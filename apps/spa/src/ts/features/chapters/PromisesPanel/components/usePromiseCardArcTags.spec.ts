@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { usePromiseCardArcTags } from './usePromiseCardArcTags';
-import { useStoryArcsStore } from '@/stores/story_arcs.store';
 
 describe('usePromiseCardArcTags', () => {
   beforeEach(() => {

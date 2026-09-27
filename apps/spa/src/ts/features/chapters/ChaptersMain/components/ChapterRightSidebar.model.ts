@@ -33,5 +33,6 @@ export interface ChapterRightSidebarEmits {
   (e: 'update:timeline-events', val: TimelineEvent[]): void;
   (e: 'update:participants', val: ParticipantItem[]): void;
   (e: 'locatePromise', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
+  (e: 'openJourney'): void;
 }
 

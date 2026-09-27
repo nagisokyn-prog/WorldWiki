@@ -10,6 +10,13 @@
       </div>
       <div class="flex items-center gap-1.5">
         <button 
+          class="btn-icon-subtle text-xs" 
+          title="Открыть путь персонажа и навигатор сцен" 
+          @click.stop="$emit('open-journey')"
+        >
+          🗺️
+        </button>
+        <button 
           class="btn-xs btn-outline" 
           title="Добавить новую сцену" 
           @click.stop="addNewScene"
@@ -97,6 +104,7 @@ const props = defineProps<PromisesPanelProps>();
 const emit = defineEmits<{
   (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
   (e: 'change'): void;
+  (e: 'open-journey'): void;
 }>();
 
 const {
@@ -141,3 +149,5 @@ defineExpose({
 
 <style src="@worldwiki/resources/styles/features/chapters/PromisesPanel.css"></style>
 <style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css"></style>
+
+

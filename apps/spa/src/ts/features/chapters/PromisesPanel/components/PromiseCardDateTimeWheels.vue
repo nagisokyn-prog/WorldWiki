@@ -8,7 +8,7 @@
           :model-value="currentEraIdx"
           :options="eraWheelOptions"
           placeholder="Эпоха"
-          @update:model-value="$emit('update:currentEraIdx', $event); $emit('change')"
+          @update:model-value="$emit('update:currentEraIdx', Number($event)); $emit('change')"
         />
       </div>
 
@@ -18,7 +18,7 @@
           :model-value="currentYear"
           :options="yearWheelOptions"
           placeholder="Год"
-          @update:model-value="$emit('update:currentYear', $event); $emit('change')"
+          @update:model-value="$emit('update:currentYear', Number($event)); $emit('change')"
         />
       </div>
 
@@ -28,7 +28,7 @@
           :model-value="currentMonthIdx"
           :options="monthWheelOptions"
           placeholder="Месяц"
-          @update:model-value="$emit('update:currentMonthIdx', $event); $emit('change')"
+          @update:model-value="$emit('update:currentMonthIdx', Number($event)); $emit('change')"
         />
       </div>
     </div>
@@ -41,7 +41,7 @@
           :model-value="currentDay"
           :options="dayWheelOptions"
           placeholder="День"
-          @update:model-value="$emit('update:currentDay', $event); $emit('change')"
+          @update:model-value="$emit('update:currentDay', Number($event)); $emit('change')"
         />
       </div>
 
@@ -51,7 +51,7 @@
           :model-value="currentHour"
           :options="hourWheelOptions"
           placeholder="Час"
-          @update:model-value="$emit('update:currentHour', $event); $emit('change')"
+          @update:model-value="$emit('update:currentHour', Number($event)); $emit('change')"
         />
       </div>
 
@@ -61,7 +61,7 @@
           :model-value="currentMinute"
           :options="minuteWheelOptions"
           placeholder="Мин"
-          @update:model-value="$emit('update:currentMinute', $event); $emit('change')"
+          @update:model-value="$emit('update:currentMinute', Number($event)); $emit('change')"
         />
       </div>
     </div>

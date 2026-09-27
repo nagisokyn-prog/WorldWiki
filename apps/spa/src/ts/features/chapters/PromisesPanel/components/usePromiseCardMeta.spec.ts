@@ -1,28 +1,31 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { usePromiseCardMeta } from './usePromiseCardMeta';
+import { useCalendarStore } from '@/stores/calendar.store';
 import type { RichPlotPromise } from '../usePromisesPanel';
+
+const { mockCal } = vi.hoisted(() => ({
+  mockCal: {
+    id: 'cal:1',
+    name: 'Основной календарь',
+    is_default: true,
+    data: {
+      название: 'Основной календарь',
+      эпохи: [{ название: 'Новая Эра', год_начала: 1, год_конца: 2000 }],
+      месяцы: [
+        { название: 'Январь', дней: 30 },
+        { название: 'Февраль', дней: 30 }
+      ],
+      сезоны: [{ название: 'Зима', месяцы: [0, 1] }],
+      настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 }
+    }
+  }
+}));
 
 vi.mock('@/services/api.client', () => ({
   getEntities: vi.fn().mockResolvedValue([]),
   getGlobalTimeline: vi.fn().mockResolvedValue({ events: [] }),
-  getCalendars: vi.fn().mockResolvedValue([
-    {
-      id: 'cal:1',
-      name: 'Основной календарь',
-      is_default: true,
-      data: {
-        название: 'Основной календарь',
-        эпохи: [{ название: 'Новая Эра', год_начала: 1, год_конца: 2000 }],
-        месяцы: [
-          { название: 'Январь', дней: 30 },
-          { название: 'Февраль', дней: 30 }
-        ],
-        сезоны: [{ название: 'Зима', месяцы: [0, 1] }],
-        настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 }
-      }
-    }
-  ])
+  getCalendars: vi.fn().mockResolvedValue([mockCal])
 }));
 
 describe('usePromiseCardMeta', () => {
@@ -47,6 +50,8 @@ describe('usePromiseCardMeta', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
+    const calStore = useCalendarStore();
+    calStore.calendars = [mockCal as any];
     vi.restoreAllMocks();
   });
 
@@ -136,9 +141,10 @@ describe('usePromiseCardMeta', () => {
     expect(emit).toHaveBeenCalledWith('change');
   });
 
-  it('calculates diegetic badges correctly based on hour and season', () => {
+  it('calculates diegetic badges correctly based on hour and season', async () => {
     const emit = vi.fn();
     const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    await meta.loadProjectEntities();
     meta.currentHour.value = 0;
     meta.currentMinute.value = 0;
     

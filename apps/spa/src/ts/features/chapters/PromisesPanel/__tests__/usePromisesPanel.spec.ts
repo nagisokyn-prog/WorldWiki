@@ -79,7 +79,7 @@ describe('usePromisesPanel', () => {
 
     // Якорь начала 'фраза раз' найден в 'фраза раз обновленная' ✓
     // Якорь конца  'фраза три' найден в 'фраза три' ✓
-    expect(panel.promises.value[0].quote).toBe('Фраза раз обновленная Фраза два Фраза три');
+    expect(panel.promises.value[0].quote).toBe('Фраза раз обновленная\nФраза два\nФраза три');
     expect(panel.promises.value[0].paragraph_index).toBe(1);
   });
 

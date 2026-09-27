@@ -254,7 +254,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
   const isLight = settings.theme === 'light' || root.getAttribute('data-theme') === 'light';
   const defaultDropdownRgb: [number, number, number] = isLight ? [255, 255, 255] : [26, 26, 32];
   const t = settings.dropdowns?.transparency !== undefined ? settings.dropdowns.transparency : 0;
-  const op = ((100 - t) / 100).toFixed(2);
+  const op = String((100 - t) / 100);
   style.setProperty('--dropdown-transparency', `${t}%`);
   style.setProperty('--dropdown-opacity', op);
   const baseDropdownColor = c.dropdownBg || c.bgCard || c.bgPanel;

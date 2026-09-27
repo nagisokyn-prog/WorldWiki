@@ -324,6 +324,7 @@ describe('useRelationshipBlock', () => {
         динамика_отношений: [{ stage: 1 }],
         relationshipStates: { 'char_1': 'active' },
       };
+      rel.foreignModified.value = true;
 
       // Wait for watcher to fire
       await new Promise(r => setTimeout(r, 0));

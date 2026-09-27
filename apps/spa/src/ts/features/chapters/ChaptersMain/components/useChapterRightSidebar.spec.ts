@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useChapterRightSidebar } from './useChapterRightSidebar';
+import { setActivePinia, createPinia } from 'pinia';
 
 describe('useChapterRightSidebar', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     localStorage.clear();
     vi.restoreAllMocks();
   });
@@ -68,15 +70,15 @@ describe('useChapterRightSidebar', () => {
 
   it('manages activeTab and persists to localStorage', () => {
     const { activeTab, setSidebarTab } = useChapterRightSidebar();
-    expect(activeTab.value).toBe('scene');
-
-    setSidebarTab('promises');
     expect(activeTab.value).toBe('promises');
-    expect(localStorage.getItem('chapters-sidebar-active-tab')).toBe('promises');
 
     setSidebarTab('plans');
     expect(activeTab.value).toBe('plans');
     expect(localStorage.getItem('chapters-sidebar-active-tab')).toBe('plans');
+
+    setSidebarTab('promises');
+    expect(activeTab.value).toBe('promises');
+    expect(localStorage.getItem('chapters-sidebar-active-tab')).toBe('promises');
   });
 
   it('manages activePlanScope and persists to localStorage', () => {

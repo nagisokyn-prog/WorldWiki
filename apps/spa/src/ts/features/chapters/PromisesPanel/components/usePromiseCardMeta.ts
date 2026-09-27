@@ -4,6 +4,8 @@ import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
 import { usePromiseDateTime } from './usePromiseDateTime';
 import { usePromiseParticipants } from './usePromiseParticipants';
+import type { RichPlotPromise } from '../usePromisesPanel';
+import type { SceneArcItem } from './PromiseCardArcTags.model';
 import type {
   PromiseCardMetaProps,
   PromiseCardMetaEmits,
@@ -26,9 +28,8 @@ export function usePromiseCardMeta(
   const projectLocations = ref<ProjectEntityOption[]>([]);
   const projectCharacters = ref<ProjectEntityOption[]>([]);
   const projectTimelineEvents = ref<TimelineEventOption[]>([]);
-  const calendars = ref<CalendarRecord[]>([]);
-
   const calendarStore = useCalendarStore();
+  const calendars = ref<CalendarRecord[]>([]);
   const dateTime = usePromiseDateTime(calendars, () => emit('change'));
   const participants = usePromiseParticipants(props, projectCharacters, emit);
 
@@ -156,9 +157,9 @@ export function usePromiseCardMeta(
     emit('change');
   };
 
-  const onArcsUpdate = (newArcs: Array<{ arc_id: string; arc_phase?: string | null }>) => {
+  const onArcsUpdate = (newArcs: SceneArcItem[]) => {
     const first = newArcs[0];
-    const updated = {
+    const updated: RichPlotPromise = {
       ...props.item,
       arcs: newArcs,
       arc_id: first?.arc_id ? String(first.arc_id) : null,
@@ -171,7 +172,7 @@ export function usePromiseCardMeta(
   const onArcChange = () => {
     const aid = localArcId.value ? String(localArcId.value) : null;
     const aphase = aid ? (localArcPhase.value || 'setup') : null;
-    const updated = {
+    const updated: RichPlotPromise = {
       ...props.item,
       arc_id: aid,
       arc_phase: aphase,
@@ -225,6 +226,7 @@ export function usePromiseCardMeta(
     saveLocation,
     updateKind,
     onArcChange,
-    onArcsUpdate
+    onArcsUpdate,
+    loadProjectEntities
   };
 }

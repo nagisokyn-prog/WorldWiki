@@ -56,6 +56,7 @@
         @update:participants="currentChapter && (currentChapter.participants = $event)"
         @mark-unsaved="markUnsaved"
         @locate-promise="handleLocatePromise"
+        @open-journey="isJourneyOpen = true"
       />
       
       <!-- History Drawer Component -->
@@ -108,6 +109,22 @@
       @saved="() => {}"
     />
 
+    <!-- Floating Character Journey & Scene Navigator -->
+    <FloatingWindow
+      v-if="isJourneyOpen"
+      title="🗺️ Навигатор Сцен & Путь Персонажа"
+      :is-open="isJourneyOpen"
+      @close="closeJourney"
+    >
+      <div class="w-full h-full min-h-[520px] min-w-[740px] flex flex-col">
+        <CharacterJourney
+          :project-id="project"
+          class="flex-1"
+          @select-scene="handleJourneySelectScene"
+        />
+      </div>
+    </FloatingWindow>
+
     <!-- Debug Panel -->
     <div v-if="debugError" class="fixed card-secondary z-tooltip p-3 font-mono text-xs debug-error-panel">
       <div class="flex justify-between mb-2">
@@ -122,9 +139,11 @@
 </template>
 
 <script setup lang="ts">
+import { FloatingWindow } from '@worldwiki/components';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
+import CharacterJourney from '../../entities/CharacterJourney/CharacterJourney.vue';
 import ChapterRightSidebar from './components/ChapterRightSidebar.vue';
 import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer.vue';
 import QuickLinkHint from './components/QuickLinkHint.vue';
@@ -164,6 +183,7 @@ const {
   markUnsaved, handleOpenEntity,
   handleExport, handleScrollChange, handleAddParticipant,
   editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
+  isJourneyOpen, closeJourney, handleJourneySelectScene,
   handleCreatePromise, handleLinkMilestone, handleLocatePromise
 } = useChaptersMain({
   project: props.project,

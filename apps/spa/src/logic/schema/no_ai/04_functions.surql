@@ -109,14 +109,14 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
     };
 };
 
--- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY)
+-- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
     LET $info = (SELECT id, name, entity_type, attributes FROM $entity);
     LET $appearances = (
         SELECT 
             out.id AS chapter_id,
             out.title AS chapter_title,
-            out.sort_order AS chapter_order,
+            IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
             source,
             role,
             created_at
@@ -127,7 +127,9 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         SELECT 
             out.id AS event_id,
             out.title AS event_title,
+            out.description AS event_desc,
             out.m_abs AS m_abs,
+            out.calendar_id AS calendar_id,
             role
         FROM participates_in 
         WHERE in = $entity
@@ -148,11 +150,20 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             id, 
             kind, 
             quote, 
-            status, 
-            chapter_id.sort_order AS planted_order,
-            resolved_in_chapter.sort_order AS resolved_order
+            status,
+            paragraph_index,
+            block_id,
+            chapter_id.id AS chapter_id,
+            chapter_id.title AS chapter_title,
+            IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS planted_order,
+            IF resolved_in_chapter.sort_order != NONE { resolved_in_chapter.sort_order } ELSE { NONE } AS resolved_order,
+            arc_id.id AS arc_id,
+            arc_id.title AS arc_title,
+            arc_id.color AS arc_color,
+            arc_phase,
+            arcs
         FROM plot_promises 
-        WHERE participant_ids CONTAINS $entity
+        WHERE participant_ids CONTAINS type::string($entity) OR participant_ids CONTAINS $entity.id OR $entity IN participant_ids
     );
 
     RETURN {
@@ -163,3 +174,4 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         promises: $promises
     };
 };
+

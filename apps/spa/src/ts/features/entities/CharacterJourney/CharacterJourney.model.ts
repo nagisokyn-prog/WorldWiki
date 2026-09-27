@@ -10,7 +10,9 @@ export interface JourneyAppearance {
 export interface JourneyEvent {
   event_id: string;
   event_title: string;
+  event_desc?: string | null;
   m_abs: number;
+  calendar_id?: string | null;
   role?: string | null;
 }
 
@@ -30,15 +32,22 @@ export interface JourneyPromise {
   status: 'planted' | 'developed' | 'resolved';
   planted_order?: number | null;
   resolved_order?: number | null;
+  chapter_id?: string | null;
+  chapter_title?: string | null;
+  paragraph_index?: number | null;
+  block_id?: string | null;
+  arc_id?: string | null;
+  arc_title?: string | null;
+  arc_color?: string | null;
+  arc_phase?: string | null;
+  arcs?: unknown;
 }
 
 export interface CharacterJourneyData {
-  entity?: {
-    id: string;
-    name: string;
-    entity_type: string;
-    attributes?: Record<string, unknown>;
-  };
+  entity_id?: string;
+  entity_name?: string;
+  entity_type?: string;
+  attributes?: Record<string, unknown>;
   appearances: JourneyAppearance[];
   events: JourneyEvent[];
   relations: JourneyRelation[];
@@ -47,14 +56,32 @@ export interface CharacterJourneyData {
 
 export type JourneyTimelineItemType = 'appearance' | 'event' | 'relation_change' | 'promise';
 
+export type CharacterJourneyViewMode = 'BY_ARCS' | 'NARRATIVE' | 'CHRONOLOGY';
+
 export interface JourneyTimelineItem {
   id: string;
   type: JourneyTimelineItemType;
   title: string;
   subtitle?: string;
+  chapter_id?: string;
+  chapter_title?: string;
   chapter_order?: number | null;
+  paragraph_index?: number | null;
+  block_id?: string | null;
   m_abs?: number | null;
+  arc_id?: string | null;
+  arc_title?: string | null;
+  arc_color?: string | null;
+  arc_phase?: string | null;
   badge?: string;
-  badgeType?: 'accent' | 'warning' | 'success' | 'danger' | 'muted';
+  badgeType?: 'accent' | 'warning' | 'success' | 'danger' | 'muted' | 'arc';
   description?: string;
+  isFlashback?: boolean;
+}
+
+export interface ArcGroup {
+  arcId: string;
+  arcTitle: string;
+  arcColor?: string;
+  items: JourneyTimelineItem[];
 }

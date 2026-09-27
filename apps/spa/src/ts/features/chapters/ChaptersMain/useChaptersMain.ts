@@ -258,11 +258,26 @@ export function useChaptersMain(
     editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote, payload.blockId);
   };
 
+  const isJourneyOpen = ref(false);
+  const openJourney = () => { isJourneyOpen.value = true; };
+  const closeJourney = () => { isJourneyOpen.value = false; };
+  const handleJourneySelectScene = (item: { chapter_id?: string; paragraph_index?: number | null; title?: string; block_id?: string | null }) => {
+    if (item.chapter_id) {
+      handleLocatePromise({
+        chapterId: item.chapter_id,
+        paragraphIndex: item.paragraph_index ?? 0,
+        quote: item.title || '',
+        blockId: item.block_id || undefined,
+      });
+    }
+  };
+
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving, localActiveTreeNode, chapterTreeRef,
     currentChapterNode, currentVolume,
     editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
+    isJourneyOpen, openJourney, closeJourney, handleJourneySelectScene,
     ...historyHook,
     ...layoutHook,
     ...floatingHook,
@@ -272,4 +287,5 @@ export function useChaptersMain(
     handleLinkMilestone, handleLocatePromise
   };
 }
+
 

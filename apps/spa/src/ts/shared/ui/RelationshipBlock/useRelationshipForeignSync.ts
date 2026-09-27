@@ -113,7 +113,8 @@ export function useRelationshipForeignSync(
         ...(targetData.attributes && typeof targetData.attributes === 'object' ? (targetData.attributes as Record<string, unknown>) : {}),
         ...(targetData.data && typeof targetData.data === 'object' ? (targetData.data as Record<string, unknown>) : {})
       };
-      const candidatePaths = [parentDataPath, tpl.dataPath, tpl.id, tpl.template, 'characterRelationships', 'связи_с_персонажами', 'custom_dynamics'].filter(Boolean) as string[];
+      const dynamicPaths = (tpl.dynamicContainers || []).map(d => d.dataPath || d.id || d.template).filter(Boolean) as string[];
+      const candidatePaths = [parentDataPath, tpl.dataPath, tpl.id, tpl.template, ...dynamicPaths, 'characterRelationships', 'связи_с_персонажами', 'custom_dynamics'].filter(Boolean) as string[];
       let targetArr: unknown[] = [];
       for (const p of candidatePaths) {
         if (Array.isArray(rootObj[p])) {

@@ -55,6 +55,7 @@
             :chapter-data="currentChapter"
             @locate="$emit('locatePromise', $event)"
             @change="$emit('markUnsaved')"
+            @open-journey="$emit('openJourney')"
           />
         </div>
 

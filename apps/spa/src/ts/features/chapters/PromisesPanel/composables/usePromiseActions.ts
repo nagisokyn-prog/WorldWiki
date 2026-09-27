@@ -12,9 +12,15 @@ export interface PromiseMilestone {
   created_at?: string | null;
 }
 
-export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution'> & {
+export interface SceneArcItem {
+  arc_id: string;
+  arc_phase?: string | null;
+}
+
+export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution' | 'arcs'> & {
   progressions?: PromiseMilestone[] | null;
   resolution?: PromiseMilestone | null;
+  arcs?: SceneArcItem[] | null;
   /** UI-флаг: текст был удалён из рукописи (не сохраняется в БД) */
   is_orphaned?: boolean;
 };
@@ -75,16 +81,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       location_id: null,
       timeline_event_id: null,
       arc_id: null,
-      arc_phase: null
+      arc_phase: null,
+      arcs: null
     };
 
     try {
       const created = await api.savePlotPromise(params.project || '', newPromise as unknown as PlotPromise);
-      if (created) {
-        promises.value.push(created as unknown as RichPlotPromise);
-      } else {
-        promises.value.push(newPromise);
-      }
+      const savedPromise: RichPlotPromise = {
+        ...newPromise,
+        ...((created as unknown as Partial<RichPlotPromise>) || {})
+      };
+      promises.value.push(savedPromise);
     } catch {
       promises.value.push(newPromise);
     }

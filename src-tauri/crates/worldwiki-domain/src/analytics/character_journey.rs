@@ -6,7 +6,9 @@ pub struct JourneyAppearanceDto {
     pub chapter_title: String,
     pub chapter_order: i32,
     pub source: String,
+    #[serde(default)]
     pub role: Option<String>,
+    #[serde(default)]
     pub created_at: String,
 }
 
@@ -14,7 +16,12 @@ pub struct JourneyAppearanceDto {
 pub struct JourneyEventDto {
     pub event_id: String,
     pub event_title: String,
+    #[serde(default)]
+    pub event_desc: Option<String>,
     pub m_abs: i64,
+    #[serde(default)]
+    pub calendar_id: Option<String>,
+    #[serde(default)]
     pub role: Option<String>,
 }
 
@@ -24,7 +31,9 @@ pub struct JourneyRelationDto {
     pub target_name: String,
     pub rel_type: String,
     pub strength: i32,
+    #[serde(default)]
     pub start_order: Option<i32>,
+    #[serde(default)]
     pub end_order: Option<i32>,
 }
 
@@ -34,8 +43,28 @@ pub struct JourneyPromiseDto {
     pub kind: String,
     pub quote: String,
     pub status: String,
+    #[serde(default)]
     pub planted_order: Option<i32>,
+    #[serde(default)]
     pub resolved_order: Option<i32>,
+    #[serde(default)]
+    pub chapter_id: Option<String>,
+    #[serde(default)]
+    pub chapter_title: Option<String>,
+    #[serde(default)]
+    pub paragraph_index: Option<i64>,
+    #[serde(default)]
+    pub block_id: Option<String>,
+    #[serde(default)]
+    pub arc_id: Option<String>,
+    #[serde(default)]
+    pub arc_title: Option<String>,
+    #[serde(default)]
+    pub arc_color: Option<String>,
+    #[serde(default)]
+    pub arc_phase: Option<String>,
+    #[serde(default)]
+    pub arcs: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -49,3 +78,4 @@ pub struct CharacterJourneyDto {
     pub relations: Vec<JourneyRelationDto>,
     pub promises: Vec<JourneyPromiseDto>,
 }
+

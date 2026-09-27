@@ -9,9 +9,9 @@ pub use errors::*;
 
 pub async fn get_projects_inner(db: &Surreal<Db>) -> Result<Vec<Value>, ProjectError> {
     let mut res = db
-        .query("SELECT *, type::string(id) as id FROM projects")
+        .query("RETURN fn::get_projects_list();")
         .await?;
-    let projects: Vec<Value> = res.take(0)?;
+    let projects: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(projects)
 }
 
@@ -41,17 +41,9 @@ pub async fn get_project_config_inner(
     db: &Surreal<Db>,
     name: &str,
 ) -> Result<Value, ProjectError> {
-    let pid_val = if name.is_empty() || name == "undefined" {
-        "projects:default".to_string()
-    } else if name.starts_with("projects:") {
-        name.to_string()
-    } else {
-        format!("projects:{}", name)
-    };
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
     let mut query_res = db
-        .query(format!("SELECT *, type::string(id) as id FROM {}", pid_literal))
+        .query("RETURN fn::get_project_config($name);")
+        .bind(("name", name.to_string()))
         .await?;
     let res: Option<Value> = query_res.take(0)?;
     Ok(res.unwrap_or(json!({})))
@@ -77,36 +69,21 @@ pub async fn delete_project_inner(
     name: &str,
 ) -> Result<String, ProjectError> {
     let pid_raw = name.strip_prefix("projects:").unwrap_or(name).trim_matches('`');
-    let pid_val = format!("projects:{}", pid_raw);
-
-    let mut retries = 5;
-    while retries > 0 {
-        let mut res = db
-            .query("DELETE projects WHERE id = type::record('projects', $p) OR id = $pid")
-            .bind(("p", pid_raw))
-            .bind(("pid", pid_val.clone()))
-            .await?;
-
-        let errors = res.take_errors();
-        if errors.is_empty() {
-            return Ok(name.to_string());
+    let mut attempts = 0;
+    loop {
+        match db.delete::<Option<Value>>(("projects", pid_raw)).await {
+            Ok(_) => return Ok(name.to_string()),
+            Err(e) => {
+                let err_str = e.to_string();
+                if attempts < 5 && (err_str.contains("Transaction conflict") || err_str.contains("can be retried")) {
+                    attempts += 1;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                    continue;
+                }
+                return Err(ProjectError::from(e));
+            }
         }
-
-        let is_conflict = errors.values().any(|e| {
-            let msg = format!("{:?}", e);
-            msg.contains("Transaction conflict") || msg.contains("Transaction write conflict")
-        });
-
-        if is_conflict && retries > 1 {
-            retries -= 1;
-            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-            continue;
-        }
-
-        return Err(ProjectError::Transaction(format!("{:?}", errors)));
     }
-
-    Ok(name.to_string())
 }
 
 #[cfg(test)]

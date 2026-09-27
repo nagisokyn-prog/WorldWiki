@@ -9,16 +9,12 @@ pub async fn get_relation_schemas_inner(
     db: &Surreal<Db>,
     project: &str,
 ) -> Result<Vec<RelationSchema>, EntityError> {
-    let pid_val = safe_pid(project);
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
+    let clean_pid = project.trim().replace("projects:", "");
     let mut res = db
-        .query(format!(
-            "SELECT * FROM relation_schemas WHERE project_id = '{}' OR project_id = {}",
-            pid_val, pid_literal
-        ))
+        .query("RETURN fn::get_relation_schemas(type::record('projects', $p));")
+        .bind(("p", clean_pid))
         .await?;
-    let values: Vec<Value> = res.take(0)?;
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }
 
@@ -58,17 +54,10 @@ pub async fn delete_relation_schema_inner(
     project: &str,
     rel_key: &str,
 ) -> Result<(), EntityError> {
-    let proj_id = format!("projects:{}", project);
+    let clean_pid = project.trim().replace("projects:", "");
     let mut tx_res = db
-        .query(
-            "
-        BEGIN TRANSACTION;
-        DELETE entity_rel WHERE project_id = $pid AND rel_type = $rel_key;
-        DELETE relation_schemas WHERE project_id = $pid AND rel_key = $rel_key;
-        COMMIT TRANSACTION;
-    ",
-        )
-        .bind(("pid", proj_id))
+        .query("fn::delete_relation_schema(type::record('projects', $p), $rel_key);")
+        .bind(("p", clean_pid))
         .bind(("rel_key", rel_key))
         .await?;
 

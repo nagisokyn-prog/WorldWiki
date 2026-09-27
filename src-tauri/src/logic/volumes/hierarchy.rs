@@ -1,6 +1,5 @@
 use crate::logic::volumes::errors::VolumeError;
 use surrealdb::engine::local::Db;
-use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 
 fn compare_record_ids(id1: &str, id2: &str) -> bool {
@@ -19,33 +18,18 @@ pub async fn get_chapter_hierarchy_inner(
     project: &str,
 ) -> Result<serde_json::Value, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
-    let proj_rec = RecordId::new("projects", pid_raw.as_str());
-    let pid_val = format!("projects:{}", pid_raw);
-    let pid_literal = format!("projects:`{}`", pid_raw);
 
-    let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
-
-    let query = format!(
-        r#"
-        SELECT * FROM volumes WHERE {cond};
-        SELECT * FROM chapters WHERE {cond};
-        SELECT in, out, sort_order FROM contains 
-        WHERE out IN (SELECT VALUE id FROM volumes WHERE {cond})
-           OR out IN (SELECT VALUE id FROM chapters WHERE {cond});
-        "#,
-        cond = query_cond
-    );
+    let query = "RETURN fn::get_chapter_hierarchy(type::record('projects', $p));";
 
     let mut res = db
         .query(query)
-        .bind(("proj", proj_rec))
-        .bind(("pid_val", pid_val))
-        .bind(("pid_literal", pid_literal))
+        .bind(("p", pid_raw))
         .await?;
 
-    let mut volumes: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
-    let mut chapters: Vec<serde_json::Value> = res.take(1).unwrap_or_default();
-    let edges: Vec<serde_json::Value> = res.take(2).unwrap_or_default();
+    let raw: Option<serde_json::Value> = res.take(0).unwrap_or(None);
+    let mut volumes: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("volumes")).and_then(|v| v.as_array()).cloned().unwrap_or_default();
+    let mut chapters: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("chapters")).and_then(|c| c.as_array()).cloned().unwrap_or_default();
+    let edges: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("relations")).and_then(|e| e.as_array()).cloned().unwrap_or_default();
 
     for vol in &mut volumes {
         if let Some(id) = vol.get("id").and_then(|i| i.as_str()) {

@@ -120,7 +120,7 @@ flowchart TD
 | **`chapters`** | Узел | Глава рукописи (Единый Источник Правды AST) | `title`, `content`, `word_count`, `summary`, `embeddings` |
 | **`story_arcs`** | Узел | Сюжетная линия / сторилайн (персонажа, конфликта, темы) | `title`, `arc_type`, `status`, `color`, `project_id` |
 | **`arc_chapters`** | Ребро | Охват глав сторилайном (`story_arcs -> chapters`) | `sort_order`, `phase` ('setup' / 'climax' / ...) |
-| **`arc_entities`** | Ребро | Фокус арки на сущностях лора (`story_arcs -> entities`) | `role` ('protagonist' / 'antagonist' / ...) |
+| **`arc_entities`** | Ребро | Фокус арки на сущностях лора (`story_arcs -> entities`) | `project_id` |
 | **`text_blocks`** | Индекс | Производный семантический индекс главы (RAG / стилометрия) | `chapter_id`, `block_type`, `order_index`, `embeddings` |
 
 > 💡 **Архитектурный Инвариант: Рукопись и Текст-Блоки**:

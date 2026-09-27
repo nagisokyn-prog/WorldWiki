@@ -10,6 +10,8 @@
 -- 1. КАСКАД УДАЛЕНИЯ ЧАТА
 DEFINE EVENT OVERWRITE cascade_chat_delete ON TABLE chats WHEN $event = "DELETE" THEN {
     DELETE chat_messages WHERE chat_id = $before.id;
+    DELETE contains WHERE in = $before.id OR out = $before.id;
+    DELETE chats WHERE parent_chat_id = $before.id;
 };
 
 -- 2. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ ПРОЕКТА (ОЧИСТКА ИИ-ПРОСТРАНСТВА)

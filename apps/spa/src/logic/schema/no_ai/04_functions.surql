@@ -45,26 +45,39 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             description,
             m_abs,
             calendar_id,
-            (
-                SELECT 
-                    out AS chapter_id,
-                    out.title AS chapter_title,
-                    out.sort_order AS chapter_order,
-                    pov_id,
-                    kind,
-                    block_id
-                FROM ->revealed_in
+            array::concat(
+                (
+                    SELECT 
+                        out.id AS chapter_id,
+                        out.title AS chapter_title,
+                        out.sort_order AS chapter_order,
+                        pov_id,
+                        kind,
+                        block_id
+                    FROM ->revealed_in
+                ),
+                (
+                    SELECT 
+                        chapter_id.id AS chapter_id,
+                        chapter_id.title AS chapter_title,
+                        IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS chapter_order,
+                        NONE AS pov_id,
+                        kind,
+                        block_id
+                    FROM plot_promises
+                    WHERE timeline_event_id = $parent.id
+                )
             ) AS reveals,
             (SELECT id, name, entity_type FROM <-participates_in<-entities) AS participants
         FROM timeline_events
-        WHERE project_id = $proj
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY m_abs ASC
     );
 
     LET $chapters = (
         SELECT id, title, sort_order 
         FROM chapters 
-        WHERE project_id = $proj 
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY sort_order ASC
     );
 
@@ -79,7 +92,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
     LET $nodes = (
         SELECT id, name, entity_type, tags, attributes 
         FROM entities 
-        WHERE project_id = $proj
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
     );
 
     LET $edges = (
@@ -99,8 +112,8 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
             } ELSE {
                 (SELECT VALUE in.m_abs FROM revealed_in WHERE out = start_chapter LIMIT 1)[0]
             } AS inferred_start_m_abs
-        FROM entity_rel
-        WHERE project_id = $proj
+        FROM entity_rel 
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
     );
 
     RETURN {
@@ -163,7 +176,10 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             arc_phase,
             arcs
         FROM plot_promises 
-        WHERE participant_ids CONTAINS type::string($entity) OR participant_ids CONTAINS $entity.id OR $entity IN participant_ids
+        WHERE participant_ids CONTAINS type::string($entity) 
+           OR participant_ids CONTAINS $entity.id 
+           OR $entity IN participant_ids
+           OR ($info[0].name != NONE AND participant_ids CONTAINS $info[0].name)
     );
 
     RETURN {
@@ -174,4 +190,500 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         promises: $promises
     };
 };
+
+-- 5. СИНХРОНИЗАЦИЯ УПОМИНАНИЙ СУЩНОСТЕЙ В ГЛАВЕ
+DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $names: array<string>) {
+    LET $proj = $chap.project_id;
+    DELETE appears_in WHERE out = $chap AND source = 'mention';
+
+    IF array::len($names) > 0 {
+        LET $lower_names = (SELECT VALUE string::lowercase($this) FROM $names);
+        LET $targets = (
+            SELECT VALUE id FROM entities 
+            WHERE (project_id = $proj OR project_id = type::record('projects', $proj) OR project_id.id = $proj.id)
+              AND (name IN $names OR string::lowercase(name) IN $lower_names OR id IN $names)
+        );
+        FOR $ent_id IN $targets {
+            RELATE $ent_id->appears_in->$chap CONTENT {
+                source: 'mention',
+                project_id: $proj,
+                created_at: time::now()
+            };
+        };
+        RETURN {
+            proj: $proj,
+            target_entities: $targets
+        };
+    } ELSE {
+        RETURN {
+            proj: $proj,
+            target_entities: []
+        };
+    };
+};
+
+-- 6. СБОР ПОЛНОЙ ИЕРАРХИИ ГЛАВ И ТОМОВ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::get_chapter_hierarchy($proj: record<projects>) {
+    LET $volumes = (SELECT * FROM volumes WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj));
+    LET $chapters = (SELECT * FROM chapters WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj));
+    LET $vol_ids = (SELECT VALUE id FROM $volumes);
+    LET $chap_ids = (SELECT VALUE id FROM $chapters);
+    LET $relations = (
+        SELECT in, out, sort_order FROM contains 
+        WHERE out IN $vol_ids OR out IN $chap_ids
+    );
+    RETURN {
+        volumes: $volumes,
+        chapters: $chapters,
+        relations: $relations
+    };
+};
+
+-- 7. СОЗДАНИЕ УЗЛА ТОМА И ПРИВЯЗКА К ПРОЕКТУ
+DEFINE FUNCTION OVERWRITE fn::create_volume_node($proj: record<projects>, $title: string, $order: int) {
+    LET $vol = (CREATE volumes SET project_id = $proj, title = $title RETURN VALUE id)[0];
+    RELATE $proj -> contains -> $vol SET sort_order = $order;
+    LET $res = (SELECT id, title, project_id, $order AS sort_order FROM $vol);
+    RETURN $res[0];
+};
+
+-- 8. ПЕРЕМЕЩЕНИЕ/ПРИВЯЗКА ГЛАВЫ К ТОМУ ИЛИ ПРОЕКТУ
+DEFINE FUNCTION OVERWRITE fn::assign_chapter_node($parent: record<projects> | record<volumes>, $chap: record<chapters>) {
+    DELETE contains WHERE out = $chap;
+    RELATE $parent -> contains -> $chap SET sort_order = 9999;
+};
+
+-- 9. СОЗДАНИЕ ГРАФОВОЙ СВЯЗИ МЕЖДУ СУЩНОСТЯМИ
+DEFINE FUNCTION OVERWRITE fn::create_entity_relation(
+    $proj: record<projects>,
+    $from: record<entities>,
+    $to: record<entities>,
+    $rel_type: string,
+    $desc: option<string | null>,
+    $strength: option<int | null>,
+    $attrs: option<object>,
+    $start_chap: option<record<chapters> | null>,
+    $end_chap: option<record<chapters> | null>
+) {
+    LET $res = (
+        RELATE $from -> entity_rel -> $to CONTENT {
+            project_id: $proj,
+            rel_type: $rel_type,
+            description: $desc,
+            strength: $strength,
+            attributes: IF $attrs != NONE { $attrs } ELSE { {} },
+            start_chapter: $start_chap,
+            end_chapter: $end_chap,
+            created_at: time::now()
+        } RETURN AFTER
+    );
+    RETURN $res[0];
+};
+
+-- 10. ПОЛУЧЕНИЕ СВЯЗЕЙ СУЩНОСТЕЙ ДЛЯ ГРАФА
+DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: record<projects>, $chap: option<record<chapters>>) {
+    IF $chap != NONE {
+        RETURN (
+            SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
+            FROM entity_rel 
+            WHERE project_id = $proj 
+              AND (start_chapter = $chap OR end_chapter = $chap)
+        );
+    } ELSE {
+        RETURN (
+            SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
+            FROM entity_rel 
+            WHERE project_id = $proj
+        );
+    };
+};
+
+-- 11. ПАКЕТНОЕ СОХРАНЕНИЕ СВЯЗЕЙ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::save_entity_connections(
+    $proj: record<projects>,
+    $src: record<entities>,
+    $connections: array<object>
+) {
+    DELETE entity_rel WHERE (in = $src OR out = $src) AND project_id = $proj;
+
+    FOR $c IN $connections {
+        IF $c.target != NONE AND $c.target.entityId != NONE {
+            LET $tgt = type::record('entities', $c.target.entityId);
+            LET $role = IF $c.role != NONE { $c.role } ELSE { 'associated' };
+            LET $desc = IF $c.description != NONE { $c.description } ELSE { '' };
+            LET $start_chap = IF $c.period != NONE AND $c.period.start_chapter != NONE { type::record('chapters', $c.period.start_chapter) } ELSE { NONE };
+            LET $end_chap = IF $c.period != NONE AND $c.period.end_chapter != NONE { type::record('chapters', $c.period.end_chapter) } ELSE { NONE };
+
+            RELATE $src -> entity_rel -> $tgt CONTENT {
+                project_id: $proj,
+                rel_type: $role,
+                description: $desc,
+                start_chapter: $start_chap,
+                end_chapter: $end_chap,
+                created_at: time::now()
+            };
+        };
+    };
+};
+
+-- 12. УДАЛЕНИЕ ВСЕХ СВЯЗЕЙ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::remove_entity_connections($src: record<entities>) {
+    DELETE entity_rel WHERE in = $src OR out = $src;
+};
+
+-- 13. СПИСОК ВСЕХ ПРОЕКТОВ
+DEFINE FUNCTION OVERWRITE fn::get_projects_list() {
+    RETURN (SELECT *, type::string(id) AS id FROM projects ORDER BY created_at DESC);
+};
+
+-- 14. ПОЛУЧЕНИЕ КОНФИГУРАЦИИ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::get_project_config($name: string) {
+    IF string::len($name) == 0 {
+        RETURN {};
+    };
+    LET $clean = string::replace($name, 'projects:', '');
+    LET $res = (
+        SELECT *, type::string(id) AS id FROM projects 
+        WHERE id = type::record('projects', $clean) OR name = $name OR name = $clean
+        LIMIT 1
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { {} };
+};
+
+-- 15. ВЫБОРКА АТРИБУТОВ СУЩНОСТЕЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: record<projects>) {
+    RETURN (
+        SELECT id, attributes FROM entities 
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
+    );
+};
+
+-- 16. ОБНОВЛЕНИЕ АТРИБУТОВ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::update_entity_attributes($entity: record<entities>, $attrs: object) {
+    UPDATE $entity SET attributes = $attrs;
+};
+
+-- 17. МАКСИМАЛЬНЫЙ ПОРЯДОК СОРТИРОВКИ ТОМОВ
+DEFINE FUNCTION OVERWRITE fn::get_max_volume_sort_order($proj: record<projects>) {
+    LET $res = (SELECT math::max(sort_order) AS max_order FROM contains WHERE in = $proj GROUP ALL);
+    RETURN IF array::len($res) > 0 AND $res[0].max_order != NONE { $res[0].max_order } ELSE { -1 };
+};
+
+-- 18. ОБНОВЛЕНИЕ ЗАГОЛОВКА ТОМА
+DEFINE FUNCTION OVERWRITE fn::update_volume_title($vol: record<volumes>, $title: string) {
+    UPDATE $vol SET title = $title;
+};
+
+-- 19. ПОЛУЧЕНИЕ СПИСКА СВЯЗЕЙ СУЩНОСТЕЙ
+DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: record<projects>, $eid: option<record<entities>>) {
+    IF $eid != NONE {
+        RETURN (
+            SELECT *, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
+            FROM entity_rel 
+            WHERE project_id = $proj AND (in = $eid OR out = $eid)
+        );
+    } ELSE {
+        RETURN (
+            SELECT *, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
+            FROM entity_rel 
+            WHERE project_id = $proj
+        );
+    };
+};
+-- 20. ПЕРЕМЕЩЕНИЕ/ИЗМЕНЕНИЕ ПОРЯДКА УЗЛА
+DEFINE FUNCTION OVERWRITE fn::reorder_node($node: record<chapters> | record<volumes>, $order: int) {
+    UPDATE contains SET sort_order = $order WHERE out = $node;
+};
+
+-- 21. ПОЛУЧЕНИЕ РЕВИЗИЙ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::get_chapter_revisions($target: record<chapters>) {
+    RETURN (SELECT * FROM chapter_revisions WHERE target_id = $target ORDER BY created_at DESC);
+};
+
+-- 22. ЗАКРЕПЛЕНИЕ/ОТКРЕПЛЕНИЕ РЕВИЗИИ ИЛИ ИСТОРИИ
+DEFINE FUNCTION OVERWRITE fn::toggle_pin($target: record, $is_pinned: bool) {
+    UPDATE $target SET is_pinned = $is_pinned;
+};
+
+-- 23. ПОЛУЧЕНИЕ ИСТОРИИ СХЕМЫ СУЩНОСТЕЙ
+DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: record<projects>, $tk: string) {
+    RETURN (SELECT * FROM schema_history WHERE project_id = $proj AND type_key = $tk ORDER BY saved_at DESC);
+};
+
+-- 24. ПОЛУЧЕНИЕ РЕВИЗИЙ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::get_entity_revisions($target: record<entities>) {
+    RETURN (SELECT * FROM entity_revisions WHERE target_id = $target ORDER BY created_at DESC);
+};
+
+-- 25. СОХРАНЕНИЕ СЕМАНТИЧЕСКИХ ТЕКСТОВЫХ БЛОКОВ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
+    $proj: record<projects>,
+    $chap: record<chapters>,
+    $blocks: array<object>
+) {
+    DELETE text_blocks WHERE chapter_id = $chap AND project_id = $proj;
+
+    FOR $b IN $blocks {
+        CREATE text_blocks SET 
+            project_id = $proj,
+            chapter_id = $chap,
+            block_type = $b.block_type,
+            order_index = $b.order_index,
+            content = $b.content;
+    };
+};
+
+-- 26. ПАКЕТНОЕ СОХРАНЕНИЕ ГЛОБАЛЬНОГО ТАЙМЛАЙНА ГЛАВ
+DEFINE FUNCTION OVERWRITE fn::save_global_timeline(
+    $proj: record<projects>,
+    $items: array<object>
+) {
+    FOR $item IN $items {
+        IF $item.chapter_id != NONE {
+            LET $cid = type::record('chapters', $item.chapter_id);
+            UPDATE $cid SET 
+                project_id = $proj,
+                title = IF $item.title != NONE { $item.title } ELSE { title },
+                timeline_events = IF $item.events != NONE { $item.events } ELSE { [] },
+                participants = IF $item.participants != NONE { $item.participants } ELSE { [] };
+        };
+    };
+};
+
+-- 27. ПОЛУЧЕНИЕ СХЕМ СВЯЗЕЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: record<projects>) {
+    RETURN (SELECT * FROM relation_schemas WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj));
+};
+
+-- 28. УДАЛЕНИЕ СХЕМЫ СВЯЗИ И СВЯЗАННЫХ РЕБЕР
+DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: record<projects>, $rel_key: string) {
+    DELETE entity_rel WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND rel_type = $rel_key;
+    DELETE relation_schemas WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND rel_key = $rel_key;
+};
+
+-- 29. ПОЛУЧЕНИЕ СХЕМ СУЩНОСТЕЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
+    RETURN (SELECT * FROM entity_schemas WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj));
+};
+
+-- 30. ПОИСК ID СХЕМЫ СУЩНОСТИ ПО TYPE_KEY
+DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: record<projects>, $tk: string) {
+    LET $res = (SELECT id FROM entity_schemas WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND type_key = $tk LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0].id } ELSE { NONE };
+};
+
+-- 31. СОХРАНЕНИЕ СНИМКА ИСТОРИИ СХЕМЫ
+DEFINE FUNCTION OVERWRITE fn::record_schema_history(
+    $proj: record<projects>,
+    $schema_id: record<entity_schemas>,
+    $type_key: string,
+    $snapshot: object,
+    $max_limit: int
+) {
+    CREATE schema_history SET
+        schema_id = $schema_id,
+        type_key = $type_key,
+        project_id = $proj,
+        snapshot = $snapshot,
+        saved_at = type::string(time::now()),
+        is_pinned = false;
+
+    LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $schema_id AND is_pinned = false ORDER BY saved_at DESC);
+    IF array::len($unpinned) > $max_limit {
+        LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
+        DELETE $to_delete;
+    };
+};
+
+-- 32. СОХРАНЕНИЕ СХЕМЫ СУЩНОСТИ (UPSERT)
+DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
+    $id: record<entity_schemas>,
+    $proj: record<projects>,
+    $type_key: string,
+    $type_name: string,
+    $icon: option<string | null>,
+    $color: option<string | null>,
+    $fields_schema: array,
+    $full_schema: option<object | null>
+) {
+    LET $res = (
+        UPSERT $id SET 
+            project_id = $proj,
+            type_key = $type_key,
+            type_name = $type_name,
+            icon = $icon,
+            color = $color,
+            fields_schema = $fields_schema,
+            full_schema = $full_schema
+    );
+    RETURN $res[0];
+};
+
+-- 33. КАСКАДНОЕ УДАЛЕНИЕ СХЕМЫ СУЩНОСТЕЙ
+DEFINE FUNCTION OVERWRITE fn::delete_entity_schema($proj: record<projects>, $type_key: string) {
+    LET $matching_rel_keys = (
+        SELECT VALUE rel_key FROM relation_schemas 
+        WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) 
+          AND (from_types CONTAINS $type_key OR to_types CONTAINS $type_key)
+    );
+    DELETE entity_rel WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND rel_type IN $matching_rel_keys;
+    DELETE entities WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND entity_type = $type_key;
+    DELETE entity_schemas WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)) AND type_key = $type_key;
+};
+
+-- 34. ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПРОЕКТА С ФИЛЬТРАЦИЕЙ ПО ТИПУ
+DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<string>) {
+    IF $et != NONE {
+        RETURN (
+            SELECT * FROM entities 
+            WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj))
+              AND entity_type = $et
+        );
+    } ELSE {
+        RETURN (
+            SELECT * FROM entities 
+            WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
+        );
+    };
+};
+
+-- 35. СОХРАНЕНИЕ СУЩНОСТИ (UPSERT ИЛИ CREATE)
+DEFINE FUNCTION OVERWRITE fn::save_entity(
+    $id: option<record<entities> | null>,
+    $proj: record<projects>,
+    $entity_type: string,
+    $name: string,
+    $desc: option<string | null>,
+    $attrs: option<object>,
+    $tags: option<array<string>>,
+    $embeds: option<object | array | null>
+) {
+    IF $id != NONE AND $id != NULL {
+        LET $existing = (SELECT * FROM ONLY $id);
+        LET $res = (
+            UPSERT $id SET
+                project_id = $proj,
+                entity_type = $entity_type,
+                name = $name,
+                description = IF $desc != NONE AND $desc != NULL { $desc } ELSE IF $existing != NONE { $existing.description } ELSE { NONE },
+                attributes = IF $attrs != NONE AND array::len(object::keys($attrs)) > 0 { $attrs } ELSE IF $existing != NONE { $existing.attributes } ELSE { {} },
+                tags = IF $tags != NONE AND array::len($tags) > 0 { $tags } ELSE IF $existing != NONE { $existing.tags } ELSE { [] },
+                embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE IF $existing != NONE { $existing.embeddings } ELSE { {} }
+        );
+        RETURN $res[0];
+    } ELSE {
+        LET $res = (
+            CREATE entities SET
+                project_id = $proj,
+                entity_type = $entity_type,
+                name = $name,
+                description = $desc,
+                attributes = IF $attrs != NONE { $attrs } ELSE { {} },
+                tags = IF $tags != NONE { $tags } ELSE { [] },
+                embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE { {} }
+        );
+        RETURN $res[0];
+    };
+};
+
+-- 36. ПОЛНОТЕКСТОВЫЙ ПОИСК СУЩНОСТЕЙ
+DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: string, $et: option<string>) {
+    IF $et != NONE {
+        RETURN (
+            SELECT * FROM entities 
+            WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj))
+              AND (name @@ $q OR description @@ $q)
+              AND entity_type = $et
+            LIMIT 50
+        );
+    } ELSE {
+        RETURN (
+            SELECT * FROM entities 
+            WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj))
+              AND (name @@ $q OR description @@ $q)
+            LIMIT 50
+        );
+    };
+};
+
+-- 37. ПАКЕТНОЕ ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПО ТИПАМ
+DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
+    RETURN (
+        SELECT * FROM entities 
+        WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj))
+          AND entity_type IN $types
+    );
+};
+
+-- 38. ПАКЕТНОЕ СОХРАНЕНИЕ СУЩНОСТИ И ЕЕ СВЯЗАННЫХ СУЩНОСТЕЙ
+DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
+    $proj: record<projects>,
+    $main_id: record<entities>,
+    $main_entity: object,
+    $foreign_updates: array<object>
+) {
+    LET $saved = (
+        UPSERT $main_id SET
+            project_id = $proj,
+            entity_type = $main_entity.entity_type,
+            name = $main_entity.name,
+            description = $main_entity.description,
+            attributes = IF $main_entity.attributes != NONE { $main_entity.attributes } ELSE { {} },
+            tags = IF $main_entity.tags != NONE { $main_entity.tags } ELSE { [] },
+            embeddings = IF $main_entity.embeddings != NONE AND $main_entity.embeddings != NULL { $main_entity.embeddings } ELSE { {} }
+    );
+
+    FOR $f IN $foreign_updates {
+        IF $f.id != NONE {
+            LET $fid = type::record('entities', $f.id);
+            UPSERT $fid SET
+                project_id = $proj,
+                entity_type = $f.entity_type,
+                name = $f.name,
+                description = $f.description,
+                attributes = IF $f.attributes != NONE { $f.attributes } ELSE { {} },
+                tags = IF $f.tags != NONE { $f.tags } ELSE { [] },
+                embeddings = IF $f.embeddings != NONE AND $f.embeddings != NULL { $f.embeddings } ELSE { {} };
+        };
+    };
+
+    RETURN $saved[0];
+};
+
+-- 39. ПАКЕТНОЕ ОБНОВЛЕНИЕ РЕБЕР СВЯЗЕЙ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::batch_upsert_connections(
+    $proj: record<projects>,
+    $src: record<entities>,
+    $connections: array<object>
+) {
+    DELETE entity_rel WHERE project_id = $proj AND (in = $src OR out = $src);
+
+    FOR $c IN $connections {
+        IF $c.target != NONE {
+            LET $tgt = type::record('entities', $c.target);
+            LET $from = IF $c.source != NONE { type::record('entities', $c.source) } ELSE { $src };
+            LET $rt = IF $c.rel_type != NONE { $c.rel_type } ELSE { 'associated' };
+            LET $desc = IF $c.description != NONE { $c.description } ELSE { '' };
+            LET $str = IF $c.strength != NONE { $c.strength } ELSE { NONE };
+            LET $attr = IF $c.attributes != NONE { $c.attributes } ELSE { {} };
+            LET $start = IF $c.start_chapter != NONE { type::record('chapters', $c.start_chapter) } ELSE { NONE };
+            LET $end = IF $c.end_chapter != NONE { type::record('chapters', $c.end_chapter) } ELSE { NONE };
+
+            RELATE $from -> entity_rel -> $tgt CONTENT {
+                project_id: $proj,
+                rel_type: $rt,
+                description: $desc,
+                strength: $str,
+                attributes: $attr,
+                start_chapter: $start,
+                end_chapter: $end,
+                created_at: time::now()
+            };
+        };
+    };
+};
+
+
+
+
 

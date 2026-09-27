@@ -34,6 +34,9 @@ impl StoryArcRepository for SurrealStoryArcRepository {
     }
 
     async fn save(&self, arc: &StoryArc) -> Result<String, DomainError> {
+        if arc.title.trim().is_empty() {
+            return Err(DomainError::Validation("Arc title cannot be empty".to_string()));
+        }
         let clean_id = if arc.id.is_empty() {
             None
         } else {
@@ -177,15 +180,13 @@ impl StoryArcRepository for SurrealStoryArcRepository {
         let ent_clean = relation.entity_id.trim_start_matches("entities:");
         let sql = r#"
             RELATE (type::record('story_arcs', $arc))->arc_entities->(type::record('entities', $ent)) CONTENT {
-                project_id: (SELECT VALUE project_id FROM ONLY type::record('story_arcs', $arc)),
-                role: $role
+                project_id: (SELECT VALUE project_id FROM ONLY type::record('story_arcs', $arc))
             };
         "#;
         self.db
             .query(sql)
             .bind(("arc", arc_clean.to_string()))
             .bind(("ent", ent_clean.to_string()))
-            .bind(("role", relation.role.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
@@ -225,7 +226,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
     async fn list_entities_for_arc(&self, arc_id: &str) -> Result<Vec<ArcEntityRelation>, DomainError> {
         let arc_clean = arc_id.trim_start_matches("story_arcs:");
         let arc_full = format!("story_arcs:{arc_clean}");
-        let sql = "SELECT in AS arc_id, out AS entity_id, role FROM arc_entities WHERE in = type::record('story_arcs', $arc) OR in = $arc_full;";
+        let sql = "SELECT in AS arc_id, out AS entity_id FROM arc_entities WHERE in = type::record('story_arcs', $arc) OR in = $arc_full;";
         let mut res = self
             .db
             .query(sql)

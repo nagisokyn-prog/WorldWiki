@@ -66,13 +66,15 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     isLoading.value = true;
     error.value = null;
     try {
+      console.log('[AnalyticsStore] Loading cross-reference matrix for project:', project);
       const data = await getCrossReferenceMatrix(project);
+      console.log('[AnalyticsStore] Cross-reference matrix data received:', data);
       matrixData.value = (data as CrossReferenceMatrixData) || { chapters: [], entities: [] };
       return matrixData.value;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       error.value = msg;
-      console.error('[AnalyticsStore] Error loading cross-reference matrix:', err);
+      console.error('[AnalyticsStore ERROR] Error loading cross-reference matrix:', err);
       return null;
     } finally {
       isLoading.value = false;

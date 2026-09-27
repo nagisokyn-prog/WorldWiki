@@ -43,48 +43,33 @@ pub async fn save_chapter_inner(
     db: &Surreal<Db>,
     chapter: Chapter,
 ) -> Result<Chapter, ChapterError> {
+    eprintln!("[SAVE_CHAPTER] Saving chapter: id={:?}, title={:?}, project_id={:?}", chapter.id, chapter.title, chapter.project_id);
     let saved = Chapter::save(db, &chapter).await?;
+    eprintln!("[SAVE_CHAPTER] Chapter saved successfully: id={:?}", saved.id);
 
     // Auto-sync entity mentions ((Entity)) and HTML links into appears_in (source = 'mention')
     let mentions = worldwiki_domain::manuscript::TextBlock::extract_entity_mentions(&saved.content);
+    eprintln!("[SAVE_CHAPTER] Extracted mentions from content (total {}): {:?}", mentions.len(), mentions);
 
     if let Some(ch_id) = &saved.id {
         let clean_ch = ch_id.trim_start_matches("chapters:");
-        let _ = db
-            .query(
-                r#"
-                DELETE appears_in 
-                WHERE out = type::record('chapters', $c_id) 
-                  AND source = 'mention';
-                "#,
-            )
+        eprintln!("[SAVE_CHAPTER] Calling fn::sync_chapter_mentions for chapter: {}", clean_ch);
+        let mut res = db
+            .query("RETURN fn::sync_chapter_mentions(type::record('chapters', $c_id), $names);")
             .bind(("c_id", clean_ch.to_string()))
-            .await;
+            .bind(("names", mentions))
+            .await
+            .map_err(|e| {
+                eprintln!("[SAVE_CHAPTER ERROR] fn::sync_chapter_mentions execution failed: {}", e);
+                ChapterError::Database(e)
+            })?;
 
-        if !mentions.is_empty() {
-            let lower_names: Vec<String> = mentions.iter().map(|n| n.to_lowercase()).collect();
-            let _ = db
-                .query(
-                    r#"
-                    LET $ch_rec = type::record('chapters', $c_id);
-                    LET $proj = $ch_rec.project_id;
-                    LET $target_entities = (
-                        SELECT id FROM entities 
-                        WHERE (project_id = $proj OR project_id = type::record('projects', $proj) OR project_id.id = $proj.id)
-                          AND (name IN $names OR string::lowercase(name) IN $lower_names OR id IN $names)
-                    );
-                    FOR $ent IN $target_entities {
-                        RELATE $ent.id->appears_in->$ch_rec CONTENT {
-                            source: 'mention',
-                            created_at: time::now()
-                        };
-                    };
-                    "#,
-                )
-                .bind(("c_id", clean_ch.to_string()))
-                .bind(("names", mentions))
-                .bind(("lower_names", lower_names))
-                .await;
+        let errors = res.take_errors();
+        if !errors.is_empty() {
+            eprintln!("[SAVE_CHAPTER ERROR] Errors during fn::sync_chapter_mentions: {:?}", errors);
+        } else {
+            let debug_info: Option<serde_json::Value> = res.take(0).unwrap_or(None);
+            eprintln!("[SAVE_CHAPTER SUCCESS] fn::sync_chapter_mentions executed. Result: {:?}", debug_info);
         }
     }
 

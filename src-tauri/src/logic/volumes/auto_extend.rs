@@ -1,7 +1,6 @@
 use crate::logic::volumes::errors::VolumeError;
 use crate::logic::volumes::lifecycle::AutoExtendResult;
 use surrealdb::engine::local::Db;
-use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 
 fn update_point_if_auto_extend(
@@ -46,10 +45,7 @@ pub async fn auto_extend_entities_inner(
     chapter_id: &str,
     volume_id: Option<String>,
 ) -> Result<u64, VolumeError> {
-    let pid_raw = project.trim().replace("projects:", "");
-    let proj_rec = RecordId::new("projects", pid_raw.as_str());
-    let pid_val = format!("projects:{}", pid_raw);
-    let pid_literal = format!("projects:`{}`", pid_raw);
+    let clean_pid = project.trim().replace("projects:", "");
 
     let clean_chap = if chapter_id.contains(':') {
         chapter_id.to_string()
@@ -63,15 +59,9 @@ pub async fn auto_extend_entities_inner(
         "is_auto_extend": true
     });
 
-    let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
     let mut res = db
-        .query(format!(
-            "SELECT id, attributes FROM entities WHERE {}",
-            query_cond
-        ))
-        .bind(("proj", proj_rec))
-        .bind(("pid_val", pid_val))
-        .bind(("pid_literal", pid_literal))
+        .query("RETURN fn::get_entities_attributes(type::record('projects', $p));")
+        .bind(("p", clean_pid))
         .await?;
 
     let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
@@ -85,13 +75,9 @@ pub async fn auto_extend_entities_inner(
         if let Some(id_str) = id_opt {
             if let Some(attr) = entity.get_mut("attributes") {
                 if update_point_if_auto_extend(attr, &new_point) {
-                    let clean_id = if id_str.contains(':') {
-                        id_str
-                    } else {
-                        format!("entities:{}", id_str)
-                    };
+                    let clean_id = id_str.trim_start_matches("entities:").to_string();
                     let _ = db
-                        .query("UPDATE type::record($id) SET attributes = $attr")
+                        .query("fn::update_entity_attributes(type::record('entities', $id), $attr);")
                         .bind(("id", clean_id))
                         .bind(("attr", attr.clone()))
                         .await;
@@ -153,20 +139,11 @@ pub async fn heal_deleted_chapter_inner(
     deleted_chapter_id: &str,
     fallback_point: Option<AutoExtendResult>,
 ) -> Result<u64, VolumeError> {
-    let pid_raw = project.trim().replace("projects:", "");
-    let proj_rec = RecordId::new("projects", pid_raw.as_str());
-    let pid_val = format!("projects:{}", pid_raw);
-    let pid_literal = format!("projects:`{}`", pid_raw);
+    let clean_pid = project.trim().replace("projects:", "");
 
-    let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
     let mut res = db
-        .query(format!(
-            "SELECT id, attributes FROM entities WHERE {}",
-            query_cond
-        ))
-        .bind(("proj", proj_rec))
-        .bind(("pid_val", pid_val))
-        .bind(("pid_literal", pid_literal))
+        .query("RETURN fn::get_entities_attributes(type::record('projects', $p));")
+        .bind(("p", clean_pid))
         .await?;
 
     let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
@@ -184,13 +161,9 @@ pub async fn heal_deleted_chapter_inner(
                     deleted_chapter_id,
                     fallback_point.as_ref(),
                 ) {
-                    let clean_id = if id_str.contains(':') {
-                        id_str
-                    } else {
-                        format!("entities:{}", id_str)
-                    };
+                    let clean_id = id_str.trim_start_matches("entities:").to_string();
                     let _ = db
-                        .query("UPDATE type::record($id) SET attributes = $attr")
+                        .query("fn::update_entity_attributes(type::record('entities', $id), $attr);")
                         .bind(("id", clean_id))
                         .bind(("attr", attr.clone()))
                         .await;

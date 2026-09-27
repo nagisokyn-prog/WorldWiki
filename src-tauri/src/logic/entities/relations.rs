@@ -14,24 +14,17 @@ pub async fn get_entity_relations_inner(
     project: &str,
     entity_id: Option<String>,
 ) -> Result<Vec<EntityRel>, EntityError> {
-    let pid_val = safe_pid(project);
-    let id_val = match &entity_id {
-        Some(e) => safe_id("entities", e),
-        None => "".to_string(),
-    };
-    let sql = match &entity_id {
-        Some(_) => "SELECT * FROM entity_rel WHERE (project_id = type::record($pid) OR project_id = $pid) AND (in = type::record($eid) OR out = type::record($eid))",
-        None => "SELECT * FROM entity_rel WHERE project_id = type::record($pid) OR project_id = $pid",
-    };
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_eid = entity_id.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("entities:", ""));
 
-    let mut q = db.query(sql).bind(("pid", pid_val));
+    let query = "RETURN fn::get_entity_relations(type::record('projects', $p), IF $eid != NONE { type::record('entities', $eid) } ELSE { NONE });";
+    let mut res = db
+        .query(query)
+        .bind(("p", clean_pid))
+        .bind(("eid", clean_eid))
+        .await?;
 
-    if entity_id.is_some() {
-        q = q.bind(("eid", id_val));
-    }
-
-    let mut res = q.await?;
-    let values: Vec<Value> = res.take(0)?;
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }
 
@@ -42,15 +35,9 @@ pub async fn create_entity_relation_inner(
     to_id: &str,
     rel: EntityRel,
 ) -> Result<EntityRel, EntityError> {
-    let proj_id = format!("projects:{}", project);
-
-    fn make_record(table: &str, full_id: &str) -> surrealdb::types::RecordId {
-        let raw = full_id.split_once(':').map(|(_, b)| b).unwrap_or(full_id);
-        surrealdb::types::RecordId::new(table, raw)
-    }
-
-    let from_rec = make_record("entities", from_id);
-    let to_rec = make_record("entities", to_id);
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_from = from_id.trim().replace("entities:", "");
+    let clean_to = to_id.trim().replace("entities:", "");
 
     let EntityRel {
         rel_type,
@@ -62,64 +49,36 @@ pub async fn create_entity_relation_inner(
         ..
     } = rel;
 
-    let has_desc = description.is_some();
-    let has_strength = strength.is_some();
-    let has_attrs = !attributes.is_null();
-    let has_start = start_chapter.as_ref().map(|s| !s.is_empty()).unwrap_or(false);
-    let has_end = end_chapter.as_ref().map(|s| !s.is_empty()).unwrap_or(false);
+    let clean_start = start_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
+    let clean_end = end_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
 
-    let mut query = "
-        RELATE $from -> entity_rel -> $to SET
-            project_id = type::record($pid),
-            rel_type = $rel_type
-    "
-    .to_string();
+    let query = r#"
+        RETURN fn::create_entity_relation(
+            type::record('projects', $pid),
+            type::record('entities', $from),
+            type::record('entities', $to),
+            $rel_type,
+            $desc,
+            $strength,
+            $attrs,
+            IF $start_chap != NONE { type::record('chapters', $start_chap) } ELSE { NONE },
+            IF $end_chap != NONE { type::record('chapters', $end_chap) } ELSE { NONE }
+        );
+    "#;
 
-    if has_desc {
-        query.push_str(", description = $desc");
-    }
-    if has_strength {
-        query.push_str(", strength = $strength");
-    }
-    if has_attrs {
-        query.push_str(", attributes = $attrs");
-    }
-    if has_start {
-        query.push_str(", start_chapter = type::record($start_chapter)");
-    }
-    if has_end {
-        query.push_str(", end_chapter = type::record($end_chapter)");
-    }
-    query.push_str(" RETURN AFTER");
-
-    let mut q = db
+    let mut res = db
         .query(query)
-        .bind(("from", from_rec))
-        .bind(("to", to_rec))
-        .bind(("pid", proj_id))
-        .bind(("rel_type", rel_type));
+        .bind(("pid", clean_pid))
+        .bind(("from", clean_from))
+        .bind(("to", clean_to))
+        .bind(("rel_type", rel_type))
+        .bind(("desc", description))
+        .bind(("strength", strength))
+        .bind(("attrs", attributes))
+        .bind(("start_chap", clean_start))
+        .bind(("end_chap", clean_end))
+        .await?;
 
-    if let Some(d) = description {
-        q = q.bind(("desc", d));
-    }
-    if let Some(s) = strength {
-        q = q.bind(("strength", s));
-    }
-    if has_attrs {
-        q = q.bind(("attrs", attributes));
-    }
-    if let Some(sc) = start_chapter {
-        if !sc.is_empty() {
-            q = q.bind(("start_chapter", sc));
-        }
-    }
-    if let Some(ec) = end_chapter {
-        if !ec.is_empty() {
-            q = q.bind(("end_chapter", ec));
-        }
-    }
-
-    let mut res = q.await?;
     let created: Option<Value> = res.take(0)?;
     match created {
         Some(v) => Ok(serde_json::from_value(v)?),

@@ -16,5 +16,6 @@ pub mod retrieval_integration;
 pub mod tools_integration;
 pub mod chat_operations_integration;
 pub mod document_export_integration;
+pub mod manuscript_tracking_integration;
 // Pipeline-тест перенесён в интеграционный таргет tests/agent_pipeline.rs
 // (см. комментарий в build.rs про манифест Common-Controls v6).

@@ -62,5 +62,4 @@ pub struct ArcChapterRelation {
 pub struct ArcEntityRelation {
     pub arc_id: String,
     pub entity_id: String,
-    pub role: Option<String>,
 }

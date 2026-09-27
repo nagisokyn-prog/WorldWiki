@@ -52,7 +52,7 @@ describe('usePromiseParticipants', () => {
 
     addParticipant('Сильфи');
     expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
-      participant_ids: ['characters:rudy', 'Эрис', 'Сильфи']
+      participant_ids: ['characters:rudy', 'Эрис', 'characters:sylphy']
     }));
     expect(emit).toHaveBeenCalledWith('change');
   });

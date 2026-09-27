@@ -1,5 +1,5 @@
 use super::errors::EntityError;
-use super::types::{deserialize_list, flatten_thing, safe_id, safe_pid};
+use super::types::{deserialize_list, flatten_thing};
 use crate::logic::models::Entity;
 use serde_json::Value;
 use surrealdb::engine::local::Db;
@@ -14,28 +14,15 @@ pub async fn get_entities_inner(
     project: &str,
     entity_type: Option<String>,
 ) -> Result<Vec<Entity>, EntityError> {
-    let pid_val = safe_pid(project);
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
-    let query = match &entity_type {
-        Some(_et) => format!(
-            "SELECT * FROM entities WHERE (project_id = '{}' OR project_id = {}) AND entity_type = $et",
-            pid_val, pid_literal
-        ),
-        None => format!(
-            "SELECT * FROM entities WHERE project_id = '{}' OR project_id = {}",
-            pid_val, pid_literal
-        ),
-    };
+    let clean_pid = project.trim().replace("projects:", "");
+    let query = "RETURN fn::get_entities(type::record('projects', $p), $et);";
+    let mut res = db
+        .query(query)
+        .bind(("p", clean_pid))
+        .bind(("et", entity_type))
+        .await?;
 
-    let mut q = db.query(&query);
-
-    if let Some(et) = entity_type {
-        q = q.bind(("et", et));
-    }
-
-    let mut res = q.await?;
-    let values: Vec<Value> = res.take(0)?;
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }
 
@@ -64,69 +51,37 @@ pub async fn save_entity_inner(
     project: &str,
     entity: Entity,
 ) -> Result<Entity, EntityError> {
-    let pid_val = safe_pid(project);
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
+    let clean_pid = project.trim().replace("projects:", "");
 
-    let id_opt = entity.id;
-    let entity_type = entity.entity_type;
-    let name = entity.name;
-    let description = entity.description;
-    let attributes = entity.attributes;
-    let tags = entity.tags;
-    let embeddings = entity.embeddings;
+    let id_opt = entity.id.map(|id_str| {
+        let raw = id_str.split_once(':').map(|(_, rest)| rest).unwrap_or(&id_str);
+        raw.trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string()
+    });
 
-    let has_desc = description.is_some();
-    let has_attrs = !attributes.is_null();
-    let has_tags = !tags.is_empty();
-    let has_embeds = embeddings.is_some();
+    let Entity {
+        entity_type,
+        name,
+        description,
+        attributes,
+        tags,
+        embeddings,
+        ..
+    } = entity;
 
-    let mut query = if let Some(ref id_str) = id_opt {
-        let actual_id = id_str.split_once(':').map(|(_, rest)| rest).unwrap_or(id_str.as_str());
-        let id_val = safe_id("entities", actual_id);
-        format!(
-            "UPSERT type::record('{}') SET project_id = {}, entity_type = $entity_type, name = $name",
-            id_val, pid_literal
-        )
-    } else {
-        format!(
-            "CREATE entities SET project_id = {}, entity_type = $entity_type, name = $name",
-            pid_literal
-        )
-    };
+    let query = "RETURN fn::save_entity(IF $id != NONE { type::record('entities', $id) } ELSE { NONE }, type::record('projects', $p), $etype, $name, $desc, $attrs, $tags, $embeds);";
 
-    if has_desc {
-        query.push_str(", description = $desc");
-    }
-    if has_attrs {
-        query.push_str(", attributes = $attrs");
-    }
-    if has_tags {
-        query.push_str(", tags = $tags");
-    }
-    if has_embeds {
-        query.push_str(", embeddings = $embeds");
-    }
-
-    let mut q = db
+    let mut res = db
         .query(query)
-        .bind(("entity_type", entity_type))
-        .bind(("name", name));
+        .bind(("id", id_opt))
+        .bind(("p", clean_pid))
+        .bind(("etype", entity_type))
+        .bind(("name", name))
+        .bind(("desc", description))
+        .bind(("attrs", attributes))
+        .bind(("tags", tags))
+        .bind(("embeds", embeddings))
+        .await?;
 
-    if let Some(d) = description {
-        q = q.bind(("desc", d));
-    }
-    if has_attrs {
-        q = q.bind(("attrs", attributes));
-    }
-    if has_tags {
-        q = q.bind(("tags", tags));
-    }
-    if let Some(e) = embeddings {
-        q = q.bind(("embeds", e));
-    }
-
-    let mut res = q.await?;
     let saved: Option<Value> = res.take(0)?;
 
     match saved {
@@ -143,29 +98,8 @@ pub async fn delete_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<(), EntityError> {
-    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id);
-    let full_id = safe_id("entities", actual_id);
-
-    let mut tx_res = db
-        .query(
-            "
-        BEGIN TRANSACTION;
-        LET $target = type::record($id);
-        DELETE entity_rel WHERE in = $target OR out = $target;
-        DELETE appears_in WHERE in = $target;
-        DELETE entity_revisions WHERE target_id = $target;
-        DELETE $target;
-        COMMIT TRANSACTION;
-    ",
-        )
-        .bind(("id", full_id))
-        .await?;
-
-    let errors = tx_res.take_errors();
-    if !errors.is_empty() {
-        return Err(EntityError::Transaction(format!("{:?}", errors)));
-    }
-
+    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id).trim_matches('⟨').trim_matches('⟩').trim_matches('`');
+    let _: Option<Value> = db.delete(("entities", actual_id)).await?;
     Ok(())
 }
 
@@ -175,28 +109,16 @@ pub async fn search_entities_inner(
     query: &str,
     entity_type: Option<String>,
 ) -> Result<Vec<Entity>, EntityError> {
-    let type_filter = if entity_type.is_some() {
-        " AND entity_type = $et"
-    } else {
-        ""
-    };
+    let clean_pid = project.trim().replace("projects:", "");
+    let sql = "RETURN fn::search_entities(type::record('projects', $p), $q, $et);";
 
-    let pid_val = safe_pid(project);
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
-    let sql = format!(
-        "SELECT * FROM entities WHERE (project_id = '{}' OR project_id = {}) \
-         AND (name @@ $q OR description @@ $q){} LIMIT 50",
-        pid_val, pid_literal, type_filter
-    );
+    let mut res = db
+        .query(sql)
+        .bind(("p", clean_pid))
+        .bind(("q", query.to_string()))
+        .bind(("et", entity_type))
+        .await?;
 
-    let mut q = db.query(sql).bind(("q", query.to_string()));
-
-    if let Some(et) = entity_type {
-        q = q.bind(("et", et));
-    }
-
-    let mut res = q.await?;
-    let values: Vec<Value> = res.take(0)?;
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }

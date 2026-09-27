@@ -27,15 +27,17 @@ export function useTimelineInspector(projectId: string) {
     isLoading.value = true;
     error.value = null;
     try {
+      console.log('[useTimelineInspector] Loading timeline inspector data for project:', projectId, 'limit:', filters.value.readerHorizonChapterOrder);
       const raw = await getTimelineInspectorData(
         projectId,
         filters.value.readerHorizonChapterOrder
       );
+      console.log('[useTimelineInspector] Received inspector data:', raw);
       data.value = (raw as TimelineInspectorData) || { events: [], chapters: [] };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       error.value = msg;
-      console.error('[useTimelineInspector] Error loading timeline inspector data:', err);
+      console.error('[useTimelineInspector ERROR] Error loading timeline inspector data:', err);
     } finally {
       isLoading.value = false;
     }

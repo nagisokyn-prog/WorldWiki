@@ -1,5 +1,5 @@
 use super::errors::EntityError;
-use super::types::{deserialize_list, safe_id, SchemaHistoryEntry};
+use super::types::{deserialize_list, SchemaHistoryEntry};
 use serde_json::Value;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -13,13 +13,13 @@ pub async fn get_schema_history_inner(
     project: &str,
     type_key: &str,
 ) -> Result<Vec<SchemaHistoryEntry>, EntityError> {
-    let pid = format!("projects:{}", project);
+    let clean_pid = project.trim().replace("projects:", "");
     let mut res = db
-        .query("SELECT * FROM schema_history WHERE project_id = type::record($pid) AND type_key = $tk ORDER BY saved_at DESC")
-        .bind(("pid", pid))
+        .query("RETURN fn::get_schema_history(type::record('projects', $pid), $tk);")
+        .bind(("pid", clean_pid))
         .bind(("tk", type_key.to_string()))
         .await?;
-    let values: Vec<Value> = res.take(0)?;
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }
 
@@ -29,9 +29,8 @@ pub async fn toggle_schema_history_pin_inner(
     is_pinned: bool,
 ) -> Result<(), EntityError> {
     let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
-    let id_val = safe_id("schema_history", actual_id);
-    db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
-        .bind(("id", id_val))
+    db.query("fn::toggle_pin(type::record('schema_history', $id), $is_pinned);")
+        .bind(("id", actual_id))
         .bind(("is_pinned", is_pinned))
         .await?;
     Ok(())
@@ -42,14 +41,12 @@ pub async fn get_entity_revisions_inner(
     entity_id: &str,
 ) -> Result<Vec<Value>, EntityError> {
     let actual_id = entity_id.split_once(':').map(|(_, b)| b).unwrap_or(entity_id);
-    let full_id = format!("entities:⟨{}⟩", actual_id);
-
     let mut result = db
-        .query("SELECT * FROM entity_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC")
-        .bind(("target_id", full_id))
+        .query("RETURN fn::get_entity_revisions(type::record('entities', $id));")
+        .bind(("id", actual_id))
         .await?;
 
-    let revisions: Vec<Value> = result.take(0)?;
+    let revisions: Vec<Value> = result.take(0).unwrap_or_default();
     Ok(revisions)
 }
 
@@ -59,11 +56,9 @@ pub async fn toggle_entity_history_pin_inner(
     is_pinned: bool,
 ) -> Result<(), EntityError> {
     let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
-
-    db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
-        .bind(("id", format!("entity_revisions:{}", actual_id)))
+    db.query("fn::toggle_pin(type::record('entity_revisions', $id), $is_pinned);")
+        .bind(("id", actual_id))
         .bind(("is_pinned", is_pinned))
         .await?;
-
     Ok(())
 }

@@ -1,5 +1,6 @@
 //! SurrealDB implementation of ChapterRepository.
 
+use super::helpers::{project_where_clause, take_list, take_one};
 use async_trait::async_trait;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
@@ -7,7 +8,6 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::manuscript::Chapter;
 use worldwiki_ports::repositories::ChapterRepository;
-use super::helpers::{project_where_clause, take_list, take_one};
 
 pub struct SurrealChapterRepository {
     db: Arc<Surreal<Db>>,
@@ -110,52 +110,26 @@ impl ChapterRepository for SurrealChapterRepository {
         take_list(&mut res, 0)
     }
 
-    async fn sync_mentions_appearances(&self, chapter_id: &str, entity_names: &[String]) -> Result<(), DomainError> {
+    async fn sync_mentions_appearances(
+        &self,
+        chapter_id: &str,
+        entity_names: &[String],
+    ) -> Result<(), DomainError> {
         let clean_ch = chapter_id.trim_start_matches("chapters:");
-        
-        // 1. Delete previous automatic mentions for this chapter
-        let del_sql = r#"
-            DELETE appears_in 
-            WHERE out = type::record('chapters', $c_id) 
-              AND source = 'mention';
-        "#;
-        self.db
-            .query(del_sql)
-            .bind(("c_id", clean_ch.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        if entity_names.is_empty() {
-            return Ok(());
-        }
-
-        let lower_names: Vec<String> = entity_names.iter().map(|n| n.to_lowercase()).collect();
-
-        // 2. Fetch entity IDs matching names in the same project as chapter
-        let insert_sql = r#"
-            LET $ch_rec = type::record('chapters', $c_id);
-            LET $proj = $ch_rec.project_id;
-            LET $target_entities = (
-                SELECT id FROM entities 
-                WHERE (project_id = $proj OR project_id = type::record('projects', $proj) OR project_id.id = $proj.id)
-                  AND (name IN $names OR string::lowercase(name) IN $lower_names OR id IN $names)
-            );
-            FOR $ent IN $target_entities {
-                RELATE $ent.id->appears_in->$ch_rec CONTENT {
-                    source: 'mention',
-                    created_at: time::now()
-                };
-            };
-        "#;
-        self.db
-            .query(insert_sql)
+        let mut res = self
+            .db
+            .query("RETURN fn::sync_chapter_mentions(type::record('chapters', $c_id), $names);")
             .bind(("c_id", clean_ch.to_string()))
             .bind(("names", entity_names.to_vec()))
-            .bind(("lower_names", lower_names))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(e.to_string()));
+        }
 
         Ok(())
     }
 }
-

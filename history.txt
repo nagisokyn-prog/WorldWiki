@@ -1,0 +1,8 @@
+#V2
+SELECT count() FROM appears_in GROUP ALL;
+SELECT id, participant_ids FROM plot_promises WHERE participant_ids != NONE LIMIT 5;
+SELECT id, name FROM projects;
+SELECT count() FROM appears_in GROUP ALL;
+SELECT id, participant_ids FROM plot_promises WHERE participant_ids != NONE LIMIT 5;
+SELECT id, name FROM projects;
+SELECT count() FROM revealed_in GROUP ALL;

@@ -37,8 +37,8 @@ impl Chapter {
             return Ok(json!({ "success": true, "updated": 0 }));
         }
 
-        let mut sql = String::from("BEGIN TRANSACTION;\n");
-        let mut bindings: Vec<(String, Value)> = Vec::new();
+        let clean_pid = project.trim().replace("projects:", "");
+        let mut clean_items: Vec<Value> = Vec::new();
 
         for (i, item) in arr.iter().enumerate() {
             let cid = item
@@ -54,16 +54,7 @@ impl Chapter {
                 .and_then(|v| v.as_str())
                 .map(|t| t.to_string())
                 .unwrap_or_else(|| format!("chapter-{i}"));
-            let cid_safe = if cid.contains(':') {
-                cid.to_string()
-            } else {
-                format!("chapters:{}", cid)
-            };
-            let pid_safe = if project.contains(':') {
-                project.to_string()
-            } else {
-                format!("projects:{}", project)
-            };
+            let clean_cid = cid.trim().replace("chapters:", "");
 
             let events = item.get("events").cloned().unwrap_or(Value::Array(vec![]));
             let participants = item
@@ -71,26 +62,20 @@ impl Chapter {
                 .cloned()
                 .unwrap_or(Value::Array(vec![]));
 
-            sql.push_str(&format!(
-                "UPDATE type::record($cid_{i}) SET project_id = type::record($pid_{i}), \
-                     title = $title_{i}, \
-                     timeline_events = $events_{i}, \
-                     participants = $participants_{i};\n",
-                i = i
-            ));
-            bindings.push((format!("cid_{i}"), json!(cid_safe)));
-            bindings.push((format!("pid_{i}"), json!(pid_safe)));
-            bindings.push((format!("title_{i}"), json!(title)));
-            bindings.push((format!("events_{i}"), events));
-            bindings.push((format!("participants_{i}"), participants));
+            clean_items.push(json!({
+                "chapter_id": clean_cid,
+                "title": title,
+                "events": events,
+                "participants": participants,
+            }));
         }
-        sql.push_str("COMMIT TRANSACTION;\n");
 
-        let mut q = db.query(sql);
-        for (k, v) in &bindings {
-            q = q.bind((k.as_str(), v.clone()));
-        }
-        let mut res = q.await?;
+        let mut res = db
+            .query("fn::save_global_timeline(type::record('projects', $p), $items);")
+            .bind(("p", clean_pid))
+            .bind(("items", clean_items))
+            .await?;
+
         let errs = res.take_errors();
         if !errs.is_empty() {
             return Err(ChapterError::Transaction(

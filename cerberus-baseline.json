@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/composables/usePromiseActions.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (269) exceeds recommended limit (265)",
+    "fingerprint": "40714cf6a9e29dce1140f0121bf310e2522532ab6259d076a97be520498a81d7"
+  }
+]

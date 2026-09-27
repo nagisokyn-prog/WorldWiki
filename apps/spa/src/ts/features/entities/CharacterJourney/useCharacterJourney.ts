@@ -28,7 +28,7 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
   const loadEntities = async () => {
     if (!projectId) return;
     try {
-      const res = await getEntities(projectId);
+      const res = await getEntities(projectId, null);
       entitiesList.value = res || [];
       if (!currentEntityId.value && entitiesList.value.length > 0) {
         currentEntityId.value = entitiesList.value[0].id || '';
@@ -43,8 +43,10 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
     isLoading.value = true;
     error.value = null;
     try {
+      console.log('[useCharacterJourney] Loading journey for entity:', currentEntityId.value, 'in project:', projectId);
       await storyArcsStore.loadArcs(projectId);
       const raw = await getCharacterJourney(projectId, currentEntityId.value);
+      console.log('[useCharacterJourney] Received journey data:', raw);
       data.value = (raw as CharacterJourneyData) || {
         appearances: [],
         events: [],
@@ -54,7 +56,7 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       error.value = msg;
-      console.error('[useCharacterJourney] Error loading journey:', err);
+      console.error('[useCharacterJourney ERROR] Error loading journey:', err);
     } finally {
       isLoading.value = false;
     }

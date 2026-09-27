@@ -86,13 +86,16 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     };
 
     try {
-      const created = await api.savePlotPromise(params.project || '', newPromise as unknown as PlotPromise);
+      console.log('[usePromiseActions] Saving new plot promise:', { project, newPromise });
+      const created = await api.savePlotPromise(project, newPromise as unknown as PlotPromise);
+      console.log('[usePromiseActions] Plot promise saved on backend:', created);
       const savedPromise: RichPlotPromise = {
         ...newPromise,
         ...((created as unknown as Partial<RichPlotPromise>) || {})
       };
       promises.value.push(savedPromise);
-    } catch {
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to save plot promise to backend:', err);
       promises.value.push(newPromise);
     }
     syncLocalBackup();
@@ -136,8 +139,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project || '', target as unknown as PlotPromise);
-    } catch { /* fallback to local */ }
+      console.log('[usePromiseActions] Saving milestone update:', { project: getProject(), target });
+      await api.savePlotPromise(getProject(), target as unknown as PlotPromise);
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to save milestone update:', err);
+    }
     syncLocalBackup();
     emit('change');
   };
@@ -160,8 +166,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project || '', promise as unknown as PlotPromise);
-    } catch { /* fallback to local */ }
+      console.log('[usePromiseActions] Removing milestone:', { project: getProject(), promise });
+      await api.savePlotPromise(getProject(), promise as unknown as PlotPromise);
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to update promise after milestone removal:', err);
+    }
     syncLocalBackup();
     emit('change');
   };
@@ -176,8 +185,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project || '', item as unknown as PlotPromise);
-    } catch { /* fallback to local */ }
+      console.log('[usePromiseActions] Updating status:', { project: getProject(), item, newStatus });
+      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to update promise status:', err);
+    }
     syncLocalBackup();
     emit('change');
   };
@@ -191,8 +203,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     item.note = noteDraft.value.trim() || null;
     editingNoteId.value = null;
     try {
-      await api.savePlotPromise(params.project || '', item as unknown as PlotPromise);
-    } catch { /* fallback to local */ }
+      console.log('[usePromiseActions] Saving note:', { project: getProject(), item });
+      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to save promise note:', err);
+    }
     syncLocalBackup();
     emit('change');
   };
@@ -205,8 +220,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
     try {
+      console.log('[usePromiseActions] Deleting plot promise:', item.id);
       await api.deletePlotPromise(item.id);
-    } catch { /* fallback to local */ }
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to delete plot promise:', err);
+    }
     promises.value = promises.value.filter((p) => p.id !== item.id);
     syncLocalBackup();
     emit('change');
@@ -243,8 +261,12 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       promises.value[index] = { ...updatedItem };
     }
     try {
+      console.log('[usePromiseActions] Updating promise/scene metadata:', { project: getProject(), updatedItem });
       await api.savePlotPromise(getProject(), updatedItem as unknown as PlotPromise);
-    } catch { /* fallback to local */ }
+      console.log('[usePromiseActions] Promise/scene metadata successfully updated on backend');
+    } catch (err) {
+      console.error('[usePromiseActions ERROR] Failed to update promise/scene metadata on backend:', err);
+    }
     syncLocalBackup();
     emit('change');
   };

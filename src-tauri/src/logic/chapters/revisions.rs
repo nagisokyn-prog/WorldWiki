@@ -8,14 +8,13 @@ pub async fn get_chapter_revisions_inner(
     chapter_id: &str,
 ) -> Result<Vec<Value>, ChapterError> {
     let actual_id = chapter_id.split_once(':').map(|(_, b)| b).unwrap_or(chapter_id);
-    let full_id = format!("chapters:{}", actual_id);
 
     let mut result = db
-        .query("SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC")
-        .bind(("target_id", full_id))
+        .query("RETURN fn::get_chapter_revisions(type::record('chapters', $id));")
+        .bind(("id", actual_id))
         .await?;
 
-    let revisions: Vec<Value> = result.take(0)?;
+    let revisions: Vec<Value> = result.take(0).unwrap_or_default();
     Ok(revisions)
 }
 
@@ -26,8 +25,8 @@ pub async fn toggle_chapter_history_pin_inner(
 ) -> Result<(), ChapterError> {
     let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
 
-    db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
-        .bind(("id", format!("chapter_revisions:{}", actual_id)))
+    db.query("fn::toggle_pin(type::record('chapter_revisions', $id), $is_pinned);")
+        .bind(("id", actual_id))
         .bind(("is_pinned", is_pinned))
         .await?;
 

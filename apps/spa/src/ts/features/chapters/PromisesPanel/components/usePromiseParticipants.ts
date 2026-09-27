@@ -60,9 +60,9 @@ export function usePromiseParticipants(
     if (!exists) {
       const found = projectCharacters.value.find(c => {
         const cId = c.id.replace(/^(characters|entities|character):/, '');
-        return cId === clean.replace(/^(characters|entities|character):/, '') || c.name.toLowerCase() === targetName;
+        return cId === clean.replace(/^(characters|entities|character):/, '') || c.name.toLowerCase() === targetName || c.id === clean;
       });
-      current.push(found ? found.name : clean);
+      current.push(found ? found.id : clean);
       const updated = {
         ...props.item,
         participant_ids: current
@@ -76,8 +76,9 @@ export function usePromiseParticipants(
 
   const removeParticipant = (nameOrId: string) => {
     const targetName = getParticipantDisplayName(nameOrId).toLowerCase();
+    const cleanTargetId = String(nameOrId).trim().toLowerCase();
     const current = (props.item.participant_ids || []).filter(
-      p => getParticipantDisplayName(p).toLowerCase() !== targetName
+      p => getParticipantDisplayName(p).toLowerCase() !== targetName && String(p).toLowerCase() !== cleanTargetId
     );
     const updated = {
       ...props.item,

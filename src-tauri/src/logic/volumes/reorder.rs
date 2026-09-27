@@ -9,14 +9,16 @@ pub async fn reorder_node_inner(
     id: &str,
     sort_order: i64,
 ) -> Result<(), VolumeError> {
-    let clean_id = if id.contains(':') {
-        id.to_string()
+    let table = if node_type == "volume" || node_type == "volumes" {
+        "volumes"
     } else {
-        format!("{}s:{}", node_type, id)
+        "chapters"
     };
+    let raw_id = id.split_once(':').map(|(_, b)| b).unwrap_or(id);
 
-    db.query("UPDATE contains SET sort_order = $order WHERE out = type::record($id)")
-        .bind(("id", clean_id))
+    db.query("fn::reorder_node(type::record($table, $id), $order);")
+        .bind(("table", table))
+        .bind(("id", raw_id))
         .bind(("order", sort_order))
         .await?;
 

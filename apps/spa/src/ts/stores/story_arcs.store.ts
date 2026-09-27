@@ -43,7 +43,6 @@ export interface ArcEntityRelation {
   arc_id?: string;
   entity_id?: string;
   project_id?: string;
-  role?: string | null; // 'protagonist' | 'antagonist' | 'subject'
 }
 
 export const useStoryArcsStore = defineStore('story_arcs', () => {
@@ -174,8 +173,7 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     const entityId = rel.entity_id || rel.out;
     const payload = {
       arc_id: arcId,
-      entity_id: entityId,
-      role: rel.role ?? null
+      entity_id: entityId
     };
     await assignArcEntity(payload);
     const inKey = rel.in || arcId || '';

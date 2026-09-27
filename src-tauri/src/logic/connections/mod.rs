@@ -14,24 +14,22 @@ pub async fn get_connections_inner(
     chapter: Option<String>,
 ) -> Result<Value, ConnectionError> {
     let proj_clean = project.trim().trim_start_matches("projects:");
-    let proj_id = format!("projects:{}", proj_clean);
+    let chap_clean = chapter.as_ref().map(|c| c.trim().trim_start_matches("chapters:").to_string());
 
-    let mut sql = String::from(
-        "SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id \
-         FROM entity_rel WHERE project_id = type::record($proj)",
-    );
+    let sql = r#"
+        RETURN fn::get_entity_connections(
+            type::record('projects', $proj),
+            IF $ch != NONE { type::record('chapters', $ch) } ELSE { NONE }
+        );
+    "#;
 
-    if chapter.is_some() {
-        sql.push_str(" AND (start_chapter = type::record($ch) OR end_chapter = type::record($ch))");
-    }
+    let mut res = db
+        .query(sql)
+        .bind(("proj", proj_clean.to_string()))
+        .bind(("ch", chap_clean))
+        .await?;
 
-    let mut q = db.query(sql).bind(("proj", proj_id));
-    if let Some(ch) = chapter {
-        q = q.bind(("ch", ch));
-    }
-
-    let mut res = q.await?;
-    let connections: Vec<Value> = res.take(0)?;
+    let connections: Vec<Value> = res.take(0).unwrap_or_default();
 
     let formatted: Vec<Value> = connections
         .into_iter()
@@ -69,14 +67,13 @@ pub async fn remove_connections_by_source_inner(
     _e_type: &str,
     e_id: &str,
 ) -> Result<usize, ConnectionError> {
-    let rid = format!("entities:{}", e_id.trim_start_matches("entities:"));
-    let mut res = db
-        .query("DELETE entity_rel WHERE in = type::record($rid) RETURN BEFORE")
-        .bind(("rid", rid))
+    let clean_eid = e_id.trim_start_matches("entities:").to_string();
+    let sql = "fn::remove_entity_connections(type::record('entities', $eid));";
+    db.query(sql)
+        .bind(("eid", clean_eid))
         .await?;
 
-    let deleted: Vec<Value> = res.take(0)?;
-    Ok(deleted.len())
+    Ok(1)
 }
 
 pub async fn save_connections_inner(
@@ -88,94 +85,30 @@ pub async fn save_connections_inner(
     let connections_arr = data
         .as_array()
         .ok_or_else(|| ConnectionError::InvalidData("Connections array expected".to_string()))?;
-    let proj_clean = project.trim().trim_start_matches("projects:");
-    let proj_id = format!("projects:{}", proj_clean);
-    let src_rid = format!("entities:{}", source_id.trim_start_matches("entities:"));
+    let proj_clean = project.trim().trim_start_matches("projects:").to_string();
+    let src_clean = source_id.trim().trim_start_matches("entities:").to_string();
 
-    db.query(
-        "DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND project_id = type::record($proj)",
-    )
-    .bind(("proj", proj_id.clone()))
-    .bind(("src", src_rid))
-    .await?;
-
-    for c in connections_arr {
-        let s_id_raw = c
-            .get("source")
-            .and_then(|v| v.get("entityId"))
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let t_id_raw = c
-            .get("target")
-            .and_then(|v| v.get("entityId"))
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-
-        let s_id = s_id_raw.trim_start_matches("entities:");
-        let t_id = t_id_raw.trim_start_matches("entities:");
-
-        if s_id.is_empty() || t_id.is_empty() {
-            continue;
-        }
-
-        let mut set_clauses = vec![
-            "project_id = type::record($proj)".to_string(),
-            "rel_type = $role".to_string(),
-            "description = $desc".to_string(),
-            "created_at = time::now()".to_string(),
-        ];
-
-        let start = c
-            .get("period")
-            .and_then(|v| v.get("start_chapter"))
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let end = c
-            .get("period")
-            .and_then(|v| v.get("end_chapter"))
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        if !start.is_empty() {
-            set_clauses.push("start_chapter = type::record($start)".to_string());
-        }
-        if !end.is_empty() {
-            set_clauses.push("end_chapter = type::record($end)".to_string());
-        }
-
-        let role_val = c.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        let desc_val = c.get("description").and_then(|v| v.as_str()).unwrap_or("");
-
-        let sql = format!(
-            "RELATE $src_node -> entity_rel -> $tgt_node SET {}",
-            set_clauses.join(", ")
+    let sql = r#"
+        fn::save_entity_connections(
+            type::record('projects', $proj),
+            type::record('entities', $src),
+            $connections
         );
+    "#;
 
-        let src_record = surrealdb::types::RecordId::new("entities", s_id);
-        let tgt_record = surrealdb::types::RecordId::new("entities", t_id);
+    let mut res = db
+        .query(sql)
+        .bind(("proj", proj_clean))
+        .bind(("src", src_clean))
+        .bind(("connections", connections_arr.clone()))
+        .await?;
 
-        let mut q = db
-            .query(sql)
-            .bind(("src_node", src_record))
-            .bind(("tgt_node", tgt_record))
-            .bind(("proj", proj_id.clone()))
-            .bind(("role", role_val))
-            .bind(("desc", desc_val));
-
-        if !start.is_empty() {
-            q = q.bind(("start", start));
-        }
-        if !end.is_empty() {
-            q = q.bind(("end", end));
-        }
-
-        let mut res = q.await?;
-        let errs = res.take_errors();
-        if !errs.is_empty() {
-            return Err(ConnectionError::Transaction(format!(
-                "entity_rel RELATE errors: {:?}",
-                errs
-            )));
-        }
+    let errs = res.take_errors();
+    if !errs.is_empty() {
+        return Err(ConnectionError::Transaction(format!(
+            "save_entity_connections errors: {:?}",
+            errs
+        )));
     }
 
     Ok(())

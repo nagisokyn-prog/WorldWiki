@@ -16,40 +16,28 @@ pub async fn create_volume_inner(
     project: &str,
     title: &str,
 ) -> Result<serde_json::Value, VolumeError> {
-    let pid_raw = project.trim().replace("projects:", "");
-    let proj_rec = RecordId::new("projects", pid_raw.as_str());
+    let clean_pid = project.trim().replace("projects:", "");
 
     let mut max_order_res = db
-        .query(
-            r#"
-        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = $proj GROUP ALL
-    "#,
-        )
-        .bind(("proj", RecordId::new("projects", pid_raw.as_str())))
+        .query("RETURN fn::get_max_volume_sort_order(type::record('projects', $p));")
+        .bind(("p", clean_pid.clone()))
         .await?;
-    let max_orders: Vec<serde_json::Value> = max_order_res.take(0).unwrap_or_default();
-    let next_order = max_orders
-        .first()
-        .and_then(|v| v.get("max_order"))
-        .and_then(|n| n.as_i64())
-        .unwrap_or(-1)
-        + 1;
+    let max_order: i64 = max_order_res
+        .take::<Option<i64>>(0)
+        .unwrap_or(None)
+        .unwrap_or(-1);
+    let next_order = max_order + 1;
 
+    let query = "RETURN fn::create_volume_node(type::record('projects', $p), $title, $order);";
     let mut create_res = db
-        .query(
-            r#"
-        LET $vol = (CREATE volumes SET project_id = $proj, title = $title RETURN VALUE id)[0];
-        RELATE $proj -> contains -> $vol SET sort_order = $order;
-        SELECT id, title, project_id, $order AS sort_order FROM $vol;
-    "#,
-        )
-        .bind(("proj", proj_rec))
+        .query(query)
+        .bind(("p", clean_pid))
         .bind(("title", title))
         .bind(("order", next_order))
         .await?;
 
-    let vols: Vec<serde_json::Value> = create_res.take(2).unwrap_or_default();
-    Ok(serde_json::json!(vols.first()))
+    let vol: Option<serde_json::Value> = create_res.take(0).unwrap_or(None);
+    Ok(serde_json::json!(vol))
 }
 
 pub async fn update_volume_inner(
@@ -57,12 +45,8 @@ pub async fn update_volume_inner(
     id: &str,
     title: &str,
 ) -> Result<(), VolumeError> {
-    let clean_id = if id.contains(':') {
-        id.to_string()
-    } else {
-        format!("volumes:{}", id)
-    };
-    db.query("UPDATE type::record($id) SET title = $title")
+    let clean_id = id.trim_start_matches("volumes:").to_string();
+    db.query("fn::update_volume_title(type::record('volumes', $id), $title);")
         .bind(("id", clean_id))
         .bind(("title", title.to_string()))
         .await?;
@@ -109,19 +93,17 @@ pub async fn assign_chapter_inner(
     let chap_rec = RecordId::new("chapters", chap_raw);
 
     let mut res = db
-        .query(
-            r#"
-        DELETE contains WHERE out = $chap;
-        RELATE $parent -> contains -> $chap SET sort_order = 9999;
-    "#,
-        )
+        .query("fn::assign_chapter_node($parent, $chap);")
         .bind(("chap", chap_rec))
         .bind(("parent", new_parent))
         .await?;
 
     let errs = res.take_errors();
     if let Some(e) = errs.values().next() {
-        return Err(VolumeError::OperationFailed(format!("assign_chapter error: {}", e)));
+        return Err(VolumeError::OperationFailed(format!(
+            "assign_chapter error: {}",
+            e
+        )));
     }
 
     let updated_count =

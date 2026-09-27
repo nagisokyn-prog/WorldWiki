@@ -198,6 +198,7 @@ surreal_entity! {
         pub title: String,
         pub content: String,
         pub summary: Option<String>,
+        #[serde(default, alias = "sortOrder")] pub sort_order: i64,
         #[serde(default, alias = "wordCount")] pub word_count: i64,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub footnotes: Option<serde_json::Value>,

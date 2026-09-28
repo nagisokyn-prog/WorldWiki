@@ -50,6 +50,18 @@ impl PlotServices {
         Ok(())
     }
 
+    pub async fn save_promise(&self, promise: &PlotPromise) -> Result<PlotPromise, ApplicationError> {
+        self.promise_repo.save(promise).await?;
+        self.events
+            .publish(PlotPromiseUpdatedEvent {
+                promise_id: promise.id.clone(),
+                status: "updated".to_string(),
+                timestamp: Utc::now().timestamp(),
+            })
+            .await?;
+        Ok(promise.clone())
+    }
+
     pub async fn complete_plan(&self, plan_id: &str) -> Result<(), ApplicationError> {
         if let Some(mut plan) = self.plan_repo.get_by_id(plan_id).await? {
             plan.complete();

@@ -6,3 +6,6 @@ SELECT count() FROM appears_in GROUP ALL;
 SELECT id, participant_ids FROM plot_promises WHERE participant_ids != NONE LIMIT 5;
 SELECT id, name FROM projects;
 SELECT count() FROM revealed_in GROUP ALL;
+SELECT id, project_id, kind, m_abs, timeline_event_id FROM plot_promises;
+USE NS test DB test;
+SELECT id, project_id, kind, m_abs, timeline_event_id FROM plot_promises;

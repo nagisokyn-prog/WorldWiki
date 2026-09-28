@@ -1,17 +1,17 @@
 <template>
-  <div class="journey-toolbar flex flex-wrap items-center justify-between gap-3 p-4 border-b border-subtle bg-surface">
+  <div class="journey-toolbar">
     <!-- Entity Selector & Title -->
-    <div class="flex items-center gap-3">
-      <span class="text-base font-bold flex items-center gap-1.5">
+    <div class="journey-toolbar-left">
+      <h2 class="journey-title">
         <span>📜</span>
         <span>Путь Персонажа</span>
-      </span>
+      </h2>
 
       <!-- Entity Switcher -->
       <select
         v-if="entitiesList.length > 0"
         :value="currentEntityId"
-        class="text-xs font-medium px-2 py-1 rounded border border-subtle bg-input text-main"
+        class="journey-entity-select"
         @change="$emit('update:currentEntityId', ($event.target as HTMLSelectElement).value)"
       >
         <option
@@ -53,12 +53,12 @@
     </div>
 
     <!-- Filters & Refresh -->
-    <div class="flex items-center gap-2">
+    <div class="journey-toolbar-right">
       <!-- Arc Filter -->
       <select
         v-if="storyArcs.length > 0"
         :value="selectedArcFilter"
-        class="text-xs px-2 py-1.5 rounded border border-subtle bg-input text-main"
+        class="journey-filter-select"
         @change="$emit('update:selectedArcFilter', ($event.target as HTMLSelectElement).value)"
       >
         <option value="ALL">Все арки</option>
@@ -75,7 +75,7 @@
       <!-- Category Filter -->
       <select
         :value="filterType"
-        class="text-xs px-2 py-1.5 rounded border border-subtle bg-input text-main"
+        class="journey-filter-select"
         @change="$emit('update:filterType', ($event.target as HTMLSelectElement).value)"
       >
         <option value="all">Все элементы</option>
@@ -86,7 +86,7 @@
       </select>
 
       <button
-        class="btn-refresh text-xs px-3 py-1.5 rounded border border-subtle bg-surface-hover hover:bg-surface text-main cursor-pointer"
+        class="btn-refresh"
         :disabled="isLoading"
         @click="$emit('refresh')"
       >
@@ -119,3 +119,6 @@ defineEmits<{
   (e: 'refresh'): void;
 }>();
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>
+

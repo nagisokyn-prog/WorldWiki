@@ -83,14 +83,56 @@ struct RawTimelineEventNode {
     m_abs: i64,
     calendar_id: Option<String>,
     #[serde(default)]
-    reveals: Vec<worldwiki_domain::analytics::TimelineRevealLink>,
+    reveals: Vec<RawTimelineRevealLink>,
     #[serde(default)]
     participants: Vec<RawParticipant>,
 }
 
 #[derive(serde::Deserialize)]
-struct RawParticipant {
-    id: String,
+struct RawTimelineRevealLink {
+    chapter_id: String,
+    #[serde(default)]
+    chapter_title: Option<String>,
+    #[serde(default, alias = "chapter_order")]
+    chapter_sort_order: Option<i32>,
+    #[serde(default)]
+    pov_id: Option<String>,
+    #[serde(default)]
+    kind: Option<String>,
+    #[serde(default)]
+    block_id: Option<String>,
+    #[serde(default)]
+    is_anachronism: Option<bool>,
+}
+
+impl RawTimelineRevealLink {
+    fn into_dto(self) -> worldwiki_domain::analytics::TimelineRevealLink {
+        worldwiki_domain::analytics::TimelineRevealLink {
+            chapter_id: self.chapter_id,
+            chapter_title: self.chapter_title.unwrap_or_default(),
+            chapter_sort_order: self.chapter_sort_order.unwrap_or(0),
+            pov_id: self.pov_id,
+            kind: self.kind.unwrap_or_else(|| "direct".to_string()),
+            block_id: self.block_id,
+            is_anachronism: self.is_anachronism.unwrap_or(false),
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum RawParticipant {
+    Object { id: String },
+    String(String),
+}
+
+impl RawParticipant {
+    fn into_id(self) -> String {
+        match self {
+            RawParticipant::Object { id } => id,
+            RawParticipant::String(s) => s,
+        }
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -273,25 +315,23 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             chapters: vec![],
         });
 
+        println!("[CHRONOINSPECTOR_LOG] Fetched data for project {}. Events count: {}, Chapters count: {}", project_id, raw.events.len(), raw.chapters.len());
+        for (i, ev) in raw.events.iter().enumerate() {
+            println!("[CHRONOINSPECTOR_LOG] Event {}: id={}, title={}, m_abs={}, reveals={}, participants={}", 
+                i, ev.id, ev.title, ev.m_abs, ev.reveals.len(), ev.participants.len());
+        }
+
         let mut event_nodes = Vec::new();
         let mut crossings_count = 0;
 
         for ev in raw.events {
             let mut reveals_dto = Vec::new();
             for rev in ev.reveals {
-                let is_anachronism = rev.chapter_sort_order < 0; // Check if revealed before occurrence
-                if is_anachronism {
+                let dto = rev.into_dto();
+                if dto.is_anachronism {
                     crossings_count += 1;
                 }
-                reveals_dto.push(worldwiki_domain::analytics::TimelineRevealLink {
-                    chapter_id: rev.chapter_id,
-                    chapter_title: rev.chapter_title,
-                    chapter_sort_order: rev.chapter_sort_order,
-                    pov_id: rev.pov_id,
-                    kind: rev.kind,
-                    block_id: rev.block_id,
-                    is_anachronism,
-                });
+                reveals_dto.push(dto);
             }
 
             event_nodes.push(worldwiki_domain::analytics::TimelineInspectorEventNode {
@@ -300,7 +340,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                 description: ev.description,
                 m_abs: ev.m_abs,
                 calendar_id: ev.calendar_id.unwrap_or_default(),
-                participants: ev.participants.into_iter().map(|p| p.id).collect(),
+                participants: ev.participants.into_iter().map(|p| p.into_id()).collect(),
                 reveals: reveals_dto,
             });
         }

@@ -41,6 +41,10 @@ export interface JourneyPromise {
   arc_color?: string | null;
   arc_phase?: string | null;
   arcs?: unknown;
+  m_abs?: number | null;
+  calendar_id?: string | null;
+  date_fields?: Record<string, unknown> | null;
+  timeline_event_id?: string | null;
 }
 
 export interface CharacterJourneyData {
@@ -61,22 +65,38 @@ export type CharacterJourneyViewMode = 'BY_ARCS' | 'NARRATIVE' | 'CHRONOLOGY';
 export interface JourneyTimelineItem {
   id: string;
   type: JourneyTimelineItemType;
+  kind?: string;
   title: string;
   subtitle?: string;
+  fullText?: string;
+  timeLabel?: string;
+  phaseLabel?: string;
   chapter_id?: string;
   chapter_title?: string;
   chapter_order?: number | null;
   paragraph_index?: number | null;
   block_id?: string | null;
   m_abs?: number | null;
+  calendar_id?: string | null;
+  date_fields?: Record<string, unknown> | null;
+  timeline_event_id?: string | null;
   arc_id?: string | null;
   arc_title?: string | null;
   arc_color?: string | null;
   arc_phase?: string | null;
+  boundArcs?: Array<{
+    arcId: string;
+    arcTitle: string;
+    arcColor?: string;
+    phase: string;
+    phaseLabel: string;
+  }>;
+  allArcIds?: string[];
   badge?: string;
   badgeType?: 'accent' | 'warning' | 'success' | 'danger' | 'muted' | 'arc';
   description?: string;
   isFlashback?: boolean;
+  flashbackDeltaLabel?: string;
 }
 
 export interface ArcGroup {

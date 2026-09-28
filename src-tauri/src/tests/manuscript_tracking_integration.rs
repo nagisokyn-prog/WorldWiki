@@ -667,12 +667,34 @@ async fn test_character_journey_and_cross_reference_matrix() {
     let entities = matrix["entities"].as_array().expect("entities array");
 
     assert_eq!(chapters.len(), 2, "2 главы в матрице");
-    assert_eq!(entities.len(), 1, "1 сущность в матрице");
+    assert_eq!(entities.len(), 1, "1 сущность в матрице до добавления сцены");
+    // Создаем нарративный блок/сцену в главе 2 с участником "hero"
+    let _scene = create_scene_promise(
+        &db,
+        proj_key,
+        "scene_matrix",
+        "ch2",
+        "Встреча у реки",
+        None,
+        None,
+        Some(vec!["hero"]),
+        1,
+    )
+    .await;
 
-    let ent = &entities[0];
-    assert_eq!(ent["name"], "Герой");
-    let appearances = ent["appearances"].as_array().expect("appearances array");
-    assert_eq!(appearances.len(), 1, "Герой появляется в 1 главе");
+    // Повторно вызываем матрицу участий fn::get_cross_reference_matrix
+    let mut mat_res2 = db
+        .query("RETURN fn::get_cross_reference_matrix(type::record('projects', $p));")
+        .bind(("p", proj_key))
+        .await
+        .expect("call fn::get_cross_reference_matrix 2");
+
+    let mat_data2: Option<Value> = mat_res2.take(0).expect("take matrix data 2");
+    let matrix2 = mat_data2.expect("matrix2 must not be null");
+    let entities2 = matrix2["entities"].as_array().expect("entities array 2");
+    let ent2 = &entities2[0];
+    let appearances2 = ent2["appearances"].as_array().expect("appearances array 2");
+    assert_eq!(appearances2.len(), 2, "Герой должен появляться в 2 главах: через упоминание в гл.1 и через нарративный блок/сцену в гл.2");
 
     // Вызываем путь персонажа fn::get_character_journey
     let mut journey_res = db
@@ -687,7 +709,7 @@ async fn test_character_journey_and_cross_reference_matrix() {
 
     assert_eq!(journey["appearances"].as_array().unwrap().len(), 1);
     assert_eq!(journey["events"].as_array().unwrap().len(), 0);
-    assert_eq!(journey["promises"].as_array().unwrap().len(), 0);
+    assert_eq!(journey["promises"].as_array().unwrap().len(), 1, "Сцена должна отразиться в promises пути персонажа");
 }
 
 /// ТЕСТ 5: Детектор противоречий (Consistency Checker / ConsistencyAuditWorkflow)
@@ -807,6 +829,26 @@ async fn test_chapter_mentions_sync_and_source_isolation() {
     let final_apps: Vec<Value> = final_res.take(0).expect("take final appearances");
 
     assert_eq!(final_apps.len(), 2, "Остались только Артур (mention) и Мерлин (manual)");
+
+    // 6. Проверяем парсинг текста с ((Лёша))[id=entities%3Aarthur] через TextBlock::extract_entity_mentions
+    let chapter_text = "В зал вошел ((Лёша))[id=entities%3Aarthur] и его друг ((Колдун))[entities:merlin].";
+    let extracted = worldwiki_domain::manuscript::TextBlock::extract_entity_mentions(chapter_text);
+    assert!(extracted.contains(&"entities:arthur".to_string()), "Должен быть извлечен Record ID entities:arthur");
+    assert!(extracted.contains(&"entities:merlin".to_string()), "Должен быть извлечен Record ID entities:merlin");
+
+    // Синкаем извлеченные имена/ID
+    let _ = db.query("RETURN fn::sync_chapter_mentions(type::record('chapters', $ch), $names);")
+        .bind(("ch", "ch1"))
+        .bind(("names", extracted))
+        .await
+        .expect("sync mentions with extracted IDs");
+
+    let mut record_res = db.query("SELECT in FROM appears_in WHERE out = type::record('chapters', $ch) AND source = 'mention';")
+        .bind(("ch", "ch1"))
+        .await
+        .expect("select appears_in for extracted IDs");
+    let record_apps: Vec<Value> = record_res.take(0).expect("take record apps");
+    assert_eq!(record_apps.len(), 2, "Оба персонажа (Артур и Мерлин) найдены по Record ID, несмотря на отображаемые имена 'Лёша' и 'Колдун'");
 }
 
 /// ТЕСТ 7: Гранулярные сцены с block_id и жизненный цикл обещаний (planted -> resolved)

@@ -5,6 +5,7 @@ import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
 import { useFloatingEntities } from './hooks/useFloatingEntities';
 import { useTimelineStore } from '../../../stores/timeline.store';
+import { openCharacterJourneyWindow } from '../../../utils/windowManager';
 import type { ExportPayload } from '../Export/useExportModal';
 import type { Chapter } from '../../../types/generated/Chapter';
 import type ChapterRightSidebar from './components/ChapterRightSidebar.vue';
@@ -259,7 +260,12 @@ export function useChaptersMain(
   };
 
   const isJourneyOpen = ref(false);
-  const openJourney = () => { isJourneyOpen.value = true; };
+  const openJourney = async () => {
+    const opened = await openCharacterJourneyWindow(props.project);
+    if (!opened) {
+      isJourneyOpen.value = true;
+    }
+  };
   const closeJourney = () => { isJourneyOpen.value = false; };
   const handleJourneySelectScene = (item: { chapter_id?: string; paragraph_index?: number | null; title?: string; block_id?: string | null }) => {
     if (item.chapter_id) {
@@ -271,6 +277,25 @@ export function useChaptersMain(
       });
     }
   };
+
+  onMounted(() => {
+    if (typeof window !== 'undefined' && window.__TAURI__) {
+      import('@tauri-apps/api/event').then(({ listen }) => {
+        listen<{ chapterId?: string; paragraphIndex?: number; blockId?: string; item?: { chapter_id?: string; paragraph_index?: number; block_id?: string; title?: string } }>('ww-journey-select-scene', (event) => {
+          const payload = event.payload;
+          const chapterId = payload.chapterId || payload.item?.chapter_id;
+          if (chapterId) {
+            handleLocatePromise({
+              chapterId,
+              paragraphIndex: payload.paragraphIndex ?? payload.item?.paragraph_index ?? 0,
+              quote: payload.item?.title || '',
+              blockId: payload.blockId || payload.item?.block_id || undefined,
+            });
+          }
+        });
+      }).catch((e) => console.warn('Tauri event listen error in useChaptersMain:', e));
+    }
+  });
 
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,

@@ -56,7 +56,7 @@
         @update:participants="currentChapter && (currentChapter.participants = $event)"
         @mark-unsaved="markUnsaved"
         @locate-promise="handleLocatePromise"
-        @open-journey="isJourneyOpen = true"
+        @open-journey="openJourney"
       />
       
       <!-- History Drawer Component -->
@@ -116,7 +116,7 @@
       :is-open="isJourneyOpen"
       @close="closeJourney"
     >
-      <div class="w-full h-full min-h-[520px] min-w-[740px] flex flex-col">
+      <div class="journey-modal-wrapper" style="width: 100%; height: 100%; min-width: 760px; min-height: 540px; display: flex; flex-direction: column; overflow: hidden;">
         <CharacterJourney
           :project-id="project"
           class="flex-1"
@@ -183,7 +183,7 @@ const {
   markUnsaved, handleOpenEntity,
   handleExport, handleScrollChange, handleAddParticipant,
   editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
-  isJourneyOpen, closeJourney, handleJourneySelectScene,
+  isJourneyOpen, openJourney, closeJourney, handleJourneySelectScene,
   handleCreatePromise, handleLinkMilestone, handleLocatePromise
 } = useChaptersMain({
   project: props.project,

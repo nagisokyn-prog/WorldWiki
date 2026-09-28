@@ -1,23 +1,23 @@
 <template>
-  <div class="inspector-container flex flex-col h-full w-full overflow-hidden bg-surface text-main">
-    <!-- Toolbar -->
-    <div class="inspector-toolbar flex flex-wrap items-center justify-between gap-3 p-4 border-b border-subtle bg-surface">
-      <div class="flex items-center gap-3">
-        <h2 class="text-base font-bold m-0 flex items-center gap-2">
-          <span>⏳</span> Хронологический Инспектор
+  <div class="inspector-container">
+    <!-- Тулбар управления -->
+    <div class="inspector-toolbar">
+      <div class="inspector-toolbar-title">
+        <h2 class="inspector-title">
+          <span class="inspector-icon">⏳</span> Хронологический Инспектор
         </h2>
-        <span v-if="filteredEvents.length" class="text-xs px-2 py-0.5 rounded bg-surface-hover text-muted">
+        <span v-if="filteredEvents.length" class="inspector-badge">
           {{ filteredEvents.length }} событий / {{ filteredChapters.length }} глав
         </span>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Reader / Author Horizon Switch -->
-        <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-muted">Режим:</span>
+      <div class="inspector-toolbar-controls">
+        <!-- Переключатель режима горизонтов -->
+        <div class="inspector-control-group">
+          <span class="control-label">Режим:</span>
           <select
             v-model="filters.readerHorizonChapterOrder"
-            class="text-xs px-2 py-1.5 rounded border border-subtle bg-input text-main"
+            class="inspector-select"
           >
             <option :value="null">👑 Режим Автора (Все главы)</option>
             <option
@@ -30,13 +30,13 @@
           </select>
         </div>
 
-        <label class="flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none">
-          <input v-model="filters.showFlashbacksOnly" type="checkbox" class="cursor-pointer" />
+        <label class="inspector-checkbox-label">
+          <input v-model="filters.showFlashbacksOnly" type="checkbox" class="inspector-checkbox" />
           <span>Только ретроспективы (Flashbacks)</span>
         </label>
 
         <button
-          class="btn-refresh text-xs px-3 py-1.5 rounded border border-subtle bg-surface-hover hover:bg-surface text-main cursor-pointer"
+          class="btn-refresh"
           :disabled="isLoading"
           @click="refresh"
         >
@@ -45,61 +45,100 @@
       </div>
     </div>
 
-    <!-- Dual-Axis Visualizer Canvas / SVG Area -->
-    <div class="inspector-viewport flex-1 overflow-auto p-6 relative">
-      <div v-if="isLoading && !filteredEvents.length" class="flex items-center justify-center h-48 text-muted text-sm">
-        Загрузка хронологических связей...
+    <!-- Область визуализации осей -->
+    <div class="inspector-viewport">
+      <div v-if="isLoading && !filteredEvents.length" class="inspector-empty">
+        <div class="empty-spinner">⏳</div>
+        <p>Загрузка хронологических связей...</p>
       </div>
 
-      <div v-else-if="!filteredEvents.length || !filteredChapters.length" class="flex items-center justify-center h-48 text-muted text-sm">
-        Нет связанных событий для отображения. Привяжите события таймлайна к главам через раскрытия (reveals).
+      <div v-else-if="!filteredEvents.length || !filteredChapters.length" class="inspector-empty">
+        <div class="empty-icon">📂</div>
+        <p>Нет связанных событий для отображения.</p>
+        <span class="empty-hint">Привяжите события таймлайна к главам или создайте сцены с датами в редакторе.</span>
       </div>
 
-      <div v-else class="dual-axis-canvas relative min-w-[1200px] h-[400px]">
-        <!-- Top Axis: Narrative (Reading Order) -->
-        <div class="narrative-axis absolute top-4 left-0 right-0 h-16 border-b-2 border-subtle flex items-center">
-          <div class="axis-label absolute -top-1 left-2 text-2xs font-bold uppercase tracking-wider text-accent">
-            📚 Нарративная Ось (Порядок чтения глав)
+      <div v-else class="dual-axis-canvas" :style="{ minWidth: canvasMinWidth }">
+        <!-- Верхняя Нарративная Ось -->
+        <div class="axis-track-wrapper narrative-wrapper">
+          <div class="axis-badge axis-badge-narrative">
+            <span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)
           </div>
+          <div class="axis-rail axis-rail-narrative"></div>
+          
           <div
             v-for="(ch, idx) in filteredChapters"
             :key="'ch-node-' + ch.id"
-            class="chapter-node absolute top-4 -translate-x-1/2 p-2 rounded border border-subtle bg-surface shadow-xs text-center cursor-pointer hover:border-accent"
-            :style="{ left: (80 + idx * 160) + 'px' }"
+            class="chapter-node"
+            :style="{ left: (100 + idx * 170) + 'px' }"
           >
-            <div class="font-bold text-xs truncate max-w-28">{{ ch.title }}</div>
-            <div class="text-2xs text-muted">Глава #{{ ch.sort_order }}</div>
+            <div class="chapter-pin-top"></div>
+            <div class="chapter-badge">Глава #{{ ch.sort_order || (idx + 1) }}</div>
+            <div class="chapter-node-title" :title="ch.title">{{ ch.title || 'Без названия' }}</div>
+            <div class="chapter-pin-bottom"></div>
           </div>
         </div>
 
-        <!-- SVG Connection Lines -->
-        <svg class="connection-svg absolute inset-0 w-full h-full pointer-events-none z-0">
+        <!-- SVG Соединительные нити Безье -->
+        <svg class="connection-svg" width="100%" height="100%">
+          <defs>
+            <marker id="arrow-direct" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--accent)" />
+            </marker>
+            <marker id="arrow-flashback" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--warning)" />
+            </marker>
+          </defs>
+
           <g v-for="line in connectionLines" :key="line.id">
             <path
-              :d="`M ${line.x1} ${line.y1 + 40} C ${line.x1} ${(line.y1 + line.y2) / 2}, ${line.x2} ${(line.y1 + line.y2) / 2}, ${line.x2} ${line.y2 - 10}`"
+              :d="`M ${line.x1} ${line.y1} C ${line.x1} ${(line.y1 + line.y2) / 2}, ${line.x2} ${(line.y1 + line.y2) / 2}, ${line.x2} ${line.y2}`"
               fill="none"
-              :class="line.isFlashback ? 'line-flashback' : 'line-direct'"
-              stroke-width="2"
+              :stroke="line.isFlashback ? 'var(--warning)' : 'var(--accent)'"
+              stroke-width="2.5"
+              :stroke-dasharray="line.isFlashback ? '6 5' : 'none'"
+              :marker-end="line.isFlashback ? 'url(#arrow-flashback)' : 'url(#arrow-direct)'"
+              class="connection-path"
             />
           </g>
         </svg>
 
-        <!-- Bottom Axis: Diegetic (World Time M_abs) -->
-        <div class="diegetic-axis absolute top-[240px] left-0 right-0 h-24 border-t-2 border-subtle flex items-center">
-          <div class="axis-label absolute top-28 left-2 text-2xs font-bold uppercase tracking-wider text-warning">
-            ⏳ Diegetic Ось (Реальное время мира M_abs)
+        <!-- Нижняя Диегетическая Ось (Время мира) -->
+        <div class="axis-track-wrapper diegetic-wrapper">
+          <div class="axis-badge axis-badge-diegetic">
+            <span>⏳</span> ВРЕМЯ МИРА (ХРОНОЛОГИЯ LORE)
           </div>
+          <div class="axis-rail axis-rail-diegetic"></div>
+
           <div
-            v-for="(ev, idx) in filteredEvents"
+            v-for="(ev, idx) in formattedEvents"
             :key="'ev-node-' + ev.id"
-            class="event-node absolute top-4 -translate-x-1/2 p-2.5 rounded border border-subtle bg-surface shadow-xs text-left cursor-pointer hover:border-warning"
-            :style="{ left: (80 + idx * 180) + 'px' }"
+            class="event-node"
+            :style="{ left: (100 + idx * 190) + 'px' }"
           >
-            <div class="font-bold text-xs text-main truncate max-w-36">{{ ev.title }}</div>
-            <div class="text-2xs text-warning">M_abs: {{ ev.m_abs }}</div>
-            <div v-if="ev.participants.length" class="text-2xs text-muted truncate max-w-36 mt-1">
-              👥 {{ ev.participants.map(p => p.name).join(', ') }}
+            <div class="event-pin-top"></div>
+            
+            <div class="event-header">
+              <span class="event-kind-icon">{{ ev.isScene ? '🎬' : '⚡' }}</span>
+              <span class="event-node-title" :title="ev.title">{{ ev.title }}</span>
             </div>
+
+            <div class="event-date-chip">
+              <span class="date-icon">📅</span>
+              <span class="date-text">{{ ev.formattedDate }}</span>
+            </div>
+
+            <div v-if="ev.cleanParticipants.length" class="event-participants-list">
+              <span
+                v-for="p in ev.cleanParticipants"
+                :key="p.id"
+                class="participant-chip"
+              >
+                👤 {{ p.name }}
+              </span>
+            </div>
+
+            <div class="event-pin-bottom"></div>
           </div>
         </div>
       </div>
@@ -122,8 +161,10 @@ const props = withDefaults(
 const {
   filters,
   filteredChapters,
+  formattedEvents,
   filteredEvents,
   connectionLines,
+  canvasMinWidth,
   isLoading,
   refresh,
 } = useTimelineInspector(props.projectId);

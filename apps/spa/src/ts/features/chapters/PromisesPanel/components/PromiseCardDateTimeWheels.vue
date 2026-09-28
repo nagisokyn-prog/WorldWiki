@@ -13,7 +13,17 @@
       </div>
 
       <div class="wheel-cell">
-        <label class="wheel-label">Год</label>
+        <div class="flex items-center justify-between gap-1 mb-1">
+          <label class="wheel-label">Год</label>
+          <input
+            type="number"
+            :value="currentYear"
+            class="w-14 px-1 py-0.5 text-xs text-right bg-panel border border-border rounded text-main focus:outline-none focus:border-accent"
+            min="1"
+            title="Прямой ввод года"
+            @input="$emit('update:currentYear', Math.max(1, Number(($event.target as HTMLInputElement).value) || 1)); $emit('change')"
+          />
+        </div>
         <XboxWheel
           :model-value="currentYear"
           :options="yearWheelOptions"

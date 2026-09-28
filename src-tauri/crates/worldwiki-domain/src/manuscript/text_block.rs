@@ -30,56 +30,8 @@ impl TextBlock {
         }
     }
 
-    /// Strictly extracts ((Entity)) mentions and HTML entity links per domain invariant
     pub fn extract_entity_mentions(text: &str) -> Vec<String> {
-        let mut results = Vec::new();
-
-        // 1. Extract ((Entity)) mentions
-        let mut remaining = text;
-        while let Some((_, after_open)) = remaining.split_once("((") {
-            if let Some((entity_name_raw, after_close)) = after_open.split_once("))") {
-                let clean = Self::clean_entity_mention(entity_name_raw);
-                if !clean.is_empty() && !results.contains(&clean) {
-                    results.push(clean);
-                }
-                remaining = after_close;
-            } else {
-                break;
-            }
-        }
-
-        // 2. Extract <a ...>Entity Name</a> mentions from HTML
-        let mut remaining_html = text;
-        while let Some((_, after_a_open)) = remaining_html.split_once("<a ") {
-            if let Some((tag_and_body, after_a_close)) = after_a_open.split_once("</a>") {
-                if let Some((_, text_inside)) = tag_and_body.split_once('>') {
-                    let clean = Self::clean_entity_mention(text_inside);
-                    if !clean.is_empty() && !results.contains(&clean) {
-                        results.push(clean);
-                    }
-                }
-                remaining_html = after_a_close;
-            } else {
-                break;
-            }
-        }
-
-        results
-    }
-
-    fn clean_entity_mention(raw: &str) -> String {
-        let mut clean = String::with_capacity(raw.len());
-        let mut in_tag = false;
-        for c in raw.chars() {
-            if c == '<' {
-                in_tag = true;
-            } else if c == '>' {
-                in_tag = false;
-            } else if !in_tag {
-                clean.push(c);
-            }
-        }
-        clean.trim().to_string()
+        crate::manuscript::MentionParser::extract_entity_mentions(text)
     }
 }
 
@@ -95,10 +47,24 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_entity_mentions_html_and_markdown() {
-        let text = "<p>Появилась <a href=\"/ui_editor.html?type=character&id=entities:123\">Вероника</a> и ((Катя))[ui_editor.html] вместе с <span>((Кира))</span>.</p>";
+    fn test_extract_entity_mentions_with_record_ids_and_urls() {
+        let text = "((Лёша))[id=entities%3A7w21sa785q6u47gguwbs] встретил ((Вероника))[entities:rycese8g98bwep68rib6].";
         let mentions = TextBlock::extract_entity_mentions(text);
-        assert_eq!(mentions, vec!["Катя", "Кира", "Вероника"]);
+        assert!(mentions.contains(&"entities:7w21sa785q6u47gguwbs".to_string()));
+        assert!(mentions.contains(&"Лёша".to_string()));
+        assert!(mentions.contains(&"entities:rycese8g98bwep68rib6".to_string()));
+        assert!(mentions.contains(&"Вероника".to_string()));
+    }
+
+    #[test]
+    fn test_extract_entity_mentions_html_and_markdown() {
+        let text = "<p>Появилась <a href=\"/ui_editor.html?type=character&id=entities%3A123\">Вероника</a> и ((Катя))[ui_editor.html] вместе с <span class=\"entity-mention\" data-entity-id=\"entities:456\">((Кира))</span>.</p>";
+        let mentions = TextBlock::extract_entity_mentions(text);
+        assert!(mentions.contains(&"entities:123".to_string()));
+        assert!(mentions.contains(&"Вероника".to_string()));
+        assert!(mentions.contains(&"Катя".to_string()));
+        assert!(mentions.contains(&"entities:456".to_string()));
+        assert!(mentions.contains(&"Кира".to_string()));
     }
 
     #[test]

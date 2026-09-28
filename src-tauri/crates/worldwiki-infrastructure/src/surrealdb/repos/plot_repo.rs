@@ -35,16 +35,22 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
         let clean = promise.id.trim_start_matches("plot_promises:").to_string();
+        let proj_clean = promise.project_id.trim_start_matches("projects:").to_string();
+        let ch_clean = promise.chapter_id.trim_start_matches("chapters:").to_string();
         let data = prepare_data_for_upsert(
             serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
         );
-        let sql = "UPSERT type::record('plot_promises', $id) CONTENT $data;";
-        self.db
+        let sql = "RETURN fn::upsert_plot_promise($id, type::record('projects', $p_id), type::record('chapters', $c_id), $data);";
+        let res = self
+            .db
             .query(sql)
             .bind(("id", clean))
+            .bind(("p_id", proj_clean))
+            .bind(("c_id", ch_clean))
             .bind(("data", data))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 

@@ -1,7 +1,8 @@
 export interface InspectorReveal {
   chapter_id: string;
   chapter_title: string;
-  chapter_order: number;
+  chapter_order?: number;
+  chapter_sort_order?: number;
   pov_id?: string | null;
   kind: 'direct' | 'flashback' | 'mention' | 'rumor';
   block_id?: string | null;
@@ -14,7 +15,8 @@ export interface InspectorParticipant {
 }
 
 export interface InspectorEvent {
-  id: string;
+  id?: string;
+  event_id?: string;
   title: string;
   description?: string | null;
   m_abs: number;

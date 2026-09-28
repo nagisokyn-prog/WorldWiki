@@ -14,8 +14,8 @@ export interface AutoExtendResult {
 }
 
 export interface ChapterHierarchy {
-  volumes: (Volume & { sort_order?: number; [key: string]: unknown })[];
-  chapters: (Chapter & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[];
+  volumes: (Volume & { sort_order?: number | bigint; [key: string]: unknown })[];
+  chapters: (Omit<Chapter, 'sort_order'> & { volume_id?: string | null; sort_order?: number | bigint; [key: string]: unknown })[];
 }
 
 export interface ProjectSummary {

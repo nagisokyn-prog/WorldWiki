@@ -1,43 +1,99 @@
 <template>
-  <div class="arc-groups-view space-y-6">
+  <div class="journey-tree-container">
+    <!-- Root Character Node -->
+    <div v-if="currentEntity" class="journey-tree-root-card">
+      <div class="root-card-left">
+        <span class="root-entity-avatar">👤</span>
+        <span class="root-entity-name">{{ currentEntity.name }}</span>
+        <span class="root-entity-type-badge">{{ currentEntity.entity_type }}</span>
+      </div>
+      <div class="root-card-right">
+        <span class="root-tree-stats">
+          {{ totalScenesCount }} сцен · {{ arcGroups.length }} ветвей
+        </span>
+      </div>
+    </div>
+
+    <!-- Tree Branches (Arcs) -->
     <div
-      v-for="group in arcGroups"
+      v-for="(group, gIdx) in arcGroups"
       :key="group.arcId"
-      class="arc-group-card"
+      class="journey-arc-group"
+      :class="{
+        'is-last-arc': gIdx === arcGroups.length - 1,
+        'is-collapsed': isArcCollapsed(group.arcId),
+      }"
     >
-      <div class="arc-group-header">
-        <div class="flex items-center gap-2">
+      <!-- Arc Branch Header (Folder / Collapsible) -->
+      <div
+        class="journey-arc-header"
+        role="button"
+        tabindex="0"
+        :aria-expanded="!isArcCollapsed(group.arcId)"
+        @click="toggleArc(group.arcId)"
+        @keydown.enter.prevent="toggleArc(group.arcId)"
+        @keydown.space.prevent="toggleArc(group.arcId)"
+      >
+        <div class="arc-header-left">
+          <span class="tree-branch-marker">{{ gIdx === arcGroups.length - 1 ? '└──' : '├──' }}</span>
+          <span class="arc-toggle-chevron">{{ isArcCollapsed(group.arcId) ? '▶' : '▼' }}</span>
           <span
             class="arc-color-pill"
-            :style="{ backgroundColor: group.arcColor || 'var(--color-accent)' }"
+            :style="{ backgroundColor: group.arcColor || 'var(--accent)' }"
           ></span>
-          <span class="font-bold text-sm text-main">{{ group.arcTitle }}</span>
+          <span class="arc-folder-icon">{{ isArcCollapsed(group.arcId) ? '📁' : '📂' }}</span>
+          <span class="arc-header-title">{{ group.arcTitle }}</span>
         </div>
-        <span class="text-xs text-muted">
+        <span class="arc-header-count">
           {{ group.items.length }} сцен
         </span>
       </div>
 
-      <div class="p-4 space-y-3">
+      <!-- Tree Branch with Scene Nodes -->
+      <div v-show="!isArcCollapsed(group.arcId)" class="journey-arc-branch">
         <div
-          v-for="item in group.items"
+          v-for="(item, sIdx) in group.items"
           :key="item.id"
-          class="journey-card p-3 rounded border border-subtle bg-surface hover:bg-surface-hover transition-colors cursor-pointer"
+          class="journey-scene-card"
+          :class="{ 'is-last-scene': sIdx === group.items.length - 1 }"
           @click="$emit('select-scene', item)"
         >
-          <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="font-semibold text-sm text-main">{{ item.title }}</span>
-            <div class="flex items-center gap-1.5">
+          <!-- Scene Node Header -->
+          <div class="scene-card-header">
+            <div class="scene-header-left">
+              <span class="tree-leaf-marker">{{ sIdx === group.items.length - 1 ? '└──' : '├──' }}</span>
+              <div v-if="item.boundArcs && item.boundArcs.length > 0" class="scene-bound-arcs-wrapper">
+                <template v-for="(bArc, bIdx) in item.boundArcs" :key="bArc.arcId">
+                  <span v-if="bIdx > 0" class="arc-ampersand">&amp;</span>
+                  <span class="phase-badge" :class="'phase-' + (bArc.phase || 'default')">
+                    {{ bArc.phaseLabel }}
+                  </span>
+                  <span
+                    v-if="item.boundArcs.length > 1"
+                    class="badge-arc-chip-mini"
+                    :style="{ backgroundColor: bArc.arcColor || 'var(--accent)' }"
+                  >
+                    {{ bArc.arcTitle }}
+                  </span>
+                </template>
+              </div>
+              <span v-else class="phase-badge" :class="'phase-' + (item.arc_phase || 'default')">
+                {{ item.phaseLabel || '🌱 Сцена' }}
+              </span>
+              <span class="scene-title-text">{{ item.title }}</span>
+            </div>
+
+            <div class="scene-header-right">
               <span
                 v-if="item.isFlashback"
-                class="flashback-indicator"
-                title="Хронология события идет вспять относительно повествования"
+                class="chip-flashback-alert"
+                title="Хронология события идет вспять относительно порядка глав"
               >
-                ⏪ Флэшбек
+                {{ item.flashbackDeltaLabel || '⏪ Флэшбек!' }}
               </span>
               <span
                 v-if="item.badge"
-                class="badge text-2xs px-2 py-0.5 rounded font-medium"
+                class="badge-status-chip"
                 :class="'badge-' + (item.badgeType || 'accent')"
               >
                 {{ item.badge }}
@@ -45,12 +101,27 @@
             </div>
           </div>
 
-          <div v-if="item.subtitle" class="text-xs text-muted mb-1">
-            {{ item.subtitle }}
+          <!-- FULL SCENE TEXT (Без обрезки) -->
+          <div v-if="item.fullText || item.description" class="journey-scene-fulltext">
+            «{{ item.fullText || item.description }}»
           </div>
 
-          <div v-if="item.description" class="text-xs text-main opacity-90 mt-1 p-2 rounded bg-input border border-subtle">
-            {{ item.description }}
+          <!-- Dual-Time Meta Row -->
+          <div class="journey-meta-row">
+            <span class="chip-reader-order">
+              📖 Читатель: {{ item.chapter_title || ('Гл. ' + (item.chapter_order || '?')) }}
+              <template v-if="item.paragraph_index !== undefined && item.paragraph_index !== null">
+                · абз. {{ item.paragraph_index }}
+              </template>
+            </span>
+
+            <span class="chip-chronology-time">
+              ⏳ Хронология: {{ item.timeLabel || ('День ' + (item.chapter_order || 1)) }}
+            </span>
+
+            <span class="jump-to-editor-hint">
+              📍 Перейти к абзацу
+            </span>
           </div>
         </div>
       </div>
@@ -59,13 +130,22 @@
 </template>
 
 <script setup lang="ts">
+import type { Entity } from '@/types/generated/Entity';
 import type { ArcGroup, JourneyTimelineItem } from '../CharacterJourney.model';
+import { useJourneyArcGroups } from './useJourneyArcGroups';
 
-defineProps<{
+const props = defineProps<{
   arcGroups: ArcGroup[];
+  currentEntity?: Entity | null;
 }>();
 
 defineEmits<{
   (e: 'select-scene', item: JourneyTimelineItem): void;
 }>();
+
+const { isArcCollapsed, toggleArc, totalScenesCount } = useJourneyArcGroups(() => props.arcGroups);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>
+
+

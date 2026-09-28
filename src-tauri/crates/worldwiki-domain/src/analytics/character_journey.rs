@@ -65,6 +65,14 @@ pub struct JourneyPromiseDto {
     pub arc_phase: Option<String>,
     #[serde(default)]
     pub arcs: Option<serde_json::Value>,
+    #[serde(default)]
+    pub m_abs: Option<i64>,
+    #[serde(default)]
+    pub calendar_id: Option<String>,
+    #[serde(default)]
+    pub date_fields: Option<serde_json::Value>,
+    #[serde(default)]
+    pub timeline_event_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

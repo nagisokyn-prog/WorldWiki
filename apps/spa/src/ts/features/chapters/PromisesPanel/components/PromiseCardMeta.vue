@@ -51,6 +51,8 @@
     <PromiseCardTimeline
       :is-date-picker-open="isDatePickerOpen"
       :diegetic-info="diegeticInfo"
+      :calendars="calendars"
+      :current-calendar-id="currentCalendarId"
       :current-era-idx="currentEraIdx"
       :current-year="currentYear"
       :current-month-idx="currentMonthIdx"
@@ -64,6 +66,7 @@
       :hour-wheel-options="hourWheelOptions"
       :minute-wheel-options="minuteWheelOptions"
       @toggle-picker="toggleDatePicker"
+      @update:current-calendar-id="onCalendarChange"
       @update:current-era-idx="currentEraIdx = $event"
       @update:current-year="currentYear = $event"
       @update:current-month-idx="currentMonthIdx = $event"
@@ -95,6 +98,8 @@ const {
   availableCharacters,
   getParticipantDisplayName,
   projectLocations,
+  calendars,
+  currentCalendarId,
   eraWheelOptions,
   yearWheelOptions,
   monthWheelOptions,
@@ -113,6 +118,7 @@ const {
   removeParticipant,
   handleParticipantBackspace,
   onDateFieldsChange,
+  onCalendarChange,
   toggleDatePicker,
   onArcsUpdate
 } = usePromiseCardMeta(props, emit);

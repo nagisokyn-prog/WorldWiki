@@ -30,6 +30,20 @@
       </span>
     </div>
 
+    <!-- Выбор календаря (при раскрытых барабанах) -->
+    <div v-if="isDatePickerOpen && calendars && calendars.length > 1" class="flex items-center gap-2 py-1">
+      <span class="text-xs text-muted">Календарь:</span>
+      <select
+        :value="currentCalendarId"
+        class="bg-surface-subtle text-main border border-border rounded px-2 py-1 text-xs flex-1 cursor-pointer focus:outline-none focus:border-accent"
+        @change="$emit('update:currentCalendarId', ($event.target as HTMLSelectElement).value); $emit('change')"
+      >
+        <option v-for="cal in calendars" :key="cal.id" :value="cal.id">
+          {{ cal.data?.название || cal.name || 'Календарь' }}
+        </option>
+      </select>
+    </div>
+
     <!-- Компактная двухрядная сетка XboxWheel (раскрывается по кнопке) -->
     <PromiseCardDateTimeWheels
       v-if="isDatePickerOpen"
@@ -59,10 +73,13 @@
 <script setup lang="ts">
 import PromiseCardDateTimeWheels from './PromiseCardDateTimeWheels.vue';
 import type { DiegeticDateBadgeInfo } from './PromiseCardMeta.model';
+import type { CalendarRecord } from '@/stores/calendar.store';
 
 defineProps<{
   isDatePickerOpen: boolean;
   diegeticInfo: DiegeticDateBadgeInfo | null;
+  calendars?: CalendarRecord[];
+  currentCalendarId?: string;
   currentEraIdx: number;
   currentYear: number;
   currentMonthIdx: number;
@@ -79,6 +96,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'toggle-picker'): void;
+  (e: 'update:currentCalendarId', val: string): void;
   (e: 'update:currentEraIdx', val: number): void;
   (e: 'update:currentYear', val: number): void;
   (e: 'update:currentMonthIdx', val: number): void;

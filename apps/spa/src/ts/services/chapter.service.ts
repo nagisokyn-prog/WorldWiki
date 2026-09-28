@@ -57,6 +57,7 @@ class ChapterService {
       title: title || 'Новая глава',
       content,
       summary: null,
+      sort_order: 0 as unknown as bigint,
       word_count: 0 as unknown as bigint,
       embeddings: {},
       footnotes: {},

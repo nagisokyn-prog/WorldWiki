@@ -30,6 +30,7 @@
       <JourneyArcGroups
         v-else-if="viewMode === 'BY_ARCS'"
         :arc-groups="arcGroups"
+        :current-entity="currentEntity"
         @select-scene="$emit('select-scene', $event)"
       />
 
@@ -67,6 +68,7 @@ defineEmits<{
 
 const {
   currentEntityId,
+  currentEntity,
   entitiesList,
   viewMode,
   selectedArcFilter,

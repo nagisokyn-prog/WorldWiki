@@ -1,10 +1,10 @@
 import { ref, computed, type Ref } from 'vue';
 import { CalendarMath } from '@/services/Calendars/calendar.math';
-import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarMonth, CalendarEra } from '@/services/Calendars/calendar.types';
 import type { CalendarRecord } from '@/stores/calendar.store';
 import type { DatePickerModelValue } from '@/shared/ui/UniversalDatePicker/useUniversalDatePicker';
-import type { DiegeticDateBadgeInfo, TimelineEventOption } from './PromiseCardMeta.model';
+import type { TimelineEventOption } from './PromiseCardMeta.model';
+import { usePromiseDateHelpers } from './usePromiseDateHelpers';
 
 export function usePromiseDateTime(
   calendars: Ref<CalendarRecord[]>,
@@ -58,106 +58,27 @@ export function usePromiseDateTime(
     return m?.дней || 30;
   });
 
-  const eraWheelOptions = computed(() => {
-    return activeCalendarEras.value.map((e, idx) => ({
-      value: idx,
-      label: e.название || e.name || `Эпоха ${idx + 1}`
-    }));
-  });
-
-  const yearWheelOptions = computed(() => {
-    const y = currentYear.value;
-    const list: Array<{ value: number; label: string }> = [];
-    for (let i = Math.max(1, y - 15); i <= y + 15; i++) {
-      list.push({ value: i, label: String(i) });
-    }
-    return list;
-  });
-
-  const monthWheelOptions = computed(() => {
-    return activeCalendarMonths.value.map((m, idx) => ({
-      value: idx,
-      label: m.название || `Месяц ${idx + 1}`
-    }));
-  });
-
-  const dayWheelOptions = computed(() => {
-    return Array.from({ length: maxDaysInCurrentMonth.value }, (_, i) => ({
-      value: i + 1,
-      label: String(i + 1)
-    }));
-  });
-
-  const hourWheelOptions = computed(() => {
-    return Array.from({ length: 24 }, (_, i) => ({
-      value: i,
-      label: String(i).padStart(2, '0')
-    }));
-  });
-
-  const minuteWheelOptions = computed(() => {
-    return Array.from({ length: 12 }, (_, i) => ({
-      value: i * 5,
-      label: String(i * 5).padStart(2, '0')
-    }));
-  });
-
-  const getSeasonClass = (seasonName: string): string => {
-    const s = seasonName.toLowerCase();
-    if (s.includes('весн') || s.includes('spring')) return 'season-spring';
-    if (s.includes('лет') || s.includes('summer')) return 'season-summer';
-    if (s.includes('осен') || s.includes('autumn') || s.includes('fall')) return 'season-autumn';
-    if (s.includes('зим') || s.includes('winter')) return 'season-winter';
-    return 'season-default';
-  };
-
-  const getTimeOfDay = (hour: number = 0): string => {
-    const h = Number(hour) || 0;
-    if (h >= 5 && h < 12) return '🌅 Утро';
-    if (h >= 12 && h < 18) return '☀️ День';
-    if (h >= 18 && h < 23) return '🌇 Вечер';
-    return '🌙 Ночь';
-  };
-
-  const diegeticInfo = computed<DiegeticDateBadgeInfo | null>(() => {
-    const cal = activeCalendar.value;
-    const calData = getCalendarData(cal);
-    if (!cal || !calData) return null;
-
-    const input = {
-      era_index: Number(currentEraIdx.value) || 0,
-      year: Number(currentYear.value) || 1,
-      month: Number(currentMonthIdx.value) || 0,
-      day: Number(currentDay.value) || 1,
-      hour: Number(currentHour.value) || 0,
-      minute: Number(currentMinute.value) || 0
-    };
-
-    const seasonName = CalendarFormat.getSeasonForDate(calData, input.year, input.month);
-    const hasValidSeason = seasonName && seasonName !== 'Вне сезона';
-    const seasonClass = getSeasonClass(seasonName || '');
-    const timeOfDayName = getTimeOfDay(input.hour);
-    const mAbs = CalendarMath.getAbsoluteMinute(input, calData);
-
-    const formattedDate = CalendarFormat.formatDate(calData, {
-      original_input: input,
-      calendar_id: cal.id || '',
-      absolute_minute: mAbs
-    });
-
-    const eraName = activeCalendarEras.value[input.era_index]?.название || '';
-    const monthName = activeCalendarMonths.value[input.month]?.название || `Месяц ${input.month + 1}`;
-    const fallbackDate = `${input.year} год, ${monthName} ${input.day}${eraName ? ` (${eraName})` : ''} в ${String(input.hour).padStart(2, '0')}:${String(input.minute).padStart(2, '0')}`;
-
-    return {
-      calendarName: cal.name || 'Календарь',
-      seasonName: hasValidSeason ? seasonName : '',
-      seasonClass,
-      timeOfDayName,
-      formattedDate: formattedDate || fallbackDate,
-      mAbs
-    };
-  });
+  const {
+    eraWheelOptions,
+    yearWheelOptions,
+    monthWheelOptions,
+    dayWheelOptions,
+    hourWheelOptions,
+    minuteWheelOptions,
+    diegeticInfo
+  } = usePromiseDateHelpers(
+    activeCalendar,
+    activeCalendarMonths,
+    activeCalendarEras,
+    maxDaysInCurrentMonth,
+    currentYear,
+    currentEraIdx,
+    currentMonthIdx,
+    currentDay,
+    currentHour,
+    currentMinute,
+    getCalendarData
+  );
 
   const syncStateFromInput = (input: {
     era_index?: number;
@@ -190,6 +111,12 @@ export function usePromiseDateTime(
       месяц: dateInput.month,
       день: dateInput.day
     };
+  };
+
+  const setCalendar = (calId: string) => {
+    if (!calId || currentCalendarId.value === calId) return;
+    currentCalendarId.value = calId;
+    onDateFieldsChange();
   };
 
   const onDateFieldsChange = () => {
@@ -233,14 +160,44 @@ export function usePromiseDateTime(
     isDatePickerOpen.value = !isDatePickerOpen.value;
   };
 
-  const syncInitialTimelineDate = (timelineEventId?: string | null, eventsList: TimelineEventOption[] = []) => {
-    if (timelineEventId) {
-      const ev = eventsList.find(e => e.id === timelineEventId);
+  const syncInitialTimelineDate = (
+    itemData?: {
+      date_fields?: { era_index?: number; year?: number; month?: number; day?: number; hour?: number; minute?: number } | null;
+      m_abs?: number | null;
+      calendar_id?: string | null;
+      timeline_event_id?: string | null;
+    } | null,
+    timelineEventId?: string | null,
+    eventsList: TimelineEventOption[] = []
+  ) => {
+    if (itemData?.calendar_id) {
+      currentCalendarId.value = itemData.calendar_id;
+    }
+
+    if (itemData?.date_fields) {
+      syncStateFromInput(itemData.date_fields, itemData.calendar_id || undefined);
+      return;
+    }
+
+    if (itemData?.m_abs !== undefined && itemData.m_abs !== null && calendars.value.length > 0) {
+      const cal = (itemData.calendar_id && calendars.value.find(c => c.id === itemData.calendar_id)) || activeCalendar.value || calendars.value[0];
+      if (cal) {
+        syncModelFromMabs(itemData.m_abs, cal);
+        return;
+      }
+    }
+
+    const tid = itemData?.timeline_event_id || timelineEventId;
+    if (tid) {
+      const ev = eventsList.find(e => e.id === tid);
       if (ev && ev.m_abs !== undefined && calendars.value.length > 0) {
         const cal = activeCalendar.value || calendars.value[0];
-        syncModelFromMabs(ev.m_abs, cal);
+        if (cal) syncModelFromMabs(ev.m_abs, cal);
+        return;
       }
-    } else if (calendars.value.length > 0) {
+    }
+
+    if (calendars.value.length > 0) {
       const cal = activeCalendar.value || calendars.value[0];
       if (cal && cal.id) {
         currentCalendarId.value = cal.id;
@@ -269,6 +226,7 @@ export function usePromiseDateTime(
     hourWheelOptions,
     minuteWheelOptions,
     diegeticInfo,
+    setCalendar,
     onDateFieldsChange,
     onUniversalDateChange,
     toggleDatePicker,

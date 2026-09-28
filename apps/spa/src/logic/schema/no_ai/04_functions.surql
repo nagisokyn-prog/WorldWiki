@@ -24,7 +24,21 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             entity_type,
             attributes.is_deceased AS is_deceased,
             attributes.death_m_abs AS death_m_abs,
-            (SELECT IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id, source, role FROM ->appears_in) AS appearances
+            array::concat(
+                (SELECT IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id, source, role FROM ->appears_in),
+                (
+                    SELECT 
+                        IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) } AS chapter_id,
+                        'scene' AS source,
+                        'participant' AS role
+                    FROM plot_promises
+                    WHERE (participant_ids CONTAINS type::string($parent.id)
+                       OR participant_ids CONTAINS $parent.id
+                       OR $parent.id IN participant_ids
+                       OR ($parent.name != NONE AND participant_ids CONTAINS $parent.name))
+                      AND chapter_id != NONE
+                )
+            ) AS appearances
         FROM entities 
         WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY name ASC
@@ -44,45 +58,85 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             title,
             description,
             m_abs,
-            calendar_id,
+            IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
             array::concat(
                 (
                     SELECT 
-                        out.id AS chapter_id,
+                        IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id,
                         out.title AS chapter_title,
-                        out.sort_order AS chapter_order,
-                        pov_id,
-                        kind,
-                        block_id
+                        IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_sort_order,
+                        IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE } AS pov_id,
+                        IF kind != NONE { kind } ELSE { 'direct' } AS kind,
+                        block_id,
+                        false AS is_anachronism
                     FROM ->revealed_in
                 ),
                 (
                     SELECT 
-                        chapter_id.id AS chapter_id,
+                        IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) } AS chapter_id,
                         chapter_id.title AS chapter_title,
-                        IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS chapter_order,
+                        IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS chapter_sort_order,
                         NONE AS pov_id,
-                        kind,
-                        block_id
+                        IF kind != NONE { kind } ELSE { 'direct' } AS kind,
+                        block_id,
+                        false AS is_anachronism
                     FROM plot_promises
                     WHERE timeline_event_id = $parent.id
                 )
             ) AS reveals,
-            (SELECT id, name, entity_type FROM <-participates_in<-entities) AS participants
+            (SELECT IF id.id != NONE { id.id } ELSE { type::string(id) } AS id, name, entity_type FROM <-participates_in<-entities) AS participants
         FROM timeline_events
         WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY m_abs ASC
     );
 
+    LET $scene_events = (
+        SELECT 
+            id,
+            IF quote != NONE AND string::len(quote) > 0 { quote } ELSE { 'Сцена' } AS title,
+            note AS description,
+            m_abs,
+            IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
+            [
+                {
+                    chapter_id: IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) },
+                    chapter_title: chapter_id.title,
+                    chapter_sort_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
+                    pov_id: NONE,
+                    kind: IF kind != NONE { kind } ELSE { 'direct' },
+                    block_id: block_id,
+                    is_anachronism: false
+                }
+            ] AS reveals,
+            IF participant_ids != NONE {
+                (
+                    SELECT 
+                        IF id.id != NONE { id.id } ELSE { type::string(id) } AS id,
+                        name,
+                        entity_type 
+                    FROM entities 
+                    WHERE id IN $parent.participant_ids OR type::string(id) IN $parent.participant_ids
+                )
+            } ELSE {
+                []
+            } AS participants
+        FROM plot_promises
+        WHERE (project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj))
+          AND m_abs != NONE
+          AND (timeline_event_id = NONE OR timeline_event_id = NULL OR type::string(timeline_event_id) CONTAINS 'ev_scene_')
+    );
+
+    LET $all_events = array::concat($events, $scene_events);
+
     LET $chapters = (
-        SELECT id, title, sort_order 
+        SELECT id, title, IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order 
         FROM chapters 
         WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY sort_order ASC
     );
 
     RETURN {
-        events: $events,
+        events: $all_events,
         chapters: $chapters
     };
 };
@@ -174,7 +228,15 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             arc_id.title AS arc_title,
             arc_id.color AS arc_color,
             arc_phase,
-            arcs
+            arcs,
+            IF m_abs != NONE { m_abs } 
+               ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
+               ELSE { NONE } AS m_abs,
+            IF calendar_id != NONE { calendar_id } 
+               ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
+               ELSE { NONE } AS calendar_id,
+            date_fields,
+            timeline_event_id
         FROM plot_promises 
         WHERE participant_ids CONTAINS type::string($entity) 
            OR participant_ids CONTAINS $entity.id 
@@ -184,7 +246,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
 
     RETURN {
         entity: $info[0],
-        appearances: $appearances,
+        appearances: [],
         events: $events,
         relations: $relations,
         promises: $promises
@@ -201,7 +263,14 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
         LET $targets = (
             SELECT VALUE id FROM entities 
             WHERE (project_id = $proj OR project_id = type::record('projects', $proj) OR project_id.id = $proj.id)
-              AND (name IN $names OR string::lowercase(name) IN $lower_names OR id IN $names)
+              AND (
+                  type::string(id) IN $names
+                  OR id.id IN $names
+                  OR id IN $names
+                  OR name IN $names 
+                  OR string::lowercase(name) IN $lower_names 
+                  OR (attributes.aliases != NONE AND array::len(array::intersect(attributes.aliases, $names)) > 0)
+              )
         );
         FOR $ent_id IN $targets {
             RELATE $ent_id->appears_in->$chap CONTENT {
@@ -680,6 +749,41 @@ DEFINE FUNCTION OVERWRITE fn::batch_upsert_connections(
                 created_at: time::now()
             };
         };
+    };
+};
+
+-- 40. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ (PLOT PROMISE / SCENE)
+DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
+    $id: string,
+    $proj: record<projects>,
+    $chap: record<chapters>,
+    $data: object
+) {
+    LET $rec_id = type::record('plot_promises', $id);
+    
+    UPSERT $rec_id MERGE {
+        project_id: $proj,
+        chapter_id: $chap,
+        kind: IF $data.kind != NONE { $data.kind } ELSE { 'scene' },
+        quote: IF $data.quote != NONE { $data.quote } ELSE { '' },
+        paragraph_index: IF $data.paragraph_index != NONE { type::int($data.paragraph_index) } ELSE { 1 },
+        block_id: IF $data.block_id != NONE { $data.block_id } ELSE { NONE },
+        note: IF $data.note != NONE { $data.note } ELSE { NONE },
+        status: IF $data.status != NONE { $data.status } ELSE { 'planted' },
+        progressions: IF $data.progressions != NONE { $data.progressions } ELSE { [] },
+        resolution: IF $data.resolution != NONE { $data.resolution } ELSE { NONE },
+        resolved_in_volume: IF $data.resolved_in_volume != NONE { $data.resolved_in_volume } ELSE { NONE },
+        resolved_in_chapter: IF $data.resolved_in_chapter != NONE { $data.resolved_in_chapter } ELSE { NONE },
+        participant_ids: IF $data.participant_ids != NONE { $data.participant_ids } ELSE { NONE },
+        location_id: IF $data.location_id != NONE { $data.location_id } ELSE { NONE },
+        timeline_event_id: IF $data.timeline_event_id != NONE { $data.timeline_event_id } ELSE { NONE },
+        arc_id: IF $data.arc_id != NONE { $data.arc_id } ELSE { NONE },
+        arc_phase: IF $data.arc_phase != NONE { $data.arc_phase } ELSE { NONE },
+        arcs: IF $data.arcs != NONE { $data.arcs } ELSE { [] },
+        m_abs: IF $data.m_abs != NONE { type::int($data.m_abs) } ELSE { NONE },
+        calendar_id: IF $data.calendar_id != NONE { $data.calendar_id } ELSE { NONE },
+        date_fields: IF $data.date_fields != NONE { $data.date_fields } ELSE { NONE },
+        updated_at: time::now()
     };
 };
 

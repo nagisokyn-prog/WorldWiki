@@ -291,6 +291,7 @@ pub fn run() {
             worldwiki_tauri::commands::get_entity_full_card,
             worldwiki_tauri::commands::add_entity_relation,
             worldwiki_tauri::commands::plant_plot_promise,
+            worldwiki_tauri::commands::save_plot_promise,
             worldwiki_tauri::commands::complete_plan,
             worldwiki_tauri::commands::audit_volume_consistency,
             // Сюжетные арки & Аналитика

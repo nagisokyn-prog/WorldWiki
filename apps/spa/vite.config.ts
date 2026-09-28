@@ -76,7 +76,8 @@ export default defineConfig({
         app: resolve(__dirname, 'app.html'),
         settings: resolve(__dirname, 'settings.html'),
         ui_editor: resolve(__dirname, 'ui_editor.html'),
-        ai: resolve(__dirname, 'ai.html')
+        ai: resolve(__dirname, 'ai.html'),
+        character_journey: resolve(__dirname, 'character_journey.html')
       },
     }
   },

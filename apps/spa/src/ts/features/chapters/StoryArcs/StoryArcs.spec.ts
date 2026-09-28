@@ -154,4 +154,32 @@ describe('useStoryArcs Composable', () => {
     expect(getLinkedBlocks('arc:1')).toHaveLength(1);
     expect(getLinkedBlocks('arc:2')).toHaveLength(1);
   });
+
+  it('useArcCard computes phase counts correctly for the 4-phase stepper', async () => {
+    const { useArcCard } = await import('./components/useArcCard');
+    const arc = { id: 'arc:main', project_id: 'test_proj', title: 'Главная арка', arc_type: 'character', status: 'in_progress' } as any;
+    const linkedBlocks = [
+      { id: 'b1', chapter_id: 'chapters:1', paragraph_index: 2, arc_phase: 'setup', quote: 'Завязка' },
+      { id: 'b2', chapter_id: 'chapters:2', paragraph_index: 10, arc_phase: 'escalation', quote: 'Эскалация 1' },
+      { id: 'b3', chapter_id: 'chapters:3', paragraph_index: 4, arc_phase: 'escalation', quote: 'Эскалация 2' },
+      { id: 'b4', chapter_id: 'chapters:4', paragraph_index: 1, arc_phase: 'climax', quote: 'Кульминация' },
+    ] as any;
+
+    const { phaseCounts, getPhaseInfo, formatChapterName, getArcTypeLabel } = useArcCard({
+      arc,
+      effectiveStatus: 'in_progress',
+      linkedBlocks,
+    });
+
+    expect(phaseCounts.value.setup).toBe(1);
+    expect(phaseCounts.value.escalation).toBe(2);
+    expect(phaseCounts.value.climax).toBe(1);
+    expect(phaseCounts.value.resolution).toBe(0);
+
+    expect(getPhaseInfo(linkedBlocks[0], 'arc:main').label).toBe('🌱 Завязка');
+    expect(getPhaseInfo(linkedBlocks[3], 'arc:main').label).toBe('🔥 Кульминация');
+    expect(formatChapterName('chapters:ch_12')).toBe('Гл. ch_12');
+    expect(getArcTypeLabel('character')).toBe('Персонаж');
+  });
 });
+

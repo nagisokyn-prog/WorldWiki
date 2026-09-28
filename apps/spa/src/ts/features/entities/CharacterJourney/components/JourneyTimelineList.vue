@@ -1,39 +1,56 @@
 <template>
-  <div class="timeline-stream relative pl-6 border-l-2 border-subtle ml-4 space-y-6">
+  <div class="timeline-stream">
     <div
       v-for="item in timelineItems"
       :key="item.id"
-      class="timeline-node relative group cursor-pointer"
+      class="timeline-node"
       @click="$emit('select-scene', item)"
     >
       <!-- Marker Dot -->
       <div
-        class="timeline-dot absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-surface flex items-center justify-center"
+        class="timeline-dot"
         :class="'dot-' + (item.badgeType || 'accent')"
       ></div>
 
       <!-- Card Content -->
-      <div class="journey-card p-4 rounded border border-subtle bg-surface hover:bg-surface-hover transition-colors shadow-sm">
-        <div class="flex items-center justify-between gap-2 mb-1">
-          <span class="font-bold text-sm text-main">{{ item.title }}</span>
-          <div class="flex items-center gap-1.5">
+      <div class="journey-scene-card">
+        <div class="scene-card-header">
+          <div class="scene-header-left">
+            <span class="phase-badge" :class="'phase-' + (item.arc_phase || 'default')">
+              {{ item.phaseLabel || '🌱 Сцена' }}
+            </span>
+            <span class="scene-title-text">{{ item.title }}</span>
+          </div>
+
+          <div class="scene-header-right">
             <span
               v-if="item.isFlashback"
-              class="flashback-indicator"
+              class="chip-flashback-alert"
               title="Хронология события опережает/отстает от порядка глав"
             >
-              ⏪ Флэшбек
+              {{ item.flashbackDeltaLabel || '⏪ Флэшбек!' }}
             </span>
+            <div v-if="item.boundArcs && item.boundArcs.length > 0" class="scene-bound-arcs-wrapper">
+              <template v-for="(bArc, bIdx) in item.boundArcs" :key="bArc.arcId">
+                <span v-if="bIdx > 0" class="arc-ampersand">&amp;</span>
+                <span
+                  class="badge-arc-chip"
+                  :style="{ backgroundColor: bArc.arcColor || 'var(--accent)' }"
+                >
+                  {{ bArc.arcTitle }}
+                </span>
+              </template>
+            </div>
             <span
-              v-if="item.arc_title"
-              class="badge text-2xs px-2 py-0.5 rounded font-medium"
-              :style="{ backgroundColor: item.arc_color || 'var(--color-accent)', color: 'var(--color-surface)' }"
+              v-else-if="item.arc_title"
+              class="badge-arc-chip"
+              :style="{ backgroundColor: item.arc_color || 'var(--accent)' }"
             >
               {{ item.arc_title }}
             </span>
             <span
               v-if="item.badge"
-              class="badge text-2xs px-2 py-0.5 rounded font-medium"
+              class="badge-status-chip"
               :class="'badge-' + (item.badgeType || 'accent')"
             >
               {{ item.badge }}
@@ -41,12 +58,27 @@
           </div>
         </div>
 
-        <div v-if="item.subtitle" class="text-xs text-muted mb-1">
-          {{ item.subtitle }}
+        <!-- FULL SCENE TEXT (Без обрезки) -->
+        <div v-if="item.fullText || item.description" class="journey-scene-fulltext">
+          «{{ item.fullText || item.description }}»
         </div>
 
-        <div v-if="item.description" class="text-xs text-main opacity-90 mt-2 p-2 rounded bg-input border border-subtle">
-          {{ item.description }}
+        <!-- Dual-Time Meta Row -->
+        <div class="journey-meta-row">
+          <span class="chip-reader-order">
+            📖 Читатель: {{ item.chapter_title || ('Гл. ' + (item.chapter_order || '?')) }}
+            <template v-if="item.paragraph_index !== undefined && item.paragraph_index !== null">
+              · абз. {{ item.paragraph_index }}
+            </template>
+          </span>
+
+          <span class="chip-chronology-time">
+            ⏳ Хронология: {{ item.timeLabel || ('День ' + (item.chapter_order || 1)) }}
+          </span>
+
+          <span class="jump-to-editor-hint">
+            📍 Перейти к абзацу
+          </span>
         </div>
       </div>
     </div>
@@ -64,3 +96,6 @@ defineEmits<{
   (e: 'select-scene', item: JourneyTimelineItem): void;
 }>();
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>
+

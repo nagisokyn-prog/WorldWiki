@@ -7,11 +7,8 @@ import {
   PROMISE_STATUSES,
   type ChapterMetaItem
 } from './composables/usePromiseFiltering';
-import {
-  usePromiseActions,
-  type PromiseMilestone,
-  type RichPlotPromise
-} from './composables/usePromiseActions';
+import { usePromiseActions } from './composables/usePromiseActions';
+import type { PromiseMilestone, RichPlotPromise } from './composables/PromiseActions.model';
 import { usePromiseResize } from './composables/usePromiseResize';
 
 export type { ChapterMetaItem, PromiseMilestone, RichPlotPromise };

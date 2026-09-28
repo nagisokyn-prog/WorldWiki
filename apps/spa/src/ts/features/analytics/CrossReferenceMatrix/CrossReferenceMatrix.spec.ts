@@ -108,10 +108,14 @@ describe('useCrossReferenceMatrix Composable', () => {
       ],
     };
 
-    const { rows } = useCrossReferenceMatrix('test_proj');
+    const { rows, formatWordCount } = useCrossReferenceMatrix('test_proj');
     expect(rows.value).toHaveLength(1);
     expect(rows.value[0].totalAppearances).toBe(1);
     expect(rows.value[0].cells.get('chapters:1')?.status).toBe('mention');
     expect(rows.value[0].cells.get('chapters:2')?.status).toBe('absent');
+
+    expect(formatWordCount(1450)).toBe('1.5k сл.');
+    expect(formatWordCount(450)).toBe('450 сл.');
+    expect(formatWordCount(0)).toBe('0 сл.');
   });
 });

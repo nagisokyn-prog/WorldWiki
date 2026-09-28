@@ -1,41 +1,8 @@
-import { ref, type Ref } from 'vue';
+import { ref } from 'vue';
 import * as api from '@/services/api.client';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
-
-export interface PromiseMilestone {
-  id: string;
-  chapter_id: string;
-  paragraph_index: number;
-  quote: string;
-  note?: string | null;
-  created_at?: string | null;
-}
-
-export interface SceneArcItem {
-  arc_id: string;
-  arc_phase?: string | null;
-}
-
-export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution' | 'arcs'> & {
-  progressions?: PromiseMilestone[] | null;
-  resolution?: PromiseMilestone | null;
-  arcs?: SceneArcItem[] | null;
-  /** UI-флаг: текст был удалён из рукописи (не сохраняется в БД) */
-  is_orphaned?: boolean;
-};
-
-export interface UsePromiseActionsParams {
-  project?: string;
-  chapterId?: string | null;
-  currentVolumeId?: string | null;
-  props?: { project?: string; chapterId?: string | null; currentVolumeId?: string | null };
-  promises: Ref<RichPlotPromise[]>;
-  emit: {
-    (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
-    (e: 'change'): void;
-  };
-}
+import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
 
 export function usePromiseActions(params: UsePromiseActionsParams) {
   const { promises, emit } = params;
@@ -51,6 +18,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     try {
       localStorage.setItem(`ww_plot_promises_${proj}`, JSON.stringify(promises.value));
     } catch { /* ignore */ }
+  };
+
+  const persist = async (item: RichPlotPromise, logMsg: string) => {
+    try {
+      console.log(logMsg, { project: getProject(), item });
+      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
+    } catch (err) {
+      console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err);
+    }
+    syncLocalBackup();
+    emit('change');
   };
 
   const addPromise = async (payload: {
@@ -86,16 +64,12 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     };
 
     try {
-      console.log('[usePromiseActions] Saving new plot promise:', { project, newPromise });
       const created = await api.savePlotPromise(project, newPromise as unknown as PlotPromise);
-      console.log('[usePromiseActions] Plot promise saved on backend:', created);
-      const savedPromise: RichPlotPromise = {
+      promises.value.push({
         ...newPromise,
         ...((created as unknown as Partial<RichPlotPromise>) || {})
-      };
-      promises.value.push(savedPromise);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to save plot promise to backend:', err);
+      });
+    } catch {
       promises.value.push(newPromise);
     }
     syncLocalBackup();
@@ -110,12 +84,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     block_id?: string | null;
     chapterId?: string | null;
   }) => {
-    const targetClean = cleanId(payload.promiseId);
-    const target = promises.value.find((p) => cleanId(p.id) === targetClean);
+    const target = promises.value.find((p) => cleanId(p.id) === cleanId(payload.promiseId));
     if (!target) return;
-
+    
     const chapId = payload.chapterId || params.chapterId || target.chapter_id;
-    const milestone: PromiseMilestone = {
+    const ms: PromiseMilestone = {
       id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       chapter_id: chapId,
       paragraph_index: payload.paragraph_index || 1,
@@ -124,28 +97,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     };
 
     if (payload.stage === 'progression') {
-      if (!Array.isArray(target.progressions)) {
-        target.progressions = [];
-      }
-      target.progressions.push(milestone);
+      target.progressions = [...(target.progressions || []), ms];
       if (target.status === 'planted') {
         target.status = 'developed';
       }
-    } else if (payload.stage === 'resolution') {
-      target.resolution = milestone;
+    } else {
+      target.resolution = ms;
       target.status = 'resolved';
       target.resolved_in_chapter = chapId;
       target.resolved_in_volume = params.currentVolumeId || null;
     }
-
-    try {
-      console.log('[usePromiseActions] Saving milestone update:', { project: getProject(), target });
-      await api.savePlotPromise(getProject(), target as unknown as PlotPromise);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to save milestone update:', err);
-    }
-    syncLocalBackup();
-    emit('change');
+    await persist(target, '[usePromiseActions] Saving milestone update');
   };
 
   const removeMilestone = async (
@@ -160,38 +122,21 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       }
     } else if (stage === 'resolution') {
       promise.resolution = null;
-      promise.status = (promise.progressions && promise.progressions.length > 0) ? 'developed' : 'planted';
+      promise.status = promise.progressions?.length ? 'developed' : 'planted';
       promise.resolved_in_chapter = null;
       promise.resolved_in_volume = null;
     }
-
-    try {
-      console.log('[usePromiseActions] Removing milestone:', { project: getProject(), promise });
-      await api.savePlotPromise(getProject(), promise as unknown as PlotPromise);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to update promise after milestone removal:', err);
-    }
-    syncLocalBackup();
-    emit('change');
+    await persist(promise, '[usePromiseActions] Removing milestone');
   };
 
   const updateStatus = async (item: RichPlotPromise, newStatus: string) => {
     if (!item.id || item.status === newStatus) return;
     item.status = newStatus;
-
     if (newStatus === 'resolved' && params.chapterId) {
       item.resolved_in_chapter = params.chapterId;
       item.resolved_in_volume = params.currentVolumeId || null;
     }
-
-    try {
-      console.log('[usePromiseActions] Updating status:', { project: getProject(), item, newStatus });
-      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to update promise status:', err);
-    }
-    syncLocalBackup();
-    emit('change');
+    await persist(item, '[usePromiseActions] Updating status');
   };
 
   const startEditNote = (item: RichPlotPromise) => {
@@ -202,14 +147,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const saveNote = async (item: RichPlotPromise) => {
     item.note = noteDraft.value.trim() || null;
     editingNoteId.value = null;
-    try {
-      console.log('[usePromiseActions] Saving note:', { project: getProject(), item });
-      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to save promise note:', err);
-    }
-    syncLocalBackup();
-    emit('change');
+    await persist(item, '[usePromiseActions] Saving note');
   };
 
   const cancelEditNote = () => {
@@ -220,17 +158,19 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
     try {
-      console.log('[usePromiseActions] Deleting plot promise:', item.id);
       await api.deletePlotPromise(item.id);
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to delete plot promise:', err);
-    }
+    } catch { /* ignore */ }
     promises.value = promises.value.filter((p) => p.id !== item.id);
     syncLocalBackup();
     emit('change');
   };
 
-  const locateSource = (item: { chapter_id: string; paragraph_index: number; quote: string; block_id?: string | null }) => {
+  const locateSource = (item: {
+    chapter_id: string;
+    paragraph_index: number;
+    quote: string;
+    block_id?: string | null;
+  }) => {
     emit('locate', {
       chapterId: item.chapter_id,
       paragraphIndex: item.paragraph_index,
@@ -241,17 +181,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
 
   const promptAttachMilestone = (item: RichPlotPromise, stage: 'progression' | 'resolution') => {
     if (!item.id) return;
-    const sel = window.getSelection()?.toString().trim();
-    const quote = sel || prompt(stage === 'progression' ? 'Введите цитату/текст упоминания:' : 'Введите цитату кульминации/выстрела:');
-    if (!quote) return;
-
-    void addMilestone({
-      promiseId: item.id,
-      stage,
-      quote,
-      paragraph_index: 1,
-      chapterId: params.chapterId || undefined
-    });
+    const quote = window.getSelection()?.toString().trim() || 
+      prompt(stage === 'progression' ? 'Введите цитату:' : 'Введите развязку:');
+    if (quote) {
+      void addMilestone({
+        promiseId: item.id,
+        stage,
+        quote,
+        paragraph_index: 1,
+        chapterId: params.chapterId || undefined
+      });
+    }
   };
 
   const updatePromise = async (updatedItem: RichPlotPromise) => {
@@ -260,15 +200,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     if (index !== -1) {
       promises.value[index] = { ...updatedItem };
     }
-    try {
-      console.log('[usePromiseActions] Updating promise/scene metadata:', { project: getProject(), updatedItem });
-      await api.savePlotPromise(getProject(), updatedItem as unknown as PlotPromise);
-      console.log('[usePromiseActions] Promise/scene metadata successfully updated on backend');
-    } catch (err) {
-      console.error('[usePromiseActions ERROR] Failed to update promise/scene metadata on backend:', err);
-    }
-    syncLocalBackup();
-    emit('change');
+    await persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
   };
 
   const addNewScene = () => {

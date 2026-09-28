@@ -115,7 +115,7 @@ export function usePromiseCardMeta(
       }
 
       projectTimelineEvents.value = eventsList;
-      dateTime.syncInitialTimelineDate(props.item.timeline_event_id, eventsList);
+      dateTime.syncInitialTimelineDate(props.item, props.item.timeline_event_id, eventsList);
     } catch {
       // ignore
     }
@@ -132,6 +132,10 @@ export function usePromiseCardMeta(
   watch(() => props.item.arc_phase, (val) => {
     localArcPhase.value = val ?? 'setup';
   });
+
+  watch(() => [props.item.date_fields, props.item.m_abs, props.item.calendar_id], () => {
+    dateTime.syncInitialTimelineDate(props.item, props.item.timeline_event_id, projectTimelineEvents.value);
+  }, { deep: true });
 
   watch(() => props.project, loadProjectEntities);
   onMounted(loadProjectEntities);
@@ -182,6 +186,44 @@ export function usePromiseCardMeta(
     emit('change');
   };
 
+  const handleDateFieldsChange = () => {
+    dateTime.onDateFieldsChange();
+    const model = dateTime.universalDateModel.value;
+    const cal = dateTime.activeCalendar.value;
+    const updated: RichPlotPromise = {
+      ...props.item,
+      m_abs: model?.absolute_minute ?? null,
+      calendar_id: cal?.id || model?.calendar_id || null,
+      date_fields: model?.original_input ? {
+        era_index: model.original_input.era_index,
+        year: model.original_input.year,
+        month: model.original_input.month,
+        day: model.original_input.day,
+        hour: model.original_input.hour,
+        minute: model.original_input.minute
+      } : {
+        era_index: dateTime.currentEraIdx.value,
+        year: dateTime.currentYear.value,
+        month: dateTime.currentMonthIdx.value,
+        day: dateTime.currentDay.value,
+        hour: dateTime.currentHour.value,
+        minute: dateTime.currentMinute.value
+      }
+    };
+    emit('update:item', updated);
+    emit('change');
+  };
+
+  const handleCalendarChange = (calId: string) => {
+    dateTime.setCalendar(calId);
+    handleDateFieldsChange();
+  };
+
+  const handleUniversalDateChange = (val: unknown) => {
+    dateTime.onUniversalDateChange(val);
+    handleDateFieldsChange();
+  };
+
   return {
     isEditingMeta,
     locationDraft,
@@ -220,8 +262,9 @@ export function usePromiseCardMeta(
     hourWheelOptions: dateTime.hourWheelOptions,
     minuteWheelOptions: dateTime.minuteWheelOptions,
     diegeticInfo: dateTime.diegeticInfo,
-    onUniversalDateChange: dateTime.onUniversalDateChange,
-    onDateFieldsChange: dateTime.onDateFieldsChange,
+    onUniversalDateChange: handleUniversalDateChange,
+    onDateFieldsChange: handleDateFieldsChange,
+    onCalendarChange: handleCalendarChange,
     toggleDatePicker: dateTime.toggleDatePicker,
     saveLocation,
     updateKind,

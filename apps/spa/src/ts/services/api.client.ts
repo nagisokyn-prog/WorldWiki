@@ -468,6 +468,10 @@ export async function plantPlotPromise(promise: PlotPromise): Promise<void> {
     return await invoke('plant_plot_promise', { promise });
 }
 
+export async function savePlotPromise(project: string, data: PlotPromise): Promise<PlotPromise> {
+    return await invoke('save_plot_promise', { project, data });
+}
+
 export async function completePlan(planId: string): Promise<void> {
     return await invoke('complete_plan', { planId });
 }
@@ -615,10 +619,6 @@ export async function getPlotPromises(project: string): Promise<PlotPromise[]> {
 
 export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
     return await invoke('get_plot_promise', { id });
-}
-
-export async function savePlotPromise(project: string, data: PlotPromise): Promise<PlotPromise> {
-    return await invoke('save_plot_promise', { project, data });
 }
 
 export async function deletePlotPromise(id: string): Promise<void> {

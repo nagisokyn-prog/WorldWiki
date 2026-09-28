@@ -78,7 +78,7 @@ export function usePromiseParticipants(
     const targetName = getParticipantDisplayName(nameOrId).toLowerCase();
     const cleanTargetId = String(nameOrId).trim().toLowerCase();
     const current = (props.item.participant_ids || []).filter(
-      p => getParticipantDisplayName(p).toLowerCase() !== targetName && String(p).toLowerCase() !== cleanTargetId
+      (p: string) => getParticipantDisplayName(p).toLowerCase() !== targetName && p.toLowerCase() !== cleanTargetId
     );
     const updated = {
       ...props.item,

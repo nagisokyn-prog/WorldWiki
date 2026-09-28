@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { useTimelineInspector } from './useTimelineInspector';
 import * as apiClient from '@/services/api.client';
 
@@ -8,6 +9,7 @@ vi.mock('@/services/api.client', () => ({
 
 describe('useTimelineInspector Composable', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.clearAllMocks();
   });
 

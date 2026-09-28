@@ -1,5 +1,9 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { getTimelineInspectorData } from '@/services/api.client';
+import { CalendarMath } from '@/services/Calendars/calendar.math';
+import { CalendarFormat } from '@/services/Calendars/calendar.format';
+import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
+import { useCalendarStore } from '@/stores/calendar.store';
 import type {
   TimelineInspectorData,
   TimelineInspectorFilterState,
@@ -10,6 +14,8 @@ import type {
 } from './TimelineInspector.model';
 
 export function useTimelineInspector(projectId: string) {
+  const calendarStore = useCalendarStore();
+  const calendarData = ref<CalendarData | null>(null);
   const data = ref<TimelineInspectorData | null>(null);
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
@@ -27,12 +33,15 @@ export function useTimelineInspector(projectId: string) {
     isLoading.value = true;
     error.value = null;
     try {
-      console.log('[useTimelineInspector] Loading timeline inspector data for project:', projectId, 'limit:', filters.value.readerHorizonChapterOrder);
+      const cals = await calendarStore.getCalendars(projectId);
+      if (cals && cals.length > 0) {
+        const master = cals.find((c) => c.is_master) || cals.find((c) => c.is_default) || cals[0];
+        calendarData.value = (master?.data as CalendarData) || null;
+      }
       const raw = await getTimelineInspectorData(
         projectId,
         filters.value.readerHorizonChapterOrder
       );
-      console.log('[useTimelineInspector] Received inspector data:', raw);
       data.value = (raw as TimelineInspectorData) || { events: [], chapters: [] };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -78,6 +87,44 @@ export function useTimelineInspector(projectId: string) {
       .sort((a, b) => a.m_abs - b.m_abs);
   });
 
+  const getEventId = (ev: InspectorEvent): string => {
+    return ev.event_id || ev.id || '';
+  };
+
+  const formattedEvents = computed(() => {
+    const cal = calendarData.value;
+
+    return filteredEvents.value.map((ev) => {
+      const evId = getEventId(ev);
+      let formattedDate = `M_abs: ${ev.m_abs}`;
+      if (cal && ev.m_abs !== undefined && ev.m_abs !== null) {
+        try {
+          const dateInput = CalendarMath.getDateFromAbsolute(ev.m_abs, cal);
+          const calDate: CalendarDate = {
+            absolute_minute: ev.m_abs,
+            calendar_id: (cal as unknown as { id?: string; _id?: string }).id || (cal as unknown as { id?: string; _id?: string })._id || 'default',
+            original_input: dateInput,
+          };
+          formattedDate = CalendarFormat.formatDate(cal, calDate) || `M_abs: ${ev.m_abs}`;
+        } catch {
+          formattedDate = `M_abs: ${ev.m_abs}`;
+        }
+      }
+
+      const cleanParticipants = (ev.participants || []).filter(
+        (p) => p && p.name && p.name.trim().length > 0
+      );
+
+      return {
+        ...ev,
+        id: evId,
+        formattedDate,
+        cleanParticipants,
+        isScene: evId.startsWith('plot_promises:') || !evId.startsWith('timeline_events:'),
+      };
+    });
+  });
+
   const connectionLines = computed<VisualizedConnectionLine[]>(() => {
     const lines: VisualizedConnectionLine[] = [];
     const chs = filteredChapters.value;
@@ -85,10 +132,9 @@ export function useTimelineInspector(projectId: string) {
 
     if (!chs.length || !evs.length) return [];
 
-    // Calculate layout coordinates
-    const chapterSpacing = 160;
-    const eventSpacing = 180;
-    const startX = 80;
+    const chapterSpacing = 170;
+    const eventSpacing = 190;
+    const startX = 100;
 
     const chapterPositions = new Map<string, number>();
     chs.forEach((ch, idx) => {
@@ -97,36 +143,48 @@ export function useTimelineInspector(projectId: string) {
 
     const eventPositions = new Map<string, number>();
     evs.forEach((ev, idx) => {
-      eventPositions.set(ev.id, startX + idx * eventSpacing);
+      const evId = getEventId(ev) || `ev-${idx}`;
+      eventPositions.set(evId, startX + idx * eventSpacing);
     });
 
     evs.forEach((ev) => {
+      const evId = getEventId(ev);
       ev.reveals.forEach((r: InspectorReveal) => {
-        const x1 = chapterPositions.get(r.chapter_id);
-        const x2 = eventPositions.get(ev.id);
+        const rChId = r.chapter_id.replace(/^chapters:/, '');
+        const matchedChId = Array.from(chapterPositions.keys()).find(
+          (k) => k.replace(/^chapters:/, '') === rChId
+        );
+        const x1 = matchedChId ? chapterPositions.get(matchedChId) : undefined;
+        const x2 = eventPositions.get(evId);
 
         if (x1 !== undefined && x2 !== undefined) {
           const isFlashback = r.kind === 'flashback' || x1 < x2;
           lines.push({
-            id: `line-${ev.id}-${r.chapter_id}`,
-            eventId: ev.id,
+            id: `line-${evId}-${r.chapter_id}`,
+            eventId: evId,
             chapterId: r.chapter_id,
             eventTitle: ev.title,
             chapterTitle: r.chapter_title,
-            chapterOrder: r.chapter_order,
+            chapterOrder: r.chapter_order ?? r.chapter_sort_order ?? 0,
             m_abs: ev.m_abs,
             kind: r.kind,
             isFlashback,
             x1,
-            y1: 50,  // top narrative axis
+            y1: 105,
             x2,
-            y2: 250, // bottom diegetic axis
+            y2: 365,
           });
         }
       });
     });
 
     return lines;
+  });
+
+  const canvasMinWidth = computed(() => {
+    const chWidth = 100 + filteredChapters.value.length * 170 + 150;
+    const evWidth = 100 + filteredEvents.value.length * 190 + 150;
+    return `${Math.max(1200, Math.max(chWidth, evWidth))}px`;
   });
 
   watch(() => [projectId, filters.value.readerHorizonChapterOrder], loadInspectorData);
@@ -136,7 +194,9 @@ export function useTimelineInspector(projectId: string) {
     filters,
     filteredChapters,
     filteredEvents,
+    formattedEvents,
     connectionLines,
+    canvasMinWidth,
     isLoading,
     error,
     refresh: loadInspectorData,

@@ -1,6 +1,6 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
@@ -16,12 +16,16 @@ pub enum PromiseStatus {
 #[serde(rename_all = "snake_case")]
 pub enum PromiseKind {
     #[default]
-    Gun,           // Чеховское ружье
+    Gun, // Чеховское ружье
     Foreshadowing, // Предзнаменование
     Mystery,       // Тайна / Загадка
     Question,      // Сюжетный вопрос
     Scene,         // Сцена / Эпизод (блок текста)
     Conflict,      // Драматургический конфликт
+}
+
+fn default_datetime() -> DateTime<Utc> {
+    DateTime::UNIX_EPOCH
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -48,7 +52,12 @@ pub struct PlotPromise {
     pub arc_phase: Option<String>,
     #[serde(default)]
     pub arcs: Option<Vec<Value>>,
+    pub m_abs: Option<i64>,
+    pub calendar_id: Option<String>,
+    pub date_fields: Option<Value>,
+    #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "default_datetime")]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -79,6 +88,9 @@ impl PlotPromise {
             arc_id: None,
             arc_phase: None,
             arcs: None,
+            m_abs: None,
+            calendar_id: None,
+            date_fields: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

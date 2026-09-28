@@ -282,7 +282,7 @@
         </div>
       </div>
       <div v-show="activePanelTab !== ''" class="panel-content-new">
-        <div v-if="activePanelTab === 'console'">
+        <div v-if="activePanelTab === 'console'" class="panel-console-tab">
           <div
             v-for="log in consoleLogs.slice(0, 100)"
             :key="log.id"
@@ -293,19 +293,19 @@
             <span>{{ log.text }}</span>
           </div>
         </div>
-        <div v-else-if="activePanelTab === 'matrix'" class="h-full">
+        <div v-else-if="activePanelTab === 'matrix'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <cross-reference-matrix-vue :project="projectName || 'default'" />
         </div>
-        <div v-else-if="activePanelTab === 'consistency'" class="h-full">
+        <div v-else-if="activePanelTab === 'consistency'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <consistency-checker-vue :project="projectName || 'default'" />
         </div>
-        <div v-else-if="activePanelTab === 'graph-web'" class="h-full">
+        <div v-else-if="activePanelTab === 'graph-web'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <graph-web-view-vue :project-id="projectName || 'default'" />
         </div>
-        <div v-else-if="activePanelTab === 'timeline-inspector'" class="h-full">
+        <div v-else-if="activePanelTab === 'timeline-inspector'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <timeline-inspector-vue :project-id="projectName || 'default'" />
         </div>
-        <div v-else-if="activePanelTab === 'arc-board'" class="h-full">
+        <div v-else-if="activePanelTab === 'arc-board'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <arc-board-vue :project-id="projectName || 'default'" />
         </div>
       </div>

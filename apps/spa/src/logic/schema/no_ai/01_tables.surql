@@ -257,6 +257,9 @@ DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<t
 DEFINE FIELD OVERWRITE arc_id              ON plot_promises TYPE option<record<story_arcs> | string | null>;
 DEFINE FIELD OVERWRITE arc_phase           ON plot_promises TYPE option<string | null>
   ASSERT $value IN [NONE, NULL, 'setup', 'escalation', 'climax', 'resolution'];
-DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE option<array<object> | null> DEFAULT [];
+DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE m_abs               ON plot_promises TYPE option<int | null>;
+DEFINE FIELD OVERWRITE calendar_id         ON plot_promises TYPE option<record<calendars> | string | null>;
+DEFINE FIELD OVERWRITE date_fields         ON plot_promises TYPE option<object | null> FLEXIBLE;
 DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();

@@ -60,9 +60,13 @@ export function useCrossReferenceMatrix(project: string) {
         rawApps.forEach(app => {
           if (!app.chapter_id) return;
           const cleanId = app.chapter_id.replace(/^chapters:/, '');
-          appearancesMap.set(app.chapter_id, app);
-          appearancesMap.set(cleanId, app);
-          appearancesMap.set(`chapters:${cleanId}`, app);
+          const existing = appearancesMap.get(app.chapter_id);
+          const isNewScene = app.kind === 'scene' || app.source === 'scene' || app.source === 'manual';
+          if (!existing || isNewScene) {
+            appearancesMap.set(app.chapter_id, app);
+            appearancesMap.set(cleanId, app);
+            appearancesMap.set(`chapters:${cleanId}`, app);
+          }
         });
 
         chs.forEach((ch, idx) => {
@@ -121,6 +125,14 @@ export function useCrossReferenceMatrix(project: string) {
     }
   });
 
+  const formatWordCount = (count?: number | null): string => {
+    if (!count) return '0 сл.';
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k сл.`;
+    }
+    return `${count} сл.`;
+  };
+
   return {
     filters,
     matrixData,
@@ -130,5 +142,6 @@ export function useCrossReferenceMatrix(project: string) {
     isLoading,
     error,
     refresh,
+    formatWordCount,
   };
 }

@@ -252,6 +252,9 @@ surreal_entity! {
         pub arc_id: Option<String>,
         pub arc_phase: Option<String>,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub arcs: Option<serde_json::Value>,
+        pub m_abs: Option<i64>,
+        pub calendar_id: Option<String>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub date_fields: Option<serde_json::Value>,
     }
 }
 

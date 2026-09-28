@@ -1,24 +1,25 @@
 <template>
-  <div class="arcboard-container flex flex-col h-full w-full overflow-hidden bg-surface text-main">
+  <div class="arcboard-container">
     <!-- Toolbar -->
-    <div class="arcboard-toolbar flex flex-wrap items-center justify-between gap-3 p-4 border-b border-subtle bg-surface">
-      <div class="flex items-center gap-3">
-        <h2 class="text-base font-bold m-0 flex items-center gap-2">
-          <span>📋</span> Канбан Сюжетных Арок
+    <div class="arcboard-toolbar">
+      <div class="arcboard-toolbar-title">
+        <h2 class="arcboard-title">
+          <span class="arcboard-icon">📋</span>
+          <span>Канбан Сюжетных Арок</span>
         </h2>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="arcboard-toolbar-controls">
         <input
           v-model="filters.searchQuery"
           type="text"
           placeholder="Поиск арок..."
-          class="text-xs px-3 py-1.5 rounded border border-subtle bg-input text-main"
+          class="arcboard-search-input"
         />
 
         <select
           v-model="filters.selectedType"
-          class="text-xs px-2 py-1.5 rounded border border-subtle bg-input text-main"
+          class="arcboard-select"
         >
           <option value="all">Все типы</option>
           <option value="character">Арка персонажа</option>
@@ -28,14 +29,14 @@
         </select>
 
         <button
-          class="btn-new-arc text-xs px-3 py-1.5 rounded font-bold bg-accent text-surface cursor-pointer"
+          class="btn-new-arc"
           @click="showCreateModal = true"
         >
           ➕ Новая Арка
         </button>
 
         <button
-          class="btn-refresh text-xs px-3 py-1.5 rounded border border-subtle bg-surface-hover hover:bg-surface text-main cursor-pointer"
+          class="btn-refresh"
           :disabled="isLoading"
           @click="refresh"
         >
@@ -45,22 +46,28 @@
     </div>
 
     <!-- Kanban Columns Grid -->
-    <div class="arcboard-grid flex-1 overflow-x-auto p-6 flex gap-6">
+    <div class="arcboard-grid">
       <div
         v-for="col in columns"
         :key="col.status"
-        class="kanban-col flex flex-col flex-1 min-w-[280px] max-w-[340px] rounded-lg border border-subtle bg-surface-subtle overflow-hidden"
+        class="kanban-column"
+        :class="'kanban-col-' + col.status"
       >
         <!-- Column Header -->
-        <div class="col-header p-3 border-b border-subtle flex items-center justify-between bg-surface font-bold text-xs">
-          <span>{{ col.title }}</span>
-          <span class="badge text-2xs px-2 py-0.5 rounded" :class="'badge-' + col.badgeType">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title">{{ col.title }}</span>
+          <span class="kanban-col-count" :class="'badge-' + col.badgeType">
             {{ col.arcs.length }}
           </span>
         </div>
 
         <!-- Cards List -->
-        <div class="col-body flex-1 overflow-y-auto p-3 space-y-3">
+        <div class="kanban-col-body">
+          <div v-if="col.arcs.length === 0" class="kanban-empty-col">
+            <span class="empty-col-icon">📂</span>
+            <span>Нет арок</span>
+          </div>
+
           <ArcCard
             v-for="arc in col.arcs"
             :key="arc.id || arc.title"

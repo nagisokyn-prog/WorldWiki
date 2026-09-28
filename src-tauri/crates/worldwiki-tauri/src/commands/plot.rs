@@ -18,6 +18,28 @@ pub async fn plant_plot_promise(
 }
 
 #[tauri::command]
+pub async fn save_plot_promise(
+    project: String,
+    data: PlotPromise,
+    state: State<'_, AppState>,
+) -> Result<PlotPromise, IpcError> {
+    let mut promise = data;
+    // Normalize project_id to ensure it satisfies SurrealDB SCHEMAFULL requirement (record<projects>)
+    let project_normalized = if project.starts_with("projects:") {
+        project
+    } else {
+        format!("projects:{}", project)
+    };
+    promise.project_id = project_normalized;
+    state
+        .services
+        .plot
+        .save_promise(&promise)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
 pub async fn complete_plan(
     state: State<'_, AppState>,
     plan_id: String,

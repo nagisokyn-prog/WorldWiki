@@ -4,8 +4,9 @@ import { useChapterStore } from '../../../stores/chapter.store';
 import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
 import { useFloatingEntities } from './hooks/useFloatingEntities';
+import { useChapterParticipants } from './hooks/useChapterParticipants';
+import { useChapterPromisesBridge } from './hooks/useChapterPromisesBridge';
 import { useTimelineStore } from '../../../stores/timeline.store';
-import { openCharacterJourneyWindow } from '../../../utils/windowManager';
 import type { ExportPayload } from '../Export/useExportModal';
 import type { Chapter } from '../../../types/generated/Chapter';
 import type ChapterRightSidebar from './components/ChapterRightSidebar.vue';
@@ -32,15 +33,15 @@ export function useChaptersMain(
   emit: (event: string, ...args: unknown[]) => void
 ) {
   const store = useChapterStore();
-  const { 
-    loading, chapters, hierarchy, currentChapterId, currentChapter, 
+  const {
+    loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving,
-    currentChapterNode, currentVolume
+    currentChapterNode, currentVolume,
   } = storeToRefs(store);
 
   const {
-    loadChapters, saveChapter, openChapter, 
-    createNewChapter, onRenameChapter, deleteChapter
+    loadChapters, saveChapter, openChapter,
+    createNewChapter, onRenameChapter, deleteChapter,
   } = store;
 
   const historyHook = useChapterHistory(props.project, currentChapterId, currentChapter);
@@ -55,7 +56,6 @@ export function useChaptersMain(
   const isTimelineOpen = ref(true);
   const isParticipantsOpen = ref(true);
 
-  
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const handleGlobalChapterRename = (e: Event) => {
@@ -75,6 +75,38 @@ export function useChaptersMain(
     loadChapters(props.project);
   };
 
+  const onTreeNodeSelect = (nodeData: ActiveTreeNode) => {
+    localActiveTreeNode.value = nodeData;
+  };
+
+  const openChapterFromTree = async (ch: ChapterTreeNode) => {
+    localActiveTreeNode.value = { type: 'chapter', node: ch };
+    emit('open-chapter-as-tab', ch);
+  };
+
+  const markUnsaved = () => {
+    hasUnsavedChanges.value = true;
+    syncAutoParticipants();
+    emit('chapter-unsaved');
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveChapter(props.project, emit), 2000);
+  };
+
+  const { syncAutoParticipants, handleAddParticipant } = useChapterParticipants(
+    currentChapter,
+    markUnsaved
+  );
+
+  const promisesBridge = useChapterPromisesBridge({
+    project: props.project,
+    currentChapter,
+    chapters,
+    hierarchy,
+    editorCoreRef,
+    rightSidebarRef,
+    openChapterFromTree,
+  });
+
   const onAddParticipantEvent = (e: Event) => {
     const detail = (e as CustomEvent<{ type: string; id: string; name?: string }>).detail;
     if (detail) handleAddParticipant(detail);
@@ -87,7 +119,7 @@ export function useChaptersMain(
     if (props.controlledChapterId) {
       await openChapter(props.project, props.controlledChapterId);
     }
-    
+
     document.addEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
     document.addEventListener('ww:hierarchy-changed', reloadHierarchy as EventListener);
     document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as EventListener);
@@ -120,78 +152,21 @@ export function useChaptersMain(
     }
   }, { immediate: true });
 
-  const syncAutoParticipants = () => {
-    if (!currentChapter.value) return;
-    const timelineStore = useTimelineStore();
-    const autoParts = timelineStore.parseParticipants(currentChapter.value.content || '');
-    const currentList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
-    
-    const manualParts = currentList.filter((p: { autoParsed?: boolean; [key: string]: unknown }) => typeof p === 'object' && p && !p.autoParsed);
-    const newAutoParts = autoParts.map(p => ({ ...p, autoParsed: true }));
-    
-    const combined = [...manualParts];
-    newAutoParts.forEach((ap: { id?: string; type?: string; name?: string; autoParsed?: boolean }) => {
-      if (!combined.some((p: { id?: string; type?: string; name?: string }) => (p.id && p.id === ap.id && p.type === ap.type) || (p.name && p.name === ap.name))) {
-        combined.push(ap);
-      }
-    });
-    const prevIds = ((currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string } | string>)
-      .map(p => typeof p === 'string' ? p : p.id)
-      .filter(Boolean)
-      .join('|');
-    const newIds = combined.map(p => p.id).filter(Boolean).join('|');
-
-    if (prevIds !== newIds) {
-      currentChapter.value.participants = combined as unknown as string[];
-    }
-  };
-
-  const handleAddParticipant = (p: { type: string; id: string; name?: string }) => {
-    if (!currentChapter.value) return;
-    const currentList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
-    const rawId = p.id.includes(':') ? p.id.split(':').slice(1).join(':') : p.id;
-    if (!currentList.some(item => item.id === p.id || (rawId && item.id && item.id.includes(rawId)))) {
-      currentChapter.value.participants = [...currentList, { type: p.type, id: p.id, name: p.name || p.id, autoParsed: true }] as unknown as string[];
-      markUnsaved();
-    }
-  };
-
-  watch(() => currentChapter.value?.content, () => {
-    syncAutoParticipants();
-  }, { immediate: true });
-
-  const markUnsaved = () => {
-    hasUnsavedChanges.value = true;
-    syncAutoParticipants();
-    emit('chapter-unsaved');
-    if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => saveChapter(props.project, emit), 2000);
-  };
-
-  const onTreeNodeSelect = (nodeData: ActiveTreeNode) => {
-    localActiveTreeNode.value = nodeData;
-  };
-
-  const openChapterFromTree = async (ch: ChapterTreeNode) => {
-    localActiveTreeNode.value = { type: 'chapter', node: ch };
-    emit('open-chapter-as-tab', ch);
-  };
-
   const createChapterIn = async ({ volumeId }: { volumeId?: string } = {}) => {
     await createNewChapter(props.project, volumeId);
     await chapterTreeRef.value?.load();
   };
-  
+
   const handleRenameChapter = async (chapter: Chapter | ChapterTreeNode, newTitle: string) => {
     await onRenameChapter(props.project, chapter as Chapter, newTitle);
     await chapterTreeRef.value?.load();
   };
-  
+
   const handleDeleteChapter = (original: { id?: string | null }, multi: boolean) => {
     if (multi || !original.id) return;
     deleteChapter(props.project, original.id).then(() => {
-        chapterTreeRef.value?.load();
-        localActiveTreeNode.value = undefined;
+      chapterTreeRef.value?.load();
+      localActiveTreeNode.value = undefined;
     });
   };
 
@@ -207,110 +182,17 @@ export function useChaptersMain(
     emit('scroll-change', scroll);
   };
 
-  const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
-    rightSidebarRef.value?.addPromise(payload);
-  };
-
-  const handleLinkMilestone = (payload: {
-    promiseId: string;
-    stage: 'progression' | 'resolution';
-    quote: string;
-    paragraph_index: number;
-    block_id?: string | null;
-  }) => {
-    rightSidebarRef.value?.addMilestone({
-      ...payload,
-      chapterId: currentChapter.value?.id || undefined
-    });
-  };
-
-  const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }) => {
-    const cleanTarget = (payload.chapterId || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-    const currentClean = (currentChapter.value?.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-
-    if (currentClean && cleanTarget && cleanTarget !== currentClean) {
-      const allList = chapters.value.length > 0 ? chapters.value : (hierarchy.value?.chapters || []);
-      const targetChapter = allList.find((c: { id?: string | null }) => {
-        const cClean = (c.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-        return cClean === cleanTarget;
-      });
-
-      if (targetChapter) {
-        const targetId = targetChapter.id 
-          ? (String(targetChapter.id).startsWith('chapters:') ? String(targetChapter.id) : `chapters:${String(targetChapter.id)}`) 
-          : `chapters:${cleanTarget}`;
-
-        const chNode = {
-          ...targetChapter,
-          id: targetId,
-          title: targetChapter.title || 'Глава'
-        } as unknown as ChapterTreeNode;
-
-        void openChapterFromTree(chNode);
-        setTimeout(() => {
-          document.dispatchEvent(new CustomEvent('ww:locate-promise', {
-            detail: payload
-          }));
-        }, 450);
-        return;
-      }
-    }
-
-    editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote, payload.blockId);
-  };
-
-  const isJourneyOpen = ref(false);
-  const openJourney = async () => {
-    const opened = await openCharacterJourneyWindow(props.project);
-    if (!opened) {
-      isJourneyOpen.value = true;
-    }
-  };
-  const closeJourney = () => { isJourneyOpen.value = false; };
-  const handleJourneySelectScene = (item: { chapter_id?: string; paragraph_index?: number | null; title?: string; block_id?: string | null }) => {
-    if (item.chapter_id) {
-      handleLocatePromise({
-        chapterId: item.chapter_id,
-        paragraphIndex: item.paragraph_index ?? 0,
-        quote: item.title || '',
-        blockId: item.block_id || undefined,
-      });
-    }
-  };
-
-  onMounted(() => {
-    if (typeof window !== 'undefined' && window.__TAURI__) {
-      import('@tauri-apps/api/event').then(({ listen }) => {
-        listen<{ chapterId?: string; paragraphIndex?: number; blockId?: string; item?: { chapter_id?: string; paragraph_index?: number; block_id?: string; title?: string } }>('ww-journey-select-scene', (event) => {
-          const payload = event.payload;
-          const chapterId = payload.chapterId || payload.item?.chapter_id;
-          if (chapterId) {
-            handleLocatePromise({
-              chapterId,
-              paragraphIndex: payload.paragraphIndex ?? payload.item?.paragraph_index ?? 0,
-              quote: payload.item?.title || '',
-              blockId: payload.blockId || payload.item?.block_id || undefined,
-            });
-          }
-        });
-      }).catch((e) => console.warn('Tauri event listen error in useChaptersMain:', e));
-    }
-  });
-
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving, localActiveTreeNode, chapterTreeRef,
     currentChapterNode, currentVolume,
     editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
-    isJourneyOpen, openJourney, closeJourney, handleJourneySelectScene,
+    ...promisesBridge,
     ...historyHook,
     ...layoutHook,
     ...floatingHook,
     triggerSave, markUnsaved, onTreeNodeSelect, openChapterFromTree,
     createChapterIn, handleRenameChapter, handleDeleteChapter, handleExport,
-    handleScrollChange, handleAddParticipant, handleCreatePromise,
-    handleLinkMilestone, handleLocatePromise
+    handleScrollChange, handleAddParticipant,
   };
 }
-
-

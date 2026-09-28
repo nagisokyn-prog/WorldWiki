@@ -83,7 +83,7 @@
 
 .journey-tab-btn.active {
   background-color: var(--accent);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .journey-filter-select {
@@ -357,22 +357,22 @@
 
 .badge-accent {
   background-color: var(--accent);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-success {
   background-color: var(--success);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-warning {
   background-color: var(--warning);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-danger {
   background-color: var(--error);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-muted {
@@ -401,7 +401,7 @@
   font-weight: 600;
   padding: 2px 6px;
   border-radius: var(--radius-xs);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-arc-chip-mini {
@@ -409,7 +409,7 @@
   font-weight: 600;
   padding: 1px 4px;
   border-radius: var(--radius-xs);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
   opacity: 0.9;
 }
 

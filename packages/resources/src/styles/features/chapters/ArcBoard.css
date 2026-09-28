@@ -89,7 +89,7 @@
   padding: 5px 12px;
   border-radius: var(--radius-sm);
   background-color: var(--accent);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
   border: 1px solid var(--accent);
   cursor: pointer;
   transition: opacity var(--anim-speed-fast, 0.15s) ease;
@@ -175,17 +175,17 @@
 
 .badge-accent {
   background-color: var(--accent);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-success {
   background-color: var(--success);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .badge-danger {
   background-color: var(--error);
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
 }
 
 .kanban-col-body {
@@ -348,7 +348,7 @@
 }
 
 .phase-step-active {
-  color: var(--accent-text, #ffffff);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
   font-weight: 700;
 }
 

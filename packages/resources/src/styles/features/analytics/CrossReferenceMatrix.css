@@ -347,7 +347,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2, 8px);
+}
+
+.entity-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 6px);
+  min-width: 0;
 }
 
 .entity-name {
@@ -356,6 +363,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.entity-role-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+  text-transform: lowercase;
 }
 
 .matrix-gap-badge {

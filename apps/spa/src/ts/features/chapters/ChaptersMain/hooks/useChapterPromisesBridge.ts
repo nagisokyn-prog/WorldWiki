@@ -1,4 +1,5 @@
-import { ref, onMounted, type Ref } from 'vue';
+import { ref, onMounted, onUnmounted, type Ref } from 'vue';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { openCharacterJourneyWindow } from '../../../../utils/windowManager';
 import type { ChapterWithHierarchy, ChapterHierarchy } from '../../../../stores/chapter.store';
 import type { ChapterTreeNode } from '../useChaptersMain';
@@ -116,10 +117,12 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     }
   };
 
-  onMounted(() => {
+  let unlistenFn: UnlistenFn | null = null;
+
+  onMounted(async () => {
     if (typeof window !== 'undefined' && window.__TAURI__) {
-      import('@tauri-apps/api/event').then(({ listen }) => {
-        listen<{
+      try {
+        unlistenFn = await listen<{
           chapterId?: string;
           paragraphIndex?: number;
           blockId?: string;
@@ -136,7 +139,16 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
             });
           }
         });
-      }).catch((e) => console.warn('Tauri event listen error in useChapterPromisesBridge:', e));
+      } catch (err) {
+        console.warn('[useChapterPromisesBridge] Failed to initialize Tauri event listener:', err);
+      }
+    }
+  });
+
+  onUnmounted(() => {
+    if (unlistenFn) {
+      unlistenFn();
+      unlistenFn = null;
     }
   });
 

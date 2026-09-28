@@ -2,6 +2,15 @@ import { ref, computed, onMounted } from 'vue';
 import { useAnalyticsStore, type CrossReferenceMatrixData, type MatrixChapter, type MatrixEntity } from '@/stores/analytics.store';
 import type { CrossReferenceFilterState, EntityPresenceRow, CellStatusInfo, AppearanceStatus } from './CrossReferenceMatrix.model';
 
+export function getRoleWeight(role?: string | null): number {
+  if (!role) return 1;
+  const r = role.toLowerCase().trim();
+  if (r.includes('главн') || r.includes('main') || r.includes('protagonist')) return 4;
+  if (r.includes('антагон') || r.includes('antagonist') || r.includes('злодей')) return 3;
+  if (r.includes('второстепен') || r.includes('secondary')) return 2;
+  return 1;
+}
+
 export function useCrossReferenceMatrix(project: string) {
   const store = useAnalyticsStore();
 
@@ -38,10 +47,11 @@ export function useCrossReferenceMatrix(project: string) {
 
     return matrixData.value.entities
       .filter((entity: MatrixEntity) => {
+        const isDeceased = Boolean(entity.is_deceased || entity.status_category === 'Мёртв');
         if (filters.value.selectedEntityType !== 'all' && entity.entity_type !== filters.value.selectedEntityType) {
           return false;
         }
-        if (filters.value.showDeceasedOnly && !entity.is_deceased) {
+        if (filters.value.showDeceasedOnly && !isDeceased) {
           return false;
         }
         if (q && !entity.name.toLowerCase().includes(q)) {
@@ -54,6 +64,7 @@ export function useCrossReferenceMatrix(project: string) {
         let total = 0;
         let lastSeenIdx = -1;
         let maxGap = 0;
+        const isDeceased = Boolean(entity.is_deceased || entity.status_category === 'Мёртв');
 
         const rawApps = entity.appearances_by_chapter || entity.appearances || [];
         const appearancesMap = new Map<string, { kind?: string; source?: string | null; role?: string | null }>();
@@ -66,6 +77,16 @@ export function useCrossReferenceMatrix(project: string) {
             appearancesMap.set(app.chapter_id, app);
             appearancesMap.set(cleanId, app);
             appearancesMap.set(`chapters:${cleanId}`, app);
+          }
+        });
+
+        // Determine the index of the last active appearance or death point
+        let lastActiveIdx = -1;
+        chs.forEach((ch, idx) => {
+          const cleanChId = ch.id.replace(/^chapters:/, '');
+          const app = appearancesMap.get(ch.id) || appearancesMap.get(cleanChId) || appearancesMap.get(`chapters:${cleanChId}`);
+          if (app && (app.kind === 'scene' || app.kind === 'mention' || app.source === 'scene' || app.source === 'mention' || app.source === 'manual')) {
+            lastActiveIdx = idx;
           }
         });
 
@@ -88,10 +109,10 @@ export function useCrossReferenceMatrix(project: string) {
               if (gap > maxGap) maxGap = gap;
             }
             lastSeenIdx = idx;
-          } else if (app?.kind === 'deceased' || entity.is_deceased) {
+          } else if (app?.kind === 'deceased' || (isDeceased && (lastActiveIdx === -1 || idx > lastActiveIdx))) {
             cells.set(ch.id, {
               status: 'deceased',
-              label: 'Мертв',
+              label: 'Погиб',
             });
           } else {
             cells.set(ch.id, {
@@ -110,7 +131,17 @@ export function useCrossReferenceMatrix(project: string) {
           hasGapWarning,
         };
       })
-      .sort((a, b) => b.totalAppearances - a.totalAppearances);
+      .sort((a, b) => {
+        const roleA = getRoleWeight(a.entity.role_in_story);
+        const roleB = getRoleWeight(b.entity.role_in_story);
+        if (roleB !== roleA) {
+          return roleB - roleA;
+        }
+        if (b.totalAppearances !== a.totalAppearances) {
+          return b.totalAppearances - a.totalAppearances;
+        }
+        return a.entity.name.localeCompare(b.entity.name, 'ru');
+      });
   });
 
   const refresh = async () => {

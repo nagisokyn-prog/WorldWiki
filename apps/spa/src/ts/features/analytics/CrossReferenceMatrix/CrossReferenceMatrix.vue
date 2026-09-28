@@ -113,7 +113,12 @@
             >
               <td class="matrix-td sticky-left matrix-entity-cell">
                 <div class="entity-name-box">
-                  <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
+                  <div class="entity-title-group">
+                    <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
+                    <span v-if="row.entity.role_in_story" class="entity-role-badge" :title="'Роль: ' + row.entity.role_in_story">
+                      {{ row.entity.role_in_story }}
+                    </span>
+                  </div>
                   <span v-if="row.hasGapWarning" class="matrix-gap-badge" title="Персонаж пропал на 3+ главы подряд!">⚠️ Разрыв</span>
                 </div>
               </td>

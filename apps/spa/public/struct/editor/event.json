@@ -1,0 +1,199 @@
+{
+  "name": "Историческое событие",
+  "icon": "fa-calendar-star",
+  "iconEmoji": "📜",
+  "photoField": "фото",
+  "tagsField": "теги",
+  "titleField": "название",
+  "entityType": "event",
+  "sections": [
+    {
+      "id": "basic",
+      "title": "Основные данные",
+      "icon": "📝",
+      "fields": [
+        {
+          "id": "eventName",
+          "type": "text",
+          "label": "Название события",
+          "placeholder": "Например, Битва у Красных Полей, Ночь Длинных Кинжалов",
+          "path": "название",
+          "required": true,
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventPhoto",
+          "type": "photo",
+          "label": "Иллюстрация события",
+          "placeholder": "Загрузите изображение",
+          "path": "фото"
+        },
+        {
+          "id": "eventDate",
+          "type": "calendar_datetime",
+          "label": "Дата начала события",
+          "placeholder": "",
+          "path": "дата_события",
+          "required": true,
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventDuration",
+          "type": "number",
+          "label": "Длительность (в абсолютных минутах / днях)",
+          "placeholder": "Длительность...",
+          "path": "длительность",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventScale",
+          "type": "select",
+          "label": "Масштаб события",
+          "placeholder": "",
+          "path": "масштаб_важность",
+          "required": true,
+          "options": [
+            {
+              "value": "локальное",
+              "label": "🟢 Локальное событие"
+            },
+            {
+              "value": "региональное",
+              "label": "🟡 Региональный масштаб"
+            },
+            {
+              "value": "мировое",
+              "label": "🟠 Мировой масштаб"
+            },
+            {
+              "value": "эпохальное",
+              "label": "🔴 Эпохальный сдвиг (Новая эра)"
+            }
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventLocation",
+          "type": "select",
+          "label": "Место действия (Локация)",
+          "placeholder": "Выберите место события...",
+          "path": "место_действия",
+          "entityType": "location",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventParticipants",
+          "type": "multiselect",
+          "label": "Ключевые участники (Персонажи)",
+          "placeholder": "Выберите персонажей...",
+          "path": "участники",
+          "entityType": "character",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventFactions",
+          "type": "multiselect",
+          "label": "Затронутые фракции и стороны",
+          "placeholder": "Выберите организации...",
+          "path": "затронутые_фракции",
+          "entityType": "organization",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "eventTags",
+          "type": "tags",
+          "label": "Теги",
+          "placeholder": "Введите теги через Enter",
+          "path": "теги"
+        },
+        {
+          "id": "eventDescription",
+          "type": "textarea",
+          "label": "Краткое описание",
+          "placeholder": "Суть и хроника события...",
+          "path": "описание",
+          "rows": 4
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "causes_and_stages",
+      "title": "Причины и хроника",
+      "icon": "⚔️",
+      "fields": [
+        {
+          "id": "eventCauses",
+          "type": "textarea",
+          "label": "Предпосылки и коренные причины",
+          "placeholder": "Что привело к событию...",
+          "path": "причины",
+          "rows": 3
+        },
+        {
+          "id": "eventTrigger",
+          "type": "textarea",
+          "label": "Повод / Триггер",
+          "placeholder": "Непосредственный повод...",
+          "path": "триггер",
+          "rows": 2
+        },
+        {
+          "id": "eventKeyStages",
+          "type": "textarea",
+          "label": "Ход события и ключевые фазы",
+          "placeholder": "Этап 1, кульминация, развязка...",
+          "path": "ход_события",
+          "rows": 5
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "consequences",
+      "title": "Итоги и лоро-эхо",
+      "icon": "💥",
+      "fields": [
+        {
+          "id": "eventResults",
+          "type": "textarea",
+          "label": "Итоги и результаты",
+          "placeholder": "Кто победил, какие договоры заключены...",
+          "path": "итоги",
+          "rows": 4
+        },
+        {
+          "id": "eventCasualties",
+          "type": "textarea",
+          "label": "Потери и разрушения",
+          "placeholder": "Погибшие герои, разрушенные города...",
+          "path": "потери",
+          "rows": 3
+        },
+        {
+          "id": "eventLoreEcho",
+          "type": "textarea",
+          "label": "Историческое влияние (Лоро-эхо)",
+          "placeholder": "Как событие изменило мир, законы и отношение потомков...",
+          "path": "историческое_влияние",
+          "rows": 4
+        }
+      ],
+      "dynamicContainers": []
+    }
+  ]
+}

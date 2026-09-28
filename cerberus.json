@@ -26,7 +26,8 @@
     "**/*test.ts",
     "**/font-awesome.min.css",
     "**/*assets/**",
-    "apps/spa/src/ts/services/api.client.ts"
+    "apps/spa/src/ts/services/api.client.ts",
+    "scripts/"
   ],
   "extends": [
     "cerberus:rust-hexagonal",

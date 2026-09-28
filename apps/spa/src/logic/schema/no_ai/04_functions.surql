@@ -22,8 +22,19 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             id, 
             name, 
             entity_type,
-            attributes.is_deceased AS is_deceased,
-            attributes.death_m_abs AS death_m_abs,
+            (attributes['статус_категория'] = 'Мёртв' OR attributes.is_deceased = true) AS is_deceased,
+            IF attributes['дата_смерти']['m_abs'] != NONE {
+                attributes['дата_смерти']['m_abs']
+            } ELSE {
+                attributes.death_m_abs
+            } AS death_m_abs,
+            IF attributes['дата_рождения']['m_abs'] != NONE {
+                attributes['дата_рождения']['m_abs']
+            } ELSE {
+                attributes.birth_m_abs
+            } AS birth_m_abs,
+            attributes['роль_в_истории'] AS role_in_story,
+            attributes['статус_категория'] AS status_category,
             array::concat(
                 (SELECT IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id, source, role FROM ->appears_in),
                 (
@@ -64,6 +75,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     SELECT 
                         IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id,
                         out.title AS chapter_title,
+                        IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
                         IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_sort_order,
                         IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE } AS pov_id,
                         IF kind != NONE { kind } ELSE { 'direct' } AS kind,
@@ -75,6 +87,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     SELECT 
                         IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) } AS chapter_id,
                         chapter_id.title AS chapter_title,
+                        IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS chapter_order,
                         IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS chapter_sort_order,
                         NONE AS pov_id,
                         IF kind != NONE { kind } ELSE { 'direct' } AS kind,
@@ -101,6 +114,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 {
                     chapter_id: IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) },
                     chapter_title: chapter_id.title,
+                    chapter_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     chapter_sort_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     pov_id: NONE,
                     kind: IF kind != NONE { kind } ELSE { 'direct' },
@@ -246,7 +260,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
 
     RETURN {
         entity: $info[0],
-        appearances: [],
+        appearances: $appearances,
         events: $events,
         relations: $relations,
         promises: $promises

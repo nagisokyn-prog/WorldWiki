@@ -42,7 +42,14 @@ pub struct EntityRowDto {
     pub name: String,
     pub entity_type: String,
     pub is_deceased: bool,
+    #[serde(default)]
     pub death_m_abs: Option<i64>,
+    #[serde(default)]
+    pub birth_m_abs: Option<i64>,
+    #[serde(default)]
+    pub role_in_story: Option<String>,
+    #[serde(default)]
+    pub status_category: Option<String>,
     pub appearances_by_chapter: Vec<CellAppearanceDto>,
 }
 

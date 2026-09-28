@@ -17,7 +17,10 @@
           "label": "Название",
           "required": true,
           "placeholder": "Введите название организации",
-          "path": "название"
+          "path": "название",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "orgOfficialName",
@@ -84,27 +87,30 @@
           "label": "Статус",
           "options": [
             {
-              "value": "",
+              "value": "Не указано",
               "label": "Не указано"
             },
             {
-              "value": "активна",
-              "label": "🟢 Активна"
+              "value": "Действует",
+              "label": "🟢 Действует"
             },
             {
-              "value": "неактивна",
+              "value": "Неактивна",
               "label": "🟡 Неактивна"
             },
             {
-              "value": "распущена",
-              "label": "🔴 Распущена"
+              "value": "Распущена / Уничтожена",
+              "label": "🔴 Распущена / Уничтожена"
             },
             {
-              "value": "подполье",
-              "label": "⚫ Подполье"
+              "value": "Подпольная",
+              "label": "🟣 Подпольная"
             }
           ],
-          "path": "статус"
+          "path": "статус_категория",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "orgFoundedDate",

@@ -57,6 +57,12 @@ struct RawEntityRow {
     #[serde(default)]
     death_m_abs: Option<i64>,
     #[serde(default)]
+    birth_m_abs: Option<i64>,
+    #[serde(default)]
+    role_in_story: Option<String>,
+    #[serde(default)]
+    status_category: Option<String>,
+    #[serde(default)]
     appearances: Vec<RawAppearanceEdge>,
 }
 
@@ -284,6 +290,9 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                 entity_type: ent.entity_type,
                 is_deceased: ent.is_deceased.unwrap_or(false),
                 death_m_abs: ent.death_m_abs,
+                birth_m_abs: ent.birth_m_abs,
+                role_in_story: ent.role_in_story,
+                status_category: ent.status_category,
                 appearances_by_chapter: apps_by_chap,
             });
         }

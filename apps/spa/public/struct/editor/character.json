@@ -17,7 +17,10 @@
           "label": "Полное имя",
           "required": true,
           "placeholder": "Имя Фамилия",
-          "path": "название"
+          "path": "название",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "characterPhoto",
@@ -29,9 +32,12 @@
         {
           "id": "characterAlias",
           "type": "text",
-          "label": "Прозвище/Псевдоним",
+          "label": "Прозвище / Псевдоним",
           "placeholder": "Например, 'Мясник', 'Странник'",
-          "path": "прозвище"
+          "path": "прозвище",
+          "isSystem": true,
+          "preventDelete": true,
+          "hint": "Алиасы для авто-поиска меншенов ((Имя)) в рукописи"
         },
         {
           "id": "characterRole",
@@ -44,23 +50,25 @@
             },
             {
               "value": "главный",
-              "label": "Главный герой"
-            },
-            {
-              "value": "второстепенный",
-              "label": "Второстепенный"
+              "label": "⭐ Главный герой"
             },
             {
               "value": "антагонист",
-              "label": "Антагонист"
+              "label": "⚔️ Антагонист"
+            },
+            {
+              "value": "второстепенный",
+              "label": "👥 Второстепенный"
             },
             {
               "value": "вспомогательный",
-              "label": "Вспомогательный"
+              "label": "엑 Вспомогательный / Эпизодический"
             }
           ],
           "placeholder": "Выберите роль",
-          "path": "роль_в_истории"
+          "path": "роль_в_истории",
+          "isSystem": true,
+          "preventDelete": true
         },
         {
           "id": "characterStatus",
@@ -69,28 +77,27 @@
           "required": true,
           "options": [
             {
-              "value": "",
+              "value": "Не указано",
               "label": "Не указано"
             },
             {
-              "value": "жив",
+              "value": "Жив",
               "label": "🟢 Жив"
             },
             {
-              "value": "мертв",
-              "label": "🔴 Мертв"
+              "value": "Мёртв",
+              "label": "🔴 Мёртв"
             },
             {
-              "value": "пропал_без_вести",
+              "value": "Пропал без вести",
               "label": "🟡 Пропал без вести"
-            },
-            {
-              "value": "неизвестно",
-              "label": "⚪ Неизвестно"
             }
           ],
           "placeholder": "Выберите статус",
-          "path": "статус"
+          "path": "статус_категория",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "characterBirthdate",
@@ -98,7 +105,20 @@
           "label": "Дата рождения",
           "placeholder": "Выберите дату по календарю",
           "hint": "Выберите дату из календаря мира",
-          "path": "дата_рождения"
+          "path": "дата_рождения",
+          "isSystem": true,
+          "preventDelete": true
+        },
+        {
+          "id": "characterDeathdate",
+          "type": "calendar_datetime",
+          "label": "Дата смерти",
+          "placeholder": "Выберите дату гибели по календарю мира",
+          "path": "дата_смерти",
+          "hint": "Критично для аудита непротиворечивости (исключает действия после смерти)",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "characterTags",

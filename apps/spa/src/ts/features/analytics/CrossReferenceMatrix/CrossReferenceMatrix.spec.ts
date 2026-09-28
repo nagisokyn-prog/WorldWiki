@@ -114,8 +114,84 @@ describe('useCrossReferenceMatrix Composable', () => {
     expect(rows.value[0].cells.get('chapters:1')?.status).toBe('mention');
     expect(rows.value[0].cells.get('chapters:2')?.status).toBe('absent');
 
-    expect(formatWordCount(1450)).toBe('1.5k сл.');
+    expect(formatWordCount(1500)).toBe('1.5k сл.');
+    expect(formatWordCount(1450)).toBe('1.4k сл.');
     expect(formatWordCount(450)).toBe('450 сл.');
     expect(formatWordCount(0)).toBe('0 сл.');
   });
+
+  it('sorts entities by role priority (главный > антагонист > второстепенный > эпизодический)', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'ch:1', title: 'Глава 1', sort_order: 1, word_count: 1000 },
+      ],
+      entities: [
+        {
+          id: 'ent:peasant',
+          name: 'Крестьянин',
+          entity_type: 'character',
+          role_in_story: 'эпизодический',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene' }],
+        },
+        {
+          id: 'ent:villain',
+          name: 'Темный Властелин',
+          entity_type: 'character',
+          role_in_story: 'антагонист',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene' }],
+        },
+        {
+          id: 'ent:hero',
+          name: 'Главный Герой',
+          entity_type: 'character',
+          role_in_story: 'главный',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene' }],
+        },
+        {
+          id: 'ent:friend',
+          name: 'Верный Друг',
+          entity_type: 'character',
+          role_in_story: 'второстепенный',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene' }],
+        },
+      ],
+    };
+
+    const { rows } = useCrossReferenceMatrix('test_proj');
+    expect(rows.value).toHaveLength(4);
+    expect(rows.value[0].entity.name).toBe('Главный Герой');
+    expect(rows.value[1].entity.name).toBe('Темный Властелин');
+    expect(rows.value[2].entity.name).toBe('Верный Друг');
+    expect(rows.value[3].entity.name).toBe('Крестьянин');
+  });
+
+  it('marks cells as deceased for deceased characters after their active chapters', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'ch:1', title: 'Глава 1', sort_order: 1, word_count: 1000 },
+        { id: 'ch:2', title: 'Глава 2', sort_order: 2, word_count: 1000 },
+        { id: 'ch:3', title: 'Глава 3', sort_order: 3, word_count: 1000 },
+      ],
+      entities: [
+        {
+          id: 'ent:fallen_hero',
+          name: 'Павший Герой',
+          entity_type: 'character',
+          is_deceased: true,
+          status_category: 'Мёртв',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene' }],
+        },
+      ],
+    };
+
+    const { rows } = useCrossReferenceMatrix('test_proj');
+    expect(rows.value).toHaveLength(1);
+    const row = rows.value[0];
+    expect(row.cells.get('ch:1')?.status).toBe('scene');
+    expect(row.cells.get('ch:2')?.status).toBe('deceased');
+    expect(row.cells.get('ch:3')?.status).toBe('deceased');
+  });
 });
+

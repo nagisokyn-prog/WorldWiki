@@ -461,6 +461,25 @@
   border: 1px solid var(--border-color);
 }
 
+.chip-character-age {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-sunken);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.chip-character-age.chip-before-birth {
+  background-color: var(--warning-bg, var(--bg-hover));
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
 .chip-flashback-alert {
   display: inline-flex;
   align-items: center;

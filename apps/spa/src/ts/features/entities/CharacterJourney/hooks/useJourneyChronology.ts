@@ -102,3 +102,93 @@ export function formatDiegeticDate(
     return undefined;
   }
 }
+
+export interface DiegeticAgeResult {
+  ageYears: number;
+  ageLabel: string;
+  isBeforeBirth: boolean;
+}
+
+export function calculateDiegeticAge(
+  birthMabs: number | null | undefined,
+  sceneMabs: number | null | undefined,
+  calendarData: CalendarData | null
+): DiegeticAgeResult | null {
+  if (birthMabs === undefined || birthMabs === null || sceneMabs === undefined || sceneMabs === null) {
+    return null;
+  }
+
+  const cal = calendarData || CalendarFormat.getDefaultCalendar();
+  const delta = sceneMabs - birthMabs;
+
+  const settings = cal?.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+  const hInDay = Number(settings.часов_в_сутках) || 24;
+  const mInHour = Number(settings.минут_в_часе) || 60;
+  const minutesInDay = Math.max(1, hInDay * mInHour);
+
+  if (delta < 0) {
+    // Before birth
+    const absDelta = Math.abs(delta);
+    const daysInYear = CalendarMath.getBaseDaysInYear(cal) || 365;
+    const minutesInYear = daysInYear * minutesInDay;
+
+    const years = Math.floor(absDelta / minutesInYear);
+    if (years >= 1) {
+      return {
+        ageYears: -years,
+        ageLabel: `До рождения (за ${years} ${pluralize(years, 'год', 'года', 'лет')})`,
+        isBeforeBirth: true,
+      };
+    }
+    const days = Math.floor(absDelta / minutesInDay);
+    return {
+      ageYears: 0,
+      ageLabel: `До рождения (за ${days} ${pluralize(days, 'день', 'дня', 'дней')})`,
+      isBeforeBirth: true,
+    };
+  }
+
+  // Born / alive
+  try {
+    const birthDate = CalendarMath.getDateFromAbsolute(birthMabs, cal);
+    const sceneDate = CalendarMath.getDateFromAbsolute(sceneMabs, cal);
+
+    let years = sceneDate.year - birthDate.year;
+    if (
+      sceneDate.month < birthDate.month ||
+      (sceneDate.month === birthDate.month && sceneDate.day < birthDate.day)
+    ) {
+      years--;
+    }
+
+    years = Math.max(0, years);
+
+    if (years >= 1) {
+      return {
+        ageYears: years,
+        ageLabel: `${years} ${pluralize(years, 'год', 'года', 'лет')}`,
+        isBeforeBirth: false,
+      };
+    }
+
+    const days = Math.floor(delta / minutesInDay);
+
+    if (days >= 30) {
+      const months = Math.floor(days / 30);
+      return {
+        ageYears: 0,
+        ageLabel: `${months} ${pluralize(months, 'месяц', 'месяца', 'месяцев')}`,
+        isBeforeBirth: false,
+      };
+    }
+
+    return {
+      ageYears: 0,
+      ageLabel: days === 0 ? 'Новорожденный' : `${days} ${pluralize(days, 'день', 'дня', 'дней')}`,
+      isBeforeBirth: false,
+    };
+  } catch {
+    return null;
+  }
+}
+

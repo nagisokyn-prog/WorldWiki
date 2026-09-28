@@ -76,6 +76,15 @@
             ⏳ Хронология: {{ item.timeLabel || ('День ' + (item.chapter_order || 1)) }}
           </span>
 
+          <span
+            v-if="item.ageLabel"
+            class="chip-character-age"
+            :class="{ 'chip-before-birth': item.isBeforeBirth }"
+            :title="item.isBeforeBirth ? 'Событие происходит до рождения персонажа' : 'Возраст персонажа в момент события'"
+          >
+            🎂 {{ item.ageLabel }}
+          </span>
+
           <span class="jump-to-editor-hint">
             📍 Перейти к абзацу
           </span>

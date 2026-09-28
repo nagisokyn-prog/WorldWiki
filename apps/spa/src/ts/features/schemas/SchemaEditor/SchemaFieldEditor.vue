@@ -1,15 +1,16 @@
 <template>
   <div class="schema-field-editor" :class="{ 'is-hidden-field': item.hidden }">
-    <div class="schema-field-header" :class="{ 'is-first-item': isFirst }">
+    <div class="schema-field-header" :class="{ 'is-first-item': isFirst || item.isSystem }">
       <div class="flex items-center gap-2 flex-1">
-        <span v-if="!isFirst" class="schema-drag-dots">⠿</span>
-        <span v-else class="text-accent icon-dim-50">🔒</span>
+        <span v-if="!isFirst && !item.isSystem" class="schema-drag-dots">⠿</span>
+        <span v-else class="text-accent icon-dim-50" title="Системное защищенное поле">🔒</span>
         
         <input :value="item.label" class="form-label schema-field-title-input" placeholder="НАЗВАНИЕ ПОЛЯ" @input="updateLabel(($event.target as HTMLInputElement).value)" />
       </div>
       
-      <div v-if="!isFirst" class="flex items-center gap-2">
+      <div v-if="!isFirst && !item.isSystem && !item.preventDelete" class="flex items-center gap-2">
         <button
+          v-if="!item.preventHide"
           class="schema-btn-icon text-xs" 
           :title="item.hidden ? 'Показать поле' : 'Скрыть поле'"
           @click="toggleHidden">
@@ -73,7 +74,7 @@
           <div class="flex-1">
              <label class="form-label-micro">ТИП КИРПИЧА</label>
              <div class="flex gap-1 flex-wrap">
-                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val, 'is-disabled-type': isFirst && item.type !== t.val }" class="type-btn-mini interactive-el" :disabled="isFirst" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
+                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val, 'is-disabled-type': (isFirst || !!item.isSystem) && item.type !== t.val }" class="type-btn-mini interactive-el" :disabled="isFirst || !!item.isSystem" @click="(!isFirst && !item.isSystem) && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
              </div>
           </div>
           <div class="flex-1">

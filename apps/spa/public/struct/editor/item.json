@@ -1,0 +1,267 @@
+{
+  "name": "Предмет / Артефакт",
+  "icon": "fa-magic",
+  "iconEmoji": "🗡️",
+  "photoField": "фото",
+  "tagsField": "теги",
+  "titleField": "название",
+  "entityType": "item",
+  "sections": [
+    {
+      "id": "basic",
+      "title": "Основные данные",
+      "icon": "📝",
+      "fields": [
+        {
+          "id": "itemName",
+          "type": "text",
+          "label": "Название предмета",
+          "placeholder": "Например, Меч Экскалибур, Кольцо Всевластья, Свиток Огня",
+          "path": "название",
+          "required": true,
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "itemPhoto",
+          "type": "photo",
+          "label": "Изображение предмета",
+          "placeholder": "Загрузите изображение",
+          "path": "фото"
+        },
+        {
+          "id": "itemType",
+          "type": "select",
+          "label": "Тип предмета",
+          "placeholder": "",
+          "path": "тип_предмета",
+          "required": true,
+          "options": [
+            {
+              "value": "оружие",
+              "label": "⚔️ Оружие"
+            },
+            {
+              "value": "артефакт",
+              "label": "🔮 Магический артефакт"
+            },
+            {
+              "value": "улика_документ",
+              "label": "📜 Документ / Улика"
+            },
+            {
+              "value": "реликвия",
+              "label": "👑 Реликвия / Символ власти"
+            },
+            {
+              "value": "транспорт",
+              "label": "🚀 Транспорт / Техника"
+            },
+            {
+              "value": "зелье_вещество",
+              "label": "🧪 Зелье / Вещество"
+            },
+            {
+              "value": "снаряжение",
+              "label": "🛡️ Снаряжение / Доспех"
+            },
+            {
+              "value": "бытовой",
+              "label": "📦 Бытовой предмет / Инструмент"
+            }
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "itemStatus",
+          "type": "select",
+          "label": "Статус / Состояние",
+          "placeholder": "",
+          "path": "статус_категория",
+          "required": true,
+          "options": [
+            {
+              "value": "Не указано",
+              "label": "Не указано"
+            },
+            {
+              "value": "Цел / Активен",
+              "label": "🟢 Цел / Активен"
+            },
+            {
+              "value": "Поврежден",
+              "label": "🟡 Поврежден"
+            },
+            {
+              "value": "Уничтожен",
+              "label": "🔴 Уничтожен"
+            },
+            {
+              "value": "Утерян",
+              "label": "⚪ Утерян / Местонахождение неизвестно"
+            }
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "itemOwner",
+          "type": "select",
+          "label": "Текущий владелец",
+          "placeholder": "Выберите текущего держателя...",
+          "path": "текущий_владелец",
+          "entityType": "character",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "itemTags",
+          "type": "tags",
+          "label": "Теги",
+          "placeholder": "Введите теги через Enter",
+          "path": "теги"
+        },
+        {
+          "id": "itemDescription",
+          "type": "textarea",
+          "label": "Краткое описание",
+          "placeholder": "Внешний вид и назначение предмета...",
+          "path": "описание",
+          "rows": 4
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "properties",
+      "title": "Свойства и магия",
+      "icon": "✨",
+      "fields": [
+        {
+          "id": "itemMaterial",
+          "type": "text",
+          "label": "Материал изготовления",
+          "placeholder": "Например, валирийская сталь, мифрил, титан",
+          "path": "материал"
+        },
+        {
+          "id": "itemPowerLevel",
+          "type": "range",
+          "label": "Мощь / Редкость (0-100)",
+          "placeholder": "",
+          "path": "мощь_редкость",
+          "min": 0,
+          "max": 100,
+          "value": 50
+        },
+        {
+          "id": "itemMagicEffects",
+          "type": "textarea",
+          "label": "Магические / Технические эффекты",
+          "placeholder": "Свойства, ауры, заклинания, даруемые владельцу...",
+          "path": "эффекты",
+          "rows": 4
+        },
+        {
+          "id": "itemCurse",
+          "type": "textarea",
+          "label": "Проклятие / Побочные эффекты",
+          "placeholder": "Цена использования, безумие, вытягивание сил...",
+          "path": "проклятие",
+          "rows": 3
+        },
+        {
+          "id": "itemWeight",
+          "type": "text",
+          "label": "Вес и габариты",
+          "placeholder": "Например, 1.5 кг, длина 90 см",
+          "path": "габариты"
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "history",
+      "title": "Хронология и владение",
+      "icon": "⏳",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "ownershipTimeline",
+          "type": "timeline",
+          "title": "Хронология передачи и владения (Чеховское ружьё)",
+          "emptyMessage": "История передачи не добавлена",
+          "template": "Базовая хронология",
+          "dataPath": "история_владения",
+          "fieldOverrides": {
+            "название": {
+              "label": "Владелец / Держатель",
+              "type": "select",
+              "entityType": "character"
+            },
+            "описание_1": {
+              "label": "Обстоятельства получения / передачи"
+            },
+            "статус_категория": {
+              "hidden": true
+            },
+            "описание_2": {
+              "hidden": true
+            },
+            "описание_3": {
+              "hidden": true
+            },
+            "числовой_показатель": {
+              "hidden": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "origins",
+      "title": "Происхождение и связи",
+      "icon": "📜",
+      "fields": [
+        {
+          "id": "itemCreator",
+          "type": "select",
+          "label": "Создатель / Мастер",
+          "placeholder": "Выберите создателя...",
+          "path": "создатель",
+          "entityType": "character"
+        },
+        {
+          "id": "itemOriginLocation",
+          "type": "select",
+          "label": "Место создания",
+          "placeholder": "Выберите локацию...",
+          "path": "место_создания",
+          "entityType": "location"
+        },
+        {
+          "id": "itemCreationDate",
+          "type": "calendar_datetime",
+          "label": "Дата создания / ковки",
+          "placeholder": "",
+          "path": "дата_создания"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "itemRelations",
+          "type": "dynamic",
+          "title": "Связи с фракциями и персонажами",
+          "emptyMessage": "Связи не добавлены",
+          "template": "Двунаправленная связь",
+          "dataPath": "двунаправленные_связи"
+        }
+      ]
+    }
+  ]
+}

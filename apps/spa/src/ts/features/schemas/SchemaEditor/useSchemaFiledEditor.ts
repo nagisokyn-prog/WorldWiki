@@ -4,6 +4,9 @@ export interface SchemaFieldItem {
     _val?: unknown;
     type?: string;
     placeholder?: string;
+    isSystem?: boolean;
+    preventDelete?: boolean;
+    preventHide?: boolean;
     options?: Array<{ value: string; label: string }>;
     [key: string]: unknown;
 }

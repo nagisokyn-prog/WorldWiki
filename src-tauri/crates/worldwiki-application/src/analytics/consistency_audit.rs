@@ -65,6 +65,29 @@ impl ConsistencyAuditWorkflow {
             }
         }
 
+        // Rule 1.2: 🔴 Action before birth
+        for ent in &matrix.entities {
+            if let Some(birth_m_abs) = ent.birth_m_abs {
+                for ev in &timeline_data.events {
+                    if ev.participants.contains(&ent.id) && ev.m_abs < birth_m_abs {
+                        anomalies.push(ContradictionAnomaly {
+                            rule: ContradictionRule::ActionBeforeBirth,
+                            severity: ContradictionSeverity::Critical,
+                            title: format!("Действие персонажа до его рождения: {}", ent.name),
+                            description: format!(
+                                "Персонаж '{}' родился в минуту {}, но участвует в событии '{}' (минута {})",
+                                ent.name, birth_m_abs, ev.title, ev.m_abs
+                            ),
+                            entity_ids: vec![ent.id.clone()],
+                            chapter_ids: vec![],
+                            event_ids: vec![ev.event_id.clone()],
+                            promise_ids: vec![],
+                        });
+                    }
+                }
+            }
+        }
+
         // Rule 2: 🟡 Reveal before event occurrence (Anachronism)
         for ev in &timeline_data.events {
             for rev in &ev.reveals {
@@ -218,6 +241,9 @@ mod tests {
                     entity_type: "character".to_string(),
                     is_deceased: true,
                     death_m_abs: Some(1000),
+                    birth_m_abs: Some(0),
+                    role_in_story: Some("главный".to_string()),
+                    status_category: Some("Мёртв".to_string()),
                     appearances_by_chapter: vec![],
                 }
             ],
@@ -252,6 +278,57 @@ mod tests {
         let anomalies = workflow.execute("proj_1").await.unwrap();
         assert_eq!(anomalies.len(), 1);
         assert_eq!(anomalies[0].rule, ContradictionRule::DeceasedEntityActive);
+        assert_eq!(anomalies[0].severity, ContradictionSeverity::Critical);
+    }
+
+    #[tokio::test]
+    async fn test_consistency_audit_detects_action_before_birth() {
+        let matrix = CrossRefMatrixDto {
+            chapters: vec![],
+            entities: vec![
+                EntityRowDto {
+                    id: "entities:frodo".to_string(),
+                    name: "Фродо".to_string(),
+                    entity_type: "character".to_string(),
+                    is_deceased: false,
+                    death_m_abs: None,
+                    birth_m_abs: Some(2968),
+                    role_in_story: Some("главный".to_string()),
+                    status_category: Some("Жив".to_string()),
+                    appearances_by_chapter: vec![],
+                }
+            ],
+            absence_warnings: vec![],
+        };
+
+        let timeline = TimelineInspectorDto {
+            events: vec![
+                TimelineInspectorEventNode {
+                    event_id: "timeline_events:ancient_war".to_string(),
+                    title: "Древняя битва".to_string(),
+                    description: None,
+                    m_abs: 1000, // Before Frodo's birth at 2968!
+                    calendar_id: "cal_1".to_string(),
+                    participants: vec!["entities:frodo".to_string()],
+                    reveals: vec![],
+                }
+            ],
+            chapters: vec![],
+            entity_swimlanes: vec![],
+            detected_crossings: 0,
+        };
+
+        let workflow = ConsistencyAuditWorkflow::new(
+            Arc::new(MockAnalyticsRepo { matrix, timeline }),
+            Arc::new(MockEntityRepo),
+            Arc::new(MockChapterRepo),
+            Arc::new(MockTimelineRepo),
+            Arc::new(MockPromiseRepo),
+        );
+
+        let anomalies = workflow.execute("proj_1").await.unwrap();
+        assert_eq!(anomalies.len(), 1);
+        assert_eq!(anomalies[0].rule, ContradictionRule::ActionBeforeBirth);
         assert_eq!(anomalies[0].severity, ContradictionSeverity::Critical);
     }
 }

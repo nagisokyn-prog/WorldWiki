@@ -12,6 +12,7 @@ pub enum ContradictionSeverity {
 #[serde(rename_all = "snake_case")]
 pub enum ContradictionRule {
     DeceasedEntityActive,
+    ActionBeforeBirth,
     RevealBeforeEvent,
     DestroyedLocationUsed,
     EntityBilocation,

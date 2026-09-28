@@ -21,7 +21,10 @@ export interface MatrixEntity {
   name: string;
   entity_type: string;
   is_deceased?: boolean;
-  death_m_abs?: number;
+  death_m_abs?: number | null;
+  birth_m_abs?: number | null;
+  role_in_story?: string | null;
+  status_category?: string | null;
   appearances_by_chapter?: MatrixAppearance[];
   appearances?: MatrixAppearance[];
 }

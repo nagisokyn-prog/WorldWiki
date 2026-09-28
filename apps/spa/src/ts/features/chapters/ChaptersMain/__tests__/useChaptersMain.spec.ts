@@ -19,6 +19,10 @@ vi.mock('../../../../stores/timeline.store', () => ({
   }),
 }));
 
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn().mockResolvedValue(vi.fn()),
+}));
+
 vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
   settingsService: {
@@ -157,7 +161,11 @@ describe('useChaptersMain', () => {
   });
 
   it('handles watcher branches for controlledChapterId and activeTreeNode', async () => {
-    const reactiveProps = reactive({
+    const reactiveProps = reactive<{
+      project: string;
+      controlledChapterId?: string;
+      activeTreeNode: any;
+    }>({
       project: 'proj_1',
       controlledChapterId: 'ch_1',
       activeTreeNode: { type: 'chapter', node: { id: 'ch_1' } } as any,
@@ -175,7 +183,7 @@ describe('useChaptersMain', () => {
     expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_2');
 
     // Clear activeTreeNode without controlledChapterId
-    reactiveProps.controlledChapterId = null;
+    reactiveProps.controlledChapterId = undefined;
     reactiveProps.activeTreeNode = null;
     await nextTick();
     expect(main.localActiveTreeNode.value).toBeUndefined();
@@ -245,7 +253,15 @@ describe('useChaptersMain', () => {
     const main = useChaptersMain(props, emit);
     mockStore.currentChapter.value = { id: 'ch_1', scrollPos: 0 };
 
-    await main.handleExport({ chapterIds: ['ch_1', 'ch_2'], format: 'pdf' });
+    await main.handleExport({
+      chapterIds: ['ch_1', 'ch_2'],
+      format: 'pdf',
+      options: {
+        addTOC: true,
+        addPageNumbers: true,
+        includeMetadata: true,
+      },
+    });
     expect(appAlert).toHaveBeenCalledWith('Начат экспорт 2 глав в формат pdf...');
 
     main.handleScrollChange(450);
@@ -263,7 +279,7 @@ describe('useChaptersMain', () => {
       props: ['project', 'controlledChapterId', 'activeTreeNode'],
       emits: ['chapter-unsaved', 'open-chapter-as-tab', 'scroll-change'],
       setup(p, { emit: e }) {
-        return useChaptersMain(p, e);
+        return useChaptersMain(p as any, e as any);
       },
       template: '<div></div>',
     });

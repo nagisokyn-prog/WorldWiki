@@ -97,6 +97,9 @@ export interface JourneyTimelineItem {
   description?: string;
   isFlashback?: boolean;
   flashbackDeltaLabel?: string;
+  ageLabel?: string;
+  isBeforeBirth?: boolean;
+  birth_m_abs?: number | null;
 }
 
 export interface ArcGroup {

@@ -8,7 +8,7 @@ import type {
   JourneyRelation,
   JourneyPromise,
 } from '../CharacterJourney.model';
-import { formatDiegeticDate, computeMabsFromDateFields } from './useJourneyChronology';
+import { formatDiegeticDate, computeMabsFromDateFields, calculateDiegeticAge } from './useJourneyChronology';
 
 export function getPhaseLabel(phase?: string | null): string {
   switch (phase) {
@@ -20,6 +20,22 @@ export function getPhaseLabel(phase?: string | null): string {
   }
 }
 
+export function extractBirthMabs(data: CharacterJourneyData | null, cal: CalendarData): number | null {
+  if (!data) return null;
+  const attrs = data.attributes || {};
+  if (typeof attrs['birth_m_abs'] === 'number') {
+    return attrs['birth_m_abs'];
+  }
+  const birthVal = attrs['дата_рождения'] ?? attrs['birth_date'];
+  if (typeof birthVal === 'number') {
+    return birthVal;
+  }
+  if (birthVal && typeof birthVal === 'object') {
+    return computeMabsFromDateFields(birthVal as Record<string, unknown>, cal);
+  }
+  return null;
+}
+
 export function buildTimelineItems(
   data: CharacterJourneyData | null,
   storyArcs: StoryArc[],
@@ -28,10 +44,12 @@ export function buildTimelineItems(
   if (!data) return [];
   const items: JourneyTimelineItem[] = [];
   const activeCal = calendarData || CalendarFormat.getDefaultCalendar();
+  const birthMabs = extractBirthMabs(data, activeCal);
 
   // 1. Global Timeline Events (diegetic M_abs)
   data.events.forEach((ev: JourneyEvent) => {
     const formattedDate = formatDiegeticDate(ev.m_abs, null, activeCal);
+    const ageInfo = calculateDiegeticAge(birthMabs, ev.m_abs, activeCal);
     items.push({
       id: `ev-${ev.event_id}`,
       type: 'event',
@@ -41,6 +59,9 @@ export function buildTimelineItems(
       timeLabel: formattedDate,
       phaseLabel: '⏳ Событие',
       m_abs: ev.m_abs,
+      birth_m_abs: birthMabs,
+      ageLabel: ageInfo?.ageLabel,
+      isBeforeBirth: ageInfo?.isBeforeBirth,
       badge: 'Событие мира',
       badgeType: 'warning',
       description: ev.event_desc || (ev.role ? `Участие: ${ev.role}` : undefined),
@@ -138,6 +159,7 @@ export function buildTimelineItems(
 
     const formattedDate = formatDiegeticDate(computedMabs, p.date_fields, activeCal);
     const sceneKind = p.kind || 'scene';
+    const ageInfo = calculateDiegeticAge(birthMabs, computedMabs, activeCal);
 
     items.push({
       id: `prom-${p.id}`,
@@ -156,6 +178,9 @@ export function buildTimelineItems(
       paragraph_index: p.paragraph_index,
       block_id: p.block_id || undefined,
       m_abs: computedMabs,
+      birth_m_abs: birthMabs,
+      ageLabel: ageInfo?.ageLabel,
+      isBeforeBirth: ageInfo?.isBeforeBirth,
       calendar_id: p.calendar_id,
       date_fields: p.date_fields,
       timeline_event_id: p.timeline_event_id,

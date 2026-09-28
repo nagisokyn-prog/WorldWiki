@@ -45,7 +45,7 @@ export const useSchemaStore = defineStore('schema', () => {
         }
         schemaCache.value[entityType] = parsed;
       } else {
-        const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
+        const staticTypes = ['character', 'location', 'organization', 'state', 'item', 'event', 'fraction', 'ui_editor'];
         if (staticTypes.includes(entityType)) {
           const res = await fetch(`/struct/editor/${entityType}.json`);
           if (res.ok) schemaCache.value[entityType] = await res.json() as EntitySchema;

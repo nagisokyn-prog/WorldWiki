@@ -17,7 +17,10 @@
           "label": "Название",
           "required": true,
           "placeholder": "Название: Римская Империя, СССР, Галактическая Республика...",
-          "path": "название"
+          "path": "название",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "stateOfficialName",
@@ -32,31 +35,34 @@
           "label": "Статус",
           "options": [
             {
-              "value": "",
+              "value": "Не указано",
               "label": "Не указано"
             },
             {
-              "value": "суверенное",
-              "label": "Суверенное"
+              "value": "Суверенное",
+              "label": "🟢 Суверенное государство"
             },
             {
-              "value": "зависимое",
-              "label": "Зависимое"
+              "value": "Зависимое / Колония",
+              "label": "🟡 Зависимое / Колония"
             },
             {
-              "value": "бывшее",
-              "label": "Бывшее (исчезнувшее)"
+              "value": "Исчезнувшее / Пало",
+              "label": "🔴 Исчезнувшее / Пало"
             },
             {
-              "value": "оспариваемое",
-              "label": "Оспариваемое"
+              "value": "Оспариваемое",
+              "label": "🟠 Оспариваемое"
             },
             {
-              "value": "автономное",
-              "label": "Автономное"
+              "value": "Автономное",
+              "label": "⚪ Автономное образование"
             }
           ],
-          "path": "статус"
+          "path": "статус_категория",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "stateStructureType",

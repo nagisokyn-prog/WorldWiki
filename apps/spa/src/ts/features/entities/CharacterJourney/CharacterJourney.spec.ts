@@ -152,4 +152,61 @@ describe('useCharacterJourney Composable', () => {
     selectedArcFilter.value = 'UNASSIGNED';
     expect(timelineItems.value.length).toBe(0);
   });
+
+  it('calculates dynamic age for scenes and detects before-birth events', async () => {
+    vi.mocked(apiClient.getEntities).mockResolvedValueOnce([
+      {
+        id: 'ent:hero',
+        name: 'Главный Герой',
+        entity_type: 'character',
+        project_id: 'test_proj',
+        attributes: {
+          дата_рождения: { era_index: 0, year: 1, month: 0, day: 1 },
+        },
+        tags: [],
+      },
+    ]);
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([]);
+    vi.mocked(apiClient.getCharacterJourney).mockResolvedValueOnce({
+      entity_id: 'ent:hero',
+      entity_name: 'Главный Герой',
+      entity_type: 'character',
+      attributes: {
+        дата_рождения: { era_index: 0, year: 1, month: 0, day: 1 },
+      },
+      appearances: [],
+      events: [
+        {
+          event_id: 'ev:prehistory',
+          event_title: 'Древняя Война',
+          m_abs: -500000, // strictly before birth
+        },
+      ],
+      relations: [],
+      promises: [
+        {
+          id: 'prom:future',
+          kind: 'scene',
+          quote: 'Взрослая битва',
+          status: 'planted',
+          planted_order: 1,
+          date_fields: { era_index: 0, year: 26, month: 0, day: 1 }, // exactly 25 years after year 1
+        },
+      ],
+    });
+
+    const { timelineItems, refresh } = useCharacterJourney('test_proj', 'ent:hero');
+    await refresh();
+
+    expect(timelineItems.value).toHaveLength(2);
+
+    const preEvent = timelineItems.value.find((i) => i.id === 'ev-ev:prehistory');
+    expect(preEvent?.isBeforeBirth).toBe(true);
+    expect(preEvent?.ageLabel).toContain('До рождения');
+
+    const futureScene = timelineItems.value.find((i) => i.id === 'prom-prom:future');
+    expect(futureScene?.isBeforeBirth).toBe(false);
+    expect(futureScene?.ageLabel).toBe('25 лет');
+  });
 });
+

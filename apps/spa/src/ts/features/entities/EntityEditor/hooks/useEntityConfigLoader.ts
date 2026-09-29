@@ -136,7 +136,7 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
           ctx.config.value = patchConfig(JSON.parse(JSON.stringify(foundSchema.full_schema)));
         } else {
           try {
-            const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
+            const staticTypes = ['character', 'location', 'organization', 'state', 'item', 'event', 'fraction', 'ui_editor'];
             if (staticTypes.includes(ctx.props.entityType)) {
               const res = await fetch(`/struct/editor/${ctx.props.entityType}.json`);
               if (res.ok) {

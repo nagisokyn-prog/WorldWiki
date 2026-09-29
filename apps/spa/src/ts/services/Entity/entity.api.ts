@@ -107,10 +107,14 @@ export const entityApi = {
       };
     }
 
-    // КОСТЫЛЬ: Если база пустая, подтягиваем локальные JSON-файлы и сохраняем в БД
-    if (Object.keys(dict).length === 0) {
-      console.warn('⚠️ Схемы в БД не найдены! Загружаю базовые из /struct/editor/ ...');
-      const defaultTypes = ['character', 'organization', 'state'];
+    // Однократная синхронизация и актуализация схем (v2 с полным набором сущностей)
+    const defaultTypes = ['character', 'location', 'organization', 'state', 'item', 'event'];
+    const syncKey = `worldwiki_schema_sync_v2_${project}`;
+    const needsSync = typeof localStorage !== 'undefined' && localStorage.getItem(syncKey) !== 'v2_done';
+    const isDbEmpty = Object.keys(dict).length === 0;
+
+    if (needsSync || isDbEmpty) {
+      console.log(`🔄 [SchemaSync] Однократная синхронизация базовых схем для проекта "${project}"...`);
       for (const type of defaultTypes) {
         try {
           const res = await fetch(`/struct/editor/${type}.json`);
@@ -135,10 +139,45 @@ export const entityApi = {
               icon: rustSchema.icon,
               full_schema: schemaData
             };
-            console.log(`✅ Базовая схема "${type}" успешно сохранена в БД.`);
+            console.log(`✅ Базовая схема "${type}" успешно синхронизирована в БД.`);
           }
         } catch (e) {
-          console.error(`❌ Ошибка загрузки дефолтной схемы ${type}:`, e);
+          console.error(`❌ Ошибка синхронизации дефолтной схемы ${type}:`, e);
+        }
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(syncKey, 'v2_done');
+      }
+    } else {
+      // Для уже синхронизированных проектов проверяем наличие всех базовых схем
+      for (const type of defaultTypes) {
+        if (!dict[type]) {
+          try {
+            const res = await fetch(`/struct/editor/${type}.json`);
+            if (res.ok) {
+              const schemaData = await res.json();
+              const rustSchema = {
+                type_key: type,
+                type_name: schemaData.name || type,
+                icon: schemaData.iconEmoji || '📄',
+                color: schemaData.color || 'var(--color-bg-tertiary)',
+                fields_schema: [],
+                full_schema: schemaData
+              };
+              await invoke<{ success: boolean }>('save_entity_schema', {
+                project,
+                schema: rustSchema
+              });
+              dict[type] = {
+                name: rustSchema.type_name,
+                icon: rustSchema.icon,
+                full_schema: schemaData
+              };
+              console.log(`✅ Недостающая базовая схема "${type}" успешно добавлена в БД.`);
+            }
+          } catch (e) {
+            console.error(`❌ Ошибка загрузки схемы ${type}:`, e);
+          }
         }
       }
     }

@@ -53,8 +53,8 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
             try {
                 const raw = e.dataTransfer.getData('application/json');
                 if (raw) return JSON.parse(raw);
-            } catch {
-                // ignore
+            } catch (err) {
+                console.warn('[useSchemaDnD] Failed to parse drag payload JSON:', err);
             }
         }
         return null;
@@ -68,8 +68,8 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
             e.dataTransfer.setData('text/plain', kind);
             try {
                 e.dataTransfer.setData('application/json', JSON.stringify(draggedItemInfo));
-            } catch {
-                // ignore
+            } catch (err) {
+                console.warn('[useSchemaDnD] Failed to serialize palette drag data:', err);
             }
         }
     };
@@ -86,8 +86,8 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
             e.dataTransfer.setData('text/plain', 'canvasItem');
             try {
                 e.dataTransfer.setData('application/json', JSON.stringify(draggedItemInfo));
-            } catch {
-                // ignore
+            } catch (err) {
+                console.warn('[useSchemaDnD] Failed to serialize canvas drag data:', err);
             }
         }
     };

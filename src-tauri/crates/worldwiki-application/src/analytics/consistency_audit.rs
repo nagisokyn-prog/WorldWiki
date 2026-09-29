@@ -8,6 +8,14 @@ use worldwiki_ports::repositories::{
 };
 use crate::errors::ApplicationError;
 
+fn is_participant(participants: &[String], entity_id: &str) -> bool {
+    let clean_ent = entity_id.strip_prefix("entities:").unwrap_or(entity_id);
+    participants.iter().any(|p| {
+        let clean_p = p.strip_prefix("entities:").unwrap_or(p);
+        clean_p == clean_ent
+    })
+}
+
 pub struct ConsistencyAuditWorkflow {
     pub analytics_repo: Arc<dyn AnalyticsRepositoryPort>,
     pub entity_repo: Arc<dyn EntityRepository>,
@@ -45,7 +53,7 @@ impl ConsistencyAuditWorkflow {
             if ent.is_deceased {
                 if let Some(death_m_abs) = ent.death_m_abs {
                     for ev in &timeline_data.events {
-                        if ev.participants.contains(&ent.id) && ev.m_abs > death_m_abs {
+                        if is_participant(&ev.participants, &ent.id) && ev.m_abs > death_m_abs {
                             anomalies.push(ContradictionAnomaly {
                                 rule: ContradictionRule::DeceasedEntityActive,
                                 severity: ContradictionSeverity::Critical,
@@ -69,7 +77,7 @@ impl ConsistencyAuditWorkflow {
         for ent in &matrix.entities {
             if let Some(birth_m_abs) = ent.birth_m_abs {
                 for ev in &timeline_data.events {
-                    if ev.participants.contains(&ent.id) && ev.m_abs < birth_m_abs {
+                    if is_participant(&ev.participants, &ent.id) && ev.m_abs < birth_m_abs {
                         anomalies.push(ContradictionAnomaly {
                             rule: ContradictionRule::ActionBeforeBirth,
                             severity: ContradictionSeverity::Critical,

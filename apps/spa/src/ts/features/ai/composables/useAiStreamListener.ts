@@ -85,8 +85,8 @@ export function useAiStreamListener(options: {
                 targetChat.token_usage = u;
               }
             }
-          } catch {
-            // ignore
+          } catch (err) {
+            console.warn('[useAiStreamListener] Failed to parse usage chunk payload:', err);
           }
         } else {
           newMsg.content = chunk.text;
@@ -128,8 +128,8 @@ export function useAiStreamListener(options: {
               targetChat.token_usage = u;
             }
           }
-        } catch {
-          // ignore
+        } catch (err) {
+          console.warn('[useAiStreamListener] Failed to parse usage chunk payload:', err);
         }
       } else {
         msg.content = (msg.content || '') + chunk.text;

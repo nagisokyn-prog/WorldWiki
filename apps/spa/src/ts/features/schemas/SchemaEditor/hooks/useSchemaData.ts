@@ -85,7 +85,7 @@ export function useSchemaData(
         try {
             const schemas = await api.getEntitySchemas(props.project);
             const foundSchema = schemas.find((s: EntitySchema) => s.type_key === props.entityType);
-            const BUILTIN_SCHEMAS = ['character', 'organization', 'state', 'ui_editor'];
+            const BUILTIN_SCHEMAS = ['character', 'location', 'organization', 'state', 'item', 'event', 'fraction', 'ui_editor'];
             const createDefaultSchema = (typeKey: string) => ({
                 name: typeKey,
                 entityType: typeKey,

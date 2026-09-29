@@ -12,7 +12,7 @@ import '@worldwiki/resources/styles/font-awesome.min.css';
 import '@worldwiki/resources/styles/styles.css';
 import '@worldwiki/resources/styles/base/glass-animations.css';
 
-import * as api from '../services/api.client';;
+import { entityApi } from '../services/Entity/entity.api';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
 import { setupGlass } from '../utils/v-glass';
@@ -48,9 +48,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const projectName = params.get('project') || 'default';
 
-  // Загружаем схемы сущностей
+  // Загружаем и синхронизируем схемы сущностей
   try {
-    await api.getEntitySchemas(projectName);
+    await entityApi.getSchemas(projectName);
   } catch (e) {
     console.warn('Failed to load schemas:', e);
   }

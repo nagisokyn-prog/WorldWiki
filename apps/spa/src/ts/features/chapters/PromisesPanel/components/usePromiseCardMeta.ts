@@ -116,8 +116,8 @@ export function usePromiseCardMeta(
 
       projectTimelineEvents.value = eventsList;
       dateTime.syncInitialTimelineDate(props.item, props.item.timeline_event_id, eventsList);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('[usePromiseCardMeta] Failed to load project timeline events:', err);
     }
   };
 

@@ -38,8 +38,8 @@ export function useTiptapState(
         if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split' || mode === 'word') {
           return mode;
         }
-      } catch {
-        // ignore
+      } catch (err) {
+        console.warn('[useTiptapState] Failed to parse saved editor mode from localStorage:', err);
       }
     }
     return (localStorage.getItem('default-editor-mode') as EditorMode) || 'wysiwyg';

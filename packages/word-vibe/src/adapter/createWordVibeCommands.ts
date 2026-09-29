@@ -53,8 +53,8 @@ export function executeWordVibeCommand(
     if (ed && !ed.isFocused && !ed.state?.selection?.empty) {
       ed.commands?.focus?.();
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn('[WordVibeCommands] Failed to focus editor before command execution:', err);
   }
 
   switch (name) {

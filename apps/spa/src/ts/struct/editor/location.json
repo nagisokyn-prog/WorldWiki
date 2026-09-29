@@ -1,0 +1,361 @@
+{
+  "name": "Локация",
+  "icon": "fa-map-marker-alt",
+  "iconEmoji": "📍",
+  "photoField": "фото",
+  "tagsField": "теги",
+  "titleField": "название",
+  "entityType": "location",
+  "sections": [
+    {
+      "id": "basic",
+      "title": "Основные данные",
+      "icon": "📝",
+      "fields": [
+        {
+          "id": "locName",
+          "type": "text",
+          "label": "Название локации",
+          "placeholder": "Например, Замок Драконий Камень, Трактир \"Пьяный Дракон\"",
+          "path": "название",
+          "required": true,
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locPhoto",
+          "type": "photo",
+          "label": "Изображение / Карта места",
+          "placeholder": "Загрузите изображение",
+          "path": "фото"
+        },
+        {
+          "id": "locType",
+          "type": "select",
+          "label": "Тип локации (Масштаб сцены)",
+          "placeholder": "",
+          "path": "тип_локации",
+          "required": true,
+          "options": [
+            {
+              "value": "интерьер",
+              "label": "🚪 Помещение / Интерьер (комната, тронный зал, каюта)"
+            },
+            {
+              "value": "здание",
+              "label": "🏰 Здание / Сооружение (замок, трактир, бункер, маяк)"
+            },
+            {
+              "value": "микро_точка",
+              "label": "📍 Точка на местности (мост, перекресток, площадь, поляна)"
+            },
+            {
+              "value": "поселение",
+              "label": "🏘️ Поселение / Город (деревня, мегаполис, станция)"
+            },
+            {
+              "value": "природная_зона",
+              "label": "🌲 Природный ландшафт (лес, перевал, болото, пещера)"
+            },
+            {
+              "value": "гео_регион",
+              "label": "🗺️ Географический регион (остров, долина, архипелаг, пустошь)"
+            },
+            {
+              "value": "макро_объект",
+              "label": "🪐 Планета / Астрономический объект / Сектор"
+            }
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locParent",
+          "type": "select",
+          "label": "Входит в локацию (Родитель)",
+          "placeholder": "Выберите родительскую локацию...",
+          "path": "родительская_локация",
+          "hint": "Формирует географическую иерархию (Комната ⊂ Здание ⊂ Город ⊂ Регион)",
+          "entityType": "location",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locStatus",
+          "type": "select",
+          "label": "Статус локации",
+          "placeholder": "",
+          "path": "статус_категория",
+          "required": true,
+          "options": [
+            {
+              "value": "Существует",
+              "label": "🟢 Существует / Доступна"
+            },
+            {
+              "value": "Разрушена / Руины",
+              "label": "🔴 Разрушена / В руинах"
+            },
+            {
+              "value": "Заброшена",
+              "label": "🟡 Заброшена"
+            },
+            {
+              "value": "Скрыта / Затоплена",
+              "label": "⚪ Скрыта / Затоплена / Недоступна"
+            }
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locState",
+          "type": "select",
+          "label": "Государство / Держава (Юрисдикция)",
+          "placeholder": "Выберите государство...",
+          "path": "принадлежность_государству",
+          "entityType": "state",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locFaction",
+          "type": "select",
+          "label": "Фактический контроль (Фракция / Гарнизон)",
+          "placeholder": "Выберите контролирующую организацию...",
+          "path": "контролирующая_фракция",
+          "entityType": "organization",
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
+        },
+        {
+          "id": "locTags",
+          "type": "tags",
+          "label": "Теги",
+          "placeholder": "Введите теги через Enter",
+          "path": "теги"
+        },
+        {
+          "id": "locDescription",
+          "type": "textarea",
+          "label": "Краткое описание места",
+          "placeholder": "Общее визуальное и смысловое описание...",
+          "path": "описание",
+          "rows": 4
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "geography",
+      "title": "География и природа",
+      "icon": "🌲",
+      "fields": [
+        {
+          "id": "locClimate",
+          "type": "text",
+          "label": "Климат и погода",
+          "placeholder": "Например, суровый северный, тропический влажный",
+          "path": "климат"
+        },
+        {
+          "id": "locLandscape",
+          "type": "text",
+          "label": "Ландшафт и рельеф",
+          "placeholder": "Например, скалистые горы, густые хвойные леса",
+          "path": "ландшафт"
+        },
+        {
+          "id": "locArea",
+          "type": "text",
+          "label": "Площадь / Протяженность",
+          "placeholder": "Например, 150 кв. км",
+          "path": "площадь"
+        },
+        {
+          "id": "locCoordinates",
+          "type": "text",
+          "label": "Координаты / Положение на карте",
+          "placeholder": "Например, 54°N, 12°E или Сектор 7G",
+          "path": "координаты"
+        },
+        {
+          "id": "locDangerLevel",
+          "type": "range",
+          "label": "Уровень опасности (0-100)",
+          "placeholder": "",
+          "path": "уровень_опасности",
+          "min": 0,
+          "max": 100,
+          "value": 10
+        },
+        {
+          "id": "locResources",
+          "type": "textarea",
+          "label": "Природные ресурсы и флора/фауна",
+          "placeholder": "Добываемые минералы, редкие травы, опасные хищники...",
+          "path": "ресурсы",
+          "rows": 3
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "culture",
+      "title": "Население и общество",
+      "icon": "👥",
+      "fields": [
+        {
+          "id": "locPopulation",
+          "type": "text",
+          "label": "Численность населения",
+          "placeholder": "Например, 50 000 жителей",
+          "path": "население"
+        },
+        {
+          "id": "locDemographics",
+          "type": "textarea",
+          "label": "Демографический состав и расы",
+          "placeholder": "70% людей, 20% гномов, 10% эльфов...",
+          "path": "демография",
+          "rows": 3
+        },
+        {
+          "id": "locLanguages",
+          "type": "text",
+          "label": "Основные языки и диалекты",
+          "placeholder": "Например, Всеобщий, Древний нордский",
+          "path": "языки"
+        },
+        {
+          "id": "locTraditions",
+          "type": "textarea",
+          "label": "Культура, праздники и обычаи",
+          "placeholder": "Местные законы, празднества, религиозные культы...",
+          "path": "культура",
+          "rows": 3
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "architecture",
+      "title": "Архитектура и объекты",
+      "icon": "🏰",
+      "fields": [
+        {
+          "id": "locArchStyle",
+          "type": "text",
+          "label": "Архитектурный стиль",
+          "placeholder": "Например, готика, киберпанк, древний монолит",
+          "path": "архитектурный_стиль"
+        },
+        {
+          "id": "locKeyBuildings",
+          "type": "textarea",
+          "label": "Ключевые сооружения и достопримечательности",
+          "placeholder": "Главная ратуша, часовая башня, рынок, казармы...",
+          "path": "ключевые_объекты",
+          "rows": 4
+        },
+        {
+          "id": "locDefenses",
+          "type": "textarea",
+          "label": "Оборона и укрепления",
+          "placeholder": "Крепостные стены, защитные магические барьеры, гарнизон...",
+          "path": "оборона",
+          "rows": 3
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "history",
+      "title": "Хронология и эволюция",
+      "icon": "⏳",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "controlTimeline",
+          "type": "timeline",
+          "title": "Эволюция контроля и владельцев",
+          "emptyMessage": "Смены власти не зафиксированы",
+          "template": "Базовая хронология",
+          "dataPath": "эволюция_контроля",
+          "fieldOverrides": {
+            "название": {
+              "label": "Владелец / Фракция у власти",
+              "type": "select",
+              "entityType": "organization"
+            },
+            "описание_1": {
+              "label": "Обстоятельства смены власти / Осада / Договор"
+            },
+            "статус_категория": {
+              "hidden": true
+            },
+            "описание_2": {
+              "hidden": true
+            },
+            "описание_3": {
+              "hidden": true
+            },
+            "числовой_показатель": {
+              "hidden": true
+            }
+          }
+        },
+        {
+          "id": "locationEvents",
+          "type": "timeline",
+          "title": "Ключевые исторические события места",
+          "emptyMessage": "Исторические события не добавлены",
+          "template": "Динамический элемент",
+          "dataPath": "исторические_события",
+          "fieldOverrides": {
+            "название": {
+              "label": "Название битвы / события"
+            },
+            "описание_1": {
+              "label": "Последствия для локации"
+            },
+            "статус_категория": {
+              "hidden": true
+            },
+            "описание_2": {
+              "hidden": true
+            },
+            "описание_3": {
+              "hidden": true
+            },
+            "числовой_показатель": {
+              "hidden": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "relations",
+      "title": "Связи и маршруты",
+      "icon": "🕸️",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "locationConnections",
+          "type": "dynamic",
+          "title": "Торговые и стратегические связи",
+          "emptyMessage": "Связи не добавлены",
+          "template": "Двунаправленная связь",
+          "dataPath": "связанные_локации"
+        }
+      ]
+    }
+  ]
+}

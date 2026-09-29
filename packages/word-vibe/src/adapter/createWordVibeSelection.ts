@@ -73,8 +73,8 @@ export function buildSelectionDTO(
         }
       }
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn('[WordVibeSelection] Failed to resolve selection formatting attributes:', err);
   }
 
   return {

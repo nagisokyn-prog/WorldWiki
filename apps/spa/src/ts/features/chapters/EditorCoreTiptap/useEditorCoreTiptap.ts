@@ -145,8 +145,8 @@ export function useEditorCoreTiptap(
             if (el) {
               targetElements.push(el);
             }
-          } catch {
-            // ignore invalid selector
+          } catch (err) {
+            console.warn('[useEditorCoreTiptap] Failed to query block selector for ID:', safeId, err);
           }
         }
 

@@ -60,7 +60,10 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       timeline_event_id: null,
       arc_id: null,
       arc_phase: null,
-      arcs: null
+      arcs: null,
+      m_abs: null,
+      calendar_id: null,
+      date_fields: null
     };
 
     try {

@@ -721,14 +721,17 @@ async fn test_manuscript_consistency_audit_rules() {
 
     let services = create_test_services(Arc::new(db.clone()));
 
-    // 1. Создаем персонажей: один живой, один погибший в m_abs=1000
+    // 1. Создаем персонажей: один живой, один погибший в m_abs=1000, один нерожденный (m_abs=5000)
     let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1", 1).await;
     let _ch2 = create_test_chapter(&db, proj_key, "ch2", "Глава 2", 2).await;
 
     let _hero_alive = create_test_entity(&db, proj_key, "hero_alive", "Живой Герой", "character").await;
 
-    let dead_sql = "UPSERT type::record('entities', 'dead_hero') SET project_id = type::record('projects', $p), name = 'Погибший Герой', entity_type = 'character', attributes = { is_deceased: true, death_m_abs: 1000 }";
+    let dead_sql = "UPSERT type::record('entities', 'dead_hero') SET project_id = type::record('projects', $p), name = 'Погибший Герой', entity_type = 'character', attributes = { 'статус_категория': 'Мёртв', is_deceased: true, death_m_abs: 1000 }";
     let _ = db.query(dead_sql).bind(("p", proj_key)).await.expect("create dead hero");
+
+    let unborn_sql = "UPSERT type::record('entities', 'unborn_hero') SET project_id = type::record('projects', $p), name = 'Нерожденный Герой', entity_type = 'character', attributes = { 'дата_рождения': { 'm_abs': 5000 }, birth_m_abs: 5000 }";
+    let _ = db.query(unborn_sql).bind(("p", proj_key)).await.expect("create unborn hero");
 
     // 2. Создаем событие в m_abs=2880, где участвует погибший герой (Критическая ошибка 🔴)
     let _ev_late = create_timeline_event(&db, proj_key, "ev_late", "Битва после смерти", 2).await; // m_abs = 2880
@@ -737,6 +740,13 @@ async fn test_manuscript_consistency_audit_rules() {
         .bind(("p", proj_key))
         .await
         .expect("relate dead hero to late event");
+
+    // Создаем событие в m_abs=1440, где участвует еще не родившийся персонаж (Критическая ошибка 🔴 ActionBeforeBirth)
+    let _ = db.query("RELATE (type::record('entities', 'unborn_hero')) -> participates_in -> (type::record('timeline_events', $ev)) SET project_id = type::record('projects', $p), role = 'actor'")
+        .bind(("ev", "ev_late"))
+        .bind(("p", proj_key))
+        .await
+        .expect("relate unborn hero to early event");
 
     // 3. Создаем два события в одно и то же время m_abs=1440, где одновременно участвует Живой Герой (Билокация 🟡)
     let _ev_biloc1 = create_timeline_event(&db, proj_key, "ev_b1", "Событие в Замке", 1).await;
@@ -763,6 +773,13 @@ async fn test_manuscript_consistency_audit_rules() {
         .collect();
     assert!(!deceased_anomalies.is_empty(), "Должна быть обнаружена ошибка активности погибшего персонажа");
     assert_eq!(deceased_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
+
+    // Проверяем обнаружение нарушения "Действие персонажа до рождения" (ActionBeforeBirth)
+    let before_birth_anomalies: Vec<_> = anomalies.iter()
+        .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::ActionBeforeBirth))
+        .collect();
+    assert!(!before_birth_anomalies.is_empty(), "Должна быть обнаружена ошибка действия персонажа до рождения");
+    assert_eq!(before_birth_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
 
     // Проверяем обнаружение нарушения "Билокация"
     let biloc_anomalies: Vec<_> = anomalies.iter()

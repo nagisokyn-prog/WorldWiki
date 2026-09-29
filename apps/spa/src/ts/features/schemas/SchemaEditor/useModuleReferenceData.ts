@@ -26,7 +26,7 @@ const isLoaded = ref(false);
 
 export function useModuleReferenceData(projectName?: string) {
   const rawStaticSchemas = import.meta.glob<Record<string, { default?: RawSchema } | RawSchema>>(
-    '../../../../../public/struct/editor/*.json',
+    '../../../struct/editor/*.json',
     { eager: true }
   );
 

@@ -60,7 +60,7 @@ export interface SchemaContainerItem {
 export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const isDraggedOver = ref(false);
     const rawConfigs = import.meta.glob<Record<string, { default?: { templates?: Record<string, SchemaTemplateConfig> }; templates?: Record<string, SchemaTemplateConfig> }>>(
-        '../../../../../public/struct/editor/ui_editor.json',
+        '../../../struct/editor/ui_editor.json',
         { eager: true }
     );
     const uiMod = Object.values(rawConfigs)[0];
@@ -72,7 +72,7 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const availableEntityTypes = computed(() => {
         let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>;
         try {
-            rawSchemas = import.meta.glob<Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>>('../../../../../public/struct/editor/*.json', { eager: true });
+            rawSchemas = import.meta.glob<Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>>('../../../struct/editor/*.json', { eager: true });
         } catch {
             rawSchemas = {};
         }

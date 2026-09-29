@@ -36,8 +36,8 @@ export function useAiModels() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           availableModels.value = parsed;
         }
-      } catch {
-        // ignore parse error
+      } catch (err) {
+        console.warn('[useAiModels] Failed to parse cached models from localStorage:', err);
       }
     }
 

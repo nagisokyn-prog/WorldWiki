@@ -15,7 +15,7 @@ export interface SceneArcItem {
   arc_phase?: string | null;
 }
 
-export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution' | 'arcs'> & {
+export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution' | 'arcs' | 'm_abs' | 'calendar_id' | 'date_fields'> & {
   progressions?: PromiseMilestone[] | null;
   resolution?: PromiseMilestone | null;
   arcs?: SceneArcItem[] | null;

@@ -1,0 +1,498 @@
+{
+  "name": "Универсальный конструктор сущностей",
+  "icon": "fa-cube",
+  "iconEmoji": "🧩",
+  "photoField": "фото",
+  "tagsField": "теги",
+  "titleField": "название",
+  "entityType": "generic",
+  "sections": [
+    {
+      "id": "основное",
+      "title": "Основные данные",
+      "icon": "📝",
+      "fields": [
+        {
+          "id": "название",
+          "type": "text",
+          "label": "Название",
+          "required": true,
+          "placeholder": "Введите название сущности",
+          "path": "название"
+        },
+        {
+          "id": "фото",
+          "type": "photo",
+          "label": "Фото / Изображение",
+          "placeholder": "Загрузите изображение",
+          "path": "фото"
+        },
+        {
+          "id": "статус",
+          "type": "select",
+          "label": "Статус",
+          "required": true,
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "активен",
+              "label": "🟢 Активен"
+            },
+            {
+              "value": "неактивен",
+              "label": "🟡 Неактивен"
+            },
+            {
+              "value": "удален",
+              "label": "🔴 Удалён"
+            }
+          ],
+          "placeholder": "Выберите статус",
+          "path": "статус"
+        },
+        {
+          "id": "дата_создания",
+          "type": "calendar_datetime",
+          "label": "Дата создания / основания",
+          "placeholder": "Выберите дату по календарю проекта",
+          "hint": "Используется календарь вымышленного мира",
+          "path": "дата_создания"
+        },
+        {
+          "id": "теги",
+          "type": "tags",
+          "label": "Теги",
+          "placeholder": "Введите теги через Enter",
+          "hint": "Ключевые слова для поиска и AI-генерации",
+          "path": "теги"
+        },
+        {
+          "id": "описание",
+          "type": "textarea",
+          "label": "Краткое описание",
+          "rows": 4,
+          "placeholder": "Общее описание сущности...",
+          "path": "описание"
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "характеристики",
+      "title": "Характеристики и параметры",
+      "icon": "📊",
+      "fields": [
+        {
+          "id": "числовое_значение",
+          "type": "number",
+          "label": "Числовое значение",
+          "min": 0,
+          "max": 999999,
+          "value": 100,
+          "placeholder": "Введите число",
+          "path": "числовое_значение"
+        },
+        {
+          "id": "уровень",
+          "type": "range",
+          "label": "Уровень / Шкала (0-100)",
+          "min": 0,
+          "max": 100,
+          "value": 50,
+          "path": "уровень"
+        },
+        {
+          "id": "категория",
+          "type": "select",
+          "label": "Категория (выпадающий список)",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "тип1",
+              "label": "Тип 1"
+            },
+            {
+              "value": "тип2",
+              "label": "Тип 2"
+            },
+            {
+              "value": "тип3",
+              "label": "Тип 3"
+            }
+          ],
+          "placeholder": "Выберите категорию",
+          "path": "категория"
+        },
+        {
+          "id": "связанная_сущность",
+          "type": "select",
+          "label": "Связь с другой сущностью",
+          "entityType": "character",
+          "placeholder": "Выберите сущность из списка...",
+          "path": "связанная_сущность"
+        },
+        {
+          "id": "множественный_выбор",
+          "type": "multiselect",
+          "label": "Множественный выбор",
+          "options": [
+            {
+              "value": "вариант_а",
+              "label": "Вариант А"
+            },
+            {
+              "value": "вариант_б",
+              "label": "Вариант Б"
+            },
+            {
+              "value": "вариант_в",
+              "label": "Вариант В"
+            }
+          ],
+          "placeholder": "Выберите один или несколько вариантов",
+          "path": "множественный_выбор"
+        },
+        {
+          "id": "множественные_сущности",
+          "type": "multiselect",
+          "label": "Множественные связи (сущности)",
+          "entityType": "organization",
+          "placeholder": "Выберите несколько сущностей...",
+          "path": "множественные_сущности"
+        }
+      ],
+      "dynamicContainers": []
+    },
+    {
+      "id": "хронология",
+      "title": "Хронология и эволюция",
+      "icon": "⏳",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "эволюция_параметра",
+          "type": "timeline",
+          "title": "Эволюция параметра по главам",
+          "emptyMessage": "Записи эволюции не добавлены. Нажмите «Добавить», чтобы создать первую запись.",
+          "template": "Базовая хронология",
+          "dataPath": "эволюция_параметра"
+        },
+        {
+          "id": "события",
+          "type": "timeline",
+          "title": "Ключевые события",
+          "emptyMessage": "События не добавлены",
+          "template": "Событие",
+          "dataPath": "события"
+        }
+      ]
+    },
+    {
+      "id": "динамические_списки",
+      "title": "Динамические списки",
+      "icon": "📋",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "простой_список",
+          "type": "dynamic",
+          "title": "Простой динамический список",
+          "emptyMessage": "Элементы не добавлены. Нажмите «Добавить».",
+          "template": "Динамический элемент",
+          "dataPath": "простой_список"
+        },
+        {
+          "id": "двунаправленная_связь",
+          "type": "dynamic",
+          "title": "Двунаправленная связь с сущностью",
+          "emptyMessage": "Связи не добавлены",
+          "template": "Двунаправленная связь",
+          "dataPath": "двунаправленные_связи"
+        },
+        {
+          "id": "вложенная_хронология",
+          "type": "dynamic",
+          "title": "Элемент с вложенной хронологией",
+          "emptyMessage": "Элементы не добавлены",
+          "template": "Вложенная хронология",
+          "dataPath": "вложенная_хронология"
+        },
+        {
+          "id": "ограниченный_список",
+          "type": "dynamic",
+          "title": "Ограниченный список (макс. 1 элемент)",
+          "limit": 1,
+          "emptyMessage": "Элемент не добавлен. Нажмите «Добавить», чтобы указать значение.",
+          "template": "Одиночный параметр",
+          "dataPath": "ограниченный_список"
+        }
+      ]
+    },
+    {
+      "id": "сложные_структуры",
+      "title": "Сложные структуры данных",
+      "icon": "🔧",
+      "fields": [
+        {
+          "id": "детальное_описание",
+          "type": "textarea",
+          "label": "Детальное описание",
+          "rows": 6,
+          "placeholder": "Развёрнутое текстовое поле с несколькими строками...",
+          "path": "детальное_описание"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "иерархический_список",
+          "type": "dynamic",
+          "title": "Иерархический элемент (с вложенными динамическими контейнерами)",
+          "emptyMessage": "Элементы не добавлены",
+          "template": "Иерархическая структура",
+          "dataPath": "иерархический_список"
+        }
+      ]
+    }
+  ],
+  "templates": {
+    "Базовая хронология": {
+      "type": "timeline",
+      "description": "Универсальный модуль хронологии.",
+      "headerTitle": "Запись",
+      "fields": [
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Категория",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            }
+          ],
+          "placeholder": "Выберите..."
+        },
+        {
+          "type": "text",
+          "class": "название",
+          "label": "Название",
+          "placeholder": "Введите название..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_2",
+          "label": "Дополнительно",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_3",
+          "label": "Дополнительно 2",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "range",
+          "class": "числовой_показатель",
+          "label": "Показатель",
+          "placeholder": "0",
+          "min": 0,
+          "max": 100
+        }
+      ],
+      "itemClass": "timeline-item"
+    },
+    "Динамический элемент": {
+      "type": "dynamic",
+      "description": "Универсальный модуль без привязки к главам.",
+      "headerTitle": "Элемент",
+      "fields": [
+        {
+          "type": "text",
+          "class": "название",
+          "label": "Название",
+          "placeholder": "..."
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Категория",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            }
+          ],
+          "placeholder": "Выберите..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_2",
+          "label": "Дополнительно",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_3",
+          "label": "Дополнительно 2",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "calendar_datetime",
+          "class": "дата",
+          "label": "Дата",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "range",
+          "class": "числовой_показатель",
+          "label": "Показатель",
+          "placeholder": "0"
+        }
+      ],
+      "itemClass": "dynamic-item"
+    },
+    "Двунаправленная связь": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "description": "Универсальная связь с другой сущностью.",
+      "headerTitle": "Связь",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Связанная сущность",
+          "entityType": "generic",
+          "placeholder": "Выберите сущность..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип связи",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            }
+          ],
+          "placeholder": "Выберите тип..."
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "relationshipStates",
+          "type": "timeline",
+          "title": "Динамика отношений",
+          "emptyMessage": "Динамика не добавлена",
+          "dataPath": "динамика_отношений",
+          "fields": [
+            {
+              "type": "manuscript_point",
+              "class": "начальная_глава",
+              "label": "Начало в рукописи (Том / Глава)",
+              "placeholder": "Выберите том и главу..."
+            },
+            {
+              "type": "manuscript_point",
+              "class": "конечная_глава",
+              "label": "Окончание в рукописи (Том / Глава)",
+              "placeholder": "Выберите том и главу...",
+              "allowAutoExtend": true
+            },
+            {
+              "type": "select",
+              "class": "тип_связи",
+              "label": "Тип связи (состояние)",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                }
+              ],
+              "placeholder": "Выберите тип..."
+            },
+            {
+              "type": "range",
+              "class": "сила_отношений",
+              "min": -100,
+              "max": 100,
+              "value": 0,
+              "label": "Отношение / Сила (-100 .. 100)"
+            },
+            {
+              "type": "textarea",
+              "class": "описание_причина",
+              "rows": 2,
+              "label": "Описание / Причина",
+              "placeholder": "Почему изменились отношения..."
+            }
+          ],
+          "itemClass": "timeline-item",
+          "headerTitle": "Состояние отношений"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "bidirectionalLinkClass": "целевая_сущность"
+    },
+    "Одиночный параметр": {
+      "type": "dynamic",
+      "headerTitle": "Параметр",
+      "fields": [
+        {
+          "type": "calendar_datetime",
+          "class": "значение_дата",
+          "label": "Дата",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "text",
+          "class": "значение_текст",
+          "label": "Значение",
+          "placeholder": "..."
+        }
+      ],
+      "itemClass": "dynamic-item"
+    }
+  },
+  "api": {
+    "list": "/api/project/{project}/generic",
+    "save": "/api/project/{project}/generic",
+    "delete": "/api/project/{project}/generic/{id}"
+  }
+}

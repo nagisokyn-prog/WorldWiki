@@ -42,13 +42,16 @@ describe('useSchemaTemplates', () => {
 
   it('handles empty uiEditorData.templates fallback', async () => {
     vi.resetModules();
-    vi.doMock('../../../../../../../public/struct/editor/ui_editor.json', () => ({
-      default: {},
-    }));
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ templates: {} })
+    } as any);
     const { useSchemaTemplates: useSchemaTemplatesMocked } = await import('../useSchemaTemplates');
     const mockedTpl = useSchemaTemplatesMocked();
     expect(mockedTpl.timelineTemplates.value).toEqual({});
     expect(mockedTpl.dynamicTemplates.value).toEqual({});
+    globalThis.fetch = originalFetch;
     vi.resetModules();
   });
 });

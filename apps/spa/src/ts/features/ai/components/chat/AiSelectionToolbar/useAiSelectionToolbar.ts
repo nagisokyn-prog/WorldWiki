@@ -67,8 +67,8 @@ export function useAiSelectionToolbar(emit: {
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(selectedText.value);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('[AiSelectionToolbar] Failed to copy text to clipboard:', err);
     }
     position.value.visible = false;
   };

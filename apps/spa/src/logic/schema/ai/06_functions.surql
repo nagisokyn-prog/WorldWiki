@@ -1,14 +1,14 @@
 -- ==============================================================================
--- 06_FUNCTIONS.SURQL — ХРАНИМЫЕ АНАЛИТИЧЕСКИЕ И RAG ФУНКЦИИ (ULTRA EDITION)
+-- 06_FUNCTIONS.SURQL вЂ” РҐР РђРќРРњР«Р• РђРќРђР›РРўРР§Р•РЎРљРР• Р RAG Р¤РЈРќРљР¦РР (ULTRA EDITION)
 -- ==============================================================================
--- Включает:
--- 1. fn::upsert_global_web_page (Атомарная функция кэширования веб-страниц)
--- 2. fn::gather_rag_bundle (Автоматический сбор контекста сущностей, чанков, глав и связей)
--- 3. fn::get_chapter_multi_hop_context (GraphRAG: многошаговый обход связей и таймлайна главы)
--- 4. fn::resolve_auto_skills (Атомарный резолв навыков по триггерам и BM25)
+-- Р’РєР»СЋС‡Р°РµС‚:
+-- 1. fn::upsert_global_web_page (РђС‚РѕРјР°СЂРЅР°СЏ С„СѓРЅРєС†РёСЏ РєСЌС€РёСЂРѕРІР°РЅРёСЏ РІРµР±-СЃС‚СЂР°РЅРёС†)
+-- 2. fn::gather_rag_bundle (РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ СЃР±РѕСЂ РєРѕРЅС‚РµРєСЃС‚Р° СЃСѓС‰РЅРѕСЃС‚РµР№, С‡Р°РЅРєРѕРІ, РіР»Р°РІ Рё СЃРІСЏР·РµР№)
+-- 3. fn::get_chapter_multi_hop_context (GraphRAG: РјРЅРѕРіРѕС€Р°РіРѕРІС‹Р№ РѕР±С…РѕРґ СЃРІСЏР·РµР№ Рё С‚Р°Р№РјР»Р°Р№РЅР° РіР»Р°РІС‹)
+-- 4. fn::resolve_auto_skills (РђС‚РѕРјР°СЂРЅС‹Р№ СЂРµР·РѕР»РІ РЅР°РІС‹РєРѕРІ РїРѕ С‚СЂРёРіРіРµСЂР°Рј Рё BM25)
 -- ==============================================================================
 
--- 1. АТОМАРНАЯ ФУНКЦИЯ КЭШИРОВАНИЯ ВЕБ-СТРАНИЦЫ
+-- 1. РђРўРћРњРђР РќРђРЇ Р¤РЈРќРљР¦РРЇ РљР­РЁРР РћР’РђРќРРЇ Р’Р•Р‘-РЎРўР РђРќРР¦Р«
 DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
     $url: string,
     $canonical_url: string,
@@ -69,34 +69,37 @@ DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
     };
 };
 
--- 2. СБОР RAG-КОНТЕКСТА (СУЩНОСТИ, ЧАНКИ, ГЛАВЫ, СВЯЗИ)
+-- 2. РЎР‘РћР  RAG-РљРћРќРўР•РљРЎРўРђ (РЎРЈР©РќРћРЎРўР, Р§РђРќРљР, Р“Р›РђР’Р«, РЎР’РЇР—Р)
 DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $proj: record<projects>, 
     $q: string, 
     $limit: int, 
     $rel_limit: int
 ) {
+    LET $p_rec = $proj;
+    LET $q_low = string::lowercase($q);
+
     LET $ents = (
-        SELECT id, name, entity_type AS type_key, description, tags, attributes, search::score(1) AS score 
+        SELECT id, name, entity_type AS type_key, description, tags, attributes 
         FROM entities 
-        WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) 
-        ORDER BY score DESC
+        WHERE project_id = $p_rec 
+          AND (string::lowercase(name) CONTAINS $q_low OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS $q_low))
         LIMIT $limit
     );
     
     LET $chunks = (
-        SELECT id, entity_id, content, search::score(1) AS score 
+        SELECT id, entity_id, content 
         FROM entity_chunks 
-        WHERE project_id = $proj AND content @1@ $q 
-        ORDER BY score DESC
+        WHERE project_id = $p_rec 
+          AND (content != NONE AND string::lowercase(type::string(content)) CONTAINS $q_low)
         LIMIT $limit
     );
 
     LET $chaps = (
-        SELECT id, title, content, search::score(1) AS score, search::highlight('<b>', '</b>', 1) AS snippet 
+        SELECT id, title, content 
         FROM chapters 
-        WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) 
-        ORDER BY score DESC
+        WHERE project_id = $p_rec 
+          AND (string::lowercase(title) CONTAINS $q_low OR (content != NONE AND string::lowercase(type::string(content)) CONTAINS $q_low))
         LIMIT $limit
     );
 
@@ -120,7 +123,7 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     };
 };
 
--- 3. GRAPHRAG: МНОГОШАГОВЫЙ ОБХОД КОНТЕКСТА ГЛАВЫ
+-- 3. GRAPHRAG: РњРќРћР“РћРЁРђР“РћР’Р«Р™ РћР‘РҐРћР” РљРћРќРўР•РљРЎРўРђ Р“Р›РђР’Р«
 DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {
     LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter);
     LET $relations = (
@@ -148,20 +151,19 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
     };
 };
 
--- 4. АТОМАРНЫЙ РЕЗОЛВ НАВЫКОВ (ТРИГГЕРЫ + BM25)
+-- 4. РђРўРћРњРђР РќР«Р™ Р Р•Р—РћР›Р’ РќРђР’Р«РљРћР’ (РўР РР“Р“Р•Р Р« + BM25)
 DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     $proj: option<record<projects>>,
     $query: string,
     $limit: int
 ) {
     LET $bm25_matches = (
-        SELECT id, name, description, prompt_text, file_path, priority, 'bm25' AS matched_via, search::score(1) AS score
+        SELECT id, name, description, prompt_text, file_path, priority, 'bm25' AS matched_via
         FROM ai_skills
         WHERE (project_id = $proj OR project_id = NONE)
           AND is_auto_trigger = true
           AND is_unlocked = true
-          AND (name @1@ $query OR description @1@ $query OR prompt_text @1@ $query)
-        ORDER BY score DESC
+          AND (name @1@ $query OR description @2@ $query OR prompt_text @3@ $query)
         LIMIT $limit
     );
 

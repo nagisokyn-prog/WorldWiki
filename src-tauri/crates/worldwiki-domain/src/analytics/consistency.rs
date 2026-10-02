@@ -63,7 +63,7 @@ impl ConsistencyAuditReportDto {
         }
 
         let total = anomalies.len();
-        let penalty = (critical_count * 25 + warning_count * 10 + notice_count * 2) as i32;
+        let penalty = (critical_count * 15 + warning_count * 5 + notice_count * 1) as i32;
         let healthy_percent = if total == 0 {
             100
         } else {

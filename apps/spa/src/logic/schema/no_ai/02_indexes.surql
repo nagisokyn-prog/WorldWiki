@@ -10,8 +10,8 @@
 -- 1. ИЕРАРХИЯ РУКОПИСИ
 DEFINE INDEX OVERWRITE idx_volume_project    ON volumes FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_chapter_project   ON chapters FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_chapter_ft        ON chapters COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
-DEFINE INDEX OVERWRITE idx_chapter_title_ft  ON chapters COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_chapter_title_ft  ON chapters FIELDS title FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_chapter_ft        ON chapters FIELDS content FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_contains_in       ON contains FIELDS in;
 DEFINE INDEX OVERWRITE idx_contains_out      ON contains FIELDS out;
 
@@ -40,8 +40,8 @@ DEFINE INDEX OVERWRITE idx_schema_history_schema  ON schema_history FIELDS schem
 -- 5. СУЩНОСТИ ЛОРА
 DEFINE INDEX OVERWRITE idx_entity_project ON entities FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entity_type;
-DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities COLUMNS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
-DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities COLUMNS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 
 -- 6. СВЯЗИ И ОТНОШЕНИЯ
 DEFINE INDEX OVERWRITE idx_rel_schema_project ON relation_schemas FIELDS project_id;
@@ -99,4 +99,4 @@ DEFINE INDEX OVERWRITE idx_promise_location         ON plot_promises FIELDS loca
 DEFINE INDEX OVERWRITE idx_promise_timeline_event   ON plot_promises FIELDS timeline_event_id;
 DEFINE INDEX OVERWRITE idx_promise_arc              ON plot_promises FIELDS arc_id;
 DEFINE INDEX OVERWRITE idx_promise_quote_ft         ON plot_promises COLUMNS quote FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
-DEFINE INDEX OVERWRITE idx_promise_desc_ft          ON plot_promises COLUMNS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_promise_note_ft          ON plot_promises COLUMNS note FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;

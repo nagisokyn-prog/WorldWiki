@@ -129,15 +129,26 @@ pub async fn delete_entity_schema_inner(
 ) -> Result<(), EntityError> {
     let clean_pid = project.trim().replace("projects:", "");
 
-    let mut tx_res = db
-        .query("fn::delete_entity_schema(type::record('projects', $p), $tk);")
-        .bind(("p", clean_pid))
-        .bind(("tk", type_key.to_string()))
-        .await?;
+    // SurrealKV может вернуть Transaction write conflict под нагрузкой — это
+    // транзиентная ошибка, которую можно повторить.
+    for attempt in 0..4u32 {
+        let mut tx_res = db
+            .query("fn::delete_entity_schema(type::record('projects', $p), $tk);")
+            .bind(("p", clean_pid.clone()))
+            .bind(("tk", type_key.to_string()))
+            .await?;
 
-    let errors = tx_res.take_errors();
-    if !errors.is_empty() {
-        return Err(EntityError::Transaction(format!("{:?}", errors)));
+        let errors = tx_res.take_errors();
+        if errors.is_empty() {
+            return Ok(());
+        }
+
+        let err_str = format!("{:?}", errors);
+        if attempt < 3 && err_str.contains("Transaction conflict") {
+            tokio::time::sleep(std::time::Duration::from_millis(50 * (1 << attempt))).await;
+            continue;
+        }
+        return Err(EntityError::Transaction(err_str));
     }
 
     Ok(())

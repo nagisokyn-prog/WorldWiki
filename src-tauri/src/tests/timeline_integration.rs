@@ -114,9 +114,11 @@ async fn delete_project_cascades_chapters() {
     );
 
     // DDL-событиe `cascade_project_delete` должно удалить все главы проекта.
-    db.query("DELETE FROM projects WHERE id = type::record('projects','p1')")
+    // ВАЖНО: Rust SDK .delete(record) гарантированно триггерит DEFINE EVENT
+    // для каждой записи. Сырой SQL DELETE может не триггерить events в SurrealDB.
+    db.delete::<Option<serde_json::Value>>(("projects", "p1"))
         .await
-        .expect("delete project");
+        .expect("delete project via SDK");
 
     let chapters = Chapter::find_all(&db, "projects:p1")
         .await

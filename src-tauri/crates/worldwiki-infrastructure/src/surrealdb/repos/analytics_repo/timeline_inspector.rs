@@ -30,8 +30,10 @@ struct RawTimelineRevealLink {
     chapter_id: String,
     #[serde(default)]
     chapter_title: Option<String>,
-    #[serde(default, alias = "chapter_order")]
+    #[serde(default)]
     chapter_sort_order: Option<i32>,
+    #[serde(default)]
+    chapter_order: Option<i32>,
     #[serde(default)]
     pov_id: Option<String>,
     #[serde(default)]
@@ -47,7 +49,7 @@ impl RawTimelineRevealLink {
         TimelineRevealLink {
             chapter_id: self.chapter_id,
             chapter_title: self.chapter_title.unwrap_or_default(),
-            chapter_sort_order: self.chapter_sort_order.unwrap_or(0),
+            chapter_sort_order: self.chapter_sort_order.or(self.chapter_order).unwrap_or(0),
             pov_id: self.pov_id,
             kind: self.kind.unwrap_or_else(|| "direct".to_string()),
             block_id: self.block_id,

@@ -31,9 +31,10 @@ pub(crate) async fn run_fallback_search(
     if list.len() < top_k {
         let ch_sql = if !q_trimmed.is_empty() {
             format!(
-                "SELECT id, title, content, 'chapter' AS source_type, search::score(1) AS score \
-                 FROM chapters WHERE {where_proj} AND (title @1@ $q OR content @1@ $q) \
-                 ORDER BY score DESC LIMIT $limit"
+                "SELECT id, title, content, 'chapter' AS source_type \
+                 FROM chapters WHERE {where_proj} \
+                 AND (string::lowercase(title) CONTAINS string::lowercase($q) OR (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q))) \
+                 LIMIT $limit"
             )
         } else {
             format!(
@@ -53,9 +54,10 @@ pub(crate) async fn run_fallback_search(
 
         let en_sql = if !q_trimmed.is_empty() {
             format!(
-                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type, search::score(1) AS score \
-                 FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) \
-                 ORDER BY score DESC LIMIT $limit"
+                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type \
+                 FROM entities WHERE {where_proj} \
+                 AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) \
+                 LIMIT $limit"
             )
         } else {
             format!(

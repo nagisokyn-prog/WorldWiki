@@ -1,0 +1,82 @@
+.chekhov-gun-tracker-root {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+}
+
+.border-subtle {
+  border-color: var(--color-border);
+}
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-surface-alt {
+  background-color: var(--color-bg-sidebar, var(--color-surface-hover));
+}
+
+.bg-surface-hover {
+  background-color: var(--color-surface-hover);
+}
+
+.bg-card {
+  background-color: var(--color-bg-card, var(--color-surface));
+}
+
+.bg-input {
+  background-color: var(--color-bg-input, var(--color-surface-hover));
+}
+
+.text-main {
+  color: var(--color-text-main);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-primary {
+  color: var(--color-primary, var(--color-accent));
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-warning {
+  color: var(--color-warning);
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+/* Badges */
+.badge-active {
+  background-color: var(--color-success-bg, var(--color-surface-hover));
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.badge-sleeping {
+  background-color: var(--color-warning-bg, var(--color-surface-hover));
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.badge-forgotten {
+  background-color: var(--color-danger-bg, var(--color-surface-hover));
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.badge-destroyed {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.btn-refresh:hover {
+  background-color: var(--color-primary, var(--color-accent));
+  color: var(--color-text-inverted, var(--color-text-main));
+}

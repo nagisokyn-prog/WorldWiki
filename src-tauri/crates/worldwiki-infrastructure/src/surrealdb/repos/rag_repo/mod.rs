@@ -136,7 +136,6 @@ impl RAGContextPort for SurrealRAGAdapter {
                 p_raw: &p_raw,
                 p_clean: &p_clean,
                 q_trimmed,
-                q_canon: &q_canon,
                 top_k,
             },
             &mut list,

@@ -765,24 +765,24 @@ async fn test_manuscript_consistency_audit_rules() {
         .expect("relate biloc 2");
 
     // 4. Запускаем ConsistencyAuditWorkflow
-    let anomalies = services.consistency_workflow.execute(proj_key).await.expect("execute consistency audit");
+    let report = services.consistency_workflow.execute(proj_key).await.expect("execute consistency audit");
 
     // Проверяем обнаружение нарушения "Погибший персонаж активен"
-    let deceased_anomalies: Vec<_> = anomalies.iter()
+    let deceased_anomalies: Vec<_> = report.anomalies.iter()
         .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::DeceasedEntityActive))
         .collect();
     assert!(!deceased_anomalies.is_empty(), "Должна быть обнаружена ошибка активности погибшего персонажа");
     assert_eq!(deceased_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
 
     // Проверяем обнаружение нарушения "Действие персонажа до рождения" (ActionBeforeBirth)
-    let before_birth_anomalies: Vec<_> = anomalies.iter()
+    let before_birth_anomalies: Vec<_> = report.anomalies.iter()
         .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::ActionBeforeBirth))
         .collect();
     assert!(!before_birth_anomalies.is_empty(), "Должна быть обнаружена ошибка действия персонажа до рождения");
     assert_eq!(before_birth_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
 
     // Проверяем обнаружение нарушения "Билокация"
-    let biloc_anomalies: Vec<_> = anomalies.iter()
+    let biloc_anomalies: Vec<_> = report.anomalies.iter()
         .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::EntityBilocation))
         .collect();
     assert!(!biloc_anomalies.is_empty(), "Должна быть обнаружена билокация персонажа");
@@ -1154,8 +1154,9 @@ async fn test_consistency_audit_clean_and_edge_cases() {
         .expect("create dead no date");
 
     // 3. Запуск аудита на чистом проекте
-    let anomalies = services.consistency_workflow.execute(proj_key).await.expect("run audit");
-    assert_eq!(anomalies.len(), 0, "В чистом проекте не должно быть ложных срабатываний");
+    let report = services.consistency_workflow.execute(proj_key).await.expect("run audit");
+    assert_eq!(report.anomalies.len(), 0, "В чистом проекте не должно быть ложных срабатываний");
+    assert_eq!(report.summary.healthy_percent, 100);
 }
 
 /// ТЕСТ 9: Высокопроизводительный Мульти-персонажный путь (fn::get_multi_character_journey)

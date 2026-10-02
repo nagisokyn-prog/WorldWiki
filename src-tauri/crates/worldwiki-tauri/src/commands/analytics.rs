@@ -1,8 +1,9 @@
 use tauri::State;
 use worldwiki_application::analytics::ManuscriptStatisticsDto;
 use worldwiki_domain::analytics::{
-    CharacterJourneyDto, ContradictionAnomaly, CrossRefMatrixDto, GraphTimeSliceDto,
-    JourneyFilterMode, MultiJourneyResponseDto, TimelineInspectorDto,
+    CharacterJourneyDto, ConsistencyAuditReportDto, CrossRefMatrixDto,
+    GraphTimeSliceDto, ItemJourneyDto, ItemTrackerDto, JourneyFilterMode,
+    MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -24,7 +25,7 @@ pub async fn get_cross_reference_matrix(
 pub async fn audit_manuscript_consistency(
     project_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<ContradictionAnomaly>, IpcError> {
+) -> Result<ConsistencyAuditReportDto, IpcError> {
     state
         .services
         .consistency_workflow
@@ -92,6 +93,33 @@ pub async fn get_multi_character_journey(
 }
 
 #[tauri::command]
+pub async fn get_item_tracker(
+    project_id: String,
+    state: State<'_, AppState>,
+) -> Result<ItemTrackerDto, IpcError> {
+    state
+        .services
+        .item_tracker_service
+        .get_item_tracker(&project_id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn get_item_journey(
+    project_id: String,
+    item_id: String,
+    state: State<'_, AppState>,
+) -> Result<ItemJourneyDto, IpcError> {
+    state
+        .services
+        .item_tracker_service
+        .get_item_journey(&project_id, &item_id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
 pub async fn get_manuscript_statistics(
     project_id: String,
     state: State<'_, AppState>,
@@ -103,3 +131,4 @@ pub async fn get_manuscript_statistics(
         .await
         .map_err(IpcError::from)
 }
+

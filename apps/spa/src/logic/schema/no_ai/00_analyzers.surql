@@ -8,3 +8,4 @@
 
 DEFINE ANALYZER OVERWRITE like TOKENIZERS blank, class, camel FILTERS ascii, lowercase;
 DEFINE ANALYZER OVERWRITE ru_en_analyzer TOKENIZERS class, blank FILTERS lowercase, snowball(russian), snowball(english);
+DEFINE ANALYZER OVERWRITE autocomplete_analyzer TOKENIZERS class, blank FILTERS lowercase, edgengram(2, 10);

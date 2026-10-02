@@ -17,6 +17,8 @@ pub enum ContradictionRule {
     DestroyedLocationUsed,
     EntityBilocation,
     ForgottenPlotPromise,
+    ForgottenItem,
+    ChainOfCustodyViolation,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,3 +32,54 @@ pub struct ContradictionAnomaly {
     pub event_ids: Vec<String>,
     pub promise_ids: Vec<String>,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AuditSummaryStatsDto {
+    pub total: usize,
+    pub critical_count: usize,
+    pub warning_count: usize,
+    pub notice_count: usize,
+    pub healthy_percent: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConsistencyAuditReportDto {
+    pub summary: AuditSummaryStatsDto,
+    pub anomalies: Vec<ContradictionAnomaly>,
+}
+
+impl ConsistencyAuditReportDto {
+    pub fn from_anomalies(anomalies: Vec<ContradictionAnomaly>) -> Self {
+        let mut critical_count = 0;
+        let mut warning_count = 0;
+        let mut notice_count = 0;
+
+        for a in &anomalies {
+            match a.severity {
+                ContradictionSeverity::Critical => critical_count += 1,
+                ContradictionSeverity::Warning => warning_count += 1,
+                ContradictionSeverity::Notice => notice_count += 1,
+            }
+        }
+
+        let total = anomalies.len();
+        let penalty = (critical_count * 25 + warning_count * 10 + notice_count * 2) as i32;
+        let healthy_percent = if total == 0 {
+            100
+        } else {
+            (100 - penalty).clamp(0, 100) as u32
+        };
+
+        Self {
+            summary: AuditSummaryStatsDto {
+                total,
+                critical_count,
+                warning_count,
+                notice_count,
+                healthy_percent,
+            },
+            anomalies,
+        }
+    }
+}
+

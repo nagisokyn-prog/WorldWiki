@@ -18,6 +18,7 @@ import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
 import ConsistencyCheckerVue from '@/features/analytics/ConsistencyChecker/ConsistencyChecker.vue';
+import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue';
 import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
 import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
@@ -32,6 +33,7 @@ export default defineComponent({
     SchemaEditorMainVue,
     CrossReferenceMatrixVue,
     ConsistencyCheckerVue,
+    ChekhovGunTrackerVue,
     ArcBoardVue,
     TimelineInspectorVue,
     GraphWebViewVue,

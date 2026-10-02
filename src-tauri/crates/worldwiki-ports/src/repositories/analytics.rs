@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use worldwiki_domain::analytics::{
-    CharacterJourneyDto, CrossRefMatrixDto, GraphTimeSliceDto, JourneyFilterMode,
-    MultiJourneyResponseDto, TimelineInspectorDto,
+    CharacterJourneyDto, CrossRefMatrixDto, GraphTimeSliceDto, ItemJourneyDto, ItemTrackerDto,
+    JourneyFilterMode, MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use worldwiki_domain::errors::DomainError;
 
@@ -17,4 +17,7 @@ pub trait AnalyticsRepositoryPort: Send + Sync {
         entity_ids: &[String],
         mode: JourneyFilterMode,
     ) -> Result<MultiJourneyResponseDto, DomainError>;
+    async fn get_item_tracker(&self, project_id: &str) -> Result<ItemTrackerDto, DomainError>;
+    async fn get_item_journey(&self, project_id: &str, item_id: &str) -> Result<ItemJourneyDto, DomainError>;
 }
+

@@ -5,6 +5,7 @@ import { setActivePinia, createPinia } from 'pinia';
 
 vi.mock('@/services/api.client', () => ({
   getCharacterJourney: vi.fn(),
+  getMultiCharacterJourney: vi.fn(),
   getEntities: vi.fn(),
   getStoryArcs: vi.fn(),
 }));
@@ -210,14 +211,14 @@ describe('useCharacterJourney Composable', () => {
   });
 
   it('supports multi-character journey with union/intersection mode and meeting gaps', async () => {
-    vi.mocked(apiClient.getEntities).mockResolvedValueOnce([
+    vi.mocked(apiClient.getEntities).mockResolvedValue([
       { id: 'ent:vladimir', name: 'Владимир', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
       { id: 'ent:sonya', name: 'Соня', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
     ]);
-    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValue([
       { id: 'arc:rebellion', project_id: 'test_proj', title: 'Арка Бунта', description: null, arc_type: 'main', status: 'active', color: 'var(--color-accent)' },
     ]);
-    vi.mocked(apiClient.getMultiCharacterJourney).mockResolvedValueOnce({
+    vi.mocked(apiClient.getMultiCharacterJourney).mockResolvedValue({
       total_scenes: 2,
       filter_mode: 'union',
       requested_entity_ids: ['ent:vladimir', 'ent:sonya'],

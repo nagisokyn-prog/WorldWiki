@@ -1,79 +1,82 @@
 <template>
-  <div class="consistency-container flex flex-col h-full w-full overflow-hidden bg-surface text-main">
-    <!-- Toolbar -->
-    <div class="consistency-toolbar flex flex-wrap items-center justify-between gap-3 p-4 border-b border-subtle bg-surface">
-      <div class="flex items-center gap-3">
-        <h2 class="text-base font-bold m-0 flex items-center gap-2">
-          <span>🛡️</span> Детектор Сюжетных Противоречий
-        </h2>
-        <div class="flex items-center gap-1.5 text-xs">
-          <span v-if="summary.criticalCount" class="badge-count px-2 py-0.5 rounded font-bold bg-danger text-surface">
-            🔴 {{ summary.criticalCount }} крит.
-          </span>
-          <span v-if="summary.warningCount" class="badge-count px-2 py-0.5 rounded font-bold bg-warning text-surface">
-            🟡 {{ summary.warningCount }} предупр.
-          </span>
+  <div class="consistency-checker-root flex flex-col h-full w-full overflow-hidden bg-surface text-main">
+    <!-- 1. Header Summary -->
+    <AuditSummaryHeader
+      :summary="summary"
+      :is-auditing="isAuditing"
+      @refresh="runAudit"
+    />
+
+    <!-- 2. Filters Toolbar -->
+    <AuditFilterToolbar
+      v-model:search-query="searchQuery"
+      v-model:selected-severity="selectedSeverity"
+      v-model:selected-rule="selectedRule"
+      :has-active-filters="hasActiveFilters"
+      @reset-filters="resetFilters"
+    />
+
+    <!-- 3. Anomaly Feed Body -->
+    <div class="consistency-body flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- Loading State -->
+      <div
+        v-if="isAuditing && !anomalies.length"
+        class="flex flex-col items-center justify-center h-48 text-muted text-sm space-y-2"
+      >
+        <span class="text-2xl animate-spin">🔄</span>
+        <span>Сканирование хронологии и сюжета рукописи...</span>
+      </div>
+
+      <!-- Clean State: Zero Violations -->
+      <div
+        v-else-if="!anomalies.length"
+        class="empty-state-card flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-subtle bg-surface space-y-3"
+      >
+        <div class="p-3 rounded-full bg-surface-hover text-3xl">
+          ✨
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-success m-0">
+            Сюжетных противоречий не обнаружено!
+          </h3>
+          <p class="text-xs text-muted m-0 mt-1 max-w-sm">
+            Все перемещения персонажей, фазы жизни, ружья и события согласованы по времени и пространству.
+          </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <select
-          v-model="filterSeverity"
-          class="text-xs px-2 py-1.5 rounded border border-subtle bg-input text-main"
-        >
-          <option value="all">Все уровни</option>
-          <option value="critical">🔴 Только критические</option>
-          <option value="warning">🟡 Только предупреждения</option>
-        </select>
-
+      <!-- Empty State: Filter Matched Nothing -->
+      <div
+        v-else-if="filteredAnomalies.length === 0"
+        class="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-subtle bg-surface text-muted text-xs space-y-2"
+      >
+        <span class="text-xl">🔍</span>
+        <span>По заданным фильтрам аномалий не найдено</span>
         <button
-          class="btn-audit text-xs px-3 py-1.5 rounded font-bold bg-accent text-surface cursor-pointer"
-          :disabled="isAuditing"
-          @click="runAudit"
+          class="btn-reset text-xs text-accent font-semibold underline cursor-pointer"
+          @click="resetFilters"
         >
-          🔍 {{ isAuditing ? 'Сканирование...' : 'Запустить аудит' }}
+          Сбросить фильтры
         </button>
       </div>
-    </div>
 
-    <!-- Violations List -->
-    <div class="consistency-body flex-1 overflow-y-auto p-6 space-y-3">
-      <div v-if="isAuditing && !violations.length" class="flex items-center justify-center h-48 text-muted text-sm">
-        Анализ нарративной целостности рукописи...
-      </div>
-
-      <div v-else-if="!violations.length" class="flex flex-col items-center justify-center h-48 text-muted text-sm space-y-2">
-        <span class="text-2xl">✨</span>
-        <span class="font-bold text-success">Сюжетных противоречий не обнаружено!</span>
-        <span class="text-xs">Все персонажи, ружья и события согласованы по времени.</span>
-      </div>
-
-      <div
-        v-for="v in filteredViolations"
-        :key="v.rule_id + (v.entity_id || '') + (v.chapter_id || '')"
-        class="violation-card p-4 rounded-lg border border-subtle bg-surface hover:bg-surface-hover transition-colors flex flex-col gap-2"
-        :class="'severity-' + v.severity"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <span class="font-bold text-xs flex items-center gap-1.5">
-            <span>{{ v.severity === 'critical' ? '🔴' : '🟡' }}</span>
-            <span>{{ v.title }}</span>
-          </span>
-          <span class="badge text-2xs px-2 py-0.5 rounded font-mono uppercase" :class="'badge-' + v.severity">
-            {{ v.severity }}
-          </span>
-        </div>
-
-        <p class="text-xs text-main m-0 opacity-90 leading-relaxed">
-          {{ v.description }}
-        </p>
-      </div>
+      <!-- Anomaly Cards List -->
+      <AuditAnomalyCard
+        v-for="(item, idx) in filteredAnomalies"
+        :key="item.rule + '_' + (item.entity_ids?.[0] || '') + '_' + (item.chapter_ids?.[0] || '') + '_' + idx"
+        :anomaly="item"
+        @jump-to-chapter="$emit('jumpToChapter', $event)"
+        @open-entity="$emit('openEntity', $event)"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useConsistencyChecker } from './useConsistencyChecker';
+import AuditSummaryHeader from './components/AuditSummaryHeader.vue';
+import AuditFilterToolbar from './components/AuditFilterToolbar.vue';
+import AuditAnomalyCard from './components/AuditAnomalyCard.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -84,15 +87,23 @@ const props = withDefaults(
   }
 );
 
+defineEmits<{
+  (e: 'jumpToChapter', chapterId: string): void;
+  (e: 'openEntity', entityId: string): void;
+}>();
+
 const {
-  violations,
-  filteredViolations,
-  filterSeverity,
+  anomalies,
+  filteredAnomalies,
+  searchQuery,
+  selectedSeverity,
+  selectedRule,
+  hasActiveFilters,
   summary,
   isAuditing,
+  resetFilters,
   runAudit,
 } = useConsistencyChecker(props.projectId);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/ConsistencyChecker.css"></style>
-

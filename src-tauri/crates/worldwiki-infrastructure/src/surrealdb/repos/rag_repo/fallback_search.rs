@@ -1,6 +1,5 @@
 use super::formatters::format_entity_dossier_value;
 use crate::surrealdb::chat_repo::clean_record_id;
-use crate::surrealdb::repos::helpers::{canonicalize_name, fuzzy_match_name};
 use serde_json::Value;
 use std::collections::HashSet;
 use surrealdb::engine::local::Db;
@@ -13,7 +12,6 @@ pub(crate) struct FallbackSearchParams<'a> {
     pub p_raw: &'a str,
     pub p_clean: &'a str,
     pub q_trimmed: &'a str,
-    pub q_canon: &'a str,
     pub top_k: usize,
 }
 
@@ -28,26 +26,49 @@ pub(crate) async fn run_fallback_search(
         p_raw,
         p_clean,
         q_trimmed,
-        q_canon,
         top_k,
     } = params;
     if list.len() < top_k {
+        let ch_sql = if !q_trimmed.is_empty() {
+            format!(
+                "SELECT id, title, content, 'chapter' AS source_type, search::score(1) AS score \
+                 FROM chapters WHERE {where_proj} AND (title @1@ $q OR content @1@ $q) \
+                 ORDER BY score DESC LIMIT $limit"
+            )
+        } else {
+            format!(
+                "SELECT id, title, content, 'chapter' AS source_type \
+                 FROM chapters WHERE {where_proj} LIMIT $limit"
+            )
+        };
         let mut res_ch = db
-            .query(format!(
-                "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj}"
-            ))
+            .query(&ch_sql)
             .bind(("p_raw", p_raw.to_string()))
             .bind(("p_clean", p_clean.to_string()))
+            .bind(("q", q_trimmed.to_string()))
+            .bind(("limit", top_k))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
 
+        let en_sql = if !q_trimmed.is_empty() {
+            format!(
+                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type, search::score(1) AS score \
+                 FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) \
+                 ORDER BY score DESC LIMIT $limit"
+            )
+        } else {
+            format!(
+                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type \
+                 FROM entities WHERE {where_proj} LIMIT $limit"
+            )
+        };
         let mut res_en = db
-            .query(format!(
-                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE {where_proj}"
-            ))
+            .query(&en_sql)
             .bind(("p_raw", p_raw.to_string()))
             .bind(("p_clean", p_clean.to_string()))
+            .bind(("q", q_trimmed.to_string()))
+            .bind(("limit", top_k))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
@@ -71,35 +92,11 @@ pub(crate) async fn run_fallback_search(
             }) {
                 continue;
             }
-            let t = item
-                .get("title")
-                .or_else(|| item.get("name"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-            let cont = item
-                .get("content")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-            let tags: Vec<String> = item
-                .get("tags")
-                .and_then(|v| serde_json::from_value(v.clone()).ok())
-                .unwrap_or_default();
 
-            let q_stem = crate::surrealdb::stemmer::SnowballStemmer::stem_phrase(q_canon);
-            let cont_canon = canonicalize_name(cont);
-            let cont_stem = crate::surrealdb::stemmer::SnowballStemmer::stem_phrase(&cont_canon);
-
-            if q_canon.is_empty()
-                || fuzzy_match_name(q_trimmed, t, &tags)
-                || canonicalize_name(t).contains(q_canon)
-                || cont_canon.contains(q_canon)
-                || (!q_stem.is_empty() && cont_stem.contains(&q_stem))
-            {
-                if let Some(eid) = item.get("id").and_then(clean_record_id) {
-                    entity_ids.insert(eid);
-                }
-                list.push(item);
+            if let Some(eid) = item.get("id").and_then(clean_record_id) {
+                entity_ids.insert(eid);
             }
+            list.push(item);
             if list.len() >= top_k {
                 break;
             }

@@ -520,7 +520,7 @@ export async function getCrossReferenceMatrix(projectId: string): Promise<unknow
     return await invoke('get_cross_reference_matrix', { projectId });
 }
 
-export async function auditManuscriptConsistency(projectId: string): Promise<unknown[]> {
+export async function auditManuscriptConsistency(projectId: string): Promise<unknown> {
     return await invoke('audit_manuscript_consistency', { projectId });
 }
 
@@ -538,6 +538,14 @@ export async function getCharacterJourney(projectId: string, entityId: string): 
 
 export async function getMultiCharacterJourney(projectId: string, entityIds: string[], filterMode: 'union' | 'intersection' = 'union'): Promise<unknown> {
     return await invoke('get_multi_character_journey', { projectId, entityIds, filterMode });
+}
+
+export async function getItemTracker(projectId: string): Promise<unknown> {
+    return await invoke('get_item_tracker', { projectId });
+}
+
+export async function getItemJourney(projectId: string, itemId: string): Promise<unknown> {
+    return await invoke('get_item_journey', { projectId, itemId });
 }
 
 export async function getManuscriptStatistics(projectId: string): Promise<unknown> {

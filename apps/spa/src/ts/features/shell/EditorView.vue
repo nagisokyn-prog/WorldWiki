@@ -257,6 +257,13 @@
           </div>
           <div
             class="panel-tab-new interactive-el"
+            :class="{ active: activePanelTab === 'chekhov-guns' }"
+            @click.stop="setActivePanelTab('chekhov-guns')"
+          >
+            🗡️ Чеховские Ружья
+          </div>
+          <div
+            class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'graph-web' }"
             @click.stop="setActivePanelTab('graph-web')"
           >
@@ -298,6 +305,9 @@
         </div>
         <div v-else-if="activePanelTab === 'consistency'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <consistency-checker-vue :project="projectName || 'default'" />
+        </div>
+        <div v-else-if="activePanelTab === 'chekhov-guns'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+          <chekhov-gun-tracker-vue :project-id="projectName || 'default'" />
         </div>
         <div v-else-if="activePanelTab === 'graph-web'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <graph-web-view-vue :project-id="projectName || 'default'" />

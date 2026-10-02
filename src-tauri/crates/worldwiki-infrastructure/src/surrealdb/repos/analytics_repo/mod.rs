@@ -1,6 +1,7 @@
 //! SurrealDB implementation of AnalyticsRepositoryPort invoking DDL fn::* stored functions.
 
 pub mod character_journey;
+pub mod item_tracker;
 pub mod matrix;
 pub mod multi_journey;
 pub mod time_slice;
@@ -11,8 +12,8 @@ use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::analytics::{
-    CharacterJourneyDto, CrossRefMatrixDto, GraphTimeSliceDto, JourneyFilterMode,
-    MultiJourneyResponseDto, TimelineInspectorDto,
+    CharacterJourneyDto, CrossRefMatrixDto, GraphTimeSliceDto, ItemJourneyDto, ItemTrackerDto,
+    JourneyFilterMode, MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::repositories::AnalyticsRepositoryPort;
@@ -67,4 +68,20 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         multi_journey::get_multi_character_journey_impl(&self.db, project_id, entity_ids, mode)
             .await
     }
+
+    async fn get_item_tracker(
+        &self,
+        project_id: &str,
+    ) -> Result<ItemTrackerDto, DomainError> {
+        item_tracker::get_item_tracker_impl(&self.db, project_id).await
+    }
+
+    async fn get_item_journey(
+        &self,
+        project_id: &str,
+        item_id: &str,
+    ) -> Result<ItemJourneyDto, DomainError> {
+        item_tracker::get_item_journey_impl(&self.db, project_id, item_id).await
+    }
 }
+

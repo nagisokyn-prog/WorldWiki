@@ -5,7 +5,7 @@ use surrealdb::Surreal;
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::analytics::{
     CharacterJourneyService, ConsistencyAuditWorkflow, CrossReferenceMatrixService,
-    GraphWebSliceService, ManuscriptAnalyticsService, TimelineInspectorService,
+    GraphWebSliceService, ItemTrackerService, ManuscriptAnalyticsService, TimelineInspectorService,
 };
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::common::JobManager;
@@ -47,6 +47,7 @@ struct CoreDomainServices {
     timeline_inspector_service: Arc<TimelineInspectorService>,
     graph_web_slice_service: Arc<GraphWebSliceService>,
     character_journey_service: Arc<CharacterJourneyService>,
+    item_tracker_service: Arc<ItemTrackerService>,
     manuscript_stats_service: Arc<ManuscriptAnalyticsService>,
     job_manager: Arc<JobManager>,
 }
@@ -96,6 +97,9 @@ fn build_core_domain(
     let character_journey_service = Arc::new(CharacterJourneyService::new(
         Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
     ));
+    let item_tracker_service = Arc::new(ItemTrackerService::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+    ));
     let manuscript_stats_service = Arc::new(ManuscriptAnalyticsService::new(
         Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
         Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
@@ -115,6 +119,7 @@ fn build_core_domain(
         timeline_inspector_service,
         graph_web_slice_service,
         character_journey_service,
+        item_tracker_service,
         manuscript_stats_service,
         job_manager,
     }
@@ -236,6 +241,7 @@ pub fn build_surreal_app_services(
         timeline_inspector_service: core.timeline_inspector_service,
         graph_web_slice_service: core.graph_web_slice_service,
         character_journey_service: core.character_journey_service,
+        item_tracker_service: core.item_tracker_service,
         manuscript_stats_service: core.manuscript_stats_service,
         edit_workflow: workflows.edit_workflow,
         search_workflow: workflows.search_workflow,

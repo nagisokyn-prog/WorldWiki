@@ -77,23 +77,26 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $rel_limit: int
 ) {
     LET $ents = (
-        SELECT id, name, entity_type AS type_key, description, tags, attributes 
+        SELECT id, name, entity_type AS type_key, description, tags, attributes, search::score(1) AS score 
         FROM entities 
         WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) 
+        ORDER BY score DESC
         LIMIT $limit
     );
     
     LET $chunks = (
-        SELECT id, entity_id, content 
+        SELECT id, entity_id, content, search::score(1) AS score 
         FROM entity_chunks 
         WHERE project_id = $proj AND content @1@ $q 
+        ORDER BY score DESC
         LIMIT $limit
     );
 
     LET $chaps = (
-        SELECT id, title, content 
+        SELECT id, title, content, search::score(1) AS score, search::highlight('<b>', '</b>', 1) AS snippet 
         FROM chapters 
         WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) 
+        ORDER BY score DESC
         LIMIT $limit
     );
 
@@ -152,12 +155,13 @@ DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     $limit: int
 ) {
     LET $bm25_matches = (
-        SELECT id, name, description, prompt_text, file_path, priority, 'bm25' AS matched_via, 1.0 AS score
+        SELECT id, name, description, prompt_text, file_path, priority, 'bm25' AS matched_via, search::score(1) AS score
         FROM ai_skills
         WHERE (project_id = $proj OR project_id = NONE)
           AND is_auto_trigger = true
           AND is_unlocked = true
           AND (name @1@ $query OR description @1@ $query OR prompt_text @1@ $query)
+        ORDER BY score DESC
         LIMIT $limit
     );
 
@@ -173,3 +177,4 @@ DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
 
     RETURN array::distinct(array::concat($trigger_matches, $bm25_matches));
 };
+

@@ -87,3 +87,75 @@ pub struct CharacterJourneyDto {
     pub promises: Vec<JourneyPromiseDto>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum JourneyFilterMode {
+    #[default]
+    Union,
+    Intersection,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JourneyParticipantArcDto {
+    pub arc_id: String,
+    pub arc_title: String,
+    #[serde(default)]
+    pub arc_phase: Option<String>,
+    #[serde(default)]
+    pub color: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct JourneyParticipantDto {
+    pub entity_id: String,
+    pub entity_name: String,
+    #[serde(default)]
+    pub role_in_story: Option<String>,
+    #[serde(default)]
+    pub status_category: Option<String>,
+    #[serde(default)]
+    pub age_label: Option<String>,
+    #[serde(default)]
+    pub is_before_birth: bool,
+    #[serde(default)]
+    pub is_deceased: bool,
+    #[serde(default)]
+    pub arcs: Vec<JourneyParticipantArcDto>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JourneyMeetingGapDto {
+    pub chapters_count: i32,
+    #[serde(default)]
+    pub minutes_delta: Option<i64>,
+    pub formatted_label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MultiJourneySceneDto {
+    pub id: String,
+    pub item_type: String, // "chapter" | "event"
+    #[serde(default)]
+    pub chapter_id: Option<String>,
+    #[serde(default)]
+    pub chapter_title: Option<String>,
+    #[serde(default)]
+    pub volume_title: Option<String>,
+    pub sort_order: i32,
+    #[serde(default)]
+    pub scene_m_abs: Option<i64>,
+    #[serde(default)]
+    pub scene_date_formatted: Option<String>,
+    pub present_entities: Vec<JourneyParticipantDto>,
+    #[serde(default)]
+    pub meeting_gap: Option<JourneyMeetingGapDto>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MultiJourneyResponseDto {
+    pub total_scenes: usize,
+    pub filter_mode: JourneyFilterMode,
+    pub requested_entity_ids: Vec<String>,
+    pub scenes: Vec<MultiJourneySceneDto>,
+}
+

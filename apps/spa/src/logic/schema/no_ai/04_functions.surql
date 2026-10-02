@@ -801,7 +801,88 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     };
 };
 
+-- 41. СБОР МУЛЬТИ-ПЕРСОНАЖНОГО ПУТИ (MULTI-CHARACTER JOURNEY & CROSS-ARC NAVIGATOR)
+DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects>, $entity_ids: array) {
+    LET $rec_ids = (
+        SELECT VALUE type::record('entities', type::string($this).replace('entities:', '')) 
+        FROM $entity_ids
+    );
 
+    LET $entities_info = (
+        SELECT 
+            id, 
+            name, 
+            entity_type, 
+            attributes,
+            avatar_url
+        FROM entities
+        WHERE id IN $rec_ids
+    );
 
+    LET $appearances = (
+        SELECT 
+            in.id AS entity_id,
+            in.name AS entity_name,
+            out.id AS chapter_id,
+            out.title AS chapter_title,
+            IF out.volume_id.title != NONE { out.volume_id.title } ELSE { NONE } AS volume_title,
+            IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
+            source,
+            role,
+            created_at
+        FROM appears_in 
+        WHERE in IN $rec_ids
+    );
 
+    LET $events = (
+        SELECT 
+            in.id AS entity_id,
+            in.name AS entity_name,
+            out.id AS event_id,
+            out.title AS event_title,
+            out.description AS event_desc,
+            out.m_abs AS m_abs,
+            out.calendar_id AS calendar_id,
+            role
+        FROM participates_in 
+        WHERE in IN $rec_ids
+    );
 
+    LET $promises = (
+        SELECT 
+            id, 
+            kind, 
+            quote, 
+            status,
+            paragraph_index,
+            block_id,
+            chapter_id.id AS chapter_id,
+            chapter_id.title AS chapter_title,
+            IF chapter_id.volume_id.title != NONE { chapter_id.volume_id.title } ELSE { NONE } AS volume_title,
+            IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS planted_order,
+            IF resolved_in_chapter.sort_order != NONE { resolved_in_chapter.sort_order } ELSE { NONE } AS resolved_order,
+            arc_id.id AS arc_id,
+            arc_id.title AS arc_title,
+            arc_id.color AS arc_color,
+            arc_phase,
+            arcs,
+            IF m_abs != NONE { m_abs } 
+               ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
+               ELSE { NONE } AS m_abs,
+            IF calendar_id != NONE { calendar_id } 
+               ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
+               ELSE { NONE } AS calendar_id,
+            date_fields,
+            timeline_event_id,
+            participant_ids
+        FROM plot_promises 
+        WHERE project_id = $proj
+    );
+
+    RETURN {
+        entities: $entities_info,
+        appearances: $appearances,
+        events: $events,
+        promises: $promises
+    };
+};

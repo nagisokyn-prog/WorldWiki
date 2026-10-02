@@ -309,6 +309,7 @@ pub fn run() {
             worldwiki_tauri::commands::get_timeline_inspector_data,
             worldwiki_tauri::commands::get_graph_time_slice,
             worldwiki_tauri::commands::get_character_journey,
+            worldwiki_tauri::commands::get_multi_character_journey,
             worldwiki_tauri::commands::get_manuscript_statistics,
             // 8 AI Facades
             worldwiki_tauri::commands::ai_query_world,

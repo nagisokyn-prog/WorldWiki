@@ -193,6 +193,14 @@ mod tests {
         async fn get_character_journey(&self, _proj: &str, _ent: &str) -> Result<CharacterJourneyDto, DomainError> {
             Err(DomainError::Validation("Mock character journey not implemented".to_string()))
         }
+        async fn get_multi_character_journey(
+            &self,
+            _proj: &str,
+            _ents: &[String],
+            _mode: worldwiki_domain::analytics::JourneyFilterMode,
+        ) -> Result<worldwiki_domain::analytics::MultiJourneyResponseDto, DomainError> {
+            Err(DomainError::Validation("Mock multi character journey not implemented".to_string()))
+        }
     }
 
     struct MockEntityRepo;

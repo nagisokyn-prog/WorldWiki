@@ -2,14 +2,17 @@
   <div class="journey-container flex flex-col h-full w-full overflow-hidden bg-surface text-main">
     <!-- Header Toolbar -->
     <JourneyToolbar
-      :current-entity-id="currentEntityId"
+      :selected-entities="selectedEntities"
       :entities-list="entitiesList"
       :view-mode="viewMode"
       :selected-arc-filter="selectedArcFilter"
       :filter-type="filterType"
+      :filter-mode="filterMode"
       :story-arcs="storyArcs"
       :is-loading="isLoading"
-      @update:current-entity-id="selectEntity"
+      @add-entity="addEntity"
+      @remove-entity="removeEntity"
+      @update:filter-mode="setFilterMode"
       @update:view-mode="viewMode = $event"
       @update:selected-arc-filter="selectedArcFilter = $event"
       @update:filter-type="filterType = $event"
@@ -19,11 +22,11 @@
     <!-- Main Content Area -->
     <div class="journey-content flex-1 overflow-y-auto p-6">
       <div v-if="isLoading && !timelineItems.length" class="flex items-center justify-center h-48 text-muted text-sm">
-        Загрузка истории и сцен персонажа...
+        Загрузка истории и сцен персонажей...
       </div>
 
       <div v-else-if="!timelineItems.length" class="flex items-center justify-center h-48 text-muted text-sm">
-        У персонажа пока нет зафиксированных сцен, связей или сюжетных арок.
+        По выбранным персонажам пока нет зафиксированных сцен, связей или сюжетных арок.
       </div>
 
       <!-- 1. РЕЖИМ 1: Группировка по аркам -->
@@ -31,6 +34,7 @@
         v-else-if="viewMode === 'BY_ARCS'"
         :arc-groups="arcGroups"
         :current-entity="currentEntity"
+        :selected-entities="selectedEntities"
         @select-scene="$emit('select-scene', $event)"
       />
 
@@ -67,19 +71,23 @@ defineEmits<{
 }>();
 
 const {
-  currentEntityId,
+  selectedEntities,
   currentEntity,
   entitiesList,
   viewMode,
   selectedArcFilter,
   filterType,
+  filterMode,
   timelineItems,
   arcGroups,
   storyArcs,
   isLoading,
-  selectEntity,
+  addEntity,
+  removeEntity,
+  setFilterMode,
   refresh,
 } = useCharacterJourney(props.projectId, props.entityId);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>
+

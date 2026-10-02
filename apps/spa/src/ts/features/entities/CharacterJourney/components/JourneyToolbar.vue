@@ -4,24 +4,23 @@
     <div class="journey-toolbar-left">
       <h2 class="journey-title">
         <span>📜</span>
-        <span>Путь Персонажа</span>
+        <span>Путь Персонажей</span>
       </h2>
 
-      <!-- Entity Switcher -->
-      <select
-        v-if="entitiesList.length > 0"
-        :value="currentEntityId"
-        class="journey-entity-select"
-        @change="$emit('update:currentEntityId', ($event.target as HTMLSelectElement).value)"
-      >
-        <option
-          v-for="ent in entitiesList"
-          :key="ent.id || ent.name"
-          :value="ent.id"
-        >
-          {{ ent.name }} ({{ ent.entity_type }})
-        </option>
-      </select>
+      <!-- Multi Entity Chip Selector -->
+      <JourneyMultiSelector
+        :selected-entities="selectedEntities"
+        :entities-list="entitiesList"
+        @add="$emit('add-entity', $event)"
+        @remove="$emit('remove-entity', $event)"
+      />
+
+      <!-- Union / Intersection Mode Toggle (visible when >= 2 characters selected) -->
+      <JourneyModeToggle
+        v-if="selectedEntities.length > 1"
+        :model-value="filterMode"
+        @update:model-value="$emit('update:filterMode', $event)"
+      />
     </div>
 
     <!-- Mode Selector Tabs (Arcs / Narrative / Chronology) -->
@@ -99,20 +98,25 @@
 <script setup lang="ts">
 import type { Entity } from '@/types/generated/Entity';
 import type { StoryArc } from '@/stores/story_arcs.store';
-import type { CharacterJourneyViewMode } from '../CharacterJourney.model';
+import type { CharacterJourneyViewMode, JourneyFilterMode } from '../CharacterJourney.model';
+import JourneyMultiSelector from './JourneyMultiSelector.vue';
+import JourneyModeToggle from './JourneyModeToggle.vue';
 
 defineProps<{
-  currentEntityId: string;
+  selectedEntities: Entity[];
   entitiesList: Entity[];
   viewMode: CharacterJourneyViewMode;
   selectedArcFilter: string;
   filterType: string;
+  filterMode: JourneyFilterMode;
   storyArcs: StoryArc[];
   isLoading: boolean;
 }>();
 
 defineEmits<{
-  (e: 'update:currentEntityId', val: string): void;
+  (e: 'add-entity', val: string): void;
+  (e: 'remove-entity', val: string): void;
+  (e: 'update:filterMode', val: JourneyFilterMode): void;
   (e: 'update:viewMode', val: CharacterJourneyViewMode): void;
   (e: 'update:selectedArcFilter', val: string): void;
   (e: 'update:filterType', val: string): void;
@@ -121,4 +125,5 @@ defineEmits<{
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>
+
 

@@ -2,7 +2,7 @@ use tauri::State;
 use worldwiki_application::analytics::ManuscriptStatisticsDto;
 use worldwiki_domain::analytics::{
     CharacterJourneyDto, ContradictionAnomaly, CrossRefMatrixDto, GraphTimeSliceDto,
-    TimelineInspectorDto,
+    JourneyFilterMode, MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -72,6 +72,21 @@ pub async fn get_character_journey(
         .services
         .character_journey_service
         .get_journey(&project_id, &entity_id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn get_multi_character_journey(
+    project_id: String,
+    entity_ids: Vec<String>,
+    mode: Option<JourneyFilterMode>,
+    state: State<'_, AppState>,
+) -> Result<MultiJourneyResponseDto, IpcError> {
+    state
+        .services
+        .character_journey_service
+        .get_multi_journey(&project_id, &entity_ids, mode.unwrap_or_default())
         .await
         .map_err(IpcError::from)
 }

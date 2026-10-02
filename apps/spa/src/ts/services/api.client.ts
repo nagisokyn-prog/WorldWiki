@@ -536,6 +536,10 @@ export async function getCharacterJourney(projectId: string, entityId: string): 
     return await invoke('get_character_journey', { projectId, entityId });
 }
 
+export async function getMultiCharacterJourney(projectId: string, entityIds: string[], filterMode: 'union' | 'intersection' = 'union'): Promise<unknown> {
+    return await invoke('get_multi_character_journey', { projectId, entityIds, filterMode });
+}
+
 export async function getManuscriptStatistics(projectId: string): Promise<unknown> {
     return await invoke('get_manuscript_statistics', { projectId });
 }

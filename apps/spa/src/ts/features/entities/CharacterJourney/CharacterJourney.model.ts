@@ -100,6 +100,8 @@ export interface JourneyTimelineItem {
   ageLabel?: string;
   isBeforeBirth?: boolean;
   birth_m_abs?: number | null;
+  participants?: JourneyParticipant[];
+  meetingGap?: JourneyMeetingGap | null;
 }
 
 export interface ArcGroup {
@@ -108,3 +110,50 @@ export interface ArcGroup {
   arcColor?: string;
   items: JourneyTimelineItem[];
 }
+
+export type JourneyFilterMode = 'union' | 'intersection';
+
+export interface JourneyParticipantArc {
+  arc_id: string;
+  arc_title: string;
+  arc_phase?: string | null;
+  color?: string | null;
+}
+
+export interface JourneyParticipant {
+  entity_id: string;
+  entity_name: string;
+  role_in_story?: string | null;
+  status_category?: string | null;
+  age_label?: string | null;
+  is_before_birth: boolean;
+  is_deceased: boolean;
+  arcs: JourneyParticipantArc[];
+}
+
+export interface JourneyMeetingGap {
+  chapters_count: number;
+  minutes_delta?: number | null;
+  formatted_label: string;
+}
+
+export interface MultiJourneyScene {
+  id: string;
+  item_type: string;
+  chapter_id?: string | null;
+  chapter_title?: string | null;
+  volume_title?: string | null;
+  sort_order: number;
+  scene_m_abs?: number | null;
+  scene_date_formatted?: string | null;
+  present_entities: JourneyParticipant[];
+  meeting_gap?: JourneyMeetingGap | null;
+}
+
+export interface MultiJourneyResponse {
+  total_scenes: number;
+  filter_mode: JourneyFilterMode;
+  requested_entity_ids: string[];
+  scenes: MultiJourneyScene[];
+}
+

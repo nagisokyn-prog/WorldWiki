@@ -1158,4 +1158,82 @@ async fn test_consistency_audit_clean_and_edge_cases() {
     assert_eq!(anomalies.len(), 0, "В чистом проекте не должно быть ложных срабатываний");
 }
 
+/// ТЕСТ 9: Высокопроизводительный Мульти-персонажный путь (fn::get_multi_character_journey)
+#[tokio::test]
+async fn test_multi_character_journey_union_and_intersection() {
+    let db = create_test_db().await;
+    let proj_key = "proj_multi_journey";
+    seed_project(&db, proj_key, "Проект для Мульти-Пути Персонажей").await;
+
+    let services = create_test_services(Arc::new(db.clone()));
+
+    // 1. Создаем главы: Глава 1 (order=1), Глава 2 (order=2), Глава 5 (order=5)
+    let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1. Первая встреча", 1).await;
+    let _ch2 = create_test_chapter(&db, proj_key, "ch2", "Глава 2. Одиночный путь", 2).await;
+    let _ch5 = create_test_chapter(&db, proj_key, "ch5", "Глава 5. Воссоединение", 5).await;
+
+    // 2. Создаем персонажей: Владимир (20 лет в гл.1) и Соня (15 лет в гл.1)
+    let hero_a_sql = "UPSERT type::record('entities', 'hero_a') SET project_id = type::record('projects', $p), name = 'Владимир', entity_type = 'character', attributes = { 'роль_в_истории': 'Главный герой', 'статус_категория': 'Жив', 'дата_рождения': { 'absolute_minute': 0 } }";
+    let _ = db.query(hero_a_sql).bind(("p", proj_key)).await.expect("create hero_a");
+
+    let hero_b_sql = "UPSERT type::record('entities', 'hero_b') SET project_id = type::record('projects', $p), name = 'Соня', entity_type = 'character', attributes = { 'роль_в_истории': 'Второстепенный', 'статус_категория': 'Жив', 'дата_рождения': { 'absolute_minute': 2628000 } }";
+    let _ = db.query(hero_b_sql).bind(("p", proj_key)).await.expect("create hero_b");
+
+    // 3. Создаем появления:
+    // hero_a появляется в ch1, ch2, ch5
+    // hero_b появляется в ch1, ch5 (пропускает ch2, ch3, ch4)
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'tag'")
+        .bind(("p", proj_key)).await.expect("a in ch1");
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch2')) SET project_id = type::record('projects', $p), source = 'tag'")
+        .bind(("p", proj_key)).await.expect("a in ch2");
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'tag'")
+        .bind(("p", proj_key)).await.expect("a in ch5");
+
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'tag'")
+        .bind(("p", proj_key)).await.expect("b in ch1");
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'tag'")
+        .bind(("p", proj_key)).await.expect("b in ch5");
+
+    // Создаем сцену-обещание в ch1 с датой m_abs = 10_512_000 (20 лет от нуля)
+    let _ = db.query("UPSERT type::record('plot_promises', 'sc_ch1') SET project_id = type::record('projects', $p), chapter_id = type::record('chapters', 'ch1'), kind = 'scene', quote = 'Привет!', status = 'planted', m_abs = 10512000, participant_ids = ['entities:hero_a', 'entities:hero_b']")
+        .bind(("p", proj_key)).await.expect("create sc_ch1");
+
+    let entity_ids = vec!["entities:hero_a".to_string(), "entities:hero_b".to_string()];
+
+    // 4. ТЕСТИРУЕМ РЕЖИМ UNION (Все сцены группы)
+    let union_resp = services
+        .character_journey_service
+        .get_multi_journey(proj_key, &entity_ids, worldwiki_domain::analytics::JourneyFilterMode::Union)
+        .await
+        .expect("get multi journey union");
+
+    assert_eq!(union_resp.scenes.len(), 3, "Union должен вернуть 3 сцены (ch1, ch2, ch5)");
+    assert_eq!(union_resp.scenes[0].present_entities.len(), 2, "В ch1 присутствуют оба персонажа");
+    assert_eq!(union_resp.scenes[1].present_entities.len(), 1, "В ch2 присутствует только hero_a");
+    assert_eq!(union_resp.scenes[2].present_entities.len(), 2, "В ch5 присутствуют оба персонажа");
+
+    // Проверка динамического возраста в ch1
+    let vladimir_in_ch1 = union_resp.scenes[0].present_entities.iter().find(|p| p.entity_name == "Владимир").unwrap();
+    assert_eq!(vladimir_in_ch1.age_label.as_deref(), Some("20 лет"));
+    assert_eq!(vladimir_in_ch1.role_in_story.as_deref(), Some("Главный герой"));
+
+    // 5. ТЕСТИРУЕМ РЕЖИМ INTERSECTION (Только совместные сцены)
+    let inter_resp = services
+        .character_journey_service
+        .get_multi_journey(proj_key, &entity_ids, worldwiki_domain::analytics::JourneyFilterMode::Intersection)
+        .await
+        .expect("get multi journey intersection");
+
+    assert_eq!(inter_resp.scenes.len(), 2, "Intersection должен вернуть строго 2 совместные сцены (ch1 и ch5)");
+    assert_eq!(inter_resp.scenes[0].chapter_id.as_deref(), Some("chapters:ch1"));
+    assert_eq!(inter_resp.scenes[1].chapter_id.as_deref(), Some("chapters:ch5"));
+
+    // Проверка разрыва (Meeting Gap) между сценой в гл.1 и сценой в гл.5:
+    // gap = 5 - 1 - 1 = 3 главы
+    let ch5_gap = inter_resp.scenes[1].meeting_gap.as_ref().expect("ch5 should have meeting gap");
+    assert_eq!(ch5_gap.chapters_count, 3, "Между гл.1 и гл.5 разрыв 3 главы (ch2, ch3, ch4)");
+    assert_eq!(ch5_gap.formatted_label, "⏳ Не виделись 3 глав");
+}
+
+
 

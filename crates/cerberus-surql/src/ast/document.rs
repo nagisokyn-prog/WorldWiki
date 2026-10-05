@@ -62,3 +62,30 @@ impl SurqlDocument {
         &self.source
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_document_span_and_line_offsets() {
+        let text = "SELECT 1;\nSELECT 2;\nSELECT 3;".to_string();
+        let doc = SurqlDocument::new(text, PathBuf::from("test.surql"), Vec::new());
+
+        assert_eq!(doc.file_path(), Path::new("test.surql"));
+        assert_eq!(doc.source(), "SELECT 1;\nSELECT 2;\nSELECT 3;");
+
+        let (l1, c1) = doc.byte_to_line_col(0);
+        assert_eq!((l1, c1), (1, 1));
+
+        let (l2, c2) = doc.byte_to_line_col(10);
+        assert_eq!((l2, c2), (2, 1));
+
+        let span = doc.resolve_span(0, 8);
+        assert_eq!(span.start_line, 1);
+        assert_eq!(span.start_col, 1);
+        assert_eq!(span.end_line, 1);
+        assert_eq!(span.end_col, 9);
+    }
+}
+

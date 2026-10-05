@@ -80,3 +80,75 @@ impl SchemaRegistry {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_schema_registry_lookups() {
+        let mut reg = SchemaRegistry::new();
+        reg.tables.insert(
+            "users".to_string(),
+            TableMeta {
+                name: "users".to_string(),
+                is_schemfull: true,
+                is_schemaless: false,
+                is_relation: false,
+                in_table: None,
+                out_table: None,
+            },
+        );
+
+        reg.fields.insert(
+            ("users".to_string(), "name".to_string()),
+            FieldMeta {
+                table_name: "users".to_string(),
+                field_name: "name".to_string(),
+                surql_type: SurqlType::String,
+                raw_type: "string".to_string(),
+                is_nullable: false,
+                is_optional: false,
+                default_expr: None,
+            },
+        );
+
+        reg.indexes.insert(
+            "users".to_string(),
+            vec![
+                IndexMeta {
+                    name: "idx_name".to_string(),
+                    table_name: "users".to_string(),
+                    fields: vec!["name".to_string()],
+                    is_fulltext: false,
+                    analyzer: None,
+                    is_bm25: false,
+                },
+                IndexMeta {
+                    name: "idx_bio_ft".to_string(),
+                    table_name: "users".to_string(),
+                    fields: vec!["bio".to_string()],
+                    is_fulltext: true,
+                    analyzer: Some("ru_en".to_string()),
+                    is_bm25: true,
+                },
+            ],
+        );
+
+        assert!(reg.get_table("users").is_some());
+        assert!(reg.get_table("non_existent").is_none());
+        assert!(reg.get_field("users", "name").is_some());
+        assert!(reg.get_field("users", "unknown").is_none());
+        assert!(reg.get_table_indexes("users").is_some());
+        assert!(reg.get_table_indexes("orders").is_none());
+
+        assert!(reg.has_index_on_field("users", "name"));
+        assert!(!reg.has_index_on_field("users", "unknown"));
+        assert!(!reg.has_index_on_field("orders", "name"));
+
+        assert!(reg.has_fts_index_on_field("users", "bio"));
+        assert!(!reg.has_fts_index_on_field("users", "name"));
+        assert!(!reg.has_fts_index_on_field("orders", "bio"));
+    }
+}
+

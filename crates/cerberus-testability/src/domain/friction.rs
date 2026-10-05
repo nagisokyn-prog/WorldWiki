@@ -54,3 +54,30 @@ impl DampingMath {
         (unit_penalty, integration_penalty)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sloc_damping_curve() {
+        assert_eq!(DampingMath::calculate_sloc_damping(10), 1.0);
+        assert_eq!(DampingMath::calculate_sloc_damping(30), 1.0);
+        assert!(DampingMath::calculate_sloc_damping(300) < 1.0);
+    }
+
+    #[test]
+    fn test_calculate_factor_penalty_zero_count() {
+        let (u, i) = DampingMath::calculate_factor_penalty(TestabilityFactor::F01HiddenAmbientIo, 0, 50, LayerContext::Domain);
+        assert_eq!(u, 0.0);
+        assert_eq!(i, 0.0);
+    }
+
+    #[test]
+    fn test_calculate_factor_penalty_non_zero() {
+        let (u, i) = DampingMath::calculate_factor_penalty(TestabilityFactor::F01HiddenAmbientIo, 2, 50, LayerContext::Domain);
+        assert!(u > 0.0);
+        assert!(i >= 0.0);
+    }
+}
+

@@ -111,3 +111,41 @@ impl SurqlRule for Surql026DatetimeCoercedToString {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_function_rules_unit() {
+        let surql = r#"
+            DEFINE FUNCTION OVERWRITE fn::bad($untyped) { RETURN 1; };
+            UPDATE users SET created_at = type::string(time::now());
+        "#;
+        let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
+        let mut schema = SchemaRegistry::new();
+        schema.fields.insert(
+            ("users".to_string(), "created_at".to_string()),
+            crate::schema::registry::FieldMeta {
+                table_name: "users".to_string(),
+                field_name: "created_at".to_string(),
+                surql_type: SurqlType::Datetime,
+                raw_type: "datetime".to_string(),
+                is_nullable: false,
+                is_optional: false,
+                default_expr: None,
+            },
+        );
+        let config = SurqlConfig::default();
+
+        let v20 = Surql020UntypedFunctionParam.check(&doc, &schema, &config);
+        assert_eq!(v20.len(), 1);
+        assert_eq!(v20[0].rule_id, "SURQL-020");
+
+        let v26 = Surql026DatetimeCoercedToString.check(&doc, &schema, &config);
+        assert_eq!(v26.len(), 1);
+        assert_eq!(v26[0].rule_id, "SURQL-026");
+    }
+}

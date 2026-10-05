@@ -266,3 +266,54 @@ impl SurqlRule for Surql025MultipleFtsIndexesInOr {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_fts_rules_unit() {
+        let surql = r#"
+            SELECT search::score(2) AS s FROM articles WHERE title @1@ 'rust';
+            SELECT * FROM articles WHERE body @@ 'rust';
+            SELECT * FROM articles WHERE string::lowercase(title) CONTAINS 'rust';
+            SELECT * FROM articles WHERE title @1@ $q OR body @2@ $q ORDER BY search::score(1) DESC, search::score(2) DESC;
+        "#;
+        let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
+        let mut schema = SchemaRegistry::new();
+        schema.indexes.insert(
+            "articles".to_string(),
+            vec![crate::schema::registry::IndexMeta {
+                name: "idx_art_title".to_string(),
+                table_name: "articles".to_string(),
+                fields: vec!["title".to_string()],
+                is_fulltext: true,
+                analyzer: Some("ru_en".to_string()),
+                is_bm25: true,
+            }],
+        );
+        let config = SurqlConfig::default();
+
+        let v21 = Surql021UnrankedPredicateSearch.check(&doc, &schema, &config);
+        assert_eq!(v21.len(), 1);
+        assert_eq!(v21[0].rule_id, "SURQL-021");
+
+        let v22 = Surql022DanglingScoreFunction.check(&doc, &schema, &config);
+        assert_eq!(v22.len(), 1);
+        assert_eq!(v22[0].rule_id, "SURQL-022");
+
+        let v23 = Surql023FtsOperatorOnUnindexedField.check(&doc, &schema, &config);
+        assert_eq!(v23.len(), 1);
+        assert_eq!(v23[0].rule_id, "SURQL-023");
+
+        let v24 = Surql024StringScanOnFtsField.check(&doc, &schema, &config);
+        assert_eq!(v24.len(), 1);
+        assert_eq!(v24[0].rule_id, "SURQL-024");
+
+        let v25 = Surql025MultipleFtsIndexesInOr.check(&doc, &schema, &config);
+        assert_eq!(v25.len(), 1);
+        assert_eq!(v25[0].rule_id, "SURQL-025");
+    }
+}

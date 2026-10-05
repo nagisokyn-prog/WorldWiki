@@ -167,3 +167,84 @@ impl WorkspaceTestabilityReport {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::archetype::TestabilityArchetype;
+    use crate::domain::layer::LayerContext;
+
+    #[test]
+    fn test_testability_tier_from_score() {
+        assert_eq!(TestabilityTier::from_score(95.0), TestabilityTier::S);
+        assert_eq!(TestabilityTier::from_score(90.0), TestabilityTier::S);
+        assert_eq!(TestabilityTier::from_score(85.0), TestabilityTier::A);
+        assert_eq!(TestabilityTier::from_score(80.0), TestabilityTier::A);
+        assert_eq!(TestabilityTier::from_score(75.0), TestabilityTier::B);
+        assert_eq!(TestabilityTier::from_score(65.0), TestabilityTier::B);
+        assert_eq!(TestabilityTier::from_score(55.0), TestabilityTier::C);
+        assert_eq!(TestabilityTier::from_score(50.0), TestabilityTier::C);
+        assert_eq!(TestabilityTier::from_score(40.0), TestabilityTier::D);
+        assert_eq!(TestabilityTier::from_score(30.0), TestabilityTier::D);
+        assert_eq!(TestabilityTier::from_score(20.0), TestabilityTier::F);
+        assert_eq!(TestabilityTier::from_score(0.0), TestabilityTier::F);
+    }
+
+    #[test]
+    fn test_testability_tier_as_str() {
+        assert_eq!(TestabilityTier::S.as_str(), "S");
+        assert_eq!(TestabilityTier::A.as_str(), "A");
+        assert_eq!(TestabilityTier::B.as_str(), "B");
+        assert_eq!(TestabilityTier::C.as_str(), "C");
+        assert_eq!(TestabilityTier::D.as_str(), "D");
+        assert_eq!(TestabilityTier::F.as_str(), "F");
+    }
+
+    #[test]
+    fn test_workspace_report_empty() {
+        let report = WorkspaceTestabilityReport::new(Vec::new());
+        assert_eq!(report.total_files, 0);
+        assert_eq!(report.workspace_score, 100.0);
+        assert_eq!(report.workspace_tier, TestabilityTier::S);
+        assert_eq!(report.archetype_percentages.get(&TestabilityArchetype::Pure), Some(&100.0));
+        assert_eq!(report.archetype_percentages.get(&TestabilityArchetype::Poisoned), Some(&0.0));
+    }
+
+    #[test]
+    fn test_workspace_report_with_files() {
+        let file1 = FileTestabilityReport {
+            file_path: "src/domain/entity.rs".to_string(),
+            layer: LayerContext::Domain,
+            archetype: TestabilityArchetype::Pure,
+            sloc: 100,
+            t_unit: 100.0,
+            t_integration: 100.0,
+            t_composite: 100.0,
+            tier: TestabilityTier::S,
+            frictions: Vec::new(),
+            triggers: Vec::new(),
+        };
+
+        let file2 = FileTestabilityReport {
+            file_path: "src/infra/db.rs".to_string(),
+            layer: LayerContext::Infrastructure,
+            archetype: TestabilityArchetype::IntBound,
+            sloc: 200,
+            t_unit: 25.0,
+            t_integration: 85.0,
+            t_composite: 43.0,
+            tier: TestabilityTier::D,
+            frictions: Vec::new(),
+            triggers: Vec::new(),
+        };
+
+        let report = WorkspaceTestabilityReport::new(vec![file1, file2]);
+        assert_eq!(report.total_files, 2);
+        assert_eq!(report.tier_counts.get(&TestabilityTier::S), Some(&1));
+        assert_eq!(report.tier_counts.get(&TestabilityTier::D), Some(&1));
+        assert_eq!(report.archetype_counts.get(&TestabilityArchetype::Pure), Some(&1));
+        assert_eq!(report.archetype_counts.get(&TestabilityArchetype::IntBound), Some(&1));
+        assert!(report.workspace_score > 0.0);
+    }
+}
+

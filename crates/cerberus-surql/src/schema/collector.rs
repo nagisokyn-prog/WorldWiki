@@ -91,3 +91,46 @@ impl SchemaCollector {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_schema_collector_collects_all_objects() {
+        let sql = r#"
+            DEFINE TABLE OVERWRITE users SCHEMAFULL;
+            DEFINE FIELD OVERWRITE name ON users TYPE string;
+            DEFINE INDEX OVERWRITE idx_users_name ON users FIELDS name;
+            DEFINE TABLE OVERWRITE user_follows TYPE RELATION IN users OUT users;
+            DEFINE FUNCTION OVERWRITE fn::get_user($id: record<users>, $untyped) {
+                RETURN 1;
+            };
+            SELECT * FROM users;
+        "#;
+        let doc = SurqlParser::parse(sql, PathBuf::from("schema.surql"));
+        let registry = SchemaCollector::collect(&[doc]);
+
+        assert_eq!(registry.tables.len(), 2);
+        assert!(registry.tables["users"].is_schemfull);
+        assert!(registry.tables["user_follows"].is_relation);
+        assert_eq!(registry.tables["user_follows"].in_table, Some("users".to_string()));
+
+        assert_eq!(registry.fields.len(), 1);
+        assert_eq!(registry.fields[&("users".to_string(), "name".to_string())].surql_type, SurqlType::String);
+
+        assert_eq!(registry.indexes["users"].len(), 1);
+        assert_eq!(registry.indexes["users"][0].name, "idx_users_name");
+
+        assert_eq!(registry.functions.len(), 1);
+        assert_eq!(registry.functions["fn::get_user"].parameters.len(), 2);
+        assert_eq!(
+            registry.functions["fn::get_user"].parameters[0].1,
+            Some(SurqlType::Record("users".to_string()))
+        );
+        assert_eq!(registry.functions["fn::get_user"].parameters[1].1, None);
+    }
+}
+

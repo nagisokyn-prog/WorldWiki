@@ -62,6 +62,57 @@ struct QueryCallVisitor<'a> {
 }
 
 impl<'a, 'ast> Visit<'ast> for QueryCallVisitor<'a> {
+    fn visit_expr_macro(&mut self, node: &'ast ExprMacro) {
+        let macro_name = node
+            .mac
+            .path
+            .segments
+            .last()
+            .map(|s| s.ident.to_string())
+            .unwrap_or_default();
+
+        if macro_name == "format" {
+            let tokens = node.mac.tokens.to_string();
+            let upper = tokens.to_uppercase();
+            if upper.contains("SELECT ")
+                || upper.contains("UPDATE ")
+                || upper.contains("DELETE ")
+                || upper.contains("INSERT ")
+                || upper.contains("RELATE ")
+                || upper.contains("CREATE ")
+                || upper.contains("DEFINE ")
+                || upper.contains("UPSERT ")
+            {
+                self.emit_sec011(
+                    "format!(...)",
+                    "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+                );
+            }
+        }
+        syn::visit::visit_expr_macro(self, node);
+    }
+
+    fn visit_expr_binary(&mut self, node: &'ast syn::ExprBinary) {
+        if matches!(node.op, syn::BinOp::Add(_)) {
+            let left_str = format!("{:?}", node.left);
+            let right_str = format!("{:?}", node.right);
+            let combined = format!("{} {}", left_str, right_str).to_uppercase();
+            if combined.contains("SELECT")
+                || combined.contains("UPDATE")
+                || combined.contains("DELETE")
+                || combined.contains("INSERT")
+                || combined.contains("RELATE")
+                || combined.contains("CREATE")
+            {
+                self.emit_sec011(
+                    "string + string",
+                    "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",
+                );
+            }
+        }
+        syn::visit::visit_expr_binary(self, node);
+    }
+
     fn visit_expr_method_call(&mut self, node: &'ast ExprMethodCall) {
         let method_name = node.method.to_string();
         if method_name == "query" || method_name == "query_raw" {
@@ -84,7 +135,7 @@ impl<'a> QueryCallVisitor<'a> {
                     .map(|s| s.ident.to_string())
                     .unwrap_or_default();
 
-                if macro_name == "format" {
+                if macro_name == "format" && !self.violations.iter().any(|v| v.rule_id == "SEC-011") {
                     self.emit_sec011(
                         "format!(...)",
                         "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
@@ -92,10 +143,12 @@ impl<'a> QueryCallVisitor<'a> {
                 }
             }
             Expr::Binary(binary) if matches!(binary.op, syn::BinOp::Add(_)) => {
-                self.emit_sec011(
-                    "string + string",
-                    "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",
-                );
+                if !self.violations.iter().any(|v| v.rule_id == "SEC-011") {
+                    self.emit_sec011(
+                        "string + string",
+                        "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",
+                    );
+                }
             }
             Expr::Lit(ExprLit {
                 lit: Lit::Str(lit_str),
@@ -154,3 +207,65 @@ impl<'a> QueryCallVisitor<'a> {
         });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::rules::all_rules;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_rust_scanner_file_read_error_handling() {
+        let rules = all_rules();
+        let schema = SchemaRegistry::new();
+        let config = SurqlConfig::default();
+        let scanner = RustSurqlInlineScanner::new(&rules, &schema, &config);
+
+        let non_existent = Path::new("non_existent_file.rs");
+        let violations = scanner.scan_file(non_existent);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_rust_scanner_invalid_syntax_handling() {
+        let rules = all_rules();
+        let schema = SchemaRegistry::new();
+        let config = SurqlConfig::default();
+        let scanner = RustSurqlInlineScanner::new(&rules, &schema, &config);
+
+        let dir = tempdir().unwrap();
+        let file = dir.path().join("invalid.rs");
+        fs::write(&file, "fn broken( { {{ unclosed").unwrap();
+
+        let violations = scanner.scan_file(&file);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_rust_scanner_inline_query_inspected() {
+        let rules = all_rules();
+        let schema = SchemaRegistry::new();
+        let config = SurqlConfig::default();
+        let scanner = RustSurqlInlineScanner::new(&rules, &schema, &config);
+
+        let dir = tempdir().unwrap();
+        let file = dir.path().join("repo.rs");
+        let code = r#"
+            pub async fn get_users(db: &Db, table_name: &str, dyn_param: usize) {
+                db.query("SELECT * FROM users;").await.unwrap();
+                db.query_raw("SELECT * FROM users;").await.unwrap();
+                db.query(format!("SELECT * FROM {}", table_name)).await.unwrap();
+                db.query("SELECT * FROM " + table_name).await.unwrap();
+                db.query(dyn_param).await.unwrap();
+                db.other_method().await.unwrap();
+            }
+        "#;
+        fs::write(&file, code).unwrap();
+
+        let violations = scanner.scan_file(&file);
+        assert!(violations.iter().any(|v| v.rule_id == "SURQL-002"));
+        assert!(violations.iter().any(|v| v.rule_id == "SEC-011"));
+    }
+}
+

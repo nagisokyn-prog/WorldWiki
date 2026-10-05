@@ -91,3 +91,44 @@ pub fn all_rules() -> Vec<Box<dyn SurqlRule>> {
         Box::new(fts::Surql025MultipleFtsIndexesInOr),
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_all_rules_have_unique_ids_and_metadata() {
+        let rules = all_rules();
+        assert_eq!(rules.len(), 26);
+
+        let mut seen = HashSet::new();
+        for rule in &rules {
+            let id = rule.id();
+            assert!(seen.insert(id), "Duplicate rule ID: {}", id);
+
+            let def = rule.definition();
+            assert_eq!(def.id, id);
+            assert!(!def.title.is_empty());
+            assert!(!def.description.is_empty());
+            assert!(!def.remediation.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_create_violation_custom_and_default_msg() {
+        let rules = all_rules();
+        let rule = &rules[0];
+        let doc = SurqlDocument::new("SELECT 1;".to_string(), PathBuf::from("test.surql"), Vec::new());
+
+        let v1 = create_violation(rule.as_ref(), &doc, 1, 1, "test_sym", "SELECT 1;", Some("custom message"));
+        assert_eq!(v1.message, "custom message");
+        assert_eq!(v1.line, 1);
+        assert_eq!(v1.symbol, "test_sym");
+
+        let v2 = create_violation(rule.as_ref(), &doc, 1, 1, "test_sym", "SELECT 1;", None);
+        assert_eq!(v2.message, rule.definition().description);
+    }
+}
+

@@ -198,8 +198,29 @@ mod tests {
         assert_eq!(vue_io.archetype, TestabilityArchetype::Poisoned);
         assert!(!vue_io.frictions.is_empty());
 
+        let fe_branches = FrontendTestabilityScanner::scan_source(
+            r#"
+            const t = performance.now();
+            const r = Math.random();
+            const ax = axios.get('url');
+            const h = http.request();
+            const xhr = new XMLHttpRequest();
+            const s = sessionStorage.getItem('key');
+            const g = globalThis.val;
+            const w = window.myProp;
+            const ipc = window.__TAURI__.invoke('cmd');
+            const inv = invoke('cmd');
+            beforeCreate() { axios.get('a'); }
+            mounted() { const x = 1; }
+            function calculate_total() {}
+            "#,
+            "views/MyView.vue",
+            LayerContext::Infrastructure,
+        );
+        assert!(!fe_branches.frictions.is_empty());
+
         let domain_ts = FrontendTestabilityScanner::scan_source(
-            "export function test() { return Date.now() + fetch('a'); }",
+            "export function test() { return Date.now() + fetch('a') + localStorage.getItem('k'); }",
             "domain.ts",
             LayerContext::Domain,
         );

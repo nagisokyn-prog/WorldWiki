@@ -26,12 +26,28 @@ impl SurqlType {
             return SurqlType::Any;
         }
 
-        if trimmed.contains('|') {
-            let parts: Vec<SurqlType> = trimmed
-                .split('|')
-                .map(|p| SurqlType::parse_single(p.trim()))
+        // Split on top-level '|' (not inside '<...>')
+        let mut parts = Vec::new();
+        let mut depth = 0usize;
+        let mut last = 0;
+        for (i, c) in trimmed.char_indices() {
+            match c {
+                '<' => depth += 1,
+                '>' => depth = depth.saturating_sub(1),
+                '|' if depth == 0 => {
+                    parts.push(&trimmed[last..i]);
+                    last = i + 1;
+                }
+                _ => {}
+            }
+        }
+        if last > 0 {
+            parts.push(&trimmed[last..]);
+            let parsed_parts: Vec<SurqlType> = parts
+                .into_iter()
+                .map(|p| SurqlType::parse(p.trim()))
                 .collect();
-            return SurqlType::Union(parts);
+            return SurqlType::Union(parsed_parts);
         }
 
         Self::parse_single(trimmed)
@@ -125,5 +141,71 @@ impl SurqlType {
             Self::Union(types) => types.iter().any(|t| t.is_collection()),
             _ => false,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_primitive_types() {
+        assert_eq!(SurqlType::parse(""), SurqlType::Any);
+        assert_eq!(SurqlType::parse("string"), SurqlType::String);
+        assert_eq!(SurqlType::parse("int"), SurqlType::Int);
+        assert_eq!(SurqlType::parse("integer"), SurqlType::Int);
+        assert_eq!(SurqlType::parse("float"), SurqlType::Float);
+        assert_eq!(SurqlType::parse("decimal"), SurqlType::Decimal);
+        assert_eq!(SurqlType::parse("number"), SurqlType::Number);
+        assert_eq!(SurqlType::parse("bool"), SurqlType::Bool);
+        assert_eq!(SurqlType::parse("boolean"), SurqlType::Bool);
+        assert_eq!(SurqlType::parse("datetime"), SurqlType::Datetime);
+        assert_eq!(SurqlType::parse("duration"), SurqlType::Duration);
+        assert_eq!(SurqlType::parse("null"), SurqlType::Null);
+        assert_eq!(SurqlType::parse("none"), SurqlType::None);
+        assert_eq!(SurqlType::parse("any"), SurqlType::Any);
+        assert_eq!(SurqlType::parse("object"), SurqlType::Object);
+        assert_eq!(SurqlType::parse("object<user>"), SurqlType::Object);
+        assert_eq!(SurqlType::parse("geometry"), SurqlType::Custom("geometry".to_string()));
+    }
+
+    #[test]
+    fn test_parse_nested_and_generic_types() {
+        assert_eq!(SurqlType::parse("record<users>"), SurqlType::Record("users".to_string()));
+        assert_eq!(SurqlType::parse("array"), SurqlType::Array(Box::new(SurqlType::Any)));
+        assert_eq!(SurqlType::parse("array<string>"), SurqlType::Array(Box::new(SurqlType::String)));
+        assert_eq!(SurqlType::parse("option<int>"), SurqlType::Option(Box::new(SurqlType::Int)));
+        assert_eq!(
+            SurqlType::parse("option<string | null>"),
+            SurqlType::Option(Box::new(SurqlType::Union(vec![SurqlType::String, SurqlType::Null])))
+        );
+    }
+
+    #[test]
+    fn test_type_predicates() {
+        let nullable_str = SurqlType::parse("string | null");
+        assert!(nullable_str.is_nullable());
+        assert!(!nullable_str.is_bool_nullable_hazard());
+        assert!(!nullable_str.is_collection());
+
+        let bool_null = SurqlType::parse("bool | null");
+        assert!(bool_null.is_nullable());
+        assert!(bool_null.is_bool_nullable_hazard());
+
+        let opt_bool_null = SurqlType::parse("option<bool | null>");
+        assert!(opt_bool_null.is_nullable());
+        assert!(opt_bool_null.is_bool_nullable_hazard());
+
+        let arr_null = SurqlType::parse("array<string> | null");
+        assert!(arr_null.is_collection());
+        assert!(arr_null.is_nullable());
+
+        let opt_arr = SurqlType::parse("option<array<int>>");
+        assert!(opt_arr.is_collection());
+
+        let plain_int = SurqlType::parse("int");
+        assert!(!plain_int.is_nullable());
+        assert!(!plain_int.is_bool_nullable_hazard());
+        assert!(!plain_int.is_collection());
     }
 }

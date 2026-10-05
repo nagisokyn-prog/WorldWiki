@@ -310,3 +310,61 @@ impl SurqlRule for Surql012NakedOptionJsonHazard {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_ddl_rules_unit() {
+        let surql = r#"
+            DEFINE TABLE logs;
+            DEFINE FIELD name ON logs TYPE string;
+            DEFINE TABLE OVERWRITE edge SCHEMAFULL TYPE RELATION IN users OUT users;
+            DEFINE FIELD OVERWRITE in ON edge TYPE option<record<users>>;
+            DEFINE FIELD OVERWRITE flag ON logs TYPE bool | null;
+            DEFINE FIELD OVERWRITE tags ON logs TYPE array<string> | null;
+            DEFINE FIELD OVERWRITE title ON logs TYPE option<string>;
+        "#;
+        let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
+        let mut schema = SchemaRegistry::new();
+        schema.tables.insert(
+            "edge".to_string(),
+            crate::schema::registry::TableMeta {
+                name: "edge".to_string(),
+                is_schemfull: true,
+                is_schemaless: false,
+                is_relation: true,
+                in_table: Some("users".to_string()),
+                out_table: Some("users".to_string()),
+            },
+        );
+        let config = SurqlConfig::default();
+
+        let v07 = Surql007SchemalessTable.check(&doc, &schema, &config);
+        assert_eq!(v07.len(), 1);
+        assert_eq!(v07[0].rule_id, "SURQL-007");
+
+        let v08 = Surql008NonIdempotentDdl.check(&doc, &schema, &config);
+        assert_eq!(v08.len(), 2);
+        assert_eq!(v08[0].rule_id, "SURQL-008");
+
+        let v09 = Surql009NullableRelationEndpoints.check(&doc, &schema, &config);
+        assert_eq!(v09.len(), 1);
+        assert_eq!(v09[0].rule_id, "SURQL-009");
+
+        let v10 = Surql010ThreeValuedBoolean.check(&doc, &schema, &config);
+        assert_eq!(v10.len(), 1);
+        assert_eq!(v10[0].rule_id, "SURQL-010");
+
+        let v11 = Surql011NullableCollection.check(&doc, &schema, &config);
+        assert_eq!(v11.len(), 1);
+        assert_eq!(v11[0].rule_id, "SURQL-011");
+
+        let v12 = Surql012NakedOptionJsonHazard.check(&doc, &schema, &config);
+        assert_eq!(v12.len(), 1);
+        assert_eq!(v12[0].rule_id, "SURQL-012");
+    }
+}

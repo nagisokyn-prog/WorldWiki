@@ -94,3 +94,51 @@ impl SurqlLinterPort for SurqlEngine {
         Ok(self.inspect_document(&doc, &schema))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_engine_default_and_disabled() {
+        let engine_default = SurqlEngine::default();
+        assert!(engine_default.config.enabled);
+
+        let cfg = SurqlConfig {
+            enabled: false,
+            ..Default::default()
+        };
+        let engine_disabled = SurqlEngine::new(cfg);
+
+        let req = SurqlScanRequest {
+            surql_files: vec![Path::new("dummy.surql").to_path_buf()],
+            rust_files: vec![],
+            workspace_root: Path::new(".").to_path_buf(),
+        };
+        let res = engine_disabled.scan(&req).unwrap();
+        assert!(res.violations.is_empty());
+        assert_eq!(res.scanned_surql_count, 0);
+    }
+
+    #[test]
+    fn test_engine_scan_missing_and_existing_files() {
+        let dir = tempdir().unwrap();
+        let surql_file = dir.path().join("users.surql");
+        fs::write(&surql_file, "SELECT * FROM users;").unwrap();
+        let missing_file = dir.path().join("missing.surql");
+
+        let engine = SurqlEngine::with_default_config();
+        let req = SurqlScanRequest {
+            surql_files: vec![surql_file, missing_file],
+            rust_files: vec![],
+            workspace_root: dir.path().to_path_buf(),
+        };
+
+        let res = engine.scan(&req).unwrap();
+        assert_eq!(res.scanned_surql_count, 2);
+        assert!(res.violations.iter().any(|v| v.rule_id == "SURQL-002"));
+    }
+}
+

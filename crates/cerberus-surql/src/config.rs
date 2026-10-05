@@ -149,3 +149,44 @@ impl Default for SurqlConfig {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_defaults_and_serde() {
+        let default_cfg = SurqlConfig::default();
+        assert!(default_cfg.enabled);
+        assert_eq!(default_cfg.target_version, "3");
+        assert!(default_cfg.strict_schema);
+        assert!(default_cfg.require_ddl_overwrite);
+        assert!(default_cfg.dml.warn_on_select_star);
+        assert!(default_cfg.types.disallow_three_valued_booleans);
+        assert!(default_cfg.fts.require_score_on_predicate);
+        assert_eq!(default_cfg.heavy_data.historical_table_patterns.len(), 1);
+        assert_eq!(default_cfg.heavy_data.heavy_field_types.len(), 3);
+
+        let dml_def = SurqlDmlConfig::default();
+        assert!(dml_def.disallow_select_star_in_functions);
+
+        let types_def = SurqlTypesConfig::default();
+        assert!(types_def.disallow_nullable_collections);
+
+        let fts_def = SurqlFtsConfig::default();
+        assert!(fts_def.warn_on_split_index_or);
+
+        let heavy_def = SurqlHeavyDataConfig::default();
+        assert!(heavy_def.historical_tables.is_empty());
+
+        assert!(default_true());
+        assert_eq!(default_target_version(), "3");
+        assert!(!default_historical_patterns().is_empty());
+        assert!(!default_heavy_field_types().is_empty());
+
+        let json = serde_json::to_string(&default_cfg).unwrap();
+        let deserialized: SurqlConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.target_version, "3");
+    }
+}
+

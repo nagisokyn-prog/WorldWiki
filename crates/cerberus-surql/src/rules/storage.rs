@@ -105,6 +105,11 @@ impl SurqlRule for Surql017UnindexedForeignKey {
                 };
 
                 if is_fk {
+                    // In SurrealDB, relation edges inherently manage `in` and `out` graph pointers
+                    if field.field_name == "in" || field.field_name == "out" {
+                        continue;
+                    }
+
                     let has_index = schema.has_index_on_field(&field.table_name, &field.field_name);
                     if !has_index {
                         violations.push(create_violation(
@@ -220,5 +225,43 @@ impl SurqlRule for Surql019ArrayContainsInsteadOfEdge {
             }
         }
         violations
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_storage_rules_unit() {
+        let surql = r#"
+            DEFINE TABLE OVERWRITE doc_history SCHEMAFULL;
+            DEFINE FIELD OVERWRITE embedding ON doc_history TYPE array<float>;
+            DEFINE TABLE OVERWRITE orders SCHEMAFULL;
+            DEFINE FIELD OVERWRITE user_id ON orders TYPE record<users>;
+            SELECT * FROM items ORDER BY priority ASC;
+            SELECT * FROM items WHERE user_ids CONTAINS $u;
+        "#;
+        let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
+        let schema = SchemaRegistry::new();
+        let config = SurqlConfig::default();
+
+        let v16 = Surql016HeavyTypeInHistoryTable.check(&doc, &schema, &config);
+        assert_eq!(v16.len(), 1);
+        assert_eq!(v16[0].rule_id, "SURQL-016");
+
+        let v17 = Surql017UnindexedForeignKey.check(&doc, &schema, &config);
+        assert_eq!(v17.len(), 1);
+        assert_eq!(v17[0].rule_id, "SURQL-017");
+
+        let v18 = Surql018UnindexedOrderBy.check(&doc, &schema, &config);
+        assert_eq!(v18.len(), 1);
+        assert_eq!(v18[0].rule_id, "SURQL-018");
+
+        let v19 = Surql019ArrayContainsInsteadOfEdge.check(&doc, &schema, &config);
+        assert_eq!(v19.len(), 1);
+        assert_eq!(v19[0].rule_id, "SURQL-019");
     }
 }

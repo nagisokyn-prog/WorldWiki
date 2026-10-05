@@ -105,3 +105,47 @@ impl AnalyzeWorkspaceTestabilityUseCase {
         WorkspaceTestabilityReport::new(reports)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_analyze_path_walks_and_filters() {
+        let dir = tempdir().unwrap();
+        let src_dir = dir.path().join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+
+        // 1. Valid rust file
+        let valid_rs = src_dir.join("domain.rs");
+        fs::write(&valid_rs, "pub struct User;").unwrap();
+
+        // 2. Pure composition root lib.rs
+        let lib_rs = src_dir.join("lib.rs");
+        fs::write(&lib_rs, "pub mod domain;").unwrap();
+
+        // 3. Ignored file extension
+        let txt_file = src_dir.join("readme.txt");
+        fs::write(&txt_file, "notes").unwrap();
+
+        // 4. Ignored target directory
+        let target_dir = dir.path().join("target");
+        fs::create_dir_all(&target_dir).unwrap();
+        let target_rs = target_dir.join("build.rs");
+        fs::write(&target_rs, "pub fn build() {}").unwrap();
+
+        let report = AnalyzeWorkspaceTestabilityUseCase::analyze_path(dir.path()).unwrap();
+        assert_eq!(report.total_files, 1);
+    }
+
+    #[test]
+    fn test_analyze_in_memory() {
+        let files = [
+            ("src/domain/entity.rs", "pub struct Entity;", LayerContext::Domain),
+            ("src/lib.rs", "pub mod entity;", LayerContext::Domain),
+        ];
+        let report = AnalyzeWorkspaceTestabilityUseCase::analyze_in_memory(&files);
+        assert_eq!(report.total_files, 1);
+    }
+}

@@ -476,3 +476,56 @@ impl SurqlRule for Surql015MassMutationWithoutWhere {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::parser::SurqlParser;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_dml_rules_unit() {
+        let surql = r#"
+            DEFINE FUNCTION OVERWRITE fn::bad() {
+                FOR $x IN $arr {
+                    DELETE orders;
+                };
+                RETURN (SELECT * FROM orders);
+                RETURN (SELECT id FROM orders);
+            };
+            SELECT * FROM orders;
+            SELECT id, (SELECT id FROM ->orders) AS o FROM users;
+            UPDATE users SET a = 1;
+            DELETE users;
+            SELECT count() FROM users;
+            SELECT (SELECT id FROM users)[0] AS u FROM orders;
+        "#;
+        let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
+        let schema = SchemaRegistry::new();
+        let config = SurqlConfig::default();
+
+        let v01 = Surql001LoopMutation.check(&doc, &schema, &config);
+        assert!(!v01.is_empty());
+
+        let v02 = Surql002SelectStar.check(&doc, &schema, &config);
+        assert!(!v02.is_empty());
+
+        let v03 = Surql003FunctionSelectStar.check(&doc, &schema, &config);
+        assert!(!v03.is_empty());
+
+        let v04 = Surql004UnboundedFunctionSelect.check(&doc, &schema, &config);
+        assert!(!v04.is_empty());
+
+        let v05 = Surql005ProjectionSubqueryNPlusOne.check(&doc, &schema, &config);
+        assert!(!v05.is_empty());
+
+        let v13 = Surql013ScalarAggregateWithoutGroup.check(&doc, &schema, &config);
+        assert!(!v13.is_empty());
+
+        let v14 = Surql014UnboundedSubqueryIndex.check(&doc, &schema, &config);
+        assert!(!v14.is_empty());
+
+        let v15 = Surql015MassMutationWithoutWhere.check(&doc, &schema, &config);
+        assert_eq!(v15.len(), 2);
+    }
+}

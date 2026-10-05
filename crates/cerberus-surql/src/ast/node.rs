@@ -166,3 +166,128 @@ pub struct OtherNode {
     pub span: SourceSpan,
     pub raw: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn dummy_span(start: usize, end: usize) -> SourceSpan {
+        SourceSpan {
+            byte_range: start..end,
+            start_line: 1,
+            start_col: 1,
+            end_line: 1,
+            end_col: 10,
+        }
+    }
+
+    #[test]
+    fn test_statement_span_dispatch() {
+        let span = dummy_span(0, 10);
+        let s_table = Statement::DefineTable(DefineTableNode {
+            span: span.clone(),
+            name: "users".to_string(),
+            is_overwrite: true,
+            is_schemfull: true,
+            is_schemaless: false,
+            relation: None,
+        });
+        assert_eq!(s_table.span(), &span);
+
+        let s_field = Statement::DefineField(DefineFieldNode {
+            span: span.clone(),
+            field_name: "name".to_string(),
+            table_name: "users".to_string(),
+            is_overwrite: false,
+            raw_type: "string".to_string(),
+            is_nullable: false,
+            is_optional: false,
+            default_expr: None,
+        });
+        assert_eq!(s_field.span(), &span);
+
+        let s_index = Statement::DefineIndex(DefineIndexNode {
+            span: span.clone(),
+            index_name: "idx".to_string(),
+            table_name: "users".to_string(),
+            is_overwrite: false,
+            fields: vec!["name".to_string()],
+            is_fulltext: false,
+            analyzer: None,
+            is_bm25: false,
+        });
+        assert_eq!(s_index.span(), &span);
+
+        let s_func = Statement::DefineFunction(DefineFunctionNode {
+            span: span.clone(),
+            name: "fn::test".to_string(),
+            is_overwrite: false,
+            parameters: Vec::new(),
+            return_type: None,
+            body_statements: Vec::new(),
+        });
+        assert_eq!(s_func.span(), &span);
+
+        let s_select = Statement::Select(SelectNode {
+            span: span.clone(),
+            is_wildcard: true,
+            projected_fields: Vec::new(),
+            from_table: Some("users".to_string()),
+            where_clause: None,
+            group_by: None,
+            order_by: None,
+            limit: None,
+            function_calls: Vec::new(),
+            subqueries: Vec::new(),
+            is_subquery_zero_indexed: false,
+        });
+        assert_eq!(s_select.span(), &span);
+
+        let s_update = Statement::Update(UpdateNode {
+            span: span.clone(),
+            target: "users".to_string(),
+            is_record_id: false,
+            has_where: false,
+            where_clause: None,
+            set_assignments: Vec::new(),
+        });
+        assert_eq!(s_update.span(), &span);
+
+        let s_delete = Statement::Delete(DeleteNode {
+            span: span.clone(),
+            target: "users".to_string(),
+            is_record_id: false,
+            has_where: false,
+            where_clause: None,
+        });
+        assert_eq!(s_delete.span(), &span);
+
+        let s_relate = Statement::Relate(RelateNode {
+            span: span.clone(),
+            from: "u1".to_string(),
+            relation_table: "follows".to_string(),
+            to: "u2".to_string(),
+        });
+        assert_eq!(s_relate.span(), &span);
+
+        let s_for = Statement::ForLoop(ForLoopNode {
+            span: span.clone(),
+            iterator_var: "$u".to_string(),
+            target_iterable: "$users".to_string(),
+            body_statements: Vec::new(),
+        });
+        assert_eq!(s_for.span(), &span);
+
+        let s_tx = Statement::Transaction(TransactionNode {
+            span: span.clone(),
+            body_statements: Vec::new(),
+        });
+        assert_eq!(s_tx.span(), &span);
+
+        let s_other = Statement::Other(OtherNode {
+            span: span.clone(),
+            raw: "INFO FOR DB;".to_string(),
+        });
+        assert_eq!(s_other.span(), &span);
+    }
+}

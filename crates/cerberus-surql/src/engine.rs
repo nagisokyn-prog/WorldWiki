@@ -90,7 +90,7 @@ impl SurqlLinterPort for SurqlEngine {
 
     fn scan_surql_content(&self, content: &str, file_path: &Path) -> Result<Vec<Violation>, String> {
         let doc = SurqlParser::parse(content, file_path.to_path_buf());
-        let schema = SchemaCollector::collect(&[doc.clone()]);
+        let schema = SchemaCollector::collect(std::slice::from_ref(&doc));
         Ok(self.inspect_document(&doc, &schema))
     }
 }

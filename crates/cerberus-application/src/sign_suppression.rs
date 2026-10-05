@@ -65,12 +65,10 @@ pub fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
     }
 
     let mut result = Vec::with_capacity(bytes.len() / 2);
-    for chunk in bytes.chunks_exact(2) {
-        if let [hi_b, lo_b] = chunk {
-            let hi = decode_hex_nibble(*hi_b)?;
-            let lo = decode_hex_nibble(*lo_b)?;
-            result.push((hi << 4) | lo);
-        }
+    for &[hi_b, lo_b] in bytes.as_chunks::<2>().0 {
+        let hi = decode_hex_nibble(hi_b)?;
+        let lo = decode_hex_nibble(lo_b)?;
+        result.push((hi << 4) | lo);
     }
     Ok(result)
 }

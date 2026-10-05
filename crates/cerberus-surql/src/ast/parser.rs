@@ -479,7 +479,7 @@ impl SurqlParser {
     }
 
     fn parse_relate(raw: &str, span: SourceSpan) -> RelateNode {
-        let re = Regex::new(r"(?i)RELATE\s+([^\s->]+)\s*->\s*([a-zA-Z0-9_]+)\s*->\s*([^\s;{]+)").unwrap();
+        let re = Regex::new(r"(?i)RELATE\s+([^\s\->]+)\s*->\s*([a-zA-Z0-9_]+)\s*->\s*([^\s;{]+)").unwrap();
         let (from, relation_table, to) = if let Some(c) = re.captures(raw) {
             (
                 c.get(1).map(|m| m.as_str().to_string()).unwrap_or_default(),

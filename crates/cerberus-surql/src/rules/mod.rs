@@ -7,9 +7,7 @@ pub mod storage;
 use crate::ast::document::SurqlDocument;
 use crate::config::SurqlConfig;
 use crate::schema::registry::SchemaRegistry;
-use cerberus_domain::{
-    compute_location_fingerprint, Category, RuleDefinition, Severity, Violation,
-};
+use cerberus_domain::{compute_location_fingerprint, RuleDefinition, Violation};
 
 pub trait SurqlRule: Send + Sync {
     fn id(&self) -> &'static str;
@@ -33,13 +31,8 @@ pub fn create_violation(
 ) -> Violation {
     let def = rule.definition();
     let file_str = doc.file_path().to_string_lossy().to_string();
-    let fingerprint = compute_location_fingerprint(
-        &def.id,
-        &def.version,
-        &file_str,
-        symbol,
-        snippet,
-    );
+    let fingerprint =
+        compute_location_fingerprint(&def.id, &def.version, &file_str, symbol, snippet);
 
     let message = if let Some(msg) = custom_msg {
         msg.to_string()
@@ -75,7 +68,6 @@ pub fn all_rules() -> Vec<Box<dyn SurqlRule>> {
         Box::new(dml::Surql013ScalarAggregateWithoutGroup),
         Box::new(dml::Surql014UnboundedSubqueryIndex),
         Box::new(dml::Surql015MassMutationWithoutWhere),
-
         // DDL & Typing
         Box::new(ddl::Surql007SchemalessTable),
         Box::new(ddl::Surql008NonIdempotentDdl),
@@ -83,17 +75,14 @@ pub fn all_rules() -> Vec<Box<dyn SurqlRule>> {
         Box::new(ddl::Surql010ThreeValuedBoolean),
         Box::new(ddl::Surql011NullableCollection),
         Box::new(ddl::Surql012NakedOptionJsonHazard),
-
         // Storage & Schema Cross-Checks
         Box::new(storage::Surql016HeavyTypeInHistoryTable),
         Box::new(storage::Surql017UnindexedForeignKey),
         Box::new(storage::Surql018UnindexedOrderBy),
         Box::new(storage::Surql019ArrayContainsInsteadOfEdge),
-
         // Functions
         Box::new(functions::Surql020UntypedFunctionParam),
         Box::new(functions::Surql026DatetimeCoercedToString),
-
         // FTS & BM25
         Box::new(fts::Surql021UnrankedPredicateSearch),
         Box::new(fts::Surql022DanglingScoreFunction),

@@ -51,6 +51,12 @@ pub enum Commands {
 
         #[arg(long, help = "Path to baseline file (default: cerberus-baseline.json)")]
         baseline: Option<PathBuf>,
+
+        #[arg(long, help = "Disable Bevy-specific rules")]
+        no_bevy: bool,
+
+        #[arg(long, help = "Scan strictly with Bevy-specific rules")]
+        bevy_only: bool,
     },
     /// Initialize cerberus configuration, constitution, hooks, and baseline
     Init {
@@ -236,6 +242,8 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
         backend_only: false,
         record_baseline: false,
         baseline: None,
+        no_bevy: false,
+        bevy_only: false,
     };
 
     execute_command(cli.command.unwrap_or(default_command), cli.rules_path.as_ref())

@@ -29,25 +29,33 @@ pub struct AgentTasks(
 
 // --- Инициализация БД ---
 
-async fn init_database() -> Surreal<Db> {
+async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> {
     let db_path = worldwiki_infrastructure::paths::get_surreal_db_path();
     let _ = fs::create_dir_all(&db_path);
     let db = match Surreal::new::<SurrealKv>(db_path).await {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("[CRITICAL] Failed to start SurrealDB: {}", e);
-            Surreal::init()
+            eprintln!("[CRITICAL] Failed to start SurrealDB engine: {}", e);
+
+            return Err(Box::new(e));
         }
     };
     if let Err(e) = db.use_ns("worldwriter").use_db("worldwriter").await {
-        eprintln!("[CRITICAL] Failed to use NS/DB: {}", e);
+        eprintln!(
+            "[CRITICAL] Failed to use namespace/database 'worldwriter': {}",
+            e
+        );
+
+        return Err(Box::new(e));
     }
 
     if let Err(e) = apply_schema_pipeline(&db).await {
-        eprintln!("[CRITICAL] Failed to apply schema pipeline: {}", e);
+        eprintln!("[CRITICAL] Schema pipeline failed to apply: {}", e);
+
+        return Err(Box::new(e));
     }
 
-    db
+    Ok(db)
 }
 
 pub async fn apply_schema_pipeline(
@@ -107,23 +115,33 @@ pub async fn apply_ddl_module(
         Ok(mut res) => {
             let errors = res.take_errors();
             if !errors.is_empty() {
+                eprintln!(
+                    "[DDL ERROR] Module '{}' failed with {} error(s):",
+                    name,
+                    errors.len()
+                );
+                for (idx, err) in &errors {
+                    eprintln!("  -> Statement #{} error: {}", idx, err);
+                }
+
                 let err_msg = format!("DDL Error in module '{}': {:?}", name, errors);
-                eprintln!("{}", err_msg);
                 return Err(worldwiki_domain::errors::DomainError::Validation(err_msg));
             }
             println!("[DB] Schema module '{}' applied successfully.", name);
             Ok(())
         }
         Err(e) => {
-            let err_msg = format!("Failed to execute DDL module '{}': {:?}", name, e);
-            eprintln!("{}", err_msg);
+            let err_msg = format!("Failed to execute DDL module '{}': {}", name, e);
+
+            eprintln!("[DDL CRITICAL] {}", err_msg);
+
             Err(worldwiki_domain::errors::DomainError::Validation(err_msg))
         }
     }
 }
 
 fn setup_application(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let raw_db = tauri::async_runtime::block_on(init_database());
+    let raw_db = tauri::async_runtime::block_on(init_database())?;
     let db = std::sync::Arc::new(raw_db);
     let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(
         app.handle().clone(),

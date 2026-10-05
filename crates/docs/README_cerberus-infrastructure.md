@@ -72,6 +72,14 @@ crates/cerberus-infrastructure/src/
 - [`macros.rs`](./src/ast/macros.rs) — `MacroVisitor`: валидирует использование макросов, запрещая опасные глобальные состояния (`lazy_static!`).
 - [`async_rules.rs`](./src/ast/async_rules.rs) — `MutexGuardVisitor`: проверяет асинхронный код на удержание `std::sync::MutexGuard` через точки прерывания `.await` (`ASYNC-001`) и блокирующий сон в async (`ASYNC-002`).
 - [`capabilities.rs`](./src/ast/capabilities.rs) — `CapabilitiesVisitor`: анализирует прямой доступ к системным возможностям (FS, Sockets, Processes) в недопустимых слоях.
+- [`bevy/`](./src/ast/bevy/) — Специализированный статический анализатор Bevy ECS (0.18.1+):
+  - `api_checker.rs`: проверка устаревших API `BEVY-API-001..006`.
+  - `sched_checker.rs`: контроль блокировок шедулера `BEVY-SCHED-001..005`.
+  - `ecs_checker.rs`: правила гигиены компонентов и клонирования `BEVY-ECS-001..007`.
+  - `query_checker.rs`: инварианты запросов и ресурсов `BEVY-QUERY-001..005`.
+  - `async_checker.rs`: безопасность асинхронных задач `BEVY-ASYNC-001..004`.
+  - `perf_checker.rs`: аудит утечек VRAM, рекурсивного despawn и мутаций `BEVY-PERF-*` (15 правил).
+  - `context.rs`: извлечение контекста Bevy-систем, Startup/Update очередей и версий.
 
 ---
 

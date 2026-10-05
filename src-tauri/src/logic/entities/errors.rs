@@ -45,7 +45,9 @@ impl From<serde_json::Error> for EntityError {
 
 impl From<EntityError> for String {
     fn from(err: EntityError) -> Self {
-        err.to_string()
+        let msg = err.to_string();
+        eprintln!("[IPC ERROR][Entity] {}", msg);
+        msg
     }
 }
 
@@ -54,6 +56,7 @@ impl serde::Serialize for EntityError {
     where
         S: serde::Serializer,
     {
+        eprintln!("[IPC ERROR][Entity] {}", self);
         serializer.serialize_str(&self.to_string())
     }
 }

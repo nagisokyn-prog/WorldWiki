@@ -214,7 +214,10 @@ impl RuleCatalog {
             },
         ];
 
-        let mut existing_ids: std::collections::HashSet<String> = bespoke.iter().map(|r| r.id.to_uppercase()).collect();
+        let mut existing_ids = std::collections::HashSet::new();
+        for r in &bespoke {
+            existing_ids.insert(r.id.to_uppercase());
+        }
         let mut results = bespoke;
 
         for rule in crate::BuiltinRuleRegistry::all_rules() {
@@ -235,14 +238,7 @@ impl RuleCatalog {
             }
         }
 
-        results.sort_by(|a, b| {
-            let cat_cmp = format!("{:?}", a.category).cmp(&format!("{:?}", b.category));
-            if cat_cmp == std::cmp::Ordering::Equal {
-                a.id.cmp(&b.id)
-            } else {
-                cat_cmp
-            }
-        });
+        results.sort_by(cmp_rule_docs);
 
         results
     }
@@ -250,24 +246,48 @@ impl RuleCatalog {
     pub fn get(id: &str) -> Option<RuleDocEntry> {
         let canonical = crate::BuiltinRuleRegistry::canonical_rule_id(id.trim());
         let id_upper = canonical.to_uppercase();
-        Self::all().into_iter().find(|r| r.id.to_uppercase() == id_upper)
+        let mut target_rule = None;
+        for r in Self::all() {
+            if r.id.to_uppercase() == id_upper {
+                target_rule = Some(r);
+                break;
+            }
+        }
+        target_rule
     }
 
     pub fn by_category(category: Category) -> Vec<RuleDocEntry> {
-        Self::all().into_iter().filter(|r| r.category == category).collect()
+        let mut res = Vec::new();
+        for r in Self::all() {
+            if r.category == category {
+                res.push(r);
+            }
+        }
+        res
     }
 
     pub fn search(query: &str) -> Vec<RuleDocEntry> {
         let q = query.to_lowercase();
-        Self::all()
-            .into_iter()
-            .filter(|r| {
-                r.id.to_lowercase().contains(&q)
-                    || r.name.to_lowercase().contains(&q)
-                    || r.summary.to_lowercase().contains(&q)
-                    || r.rationale.to_lowercase().contains(&q)
-            })
-            .collect()
+        let mut res = Vec::new();
+        for r in Self::all() {
+            if r.id.to_lowercase().contains(&q)
+                || r.name.to_lowercase().contains(&q)
+                || r.summary.to_lowercase().contains(&q)
+                || r.rationale.to_lowercase().contains(&q)
+            {
+                res.push(r);
+            }
+        }
+        res
+    }
+}
+
+fn cmp_rule_docs(a: &RuleDocEntry, b: &RuleDocEntry) -> std::cmp::Ordering {
+    let cat_cmp = format!("{:?}", a.category).cmp(&format!("{:?}", b.category));
+    if cat_cmp == std::cmp::Ordering::Equal {
+        a.id.cmp(&b.id)
+    } else {
+        cat_cmp
     }
 }
 

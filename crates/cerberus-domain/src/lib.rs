@@ -1,3 +1,4 @@
+pub mod bevy_rules;
 pub mod catalog;
 pub mod cluster;
 pub mod layer;
@@ -11,6 +12,7 @@ pub mod suppression;
 pub mod traits;
 pub mod tree;
 
+pub use bevy_rules::all_bevy_rules;
 pub use catalog::{RuleCatalog, RuleDocEntry};
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
 pub use layer::{ArchLayer, LayerRule, LayerTopologyMatrix, PackageArchMetadata, WorkspaceArchMetadata};

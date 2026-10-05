@@ -43,7 +43,8 @@ pub struct RawEntity {
 pub struct RawChapter {
     pub id: String,
     pub title: String,
-    pub sort_order: i32,
+    #[serde(default)]
+    pub sort_order: Option<i32>,
 }
 
 #[derive(serde::Deserialize)]

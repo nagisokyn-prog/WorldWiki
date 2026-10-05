@@ -41,7 +41,7 @@ pub(crate) async fn get_item_journey_impl(
 
     let chapter_map: std::collections::HashMap<String, (i32, String)> = chapters
         .into_iter()
-        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order, c.title)))
+        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title)))
         .collect();
 
     let attrs = &target_item.attributes;

@@ -158,19 +158,21 @@ impl<'a> TestabilityChecker<'a> {
     }
 
     fn is_rule_enabled(&self, rule_id: &str) -> bool {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity != Severity::Off)
-            .unwrap_or(true)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity != Severity::Off;
+            }
+        }
+        true
     }
 
     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity)
-            .unwrap_or(default)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity;
+            }
+        }
+        default
     }
 }
 
@@ -182,12 +184,11 @@ struct TestabilityVisitor<'a, 'b> {
 impl<'a, 'b> Visit<'_> for TestabilityVisitor<'a, 'b> {
     fn visit_expr_call(&mut self, item: &ExprCall) {
         if let syn::Expr::Path(ExprPath { path, .. }) = &*item.func {
-            let path_str = path
-                .segments
-                .iter()
-                .map(|s| s.ident.to_string())
-                .collect::<Vec<_>>()
-                .join("::");
+            let mut parts = Vec::new();
+            for s in &path.segments {
+                parts.push(s.ident.to_string());
+            }
+            let path_str = parts.join("::");
             self.checker.check_call_path(&path_str, self.violations);
         }
         syn::visit::visit_expr_call(self, item);
@@ -201,5 +202,68 @@ impl<'a, 'b> Visit<'_> for TestabilityVisitor<'a, 'b> {
     fn visit_item_static(&mut self, item: &ItemStatic) {
         self.checker.check_static_item(item, self.violations);
         syn::visit::visit_item_static(self, item);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
+    #[test]
+    fn test_testability_rules_and_fallbacks() {
+        let code = r#"
+            use std::time::SystemTime;
+            static LOCK: std::sync::Mutex<i32> = std::sync::Mutex::new(0);
+
+            pub fn logic() {
+                let _ = SqlAdapter::new();
+                let now = SystemTime::now();
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = cerberus_domain::BuiltinRuleRegistry::all_rules();
+        let checker = TestabilityChecker::new("crates/domain/src/lib.rs", "domain", &rules);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "TEST-005"));
+        assert!(has_rule(&violations, "TEST-002"));
+        assert!(has_rule(&violations, "TEST-003"));
+
+        // Fallback test with empty rules
+        let empty_rules: Vec<RuleDefinition> = Vec::new();
+        let checker_empty = TestabilityChecker::new("crates/domain/src/lib.rs", "domain", &empty_rules);
+        let violations_empty = checker_empty.check_file(&syntax);
+        assert!(has_rule(&violations_empty, "TEST-005"));
+        assert!(has_rule(&violations_empty, "TEST-002"));
+        assert!(has_rule(&violations_empty, "TEST-003"));
+    }
+
+    #[test]
+    fn test_testability_disabled_rule() {
+        let code = r#"
+            static LOCK: std::sync::Mutex<i32> = std::sync::Mutex::new(0);
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = vec![RuleDefinition {
+            id: "TEST-002".into(),
+            title: "Mutex".into(),
+            version: "1.0".into(),
+            category: Category::Testability,
+            severity: Severity::Off,
+            description: "off".into(),
+            remediation: "none".into(),
+        }];
+        let checker = TestabilityChecker::new("crates/domain/src/lib.rs", "domain", &rules);
+        let violations = checker.check_file(&syntax);
+        assert!(violations.is_empty());
     }
 }

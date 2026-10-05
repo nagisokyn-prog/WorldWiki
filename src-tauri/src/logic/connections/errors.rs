@@ -47,7 +47,9 @@ impl From<serde_json::Error> for ConnectionError {
 
 impl From<ConnectionError> for String {
     fn from(err: ConnectionError) -> Self {
-        err.to_string()
+        let msg = err.to_string();
+        eprintln!("[IPC ERROR][Connection] {}", msg);
+        msg
     }
 }
 
@@ -56,6 +58,7 @@ impl serde::Serialize for ConnectionError {
     where
         S: serde::Serializer,
     {
+        eprintln!("[IPC ERROR][Connection] {}", self);
         serializer.serialize_str(&self.to_string())
     }
 }

@@ -19,7 +19,12 @@ impl ResolvedLayer {
         if self.name.to_lowercase() == seg {
             return true;
         }
-        self.aliases.iter().any(|a| a.to_lowercase() == seg)
+        for a in &self.aliases {
+            if a.to_lowercase() == seg {
+                return true;
+            }
+        }
+        false
     }
 
     pub fn can_import(&self, target: &ResolvedLayer) -> bool {
@@ -27,7 +32,12 @@ impl ResolvedLayer {
             return true;
         }
         if !self.allowed_deps.is_empty() {
-            return self.allowed_deps.iter().any(|d| d == &target.name || d == "*");
+            for d in &self.allowed_deps {
+                if d == &target.name || d == "*" {
+                    return true;
+                }
+            }
+            return false;
         }
         self.order >= target.order
     }
@@ -184,7 +194,7 @@ pub fn resolve_layers_from_config(config: Option<&CerberusConfig>) -> Vec<Resolv
 pub fn parse_layer_with_matrix(path_str: &str, matrix: &[ResolvedLayer]) -> Option<ResolvedLayer> {
     let normalized = path_str.replace('\\', "/").to_lowercase();
 
-    let is_internal = normalized.starts_with('.')
+    let mut is_internal = normalized.starts_with('.')
         || normalized.starts_with('/')
         || normalized.starts_with("@/")
         || normalized.starts_with("~/")
@@ -195,21 +205,45 @@ pub fn parse_layer_with_matrix(path_str: &str, matrix: &[ResolvedLayer]) -> Opti
         || normalized.ends_with(".ts")
         || normalized.ends_with(".js")
         || normalized.ends_with(".vue")
-        || normalized.ends_with(".css")
-        || matrix.iter().any(|l| {
-            normalized.starts_with(&format!("{}/", l.name.to_lowercase()))
-                || l.aliases.iter().any(|a| normalized.starts_with(&format!("{}/", a.to_lowercase())))
-        });
+        || normalized.ends_with(".css");
+
+    if !is_internal {
+        for l in matrix {
+            if normalized.starts_with(&format!("{}/", l.name.to_lowercase())) {
+                is_internal = true;
+                break;
+            }
+            for a in &l.aliases {
+                if normalized.starts_with(&format!("{}/", a.to_lowercase())) {
+                    is_internal = true;
+                    break;
+                }
+            }
+            if is_internal {
+                break;
+            }
+        }
+    }
 
     if !is_internal {
         return None;
     }
 
     // First check high-priority orchestrator layers (like shell) if present in path
-    for layer in matrix.iter().filter(|l| l.is_orchestrator) {
-        if layer.aliases.iter().any(|a| normalized.contains(&format!("/{}/", a.to_lowercase())))
-            || normalized.contains(&format!("/{}/", layer.name.to_lowercase()))
-        {
+    for layer in matrix {
+        if !layer.is_orchestrator {
+            continue;
+        }
+        let mut matched = normalized.contains(&format!("/{}/", layer.name.to_lowercase()));
+        if !matched {
+            for a in &layer.aliases {
+                if normalized.contains(&format!("/{}/", a.to_lowercase())) {
+                    matched = true;
+                    break;
+                }
+            }
+        }
+        if matched {
             return Some(layer.clone());
         }
     }
@@ -441,4 +475,93 @@ fn extract_slice_name(path: &str, layer: &ResolvedLayer) -> Option<String> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
+    #[test]
+    fn test_fsd_layer_methods() {
+        assert_eq!(FsdLayer::parse("src/shared/ui/button.vue"), FsdLayer::Shared);
+        assert_eq!(FsdLayer::parse("src/entities/user/model.ts"), FsdLayer::Entities);
+        assert_eq!(FsdLayer::parse("src/features/auth/ui.vue"), FsdLayer::Features);
+        assert_eq!(FsdLayer::parse("src/widgets/header/ui.vue"), FsdLayer::Widgets);
+        assert_eq!(FsdLayer::parse("src/pages/home/ui.vue"), FsdLayer::Pages);
+        assert_eq!(FsdLayer::parse("src/app/main.ts"), FsdLayer::App);
+        assert_eq!(FsdLayer::parse("external-lib"), FsdLayer::Unknown);
+
+        assert_eq!(FsdLayer::Shared.as_str(), "shared");
+        assert_eq!(FsdLayer::Entities.as_str(), "entities");
+        assert_eq!(FsdLayer::Features.as_str(), "features");
+        assert_eq!(FsdLayer::Widgets.as_str(), "widgets");
+        assert_eq!(FsdLayer::Pages.as_str(), "pages");
+        assert_eq!(FsdLayer::App.as_str(), "app");
+        assert_eq!(FsdLayer::Unknown.as_str(), "unknown");
+
+        assert!(FsdLayer::Pages.can_import(FsdLayer::Features));
+        assert!(!FsdLayer::Entities.can_import(FsdLayer::Features));
+        assert!(FsdLayer::Unknown.can_import(FsdLayer::Shared));
+    }
+
+    #[test]
+    fn test_fsd_001_layer_violation() {
+        let code = "import { LoginButton } from '@/features/auth';";
+        let violations = FsdRulesChecker::check_source(code, &PathBuf::from("src/entities/user/index.ts"));
+        assert!(has_rule(&violations, "FSD-001"));
+
+        let good = "import { UserAvatar } from '@/entities/user';";
+        let violations_good = FsdRulesChecker::check_source(good, &PathBuf::from("src/features/auth/index.ts"));
+        assert!(!has_rule(&violations_good, "FSD-001"));
+    }
+
+    #[test]
+    fn test_fsd_002_public_api_bypass() {
+        let code = "import { secretHelper } from '@/features/auth/internal/secret';";
+        let violations = FsdRulesChecker::check_source(code, &PathBuf::from("src/pages/home/index.vue"));
+        assert!(has_rule(&violations, "FSD-002"));
+    }
+
+    #[test]
+    fn test_fsd_003_uikit_purity() {
+        let code = "import { useUserStore } from '@/entities/user/stores';";
+        let violations = FsdRulesChecker::check_source(code, &PathBuf::from("packages/ui/button.vue"));
+        assert!(has_rule(&violations, "FSD-003"));
+    }
+
+    #[test]
+    fn test_fsd_004_cross_slice() {
+        let code = "import { cartHelper } from '@/features/cart';";
+        let violations = FsdRulesChecker::check_source(code, &PathBuf::from("src/features/auth/index.ts"));
+        assert!(has_rule(&violations, "FSD-004"));
+    }
+
+    #[test]
+    fn test_fsd_custom_config_layers() {
+        let mut cfg = CerberusConfig::default();
+        let mut layers = std::collections::HashMap::new();
+        layers.insert("custom_layer".to_string(), cerberus_domain::FrontendLayerConfig {
+            order: Some(2),
+            aliases: vec!["custom".into()],
+            allowed_deps: vec!["shared".into()],
+            is_orchestrator: false,
+            allow_cross_slice: false,
+        });
+        cfg.frontend_layers = layers;
+
+        let resolved = resolve_layers_from_config(Some(&cfg));
+        assert_eq!(resolved.len(), 1);
+        assert_eq!(resolved[0].name, "custom_layer");
+        assert!(resolved[0].matches_segment("custom"));
+    }
 }

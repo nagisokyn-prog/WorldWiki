@@ -18,7 +18,7 @@ fn r(id: &str, cat: Category, sev: Severity, title: &str, desc: &str, rem: &str)
 
 impl BuiltinRuleRegistry {
     pub fn all_rules() -> Vec<RuleDefinition> {
-        vec![
+        let mut base = vec![
             // 1. Rust & Hexagonal Backend Rules
             r("ARCH-001", Category::Architecture, Severity::Deny, "Domain crate cannot import external frameworks", "Domain layer must remain pure without dependencies on framework SDKs (tauri, tokio, surrealdb, reqwest).", "Move infrastructure dependencies to ports and adapter traits in infrastructure."),
             r("ARCH-002", Category::Architecture, Severity::Deny, "Application layer cannot import Tauri", "Application use cases must not depend on UI/IPC framework types (tauri::*).", "Pass UI parameters as clean DTOs into use case methods."),
@@ -116,7 +116,9 @@ impl BuiltinRuleRegistry {
             r("LEAK-001", Category::Robustness, Severity::Deny, "Uncleaned Tauri IPC listener or setInterval timer", "Calling listen() or setInterval() without corresponding cleanup leaks memory.", "Save unlisten handle and clean up symmetrically in onUnmounted()."),
             r("FE-RAII-001", Category::Robustness, Severity::Deny, "Symmetric Lifecycle Cleanup Violation", "Global event listeners, timers or IPC subscriptions are not symmetrically released in onUnmounted().", "Release all allocated handles in onUnmounted()."),
             r("TAURI-DRIFT-001", Category::Architecture, Severity::Warn, "Cross-Language DTO Schema Drift", "Field names, types or serde renaming modifiers in Rust tauri commands mismatch TypeScript client DTOs.", "Sync Rust DTO struct and TypeScript interface fields."),
-        ]
+        ];
+        base.extend(crate::bevy_rules::all_bevy_rules());
+        base
     }
 
     pub fn rule_map() -> HashMap<String, RuleDefinition> {
@@ -209,6 +211,9 @@ impl BuiltinRuleRegistry {
 
         let mut map = HashMap::new();
         for (k, v) in pairs {
+            map.insert(k.to_string(), v.to_string());
+        }
+        for (k, v) in crate::bevy_rules::bevy_alias_pairs() {
             map.insert(k.to_string(), v.to_string());
         }
         map

@@ -325,7 +325,7 @@ flowchart TD
 
 ## 📋 Сводный реестр архитектурных правил
 
-Система Cerberus из коробки контролирует более 50 фундаментальных архитектурных, инженерных и реактивных инвариантов, декомпозированных на 11 предметных категорий:
+Система Cerberus из коробки контролирует 92 фундаментальных архитектурных, Bevy ECS, инженерных и реактивных инварианта, декомпозированных на 12 предметных категорий:
 
 ### 1. Архитектурная топология и изоляция слоев (Hexagonal / Clean)
 
@@ -353,12 +353,13 @@ flowchart TD
 
 ### 3. Frontend & Vue 3 SFC
 
-- `VUE-001` [🛑 Deny]: Божественные монолиты в `<script setup>` (> 15–30 строк связующего клея).
-- `VUE-002` [🛑 Deny]: Отсутствие хука-компаньона `use<Component>.ts` у нетривиального компонента.
-- `VUE-003` [🛑 Deny]: Запрет объявления TypeScript-интерфейсов и DTO внутри `.vue` (вынос в `*.model.ts`).
-- `VUE-007` [🛑 Deny]: Разрушение реактивности (Reactivity Loss) через прямую деструктуризацию `props` или `store`.
+- `VUE-001` [🛑 Deny]: Запрет сырой бизнес-логики в `<script setup>` (объявление `function`, `ref()`, `reactive()`, `computed()`, `watch()` должно быть вынесено в хук-компаньон `use<Component>.ts`).
+- `VUE-002` [🛑 Deny]: Отсутствие обязательного хука-компаньона `use<Component>.ts` у нетривиального компонента.
+- `VUE-003` [🛑 Deny]: Запрет объявления TypeScript-интерфейсов и типов внутри `.vue` (вынос в `<Component>.model.ts`).
+- `VUE-007` [🛑 Deny]: Разрушение реактивности (Reactivity Loss) через прямую деструктуризацию `props` или `store` без `toRefs()`.
 - `VUE-008` [🛑 Deny]: Прямая мутация входных пропсов (`props.x = val` или `props.list.push()`).
 - `VUE-009` [🛑 Deny]: Вызовы тяжелых методов и функций внутри директивы `v-for` шаблона.
+- `TAURI-002` [🛑 Deny]: Прямой вызов `invoke()` или импорт `@tauri-apps/api` из presentation UI компонента.
 
 ### 4. CSS Design Tokens, Семантика и Архитектура Стилей
 
@@ -434,6 +435,63 @@ flowchart TD
 
 - `DATA-001` [🛑 Deny]: Сетевые вызовы или блокирующий I/O внутри открытой транзакции базы данных.
 - `DATA-005` [🛑 Deny]: Использование чисел с плавающей запятой (`f32`/`f64`) для финансовых и валютных значений.
+
+### 12. Bevy ECS & Игровая Производительность (Bevy 0.18.1+, 42 правила)
+
+#### 12.1. Миграция и модернизация API (`BEVY-API-*`)
+- `BEVY-API-001` [🛑 Deny]: Устаревший API `app.add_system()`. Используйте `app.add_systems(Update, system)`.
+- `BEVY-API-002` [🛑 Deny]: Устаревший API `app.add_startup_system()`. Используйте `app.add_systems(Startup, system)`.
+- `BEVY-API-003` [🛑 Deny]: Устаревший метод `EventWriter::send()`. Используйте `event_writer.write(event)`.
+- `BEVY-API-004` [⚠️ Warn]: Устаревший вызов `insert_bundle()`. Передавайте компоненты кортежем в `spawn((A, B))`.
+- `BEVY-API-005` [🛑 Deny]: Устаревший метод `app.add_plugin()`. Используйте `app.add_plugins(Plugin)`.
+- `BEVY-API-006` [⚠️ Warn]: Устаревший паттерн иерархии сущностей `with_children`.
+
+#### 12.2. Планировщик и безопасность многопоточности (`BEVY-SCHED-*`)
+- `BEVY-SCHED-001` [🛑 Deny]: `std::thread::sleep` внутри Bevy-системы блокирует игровой цикл и пул потоков.
+- `BEVY-SCHED-002` [🛑 Deny]: `tokio::block_on` в Bevy-системе вызывает взаимную блокировку (Deadlock) экзекуторов.
+- `BEVY-SCHED-003` [⚠️ Warn]: Тяжелые вычисления в `Update` без использования `AsyncComputeTaskPool`.
+- `BEVY-SCHED-004` [🛑 Deny]: Создание Tokio Runtime внутри тела системы (`Runtime::new()` аллоцирует рантайм каждый кадр).
+- `BEVY-SCHED-005` [⚠️ Warn]: Отсутствие явного порядка систем через `.after()` / `.before()` / `.chain()`.
+
+#### 12.3. Архитектура ECS и гигиена компонентов (`BEVY-ECS-*`)
+- `BEVY-ECS-001` [⚠️ Warn]: God Component (> 7 полей). Декомпозируйте на мелкие сфокусированные компоненты.
+- `BEVY-ECS-002` [⚠️ Warn]: Сущностно-зависимые данные хранятся в глобальном `Resource` вместо `Component`.
+- `BEVY-ECS-003` [⚠️ Warn]: `HashMap<Entity, T>` в `Resource`. Должно быть ECS-компонентом на сущности.
+- `BEVY-ECS-004` [🛑 Deny]: Бизнес-логика в `impl` компонента (> 3 методов). Компоненты — чистые структуры данных.
+- `BEVY-ECS-005` [⚠️ Warn]: Эпидемия `.clone()` в системе (> 3 вызовов и высокая плотность).
+- `BEVY-ECS-006` [⚠️ Warn]: Запрос мутабельного доступа `Query<&mut T>` при исключительном чтении.
+- `BEVY-ECS-007` [⚠️ Warn]: Использование `despawn()` без рекурсивной очистки дочерних сущностей.
+
+#### 12.4. Запросы и Change Detection (`BEVY-QUERY-*`)
+- `BEVY-QUERY-001` [🛑 Deny]: Паникоопасный `query.single()`. Используйте `query.get_single()`.
+- `BEVY-QUERY-002` [⚠️ Warn]: Использование `Query<&T>` для синглтон-ресурсов (используйте `Res<T>`).
+- `BEVY-QUERY-003` [⚠️ Warn]: Фильтр `Changed<T>` на Resource в параметрах Query.
+- `BEVY-QUERY-004` [⚠️ Warn]: Объявление `EventReader<T>` без вызова чтения (`.read()`).
+- `BEVY-QUERY-005` [🛑 Deny]: Одновременный конфликт `ResMut<T>` и `Res<T>` на один тип в одной системе (Panic B0001).
+
+#### 12.5. Асинхронность и интеграция с Tokio (`BEVY-ASYNC-*`)
+- `BEVY-ASYNC-001` [🛑 Deny]: Вызов `.await` внутри синхронной Bevy-системы.
+- `BEVY-ASYNC-002` [🛑 Deny]: Создание рантайма Tokio внутри системы.
+- `BEVY-ASYNC-003` [⚠️ Warn]: Прямые блокирующие I/O вызовы к БД или сети в синхронной системе.
+- `BEVY-ASYNC-004` [⚠️ Warn]: `Task::detach()` без токена отмены (риск зомби-задач при смене состояния).
+
+#### 12.6. Производительность ассетов, памяти и рендера (`BEVY-PERF-*`)
+- `BEVY-PERF-ASSET-001` [🛑 Deny]: `Assets<T>.add()` в системе `Update` приводит к утечке видеопамяти VRAM.
+- `BEVY-PERF-ASSET-002` [⚠️ Warn]: Хэндлы `Handle<Mesh>` / `Handle<Material>` не кэшируются в Resource.
+- `BEVY-PERF-ASSET-003` [🛑 Deny]: Вызов `asset_server.load()` внутри системы `Update` перезагружает ассет каждый кадр.
+- `BEVY-PERF-ASSET-004` [⚠️ Warn]: Уникальный материал на каждую сущность ломает GPU Draw Call Batching.
+- `BEVY-PERF-ECS-001` [⚠️ Warn]: Частый `insert()` / `remove()` в горячем цикле вызывает фрагментацию архетипов.
+- `BEVY-PERF-ECS-002` [⚠️ Warn]: Спавн сущностей в цикле без `spawn_batch`.
+- `BEVY-PERF-ECS-003` [🛑 Deny]: Нерекурсивный `despawn()` родительских сущностей оставляет сирот.
+- `BEVY-PERF-ECS-004` [⚠️ Warn]: Глубокая иерархия сущностей (> 5 уровней) перегружает propagation Transform.
+- `BEVY-PERF-CHANGE-001` [⚠️ Warn]: Безусловное разыменование `*transform = ...` триггерит пересчет `GlobalTransform`.
+- `BEVY-PERF-CHANGE-002` [⚠️ Warn]: Безусловная запись в `&mut T` триггерит ложный флаг `Changed<T>`.
+- `BEVY-PERF-CHANGE-003` [⚠️ Warn]: Отсутствие `run_if` на условных системах.
+- `BEVY-PERF-RENDER-001` [⚠️ Warn]: Создание процедурного меша в `Update` перезаливает буферы на GPU каждый кадр.
+- `BEVY-PERF-RENDER-002` [⚠️ Warn]: Отсутствие компонента `NotShadowCaster` на сущностях, не отбрасывающих тени.
+- `BEVY-PERF-MEM-001` [🛑 Deny]: Утечка памяти из-за осиротевших сущностей при нерекурсивном удалении.
+- `BEVY-PERF-MEM-002` [⚠️ Warn]: Неограниченная коллекция хэндлов в Resource без политики очистки.
+- `BEVY-PERF-MEM-003` [⚠️ Warn]: Утечка фоновых асинхронных задач при переходе игровых состояний.
 
 ---
 
@@ -620,6 +678,9 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 
 ### 📋 7.4. Выполнение инженерного SLA
 
+- ✅ **Total Files: 211** (132 Production, 66 Tests, 13 Cargo.toml)
+- ✅ **Total SLOC: 37 911** (17 996 Production, 19 609 Tests & Benchmarks, 306 Cargo.toml)
+- ✅ **Test / Code Ratio: 109.0%** (440+ автоматических Unit & Integration тестов)
 - ✅ **Recall: 100.0% (1.0000)** (Полнота обнаружения архитектурных нарушений, SLA $\ge$ 95%)
 - ✅ **Precision: 100.0% (1.0000)** (Точность без ложных срабатываний, SLA $\ge$ 90%)
 - ✅ **Throughput: 120 560 SLOC/s** (Сквозная скорость анализа, SLA $\ge$ 100 000 SLOC/s)
@@ -627,7 +688,6 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 - ✅ **Function Coverage: 100.00% (881/881)** (Абсолютное 100% покрытие всех функций и методов кодовой базы)
 - ✅ **Line Coverage: 97.03% (13 629 / 14 046)**
 - ✅ **Region Coverage: 97.24% (22 925 / 23 576)**
-- ✅ **Test / Code Ratio: 109.4%** (Полная верификация 87+ тестовых модулей)
 
 ---
 

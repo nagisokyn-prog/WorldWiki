@@ -44,7 +44,12 @@ pub fn deserialize_list<T: serde::de::DeserializeOwned>(values: Vec<Value>) -> V
         .filter_map(|v| match serde_json::from_value::<T>(v.clone()) {
             Ok(e) => Some(e),
             Err(e) => {
-                eprintln!("⚠️ deserialize error: {}", e);
+                eprintln!(
+                    "[DESERIALIZE ERROR] Failed to parse item of type '{}': {}\nRaw JSON: {:?}",
+                    std::any::type_name::<T>(),
+                    e,
+                    v
+                );
                 None
             }
         })

@@ -116,19 +116,21 @@ impl<'a> RustPerfChecker<'a> {
     }
 
     fn is_rule_enabled(&self, rule_id: &str) -> bool {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity != Severity::Off)
-            .unwrap_or(true)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity != Severity::Off;
+            }
+        }
+        true
     }
 
     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity)
-            .unwrap_or(default)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity;
+            }
+        }
+        default
     }
 }
 
@@ -166,13 +168,11 @@ impl<'a, 'b> Visit<'_> for RustPerfVisitor<'a, 'b> {
 
     fn visit_expr_call(&mut self, item: &ExprCall) {
         if let syn::Expr::Path(expr_path) = &*item.func {
-            let path_str = expr_path
-                .path
-                .segments
-                .iter()
-                .map(|s| s.ident.to_string())
-                .collect::<Vec<_>>()
-                .join("::");
+            let mut parts = Vec::new();
+            for s in &expr_path.path.segments {
+                parts.push(s.ident.to_string());
+            }
+            let path_str = parts.join("::");
             self.checker.check_call(
                 &path_str,
                 self.loop_depth > 0,
@@ -187,6 +187,15 @@ impl<'a, 'b> Visit<'_> for RustPerfVisitor<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
 
     #[test]
     fn test_rust_perf_checker() {
@@ -211,9 +220,32 @@ mod tests {
         let checker = RustPerfChecker::new("src/perf.rs", &[]);
         let violations = checker.check_file(&syntax);
 
-        assert!(violations.iter().any(|v| v.rule_id == "PERF-006"));
-        assert!(violations.iter().any(|v| v.rule_id == "PERF-011"));
-        assert!(violations.iter().any(|v| v.rule_id == "PERF-012"));
+        assert!(has_rule(&violations, "PERF-006"));
+        assert!(has_rule(&violations, "PERF-011"));
+        assert!(has_rule(&violations, "PERF-012"));
+    }
+
+    #[test]
+    fn test_rust_perf_disabled_rules() {
+        let code = r#"
+            fn run() {
+                for i in 0..10 {
+                    let (tx, rx) = mpsc::unbounded_channel();
+                }
+            }
+        "#;
+        let syntax: syn::File = syn::parse_str(code).unwrap();
+        let rules = vec![RuleDefinition {
+            id: "PERF-012".into(),
+            title: "unbounded".into(),
+            version: "1.0".into(),
+            category: Category::Performance,
+            severity: Severity::Off,
+            description: "off".into(),
+            remediation: "none".into(),
+        }];
+        let checker = RustPerfChecker::new("src/perf.rs", &rules);
+        let violations = checker.check_file(&syntax);
+        assert!(violations.is_empty());
     }
 }
-

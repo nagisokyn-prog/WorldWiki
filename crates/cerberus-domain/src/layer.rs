@@ -133,12 +133,13 @@ impl LayerTopologyMatrix {
         let l = layer.to_lowercase();
         let dep = dep_name.to_lowercase();
 
-        let canonical_layer = self
-            .layer_aliases
-            .iter()
-            .find(|(_, aliases)| aliases.contains(&l))
-            .map(|(k, _)| k.as_str())
-            .unwrap_or(l.as_str());
+        let mut canonical_layer = l.as_str();
+        for (k, aliases) in &self.layer_aliases {
+            if aliases.contains(&l) {
+                canonical_layer = k.as_str();
+                break;
+            }
+        }
 
         if let Some(forbidden) = self
             .forbidden_external
@@ -158,12 +159,13 @@ impl LayerTopologyMatrix {
         let l = layer.to_lowercase();
         let dep = dep_name.to_lowercase();
 
-        let canonical_layer = self
-            .layer_aliases
-            .iter()
-            .find(|(_, aliases)| aliases.contains(&l))
-            .map(|(k, _)| k.as_str())
-            .unwrap_or(l.as_str());
+        let mut canonical_layer = l.as_str();
+        for (k, aliases) in &self.layer_aliases {
+            if aliases.contains(&l) {
+                canonical_layer = k.as_str();
+                break;
+            }
+        }
 
         if let Some(forbidden) = self
             .forbidden_external

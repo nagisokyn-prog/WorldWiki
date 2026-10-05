@@ -65,7 +65,9 @@ impl From<serde_json::Error> for ChapterError {
 
 impl From<ChapterError> for String {
     fn from(err: ChapterError) -> Self {
-        err.to_string()
+        let msg = err.to_string();
+        eprintln!("[IPC ERROR][Chapter] {}", msg);
+        msg
     }
 }
 
@@ -74,6 +76,7 @@ impl serde::Serialize for ChapterError {
     where
         S: serde::Serializer,
     {
+        eprintln!("[IPC ERROR][Chapter] {}", self);
         serializer.serialize_str(&self.to_string())
     }
 }

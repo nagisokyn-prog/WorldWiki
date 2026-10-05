@@ -220,19 +220,21 @@ impl<'a> AiDefenseChecker<'a> {
     }
 
     fn is_rule_enabled(&self, rule_id: &str) -> bool {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity != Severity::Off)
-            .unwrap_or(true)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity != Severity::Off;
+            }
+        }
+        true
     }
 
     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity)
-            .unwrap_or(default)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity;
+            }
+        }
+        default
     }
 }
 
@@ -285,16 +287,88 @@ impl<'a, 'b> Visit<'_> for AiDefenseVisitor<'a, 'b> {
     fn visit_expr(&mut self, expr: &Expr) {
         if let Expr::Call(item) = expr {
             if let syn::Expr::Path(expr_path) = &*item.func {
-                let path_str = expr_path
-                    .path
-                    .segments
-                    .iter()
-                    .map(|s| s.ident.to_string())
-                    .collect::<Vec<_>>()
-                    .join("::");
+                let mut parts = Vec::new();
+                for s in &expr_path.path.segments {
+                    parts.push(s.ident.to_string());
+                }
+                let path_str = parts.join("::");
                 self.checker.check_reflection_probe(&path_str, self.violations);
             }
         }
         syn::visit::visit_expr(self, expr);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
+    #[test]
+    fn test_ai_defense_all_rules() {
+        let code = r#"
+            // TODO: fix this later without date
+            // SAFETY: safe because ptr is valid
+            unsafe fn safe_fn() {}
+
+            unsafe fn unsafe_fn_without_safety() {}
+
+            #[allow(dead_code)]
+            fn probe() {
+                let _ = std::env::current_exe();
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = cerberus_domain::BuiltinRuleRegistry::all_rules();
+        let checker = AiDefenseChecker::new("crates/domain/src/lib.rs", "domain", &rules, code);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "AI-009"));
+        assert!(has_rule(&violations, "AI-008"));
+        assert!(has_rule(&violations, "AI-013"));
+        assert!(has_rule(&violations, "AI-003"));
+    }
+
+    #[test]
+    fn test_ai_defense_fallback_when_empty_rules() {
+        let code = r#"
+            // TODO: missing issue and date
+            unsafe fn raw() {}
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let empty_rules: Vec<RuleDefinition> = Vec::new();
+        let checker = AiDefenseChecker::new("crates/domain/src/lib.rs", "domain", &empty_rules, code);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "AI-009"));
+        assert!(has_rule(&violations, "AI-008"));
+    }
+
+    #[test]
+    fn test_ai_defense_disabled_rule() {
+        let code = r#"
+            // TODO: missing issue and date
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = vec![RuleDefinition {
+            id: "AI-009".into(),
+            title: "Todo".into(),
+            version: "1.0".into(),
+            category: Category::AiDefense,
+            severity: Severity::Off,
+            description: "off".into(),
+            remediation: "none".into(),
+        }];
+        let checker = AiDefenseChecker::new("crates/domain/src/lib.rs", "domain", &rules, code);
+        let violations = checker.check_file(&syntax);
+        assert!(violations.is_empty());
     }
 }

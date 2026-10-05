@@ -34,8 +34,9 @@
 crates/cerberus-domain/src/
 ├── lib.rs            # 📚 Корневой модуль и реэкспорт доменного API
 ├── catalog.rs        # 📖 Офлайн-каталог документации правил (RuleCatalog, RuleDocEntry)
-├── rules.rs          # 📜 Сущности Rule, Severity, Violation, Fingerprints
-├── registry.rs       # 🏛️ Встроенный эталонный реестр правил (BuiltinRuleRegistry)
+├── rules.rs          # 📜 Сущности Rule, Severity, Category, Violation, Fingerprints
+├── bevy_rules.rs     # 🎮 Правила Bevy ECS (42 правила: BEVY-API, SCHED, ECS, QUERY, ASYNC, PERF)
+├── registry.rs       # 🏛️ Встроенный эталонный реестр правил (BuiltinRuleRegistry, 92 правила)
 ├── suppression.rs    # 🔐 Модель SuppressionRecord, подписи HMAC-SHA256
 ├── metrics.rs        # 📐 Метрики сложности AST, SLOC и расчет давления S_arch
 ├── layer.rs          # 🧱 Гексагональные слои и слои FSD, проверка направлений
@@ -54,8 +55,8 @@ crates/cerberus-domain/src/
 - **Ответственность**: Доменное представление архитектурного правила, зафиксированного нарушения и пороговых лимитов (`LimitsConfig`).
 - **Ключевые типы**:
   - `Severity`: уровни строгости (`Allow`, `Warn`, `Deny`).
-  - `Category`: категории правил (`Architecture`, `Frontend`, `Css`, `Taint`, `Async`, `Security`, `AI`, `ErrorHandling`, `Performance`, `Concurrency`, `Testability`).
-  - `Rule`: описание правила (ID, имя, категория, severity по умолчанию, сообщение об ошибке, совет по исправлению `remediation`).
+  - `Category`: 19 категорий правил (`Architecture`, `Security`, `Robustness`, `Convention`, `Performance`, `Concurrency`, `ErrorHandling`, `Observability`, `DataIntegrity`, `SupplyChain`, `AiDefense`, `Testability`, `Frontend`, `BevyApi`, `BevySched`, `BevyEcs`, `BevyQuery`, `BevyAsync`, `BevyPerf`).
+  - `RuleDefinition`: описание правила (ID, имя, категория, severity по умолчанию, сообщение об ошибке, совет по исправлению `remediation`).
   - `LimitsConfig`: пороговые лимиты на SLOC (`max_sloc_warn`, `max_sloc_deny`), давление $S_{\text{arch}}$ (`max_pressure_warn`, `max_pressure_deny`) и жесткое количество функций на модуль (`max_functions_warn`, `max_functions_deny` — правило `ARCH-032`).
   - `Violation`: конкретное зафиксированное нарушение (ID правила, файл, строка, колонка, имя символа, фрагмент кода, отпечаток `fingerprint`).
 - **Как работает `compute_fingerprint`**:
@@ -65,11 +66,11 @@ crates/cerberus-domain/src/
     $$\text{Fingerprint} = \text{SHA256}(\text{rule\_id} \mathbin{\Vert} \text{version} \mathbin{\Vert} \text{symbol} \mathbin{\Vert} \text{normalized\_code})$$
   - Обеспечивает стабильность отпечатка даже при форматировании кода `rustfmt` или `prettier`.
 
-### 3. [`registry.rs`](./src/registry.rs)
-- **Ответственность**: Единый источник правды (Single Source of Truth) для встроенных правил Cerberus.
+### 3. [`registry.rs`](./src/registry.rs) & [`bevy_rules.rs`](./src/bevy_rules.rs)
+- **Ответственность**: Единый источник правды (Single Source of Truth) для встроенных правил Cerberus (92 правила).
 - **Как работает**:
-  - Содержит каталог всех эталонных правил (`ARCH-001..ARCH-032`, `MOD-001`, `CQRS-001`, `EVT-001`, `VUE-001..VUE-009`, `CSS-001..CSS-006`, `DS-001..DS-003`, `CSS-PERF-001..005`, `SEC-001..009`, `ERR-001..005`, `CONC-002..008`, `AI-001..013`, `TEST-002..005`).
-  - Поддерживает канонические алиасы (например, `arch/domain-purity` $\to$ `ARCH-001`, `code/max-functions` $\to$ `ARCH-032`).
+  - Содержит каталог всех эталонных правил: 50 базовых правил (`ARCH-*`, `MOD-*`, `CQRS-*`, `EVT-*`, `VUE-*`, `CSS-*`, `DS-*`, `CSS-PERF-*`, `SEC-*`, `ERR-*`, `CONC-*`, `AI-*`, `TEST-*`, `TS-*`, `DATA-*`, `LEAK-*`, `FE-RAII-*`) и 42 Bevy ECS правила (`BEVY-API-*`, `BEVY-SCHED-*`, `BEVY-ECS-*`, `BEVY-QUERY-*`, `BEVY-ASYNC-*`, `BEVY-PERF-*`).
+  - Поддерживает канонические алиасы (например, `arch/domain-purity` $\to$ `ARCH-001`, `bevy/query-single-panic` $\to$ `BEVY-QUERY-001`).
   - Выполняет метод `validate_registered_rules(...)` для защиты от опечаток в пользовательских файлах конфигурации.
 
 ### 4. [`suppression.rs`](./src/suppression.rs)

@@ -19,7 +19,7 @@ impl std::error::Error for IpcError {}
 
 impl From<ApplicationError> for IpcError {
     fn from(err: ApplicationError) -> Self {
-        match err {
+        let ipc_err = match err {
             ApplicationError::NotFound(msg) => Self {
                 code: "NOT_FOUND".to_string(),
                 message: msg,
@@ -35,7 +35,7 @@ impl From<ApplicationError> for IpcError {
                 message: msg,
                 details: None,
             },
-            ApplicationError::Domain(domain_err) => domain_err.into(),
+            ApplicationError::Domain(domain_err) => return domain_err.into(),
             ApplicationError::Cancelled => Self {
                 code: "TASK_CANCELLED".to_string(),
                 message: "Operation was cancelled by user".to_string(),
@@ -51,15 +51,19 @@ impl From<ApplicationError> for IpcError {
                 message: msg,
                 details: None,
             },
-        }
+        };
+        eprintln!("[IPC ERROR][{}] {}", ipc_err.code, ipc_err.message);
+        ipc_err
     }
 }
 
 impl From<DomainError> for IpcError {
     fn from(err: DomainError) -> Self {
+        let msg = err.to_string();
+        eprintln!("[IPC ERROR][DOMAIN_INVARIANT_VIOLATION] {}", msg);
         Self {
             code: "DOMAIN_INVARIANT_VIOLATION".to_string(),
-            message: err.to_string(),
+            message: msg,
             details: None,
         }
     }
@@ -67,6 +71,7 @@ impl From<DomainError> for IpcError {
 
 impl From<String> for IpcError {
     fn from(msg: String) -> Self {
+        eprintln!("[IPC ERROR][INTERNAL_ERROR] {}", msg);
         Self {
             code: "INTERNAL_ERROR".to_string(),
             message: msg,
@@ -77,6 +82,7 @@ impl From<String> for IpcError {
 
 impl From<&str> for IpcError {
     fn from(msg: &str) -> Self {
+        eprintln!("[IPC ERROR][INTERNAL_ERROR] {}", msg);
         Self {
             code: "INTERNAL_ERROR".to_string(),
             message: msg.to_string(),

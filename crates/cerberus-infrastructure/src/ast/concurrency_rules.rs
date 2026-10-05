@@ -55,14 +55,10 @@ impl<'a> ConcurrencyRulesChecker<'a> {
             return;
         }
 
-        // Check if statement is an expression containing tokio::spawn
+        // Check if statement is an unhandled async task spawn
         if let Stmt::Expr(expr, _) = stmt {
-            let expr_str = quote::quote!(#expr).to_string();
-            if (expr_str.contains("tokio :: spawn") || expr_str.contains("spawn (") || expr_str.contains("spawn("))
-                && !expr_str.contains("token")
-                && !expr_str.contains("cancellation")
-            {
-                let snippet = expr_str;
+            if self.is_orphan_async_spawn(expr) {
+                let snippet = quote::quote!(#expr).to_string();
                 let fp = compute_fingerprint("CONC-002", "1.0", "orphan_spawn", &snippet);
 
                 violations.push(Violation {
@@ -83,20 +79,75 @@ impl<'a> ConcurrencyRulesChecker<'a> {
         }
     }
 
+    fn is_orphan_async_spawn(&self, expr: &syn::Expr) -> bool {
+        let expr_str = quote::quote!(#expr).to_string();
+
+        if expr_str.contains("token") || expr_str.contains("cancellation") {
+            return false;
+        }
+
+        let expr_str_lower = expr_str.to_lowercase();
+
+        // Explicitly exclude Bevy ECS / Entity world spawns
+        if expr_str_lower.contains("commands . spawn")
+            || expr_str_lower.contains("commands.spawn")
+            || expr_str_lower.contains("parent . spawn")
+            || expr_str_lower.contains("parent.spawn")
+            || expr_str_lower.contains("builder . spawn")
+            || expr_str_lower.contains("builder.spawn")
+            || expr_str_lower.contains("world . spawn")
+            || expr_str_lower.contains("world.spawn")
+            || expr_str_lower.contains("child_builder . spawn")
+            || expr_str_lower.contains("child_builder.spawn")
+        {
+            return false;
+        }
+
+        // Match async runtime task spawns (tokio::spawn, async_std::task::spawn, rt.spawn, runtime.spawn, handle.spawn)
+        if expr_str.contains("tokio :: spawn")
+            || expr_str.contains("tokio :: task :: spawn")
+            || expr_str.contains("async_std :: task :: spawn")
+            || expr_str_lower.contains("rt . spawn")
+            || expr_str_lower.contains("rt.spawn")
+            || expr_str_lower.contains("runtime . spawn")
+            || expr_str_lower.contains("runtime.spawn")
+            || expr_str_lower.contains("handle . spawn")
+            || expr_str_lower.contains("handle.spawn")
+            || expr_str_lower.contains("executor . spawn")
+            || expr_str_lower.contains("executor.spawn")
+        {
+            return true;
+        }
+
+        // Match .spawn(...) with async block argument
+        if (expr_str.contains("spawn (") || expr_str.contains("spawn("))
+            && (expr_str.contains("async {")
+                || expr_str.contains("async move {")
+                || expr_str.contains("async move|")
+                || expr_str.contains("async |"))
+        {
+            return true;
+        }
+
+        false
+    }
+
     fn is_rule_enabled(&self, rule_id: &str) -> bool {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity != Severity::Off)
-            .unwrap_or(true)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity != Severity::Off;
+            }
+        }
+        true
     }
 
     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity)
-            .unwrap_or(default)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity;
+            }
+        }
+        default
     }
 }
 
@@ -114,5 +165,108 @@ impl<'a, 'b> Visit<'_> for ConcurrencyRulesVisitor<'a, 'b> {
     fn visit_stmt(&mut self, item: &Stmt) {
         self.checker.check_stmt(item, self.violations);
         syn::visit::visit_stmt(self, item);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
+    #[test]
+    fn test_concurrency_rules_all() {
+        let code = r#"
+            static mut GLOBAL_VAL: u32 = 0;
+            pub fn run() {
+                tokio::spawn(async {
+                    println!("hello");
+                });
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = cerberus_domain::BuiltinRuleRegistry::all_rules();
+        let checker = ConcurrencyRulesChecker::new("src/lib.rs", &rules);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "CONC-008"));
+        assert!(has_rule(&violations, "CONC-002"));
+    }
+
+    #[test]
+    fn test_bevy_commands_spawn_not_flagged_as_conc_002() {
+        let code = r#"
+            pub fn spawn_entities(mut commands: Commands) {
+                commands.spawn((Mesh3d(mesh), Transform::default()));
+                parent.spawn((ChildComponent,));
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = cerberus_domain::BuiltinRuleRegistry::all_rules();
+        let checker = ConcurrencyRulesChecker::new("src/combat/render.rs", &rules);
+        let violations = checker.check_file(&syntax);
+
+        assert!(!has_rule(&violations, "CONC-002"), "commands.spawn should not trigger CONC-002");
+    }
+
+    #[test]
+    fn test_rt_spawn_flagged_as_conc_002() {
+        let code = r#"
+            pub fn run_async(rt: &tokio::runtime::Runtime) {
+                rt.spawn(async move {
+                    do_work().await;
+                });
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = cerberus_domain::BuiltinRuleRegistry::all_rules();
+        let checker = ConcurrencyRulesChecker::new("src/db.rs", &rules);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "CONC-002"), "rt.spawn without handle should trigger CONC-002");
+    }
+
+    #[test]
+    fn test_concurrency_rules_fallback_when_empty_rules() {
+        let code = r#"
+            static mut GLOBAL_VAL: u32 = 0;
+            pub fn run() {
+                tokio::spawn(async {});
+            }
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let empty_rules: Vec<RuleDefinition> = Vec::new();
+        let checker = ConcurrencyRulesChecker::new("src/lib.rs", &empty_rules);
+        let violations = checker.check_file(&syntax);
+
+        assert!(has_rule(&violations, "CONC-008"));
+        assert!(has_rule(&violations, "CONC-002"));
+    }
+
+    #[test]
+    fn test_concurrency_disabled_rule() {
+        let code = r#"
+            static mut GLOBAL_VAL: u32 = 0;
+        "#;
+        let syntax: File = syn::parse_str(code).unwrap();
+        let rules = vec![RuleDefinition {
+            id: "CONC-008".into(),
+            title: "static mut".into(),
+            version: "1.0".into(),
+            category: Category::Concurrency,
+            severity: Severity::Off,
+            description: "off".into(),
+            remediation: "none".into(),
+        }];
+        let checker = ConcurrencyRulesChecker::new("src/lib.rs", &rules);
+        let violations = checker.check_file(&syntax);
+        assert!(violations.is_empty());
     }
 }

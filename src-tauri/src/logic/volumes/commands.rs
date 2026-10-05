@@ -41,7 +41,7 @@ pub async fn assign_chapter(
 ) -> Result<AutoExtendResult, VolumeError> {
     let res = assign_chapter_inner(&state.db, &project, &chapter_id, volume_id).await?;
     if let Err(e) = app.emit("ww:timeline-auto-extended", &res) {
-        eprintln!("[VOLUMES IPC] Emit error: {e}");
+        eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-auto-extended': {e:?}, payload: {res:?}");
     }
     Ok(res)
 }
@@ -73,7 +73,7 @@ pub async fn auto_extend_timeline(
         updated_count,
     };
     if let Err(e) = app.emit("ww:timeline-auto-extended", &res) {
-        eprintln!("[VOLUMES IPC] Emit error: {e}");
+        eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-auto-extended': {e:?}, payload: {res:?}");
     }
     Ok(res)
 }
@@ -95,7 +95,7 @@ pub async fn heal_deleted_chapter(
     .await?;
     if let Some(ref fb) = fallback_point {
         if let Err(e) = app.emit("ww:timeline-auto-extended", fb) {
-            eprintln!("[VOLUMES IPC] Emit error: {e}");
+            eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-auto-extended': {e:?}, payload: {fb:?}");
         }
     }
     if let Err(e) = app.emit(
@@ -106,7 +106,7 @@ pub async fn heal_deleted_chapter(
             "updated_count": updated_count
         }),
     ) {
-        eprintln!("[VOLUMES IPC] Emit error: {e}");
+        eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-healed': {e:?}");
     }
     Ok(updated_count)
 }

@@ -1,8 +1,17 @@
 use cerberus_infrastructure::ast::{
     ConcurrencyRulesChecker, ErrorRulesChecker, RustPerfChecker, TestabilityChecker,
 };
-use cerberus_domain::BuiltinRuleRegistry;
+use cerberus_domain::{BuiltinRuleRegistry, Violation};
 use syn::parse_file;
+
+fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+    for v in violations {
+        if v.rule_id == rule_id {
+            return true;
+        }
+    }
+    false
+}
 
 #[test]
 fn test_testability_deterministic_domain_rules() {
@@ -17,12 +26,12 @@ fn test_testability_deterministic_domain_rules() {
     let checker = TestabilityChecker::new("crates/domain/src/score.rs", "domain", &rules);
     let violations = checker.check_file(&syntax);
 
-    assert!(violations.iter().any(|v| v.rule_id == "TEST-005"));
+    assert!(has_rule(&violations, "TEST-005"));
 
     // Check outside domain
     let checker_infra = TestabilityChecker::new("crates/infrastructure/src/score.rs", "infrastructure", &rules);
     let violations_infra = checker_infra.check_file(&syntax);
-    assert!(!violations_infra.iter().any(|v| v.rule_id == "TEST-005"));
+    assert!(!has_rule(&violations_infra, "TEST-005"));
 }
 
 #[test]
@@ -35,7 +44,7 @@ fn test_testability_mutable_global_state() {
     let checker = TestabilityChecker::new("src/state.rs", "app", &rules);
     let violations = checker.check_file(&syntax);
 
-    assert!(violations.iter().any(|v| v.rule_id == "TEST-002"));
+    assert!(has_rule(&violations, "TEST-002"));
 }
 
 #[test]
@@ -61,9 +70,9 @@ fn test_error_rules_hygiene() {
     let checker = ErrorRulesChecker::new("src/lib.rs", "my_lib", &rules);
     let violations = checker.check_file(&syntax);
 
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-001"));
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-002"));
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-003"));
+    assert!(has_rule(&violations, "ERR-001"));
+    assert!(has_rule(&violations, "ERR-002"));
+    assert!(has_rule(&violations, "ERR-003"));
 }
 
 #[test]
@@ -82,8 +91,8 @@ fn test_concurrency_and_static_mut_rules() {
     let checker = ConcurrencyRulesChecker::new("src/async_tasks.rs", &rules);
     let violations = checker.check_file(&syntax);
 
-    assert!(violations.iter().any(|v| v.rule_id == "CONC-008"));
-    assert!(violations.iter().any(|v| v.rule_id == "CONC-002"));
+    assert!(has_rule(&violations, "CONC-008"));
+    assert!(has_rule(&violations, "CONC-002"));
 }
 
 #[test]
@@ -108,7 +117,7 @@ fn test_rust_performance_rules() {
     let checker = RustPerfChecker::new("src/perf.rs", &rules);
     let violations = checker.check_file(&syntax);
 
-    assert!(violations.iter().any(|v| v.rule_id == "PERF-006"));
-    assert!(violations.iter().any(|v| v.rule_id == "PERF-011"));
-    assert!(violations.iter().any(|v| v.rule_id == "PERF-012"));
+    assert!(has_rule(&violations, "PERF-006"));
+    assert!(has_rule(&violations, "PERF-011"));
+    assert!(has_rule(&violations, "PERF-012"));
 }

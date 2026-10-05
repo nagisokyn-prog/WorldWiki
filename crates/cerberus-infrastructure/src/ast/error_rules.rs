@@ -211,19 +211,21 @@ impl<'a> ErrorRulesChecker<'a> {
     }
 
     fn is_rule_enabled(&self, rule_id: &str) -> bool {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity != Severity::Off)
-            .unwrap_or(true)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity != Severity::Off;
+            }
+        }
+        true
     }
 
     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
-        self.rules
-            .iter()
-            .find(|r| r.id == rule_id)
-            .map(|r| r.severity)
-            .unwrap_or(default)
+        for r in self.rules {
+            if r.id == rule_id {
+                return r.severity;
+            }
+        }
+        default
     }
 }
 
@@ -324,6 +326,25 @@ fn is_string_type(ty: &syn::Type) -> bool {
 mod tests {
     use super::*;
 
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn count_rule(violations: &[Violation], rule_id: &str) -> usize {
+        let mut count = 0;
+        for v in violations {
+            if v.rule_id == rule_id {
+                count += 1;
+            }
+        }
+        count
+    }
+
     #[test]
     fn test_error_rules_comprehensive() {
         let code = r#"
@@ -356,10 +377,10 @@ mod tests {
         let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
         let violations = checker.check_file(&syntax);
 
-        assert!(violations.iter().any(|v| v.rule_id == "ERR-001"));
-        assert!(violations.iter().any(|v| v.rule_id == "ERR-002"));
-        assert!(violations.iter().any(|v| v.rule_id == "ERR-003"));
-        assert!(violations.iter().any(|v| v.rule_id == "ERR-005"));
+        assert!(has_rule(&violations, "ERR-001"));
+        assert!(has_rule(&violations, "ERR-002"));
+        assert!(has_rule(&violations, "ERR-003"));
+        assert!(has_rule(&violations, "ERR-005"));
     }
 
     #[test]
@@ -484,7 +505,7 @@ mod tests {
         let violations = checker.check_file(&syntax);
 
         assert!(
-            violations.iter().all(|v| v.rule_id != "ERR-005"),
+            !has_rule(&violations, "ERR-005"),
             "Binary target must not trigger ERR-005 for panic!/unimplemented!"
         );
     }
@@ -573,8 +594,8 @@ mod tests {
         let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
         let violations = checker.check_file(&syntax);
 
-        let err001_count = violations.iter().filter(|v| v.rule_id == "ERR-001").count();
-        let err002_count = violations.iter().filter(|v| v.rule_id == "ERR-002").count();
+        let err001_count = count_rule(&violations, "ERR-001");
+        let err002_count = count_rule(&violations, "ERR-002");
 
         assert_eq!(err001_count, 3, "Expected 3 ERR-001 violations (send, execute, flush)");
         assert_eq!(err002_count, 2, "Expected 2 ERR-002 violations (unwrap, expect)");

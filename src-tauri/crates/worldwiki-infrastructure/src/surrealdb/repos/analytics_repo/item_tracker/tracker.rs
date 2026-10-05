@@ -28,12 +28,16 @@ pub(crate) async fn get_item_tracker_impl(
     let promises = bundle.promises;
     let events = bundle.events;
 
-    let max_chapter_order = chapters.iter().map(|c| c.sort_order).max().unwrap_or(1);
+    let max_chapter_order = chapters
+        .iter()
+        .map(|c| c.sort_order.unwrap_or(0))
+        .max()
+        .unwrap_or(1);
 
     // Map chapter id -> (sort_order, title)
     let chapter_map: std::collections::HashMap<String, (i32, String)> = chapters
         .into_iter()
-        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order, c.title)))
+        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title)))
         .collect();
 
     let mut character_names = std::collections::HashMap::new();

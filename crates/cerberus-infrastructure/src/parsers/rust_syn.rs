@@ -16,6 +16,7 @@ use syn::visit::Visit;
 pub struct RustSynParserAdapter {
     pub matrix: Option<cerberus_domain::LayerTopologyMatrix>,
     pub config: Option<cerberus_domain::CerberusConfig>,
+    pub bevy_context: Option<crate::ast::bevy::BevyScanContext>,
 }
 
 impl AstParserPort for RustSynParserAdapter {
@@ -35,6 +36,7 @@ impl RustSynParserAdapter {
         Self {
             matrix: None,
             config: None,
+            bevy_context: None,
         }
     }
 
@@ -42,6 +44,7 @@ impl RustSynParserAdapter {
         Self {
             matrix: Some(matrix),
             config: None,
+            bevy_context: None,
         }
     }
 
@@ -52,7 +55,13 @@ impl RustSynParserAdapter {
         Self {
             matrix: Some(matrix),
             config,
+            bevy_context: None,
         }
+    }
+
+    pub fn with_bevy_context(mut self, ctx: crate::ast::bevy::BevyScanContext) -> Self {
+        self.bevy_context = Some(ctx);
+        self
     }
 
     pub fn parse_source(
@@ -129,6 +138,16 @@ impl RustSynParserAdapter {
         let perf_checker = crate::ast::RustPerfChecker::new(&path_str, &[]);
         violations.extend(perf_checker.check_file(&syntax_tree));
 
+        // 12. Bevy Rules (BEVY-*)
+        if let Some(ctx) = &self.bevy_context {
+            violations.extend(crate::ast::bevy::run_all_bevy_checks(
+                &syntax_tree,
+                &path_str,
+                &[],
+                ctx,
+            ));
+        }
+
         let weights = PressureWeights::default();
         if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights) {
             let path_str = path.to_string_lossy().to_lowercase();
@@ -195,6 +214,15 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
 
+    fn has_rule(violations: &[Violation], rule_id: &str) -> bool {
+        for v in violations {
+            if v.rule_id == rule_id {
+                return true;
+            }
+        }
+        false
+    }
+
     #[test]
     fn test_rust_syn_parser_adapter() {
         let adapter = RustSynParserAdapter::new();
@@ -216,11 +244,18 @@ mod tests {
 
         // Test with_matrix
         let matrix = cerberus_domain::LayerTopologyMatrix::preset_matrix("layered");
-        let matrix_adapter = RustSynParserAdapter::with_matrix(matrix);
+        let matrix_adapter = RustSynParserAdapter::with_matrix(matrix.clone());
         let violations = matrix_adapter
             .parse_source("use crate::repository::Repo;", Path::new("src/controller/c.rs"), "app")
             .unwrap();
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-007"));
+        assert!(has_rule(&violations, "ARCH-007"));
+
+        // Test with_matrix_and_config
+        let config_adapter = RustSynParserAdapter::with_matrix_and_config(matrix, Some(cerberus_domain::CerberusConfig::default()));
+        let violations2 = config_adapter
+            .parse_source("use crate::repository::Repo;", Path::new("src/controller/c.rs"), "app")
+            .unwrap();
+        assert!(has_rule(&violations2, "ARCH-007"));
     }
 
     #[test]
@@ -233,12 +268,26 @@ mod tests {
         let violations = adapter
             .parse_source(&big_code, Path::new("crates/domain/src/god.rs"), "domain")
             .unwrap();
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-031"));
+        assert!(has_rule(&violations, "ARCH-031"));
 
         // Test file path branch
         let test_violations = adapter
             .parse_source("pub fn small() {}", Path::new("tests/my_test.rs"), "domain")
             .unwrap();
         assert!(test_violations.is_empty());
+    }
+
+    #[test]
+    fn test_rust_syn_parser_with_bevy_context() {
+        let ctx = crate::ast::bevy::BevyScanContext::new(true, Some(semver::Version::new(0, 19, 1)));
+        let adapter = RustSynParserAdapter::new().with_bevy_context(ctx);
+        let violations = adapter
+            .parse_source(
+                "fn bad_sys() { std::thread::sleep(std::time::Duration::from_millis(10)); }",
+                Path::new("src/main.rs"),
+                "game",
+            )
+            .unwrap();
+        assert!(has_rule(&violations, "BEVY-SCHED-001"));
     }
 }

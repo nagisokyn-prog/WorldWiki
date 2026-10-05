@@ -37,6 +37,8 @@ pub struct CheckExecutionOptions<'a> {
     pub backend_only: bool,
     pub record_baseline: bool,
     pub baseline_path: Option<&'a Path>,
+    pub no_bevy: bool,
+    pub bevy_only: bool,
 }
 
 pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
@@ -73,11 +75,38 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
         cerberus_domain::LayerTopologyMatrix::default()
     };
 
+    let bevy_ctx = if !options.no_bevy && manifest_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&manifest_path) {
+            let mut ctx = cerberus_infrastructure::ast::bevy::BevyScanContext::from_cargo_toml(&content);
+            if ctx.is_bevy_project {
+                let scanner = WalkDirScannerAdapter::new().with_ignores(options.rules_repo.config.ignore.to_vec());
+                let files = scanner.scan_files(options.path, cerberus_application::ScanScope::BackendOnly);
+                for f in files {
+                    if let Ok(c) = std::fs::read_to_string(&f.path) {
+                        if let Ok(syntax) = syn::parse_file(&c) {
+                            ctx.collect_systems_phase1(&syntax);
+                        }
+                    }
+                }
+            }
+            Some(ctx)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let mut rust_adapter = RustSynParserAdapter::with_matrix_and_config(
+        matrix,
+        options.rules_repo.cerberus_config.clone(),
+    );
+    if let Some(ctx) = bevy_ctx {
+        rust_adapter = rust_adapter.with_bevy_context(ctx);
+    }
+
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
-        Arc::new(RustSynParserAdapter::with_matrix_and_config(
-            matrix,
-            options.rules_repo.cerberus_config.clone(),
-        )),
+        Arc::new(rust_adapter),
         Arc::new(VueSfcParserAdapter::with_config(
             options.rules_repo.cerberus_config.clone(),
         )),
@@ -98,6 +127,16 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     let use_case = ScanWorkspaceUseCase::new(scanner_port, ast_engine, rules_repo_port, scope)
         .with_manifest_parser(manifest_parser_port);
     let mut scan_result = use_case.execute(options.path);
+
+    if options.bevy_only {
+        let mut filtered = Vec::new();
+        for v in scan_result.violations {
+            if v.rule_id.starts_with("BEVY-") {
+                filtered.push(v);
+            }
+        }
+        scan_result.violations = filtered;
+    }
 
     if options.expanded {
         audit_macro_expansion(options.path, &mut scan_result.violations);
@@ -495,6 +534,8 @@ mod tests {
             backend_only: true,
             record_baseline: false,
             baseline_path: Some(&base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(fail_run.is_err());
 
@@ -510,6 +551,8 @@ mod tests {
             backend_only: true,
             record_baseline: true,
             baseline_path: Some(&base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(record_run.is_ok());
         assert!(base_file.exists());
@@ -526,6 +569,8 @@ mod tests {
             backend_only: true,
             record_baseline: true,
             baseline_path: Some(&base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(re_record_run.is_ok());
 
@@ -541,6 +586,8 @@ mod tests {
             backend_only: true,
             record_baseline: false,
             baseline_path: Some(&base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(pass_run.is_ok());
 
@@ -559,6 +606,8 @@ mod tests {
             backend_only: true,
             record_baseline: false,
             baseline_path: Some(&base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(partial_fail_run.is_err());
 
@@ -609,6 +658,8 @@ mod tests {
             backend_only: false,
             record_baseline: true,
             baseline_path: Some(&unwritable_base),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(write_fail_run.is_err());
         assert!(write_fail_run.unwrap_err().contains("Failed to write baseline file"));
@@ -631,6 +682,8 @@ mod tests {
             backend_only: true,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(direct_cargo_run.is_ok());
 
@@ -694,6 +747,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(frontend_run.is_ok());
         assert!(sarif_target.exists());
@@ -713,6 +768,8 @@ mod tests {
             backend_only: true,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         let _ = parse_err_run; // exercised parse_errors loop
 
@@ -730,6 +787,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: Some(&empty_base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(empty_base_run.is_ok());
 
@@ -746,6 +805,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: Some(&invalid_base_file),
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(invalid_base_run.is_ok());
 
@@ -761,6 +822,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(error_rate_fail_run.is_err());
         assert!(error_rate_fail_run.unwrap_err().contains("Parse error rate"));
@@ -803,6 +866,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(clean_scope_run.is_ok());
 
@@ -821,6 +886,8 @@ mod tests {
             backend_only: false,
             record_baseline: false,
             baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
         });
         assert!(broken_scope_run.is_ok());
 
@@ -859,5 +926,39 @@ mod tests {
         assert!(e2 >= e1);
         assert_eq!(e1.partial_cmp(&e2), Some(std::cmp::Ordering::Less));
         assert_ne!(e1, e2);
+
+        // 15. Test run_check with expanded: true to exercise audit_macro_expansion
+        let expanded_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: clean_ws.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: true,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
+        });
+        assert!(expanded_run.is_ok());
+
+        // 16. Test bevy_only: true and no_bevy: true
+        let bevy_only_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: clean_ws.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+            no_bevy: true,
+            bevy_only: true,
+        });
+        assert!(bevy_only_run.is_ok());
     }
 }

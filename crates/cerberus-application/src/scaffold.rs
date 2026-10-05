@@ -123,27 +123,26 @@ impl ScaffoldUseCase {
                     "layers": {
                         "domain": {
                             "allowed_deps": [],
-                            "forbidden_external": ["reqwest", "tokio", "tauri", "sqlx", "surrealdb"],
+                            "forbidden_external": ["reqwest", "tokio", "sqlx"],
                             "description": "Pure domain core with zero external IO/SDK dependencies"
                         },
                         "ports": {
                             "allowed_deps": ["domain"],
-                            "forbidden_external": ["tauri", "tokio"],
+                            "forbidden_external": ["tokio"],
                             "description": "Abstract repository and driver traits"
                         },
                         "application": {
                             "allowed_deps": ["domain", "ports"],
-                            "forbidden_external": ["tauri", "surrealdb"],
                             "description": "Use cases orchestrating domain entities and ports"
                         },
                         "infrastructure": {
                             "allowed_deps": ["domain", "ports"],
                             "description": "Database adapters, external APIs, filesystem"
                         },
-                        "adapters_tauri": {
+                        "game_systems": {
                             "allowed_deps": ["domain", "ports", "application"],
-                            "allowed_external": ["tauri"],
-                            "description": "Tauri IPC presentation layer"
+                            "allowed_external": ["bevy", "bevy_egui", "surrealdb", "tokio", "rand", "noise"],
+                            "description": "Bevy ECS presentation & simulation systems"
                         }
                     },
                     "sla": {
@@ -184,27 +183,26 @@ impl ScaffoldUseCase {
                     "layers": {
                         "domain": {
                             "allowed_deps": [],
-                            "forbidden_external": ["reqwest", "tokio", "tauri", "sqlx", "surrealdb"],
+                            "forbidden_external": ["reqwest", "tokio", "sqlx"],
                             "description": "Pure domain core with zero external IO/SDK dependencies"
                         },
                         "ports": {
                             "allowed_deps": ["domain"],
-                            "forbidden_external": ["tauri", "tokio"],
+                            "forbidden_external": ["tokio"],
                             "description": "Abstract repository and driver traits"
                         },
                         "application": {
                             "allowed_deps": ["domain", "ports"],
-                            "forbidden_external": ["tauri", "surrealdb"],
                             "description": "Use cases orchestrating domain entities and ports"
                         },
                         "infrastructure": {
                             "allowed_deps": ["domain", "ports"],
                             "description": "Database adapters, external APIs, filesystem"
                         },
-                        "adapters_tauri": {
+                        "game_systems": {
                             "allowed_deps": ["domain", "ports", "application"],
-                            "allowed_external": ["tauri"],
-                            "description": "Tauri IPC presentation layer"
+                            "allowed_external": ["bevy", "bevy_egui", "surrealdb", "tokio", "rand", "noise"],
+                            "description": "Bevy ECS presentation & simulation systems"
                         }
                     },
                     "sla": {

@@ -73,9 +73,9 @@ crates/cerberus-sfc/src/
 ### Vue 3 SFC & Реактивность
 | Код Правила | Название | Уровень | Описание |
 |---|---|:---:|---|
-| `VUE-001` | Vue Script Setup Monolith | 🛑 Deny | Запрет тяжелой логики в `<script setup>` (предел 15–30 строк связующего клея). |
+| `VUE-001` | Zero Raw Logic in Script Setup | 🛑 Deny | Полный запрет сырой логики (`function`, `ref`, `reactive`, `computed`, `watch`) в `<script setup>`. |
 | `VUE-002` | Missing Composable Companion | 🛑 Deny | Обязательное наличие хука-компаньона `use<Component>.ts` для бизнес-компонентов. |
-| `VUE-003` | Types Inside Vue SFC | 🛑 Deny | Запрет объявления типов и интерфейсов внутри `.vue` (вынос в `*.model.ts`). |
+| `VUE-003` | Types Inside Vue SFC | 🛑 Deny | Запрет объявления типов и интерфейсов внутри `.vue` (вынос в `<Component>.model.ts`). |
 | `VUE-007` | Reactivity Loss | 🛑 Deny | Запрет деструктуризации реактивных `props` или Pinia store без `toRefs()`. |
 | `VUE-008` | Direct Props Mutation | 🛑 Deny | Запрет прямой мутации входных `props` (мутирование полей, `.push()` и т.д.). |
 | `VUE-009` | Heavy Function in v-for | 🛑 Deny | Запрет вызова некэшируемых тяжелых методов внутри директивы `v-for`. |

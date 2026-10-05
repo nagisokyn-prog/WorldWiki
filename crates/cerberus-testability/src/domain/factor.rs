@@ -126,3 +126,52 @@ impl TestabilityFactor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_all_factors_metadata_and_weights() {
+        let factors = [
+            TestabilityFactor::F01HiddenAmbientIo,
+            TestabilityFactor::F02DirectOsFsAccess,
+            TestabilityFactor::F03SharedGlobalMutableState,
+            TestabilityFactor::F04SideEffectingConstructor,
+            TestabilityFactor::F05HeavyMultiLineClosure,
+            TestabilityFactor::F06ConcreteCouplingInBoundary,
+            TestabilityFactor::Conc002OrphanConcurrency,
+        ];
+
+        let layers = [
+            LayerContext::Domain,
+            LayerContext::Application,
+            LayerContext::Infrastructure,
+            LayerContext::Unknown,
+        ];
+
+        for factor in &factors {
+            assert!(!factor.code().is_empty());
+            assert!(!factor.name().is_empty());
+            assert!(!factor.description().is_empty());
+            assert!(factor.unit_ratio() > 0.0 && factor.unit_ratio() <= 1.0);
+            assert!(factor.integration_ratio() > 0.0 && factor.integration_ratio() <= 1.0);
+
+            for layer in &layers {
+                let w = factor.base_weight(*layer);
+                assert!(w > 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn test_specific_factor_codes() {
+        assert_eq!(TestabilityFactor::F01HiddenAmbientIo.code(), "F-01");
+        assert_eq!(TestabilityFactor::F02DirectOsFsAccess.code(), "F-02");
+        assert_eq!(TestabilityFactor::F03SharedGlobalMutableState.code(), "F-03");
+        assert_eq!(TestabilityFactor::F04SideEffectingConstructor.code(), "F-04");
+        assert_eq!(TestabilityFactor::F05HeavyMultiLineClosure.code(), "F-05");
+        assert_eq!(TestabilityFactor::F06ConcreteCouplingInBoundary.code(), "F-06");
+        assert_eq!(TestabilityFactor::Conc002OrphanConcurrency.code(), "CONC-002");
+    }
+}

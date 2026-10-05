@@ -20,6 +20,12 @@ pub enum Category {
     AiDefense,
     Testability,
     Frontend,
+    BevyApi,
+    BevySched,
+    BevyEcs,
+    BevyQuery,
+    BevyAsync,
+    BevyPerf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

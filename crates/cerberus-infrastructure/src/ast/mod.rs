@@ -1,6 +1,7 @@
 pub mod ai_defense;
 pub mod ai_slop;
 pub mod async_rules;
+pub mod bevy;
 pub mod capabilities;
 pub mod concurrency_rules;
 pub mod error_rules;

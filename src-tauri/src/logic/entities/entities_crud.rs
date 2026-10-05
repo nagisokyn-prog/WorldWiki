@@ -35,11 +35,14 @@ pub async fn get_entity_inner(
 
     if let Some(mut val) = res {
         flatten_thing(&mut val);
-        match serde_json::from_value(val) {
+        match serde_json::from_value(val.clone()) {
             Ok(e) => return Ok(Some(e)),
             Err(e) => {
-                eprintln!("[DEBUG get_entity] error: {}", e);
-                return Ok(None);
+                eprintln!(
+                    "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}\nRaw JSON: {:?}",
+                    actual_id, e, val
+                );
+                return Err(EntityError::Serialization(e));
             }
         }
     }

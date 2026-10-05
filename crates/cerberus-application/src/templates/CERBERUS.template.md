@@ -7,15 +7,17 @@
 
 ## 1. 🚀 CLI CHEATSHEET & COMMAND REFERENCE
 
-Cerberus provides unified CLI tools for Rust backend (`cargo-cerberus`) and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
+Cerberus provides unified CLI tools for Rust backend / Bevy ECS (`cargo-cerberus`) and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
 
 ### 🦀 Rust & Fullstack Backend (`cargo-cerberus`)
 
 ```bash
 # 1. Structural Verification & Linting
 cargo cerberus check                              # Run all architectural checks
-cargo cerberus check --layer-matrix               # Enforce layer matrix boundaries
+cargo cerberus check --bevy-only                  # Scan strictly with Bevy-specific ECS & perf rules
+cargo cerberus check --no-bevy                    # Disable Bevy-specific rules for pure libraries
 cargo cerberus check --json                       # Output violations as structured JSON
+cargo cerberus check --sarif ./reports/audit.sarif # Export SARIF for GitHub Code Scanning / IDEs
 cargo cerberus check --baseline cerberus-baseline.json # Filter against grandfathered baseline
 
 # 2. Workspace Health & Architectural Tree
@@ -27,6 +29,7 @@ cargo cerberus tree --output ./reports/tree.txt   # Save ASCII tree to text file
 # 3. Offline Rule Catalog & Documentation
 cargo cerberus rule list                          # List all registered rules
 cargo cerberus rule explain ARCH-001              # Display detailed card, bad/good code, remediation
+cargo cerberus rule explain BEVY-PERF-ASSET-001   # Inspect Bevy asset cache rule card
 cargo cerberus rule explain VUE-007 --markdown    # Output explain card as Markdown
 cargo cerberus rule explain CSS-001 --json        # Output explain card as JSON
 
@@ -55,7 +58,7 @@ npx cerberus-sfc check --baseline cerberus-baseline.json
 
 # 2. Frontend Offline Rule Explain
 npx cerberus-sfc rule list                        # List all frontend-specific rules
-npx cerberus-sfc rule explain VUE-007             # Explain Vue 3 shallowRef vs reactive invariant
+npx cerberus-sfc rule explain VUE-007             # Explain Vue 3 reactivity destructuring invariant
 npx cerberus-sfc rule explain CSS-001             # Explain design token hardcode restriction
 
 # 3. Frontend Project Initialization
@@ -67,7 +70,7 @@ npx cerberus-sfc init --adopt                     # Adopt existing codebase & ca
 
 ## 2. 🏛️ ARCHITECTURAL TOPOLOGY MATRIX (`cerberus.json`)
 
-Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Layered, CQRS, or Microservices, you define your layers in `cerberus.json`:
+Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Layered, CQRS, or Bevy ECS, you define your layers in `cerberus.json`:
 
 ```json
 {
@@ -76,34 +79,33 @@ Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Laye
     "layers": {
       "domain": {
         "allowed_deps": [],
-        "forbidden_external": ["reqwest", "tokio", "tauri", "sqlx", "surrealdb"],
-        "description": "Pure domain core with zero external IO/SDK dependencies"
+        "forbidden_external": ["reqwest", "tokio", "sqlx"],
+        "description": "Pure domain core: game state, components, affinity models, math"
       },
       "ports": {
         "allowed_deps": ["domain"],
-        "forbidden_external": ["tauri", "tokio"],
-        "description": "Abstract repository and driver traits"
+        "forbidden_external": ["tokio"],
+        "description": "Abstract repository traits and port interfaces"
       },
       "application": {
         "allowed_deps": ["domain", "ports"],
-        "forbidden_external": ["tauri", "surrealdb"],
         "description": "Use cases orchestrating domain entities and ports"
       },
       "infrastructure": {
         "allowed_deps": ["domain", "ports"],
-        "description": "Database adapters, external APIs, filesystem"
+        "description": "Database adapters (SurrealKV), external APIs, filesystem"
       },
-      "adapters_tauri": {
+      "game_systems": {
         "allowed_deps": ["domain", "ports", "application"],
-        "allowed_external": ["tauri"],
-        "description": "Tauri IPC presentation layer"
+        "allowed_external": ["bevy", "bevy_egui", "surrealdb", "tokio", "rand", "noise"],
+        "description": "Bevy ECS presentation & simulation systems"
       }
     }
   }
 }
 ```
 
-Assigning crates to layers in `Cargo.toml`:
+Assigning crates or modules to layers in `Cargo.toml`:
 ```toml
 [package.metadata.cerberus]
 layer = "domain"
@@ -111,20 +113,68 @@ layer = "domain"
 
 ---
 
-## 3. 🧩 FRONTEND AST & SCOPED CSS RULES
+## 3. 🎮 BEVY ECS & GAME PERFORMANCE INVARIANTS
 
-Frontend rules inspect Vue SFC AST and Scoped CSS without arbitrary line counting heuristics:
+Cerberus includes 42 dedicated rules for Bevy ECS (0.18.1+):
 
-- **`VUE-007` (Deep Reactivity Trap)**: Heavy data structures (AST, large lists, tables) must use `shallowRef` + `triggerRef` instead of `ref()` / `reactive()`.
-- **`VUE-008` (Watcher Cascade)**: Banned uncontrolled `watch(..., { deep: true })` causing re-render storms; use shallow watchers `{ deep: 1 }` or scalar getters.
-- **`PERF-001` (DOM Flooding)**: Lists $> 50$ items must be virtualized or bounded.
-- **`FE-RAII-001` (Uncleaned IPC/Timers)**: Tauri IPC event listeners and intervals must be symmetrically cleaned up in `onUnmounted`.
-- **`FSD-001` (Feature-Sliced Design Hierarchy)**: Imports must strictly flow downwards (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
-- **`CSS-001` (CSS Hardcode Hunter)**: Direct Hex (`#ffffff`), RGB/RGBA, and named HTML colors are prohibited. Use design tokens: `var(--color-text-primary)`, `var(--glass-border)`.
+- **API Migration & Modernization (`BEVY-API-*`)**:
+  - `BEVY-API-001` [🛑 Deny]: Deprecated `add_system()` (use `add_systems(Update, ...)`).
+  - `BEVY-API-002` [🛑 Deny]: Deprecated `add_startup_system()` (use `add_systems(Startup, ...)`).
+  - `BEVY-API-003` [🛑 Deny]: Deprecated `EventWriter::send` (use `.write()`).
+  - `BEVY-API-004` [⚠️ Warn]: Deprecated `insert_bundle()` (pass tuples to `spawn()`).
+  - `BEVY-API-005` [🛑 Deny]: Deprecated `add_plugin()` (use `add_plugins()`).
+- **Scheduler & Concurrency Safety (`BEVY-SCHED-*`)**:
+  - `BEVY-SCHED-001` [🛑 Deny]: `std::thread::sleep` inside Bevy systems blocks game loop.
+  - `BEVY-SCHED-002` [🛑 Deny]: `tokio::block_on` in Bevy system causes executor deadlock.
+  - `BEVY-SCHED-003` [⚠️ Warn]: Heavy compute in `Update` without `AsyncComputeTaskPool`.
+  - `BEVY-SCHED-004` [🛑 Deny]: `Runtime::new()` inside system body leaks runtimes per frame.
+- **ECS Design & Component Hygiene (`BEVY-ECS-*`)**:
+  - `BEVY-ECS-001` [⚠️ Warn]: God Component (> 7 fields). Decompose into cohesive components.
+  - `BEVY-ECS-002` [⚠️ Warn]: Entity-specific data in global `Resource`.
+  - `BEVY-ECS-003` [⚠️ Warn]: `HashMap<Entity, T>` in Resource instead of ECS Component.
+  - `BEVY-ECS-004` [🛑 Deny]: Business logic in Component `impl` (> 3 methods).
+  - `BEVY-ECS-005` [⚠️ Warn]: Clone epidemic in system (> 3 clones / high density).
+  - `BEVY-ECS-006` [⚠️ Warn]: Mutable query `Query<&mut T>` when read-only is sufficient.
+- **Query & Change Detection Invariants (`BEVY-QUERY-*`)**:
+  - `BEVY-QUERY-001` [🛑 Deny]: Panic-prone `query.single()` (use `get_single()`).
+  - `BEVY-QUERY-002` [⚠️ Warn]: Query used for singleton Resource access.
+  - `BEVY-QUERY-003` [⚠️ Warn]: `Changed<T>` filter on Resource in Query parameters.
+  - `BEVY-QUERY-004` [⚠️ Warn]: `EventReader<T>` declared but never read (`.read()`).
+  - `BEVY-QUERY-005` [🛑 Deny]: `ResMut<T>` + `Res<T>` same type conflict (Runtime panic B0001).
+- **Async & Task Pool Safety (`BEVY-ASYNC-*`)**:
+  - `BEVY-ASYNC-001` [🛑 Deny]: `.await` in synchronous Bevy system.
+  - `BEVY-ASYNC-002` [🛑 Deny]: Tokio Runtime created in system body.
+  - `BEVY-ASYNC-003` [⚠️ Warn]: Direct blocking DB/network call in system.
+  - `BEVY-ASYNC-004` [⚠️ Warn]: `Task::detach()` without cancel token.
+- **Asset, VRAM & Frame Budget Performance (`BEVY-PERF-*`)**:
+  - `BEVY-PERF-ASSET-001` [🛑 Deny]: `Assets<T>.add()` in `Update` system leaks GPU memory.
+  - `BEVY-PERF-ASSET-002` [⚠️ Warn]: Asset Handle not cached in Resource.
+  - `BEVY-PERF-ASSET-003` [🛑 Deny]: `asset_server.load()` in `Update` system triggers reload per frame.
+  - `BEVY-PERF-ASSET-004` [⚠️ Warn]: Unique material per entity prevents draw batching.
+  - `BEVY-PERF-ECS-001` [⚠️ Warn]: `insert()` / `remove()` in hot loops (archetype fragmentation).
+  - `BEVY-PERF-ECS-002` [⚠️ Warn]: Spawning entities in loop without `spawn_batch`.
+  - `BEVY-PERF-ECS-003` [🛑 Deny]: Non-recursive `despawn()` leaves orphaned child entities.
+  - `BEVY-PERF-CHANGE-001` [⚠️ Warn]: Unconditional `*Transform` mutation triggers `GlobalTransform` reflows.
+  - `BEVY-PERF-CHANGE-002` [⚠️ Warn]: Unconditional `&mut T` write triggers false `Changed<T>`.
 
 ---
 
-## 4. 📊 REALISTIC TESTABILITY INDEX (TI)
+## 4. 🧩 FRONTEND AST & SCOPED CSS RULES
+
+- **`VUE-001` (Zero Raw Logic in Script Setup)**: Raw business logic (declaring `function`, `ref()`, `reactive()`, `computed()`, `watch()`) in `<script setup>` is forbidden. Extract state and methods to companion `use<Component>.ts`.
+- **`VUE-002` (Missing Companion Composable)**: Non-trivial Vue component must have a companion `use<Component>.ts` hook alongside `<Component>.vue`.
+- **`VUE-003` (Types Inside SFC Ban)**: Declaring `interface` or `type` inside `.vue` is forbidden; move to `<Component>.model.ts`.
+- **`VUE-007` (Reactivity Destructuring Loss)**: Direct destructuring of `props` or Pinia store breaks reactive Proxy. Use `toRefs(props)`.
+- **`VUE-008` (Direct Props Mutation)**: Child components must not mutate props directly (`props.x = ...`, `props.list.push()`). Emit events to parent.
+- **`PERF-001` (Deep Reactivity on Large AST/Logs)**: Heavy data structures must use `shallowRef` + `triggerRef` or `markRaw`.
+- **`PERF-005` (Cascading Deep Watchers)**: Banned uncontrolled `watch(..., { deep: true })`; use shallow watchers `{ deep: 1 }`.
+- **`CSS-001` (CSS Hardcode Hunter)**: Direct Hex (`#ffffff`), RGB/RGBA, and named colors are prohibited. Use design tokens `var(--color-*)`.
+- **`CSS-PERF-003` (Layout Animation Ban)**: Animating `width`, `height`, `margin`, `box-shadow` is prohibited. Animate `transform` and `opacity`.
+- **`FSD-001` (FSD Hierarchy Inversion)**: Imports must strictly flow downwards (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
+
+---
+
+## 5. 📊 REALISTIC TESTABILITY INDEX (TI)
 
 Cerberus evaluates code testability using empirical AST archetypes:
 
@@ -135,7 +185,7 @@ Cerberus evaluates code testability using empirical AST archetypes:
 
 ---
 
-## 5. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
+## 6. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
 
 Legacy technical debt is isolated using cryptographic HMAC-SHA256 signatures:
 1. Violations can be grandfathered using `cerberus-baseline.json`.

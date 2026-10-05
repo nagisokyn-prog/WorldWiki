@@ -47,7 +47,9 @@ impl From<serde_json::Error> for BatchError {
 
 impl From<BatchError> for String {
     fn from(err: BatchError) -> Self {
-        err.to_string()
+        let msg = err.to_string();
+        eprintln!("[IPC ERROR][Batch] {}", msg);
+        msg
     }
 }
 
@@ -56,6 +58,7 @@ impl serde::Serialize for BatchError {
     where
         S: serde::Serializer,
     {
+        eprintln!("[IPC ERROR][Batch] {}", self);
         serializer.serialize_str(&self.to_string())
     }
 }

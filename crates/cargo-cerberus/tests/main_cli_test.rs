@@ -69,6 +69,8 @@ fn test_run_app_all_subcommands() {
             backend_only: false,
             record_baseline: false,
             baseline: None,
+            no_bevy: false,
+            bevy_only: false,
         }),
     })
     .is_ok());
@@ -88,6 +90,8 @@ fn test_run_app_all_subcommands() {
             backend_only: false,
             record_baseline: true,
             baseline: Some(custom_base.clone()),
+            no_bevy: false,
+            bevy_only: false,
         }),
     })
     .is_ok());
@@ -107,6 +111,8 @@ fn test_run_app_all_subcommands() {
             backend_only: false,
             record_baseline: false,
             baseline: Some(custom_base.clone()),
+            no_bevy: false,
+            bevy_only: false,
         }),
     })
     .is_ok());
@@ -349,6 +355,8 @@ fn test_run_check_clean_with_failing_reports() {
         backend_only: false,
         record_baseline: false,
         baseline_path: None,
+        no_bevy: false,
+        bevy_only: false,
     })
     .is_ok());
 
@@ -363,6 +371,8 @@ fn test_run_check_clean_with_failing_reports() {
         backend_only: false,
         record_baseline: false,
         baseline_path: None,
+        no_bevy: false,
+        bevy_only: false,
     })
     .is_ok());
 
@@ -377,6 +387,8 @@ fn test_run_check_clean_with_failing_reports() {
         backend_only: true,
         record_baseline: false,
         baseline_path: None,
+        no_bevy: false,
+        bevy_only: false,
     })
     .is_ok());
 }
@@ -519,6 +531,8 @@ fn test_cli_deep_coverage_branches() {
         backend_only: false,
         record_baseline: false,
         baseline_path: None,
+        no_bevy: false,
+        bevy_only: false,
     })
     .is_err());
 

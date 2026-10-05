@@ -9,10 +9,12 @@ pub mod registry;
 pub mod rules;
 pub mod sla;
 pub mod suppression;
+pub mod surql_rules;
 pub mod traits;
 pub mod tree;
 
 pub use bevy_rules::all_bevy_rules;
+pub use surql_rules::all_surql_rules;
 pub use catalog::{RuleCatalog, RuleDocEntry};
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
 pub use layer::{ArchLayer, LayerRule, LayerTopologyMatrix, PackageArchMetadata, WorkspaceArchMetadata};

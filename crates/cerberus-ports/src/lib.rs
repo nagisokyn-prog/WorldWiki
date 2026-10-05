@@ -6,6 +6,7 @@ pub mod parser;
 pub mod reporter;
 pub mod scanner;
 pub mod storage;
+pub mod surql;
 
 pub use clusterer::ClustererPort;
 pub use downloader::ModelDownloaderPort;
@@ -15,6 +16,7 @@ pub use parser::{AstEnginePort, AstParserPort};
 pub use reporter::ReportPublisherPort;
 pub use scanner::{FileSystemScannerPort, ScanScope, ScannedSourceFile};
 pub use storage::{BaselineStoragePort, KeyStoragePort, RulesRepositoryPort};
+pub use surql::{SurqlLinterPort, SurqlScanRequest, SurqlScanResult};
 
 
 

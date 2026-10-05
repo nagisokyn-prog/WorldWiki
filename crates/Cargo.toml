@@ -6,6 +6,7 @@ members = [
     "cerberus-infrastructure",
     "cargo-cerberus",
     "cerberus-sfc",
+    "cerberus-surql",
     "cerberus-testability",
 ]
 exclude = [

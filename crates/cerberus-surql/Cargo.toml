@@ -1,0 +1,30 @@
+[package]
+name = "cerberus-surql"
+version = "1.0.0"
+edition = "2021"
+authors = ["Danila"]
+description = "Universal Domain-Agnostic SurrealDB v3 AST Analyzer & Capability Firewall for Cerberus"
+
+[package.metadata.cerberus]
+layer = "infrastructure"
+
+[lib]
+name = "cerberus_surql"
+path = "src/lib.rs"
+
+[dependencies]
+cerberus-domain = { path = "../cerberus-domain" }
+cerberus-ports = { path = "../cerberus-ports" }
+syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
+proc-macro2 = "1.0"
+quote = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+regex = "1.10"
+rayon = "1.8"
+walkdir = "2.4"
+thiserror = "2.0"
+
+[dev-dependencies]
+tempfile = "3.8"

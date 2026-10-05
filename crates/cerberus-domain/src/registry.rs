@@ -118,6 +118,7 @@ impl BuiltinRuleRegistry {
             r("TAURI-DRIFT-001", Category::Architecture, Severity::Warn, "Cross-Language DTO Schema Drift", "Field names, types or serde renaming modifiers in Rust tauri commands mismatch TypeScript client DTOs.", "Sync Rust DTO struct and TypeScript interface fields."),
         ];
         base.extend(crate::bevy_rules::all_bevy_rules());
+        base.extend(crate::surql_rules::all_surql_rules());
         base
     }
 

@@ -339,6 +339,7 @@ mod tests {
         assert!(handle_init(temp.path(), true, true, false, false, false, false).is_ok());
         assert!(handle_init(temp.path(), false, true, true, false, false, false).is_ok());
         assert!(handle_init(temp.path(), false, true, false, true, false, false).is_ok());
+        assert!(handle_init(temp.path(), true, true, false, false, true, false).is_ok());
     }
 
     #[test]
@@ -367,8 +368,40 @@ mod tests {
     }
 
     #[test]
-    fn test_execute_command_rule_and_init() {
+    fn test_handle_testability_suite() {
         let temp = tempdir().unwrap();
+        // Calibrate
+        assert!(handle_testability(temp.path(), None, None, true).is_ok());
+
+        // Analyze path
+        assert!(handle_testability(temp.path(), None, None, false).is_ok());
+
+        // JSON output
+        let json_path = temp.path().join("testability.json");
+        assert!(handle_testability(temp.path(), Some(&json_path), None, false).is_ok());
+        assert!(json_path.exists());
+
+        // Threshold pass / fail
+        assert!(handle_testability(temp.path(), None, Some(0.0), false).is_ok());
+        assert!(handle_testability(temp.path(), None, Some(150.0), false).is_err());
+    }
+
+    #[test]
+    fn test_validate_rules_registry() {
+        let temp = tempdir().unwrap();
+        let cfg = cerberus_domain::CerberusConfig::default();
+        let rules_file = temp.path().join("cerberus.json");
+        let content = serde_json::to_string_pretty(&cfg).unwrap();
+        std::fs::write(&rules_file, content).unwrap();
+
+        assert!(validate_rules_registry(Some(&rules_file)).is_ok());
+        assert!(validate_rules_registry(Some(&temp.path().join("non_existent.json"))).is_err());
+    }
+
+    #[test]
+    fn test_execute_command_all_variants() {
+        let temp = tempdir().unwrap();
+
         let cmd_init = Commands::Init {
             path: temp.path().to_path_buf(),
             preset: None,
@@ -389,6 +422,47 @@ mod tests {
             },
         };
         assert!(execute_command(cmd_rule, None).is_ok());
+
+        let cmd_model = Commands::Model {
+            action: crate::cli::ModelCommands::Status,
+        };
+        assert!(execute_command(cmd_model, None).is_ok());
+
+        let cmd_explain = Commands::Explain {
+            path: temp.path().to_path_buf(),
+            clusters: true,
+        };
+        assert!(execute_command(cmd_explain, None).is_ok());
+
+        let cmd_tree = Commands::Tree {
+            path: temp.path().to_path_buf(),
+            json: None,
+            save_json: None,
+            output: None,
+        };
+        assert!(execute_command(cmd_tree, None).is_ok());
+
+        let cmd_testability = Commands::Testability {
+            path: temp.path().to_path_buf(),
+            json: None,
+            threshold: None,
+            calibrate: true,
+        };
+        assert!(execute_command(cmd_testability, None).is_ok());
+
+        let cmd_baseline = Commands::Baseline {
+            action: crate::cli::BaselineCommands::Reconcile {
+                file: temp.path().join("cerberus-baseline.json"),
+            },
+        };
+        assert!(execute_command(cmd_baseline, None).is_ok());
+
+        let cmd_ledger = Commands::Ledger {
+            action: crate::cli::LedgerCommands::Verify {
+                file: temp.path().join("cerberus-ledger.lock"),
+            },
+        };
+        assert!(execute_command(cmd_ledger, None).is_ok());
     }
 }
 

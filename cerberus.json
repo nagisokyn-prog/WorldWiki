@@ -18,6 +18,7 @@
     "crates/cerberus-infrastructure/**",
     "crates/cerberus-ports/**",
     "crates/cerberus-sfc/**",
+    "crates/cerberus-surql/**",
     "crates/cerberus-testability/**",
     "src/dist-check/**",
     "__tests__/**",
@@ -31,6 +32,7 @@
   ],
   "extends": [
     "cerberus:rust-hexagonal",
+    "cerberus:surrealdb-v3",
     "cerberus:vue-clean-architecture",
     "cerberus:fsd-strict",
     "cerberus:perf-high-fps",
@@ -78,6 +80,17 @@
       "allowed_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain", "application", "ports", "infrastructure"]
     }
+  },
+  "surrealdb": {
+    "schema_roots": [
+      "logic/schema/**",
+      "src-tauri/schema/**"
+    ],
+    "strict_mode": true,
+    "enforce_idempotent_ddl": true,
+    "ban_schemaless": true,
+    "ban_vector_in_revisions": true,
+    "enforce_100pct_parameterization": true
   },
   "frontend_layers": {
     "shared": {
@@ -168,6 +181,33 @@
 
     "sec/taint-sink-execution": "deny",
     "sec/transitive-capabilities": "warn",
+
+    "surql/schemaless-table-ban": "deny",
+    "surql/idempotent-ddl": "deny",
+    "surql/require-field-type": "deny",
+    "surql/indexed-fk": "warn",
+    "surql/flexible-field-ban": "deny",
+    "surql/readonly-metadata": "warn",
+    "surql/unconstrained-string": "deny",
+    "surql/full-parameterization": "deny",
+    "surql/unbounded-select": "deny",
+    "surql/missing-where-limit": "warn",
+    "surql/record-id-manipulation": "deny",
+    "surql/idempotent-mutations": "warn",
+    "surql/unescaped-identifiers": "deny",
+    "surql/inefficient-subqueries": "warn",
+    "surql/fts-analyzer-defined": "deny",
+    "surql/bm25-pipeline-valid": "warn",
+    "surql/fts-operator-indexed": "deny",
+    "surql/no-vector-in-revisions": "deny",
+    "surql/hnsw-distance-defined": "deny",
+    "surql/hnsw-dimension-specified": "warn",
+    "surql/no-recursive-cascade-loops": "warn",
+    "surql/no-interactive-tx-in-handlers": "deny",
+    "surql/encapsulate-rag-functions": "deny",
+    "surql/migration-version-header": "warn",
+    "surql/ban-deprecated-v1-v2-syntax": "deny",
+    "surql/no-types-in-domain": "deny",
 
     "vue/no-monolith-script-setup": "deny",
     "vue/require-companion-hook": "deny",

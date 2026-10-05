@@ -184,3 +184,54 @@ pub fn handle_explain(
         )),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    struct FakeDownloader {
+        should_fail: bool,
+    }
+    impl cerberus_ports::ModelDownloaderPort for FakeDownloader {
+        fn download_file(&self, _url: &str, destination: &Path) -> Result<(), String> {
+            if self.should_fail {
+                Err("Download failed".into())
+            } else {
+                if let Some(parent) = destination.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                let _ = std::fs::write(destination, "fake content");
+                Ok(())
+            }
+        }
+    }
+
+    #[test]
+    fn test_handle_model_with_downloader_all_actions() {
+        let temp = tempdir().unwrap();
+        let cache_dir = temp.path().to_path_buf();
+        let dl = Arc::new(FakeDownloader { should_fail: false });
+
+        assert!(handle_model_with_downloader(ModelCommands::Status, dl.clone(), &cache_dir).is_ok());
+        assert!(handle_model_with_downloader(ModelCommands::Download, dl.clone(), &cache_dir).is_ok());
+        assert!(handle_model_with_downloader(ModelCommands::Status, dl.clone(), &cache_dir).is_ok());
+        assert!(handle_model_with_downloader(ModelCommands::Clean, dl.clone(), &cache_dir).is_ok());
+
+        let dl_fail = Arc::new(FakeDownloader { should_fail: true });
+        assert!(handle_model_with_downloader(ModelCommands::Download, dl_fail, &cache_dir).is_err());
+    }
+
+    #[test]
+    fn test_handle_explain() {
+        let temp = tempdir().unwrap();
+        let repo = Arc::new(RulesJsonRepository::default());
+        assert!(handle_explain(temp.path(), true, &repo).is_ok());
+    }
+
+    #[test]
+    fn test_handle_model_entrypoint() {
+        assert!(handle_model(ModelCommands::Status).is_ok());
+        assert!(handle_model(ModelCommands::Clean).is_ok());
+    }
+}

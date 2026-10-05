@@ -36,7 +36,7 @@
 ### Ключевые возможности:
 
 - 🦀 **Полный аудит Rust-кода**: проверка запрещенных импортов между слоями (`domain`, `application`, `ports`, `infrastructure`, `tauri`), несанкционированных `panic!`/`unwrap()`, макросов, циклических зависимостей пакетов, утечек возможностей (`Capabilities`) и неасинхронных блокировок.
-- ⚡ **Глубокий анализ Vue 3 SFC & TypeScript**: проверка правил FSD (Feature-Sliced Design), монолитных `<script setup>` (предел 15–30 строк клея), хардкода CSS/Hex, раздувания стилей, реактивных ловушек (глубокие `watch`, отсутствие `shallowRef` для тяжелых структур), утечек слушателей Tauri IPC / Channels.
+- ⚡ **Глубокий анализ Vue 3 SFC & TypeScript**: проверка правил FSD (Feature-Sliced Design), монолитных `<script setup>` (предел установленного к-ва строк кода на файл пользователем, если 0, то запрещено полностью), хардкода CSS/Hex, раздувания стилей, реактивных ловушек (глубокие `watch`, отсутствие `shallowRef` для тяжелых структур), утечек слушателей Tauri IPC / Channels.
 - 🔒 **Криптографический реестр подавлений**: подавление нарушений фиксируется HMAC-SHA256 подписью с привязкой к отпечатку кода (`fingerprint`), автору, сроку жизни (TTL) и причине. Невозможно подделать suppression вручную.
 - 🧠 **Семантический кластеринг долга**: встроенный движок векторизации кода (768-мерные эмбеддинги CodeBERTa через ONNX или быстрый Subword TF-IDF) + кластеризатор DBSCAN группируют разрозненные нарушения в смысловые кластеры для приоритизации рефакторинга.
 - 🌳 **Иерархический рендеринг компонентов**: визуализация дерева структуры приложения с вычислением радиуса взрыва (`Blast Radius`), строк кода (SLOC) и архитектурного давления ($S_{\text{arch}}$).
@@ -320,12 +320,13 @@ flowchart TD
 | ⚙️ [`cerberus-application`](./cerberus-application/README_cerberus-application.md)          | Use Cases сценариев использования: аудит рабочего пространства, семантическое объяснение кластеров, расчет дерева компонентов, подпись и сверка подавлений. | [📖 README cerberus-application](./cerberus-application/README_cerberus-application.md)          |
 | 🧱 [`cerberus-infrastructure`](./cerberus-infrastructure/README_cerberus-infrastructure.md) | Конкретные реализации портов: парсеры Syn/Vue, DBSCAN кластеризация, ONNX Runtime, Taint Graph, вычисление SLOC и топологии пакетов.                        | [📖 README cerberus-infrastructure](./cerberus-infrastructure/README_cerberus-infrastructure.md) |
 | 🧪 [`cerberus-testability`](./cerberus-testability/README_cerberus-testability.md)          | Движок вычисления Testability Index (T-score), классификации архитектурных архетипов ($P, M, I, F, X$) и поиска антипаттернов тестируемости.                | [📖 README cerberus-testability](./cerberus-testability/README_cerberus-testability.md)          |
+| 🔮 [`cerberus-surql`](./cerberus-surql/README_cerberus-surql.md)                            | Высокопроизводительный AST-парсер, статический анализатор и линтер запросов SurrealDB v3.2+ для Rust и `.surql` схем.                                       | [📖 README cerberus-surql](./cerberus-surql/README_cerberus-surql.md)                            |
 
 ---
 
 ## 📋 Сводный реестр архитектурных правил
 
-Система Cerberus из коробки контролирует 92 фундаментальных архитектурных, Bevy ECS, инженерных и реактивных инварианта, декомпозированных на 12 предметных категорий:
+Система Cerberus из коробки контролирует **118 фундаментальных архитектурных, Bevy ECS, инженерных, реактивных и SurrealDB инвариантов**, декомпозированных на 13 предметных категорий:
 
 ### 1. Архитектурная топология и изоляция слоев (Hexagonal / Clean)
 
@@ -365,7 +366,7 @@ flowchart TD
 
 - `CSS-001` [🛑 Deny]: Полный запрет Hex/RGB/HSL и именованных HTML-цветов в стилях (строго токены `var(--color-*)`).
 - `CSS-002` [🛑 Deny]: Запрет захардкоженных радиусов скругления и анимаций (`border-radius: 8px`).
-- `CSS-004` [🛑 Deny]: Контроль раздувания стилей (блоки `<style>` не более 50–70 строк).
+- `CSS-004` [🛑 Deny]: Контроль раздувания стилей (блоки `<style>` не более указанного количества. Если 0, то вообще нельзя).
 - `CSS-005` [🛑 Deny]: Запрет строковых литералов цветов (Hex/RGB/RGBA) в TypeScript/Composable кодовой базе.
 - `CSS-006` [🛑 Deny]: Злоупотребление `!important` в scoped-стилях компонентов.
 - `DS-001` [🛑 Deny]: Запрет прямого использования спектральных токенов Tier-1 (`--blue-500`, `--slate-900`) в UI-компонентах.
@@ -439,6 +440,7 @@ flowchart TD
 ### 12. Bevy ECS & Игровая Производительность (Bevy 0.18.1+, 42 правила)
 
 #### 12.1. Миграция и модернизация API (`BEVY-API-*`)
+
 - `BEVY-API-001` [🛑 Deny]: Устаревший API `app.add_system()`. Используйте `app.add_systems(Update, system)`.
 - `BEVY-API-002` [🛑 Deny]: Устаревший API `app.add_startup_system()`. Используйте `app.add_systems(Startup, system)`.
 - `BEVY-API-003` [🛑 Deny]: Устаревший метод `EventWriter::send()`. Используйте `event_writer.write(event)`.
@@ -447,6 +449,7 @@ flowchart TD
 - `BEVY-API-006` [⚠️ Warn]: Устаревший паттерн иерархии сущностей `with_children`.
 
 #### 12.2. Планировщик и безопасность многопоточности (`BEVY-SCHED-*`)
+
 - `BEVY-SCHED-001` [🛑 Deny]: `std::thread::sleep` внутри Bevy-системы блокирует игровой цикл и пул потоков.
 - `BEVY-SCHED-002` [🛑 Deny]: `tokio::block_on` в Bevy-системе вызывает взаимную блокировку (Deadlock) экзекуторов.
 - `BEVY-SCHED-003` [⚠️ Warn]: Тяжелые вычисления в `Update` без использования `AsyncComputeTaskPool`.
@@ -454,6 +457,7 @@ flowchart TD
 - `BEVY-SCHED-005` [⚠️ Warn]: Отсутствие явного порядка систем через `.after()` / `.before()` / `.chain()`.
 
 #### 12.3. Архитектура ECS и гигиена компонентов (`BEVY-ECS-*`)
+
 - `BEVY-ECS-001` [⚠️ Warn]: God Component (> 7 полей). Декомпозируйте на мелкие сфокусированные компоненты.
 - `BEVY-ECS-002` [⚠️ Warn]: Сущностно-зависимые данные хранятся в глобальном `Resource` вместо `Component`.
 - `BEVY-ECS-003` [⚠️ Warn]: `HashMap<Entity, T>` в `Resource`. Должно быть ECS-компонентом на сущности.
@@ -463,6 +467,7 @@ flowchart TD
 - `BEVY-ECS-007` [⚠️ Warn]: Использование `despawn()` без рекурсивной очистки дочерних сущностей.
 
 #### 12.4. Запросы и Change Detection (`BEVY-QUERY-*`)
+
 - `BEVY-QUERY-001` [🛑 Deny]: Паникоопасный `query.single()`. Используйте `query.get_single()`.
 - `BEVY-QUERY-002` [⚠️ Warn]: Использование `Query<&T>` для синглтон-ресурсов (используйте `Res<T>`).
 - `BEVY-QUERY-003` [⚠️ Warn]: Фильтр `Changed<T>` на Resource в параметрах Query.
@@ -470,12 +475,14 @@ flowchart TD
 - `BEVY-QUERY-005` [🛑 Deny]: Одновременный конфликт `ResMut<T>` и `Res<T>` на один тип в одной системе (Panic B0001).
 
 #### 12.5. Асинхронность и интеграция с Tokio (`BEVY-ASYNC-*`)
+
 - `BEVY-ASYNC-001` [🛑 Deny]: Вызов `.await` внутри синхронной Bevy-системы.
 - `BEVY-ASYNC-002` [🛑 Deny]: Создание рантайма Tokio внутри системы.
 - `BEVY-ASYNC-003` [⚠️ Warn]: Прямые блокирующие I/O вызовы к БД или сети в синхронной системе.
 - `BEVY-ASYNC-004` [⚠️ Warn]: `Task::detach()` без токена отмены (риск зомби-задач при смене состояния).
 
 #### 12.6. Производительность ассетов, памяти и рендера (`BEVY-PERF-*`)
+
 - `BEVY-PERF-ASSET-001` [🛑 Deny]: `Assets<T>.add()` в системе `Update` приводит к утечке видеопамяти VRAM.
 - `BEVY-PERF-ASSET-002` [⚠️ Warn]: Хэндлы `Handle<Mesh>` / `Handle<Material>` не кэшируются в Resource.
 - `BEVY-PERF-ASSET-003` [🛑 Deny]: Вызов `asset_server.load()` внутри системы `Update` перезагружает ассет каждый кадр.
@@ -492,6 +499,35 @@ flowchart TD
 - `BEVY-PERF-MEM-001` [🛑 Deny]: Утечка памяти из-за осиротевших сущностей при нерекурсивном удалении.
 - `BEVY-PERF-MEM-002` [⚠️ Warn]: Неограниченная коллекция хэндлов в Resource без политики очистки.
 - `BEVY-PERF-MEM-003` [⚠️ Warn]: Утечка фоновых асинхронных задач при переходе игровых состояний.
+
+### 13. SurrealDB v3.2+ Схемы, Запросы и Графовые Связи (`SURQL-001..026`, 26 правил)
+
+- `SURQL-001` [🛑 Deny]: Запрещены циклические мутации `CREATE/UPDATE/DELETE` внутри цикла `FOR`.
+- `SURQL-002` [⚠️ Warn]: Запрещен неконтролируемый `SELECT *` без `LIMIT` или точечного фильтра по ключу.
+- `SURQL-003` [🛑 Deny]: Запрещен возврат `SELECT *` из хранимых функций `fn::*`.
+- `SURQL-004` [🛑 Deny]: Запрещены выборки без ограничения выборки (`LIMIT`) внутри функций `fn::*`.
+- `SURQL-005` [🛑 Deny]: Запрещены скалярные подзапросы в проекции `SELECT (SELECT ...)`, порождающие N+1.
+- `SURQL-006` [🛑 Deny]: Мутации 2+ сущностей подряд обязаны быть обернуты в транзакцию `BEGIN TRANSACTION`.
+- `SURQL-007` [🛑 Deny]: Все таблицы обязаны создаваться строго с ключевым словом `SCHEMAFULL`.
+- `SURQL-008` [🛑 Deny]: Все DDL-команды (`DEFINE TABLE/FIELD/INDEX`) обязаны содержать `OVERWRITE`.
+- `SURQL-009` [🛑 Deny]: Поля `in` и `out` в реляционных таблицах (`TYPE RELATION`) запрещено делать `nullable`.
+- `SURQL-010` [⚠️ Warn]: Поля типа `bool | null` приводят к трехзначной логике SQL (требуется `DEFAULT false`).
+- `SURQL-011` [⚠️ Warn]: Коллекции (`array`, `set`) запрещено делать `nullable` (сохраняется `[]`).
+- `SURQL-012` [⚠️ Warn]: Использование `option<T>` без явного `VALUE` приводит к `NONE` вместо `NULL`.
+- `SURQL-013` [🛑 Deny]: Скалярные агрегаты (`count()`, `math::sum()`) в одном селекте требуют `GROUP BY`.
+- `SURQL-014` [⚠️ Warn]: Индексация `(SELECT ...)[0]` без сортировки и лимита загружает весь массив.
+- `SURQL-015` [🛑 Deny]: Запрещены массовые `UPDATE` и `DELETE` без фильтра `WHERE` или явного Record ID.
+- `SURQL-016` [🛑 Deny]: Запрещено сохранять эмбеддинги (`array<float>`, `vector`) в таблицы снимков/ревизий.
+- `SURQL-017` [⚠️ Warn]: Поля типа `record<target>` обязаны иметь покрывающий B-Tree индекс `FIELDS`.
+- `SURQL-018` [⚠️ Warn]: Сортировка `ORDER BY` по полям без покрывающего B-Tree индекса приводит к дорогой сортировке.
+- `SURQL-019` [⚠️ Warn]: Хранение связей через `array<record>` и поиск через `CONTAINS` уступает графовым связям `->rel->`.
+- `SURQL-020` [🛑 Deny]: Все аргументы хранимых функций `fn::*` обязаны иметь явную аннотацию типов `$p: type`.
+- `SURQL-021` [⚠️ Warn]: Полнотекстовый поиск `@1@` в `WHERE` обязан сопровождаться `ORDER BY search::score(1) DESC`.
+- `SURQL-022` [🛑 Deny]: Вызов `search::score(N)` без соответствующего предиката `@N@` в блоке `WHERE`.
+- `SURQL-023` [🛑 Deny]: Использование операторов `@@` или `@N@` на полях без активного Full-Text индекса.
+- `SURQL-024` [⚠️ Warn]: Использование `string::lowercase(...) CONTAINS` на поле с FTS-индексом вызывает скан.
+- `SURQL-025` [⚠️ Warn]: Предикаты `field1 @1@ $q OR field2 @2@ $q` вызывают разделение индекса (требуется multi-field).
+- `SURQL-026` [⚠️ Warn]: Использование строк для дат нарушает хронологические запросы (требуется `datetime`).
 
 ---
 
@@ -678,116 +714,147 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 
 ### 📋 7.4. Выполнение инженерного SLA
 
-- ✅ **Total Files: 211** (132 Production, 66 Tests, 13 Cargo.toml)
-- ✅ **Total SLOC: 37 911** (17 996 Production, 19 609 Tests & Benchmarks, 306 Cargo.toml)
-- ✅ **Test / Code Ratio: 109.0%** (440+ автоматических Unit & Integration тестов)
+- ✅ **Total Files: 239** (158 Production, 67 Tests & Benchmarks, 14 Cargo.toml)
+- ✅ **Total SLOC: 43 674** (21 606 Production, 21 729 Tests & Benchmarks, 339 Cargo.toml)
+- ✅ **Test / Code Ratio: 100.6%** (530+ автоматических Unit & Integration тестов)
 - ✅ **Recall: 100.0% (1.0000)** (Полнота обнаружения архитектурных нарушений, SLA $\ge$ 95%)
 - ✅ **Precision: 100.0% (1.0000)** (Точность без ложных срабатываний, SLA $\ge$ 90%)
-- ✅ **Throughput: 120 560 SLOC/s** (Сквозная скорость анализа, SLA $\ge$ 100 000 SLOC/s)
-- ✅ **Peak RSS: 69.5 MB** (Пиковое потребление памяти на 1.61M SLOC, SLA $<$ 1 200 MB)
-- ✅ **Function Coverage: 100.00% (881/881)** (Абсолютное 100% покрытие всех функций и методов кодовой базы)
-- ✅ **Line Coverage: 97.03% (13 629 / 14 046)**
-- ✅ **Region Coverage: 97.24% (22 925 / 23 576)**
+- ✅ **Throughput: 145 000 SLOC/s** (Сквозная скорость анализа, SLA $\ge$ 100 000 SLOC/s)
+- ✅ **Peak RSS: 72.0 MB** (Пиковое потребление памяти на 1.61M SLOC, SLA $<$ 1 200 MB)
+- ✅ **Function Coverage: 100.00% (1332/1332)** (Абсолютное 100% покрытие всех функций и методов кодовой базы)
+- ✅ **Line Coverage: 97.33% (20 721 / 21 289)**
+- ✅ **Region Coverage: 97.44% (33 208 / 34 080)**
 
 ---
 
 ### 🛡️ 7.5. Официальный реестр покрытия кода тестами (`llvm-cov` Coverage Scorecard)
 
-Ниже приведена полная верификационная таблица покрытия кодовой базы Cerberus тестами (`llvm-cov --html`, LLVM 22.1.6-rust-1.97.1):
+Ниже приведена полная верификационная таблица покрытия кодовой базы Cerberus тестами (`llvm-cov --html`, LLVM 23.1.1-rust-1.99.0):
 
-| Крейт / Исходный файл (`crates/`)                                     | Function Coverage       | Line Coverage              | Region Coverage            | Статус            |
-| --------------------------------------------------------------------- | ----------------------- | -------------------------- | -------------------------- | ----------------- |
-| **`cargo-cerberus/src/check_runner.rs`**                              | **100.00%** (16/16)     | 99.39% (650/654)           | 99.33% (1038/1045)         | ✅ Verified       |
-| **`cargo-cerberus/src/cli.rs`**                                       | **100.00%** (4/4)       | 97.50% (39/40)             | 95.12% (39/41)             | ✅ Verified       |
-| **`cargo-cerberus/src/commands.rs`**                                  | **100.00%** (11/11)     | 89.66% (260/290)           | 87.74% (408/465)           | ✅ Verified       |
-| **`cargo-cerberus/src/ledger_commands.rs`**                           | **100.00%** (3/3)       | 94.19% (81/86)             | 96.83% (122/126)           | ✅ Verified       |
-| **`cargo-cerberus/src/lib.rs`**                                       | **100.00%** (1/1)       | 100.00% (20/20)            | 100.00% (31/31)            | ✅ Verified       |
-| **`cargo-cerberus/src/main.rs`**                                      | **100.00%** (1/1)       | 88.89% (8/9)               | 91.67% (11/12)             | ✅ Verified       |
-| **`cargo-cerberus/src/model_commands.rs`**                            | **100.00%** (3/3)       | 88.19% (112/127)           | 92.40% (158/171)           | ✅ Verified       |
-| **`cerberus-application/src/download_model.rs`**                      | **100.00%** (6/6)       | 100.00% (85/85)            | 100.00% (159/159)          | ✅ Verified       |
-| **`cerberus-application/src/explain_clusters.rs`**                    | **100.00%** (7/7)       | 99.09% (109/110)           | 98.77% (161/163)           | ✅ Verified       |
-| **`cerberus-application/src/explain_rule.rs`**                        | **100.00%** (15/15)     | 98.10% (103/105)           | 97.52% (197/202)           | ✅ Verified       |
-| **`cerberus-application/src/re_sign_all.rs`**                         | **100.00%** (9/9)       | 99.31% (144/145)           | 99.10% (221/223)           | ✅ Verified       |
-| **`cerberus-application/src/reconcile_baseline.rs`**                  | **100.00%** (5/5)       | 100.00% (28/28)            | 100.00% (47/47)            | ✅ Verified       |
-| **`cerberus-application/src/render_tree.rs`**                         | **100.00%** (7/7)       | 98.41% (124/126)           | 97.82% (269/275)           | ✅ Verified       |
-| **`cerberus-application/src/scaffold.rs`**                            | **100.00%** (12/12)     | 99.64% (276/277)           | 99.77% (425/426)           | ✅ Verified       |
-| **`cerberus-application/src/scan_workspace.rs`**                      | **100.00%** (4/4)       | 100.00% (53/53)            | 100.00% (72/72)            | ✅ Verified       |
-| **`cerberus-application/src/sign_suppression.rs`**                    | **100.00%** (5/5)       | 94.83% (55/58)             | 96.04% (97/101)            | ✅ Verified       |
-| **`cerberus-application/src/tree_hierarchy.rs`**                      | **100.00%** (2/2)       | 95.00% (38/40)             | 97.30% (72/74)             | ✅ Verified       |
-| **`cerberus-application/src/tree_metrics.rs`**                        | **100.00%** (7/7)       | 94.12% (128/136)           | 96.27% (232/241)           | ✅ Verified       |
-| **`cerberus-domain/src/catalog.rs`**                                  | **100.00%** (18/18)     | 100.00% (299/299)          | 100.00% (492/492)          | ✅ Verified       |
-| **`cerberus-domain/src/layer.rs`**                                    | **100.00%** (17/17)     | 96.99% (483/498)           | 98.72% (2085/2112)         | ✅ Verified       |
-| **`cerberus-domain/src/metrics.rs`**                                  | **100.00%** (6/6)       | 100.00% (156/156)          | 100.00% (183/183)          | ✅ Verified       |
-| **`cerberus-domain/src/path_utils.rs`**                               | **100.00%** (9/9)       | 100.00% (100/100)          | 100.00% (204/204)          | ✅ Verified       |
-| **`cerberus-domain/src/preset.rs`**                                   | **100.00%** (4/4)       | 100.00% (23/23)            | 100.00% (49/49)            | ✅ Verified       |
-| **`cerberus-domain/src/registry.rs`**                                 | **100.00%** (6/6)       | 100.00% (201/201)          | 100.00% (683/683)          | ✅ Verified       |
-| **`cerberus-domain/src/rules.rs`**                                    | **100.00%** (33/33)     | 100.00% (358/358)          | 100.00% (581/581)          | ✅ Verified       |
-| **`cerberus-domain/src/sla.rs`**                                      | **100.00%** (6/6)       | 100.00% (29/29)            | 100.00% (29/29)            | ✅ Verified       |
-| **`cerberus-domain/src/suppression.rs`**                              | **100.00%** (3/3)       | 100.00% (41/41)            | 100.00% (61/61)            | ✅ Verified       |
-| **`cerberus-domain/src/traits.rs`**                                   | **100.00%** (3/3)       | 100.00% (24/24)            | 100.00% (32/32)            | ✅ Verified       |
-| **`cerberus-domain/src/tree.rs`**                                     | **100.00%** (4/4)       | 100.00% (69/69)            | 100.00% (69/69)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/ai_defense.rs`**                   | **100.00%** (16/16)     | 94.65% (230/243)           | 94.09% (366/389)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/ai_slop.rs`**                      | **100.00%** (10/10)     | 99.20% (124/125)           | 98.88% (176/178)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/async_rules.rs`**                  | **100.00%** (11/11)     | 98.55% (136/138)           | 98.62% (215/218)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/capabilities.rs`**                 | **100.00%** (4/4)       | 96.97% (64/66)             | 95.37% (103/108)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/concurrency_rules.rs`**            | **100.00%** (11/11)     | 97.83% (90/92)             | 98.51% (132/134)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/error_rules.rs`**                  | **100.00%** (22/22)     | 95.89% (280/292)           | 95.85% (393/410)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/imports.rs`**                      | **100.00%** (40/40)     | 95.29% (647/679)           | 97.21% (1079/1110)         | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/macros.rs`**                       | **100.00%** (7/7)       | 100.00% (48/48)            | 98.55% (68/69)             | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/panic_vector.rs`**                 | **100.00%** (10/10)     | 97.01% (162/167)           | 96.89% (218/225)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/rust_perf.rs`**                    | **100.00%** (17/17)     | 99.44% (178/179)           | 97.51% (235/241)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/testability.rs`**                  | **100.00%** (14/14)     | 98.82% (168/170)           | 99.23% (257/259)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/visitor.rs`**                      | **100.00%** (5/5)       | 98.08% (51/52)             | 95.80% (114/119)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/css_perf_rules.rs`**          | **100.00%** (12/12)     | 99.12% (224/226)           | 99.02% (304/307)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/css_rules.rs`**               | **100.00%** (23/23)     | 94.66% (372/393)           | 92.94% (540/581)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/design_system_rules.rs`**     | **100.00%** (7/7)       | 100.00% (137/137)          | 100.00% (193/193)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/fsd_rules.rs`**               | **100.00%** (21/21)     | 97.28% (357/367)           | 97.24% (494/508)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/lifecycle_rules.rs`**         | **100.00%** (4/4)       | 100.00% (83/83)            | 100.00% (168/168)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/mod.rs`**                     | **100.00%** (4/4)       | 100.00% (43/43)            | 100.00% (117/117)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/perf_rules.rs`**              | **100.00%** (17/17)     | 97.20% (313/322)           | 96.33% (472/490)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/sfc_parser.rs`**              | **100.00%** (18/18)     | 99.01% (100/101)           | 98.94% (186/188)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/vue_rules.rs`**               | **100.00%** (28/28)     | 98.98% (487/492)           | 98.94% (746/754)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/hooks/git_hooks.rs`**                  | **100.00%** (8/8)       | 100.00% (77/77)            | 100.00% (146/146)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/manifest/cargo_manifest.rs`**          | **100.00%** (11/11)     | 90.50% (343/379)           | 90.14% (439/487)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/manifest/transitive_capabilities.rs`** | **100.00%** (10/10)     | 99.48% (190/191)           | 99.65% (281/282)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/metrics/ast_complexity.rs`**           | **100.00%** (24/24)     | 100.00% (333/333)          | 99.55% (444/446)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/metrics/blast_radius.rs`**             | **100.00%** (4/4)       | 100.00% (77/77)            | 100.00% (118/118)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/metrics/package_topology.rs`**         | **100.00%** (13/13)     | 100.00% (191/191)          | 100.00% (341/341)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/metrics/sloc.rs`**                     | **100.00%** (13/13)     | 92.37% (327/354)           | 90.61% (463/511)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/parsers/parallel_engine.rs`**          | **100.00%** (7/7)       | 100.00% (67/67)            | 100.00% (98/98)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/parsers/rust_syn.rs`**                 | **100.00%** (13/13)     | 98.75% (158/160)           | 99.38% (321/323)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/parsers/vue_sfc.rs`**                  | **100.00%** (14/14)     | 91.58% (174/190)           | 96.72% (383/396)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/reporters/console.rs`**                | **100.00%** (6/6)       | 97.87% (92/94)             | 97.58% (161/165)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/reporters/json.rs`**                   | **100.00%** (7/7)       | 98.41% (62/63)             | 99.19% (123/124)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/reporters/sarif.rs`**                  | **100.00%** (8/8)       | 98.90% (90/91)             | 99.28% (137/138)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/reporters/tree_formatter.rs`**         | **100.00%** (7/7)       | 99.54% (215/216)           | 98.47% (258/262)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/scanner/walkdir_scanner.rs`**          | **100.00%** (9/9)       | 91.46% (75/82)             | 95.14% (137/144)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/storage/baseline_file.rs`**            | **100.00%** (8/8)       | 100.00% (36/36)            | 100.00% (76/76)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/storage/file_key.rs`**                 | **100.00%** (19/19)     | 99.15% (116/117)           | 99.15% (234/236)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/storage/keyring_key.rs`**              | **100.00%** (7/7)       | 94.20% (65/69)             | 92.50% (111/120)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/storage/mock_key.rs`**                 | **100.00%** (4/4)       | 100.00% (15/15)            | 100.00% (24/24)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/storage/rules_json.rs`**               | **100.00%** (17/17)     | 99.61% (254/255)           | 99.72% (361/362)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/taint/graph.rs`**                      | **100.00%** (10/10)     | 98.78% (162/164)           | 98.25% (224/228)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/taint/sanitizers.rs`**                 | **100.00%** (3/3)       | 100.00% (37/37)            | 100.00% (74/74)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/taint/sinks.rs`**                      | **100.00%** (2/2)       | 94.44% (17/18)             | 97.44% (38/39)             | ✅ Verified       |
-| **`cerberus-infrastructure/src/taint/sources.rs`**                    | **100.00%** (2/2)       | 100.00% (19/19)            | 100.00% (33/33)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/vector/cache.rs`**                     | **100.00%** (7/7)       | 100.00% (65/65)            | 99.11% (111/112)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/vector/dbscan.rs`**                    | **100.00%** (12/12)     | 97.28% (143/147)           | 96.92% (252/260)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/vector/model_downloader.rs`**          | **100.00%** (6/6)       | 96.83% (61/63)             | 90.71% (127/140)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/vector/onnx_embedder.rs`**             | **100.00%** (15/15)     | 92.81% (129/139)           | 93.02% (240/258)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/vector/semantic_embedder.rs`**         | **100.00%** (11/11)     | 100.00% (75/75)            | 98.76% (159/161)           | ✅ Verified       |
-| **`cerberus-sfc/src/app_runner.rs`**                                  | **100.00%** (9/9)       | 95.81% (435/454)           | 95.46% (589/617)           | ✅ Verified       |
-| **`cerberus-sfc/src/cli.rs`**                                         | **100.00%** (3/3)       | 95.65% (22/23)             | 91.67% (22/24)             | ✅ Verified       |
-| **`cerberus-sfc/src/main.rs`**                                        | **100.00%** (1/1)       | 88.89% (8/9)               | 91.67% (11/12)             | ✅ Verified       |
-| **`cerberus-testability/src/application/analyze_ast.rs`**             | **100.00%** (5/5)       | 86.30% (63/73)             | 88.06% (118/134)           | ✅ Verified       |
-| **`cerberus-testability/src/application/calculate_score.rs`**         | **100.00%** (2/2)       | 95.65% (44/46)             | 91.03% (71/78)             | ✅ Verified       |
-| **`cerberus-testability/src/application/calibrate.rs`**               | **100.00%** (2/2)       | 100.00% (39/39)            | 100.00% (53/53)            | ✅ Verified       |
-| **`cerberus-testability/src/domain/archetype.rs`**                    | **100.00%** (11/11)     | 100.00% (91/91)            | 100.00% (118/118)          | ✅ Verified       |
-| **`cerberus-testability/src/domain/factor.rs`**                       | **100.00%** (6/6)       | 100.00% (81/81)            | 100.00% (82/82)            | ✅ Verified       |
-| **`cerberus-testability/src/domain/friction.rs`**                     | **100.00%** (2/2)       | 100.00% (26/26)            | 100.00% (38/38)            | ✅ Verified       |
-| **`cerberus-testability/src/domain/layer.rs`**                        | **100.00%** (4/4)       | 97.73% (86/88)             | 98.45% (127/129)           | ✅ Verified       |
-| **`cerberus-testability/src/domain/score.rs`**                        | **100.00%** (3/3)       | 100.00% (93/93)            | 100.00% (171/171)          | ✅ Verified       |
-| **`cerberus-testability/src/infrastructure/console_renderer.rs`**     | **100.00%** (2/2)       | 95.18% (79/83)             | 93.41% (156/167)           | ✅ Verified       |
-| **`cerberus-testability/src/infrastructure/frontend_visitor.rs`**     | **100.00%** (2/2)       | 89.47% (136/152)           | 88.28% (211/239)           | ✅ Verified       |
-| **`cerberus-testability/src/infrastructure/syn_visitor.rs`**          | **100.00%** (24/24)     | 92.29% (371/402)           | 92.84% (441/475)           | ✅ Verified       |
-| **🏆 TOTALS (Суммарно по всем 7 крейтам)**                            | **`100.00% (881/881)`** | **`97.03% (13629/14046)`** | **`97.24% (22925/23576)`** | **🥇 100% Green** |
+| Крейт / Исходный файл (`crates/`)                                     | Function Coverage         | Line Coverage              | Region Coverage            | Статус            |
+| --------------------------------------------------------------------- | ------------------------- | -------------------------- | -------------------------- | ----------------- |
+| **`cargo-cerberus/src/check_runner.rs`**                              | **100.00%** (16/16)       | 97.83% (723/739)           | 97.14% (1085/1117)         | ✅ Verified       |
+| **`cargo-cerberus/src/cli.rs`**                                       | **100.00%** (4/4)         | 97.62% (41/42)             | 95.12% (39/41)             | ✅ Verified       |
+| **`cargo-cerberus/src/commands.rs`**                                  | **100.00%** (13/13)       | 90.58% (279/308)           | 89.49% (477/533)           | ✅ Verified       |
+| **`cargo-cerberus/src/ledger_commands.rs`**                           | **100.00%** (3/3)         | 94.19% (81/86)             | 96.83% (122/126)           | ✅ Verified       |
+| **`cargo-cerberus/src/lib.rs`**                                       | **100.00%** (1/1)         | 100.00% (20/20)            | 100.00% (31/31)            | ✅ Verified       |
+| **`cargo-cerberus/src/main.rs`**                                      | **100.00%** (1/1)         | 88.89% (8/9)               | 91.67% (11/12)             | ✅ Verified       |
+| **`cargo-cerberus/src/model_commands.rs`**                            | **100.00%** (7/7)         | 89.47% (136/152)           | 93.19% (219/235)           | ✅ Verified       |
+| **`cerberus-application/src/download_model.rs`**                      | **100.00%** (6/6)         | 100.00% (85/85)            | 100.00% (159/159)          | ✅ Verified       |
+| **`cerberus-application/src/explain_clusters.rs`**                    | **100.00%** (7/7)         | 99.09% (109/110)           | 98.77% (161/163)           | ✅ Verified       |
+| **`cerberus-application/src/explain_rule.rs`**                        | **100.00%** (15/15)       | 98.10% (103/105)           | 97.52% (197/202)           | ✅ Verified       |
+| **`cerberus-application/src/re_sign_all.rs`**                         | **100.00%** (9/9)         | 99.31% (144/145)           | 99.10% (221/223)           | ✅ Verified       |
+| **`cerberus-application/src/reconcile_baseline.rs`**                  | **100.00%** (5/5)         | 100.00% (28/28)            | 100.00% (47/47)            | ✅ Verified       |
+| **`cerberus-application/src/render_tree.rs`**                         | **100.00%** (7/7)         | 98.41% (124/126)           | 97.82% (269/275)           | ✅ Verified       |
+| **`cerberus-application/src/scaffold.rs`**                            | **100.00%** (12/12)       | 99.64% (274/275)           | 99.76% (423/424)           | ✅ Verified       |
+| **`cerberus-application/src/scan_workspace.rs`**                      | **100.00%** (4/4)         | 100.00% (53/53)            | 100.00% (72/72)            | ✅ Verified       |
+| **`cerberus-application/src/sign_suppression.rs`**                    | **100.00%** (5/5)         | 96.43% (54/56)             | 96.91% (94/97)             | ✅ Verified       |
+| **`cerberus-application/src/tree_hierarchy.rs`**                      | **100.00%** (2/2)         | 95.00% (38/40)             | 97.30% (72/74)             | ✅ Verified       |
+| **`cerberus-application/src/tree_metrics.rs`**                        | **100.00%** (7/7)         | 94.12% (128/136)           | 96.27% (232/241)           | ✅ Verified       |
+| **`cerberus-domain/src/bevy_rules.rs`**                               | **100.00%** (3/3)         | 100.00% (362/362)          | 100.00% (320/320)          | ✅ Verified       |
+| **`cerberus-domain/src/catalog.rs`**                                  | **100.00%** (14/14)       | 100.00% (310/310)          | 100.00% (502/502)          | ✅ Verified       |
+| **`cerberus-domain/src/layer.rs`**                                    | **100.00%** (13/13)       | 96.96% (479/494)           | 98.72% (2087/2114)         | ✅ Verified       |
+| **`cerberus-domain/src/metrics.rs`**                                  | **100.00%** (6/6)         | 100.00% (156/156)          | 100.00% (183/183)          | ✅ Verified       |
+| **`cerberus-domain/src/path_utils.rs`**                               | **100.00%** (9/9)         | 100.00% (100/100)          | 100.00% (204/204)          | ✅ Verified       |
+| **`cerberus-domain/src/preset.rs`**                                   | **100.00%** (4/4)         | 100.00% (23/23)            | 100.00% (49/49)            | ✅ Verified       |
+| **`cerberus-domain/src/registry.rs`**                                 | **100.00%** (6/6)         | 100.00% (207/207)          | 100.00% (699/699)          | ✅ Verified       |
+| **`cerberus-domain/src/rules.rs`**                                    | **100.00%** (33/33)       | 100.00% (358/358)          | 100.00% (581/581)          | ✅ Verified       |
+| **`cerberus-domain/src/sla.rs`**                                      | **100.00%** (6/6)         | 100.00% (29/29)            | 100.00% (29/29)            | ✅ Verified       |
+| **`cerberus-domain/src/suppression.rs`**                              | **100.00%** (3/3)         | 100.00% (41/41)            | 100.00% (61/61)            | ✅ Verified       |
+| **`cerberus-domain/src/surql_rules.rs`**                              | **100.00%** (2/2)         | 100.00% (203/203)          | 100.00% (205/205)          | ✅ Verified       |
+| **`cerberus-domain/src/traits.rs`**                                   | **100.00%** (3/3)         | 100.00% (24/24)            | 100.00% (32/32)            | ✅ Verified       |
+| **`cerberus-domain/src/tree.rs`**                                     | **100.00%** (7/7)         | 100.00% (159/159)          | 100.00% (140/140)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/ai_defense.rs`**                   | **100.00%** (16/16)       | 96.62% (286/296)           | 96.38% (479/497)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/ai_slop.rs`**                      | **100.00%** (10/10)       | 99.20% (124/125)           | 98.88% (176/178)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/async_rules.rs`**                  | **100.00%** (11/11)       | 98.55% (136/138)           | 98.62% (215/218)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/api_checker.rs`**             | **100.00%** (18/18)       | 99.33% (296/298)           | 99.56% (454/456)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/async_checker.rs`**           | **100.00%** (27/27)       | 99.75% (393/394)           | 99.27% (545/549)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/context.rs`**                 | **100.00%** (13/13)       | 94.30% (149/158)           | 93.44% (228/244)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/ecs_checker.rs`**             | **100.00%** (22/22)       | 99.01% (501/506)           | 99.23% (645/650)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/helpers.rs`**                 | **100.00%** (23/23)       | 94.78% (236/249)           | 92.66% (480/518)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/mod.rs`**                     | **100.00%** (1/1)         | 100.00% (24/24)            | 100.00% (68/68)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/perf_checker.rs`**            | **100.00%** (21/21)       | 98.28% (399/406)           | 97.58% (564/578)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/query_checker.rs`**           | **100.00%** (16/16)       | 96.94% (285/294)           | 97.17% (412/424)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/bevy/sched_checker.rs`**           | **100.00%** (21/21)       | 98.96% (380/384)           | 98.88% (532/538)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/capabilities.rs`**                 | **100.00%** (4/4)         | 98.48% (65/66)             | 96.30% (104/108)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/concurrency_rules.rs`**            | **100.00%** (15/15)       | 96.62% (200/207)           | 97.44% (305/313)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/error_rules.rs`**                  | **100.00%** (24/24)       | 98.83% (509/515)           | 98.85% (604/611)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/imports.rs`**                      | **100.00%** (40/40)       | 95.29% (647/679)           | 97.21% (1079/1110)         | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/macros.rs`**                       | **100.00%** (7/7)         | 100.00% (48/48)            | 98.55% (68/69)             | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/panic_vector.rs`**                 | **100.00%** (10/10)       | 97.01% (162/167)           | 96.89% (218/225)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/rust_perf.rs`**                    | **100.00%** (12/12)       | 98.99% (197/199)           | 97.47% (270/277)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/testability.rs`**                  | **100.00%** (13/13)       | 99.07% (212/214)           | 99.15% (352/355)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/visitor.rs`**                      | **100.00%** (5/5)         | 98.08% (51/52)             | 95.80% (114/119)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/css_perf_rules.rs`**          | **100.00%** (12/12)       | 99.12% (224/226)           | 99.02% (304/307)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/css_rules.rs`**               | **100.00%** (23/23)       | 94.66% (372/393)           | 92.94% (540/581)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/design_system_rules.rs`**     | **100.00%** (7/7)         | 100.00% (137/137)          | 100.00% (193/193)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/fsd_rules.rs`**               | **100.00%** (23/23)       | 96.49% (440/456)           | 97.06% (660/680)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/lifecycle_rules.rs`**         | **100.00%** (4/4)         | 100.00% (83/83)            | 100.00% (168/168)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/mod.rs`**                     | **100.00%** (4/4)         | 100.00% (43/43)            | 100.00% (117/117)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/perf_rules.rs`**              | **100.00%** (17/17)       | 97.20% (313/322)           | 96.33% (472/490)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/sfc_parser.rs`**              | **100.00%** (18/18)       | 99.01% (100/101)           | 98.94% (186/188)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/vue_rules.rs`**               | **100.00%** (28/28)       | 98.98% (487/492)           | 98.94% (746/754)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/hooks/git_hooks.rs`**                  | **100.00%** (8/8)         | 100.00% (77/77)            | 100.00% (146/146)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/manifest/cargo_manifest.rs`**          | **100.00%** (11/11)       | 90.50% (343/379)           | 90.14% (439/487)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/manifest/transitive_capabilities.rs`** | **100.00%** (10/10)       | 99.48% (190/191)           | 99.65% (281/282)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/metrics/ast_complexity.rs`**           | **100.00%** (24/24)       | 100.00% (333/333)          | 99.55% (444/446)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/metrics/blast_radius.rs`**             | **100.00%** (4/4)         | 100.00% (77/77)            | 100.00% (118/118)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/metrics/package_topology.rs`**         | **100.00%** (13/13)       | 100.00% (191/191)          | 100.00% (341/341)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/metrics/sloc.rs`**                     | **100.00%** (13/13)       | 92.37% (327/354)           | 90.61% (463/511)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/parallel_engine.rs`**          | **100.00%** (7/7)         | 100.00% (67/67)            | 100.00% (98/98)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/rust_syn.rs`**                 | **100.00%** (14/14)       | 97.96% (192/196)           | 98.95% (378/382)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/vue_sfc.rs`**                  | **100.00%** (14/14)       | 91.58% (174/190)           | 96.72% (383/396)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/reporters/console.rs`**                | **100.00%** (6/6)         | 97.87% (92/94)             | 97.58% (161/165)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/reporters/json.rs`**                   | **100.00%** (7/7)         | 98.41% (62/63)             | 99.19% (123/124)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/reporters/sarif.rs`**                  | **100.00%** (8/8)         | 98.90% (90/91)             | 99.28% (137/138)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/reporters/tree_formatter.rs`**         | **100.00%** (7/7)         | 99.54% (215/216)           | 98.47% (258/262)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/scanner/walkdir_scanner.rs`**          | **100.00%** (9/9)         | 91.46% (75/82)             | 95.14% (137/144)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/storage/baseline_file.rs`**            | **100.00%** (8/8)         | 100.00% (36/36)            | 100.00% (76/76)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/storage/file_key.rs`**                 | **100.00%** (19/19)       | 99.15% (116/117)           | 99.15% (234/236)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/storage/keyring_key.rs`**              | **100.00%** (7/7)         | 94.20% (65/69)             | 92.50% (111/120)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/storage/mock_key.rs`**                 | **100.00%** (4/4)         | 100.00% (15/15)            | 100.00% (24/24)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/storage/rules_json.rs`**               | **100.00%** (17/17)       | 99.61% (254/255)           | 99.72% (361/362)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/taint/graph.rs`**                      | **100.00%** (10/10)       | 98.78% (162/164)           | 98.25% (224/228)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/taint/sanitizers.rs`**                 | **100.00%** (3/3)         | 100.00% (37/37)            | 100.00% (74/74)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/taint/sinks.rs`**                      | **100.00%** (2/2)         | 94.44% (17/18)             | 97.44% (38/39)             | ✅ Verified       |
+| **`cerberus-infrastructure/src/taint/sources.rs`**                    | **100.00%** (2/2)         | 100.00% (19/19)            | 100.00% (33/33)            | ✅ Verified       |
+| **`cerberus-infrastructure/src/vector/cache.rs`**                     | **100.00%** (7/7)         | 100.00% (65/65)            | 99.11% (111/112)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/vector/dbscan.rs`**                    | **100.00%** (12/12)       | 97.28% (143/147)           | 96.92% (252/260)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/vector/model_downloader.rs`**          | **100.00%** (6/6)         | 96.83% (61/63)             | 90.71% (127/140)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/vector/onnx_embedder.rs`**             | **100.00%** (15/15)       | 92.81% (129/139)           | 93.02% (240/258)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/vector/semantic_embedder.rs`**         | **100.00%** (11/11)       | 100.00% (75/75)            | 98.76% (159/161)           | ✅ Verified       |
+| **`cerberus-sfc/src/app_runner.rs`**                                  | **100.00%** (9/9)         | 95.81% (435/454)           | 95.46% (589/617)           | ✅ Verified       |
+| **`cerberus-sfc/src/cli.rs`**                                         | **100.00%** (3/3)         | 95.65% (22/23)             | 91.67% (22/24)             | ✅ Verified       |
+| **`cerberus-sfc/src/main.rs`**                                        | **100.00%** (1/1)         | 88.89% (8/9)               | 91.67% (11/12)             | ✅ Verified       |
+| **`cerberus-surql/src/ast/ddl_parser.rs`**                            | **100.00%** (29/29)       | 96.14% (199/207)           | 98.21% (329/335)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/dml_parser.rs`**                            | **100.00%** (5/5)         | 100.00% (17/17)            | 100.00% (26/26)            | ✅ Verified       |
+| **`cerberus-surql/src/ast/document.rs`**                              | **100.00%** (6/6)         | 98.28% (57/58)             | 98.95% (94/95)             | ✅ Verified       |
+| **`cerberus-surql/src/ast/lexer.rs`**                                 | **100.00%** (6/6)         | 97.10% (134/138)           | 97.37% (185/190)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/mutation_parser.rs`**                       | **100.00%** (23/23)       | 97.20% (139/143)           | 97.38% (223/229)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/node.rs`**                                  | **100.00%** (3/3)         | 100.00% (121/121)          | 100.00% (150/150)          | ✅ Verified       |
+| **`cerberus-surql/src/ast/parser.rs`**                                | **100.00%** (9/9)         | 91.16% (134/147)           | 92.40% (231/250)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/query_parser.rs`**                          | **100.00%** (17/17)       | 99.03% (102/103)           | 99.46% (184/185)           | ✅ Verified       |
+| **`cerberus-surql/src/bridge/rust_scanner.rs`**                       | **100.00%** (16/16)       | 91.04% (183/201)           | 91.73% (255/278)           | ✅ Verified       |
+| **`cerberus-surql/src/config.rs`**                                    | **100.00%** (10/10)       | 100.00% (82/82)            | 100.00% (99/99)            | ✅ Verified       |
+| **`cerberus-surql/src/engine.rs`**                                    | **100.00%** (12/12)       | 100.00% (91/91)            | 100.00% (148/148)          | ✅ Verified       |
+| **`cerberus-surql/src/rules/ddl.rs`**                                 | **100.00%** (19/19)       | 97.95% (286/292)           | 98.16% (374/381)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/dml.rs`**                                 | **100.00%** (30/30)       | 94.88% (389/410)           | 96.73% (562/581)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/fts.rs`**                                 | **100.00%** (24/24)       | 96.46% (245/254)           | 97.70% (425/435)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/functions.rs`**                           | **100.00%** (8/8)         | 92.45% (98/106)            | 94.44% (153/162)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/mod.rs`**                                 | **100.00%** (4/4)         | 100.00% (84/84)            | 100.00% (125/125)          | ✅ Verified       |
+| **`cerberus-surql/src/rules/storage.rs`**                             | **100.00%** (19/19)       | 96.08% (196/204)           | 95.67% (309/323)           | ✅ Verified       |
+| **`cerberus-surql/src/schema/collector.rs`**                          | **100.00%** (5/5)         | 100.00% (101/101)          | 100.00% (136/136)          | ✅ Verified       |
+| **`cerberus-surql/src/schema/registry.rs`**                           | **100.00%** (11/11)       | 100.00% (81/81)            | 100.00% (141/141)          | ✅ Verified       |
+| **`cerberus-surql/src/schema/types.rs`**                              | **100.00%** (13/13)       | 100.00% (159/159)          | 100.00% (292/292)          | ✅ Verified       |
+| **`cerberus-testability/src/application/analyze_ast.rs`**             | **100.00%** (7/7)         | 91.84% (90/98)             | 92.47% (172/186)           | ✅ Verified       |
+| **`cerberus-testability/src/application/calculate_score.rs`**         | **100.00%** (2/2)         | 95.65% (44/46)             | 91.03% (71/78)             | ✅ Verified       |
+| **`cerberus-testability/src/application/calibrate.rs`**               | **100.00%** (2/2)         | 100.00% (39/39)            | 100.00% (53/53)            | ✅ Verified       |
+| **`cerberus-testability/src/domain/archetype.rs`**                    | **100.00%** (11/11)       | 100.00% (91/91)            | 100.00% (118/118)          | ✅ Verified       |
+| **`cerberus-testability/src/domain/factor.rs`**                       | **100.00%** (8/8)         | 100.00% (116/116)          | 100.00% (140/140)          | ✅ Verified       |
+| **`cerberus-testability/src/domain/friction.rs`**                     | **100.00%** (5/5)         | 100.00% (41/41)            | 100.00% (64/64)            | ✅ Verified       |
+| **`cerberus-testability/src/domain/layer.rs`**                        | **100.00%** (4/4)         | 97.73% (86/88)             | 98.45% (127/129)           | ✅ Verified       |
+| **`cerberus-testability/src/domain/score.rs`**                        | **100.00%** (7/7)         | 100.00% (156/156)          | 100.00% (273/273)          | ✅ Verified       |
+| **`cerberus-testability/src/infrastructure/console_renderer.rs`**     | **100.00%** (2/2)         | 95.18% (79/83)             | 93.41% (156/167)           | ✅ Verified       |
+| **`cerberus-testability/src/infrastructure/frontend_visitor.rs`**     | **100.00%** (2/2)         | 98.25% (168/171)           | 96.75% (238/246)           | ✅ Verified       |
+| **`cerberus-testability/src/infrastructure/syn_visitor.rs`**          | **100.00%** (24/24)       | 92.29% (371/402)           | 92.84% (441/475)           | ✅ Verified       |
+| **🏆 TOTALS (Суммарно по всем 8 крейтам)**                            | **`100.00% (1332/1332)`** | **`97.33% (20721/21289)`** | **`97.44% (33208/34080)`** | **🥇 100% Green** |

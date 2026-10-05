@@ -7,15 +7,19 @@
 
 ## 1. 🚀 CLI CHEATSHEET & COMMAND REFERENCE
 
-Cerberus provides unified CLI tools for Rust backend (`cargo-cerberus`) and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
+Cerberus provides unified CLI tools for Rust backend / Bevy ECS (`cargo-cerberus`), SurrealDB v3.2+ (`cerberus-surql`), and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
 
-### 🦀 Rust & Fullstack Backend (`cargo-cerberus`)
+### 🦀 Rust, SurrealDB & Fullstack Backend (`cargo-cerberus`)
 
 ```bash
-# 1. Structural Verification & Linting
-cargo cerberus check                              # Run all architectural checks
-cargo cerberus check --layer-matrix               # Enforce layer matrix boundaries
+# 1. Structural Verification & Static Linting
+cargo cerberus check                              # Run all architectural checks across workspace
+cargo cerberus check --ci                         # CI mode: strict exit code 1 on any [DENY] violation
+cargo cerberus check --surql-only                 # Scan strictly with SurrealDB v3.2+ rules (SURQL-001..026)
+cargo cerberus check --bevy-only                  # Scan strictly with Bevy-specific ECS & perf rules
+cargo cerberus check --no-bevy                    # Disable Bevy-specific rules for pure enterprise libraries
 cargo cerberus check --json                       # Output violations as structured JSON
+cargo cerberus check --sarif ./reports/audit.sarif # Export SARIF for GitHub Code Scanning / IDEs
 cargo cerberus check --baseline cerberus-baseline.json # Filter against grandfathered baseline
 
 # 2. Workspace Health & Architectural Tree
@@ -25,19 +29,21 @@ cargo cerberus tree --save-json ./reports/tree.json # Save tree report to file
 cargo cerberus tree --output ./reports/tree.txt   # Save ASCII tree to text file
 
 # 3. Offline Rule Catalog & Documentation
-cargo cerberus rule list                          # List all registered rules
+cargo cerberus rule list                          # List all registered rules (118 rules across 13 categories)
 cargo cerberus rule explain ARCH-001              # Display detailed card, bad/good code, remediation
+cargo cerberus rule explain SURQL-003             # Inspect SurrealDB 100% Parameterization rule card
+cargo cerberus rule explain BEVY-PERF-ASSET-001   # Inspect Bevy asset cache rule card
 cargo cerberus rule explain VUE-007 --markdown    # Output explain card as Markdown
 cargo cerberus rule explain CSS-001 --json        # Output explain card as JSON
 
 # 4. Realistic Testability Index (TI)
-cargo cerberus testability                            # Calculate TI score across workspace
-cargo cerberus testability --threshold 85             # Enforce minimum score threshold
-cargo cerberus testability --json report.json         # Export TI analysis to JSON
-cargo cerberus testability --calibrate               # Run synthetic calibration suite
+cargo cerberus testability calculate              # Calculate TI score across workspace
+cargo cerberus testability calculate --strict --min-score 85 # Enforce minimum 85% SLA in CI
+cargo cerberus testability explain src/domain/user.rs        # Inspect archetype breakdown for file
+cargo cerberus testability baseline capture       # Capture current TI scores to baseline
 
 # 5. Cryptographic Ledger & Suppressions
-cargo cerberus ledger sign --rule ARCH-001 --file src/legacy.rs --reason "Planned refactoring" # Sign suppression with HMAC
+cargo cerberus ledger sign --rule ARCH-001 --file src/legacy.rs --reason "Planned refactoring" # Sign suppression with HMAC-SHA256
 cargo cerberus ledger verify                      # Verify all suppression signatures against secret key
 cargo cerberus ledger re-sign-all                 # Batch resign valid suppressions
 
@@ -61,7 +67,7 @@ npx cerberus-sfc check --baseline cerberus-baseline.json
 
 # 2. Frontend Offline Rule Explain
 npx cerberus-sfc rule list                        # List all frontend-specific rules
-npx cerberus-sfc rule explain VUE-007             # Explain Vue 3 shallowRef vs reactive invariant
+npx cerberus-sfc rule explain VUE-007             # Explain Vue 3 reactivity destructuring invariant
 npx cerberus-sfc rule explain CSS-001             # Explain design token hardcode restriction
 
 # 3. Frontend Project Initialization
@@ -73,7 +79,7 @@ npx cerberus-sfc init --adopt                     # Adopt existing codebase & ca
 
 ## 2. 🏛️ ARCHITECTURAL TOPOLOGY MATRIX (`cerberus.json`)
 
-Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Layered, CQRS, or Microservices, you define your layers in `cerberus.json`:
+Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Layered, CQRS, or Bevy ECS, you define your layers in `cerberus.json`:
 
 ```json
 {
@@ -88,7 +94,7 @@ Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Laye
       "ports": {
         "allowed_deps": ["domain"],
         "forbidden_external": ["tauri", "tokio"],
-        "description": "Abstract repository and driver traits"
+        "description": "Abstract repository traits and port interfaces"
       },
       "application": {
         "allowed_deps": ["domain", "ports"],
@@ -97,19 +103,49 @@ Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Laye
       },
       "infrastructure": {
         "allowed_deps": ["domain", "ports"],
-        "description": "Database adapters, external APIs, filesystem"
+        "description": "Database adapters (SurrealDB, SQLite, FS), external APIs"
       },
       "adapters_tauri": {
         "allowed_deps": ["domain", "ports", "application"],
         "allowed_external": ["tauri"],
-        "description": "Tauri IPC presentation layer"
+        "description": "Tauri IPC presentation and bridge layer"
       }
+    },
+    "sla": {
+      "min_testability_score": 80.0,
+      "max_violations_warning": 5,
+      "max_violations_deny": 0
     }
+  },
+  "frontend": {
+    "ast": {
+      "enforce_shallow_ref": true,
+      "ban_deep_watcher": true,
+      "max_dom_nodes_threshold": 50,
+      "enforce_raii_cleanup": true
+    },
+    "fsd": {
+      "enabled": true,
+      "hierarchy": ["app", "pages", "widgets", "features", "entities", "shared"]
+    },
+    "css": {
+      "ban_hex_colors": true,
+      "ban_raw_rgb": true,
+      "ban_named_colors": true,
+      "enforce_design_tokens": true
+    }
+  },
+  "limits": {
+    "max_file_loc": 500,
+    "max_fn_loc": 50,
+    "max_cyclomatic_complexity": 15,
+    "max_cognitive_complexity": 15,
+    "max_fn_params": 5
   }
 }
 ```
 
-Assigning crates to layers in `Cargo.toml`:
+Assigning crates or modules to layers in `Cargo.toml`:
 ```toml
 [package.metadata.cerberus]
 layer = "domain"
@@ -117,20 +153,109 @@ layer = "domain"
 
 ---
 
-## 3. 🧩 FRONTEND AST & SCOPED CSS RULES
+## 3. 🗄️ SURREALDB v3.2+ INVARIANTS (`cerberus-surql`: `SURQL-001..026`)
 
-Frontend rules inspect Vue SFC AST and Scoped CSS without arbitrary line counting heuristics:
+Cerberus provides 26 specialized AST rules for SurrealDB v3.2+ schema definitions (`.surql`) and embedded Rust queries:
 
-- **`VUE-007` (Deep Reactivity Trap)**: Heavy data structures (AST, large lists, tables) must use `shallowRef` + `triggerRef` instead of `ref()` / `reactive()`.
-- **`VUE-008` (Watcher Cascade)**: Banned uncontrolled `watch(..., { deep: true })` causing re-render storms; use shallow watchers `{ deep: 1 }` or scalar getters.
-- **`PERF-001` (DOM Flooding)**: Lists $> 50$ items must be virtualized or bounded.
-- **`FE-RAII-001` (Uncleaned IPC/Timers)**: Tauri IPC event listeners and intervals must be symmetrically cleaned up in `onUnmounted`.
-- **`FSD-001` (Feature-Sliced Design Hierarchy)**: Imports must strictly flow downwards (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
-- **`CSS-001` (CSS Hardcode Hunter)**: Direct Hex (`#ffffff`), RGB/RGBA, and named HTML colors are prohibited. Use design tokens: `var(--color-text-primary)`, `var(--glass-border)`.
+### 3.1. DDL & Schema Hygiene (`SURQL-001..007`)
+- **`SURQL-001` [🛑 Deny] — Schemaless Table Ban**: Every `DEFINE TABLE` must specify `TYPE NORMAL SCHEMAFULL` or `TYPE RELATION`. `SCHEMALESS` is forbidden.
+- **`SURQL-002` [🛑 Deny] — Idempotent DDL Invariant**: All DDL statements (`DEFINE TABLE/FIELD/INDEX/EVENT/ANALYZER`) must include `OVERWRITE`.
+- **`SURQL-003` [🛑 Deny] — Missing Field Type Assertion**: Every `DEFINE FIELD` must have an explicit `TYPE <datatype>` declaration.
+- **`SURQL-004` [⚠️ Warn] — Unindexed Foreign Key Reference**: Foreign key fields (`*_id`, `record<...>`, `project_id`) must have a matching `DEFINE INDEX ... FIELDS`.
+- **`SURQL-005` [🛑 Deny] — Raw Dynamic Flexible Field Ban**: Flexible / dynamic schema types (`FLEXIBLE`) are restricted exclusively to `attributes` and `embeddings`.
+- **`SURQL-006` [⚠️ Warn] — Missing Read-Only System Field Protection**: Internal metadata fields (`created_at`, `version`) must specify `READONLY`.
+- **`SURQL-007` [🛑 Deny] — Unconstrained Text Field**: Open `TYPE string` without length validation or regex assertion is forbidden for sensitive fields.
+
+### 3.2. Query & Parameterization Safety (`SURQL-008..014`)
+- **`SURQL-008` [🛑 Deny] — 100% Parameterization Invariant**: SQL string formatting/concatenation (`format!("SELECT ... {}", var)`) is forbidden. Use `.bind()`.
+- **`SURQL-009` [🛑 Deny] — Unbounded SELECT Query (`SELECT *`)**: Top-level `SELECT *` without explicit `LIMIT` or `WHERE` clause is forbidden on large tables.
+- **`SURQL-010` [⚠️ Warn] — Missing WHERE/LIMIT Clause**: Broad table scans without filter predicates are flagged.
+- **`SURQL-011` [🛑 Deny] — Record ID String Parsing in Query**: Manual string manipulation of Record IDs (`"entity:" + id`) is forbidden; use `RecordId::from_table_key()`.
+- **`SURQL-012` [⚠️ Warn] — Non-Idempotent UPSERT/MERGE**: Data mutation queries without conflict resolution strategies.
+- **`SURQL-013` [🛑 Deny] — Unescaped Complex Identifier**: Schema identifiers containing special symbols without proper escaping.
+- **`SURQL-014` [⚠️ Warn] — Subquery Inefficient IN Clause**: Using unindexed nested subqueries inside `WHERE x IN (...)`.
+
+### 3.3. Full-Text Search, Analyzers & HNSW Vector Indexing (`SURQL-015..020`)
+- **`SURQL-015` [🛑 Deny] — Missing Tokenizer Analyzer Definition**: Full-text `SEARCH` indexes must declare a valid, existing `ANALYZER` with tokenizers and filters.
+- **`SURQL-016` [⚠️ Warn] — Non-Standard BM25 Tokenizer Pipeline**: Text analyzers should include standard lowercase, stemmer, and edge n-gram filters.
+- **`SURQL-017` [🛑 Deny] — Unindexed Fulltext Search Operator (`@@`)**: Using `@@` or `MATCHES` without a corresponding `SEARCH ANALYZER` index.
+- **`SURQL-018` [🛑 Deny] — Vector Bloat in Snapshot / Revision Tables**: Embedding vectors (`embeddings.*`, `array<float>`) are strictly forbidden in historical snapshot tables.
+- **`SURQL-019` [🛑 Deny] — Invalid HNSW Vector Distance Metric**: `MTREE` / `HNSW` vector indexes must explicitly define distance (`COSINE`, `EUCLIDEAN`, `MANHATTAN`) and dimension.
+- **`SURQL-020` [⚠️ Warn] — Missing Vector Index Dimension Specifier**: Vector dimension must match the embedded model (e.g. 384 or 768).
+
+### 3.4. Events, Cascades, Transactions & Atomic Functions (`SURQL-021..026`)
+- **`SURQL-021` [⚠️ Warn] — Recursive Cascading DELETE Event Loop**: DDL event listeners triggering cascading deletes must have cycle-breaking conditions.
+- **`SURQL-022` [🛑 Deny] — Long-Running Interactive Transaction Ban**: Long multi-statement transactions in web request handlers without timeout limits.
+- **`SURQL-023` [🛑 Deny] — Non-Atomic Stored Function Definition**: Complex graph and RAG traversals must be encapsulated in stored functions (`DEFINE FUNCTION fn::*`).
+- **`SURQL-024` [⚠️ Warn] — Missing Schema Version Migration Header**: SurQL migration files must specify explicit version metadata headers.
+- **`SURQL-025` [🛑 Deny] — Deprecated SurrealQL v1/v2 Syntax**: Obsolete syntax constructs (`->edge->`, legacy permissions) must be migrated to SurrealDB v3.2+.
+- **`SURQL-026` [🛑 Deny] — Leaking SurrealDB Types into Domain**: Direct imports of `surrealdb::sql::Thing` or `surrealdb::Value` into domain/application layers.
 
 ---
 
-## 4. 📊 REALISTIC TESTABILITY INDEX (TI)
+## 4. 🎮 BEVY ECS & GAME PERFORMANCE INVARIANTS
+
+Cerberus includes 42 dedicated rules for Bevy ECS (0.18.1+):
+
+- **API Migration & Modernization (`BEVY-API-*`)**:
+  - `BEVY-API-001` [🛑 Deny]: Deprecated `add_system()` (use `add_systems(Update, ...)`).
+  - `BEVY-API-002` [🛑 Deny]: Deprecated `add_startup_system()` (use `add_systems(Startup, ...)`).
+  - `BEVY-API-003` [🛑 Deny]: Deprecated `EventWriter::send` (use `.write()`).
+  - `BEVY-API-004` [⚠️ Warn]: Deprecated `insert_bundle()` (pass tuples to `spawn()`).
+  - `BEVY-API-005` [🛑 Deny]: Deprecated `add_plugin()` (use `add_plugins()`).
+- **Scheduler & Concurrency Safety (`BEVY-SCHED-*`)**:
+  - `BEVY-SCHED-001` [🛑 Deny]: `std::thread::sleep` inside Bevy systems blocks game loop.
+  - `BEVY-SCHED-002` [🛑 Deny]: `tokio::block_on` in Bevy system causes executor deadlock.
+  - `BEVY-SCHED-003` [⚠️ Warn]: Heavy compute in `Update` without `AsyncComputeTaskPool`.
+  - `BEVY-SCHED-004` [🛑 Deny]: `Runtime::new()` inside system body leaks runtimes per frame.
+- **ECS Design & Component Hygiene (`BEVY-ECS-*`)**:
+  - `BEVY-ECS-001` [⚠️ Warn]: God Component (> 7 fields). Decompose into cohesive components.
+  - `BEVY-ECS-002` [⚠️ Warn]: Entity-specific data in global `Resource`.
+  - `BEVY-ECS-003` [⚠️ Warn]: `HashMap<Entity, T>` in Resource instead of ECS Component.
+  - `BEVY-ECS-004` [🛑 Deny]: Business logic in Component `impl` (> 3 methods).
+  - `BEVY-ECS-005` [⚠️ Warn]: Clone epidemic in system (> 3 clones / high density).
+  - `BEVY-ECS-006` [⚠️ Warn]: Mutable query `Query<&mut T>` when read-only is sufficient.
+- **Query & Change Detection Invariants (`BEVY-QUERY-*`)**:
+  - `BEVY-QUERY-001` [🛑 Deny]: Panic-prone `query.single()` (use `get_single()`).
+  - `BEVY-QUERY-002` [⚠️ Warn]: Query used for singleton Resource access.
+  - `BEVY-QUERY-003` [⚠️ Warn]: `Changed<T>` filter on Resource in Query parameters.
+  - `BEVY-QUERY-004` [⚠️ Warn]: `EventReader<T>` declared but never read (`.read()`).
+  - `BEVY-QUERY-005` [🛑 Deny]: `ResMut<T>` + `Res<T>` same type conflict (Runtime panic B0001).
+- **Async & Task Pool Safety (`BEVY-ASYNC-*`)**:
+  - `BEVY-ASYNC-001` [🛑 Deny]: `.await` in synchronous Bevy system.
+  - `BEVY-ASYNC-002` [🛑 Deny]: Tokio Runtime created in system body.
+  - `BEVY-ASYNC-003` [⚠️ Warn]: Direct blocking DB/network call in system.
+  - `BEVY-ASYNC-004` [⚠️ Warn]: `Task::detach()` without cancel token.
+- **Asset, VRAM & Frame Budget Performance (`BEVY-PERF-*`)**:
+  - `BEVY-PERF-ASSET-001` [🛑 Deny]: `Assets<T>.add()` in `Update` system leaks GPU memory.
+  - `BEVY-PERF-ASSET-002` [⚠️ Warn]: Asset Handle not cached in Resource.
+  - `BEVY-PERF-ASSET-003` [🛑 Deny]: `asset_server.load()` in `Update` system triggers reload per frame.
+  - `BEVY-PERF-ASSET-004` [⚠️ Warn]: Unique material per entity prevents draw batching.
+  - `BEVY-PERF-ECS-001` [⚠️ Warn]: `insert()` / `remove()` in hot loops (archetype fragmentation).
+  - `BEVY-PERF-ECS-002` [⚠️ Warn]: Spawning entities in loop without `spawn_batch`.
+  - `BEVY-PERF-ECS-003` [🛑 Deny]: Non-recursive `despawn()` leaves orphaned child entities.
+  - `BEVY-PERF-CHANGE-001` [⚠️ Warn]: Unconditional `*Transform` mutation triggers `GlobalTransform` reflows.
+  - `BEVY-PERF-CHANGE-002` [⚠️ Warn]: Unconditional `&mut T` write triggers false `Changed<T>`.
+
+---
+
+## 5. 🧩 FRONTEND AST & SCOPED CSS RULES
+
+- **`VUE-001` (Zero Raw Logic in Script Setup)**: Raw business logic (declaring `function`, `ref()`, `reactive()`, `computed()`, `watch()`) in `<script setup>` is forbidden. Extract state and methods to companion `use<Component>.ts`.
+- **`VUE-002` (Missing Companion Composable)**: Non-trivial Vue component must have a companion `use<Component>.ts` hook alongside `<Component>.vue`.
+- **`VUE-003` (Types Inside SFC Ban)**: Declaring `interface` or `type` inside `.vue` is forbidden; move to `<Component>.model.ts`.
+- **`VUE-007` (Reactivity Destructuring Loss)**: Direct destructuring of `props` or Pinia store breaks reactive Proxy. Use `toRefs(props)`.
+- **`VUE-008` (Direct Props Mutation)**: Child components must not mutate props directly (`props.x = ...`, `props.list.push()`). Emit events to parent.
+- **`PERF-001` (Deep Reactivity on Large AST/Logs)**: Heavy data structures must use `shallowRef` + `triggerRef` or `markRaw`.
+- **`PERF-005` (Cascading Deep Watchers)**: Banned uncontrolled `watch(..., { deep: true })`; use shallow watchers `{ deep: 1 }`.
+- **`FE-RAII-001` (Uncleaned IPC/Timers)**: Tauri IPC event listeners and intervals must be symmetrically cleaned up in `onUnmounted`.
+- **`CSS-001` (CSS Hardcode Hunter)**: Direct Hex (`#ffffff`), RGB/RGBA, and named colors are prohibited. Use design tokens `var(--color-*)`.
+- **`CSS-PERF-003` (Layout Animation Ban)**: Animating `width`, `height`, `margin`, `box-shadow` is prohibited. Animate `transform` and `opacity`.
+- **`FSD-001` (FSD Hierarchy Inversion)**: Imports must strictly flow downwards (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
+
+---
+
+## 6. 📊 REALISTIC TESTABILITY INDEX (TI)
 
 Cerberus evaluates code testability using empirical AST archetypes:
 
@@ -141,7 +266,7 @@ Cerberus evaluates code testability using empirical AST archetypes:
 
 ---
 
-## 5. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
+## 7. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
 
 Legacy technical debt is isolated using cryptographic HMAC-SHA256 signatures:
 1. Violations can be grandfathered using `cerberus-baseline.json`.
@@ -150,7 +275,7 @@ Legacy technical debt is isolated using cryptographic HMAC-SHA256 signatures:
 
 ---
 
-## 6. 🧠 VECTOR INTELLIGENCE & NEURAL ARCHITECTURAL EXPLAINABILITY
+## 8. 🧠 VECTOR INTELLIGENCE & NEURAL ARCHITECTURAL EXPLAINABILITY
 
 Cerberus integrates an embedded local CodeBERTa ONNX neural engine to analyze architectural semantics without cloud dependencies:
 1. **Semantic Debt Clustering**: `cargo cerberus explain --clusters` embeds violations into a dense vector space and clusters related architectural debt (e.g. grouped state leaks, async deadlocks, god-class clusters).

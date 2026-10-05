@@ -323,7 +323,7 @@ mod tests {
             DEFINE TABLE logs;
             DEFINE FIELD name ON logs TYPE string;
             DEFINE TABLE OVERWRITE edge SCHEMAFULL TYPE RELATION IN users OUT users;
-            DEFINE FIELD OVERWRITE in ON edge TYPE option<record<users>>;
+            DEFINE FIELD OVERWRITE in ON edge TYPE record<users> | null;
             DEFINE FIELD OVERWRITE flag ON logs TYPE bool | null;
             DEFINE FIELD OVERWRITE tags ON logs TYPE array<string> | null;
             DEFINE FIELD OVERWRITE title ON logs TYPE option<string>;

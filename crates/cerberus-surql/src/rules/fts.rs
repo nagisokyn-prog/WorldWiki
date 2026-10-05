@@ -277,7 +277,7 @@ mod tests {
     fn test_fts_rules_unit() {
         let surql = r#"
             SELECT search::score(2) AS s FROM articles WHERE title @1@ 'rust';
-            SELECT * FROM articles WHERE body @@ 'rust';
+            SELECT * FROM articles WHERE content @@ 'rust';
             SELECT * FROM articles WHERE string::lowercase(title) CONTAINS 'rust';
             SELECT * FROM articles WHERE title @1@ $q OR body @2@ $q ORDER BY search::score(1) DESC, search::score(2) DESC;
         "#;
@@ -285,14 +285,24 @@ mod tests {
         let mut schema = SchemaRegistry::new();
         schema.indexes.insert(
             "articles".to_string(),
-            vec![crate::schema::registry::IndexMeta {
-                name: "idx_art_title".to_string(),
-                table_name: "articles".to_string(),
-                fields: vec!["title".to_string()],
-                is_fulltext: true,
-                analyzer: Some("ru_en".to_string()),
-                is_bm25: true,
-            }],
+            vec![
+                crate::schema::registry::IndexMeta {
+                    name: "idx_art_title".to_string(),
+                    table_name: "articles".to_string(),
+                    fields: vec!["title".to_string()],
+                    is_fulltext: true,
+                    analyzer: Some("ru_en".to_string()),
+                    is_bm25: true,
+                },
+                crate::schema::registry::IndexMeta {
+                    name: "idx_art_body".to_string(),
+                    table_name: "articles".to_string(),
+                    fields: vec!["body".to_string()],
+                    is_fulltext: true,
+                    analyzer: Some("ru_en".to_string()),
+                    is_bm25: true,
+                },
+            ],
         );
         let config = SurqlConfig::default();
 

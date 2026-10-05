@@ -7,15 +7,17 @@
 
 ## 1. 🚀 CLI CHEATSHEET & COMMAND REFERENCE
 
-Cerberus provides unified CLI tools for Rust backend / Bevy ECS (`cargo-cerberus`) and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
+Cerberus provides unified CLI tools for Rust backend / Bevy ECS (`cargo-cerberus`), SurrealDB v3.2+ (`cerberus-surql`), and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
 
-### 🦀 Rust & Fullstack Backend (`cargo-cerberus`)
+### 🦀 Rust, SurrealDB & Fullstack Backend (`cargo-cerberus`)
 
 ```bash
-# 1. Structural Verification & Linting
-cargo cerberus check                              # Run all architectural checks
+# 1. Structural Verification & Static Linting
+cargo cerberus check                              # Run all architectural checks across workspace
+cargo cerberus check --ci                         # CI mode: strict exit code 1 on any [DENY] violation
+cargo cerberus check --surql-only                 # Scan strictly with SurrealDB v3.2+ rules (SURQL-001..026)
 cargo cerberus check --bevy-only                  # Scan strictly with Bevy-specific ECS & perf rules
-cargo cerberus check --no-bevy                    # Disable Bevy-specific rules for pure libraries
+cargo cerberus check --no-bevy                    # Disable Bevy-specific rules for pure enterprise libraries
 cargo cerberus check --json                       # Output violations as structured JSON
 cargo cerberus check --sarif ./reports/audit.sarif # Export SARIF for GitHub Code Scanning / IDEs
 cargo cerberus check --baseline cerberus-baseline.json # Filter against grandfathered baseline
@@ -27,8 +29,9 @@ cargo cerberus tree --save-json ./reports/tree.json # Save tree report to file
 cargo cerberus tree --output ./reports/tree.txt   # Save ASCII tree to text file
 
 # 3. Offline Rule Catalog & Documentation
-cargo cerberus rule list                          # List all registered rules
+cargo cerberus rule list                          # List all registered rules (118 rules across 13 categories)
 cargo cerberus rule explain ARCH-001              # Display detailed card, bad/good code, remediation
+cargo cerberus rule explain SURQL-003             # Inspect SurrealDB 100% Parameterization rule card
 cargo cerberus rule explain BEVY-PERF-ASSET-001   # Inspect Bevy asset cache rule card
 cargo cerberus rule explain VUE-007 --markdown    # Output explain card as Markdown
 cargo cerberus rule explain CSS-001 --json        # Output explain card as JSON
@@ -40,12 +43,18 @@ cargo cerberus testability explain src/domain/user.rs        # Inspect archetype
 cargo cerberus testability baseline capture       # Capture current TI scores to baseline
 
 # 5. Cryptographic Ledger & Suppressions
-cargo cerberus ledger sign --rule ARCH-001 --file src/legacy.rs --reason "Planned refactoring" # Sign suppression with HMAC
+cargo cerberus ledger sign --rule ARCH-001 --file src/legacy.rs --reason "Planned refactoring" # Sign suppression with HMAC-SHA256
 cargo cerberus ledger verify                      # Verify all suppression signatures against secret key
 cargo cerberus ledger re-sign-all                 # Batch resign valid suppressions
 
 # 6. Baseline Reconcile & Ratchet
 cargo cerberus baseline reconcile                 # Automatically purge resolved violations from baseline
+
+# 7. Vector Intelligence & Neural Models (CodeBERTa ONNX)
+cargo cerberus model download                     # Download and cache CodeBERTa-small-v1 ONNX model & tokenizer
+cargo cerberus model status                       # Display neural model cache status and ONNX runtime availability
+cargo cerberus model clean                        # Purge cached local models
+cargo cerberus explain --clusters                 # Group codebase violations into semantic clusters via vector embeddings
 ```
 
 ### 💚 Frontend AST & Scoped CSS (`@worldwiki/cerberus-sfc`)
@@ -79,28 +88,59 @@ Cerberus is **topology-agnostic**. Whether your system is Hexagonal, Clean, Laye
     "layers": {
       "domain": {
         "allowed_deps": [],
-        "forbidden_external": ["reqwest", "tokio", "sqlx"],
-        "description": "Pure domain core: game state, components, affinity models, math"
+        "forbidden_external": ["reqwest", "tokio", "tauri", "sqlx", "surrealdb"],
+        "description": "Pure domain core with zero external IO/SDK dependencies"
       },
       "ports": {
         "allowed_deps": ["domain"],
-        "forbidden_external": ["tokio"],
+        "forbidden_external": ["tauri", "tokio"],
         "description": "Abstract repository traits and port interfaces"
       },
       "application": {
         "allowed_deps": ["domain", "ports"],
+        "forbidden_external": ["tauri", "surrealdb"],
         "description": "Use cases orchestrating domain entities and ports"
       },
       "infrastructure": {
         "allowed_deps": ["domain", "ports"],
-        "description": "Database adapters (SurrealKV), external APIs, filesystem"
+        "description": "Database adapters (SurrealDB, SQLite, FS), external APIs"
       },
-      "game_systems": {
+      "adapters_tauri": {
         "allowed_deps": ["domain", "ports", "application"],
-        "allowed_external": ["bevy", "bevy_egui", "surrealdb", "tokio", "rand", "noise"],
-        "description": "Bevy ECS presentation & simulation systems"
+        "allowed_external": ["tauri"],
+        "description": "Tauri IPC presentation and bridge layer"
       }
+    },
+    "sla": {
+      "min_testability_score": 80.0,
+      "max_violations_warning": 5,
+      "max_violations_deny": 0
     }
+  },
+  "frontend": {
+    "ast": {
+      "enforce_shallow_ref": true,
+      "ban_deep_watcher": true,
+      "max_dom_nodes_threshold": 50,
+      "enforce_raii_cleanup": true
+    },
+    "fsd": {
+      "enabled": true,
+      "hierarchy": ["app", "pages", "widgets", "features", "entities", "shared"]
+    },
+    "css": {
+      "ban_hex_colors": true,
+      "ban_raw_rgb": true,
+      "ban_named_colors": true,
+      "enforce_design_tokens": true
+    }
+  },
+  "limits": {
+    "max_file_loc": 500,
+    "max_fn_loc": 50,
+    "max_cyclomatic_complexity": 15,
+    "max_cognitive_complexity": 15,
+    "max_fn_params": 5
   }
 }
 ```
@@ -113,7 +153,47 @@ layer = "domain"
 
 ---
 
-## 3. 🎮 BEVY ECS & GAME PERFORMANCE INVARIANTS
+## 3. 🗄️ SURREALDB v3.2+ INVARIANTS (`cerberus-surql`: `SURQL-001..026`)
+
+Cerberus provides 26 specialized AST rules for SurrealDB v3.2+ schema definitions (`.surql`) and embedded Rust queries:
+
+### 3.1. DDL & Schema Hygiene (`SURQL-001..007`)
+- **`SURQL-001` [🛑 Deny] — Schemaless Table Ban**: Every `DEFINE TABLE` must specify `TYPE NORMAL SCHEMAFULL` or `TYPE RELATION`. `SCHEMALESS` is forbidden.
+- **`SURQL-002` [🛑 Deny] — Idempotent DDL Invariant**: All DDL statements (`DEFINE TABLE/FIELD/INDEX/EVENT/ANALYZER`) must include `OVERWRITE`.
+- **`SURQL-003` [🛑 Deny] — Missing Field Type Assertion**: Every `DEFINE FIELD` must have an explicit `TYPE <datatype>` declaration.
+- **`SURQL-004` [⚠️ Warn] — Unindexed Foreign Key Reference**: Foreign key fields (`*_id`, `record<...>`, `project_id`) must have a matching `DEFINE INDEX ... FIELDS`.
+- **`SURQL-005` [🛑 Deny] — Raw Dynamic Flexible Field Ban**: Flexible / dynamic schema types (`FLEXIBLE`) are restricted exclusively to `attributes` and `embeddings`.
+- **`SURQL-006` [⚠️ Warn] — Missing Read-Only System Field Protection**: Internal metadata fields (`created_at`, `version`) must specify `READONLY`.
+- **`SURQL-007` [🛑 Deny] — Unconstrained Text Field**: Open `TYPE string` without length validation or regex assertion is forbidden for sensitive fields.
+
+### 3.2. Query & Parameterization Safety (`SURQL-008..014`)
+- **`SURQL-008` [🛑 Deny] — 100% Parameterization Invariant**: SQL string formatting/concatenation (`format!("SELECT ... {}", var)`) is forbidden. Use `.bind()`.
+- **`SURQL-009` [🛑 Deny] — Unbounded SELECT Query (`SELECT *`)**: Top-level `SELECT *` without explicit `LIMIT` or `WHERE` clause is forbidden on large tables.
+- **`SURQL-010` [⚠️ Warn] — Missing WHERE/LIMIT Clause**: Broad table scans without filter predicates are flagged.
+- **`SURQL-011` [🛑 Deny] — Record ID String Parsing in Query**: Manual string manipulation of Record IDs (`"entity:" + id`) is forbidden; use `RecordId::from_table_key()`.
+- **`SURQL-012` [⚠️ Warn] — Non-Idempotent UPSERT/MERGE**: Data mutation queries without conflict resolution strategies.
+- **`SURQL-013` [🛑 Deny] — Unescaped Complex Identifier**: Schema identifiers containing special symbols without proper escaping.
+- **`SURQL-014` [⚠️ Warn] — Subquery Inefficient IN Clause**: Using unindexed nested subqueries inside `WHERE x IN (...)`.
+
+### 3.3. Full-Text Search, Analyzers & HNSW Vector Indexing (`SURQL-015..020`)
+- **`SURQL-015` [🛑 Deny] — Missing Tokenizer Analyzer Definition**: Full-text `SEARCH` indexes must declare a valid, existing `ANALYZER` with tokenizers and filters.
+- **`SURQL-016` [⚠️ Warn] — Non-Standard BM25 Tokenizer Pipeline**: Text analyzers should include standard lowercase, stemmer, and edge n-gram filters.
+- **`SURQL-017` [🛑 Deny] — Unindexed Fulltext Search Operator (`@@`)**: Using `@@` or `MATCHES` without a corresponding `SEARCH ANALYZER` index.
+- **`SURQL-018` [🛑 Deny] — Vector Bloat in Snapshot / Revision Tables**: Embedding vectors (`embeddings.*`, `array<float>`) are strictly forbidden in historical snapshot tables.
+- **`SURQL-019` [🛑 Deny] — Invalid HNSW Vector Distance Metric**: `MTREE` / `HNSW` vector indexes must explicitly define distance (`COSINE`, `EUCLIDEAN`, `MANHATTAN`) and dimension.
+- **`SURQL-020` [⚠️ Warn] — Missing Vector Index Dimension Specifier**: Vector dimension must match the embedded model (e.g. 384 or 768).
+
+### 3.4. Events, Cascades, Transactions & Atomic Functions (`SURQL-021..026`)
+- **`SURQL-021` [⚠️ Warn] — Recursive Cascading DELETE Event Loop**: DDL event listeners triggering cascading deletes must have cycle-breaking conditions.
+- **`SURQL-022` [🛑 Deny] — Long-Running Interactive Transaction Ban**: Long multi-statement transactions in web request handlers without timeout limits.
+- **`SURQL-023` [🛑 Deny] — Non-Atomic Stored Function Definition**: Complex graph and RAG traversals must be encapsulated in stored functions (`DEFINE FUNCTION fn::*`).
+- **`SURQL-024` [⚠️ Warn] — Missing Schema Version Migration Header**: SurQL migration files must specify explicit version metadata headers.
+- **`SURQL-025` [🛑 Deny] — Deprecated SurrealQL v1/v2 Syntax**: Obsolete syntax constructs (`->edge->`, legacy permissions) must be migrated to SurrealDB v3.2+.
+- **`SURQL-026` [🛑 Deny] — Leaking SurrealDB Types into Domain**: Direct imports of `surrealdb::sql::Thing` or `surrealdb::Value` into domain/application layers.
+
+---
+
+## 4. 🎮 BEVY ECS & GAME PERFORMANCE INVARIANTS
 
 Cerberus includes 42 dedicated rules for Bevy ECS (0.18.1+):
 
@@ -159,7 +239,7 @@ Cerberus includes 42 dedicated rules for Bevy ECS (0.18.1+):
 
 ---
 
-## 4. 🧩 FRONTEND AST & SCOPED CSS RULES
+## 5. 🧩 FRONTEND AST & SCOPED CSS RULES
 
 - **`VUE-001` (Zero Raw Logic in Script Setup)**: Raw business logic (declaring `function`, `ref()`, `reactive()`, `computed()`, `watch()`) in `<script setup>` is forbidden. Extract state and methods to companion `use<Component>.ts`.
 - **`VUE-002` (Missing Companion Composable)**: Non-trivial Vue component must have a companion `use<Component>.ts` hook alongside `<Component>.vue`.
@@ -168,13 +248,14 @@ Cerberus includes 42 dedicated rules for Bevy ECS (0.18.1+):
 - **`VUE-008` (Direct Props Mutation)**: Child components must not mutate props directly (`props.x = ...`, `props.list.push()`). Emit events to parent.
 - **`PERF-001` (Deep Reactivity on Large AST/Logs)**: Heavy data structures must use `shallowRef` + `triggerRef` or `markRaw`.
 - **`PERF-005` (Cascading Deep Watchers)**: Banned uncontrolled `watch(..., { deep: true })`; use shallow watchers `{ deep: 1 }`.
+- **`FE-RAII-001` (Uncleaned IPC/Timers)**: Tauri IPC event listeners and intervals must be symmetrically cleaned up in `onUnmounted`.
 - **`CSS-001` (CSS Hardcode Hunter)**: Direct Hex (`#ffffff`), RGB/RGBA, and named colors are prohibited. Use design tokens `var(--color-*)`.
 - **`CSS-PERF-003` (Layout Animation Ban)**: Animating `width`, `height`, `margin`, `box-shadow` is prohibited. Animate `transform` and `opacity`.
 - **`FSD-001` (FSD Hierarchy Inversion)**: Imports must strictly flow downwards (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
 
 ---
 
-## 5. 📊 REALISTIC TESTABILITY INDEX (TI)
+## 6. 📊 REALISTIC TESTABILITY INDEX (TI)
 
 Cerberus evaluates code testability using empirical AST archetypes:
 
@@ -185,9 +266,18 @@ Cerberus evaluates code testability using empirical AST archetypes:
 
 ---
 
-## 6. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
+## 7. 🔐 CRYPTOGRAPHIC LEDGER & ZERO-REGRESSION RATELIMIT
 
 Legacy technical debt is isolated using cryptographic HMAC-SHA256 signatures:
 1. Violations can be grandfathered using `cerberus-baseline.json`.
 2. New violations will fail CI immediately.
 3. Once a violation is resolved, running `cargo cerberus baseline reconcile` permanently ratchets down the baseline so debt can never be re-introduced.
+
+---
+
+## 8. 🧠 VECTOR INTELLIGENCE & NEURAL ARCHITECTURAL EXPLAINABILITY
+
+Cerberus integrates an embedded local CodeBERTa ONNX neural engine to analyze architectural semantics without cloud dependencies:
+1. **Semantic Debt Clustering**: `cargo cerberus explain --clusters` embeds violations into a dense vector space and clusters related architectural debt (e.g. grouped state leaks, async deadlocks, god-class clusters).
+2. **100% Offline & Private**: Neural inference runs entirely locally on CPU/GPU via ONNX Runtime without external network telemetry.
+3. **Model Management**: Managed via `cargo cerberus model download`, `status`, and `clean`.

@@ -239,17 +239,43 @@ mod tests {
         let surql = r#"
             DEFINE TABLE OVERWRITE doc_history SCHEMAFULL;
             DEFINE FIELD OVERWRITE embedding ON doc_history TYPE array<float>;
+            DEFINE TABLE OVERWRITE custom_history SCHEMAFULL;
+            DEFINE FIELD OVERWRITE raw_vec ON custom_history TYPE vector<384>;
+            DEFINE TABLE OVERWRITE exempt_history SCHEMAFULL;
+            DEFINE FIELD OVERWRITE embedding ON exempt_history TYPE array<float>;
             DEFINE TABLE OVERWRITE orders SCHEMAFULL;
             DEFINE FIELD OVERWRITE user_id ON orders TYPE record<users>;
+            DEFINE FIELD OVERWRITE opt_user_id ON orders TYPE option<record<users>>;
+            DEFINE FIELD OVERWRITE in ON orders TYPE record<users>;
+            DEFINE FIELD OVERWRITE out ON orders TYPE record<users>;
+            SELECT * FROM items ORDER BY id ASC;
+            SELECT * FROM items ORDER BY rand();
+            SELECT * FROM items ORDER BY search::score(1) DESC;
             SELECT * FROM items ORDER BY priority ASC;
             SELECT * FROM items WHERE user_ids CONTAINS $u;
+            SELECT * FROM items WHERE item_ids CONTAINS users:123;
+            SELECT * FROM items WHERE participants CONTAINS $u;
         "#;
         let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
-        let schema = SchemaRegistry::new();
-        let config = SurqlConfig::default();
+        let mut schema = SchemaRegistry::new();
+        schema.indexes.insert(
+            "orders".to_string(),
+            vec![crate::schema::registry::IndexMeta {
+                name: "idx_opt_user".to_string(),
+                table_name: "orders".to_string(),
+                fields: vec!["opt_user_id".to_string()],
+                is_fulltext: false,
+                analyzer: None,
+                is_bm25: false,
+            }],
+        );
+
+        let mut config = SurqlConfig::default();
+        config.heavy_data.historical_tables = vec!["custom_history".to_string()];
+        config.heavy_data.exempt_tables = vec!["exempt_history".to_string()];
 
         let v16 = Surql016HeavyTypeInHistoryTable.check(&doc, &schema, &config);
-        assert_eq!(v16.len(), 1);
+        assert_eq!(v16.len(), 2);
         assert_eq!(v16[0].rule_id, "SURQL-016");
 
         let v17 = Surql017UnindexedForeignKey.check(&doc, &schema, &config);
@@ -261,7 +287,7 @@ mod tests {
         assert_eq!(v18[0].rule_id, "SURQL-018");
 
         let v19 = Surql019ArrayContainsInsteadOfEdge.check(&doc, &schema, &config);
-        assert_eq!(v19.len(), 1);
+        assert_eq!(v19.len(), 3);
         assert_eq!(v19[0].rule_id, "SURQL-019");
     }
 }

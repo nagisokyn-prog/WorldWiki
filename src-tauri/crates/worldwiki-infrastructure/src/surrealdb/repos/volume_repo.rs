@@ -69,11 +69,10 @@ impl VolumeRepository for SurrealVolumeRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM volumes WHERE {where_clause} ORDER BY sort_order ASC;");
+        let sql = "SELECT id, project_id, title, sort_order FROM volumes WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY sort_order ASC;";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .await

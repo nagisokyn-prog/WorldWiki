@@ -9,7 +9,6 @@ use crate::ai::retrieval::embedder::EmbedderService;
 
 pub(crate) struct SearchScope<'a> {
     pub db: &'a Surreal<Db>,
-    pub where_proj: &'a str,
     pub p_raw: &'a str,
     pub p_clean: &'a str,
     pub query: &'a str,
@@ -21,15 +20,10 @@ pub(crate) async fn fetch_bm25_candidates(
     entity_ids: &mut HashSet<String>,
 ) {
     // 1. Entities BM25
-    let ent_query = format!(
-        "SELECT id, name, description \
-         FROM entities WHERE {} AND (name @1@ $q OR description @2@ $q) \
-         LIMIT 6",
-        scope.where_proj
-    );
+    let ent_query = "SELECT id, name, description FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (name @1@ $q OR description @2@ $q) LIMIT 6";
     if let Ok(mut resp) = scope
         .db
-        .query(&ent_query)
+        .query(ent_query)
         .bind(("p_raw", scope.p_raw.to_string()))
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
@@ -64,15 +58,10 @@ pub(crate) async fn fetch_bm25_candidates(
     }
 
     // 2. Entity Chunks — string::lowercase CONTAINS (надёжно в любом контексте)
-    let chunk_query = format!(
-        "SELECT id, entity_id, content \
-         FROM entity_chunks WHERE {} AND (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q)) \
-         LIMIT 6",
-        scope.where_proj
-    );
+    let chunk_query = "SELECT id, entity_id, content FROM entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q)) LIMIT 6";
     if let Ok(mut resp) = scope
         .db
-        .query(&chunk_query)
+        .query(chunk_query)
         .bind(("p_raw", scope.p_raw.to_string()))
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
@@ -100,15 +89,10 @@ pub(crate) async fn fetch_bm25_candidates(
     }
 
     // 3. Chapters BM25
-    let chap_query = format!(
-        "SELECT id, title, content \
-         FROM chapters WHERE {} AND (title @1@ $q OR content @2@ $q) \
-         LIMIT 4",
-        scope.where_proj
-    );
+    let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (title @1@ $q OR content @2@ $q) LIMIT 4";
     if let Ok(mut resp) = scope
         .db
-        .query(&chap_query)
+        .query(chap_query)
         .bind(("p_raw", scope.p_raw.to_string()))
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
@@ -147,15 +131,10 @@ pub(crate) async fn fetch_semantic_candidates(
 ) {
     if let Ok(query_vec) = embedder.embed_query(scope.query).await {
         // Vector search on entity_chunks
-        let vec_chunk_sql = format!(
-            "SELECT entity_id, content, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
-             FROM entity_chunks WHERE {} AND embeddings.nemotron != NONE \
-             ORDER BY sim DESC LIMIT 5",
-            scope.where_proj
-        );
+        let vec_chunk_sql = "SELECT entity_id, content, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim FROM entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND embeddings.nemotron != NONE ORDER BY sim DESC LIMIT 5";
         if let Ok(mut resp) = scope
             .db
-            .query(&vec_chunk_sql)
+            .query(vec_chunk_sql)
             .bind(("p_raw", scope.p_raw.to_string()))
             .bind(("p_clean", scope.p_clean.to_string()))
             .bind(("vec", query_vec.clone()))
@@ -183,15 +162,10 @@ pub(crate) async fn fetch_semantic_candidates(
         }
 
         // Vector search on entities
-        let vec_ent_sql = format!(
-            "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
-             FROM entities WHERE {} AND embeddings.nemotron != NONE \
-             ORDER BY sim DESC LIMIT 5",
-            scope.where_proj
-        );
+        let vec_ent_sql = "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND embeddings.nemotron != NONE ORDER BY sim DESC LIMIT 5";
         if let Ok(mut resp) = scope
             .db
-            .query(&vec_ent_sql)
+            .query(vec_ent_sql)
             .bind(("p_raw", scope.p_raw.to_string()))
             .bind(("p_clean", scope.p_clean.to_string()))
             .bind(("vec", query_vec))

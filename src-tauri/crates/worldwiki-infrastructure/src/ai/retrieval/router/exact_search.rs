@@ -7,18 +7,15 @@ use super::candidate::RetrievalCandidate;
 
 pub(crate) async fn fetch_exact_chapter(
     db: &Surreal<Db>,
-    where_proj: &str,
     p_raw: &str,
     p_clean: &str,
     ch_num: i64,
 ) -> Option<String> {
     println!("[RetrievalRouter] Intent: Exact Document Retrieval for Chapter {}", ch_num);
     let num_str = ch_num.to_string();
-    let exact_q = format!(
-        "SELECT title, content, chunk_index FROM entity_chunks WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8"
-    );
+    let exact_q = "SELECT title, content, chunk_index FROM entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8";
     if let Ok(mut resp) = db
-        .query(&exact_q)
+        .query(exact_q)
         .bind(("p_raw", p_raw.to_string()))
         .bind(("p_clean", p_clean.to_string()))
         .bind(("num_str", num_str))
@@ -42,16 +39,15 @@ pub(crate) async fn fetch_exact_chapter(
 
 pub(crate) async fn fetch_fuzzy_entities(
     db: &Surreal<Db>,
-    where_proj: &str,
     p_raw: &str,
     p_clean: &str,
     query: &str,
     candidates: &mut Vec<RetrievalCandidate>,
     entity_ids: &mut HashSet<String>,
 ) {
-    let all_ent_query = format!("SELECT id, name, description, tags, custom_fields FROM entities WHERE {where_proj}");
+    let all_ent_query = "SELECT id, name, description, tags, custom_fields FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Ok(mut resp) = db
-        .query(&all_ent_query)
+        .query(all_ent_query)
         .bind(("p_raw", p_raw.to_string()))
         .bind(("p_clean", p_clean.to_string()))
         .await

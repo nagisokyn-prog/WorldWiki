@@ -331,6 +331,17 @@ pub struct RulesConfig {
     pub rules: Vec<RuleDefinition>,
 }
 
+impl Default for RulesConfig {
+    fn default() -> Self {
+        Self {
+            schema: None,
+            version: default_version(),
+            ignore: Vec::new(),
+            rules: Vec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Violation {
     pub rule_id: String,
@@ -596,6 +607,9 @@ mod tests {
         let _ = format!("{:?}", parsed_v);
         let _ = format!("{:?}", dt);
         let _ = format!("{:?}", perf);
+        let default_rules_cfg = RulesConfig::default();
+        assert_eq!(default_rules_cfg.version, "1.0");
+        assert!(default_rules_cfg.rules.is_empty());
     }
 }
 

@@ -4,7 +4,6 @@ use surrealdb::Surreal;
 
 pub(crate) async fn fetch_exact_chapter(
     db: &Surreal<Db>,
-    where_proj: &str,
     p_raw: &str,
     p_clean: &str,
     q_canon: &str,
@@ -21,11 +20,9 @@ pub(crate) async fn fetch_exact_chapter(
 
         if let Some(num) = num_opt {
             let num_str = num.to_string();
-            let exact_sql = format!(
-                "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1"
-            );
+            let exact_sql = "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1";
             if let Ok(mut resp) = db
-                .query(&exact_sql)
+                .query(exact_sql)
                 .bind(("p_raw", p_raw.to_string()))
                 .bind(("p_clean", p_clean.to_string()))
                 .bind(("num_str", num_str))

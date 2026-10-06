@@ -35,6 +35,7 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
             baseline,
             no_bevy,
             bevy_only,
+            surql_only,
         } => run_check(CheckExecutionOptions {
             rules_repo,
             path: &path,
@@ -48,6 +49,7 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
             baseline_path: baseline.as_deref(),
             no_bevy,
             bevy_only,
+            surql_only,
         }),
 
         Commands::Init {

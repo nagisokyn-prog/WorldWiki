@@ -49,9 +49,9 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
 
                 let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
                 match scope {
-                    ScanScope::All => matches!(ext, "rs" | "vue" | "css" | "ts" | "js"),
+                    ScanScope::All => matches!(ext, "rs" | "vue" | "css" | "ts" | "js" | "surql"),
                     ScanScope::FrontendOnly => matches!(ext, "vue" | "css" | "ts" | "js"),
-                    ScanScope::BackendOnly => ext == "rs",
+                    ScanScope::BackendOnly => matches!(ext, "rs" | "surql"),
                 }
             })
             .map(|e| {

@@ -52,10 +52,8 @@ pub async fn reindex_project_lore_inner(
             &p_clean
         },
     );
-    let where_proj = project_where_clause("project_id");
-
     // 1. Clear existing chunks for this project
-    let del_query = format!("DELETE entity_chunks WHERE {where_proj}");
+    let del_query = "DELETE entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Err(e) = db.query(del_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         eprintln!("[INDEXER] Warning while clearing old chunks: {e}");
     }
@@ -66,7 +64,7 @@ pub async fn reindex_project_lore_inner(
     let mut pending_chunks: Vec<PendingChunk> = Vec::new();
 
     // 2. Collect and chunk all chapters
-    let chap_query = format!("SELECT id, title, content FROM chapters WHERE {where_proj}");
+    let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Ok(mut resp) = db.query(chap_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         if let Ok(chapters) = resp.take::<Vec<serde_json::Value>>(0) {
             for chap in chapters {
@@ -106,8 +104,7 @@ pub async fn reindex_project_lore_inner(
     }
 
     // 3. Collect and chunk all entities
-    let ent_query =
-        format!("SELECT id, name, entity_type, attributes FROM entities WHERE {where_proj}");
+    let ent_query = "SELECT id, name, entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Ok(mut resp) = db.query(ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         if let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
             for ent in entities {

@@ -136,11 +136,10 @@ impl TimelineEventRepository for SurrealTimelineRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM timeline_events WHERE {where_clause} ORDER BY m_abs ASC;");
+        let sql = "SELECT id, project_id, title, description, m_abs, calendar_id, block_id, created_at FROM timeline_events WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY m_abs ASC;";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .await

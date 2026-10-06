@@ -125,11 +125,10 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM story_arcs WHERE {where_clause} ORDER BY created_at ASC;");
+        let sql = "SELECT id, project_id, title, description, arc_type, status, color, created_at, updated_at FROM story_arcs WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY created_at ASC;";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .await

@@ -21,7 +21,9 @@ pub use metrics::{
     AstComplexityAnalyzer, BlastRadiusAnalyzer, PackageTopologyAnalyzer, RustAstComplexityVisitor,
     SlocCalculator,
 };
-pub use parsers::{ParallelAstEngineAdapter, RustSynParserAdapter, VueSfcParserAdapter};
+pub use parsers::{
+    ParallelAstEngineAdapter, RustSynParserAdapter, SurqlAstParserAdapter, VueSfcParserAdapter,
+};
 
 pub use reporters::{ConsoleReportAdapter, JsonReportAdapter, SarifReportAdapter, TreeFormatterAdapter};
 

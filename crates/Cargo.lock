@@ -397,6 +397,7 @@ dependencies = [
  "cargo_metadata",
  "cerberus-domain",
  "cerberus-ports",
+ "cerberus-surql",
  "colored",
  "fs2",
  "indoc",

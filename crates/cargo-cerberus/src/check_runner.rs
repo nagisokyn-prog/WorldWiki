@@ -39,6 +39,7 @@ pub struct CheckExecutionOptions<'a> {
     pub baseline_path: Option<&'a Path>,
     pub no_bevy: bool,
     pub bevy_only: bool,
+    pub surql_only: bool,
 }
 
 pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
@@ -51,7 +52,10 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     };
 
     let matrix = if manifest_path.exists() {
-        if let Ok(metadata) = cargo_metadata::MetadataCommand::new().manifest_path(&manifest_path).exec() {
+        if let Ok(metadata) = cargo_metadata::MetadataCommand::new()
+            .manifest_path(&manifest_path)
+            .exec()
+        {
             let ws_arch: cerberus_domain::WorkspaceArchMetadata = metadata
                 .workspace_metadata
                 .get("cerberus")
@@ -60,9 +64,15 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
             let mut mat = cerberus_domain::LayerTopologyMatrix::from_workspace_metadata(&ws_arch);
             for pkg in &metadata.packages {
                 if let Some(pkg_meta) = pkg.metadata.get("cerberus") {
-                    if let Ok(arch_meta) = serde_json::from_value::<cerberus_domain::PackageArchMetadata>(pkg_meta.clone()) {
+                    if let Ok(arch_meta) = serde_json::from_value::<
+                        cerberus_domain::PackageArchMetadata,
+                    >(pkg_meta.clone())
+                    {
                         if let Some(layer) = arch_meta.layer {
-                            mat.layer_aliases.entry(layer.clone()).or_default().insert(pkg.name.clone().to_lowercase());
+                            mat.layer_aliases
+                                .entry(layer.clone())
+                                .or_default()
+                                .insert(pkg.name.clone().to_lowercase());
                         }
                     }
                 }
@@ -77,10 +87,13 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     let bevy_ctx = if !options.no_bevy && manifest_path.exists() {
         if let Ok(content) = std::fs::read_to_string(&manifest_path) {
-            let mut ctx = cerberus_infrastructure::ast::bevy::BevyScanContext::from_cargo_toml(&content);
+            let mut ctx =
+                cerberus_infrastructure::ast::bevy::BevyScanContext::from_cargo_toml(&content);
             if ctx.is_bevy_project {
-                let scanner = WalkDirScannerAdapter::new().with_ignores(options.rules_repo.config.ignore.to_vec());
-                let files = scanner.scan_files(options.path, cerberus_application::ScanScope::BackendOnly);
+                let scanner = WalkDirScannerAdapter::new()
+                    .with_ignores(options.rules_repo.config.ignore.to_vec());
+                let files =
+                    scanner.scan_files(options.path, cerberus_application::ScanScope::BackendOnly);
                 for f in files {
                     if let Ok(c) = std::fs::read_to_string(&f.path) {
                         if let Ok(syntax) = syn::parse_file(&c) {
@@ -110,6 +123,9 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
         Arc::new(VueSfcParserAdapter::with_config(
             options.rules_repo.cerberus_config.clone(),
         )),
+        Arc::new(cerberus_infrastructure::SurqlAstParserAdapter::with_config(
+            cerberus_surql::config::SurqlConfig::default(),
+        )),
     ];
 
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
@@ -132,6 +148,16 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
         let mut filtered = Vec::new();
         for v in scan_result.violations {
             if v.rule_id.starts_with("BEVY-") {
+                filtered.push(v);
+            }
+        }
+        scan_result.violations = filtered;
+    }
+
+    if options.surql_only {
+        let mut filtered = Vec::new();
+        for v in scan_result.violations {
+            if v.rule_id.starts_with("SURQL-") {
                 filtered.push(v);
             }
         }
@@ -292,10 +318,13 @@ fn validate_error_rate(total_files: usize, error_count: usize, ci: bool) -> Resu
     Ok(())
 }
 
-pub(crate) fn process_expanded_code(expanded_code: &str, path: &Path, violations: &mut Vec<Violation>) {
+pub(crate) fn process_expanded_code(
+    expanded_code: &str,
+    path: &Path,
+    violations: &mut Vec<Violation>,
+) {
     let syn_parser = RustSynParserAdapter::default();
-    if let Ok(expanded_violations) =
-        syn_parser.parse_source(expanded_code, path, "expanded_macro")
+    if let Ok(expanded_violations) = syn_parser.parse_source(expanded_code, path, "expanded_macro")
     {
         merge_unique_violations(violations, expanded_violations);
     }
@@ -477,11 +506,26 @@ mod tests {
         audit_macro_expansion(temp.path(), &mut violations);
 
         let manifest_adapter = CargoMetadataManifestAdapter::new();
-        let _ = audit_martin_topology(temp.path(), ScanScope::All, &manifest_adapter, &mut violations);
-        let _ = audit_martin_topology(temp.path(), ScanScope::FrontendOnly, &manifest_adapter, &mut violations);
+        let _ = audit_martin_topology(
+            temp.path(),
+            ScanScope::All,
+            &manifest_adapter,
+            &mut violations,
+        );
+        let _ = audit_martin_topology(
+            temp.path(),
+            ScanScope::FrontendOnly,
+            &manifest_adapter,
+            &mut violations,
+        );
 
         let scanner_adapter = WalkDirScannerAdapter::new();
-        audit_blast_radius(temp.path(), ScanScope::All, &scanner_adapter, &mut violations);
+        audit_blast_radius(
+            temp.path(),
+            ScanScope::All,
+            &scanner_adapter,
+            &mut violations,
+        );
 
         // Test resolve_baseline_path
         let direct_base = temp.path().join("my-base.json");
@@ -536,6 +580,7 @@ mod tests {
             baseline_path: Some(&base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(fail_run.is_err());
 
@@ -553,6 +598,7 @@ mod tests {
             baseline_path: Some(&base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(record_run.is_ok());
         assert!(base_file.exists());
@@ -571,6 +617,7 @@ mod tests {
             baseline_path: Some(&base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(re_record_run.is_ok());
 
@@ -588,6 +635,7 @@ mod tests {
             baseline_path: Some(&base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(pass_run.is_ok());
 
@@ -608,6 +656,7 @@ mod tests {
             baseline_path: Some(&base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(partial_fail_run.is_err());
 
@@ -660,9 +709,12 @@ mod tests {
             baseline_path: Some(&unwritable_base),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(write_fail_run.is_err());
-        assert!(write_fail_run.unwrap_err().contains("Failed to write baseline file"));
+        assert!(write_fail_run
+            .unwrap_err()
+            .contains("Failed to write baseline file"));
 
         // 2. Positive: run_check with path directly pointing to Cargo.toml
         let cargo_toml = temp.path().join("Cargo.toml");
@@ -684,6 +736,7 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(direct_cargo_run.is_ok());
 
@@ -708,7 +761,9 @@ mod tests {
         let mut segments = HashSet::new();
         let use_item: syn::ItemUse = syn::parse_str("pub use crate::foo::bar::Baz;").unwrap();
         collect_use_segments(&use_item, &mut segments);
-        assert!(segments.contains("foo::bar::Baz") || segments.contains("Baz") || !segments.is_empty());
+        assert!(
+            segments.contains("foo::bar::Baz") || segments.contains("Baz") || !segments.is_empty()
+        );
 
         // 7. Positive: merge_unique_violations empty inputs
         let mut target = Vec::new();
@@ -718,20 +773,45 @@ mod tests {
         // 8. Positive & Negative: audit_martin_topology with Scope
         let mut violations = Vec::new();
         let manifest_adapter = CargoMetadataManifestAdapter::new();
-        let metrics_frontend = audit_martin_topology(temp.path(), ScanScope::FrontendOnly, &manifest_adapter, &mut violations);
+        let metrics_frontend = audit_martin_topology(
+            temp.path(),
+            ScanScope::FrontendOnly,
+            &manifest_adapter,
+            &mut violations,
+        );
         assert!(metrics_frontend.is_empty());
 
-        let metrics_backend = audit_martin_topology(temp.path(), ScanScope::BackendOnly, &manifest_adapter, &mut violations);
+        let metrics_backend = audit_martin_topology(
+            temp.path(),
+            ScanScope::BackendOnly,
+            &manifest_adapter,
+            &mut violations,
+        );
         assert_eq!(metrics_backend.len(), 1);
 
         let empty_temp = tempdir().unwrap();
-        let empty_metrics = audit_martin_topology(empty_temp.path(), ScanScope::BackendOnly, &manifest_adapter, &mut violations);
+        let empty_metrics = audit_martin_topology(
+            empty_temp.path(),
+            ScanScope::BackendOnly,
+            &manifest_adapter,
+            &mut violations,
+        );
         assert!(empty_metrics.is_empty());
 
         // 9. Positive & Negative: audit_blast_radius with empty and non-empty directory
         let scanner_adapter = WalkDirScannerAdapter::new();
-        audit_blast_radius(temp.path(), ScanScope::BackendOnly, &scanner_adapter, &mut violations);
-        audit_blast_radius(temp.path(), ScanScope::FrontendOnly, &scanner_adapter, &mut violations);
+        audit_blast_radius(
+            temp.path(),
+            ScanScope::BackendOnly,
+            &scanner_adapter,
+            &mut violations,
+        );
+        audit_blast_radius(
+            temp.path(),
+            ScanScope::FrontendOnly,
+            &scanner_adapter,
+            &mut violations,
+        );
 
         // 10. Positive: run_check with frontend_only, expanded, ci, sarif_path and json_path
         let sarif_target = temp.path().join("check_run.sarif");
@@ -749,6 +829,7 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(frontend_run.is_ok());
         assert!(sarif_target.exists());
@@ -770,6 +851,7 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         let _ = parse_err_run; // exercised parse_errors loop
 
@@ -789,6 +871,7 @@ mod tests {
             baseline_path: Some(&empty_base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(empty_base_run.is_ok());
 
@@ -807,6 +890,7 @@ mod tests {
             baseline_path: Some(&invalid_base_file),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(invalid_base_run.is_ok());
 
@@ -824,14 +908,19 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(error_rate_fail_run.is_err());
-        assert!(error_rate_fail_run.unwrap_err().contains("Parse error rate"));
+        assert!(error_rate_fail_run
+            .unwrap_err()
+            .contains("Parse error rate"));
 
         // Test scope All on a clean workspace with workspace metadata
         let clean_ws = tempdir().unwrap();
         let ws_cargo = clean_ws.path().join("Cargo.toml");
-        std::fs::write(&ws_cargo, r#"
+        std::fs::write(
+            &ws_cargo,
+            r#"
             [package]
             name = "clean_pkg"
             version = "0.1.0"
@@ -848,11 +937,18 @@ mod tests {
 
             [lib]
             path = "src/lib.rs"
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let ws_src = clean_ws.path().join("src");
         std::fs::create_dir_all(&ws_src).unwrap();
         std::fs::write(ws_src.join("lib.rs"), "pub fn lib() {}").unwrap();
-        std::fs::write(ws_src.join("comp.vue"), "<template><div>Hello</div></template>").unwrap();
+        std::fs::write(
+            ws_src.join("comp.vue"),
+            "<template><div>Hello</div></template>",
+        )
+        .unwrap();
+        std::fs::write(ws_src.join("schema.surql"), "DEFINE TABLE OVERWRITE user SCHEMAFULL;").unwrap();
         std::fs::write(ws_src.join("note.txt"), "some notes").unwrap();
 
         let clean_scope_run = run_check(CheckExecutionOptions {
@@ -868,6 +964,7 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(clean_scope_run.is_ok());
 
@@ -888,20 +985,33 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(broken_scope_run.is_ok());
 
         // 13. Positive and negative tests for process_expanded_code
         let mut macro_violations = Vec::new();
-        process_expanded_code("pub fn bad() { panic!(\"boom\"); }", Path::new("dummy.rs"), &mut macro_violations);
+        process_expanded_code(
+            "pub fn bad() { panic!(\"boom\"); }",
+            Path::new("dummy.rs"),
+            &mut macro_violations,
+        );
         assert!(!macro_violations.is_empty());
 
         let mut clean_macro_violations = Vec::new();
-        process_expanded_code("pub fn good() { let _x = 42; }", Path::new("dummy.rs"), &mut clean_macro_violations);
+        process_expanded_code(
+            "pub fn good() { let _x = 42; }",
+            Path::new("dummy.rs"),
+            &mut clean_macro_violations,
+        );
         assert!(clean_macro_violations.is_empty());
 
         let mut invalid_syntax_violations = Vec::new();
-        process_expanded_code("invalid syntax @@@ @@", Path::new("dummy.rs"), &mut invalid_syntax_violations);
+        process_expanded_code(
+            "invalid syntax @@@ @@",
+            Path::new("dummy.rs"),
+            &mut invalid_syntax_violations,
+        );
         assert!(invalid_syntax_violations.is_empty());
 
         // 14. BaselineEntry comparison methods
@@ -941,6 +1051,7 @@ mod tests {
             baseline_path: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         });
         assert!(expanded_run.is_ok());
 
@@ -958,7 +1069,26 @@ mod tests {
             baseline_path: None,
             no_bevy: true,
             bevy_only: true,
+            surql_only: false,
         });
         assert!(bevy_only_run.is_ok());
+
+        // 17. Test surql_only: true
+        let surql_only_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: clean_ws.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+            no_bevy: false,
+            bevy_only: false,
+            surql_only: true,
+        });
+        assert!(surql_only_run.is_ok());
     }
 }

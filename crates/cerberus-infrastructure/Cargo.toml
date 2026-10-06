@@ -11,6 +11,7 @@ layer = "infrastructure"
 [dependencies]
 cerberus-domain = { path = "../cerberus-domain" }
 cerberus-ports = { path = "../cerberus-ports" }
+cerberus-surql = { path = "../cerberus-surql" }
 syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
 proc-macro2 = "1.0"
 quote = "1.0"

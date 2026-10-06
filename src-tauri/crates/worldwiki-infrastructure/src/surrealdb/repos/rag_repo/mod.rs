@@ -63,7 +63,7 @@ impl RAGContextPort for SurrealRAGAdapter {
 
         // 0. Exact Document Retrieval
         let exact_rows =
-            fetch_exact_chapter(&self.db, &where_proj, &p_raw, &p_clean, &q_canon, &q_lower).await;
+            fetch_exact_chapter(&self.db, &p_raw, &p_clean, &q_canon, &q_lower).await;
         list.extend(exact_rows);
 
         // 1. Атомарный вызов fn::gather_rag_bundle (1 раундтрип, типизированный DTO)
@@ -132,7 +132,6 @@ impl RAGContextPort for SurrealRAGAdapter {
         run_fallback_search(
             &self.db,
             fallback_search::FallbackSearchParams {
-                where_proj: &where_proj,
                 p_raw: &p_raw,
                 p_clean: &p_clean,
                 q_trimmed,

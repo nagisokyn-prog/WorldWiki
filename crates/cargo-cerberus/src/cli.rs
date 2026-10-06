@@ -57,6 +57,9 @@ pub enum Commands {
 
         #[arg(long, help = "Scan strictly with Bevy-specific rules")]
         bevy_only: bool,
+
+        #[arg(long, help = "Scan strictly with SurrealDB rules")]
+        surql_only: bool,
     },
     /// Initialize cerberus configuration, constitution, hooks, and baseline
     Init {
@@ -244,6 +247,7 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
         baseline: None,
         no_bevy: false,
         bevy_only: false,
+        surql_only: false,
     };
 
     execute_command(cli.command.unwrap_or(default_command), cli.rules_path.as_ref())

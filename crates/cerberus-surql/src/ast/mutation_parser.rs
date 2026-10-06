@@ -6,14 +6,14 @@ pub struct MutationParser;
 
 impl MutationParser {
     pub fn parse_update(raw: &str, span: SourceSpan) -> UpdateNode {
-        let re = Regex::new(r"(?i)UPDATE\s+([a-zA-Z0-9_:]+)").unwrap();
+        let re = Regex::new(r"(?i)UPDATE\s+([a-zA-Z0-9_$:]+)").unwrap();
         let target = re
             .captures(raw)
             .and_then(|c| c.get(1))
             .map(|m| m.as_str().to_string())
             .unwrap_or_default();
 
-        let is_record_id = target.contains(':');
+        let is_record_id = target.contains(':') || target.starts_with('$');
         let has_where = raw.to_uppercase().contains("WHERE");
 
         let where_re = Regex::new(r"(?i)\bWHERE\s+(.+?)(?:;|\z)").unwrap();
@@ -45,14 +45,14 @@ impl MutationParser {
     }
 
     pub fn parse_delete(raw: &str, span: SourceSpan) -> DeleteNode {
-        let re = Regex::new(r"(?i)DELETE\s+(?:FROM\s+)?([a-zA-Z0-9_:]+)").unwrap();
+        let re = Regex::new(r"(?i)DELETE\s+(?:FROM\s+)?([a-zA-Z0-9_$:]+)").unwrap();
         let target = re
             .captures(raw)
             .and_then(|c| c.get(1))
             .map(|m| m.as_str().to_string())
             .unwrap_or_default();
 
-        let is_record_id = target.contains(':');
+        let is_record_id = target.contains(':') || target.starts_with('$');
         let has_where = raw.to_uppercase().contains("WHERE");
 
         let where_re = Regex::new(r"(?i)\bWHERE\s+(.+?)(?:;|\z)").unwrap();

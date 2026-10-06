@@ -148,8 +148,14 @@ impl RustSynParserAdapter {
             ));
         }
 
+        // 13. SurrealDB Bridge & Inline Query Rules (SURQL-008, SURQL-011, SURQL-026)
+        let surql_violations =
+            cerberus_surql::bridge::scan_rust_source_for_surreal_queries(content, path);
+        violations.extend(surql_violations);
+
         let weights = PressureWeights::default();
-        if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights) {
+        if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights)
+        {
             let path_str = path.to_string_lossy().to_lowercase();
             let is_test_file = path_str.contains("/tests/")
                 || path_str.contains("\\tests\\")
@@ -169,14 +175,35 @@ impl RustSynParserAdapter {
                 .map(|c| c.limits.max_functions_deny)
                 .unwrap_or(35);
 
-            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure, warn_functions, deny_functions) = if is_test_file {
+            let (
+                warn_sloc,
+                deny_sloc,
+                warn_pressure,
+                deny_pressure,
+                warn_functions,
+                deny_functions,
+            ) = if is_test_file {
                 (1500, 3000, 800.0, 1500.0, 100, 200)
             } else if path_str.contains("domain") {
-                (300, 500, 150.0, 300.0, default_warn_fns.min(15), default_deny_fns.min(25))
+                (
+                    300,
+                    500,
+                    150.0,
+                    300.0,
+                    default_warn_fns.min(15),
+                    default_deny_fns.min(25),
+                )
             } else if path_str.contains("application") {
                 (400, 600, 200.0, 400.0, default_warn_fns, default_deny_fns)
             } else if path_str.contains("infrastructure") {
-                (500, 800, 250.0, 500.0, default_warn_fns + 5, default_deny_fns + 10)
+                (
+                    500,
+                    800,
+                    250.0,
+                    500.0,
+                    default_warn_fns + 5,
+                    default_deny_fns + 10,
+                )
             } else {
                 (500, 800, 200.0, 400.0, default_warn_fns, default_deny_fns)
             };
@@ -246,14 +273,25 @@ mod tests {
         let matrix = cerberus_domain::LayerTopologyMatrix::preset_matrix("layered");
         let matrix_adapter = RustSynParserAdapter::with_matrix(matrix.clone());
         let violations = matrix_adapter
-            .parse_source("use crate::repository::Repo;", Path::new("src/controller/c.rs"), "app")
+            .parse_source(
+                "use crate::repository::Repo;",
+                Path::new("src/controller/c.rs"),
+                "app",
+            )
             .unwrap();
         assert!(has_rule(&violations, "ARCH-007"));
 
         // Test with_matrix_and_config
-        let config_adapter = RustSynParserAdapter::with_matrix_and_config(matrix, Some(cerberus_domain::CerberusConfig::default()));
+        let config_adapter = RustSynParserAdapter::with_matrix_and_config(
+            matrix,
+            Some(cerberus_domain::CerberusConfig::default()),
+        );
         let violations2 = config_adapter
-            .parse_source("use crate::repository::Repo;", Path::new("src/controller/c.rs"), "app")
+            .parse_source(
+                "use crate::repository::Repo;",
+                Path::new("src/controller/c.rs"),
+                "app",
+            )
             .unwrap();
         assert!(has_rule(&violations2, "ARCH-007"));
     }
@@ -279,7 +317,8 @@ mod tests {
 
     #[test]
     fn test_rust_syn_parser_with_bevy_context() {
-        let ctx = crate::ast::bevy::BevyScanContext::new(true, Some(semver::Version::new(0, 19, 1)));
+        let ctx =
+            crate::ast::bevy::BevyScanContext::new(true, Some(semver::Version::new(0, 19, 1)));
         let adapter = RustSynParserAdapter::new().with_bevy_context(ctx);
         let violations = adapter
             .parse_source(

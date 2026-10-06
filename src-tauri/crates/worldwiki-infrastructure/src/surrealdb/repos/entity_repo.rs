@@ -96,11 +96,10 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM entities WHERE {where_clause};");
+        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw));";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .await
@@ -147,11 +146,10 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM entities WHERE {where_clause} AND (entity_type = $type_key OR type_key = $type_key) ORDER BY name ASC;");
+        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) AND (entity_type = $type_key OR type_key = $type_key) ORDER BY name ASC;";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .bind(("type_key", type_key.to_string()))
@@ -170,11 +168,10 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_clause = project_where_clause("project_id");
-        let sql = format!("SELECT * FROM entities WHERE {where_clause} ORDER BY name ASC;");
+        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY name ASC;";
         let mut res = self
             .db
-            .query(&sql)
+            .query(sql)
             .bind(("p_raw", p_raw))
             .bind(("p_clean", p_clean))
             .await

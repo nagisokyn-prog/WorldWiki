@@ -28,7 +28,8 @@
     "**/font-awesome.min.css",
     "**/*assets/**",
     "apps/spa/src/ts/services/api.client.ts",
-    "scripts/"
+    "scripts/",
+    "src-tauri/data/backup_latest.surql"
   ],
   "extends": [
     "cerberus:rust-hexagonal",
@@ -83,8 +84,10 @@
   },
   "surrealdb": {
     "schema_roots": [
-      "logic/schema/**",
-      "src-tauri/schema/**"
+      "logic/schema/no_ai/**",
+      "logic/schema/ai/**",
+      "tauri-surreal-kit/**",
+      "src-tauri"
     ],
     "strict_mode": true,
     "enforce_idempotent_ddl": true,

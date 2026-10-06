@@ -66,12 +66,11 @@ impl RetrievalRouter {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_proj = project_where_clause("project_id");
 
         // 0. Exact Document Retrieval (if user specifically asked for Chapter/Volume)
         if let Some(ch_num) = intent.chapter_num {
             if let Some(doc_out) =
-                exact_search::fetch_exact_chapter(db, &where_proj, &p_raw, &p_clean, ch_num).await
+                exact_search::fetch_exact_chapter(db, &p_raw, &p_clean, ch_num).await
             {
                 return Some(doc_out);
             }
@@ -83,7 +82,6 @@ impl RetrievalRouter {
         // 0.1 Exact & Fuzzy Entity Mention Retrieval (Auto Entity Dossier)
         exact_search::fetch_fuzzy_entities(
             db,
-            &where_proj,
             &p_raw,
             &p_clean,
             query,
@@ -94,7 +92,6 @@ impl RetrievalRouter {
 
         let search_scope = hybrid_search::SearchScope {
             db,
-            where_proj: &where_proj,
             p_raw: &p_raw,
             p_clean: &p_clean,
             query,

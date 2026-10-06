@@ -8,7 +8,6 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 
 pub(crate) struct FallbackSearchParams<'a> {
-    pub where_proj: &'a str,
     pub p_raw: &'a str,
     pub p_clean: &'a str,
     pub q_trimmed: &'a str,
@@ -22,7 +21,6 @@ pub(crate) async fn run_fallback_search(
     entity_ids: &mut HashSet<String>,
 ) -> Result<(), DomainError> {
     let FallbackSearchParams {
-        where_proj,
         p_raw,
         p_clean,
         q_trimmed,
@@ -30,20 +28,12 @@ pub(crate) async fn run_fallback_search(
     } = params;
     if list.len() < top_k {
         let ch_sql = if !q_trimmed.is_empty() {
-            format!(
-                "SELECT id, title, content, 'chapter' AS source_type \
-                 FROM chapters WHERE {where_proj} \
-                 AND (string::lowercase(title) CONTAINS string::lowercase($q) OR (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q))) \
-                 LIMIT $limit"
-            )
+            "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (string::lowercase(title) CONTAINS string::lowercase($q) OR (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q))) LIMIT $limit"
         } else {
-            format!(
-                "SELECT id, title, content, 'chapter' AS source_type \
-                 FROM chapters WHERE {where_proj} LIMIT $limit"
-            )
+            "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) LIMIT $limit"
         };
         let mut res_ch = db
-            .query(&ch_sql)
+            .query(ch_sql)
             .bind(("p_raw", p_raw.to_string()))
             .bind(("p_clean", p_clean.to_string()))
             .bind(("q", q_trimmed.to_string()))
@@ -53,20 +43,12 @@ pub(crate) async fn run_fallback_search(
         let chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
 
         let en_sql = if !q_trimmed.is_empty() {
-            format!(
-                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type \
-                 FROM entities WHERE {where_proj} \
-                 AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) \
-                 LIMIT $limit"
-            )
+            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) LIMIT $limit"
         } else {
-            format!(
-                "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type \
-                 FROM entities WHERE {where_proj} LIMIT $limit"
-            )
+            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) LIMIT $limit"
         };
         let mut res_en = db
-            .query(&en_sql)
+            .query(en_sql)
             .bind(("p_raw", p_raw.to_string()))
             .bind(("p_clean", p_clean.to_string()))
             .bind(("q", q_trimmed.to_string()))

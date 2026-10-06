@@ -47,15 +47,15 @@ DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats>;
 DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string | null>;
-DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE option<array<string> | null>;
+DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
+DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object | null> FLEXIBLE;
 DEFINE FIELD OVERWRITE citations        ON chat_messages TYPE array<object> FLEXIBLE DEFAULT [];
 DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE parent_id        ON chat_messages TYPE option<record<chat_messages>>;
+DEFINE FIELD OVERWRITE parent_id        ON chat_messages TYPE option<record<chat_messages> | null>;
 DEFINE FIELD OVERWRITE is_active        ON chat_messages TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at       ON chat_messages TYPE datetime DEFAULT time::now();
@@ -71,19 +71,19 @@ DEFINE FIELD OVERWRITE created_at  ON agent_memory TYPE datetime DEFAULT time::n
 
 -- 6. ПРОФИЛИ ИИ
 DEFINE TABLE OVERWRITE ai_profiles SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON ai_profiles TYPE option<record<projects>>;
+DEFINE FIELD OVERWRITE project_id  ON ai_profiles TYPE option<record<projects> | null>;
 DEFINE FIELD OVERWRITE name        ON ai_profiles TYPE string;
 DEFINE FIELD OVERWRITE provider    ON ai_profiles TYPE string; -- 'openai', 'anthropic', 'ollama', 'turboquant'
-DEFINE FIELD OVERWRITE base_url    ON ai_profiles TYPE option<string>;
-DEFINE FIELD OVERWRITE api_key     ON ai_profiles TYPE option<string>;
+DEFINE FIELD OVERWRITE base_url    ON ai_profiles TYPE option<string | null>;
+DEFINE FIELD OVERWRITE api_key     ON ai_profiles TYPE option<string | null>;
 DEFINE FIELD OVERWRITE settings    ON ai_profiles TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE is_active   ON ai_profiles TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_global   ON ai_profiles TYPE bool DEFAULT false;
 
 -- 7. АРТЕФАКТЫ ИИ
 DEFINE TABLE OVERWRITE artifacts SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON artifacts TYPE option<record<projects>>;
-DEFINE FIELD OVERWRITE chat_id     ON artifacts TYPE option<record<chats>>;
+DEFINE FIELD OVERWRITE project_id  ON artifacts TYPE option<record<projects> | null>;
+DEFINE FIELD OVERWRITE chat_id     ON artifacts TYPE option<record<chats> | null>;
 DEFINE FIELD OVERWRITE type        ON artifacts TYPE string; -- 'document', 'code', 'table', 'graph'
 DEFINE FIELD OVERWRITE title       ON artifacts TYPE string;
 DEFINE FIELD OVERWRITE content     ON artifacts TYPE string;
@@ -92,7 +92,7 @@ DEFINE FIELD OVERWRITE created_at  ON artifacts TYPE datetime DEFAULT time::now(
 
 -- 8. НАВЫКИ И ИНСТРУКЦИИ (AI SKILLS)
 DEFINE TABLE OVERWRITE ai_skills SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id             ON ai_skills TYPE option<record<projects>>;
+DEFINE FIELD OVERWRITE project_id             ON ai_skills TYPE option<record<projects> | null>;
 DEFINE FIELD OVERWRITE name                   ON ai_skills TYPE string;
 DEFINE FIELD OVERWRITE description            ON ai_skills TYPE string;
 DEFINE FIELD OVERWRITE prompt_text            ON ai_skills TYPE string;
@@ -100,7 +100,7 @@ DEFINE FIELD OVERWRITE triggers               ON ai_skills TYPE array<string> DE
 DEFINE FIELD OVERWRITE is_auto_trigger        ON ai_skills TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE priority               ON ai_skills TYPE int DEFAULT 10;
 DEFINE FIELD OVERWRITE is_builtin             ON ai_skills TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE file_path              ON ai_skills TYPE option<string>;
+DEFINE FIELD OVERWRITE file_path              ON ai_skills TYPE option<string | null>;
 DEFINE FIELD OVERWRITE is_unlocked            ON ai_skills TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE is_custom_author_style ON ai_skills TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE embeddings             ON ai_skills TYPE object FLEXIBLE DEFAULT {};
@@ -110,6 +110,6 @@ DEFINE FIELD OVERWRITE created_at             ON ai_skills TYPE datetime DEFAULT
 DEFINE TABLE OVERWRITE user_dictionary SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON user_dictionary TYPE record<projects>;
 DEFINE FIELD OVERWRITE word        ON user_dictionary TYPE string;
-DEFINE FIELD OVERWRITE definition  ON user_dictionary TYPE option<string>;
+DEFINE FIELD OVERWRITE definition  ON user_dictionary TYPE option<string | null>;
 DEFINE FIELD OVERWRITE is_approved ON user_dictionary TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE confidence  ON user_dictionary TYPE float DEFAULT 1.0;

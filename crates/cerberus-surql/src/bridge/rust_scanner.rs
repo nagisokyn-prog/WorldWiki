@@ -29,6 +29,19 @@ impl<'a> RustSurqlInlineScanner<'a> {
         }
     }
 
+    pub fn scan_syntax_tree(&self, syn_file: &syn::File, path: &Path) -> Vec<Violation> {
+        let mut visitor = QueryCallVisitor {
+            file_path: path,
+            violations: Vec::new(),
+            rules: self.rules,
+            schema: self.schema,
+            config: self.config,
+        };
+
+        visitor.visit_file(syn_file);
+        visitor.violations
+    }
+
     pub fn scan_file(&self, path: &Path) -> Vec<Violation> {
         let content = match fs::read_to_string(path) {
             Ok(c) => c,
@@ -40,17 +53,22 @@ impl<'a> RustSurqlInlineScanner<'a> {
             Err(_) => return Vec::new(),
         };
 
-        let mut visitor = QueryCallVisitor {
-            file_path: path,
-            violations: Vec::new(),
-            rules: self.rules,
-            schema: self.schema,
-            config: self.config,
-        };
-
-        visitor.visit_file(&syn_file);
-        visitor.violations
+        self.scan_syntax_tree(&syn_file, path)
     }
+}
+
+pub fn scan_rust_source_for_surreal_queries(content: &str, file_path: &Path) -> Vec<Violation> {
+    let syn_file = match syn::parse_file(content) {
+        Ok(f) => f,
+        Err(_) => return Vec::new(),
+    };
+
+    let rules = crate::rules::all_rules();
+    let schema = SchemaRegistry::default();
+    let config = SurqlConfig::default();
+
+    let scanner = RustSurqlInlineScanner::new(&rules, &schema, &config);
+    scanner.scan_syntax_tree(&syn_file, file_path)
 }
 
 struct QueryCallVisitor<'a> {

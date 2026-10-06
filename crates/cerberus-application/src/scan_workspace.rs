@@ -84,3 +84,153 @@ impl ScanWorkspaceUseCase {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cerberus_domain::{Category, RuleDefinition, Severity, Violation};
+    use std::path::PathBuf;
+
+    struct FakeScanner(Vec<ScannedSourceFile>);
+    impl FileSystemScannerPort for FakeScanner {
+        fn scan_files(&self, _root_dir: &Path, _scope: ScanScope) -> Vec<ScannedSourceFile> {
+            self.0.clone()
+        }
+    }
+
+    struct FakeAstEngine(Vec<Violation>, Vec<String>);
+    impl AstEnginePort for FakeAstEngine {
+        fn parse_batch(&self, _files: &[ScannedSourceFile]) -> (Vec<Violation>, Vec<String>) {
+            (self.0.clone(), self.1.clone())
+        }
+    }
+
+    struct FakeManifestParser(Result<Vec<Violation>, String>);
+    impl ManifestParserPort for FakeManifestParser {
+        fn check_manifest_layers(&self, _root: &Path) -> Result<Vec<Violation>, String> {
+            self.0.clone()
+        }
+    }
+
+    struct FakeRulesRepo(Option<RuleDefinition>);
+    impl RulesRepositoryPort for FakeRulesRepo {
+        fn load_config(&self) -> Result<cerberus_domain::RulesConfig, String> {
+            Ok(cerberus_domain::RulesConfig::default())
+        }
+        fn get_rule(&self, _id: &str) -> Option<RuleDefinition> {
+            self.0.clone()
+        }
+    }
+
+    #[test]
+    fn test_scan_workspace_use_case_new() {
+        let scanner = Arc::new(FakeScanner(vec![ScannedSourceFile {
+            path: PathBuf::from("src/lib.rs"),
+            crate_name: "test_crate".into(),
+        }]));
+        let ast_engine = Arc::new(FakeAstEngine(Vec::new(), Vec::new()));
+        let rules_repo: Arc<dyn RulesRepositoryPort> = Arc::new(FakeRulesRepo(None));
+
+        let use_case = ScanWorkspaceUseCase::new(
+            scanner,
+            ast_engine,
+            Arc::clone(&rules_repo),
+            ScanScope::BackendOnly,
+        );
+        assert!(use_case.manifest_parser.is_none());
+        assert_eq!(use_case.scope, ScanScope::BackendOnly);
+
+        let res = use_case.execute(Path::new("."));
+        assert_eq!(res.total_files_scanned, 1);
+        assert!(res.violations.is_empty());
+        assert!(res.parse_errors.is_empty());
+        assert!(rules_repo.load_config().is_ok());
+    }
+
+    #[test]
+    fn test_scan_workspace_with_manifest_and_violations() {
+        let scanner = Arc::new(FakeScanner(Vec::new()));
+        let v1 = Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from("src/domain.rs"),
+            line: 10,
+            column: 1,
+            symbol: "bad".into(),
+            snippet: "use tokio;".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "".into(),
+        };
+        let ast_engine = Arc::new(FakeAstEngine(vec![v1], vec!["parse err".into()]));
+        let manifest_parser = Arc::new(FakeManifestParser(Ok(vec![])));
+        let rule_def = RuleDefinition {
+            id: "ARCH-001".into(),
+            version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Warn,
+            title: "T".into(),
+            description: "D".into(),
+            remediation: "R".into(),
+        };
+        let rules_repo = Arc::new(FakeRulesRepo(Some(rule_def)));
+
+        let use_case = ScanWorkspaceUseCase::new(
+            scanner,
+            ast_engine,
+            rules_repo,
+            ScanScope::All,
+        )
+        .with_manifest_parser(manifest_parser);
+
+        let res = use_case.execute(Path::new("."));
+        assert_eq!(res.violations.len(), 1);
+        assert_eq!(res.violations[0].severity, Severity::Warn);
+        assert_eq!(res.parse_errors.len(), 1);
+    }
+
+    #[test]
+    fn test_scan_workspace_rule_severity_off_and_manifest_err() {
+        let scanner = Arc::new(FakeScanner(Vec::new()));
+        let v1 = Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from("src/domain.rs"),
+            line: 10,
+            column: 1,
+            symbol: "bad".into(),
+            snippet: "use tokio;".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "".into(),
+        };
+        let ast_engine = Arc::new(FakeAstEngine(vec![v1], vec![]));
+        let manifest_parser = Arc::new(FakeManifestParser(Err("manifest err".into())));
+        let rule_def = RuleDefinition {
+            id: "ARCH-001".into(),
+            version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Off,
+            title: "T".into(),
+            description: "D".into(),
+            remediation: "R".into(),
+        };
+        let rules_repo = Arc::new(FakeRulesRepo(Some(rule_def)));
+
+        let use_case = ScanWorkspaceUseCase::new(
+            scanner,
+            ast_engine,
+            rules_repo,
+            ScanScope::BackendOnly,
+        )
+        .with_manifest_parser(manifest_parser);
+
+        let res = use_case.execute(Path::new("."));
+        assert_eq!(res.violations.len(), 0); // filtered out due to Severity::Off
+        assert_eq!(res.parse_errors.len(), 1);
+    }
+}

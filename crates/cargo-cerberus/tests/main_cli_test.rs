@@ -71,6 +71,7 @@ fn test_run_app_all_subcommands() {
             baseline: None,
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         }),
     })
     .is_ok());
@@ -92,6 +93,7 @@ fn test_run_app_all_subcommands() {
             baseline: Some(custom_base.clone()),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         }),
     })
     .is_ok());
@@ -113,6 +115,7 @@ fn test_run_app_all_subcommands() {
             baseline: Some(custom_base.clone()),
             no_bevy: false,
             bevy_only: false,
+            surql_only: false,
         }),
     })
     .is_ok());
@@ -357,6 +360,7 @@ fn test_run_check_clean_with_failing_reports() {
         baseline_path: None,
         no_bevy: false,
         bevy_only: false,
+        surql_only: false,
     })
     .is_ok());
 
@@ -373,6 +377,7 @@ fn test_run_check_clean_with_failing_reports() {
         baseline_path: None,
         no_bevy: false,
         bevy_only: false,
+        surql_only: false,
     })
     .is_ok());
 
@@ -389,6 +394,7 @@ fn test_run_check_clean_with_failing_reports() {
         baseline_path: None,
         no_bevy: false,
         bevy_only: false,
+        surql_only: false,
     })
     .is_ok());
 }
@@ -533,6 +539,7 @@ fn test_cli_deep_coverage_branches() {
         baseline_path: None,
         no_bevy: false,
         bevy_only: false,
+        surql_only: false,
     })
     .is_err());
 

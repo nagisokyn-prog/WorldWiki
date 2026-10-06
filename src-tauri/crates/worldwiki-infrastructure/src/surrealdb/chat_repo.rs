@@ -33,7 +33,7 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = self
             .db
-            .query("SELECT * FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
+            .query("SELECT id, title, project_id, tag, session_context, created_at FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
             .bind(("p_clean", proj_clean.to_string()))
             .bind(("proj_id", proj_id.clone()))
             .await
@@ -68,7 +68,7 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = self
             .db
-            .query("SELECT * FROM chat_messages WHERE chat_id = type::record('chats', $c_clean) ORDER BY created_at ASC")
+            .query("SELECT id, project_id, chat_id, role, content, reasoning, tool_logs, version, quoted_context, citations, edited_content, feedback_comment, rag_was_bad, parent_id, is_active, created_at, updated_at FROM chat_messages WHERE chat_id = type::record('chats', $c_clean) ORDER BY created_at ASC")
             .bind(("c_clean", chat_clean.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;

@@ -283,6 +283,13 @@
           >
             📋 Канбан Арок
           </div>
+          <div
+            class="panel-tab-new interactive-el font-semibold"
+            :class="{ active: activePanelTab === 'surreal' }"
+            @click.stop="setActivePanelTab('surreal')"
+          >
+            ⚡ SurrealDB SQL
+          </div>
         </div>
         <div class="text-xs pr-4 opacity-50">
           {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
@@ -299,6 +306,9 @@
             <span class="console-time">[{{ log.timestamp }}]</span>
             <span>{{ log.text }}</span>
           </div>
+        </div>
+        <div v-else-if="activePanelTab === 'surreal'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+          <surreal-console-vue :project="projectName || 'default'" />
         </div>
         <div v-else-if="activePanelTab === 'matrix'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <cross-reference-matrix-vue :project="projectName || 'default'" />

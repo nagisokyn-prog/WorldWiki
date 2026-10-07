@@ -17,8 +17,7 @@ DEFINE EVENT OVERWRITE cascade_chat_delete ON TABLE chats WHEN $event = "DELETE"
 -- 2. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ ПРОЕКТА (ОЧИСТКА ИИ-ПРОСТРАНСТВА)
 DEFINE EVENT OVERWRITE cascade_project_ai_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
-    LET $clean = string::replace(string::replace(string::replace(type::string($pid), 'projects:', ''), '⟨', ''), '⟩', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($pid);
     
     -- 1. ИИ-сессии, чаты, сообщения и память агента
     DELETE chats WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;

@@ -43,3 +43,12 @@ pub async fn delete_project(
 ) -> Result<String, ProjectError> {
     delete_project_inner(&state.db, &name).await
 }
+
+#[tauri::command]
+pub async fn execute_raw_surql(
+    query: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<Value, ProjectError> {
+    execute_raw_surql_inner(&state.db, &query).await
+}
+

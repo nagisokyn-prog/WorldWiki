@@ -3,8 +3,7 @@
 
 -- 1. СБОР МАТРИЦЫ УЧАСТИЙ (CROSS-REFERENCE MATRIX & HEATMAP)
 DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
 
     LET $chapters = (
         SELECT 
@@ -66,8 +65,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
 
 -- 2. СБОР ДАННЫХ ДЛЯ ХРОНОЛОГИЧЕСКОГО ОКНА (TIMELINE INSPECTOR)
 DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
 
     LET $events = (
         SELECT 
@@ -142,8 +140,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
 
 -- 3. ВЫБОРКА ВРЕМЕННОГО СРЕЗА ГРАФА СВЯЗЕЙ («ПАУТИНА»)
 DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
 
     LET $nodes = (
         SELECT id, name, entity_type, tags, attributes 
@@ -263,8 +260,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
 
 -- 5. СИНХРОНИЗАЦИЯ УПОМИНАНИЙ СУЩНОСТЕЙ В ГЛАВЕ
 DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $names: array<string>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($chap.project_id), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($chap.project_id);
     DELETE appears_in WHERE out = $chap AND source = 'mention';
 
     IF array::len($names) > 0 {

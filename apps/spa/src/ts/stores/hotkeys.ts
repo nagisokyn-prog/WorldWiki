@@ -136,6 +136,9 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           // Russian 'Ф' uses the same KeyA code
           document.dispatchEvent(new CustomEvent('ww:toggle-wowilon'));
           return;
+        case 'Backquote':
+          shell.activePanelTab = shell.activePanelTab === 'surreal' ? '' : 'surreal';
+          return;
       }
     }
 

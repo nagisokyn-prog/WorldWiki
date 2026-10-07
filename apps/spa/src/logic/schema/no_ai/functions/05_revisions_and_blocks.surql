@@ -13,8 +13,7 @@ DEFINE FUNCTION OVERWRITE fn::toggle_pin($target: record, $is_pinned: bool) {
 
 -- 23. ПОЛУЧЕНИЕ ИСТОРИИ СХЕМЫ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: record<projects>, $tk: string) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT id, schema_id, project_id, type_key, snapshot, saved_at, is_pinned FROM schema_history WHERE project_id = $p_rec AND type_key = $tk ORDER BY saved_at DESC LIMIT 100);
 };
 
@@ -29,19 +28,20 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
     $chap: record<chapters>,
     $blocks: array<object>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     DELETE text_blocks WHERE chapter_id = $chap AND project_id = $p_rec;
 
-    INSERT INTO text_blocks (
-        SELECT 
-            $p_rec AS project_id, 
-            $chap AS chapter_id, 
-            block_type, 
-            order_index, 
-            content 
-        FROM $blocks
-    );
+    IF array::len($blocks) > 0 {
+        INSERT INTO text_blocks (
+            SELECT 
+                $p_rec AS project_id, 
+                $chap AS chapter_id, 
+                block_type, 
+                order_index, 
+                content 
+            FROM $blocks
+        );
+    };
 };
 
 -- 26. ПАКЕТНОЕ СОХРАНЕНИЕ ГЛОБАЛЬНОГО ТАЙМЛАЙНА ГЛАВ
@@ -49,8 +49,7 @@ DEFINE FUNCTION OVERWRITE fn::save_global_timeline(
     $proj: record<projects>,
     $items: array<object>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     FOR $item IN $items {
         IF $item.chapter_id != NONE {
             LET $cid = type::record('chapters', $item.chapter_id);
@@ -71,14 +70,13 @@ DEFINE FUNCTION OVERWRITE fn::record_schema_history(
     $snapshot: object,
     $max_limit: int
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     CREATE schema_history SET
         schema_id = $schema_id,
         type_key = $type_key,
         project_id = $p_rec,
         snapshot = $snapshot,
-        saved_at = type::string(time::now()),
+        saved_at = time::now(),
         is_pinned = false;
 
     LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $schema_id AND is_pinned = false ORDER BY saved_at DESC LIMIT 200);

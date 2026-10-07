@@ -112,6 +112,31 @@ pub async fn delete_project_inner(
     }
 }
 
+pub async fn execute_raw_surql_inner(
+    db: &Surreal<Db>,
+    query: &str,
+) -> Result<Value, ProjectError> {
+    let mut res = db
+        .query(query)
+        .await
+        .map_err(|e| ProjectError::InvalidData(e.to_string()))?;
+
+    let mut results: Vec<Value> = Vec::new();
+    let mut idx: usize = 0;
+    while let Ok(Some(val)) = res.take::<Option<Value>>(idx) {
+        results.push(val);
+        idx += 1;
+    }
+
+    if results.is_empty() {
+        Ok(Value::Array(vec![]))
+    } else if results.len() == 1 {
+        Ok(results.remove(0))
+    } else {
+        Ok(Value::Array(results))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -126,6 +151,19 @@ mod tests {
 
         let inv = ProjectError::InvalidData("no name".to_string());
         assert_eq!(inv.to_string(), "Invalid project data: no name");
+    }
+
+    #[tokio::test]
+    async fn test_execute_raw_surql_inner() {
+        use surrealdb::engine::local::Mem;
+        let db = Surreal::new::<Mem>(()).await.expect("in-memory db");
+        db.use_ns("test").use_db("test").await.expect("use ns/db");
+
+        let res = execute_raw_surql_inner(&db, "RETURN 1 + 1;").await.expect("exec raw surql");
+        assert_eq!(res, serde_json::json!(2));
+
+        let res_multi = execute_raw_surql_inner(&db, "RETURN 'a'; RETURN 'b';").await.expect("exec raw surql multi");
+        assert_eq!(res_multi, serde_json::json!(["a", "b"]));
     }
 }
 

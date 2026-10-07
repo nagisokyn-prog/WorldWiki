@@ -7,14 +7,14 @@ DEFINE FUNCTION OVERWRITE fn::get_projects_list() {
 };
 
 -- 14. ПОЛУЧЕНИЕ КОНФИГУРАЦИИ ПРОЕКТА
-DEFINE FUNCTION OVERWRITE fn::get_project_config($name: string) {
-    IF string::len($name) == 0 {
+DEFINE FUNCTION OVERWRITE fn::get_project_config($name: any) {
+    IF type::is_null($name) OR (type::is_string($name) AND string::len($name) == 0) {
         RETURN {};
     };
-    LET $clean = string::replace($name, 'projects:', '');
+    LET $p_rec = fn::normalize_project_id($name);
     LET $res = (
         SELECT id, name, created_at, data, type, genres, perfLevel, type::string(id) AS id FROM projects 
-        WHERE id = type::record('projects', $clean) OR name = $name OR name = $clean
+        WHERE id = $p_rec OR name = type::string($name)
         LIMIT 1
     );
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { {} };
@@ -22,8 +22,7 @@ DEFINE FUNCTION OVERWRITE fn::get_project_config($name: string) {
 
 -- 15. ВЫБОРКА АТРИБУТОВ СУЩНОСТЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: record<projects>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
         SELECT id, attributes FROM entities 
         WHERE project_id = $p_rec
@@ -38,8 +37,7 @@ DEFINE FUNCTION OVERWRITE fn::update_entity_attributes($entity: record<entities>
 
 -- 34. ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПРОЕКТА С ФИЛЬТРАЦИЕЙ ПО ТИПУ
 DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<string>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     IF $et != NONE {
         RETURN (
             SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
@@ -67,8 +65,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
     $tags: option<array<string>>,
     $embeds: option<object | array | null>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     IF $id != NONE AND $id != NULL {
         LET $existing = (SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM ONLY $id);
         LET $res = (
@@ -99,8 +96,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
 
 -- 36. ПОЛНОТЕКСТОВЫЙ ПОИСК СУЩНОСТЕЙ ПО BM25 С РАНЖИРОВАНИЕМ
 DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: string, $et: option<string>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     IF $et != NONE {
         RETURN (
             SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
@@ -123,8 +119,7 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
 
 -- 37. ПАКЕТНОЕ ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПО ТИПАМ
 DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
         SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
         WHERE project_id = $p_rec
@@ -140,8 +135,7 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
     $main_entity: object,
     $foreign_updates: array<object>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     LET $saved = (
         UPSERT $main_id SET
             project_id = $p_rec,
@@ -172,8 +166,7 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
 
 -- 39. ПОЛНОЕ КАСКАДНОЕ УДАЛЕНИЕ ПРОЕКТА И ВСЕХ ПРОЕКТНЫХ ДАННЫХ
 DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
-    LET $clean = string::replace(string::replace(string::replace($name, 'projects:', ''), '⟨', ''), '⟩', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($name);
     
     -- 1. Иерархия, связи и участие
     DELETE contains WHERE in = $p_rec OR out = $p_rec;
@@ -203,9 +196,58 @@ DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
     DELETE timeline_events WHERE project_id = $p_rec;
 
     -- 5. Сам проект (триггерит cascade_project_delete и cascade_project_ai_delete если Ultra включена)
-    DELETE projects WHERE id = $p_rec OR name = $name OR name = $clean;
+    DELETE projects WHERE id = $p_rec;
     
     RETURN true;
+};
+
+-- 40. ПАГИНАЦИЯ СУЩНОСТЕЙ ЧЕРЕЗ KEYSET (CURSOR PAGINATION)
+DEFINE FUNCTION OVERWRITE fn::get_entities_cursor(
+    $proj: record<projects>, 
+    $et: option<string>, 
+    $cursor_id: option<record<entities> | null>, 
+    $limit: int
+) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $lim = IF $limit > 0 AND $limit <= 500 { $limit } ELSE { 50 };
+    
+    IF $et != NONE AND $cursor_id != NONE AND $cursor_id != NULL {
+        RETURN (
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            FROM entities 
+            WHERE project_id = $p_rec 
+              AND entity_type = $et 
+              AND id > $cursor_id 
+            ORDER BY id ASC 
+            LIMIT $lim
+        );
+    } ELSE IF $et != NONE {
+        RETURN (
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            FROM entities 
+            WHERE project_id = $p_rec 
+              AND entity_type = $et 
+            ORDER BY id ASC 
+            LIMIT $lim
+        );
+    } ELSE IF $cursor_id != NONE AND $cursor_id != NULL {
+        RETURN (
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            FROM entities 
+            WHERE project_id = $p_rec 
+              AND id > $cursor_id 
+            ORDER BY id ASC 
+            LIMIT $lim
+        );
+    } ELSE {
+        RETURN (
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            FROM entities 
+            WHERE project_id = $p_rec 
+            ORDER BY id ASC 
+            LIMIT $lim
+        );
+    };
 };
 
 

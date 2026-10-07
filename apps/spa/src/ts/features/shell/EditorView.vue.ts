@@ -22,6 +22,7 @@ import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/Chekhov
 import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
 import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
+import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
 
 export default defineComponent({
   name: 'EditorView',
@@ -37,6 +38,7 @@ export default defineComponent({
     ArcBoardVue,
     TimelineInspectorVue,
     GraphWebViewVue,
+    SurrealConsoleVue,
     QuickOpenVue,
     CommandPaletteVue,
     TagsManagerModalVue,

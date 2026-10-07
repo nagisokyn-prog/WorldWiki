@@ -76,7 +76,7 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $limit: int, 
     $rel_limit: int
 ) {
-    LET $p_rec = $proj;
+    LET $p_rec = fn::normalize_project_id($proj);
     LET $q_low = string::lowercase($q);
 
     LET $ents = (

@@ -1,476 +1,11 @@
-        FAIL [   2.489s] world-wiki tests::chat_integration::test_get_chat_tree_hierarchical_relationships
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::chat_integration::test_get_chat_tree_hierarchical_relationships ... FAILED        
-
-    failures:
-
-    failures:
-        tests::chat_integration::test_get_chat_tree_hierarchical_relationships
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.35s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::chat_integration::test_get_chat_tree_hierarchical_relationships' (5892) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-  Cancelling due to test failure: 15 tests still running
-        FAIL [   2.638s] world-wiki tests::batch_and_connections_integration::test_get_entities_batch_empty_types_returns_empty_map
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_get_entities_batch_empty_types_returns_empty_map ... FAILED
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_get_entities_batch_empty_types_returns_empty_map
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.49s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_get_entities_batch_empty_types_returns_empty_map' (6360) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.643s] world-wiki tests::batch_and_connections_integration::test_get_entities_batch_by_types
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_get_entities_batch_by_types ... FAILED    
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_get_entities_batch_by_types
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.50s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_get_entities_batch_by_types' (16228) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.656s] world-wiki tests::ai_integration::test_ai_tools_chapters_list_and_get_chapter
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::ai_integration::test_ai_tools_chapters_list_and_get_chapter ... FAILED
-
-    failures:
-
-    failures:
-        tests::ai_integration::test_ai_tools_chapters_list_and_get_chapter
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.52s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::ai_integration::test_ai_tools_chapters_list_and_get_chapter' (15752) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.623s] world-wiki tests::batch_and_connections_integration::test_save_connections_creates_and_replaces_edges
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_save_connections_creates_and_replaces_edges ... FAILED
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_save_connections_creates_and_replaces_edges
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.47s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_save_connections_creates_and_replaces_edges' (15972) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.511s] world-wiki tests::batch_and_connections_integration::test_save_entity_with_relations_transactional
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_save_entity_with_relations_transactional ... FAILED
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_save_entity_with_relations_transactional   
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.36s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_save_entity_with_relations_transactional' (3232) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.662s] world-wiki tests::ai_integration::test_ai_tools_query_world
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::ai_integration::test_ai_tools_query_world ... FAILED
-
-    failures:
-
-    failures:
-        tests::ai_integration::test_ai_tools_query_world
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.50s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::ai_integration::test_ai_tools_query_world' (15192) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.521s] world-wiki tests::chat_integration::test_chat_create_and_messages_roundtrip
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::chat_integration::test_chat_create_and_messages_roundtrip ... FAILED
-
-    failures:
-
-    failures:
-        tests::chat_integration::test_chat_create_and_messages_roundtrip
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.40s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::chat_integration::test_chat_create_and_messages_roundtrip' (8244) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.509s] world-wiki tests::chat_operations_integration::delete_ai_chat_cascades_messages_and_chat
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::chat_operations_integration::delete_ai_chat_cascades_messages_and_chat ... FAILED 
-
-    failures:
-
-    failures:
-        tests::chat_operations_integration::delete_ai_chat_cascades_messages_and_chat
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.38s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::chat_operations_integration::delete_ai_chat_cascades_messages_and_chat' (18940) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.638s] world-wiki tests::batch_and_connections_integration::test_save_connections_rejects_non_array
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_save_connections_rejects_non_array ... FAILED
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_save_connections_rejects_non_array
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.49s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_save_connections_rejects_non_array' (4332) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.523s] world-wiki tests::batch_and_connections_integration::test_upsert_connections_batch_and_get_connections
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::batch_and_connections_integration::test_upsert_connections_batch_and_get_connections ... FAILED
-
-    failures:
-
-    failures:
-        tests::batch_and_connections_integration::test_upsert_connections_batch_and_get_connections
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.39s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::batch_and_connections_integration::test_upsert_connections_batch_and_get_connections' (18344) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.667s] world-wiki tests::ai_integration::test_ai_tools_search_and_get_entity    
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::ai_integration::test_ai_tools_search_and_get_entity ... FAILED
-
-    failures:
-
-    failures:
-        tests::ai_integration::test_ai_tools_search_and_get_entity
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.53s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::ai_integration::test_ai_tools_search_and_get_entity' (8728) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.671s] world-wiki tests::ai_integration::test_ai_tools_create_entity_and_relation
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
-    [DB] Schema module 'no_ai/02_indexes' applied successfully.
-    [DB] Schema module 'no_ai/03_events' applied successfully.
-    test tests::ai_integration::test_ai_tools_create_entity_and_relation ... FAILED
-
-    failures:
-
-    failures:
-        tests::ai_integration::test_ai_tools_create_entity_and_relation
-
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
-2.54s
-
-  stderr ───
-    [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
-       --> [250:11]
-        |
-    250 | BEGIN TRANSACTION;
-        |       ^^^^^^^^^^^
-       --> [249:101]
-        |
-    249 | ...<string>) {
-        |              ^ expected this delimiter to close
-
-
-    thread 'tests::ai_integration::test_ai_tools_create_entity_and_relation' (8880) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
-    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-        FAIL [   2.523s] world-wiki tests::chat_integration::test_fork_chat_copies_history_up_to_target_message
-  stdout ───
-
-    running 1 test
-    [DB] Schema module 'no_ai/00_analyzers' applied successfully.
-    [DB] Schema module 'no_ai/01_tables' applied successfully.
+#V2
     [DB] Schema module 'no_ai/02_indexes' applied successfully.
     [DB] Schema module 'no_ai/03_events' applied successfully.
     test tests::chat_integration::test_fork_chat_copies_history_up_to_target_message ... FAILED   
-
-    failures:
-
     failures:
         tests::chat_integration::test_fork_chat_copies_history_up_to_target_message
-
     test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
 2.40s
-
   stderr ───
     [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
        --> [250:11]
@@ -481,31 +16,22 @@
         |
     249 | ...<string>) {
         |              ^ expected this delimiter to close
-
-
-    thread 'tests::chat_integration::test_fork_chat_copies_history_up_to_target_message' (6164) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
+    thread 'tests::chat_integration::test_fork_chat_copies_history_up_to_target_message' (6164) panicked at src\\tests\\common.rs:41:10:
+    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\\n   --> [250:11]\\n 
+   |\\n250 | BEGIN TRANSACTION;\\n    |       ^^^^^^^^^^^\\n   --> [249:101]\\n    |\\n249 | ...<string>) {\\n    |              ^ expected this delimiter to close\\n")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
         FAIL [   2.518s] world-wiki tests::chat_operations_integration::edit_message_updates_content
   stdout ───
-
     running 1 test
     [DB] Schema module 'no_ai/00_analyzers' applied successfully.
     [DB] Schema module 'no_ai/01_tables' applied successfully.
     [DB] Schema module 'no_ai/02_indexes' applied successfully.
     [DB] Schema module 'no_ai/03_events' applied successfully.
     test tests::chat_operations_integration::edit_message_updates_content ... FAILED
-
-    failures:
-
     failures:
         tests::chat_operations_integration::edit_message_updates_content
-
     test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
 2.40s
-
   stderr ───
     [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
        --> [250:11]
@@ -516,17 +42,13 @@
         |
     249 | ...<string>) {
         |              ^ expected this delimiter to close
-
-
     thread 'tests::chat_operations_integration::edit_message_updates_content' (16016) panicked at 
-src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
+src\\tests\\common.rs:41:10:
+    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\\n   --> [250:11]\\n 
+   |\\n250 | BEGIN TRANSACTION;\\n    |       ^^^^^^^^^^^\\n   --> [249:101]\\n    |\\n249 | ...<string>) {\\n    |              ^ expected this delimiter to close\\n")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
         FAIL [   2.521s] world-wiki tests::chat_operations_integration::delete_chat_message_removes_single_message
   stdout ───
-
     running 1 test
     [DB] Schema module 'no_ai/00_analyzers' applied successfully.
     [DB] Schema module 'no_ai/01_tables' applied successfully.
@@ -534,13 +56,9 @@ src\tests\common.rs:41:10:
     [DB] Schema module 'no_ai/03_events' applied successfully.
     test tests::chat_operations_integration::delete_chat_message_removes_single_message ... FAILED
     failures:
-
-    failures:
         tests::chat_operations_integration::delete_chat_message_removes_single_message
-
     test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 
 2.38s
-
   stderr ───
     [DDL CRITICAL] Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`
        --> [250:11]
@@ -551,13 +69,10 @@ src\tests\common.rs:41:10:
         |
     249 | ...<string>) {
         |              ^ expected this delimiter to close
-
-
-    thread 'tests::chat_operations_integration::delete_chat_message_removes_single_message' (11128) panicked at src\tests\common.rs:41:10:
-    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\n   --> [250:11]\n 
-   |\n250 | BEGIN TRANSACTION;\n    |       ^^^^^^^^^^^\n   --> [249:101]\n    |\n249 | ...<string>) {\n    |              ^ expected this delimiter to close\n")
+    thread 'tests::chat_operations_integration::delete_chat_message_removes_single_message' (11128) panicked at src\\tests\\common.rs:41:10:
+    Failed to apply schema pipeline: Validation("Failed to execute DDL module 'no_ai/functions/01_analytics': Parse error: Unexpected token `TRANSACTION` expected delimiter `}`\\n   --> [250:11]\\n 
+   |\\n250 | BEGIN TRANSACTION;\\n    |       ^^^^^^^^^^^\\n   --> [249:101]\\n    |\\n249 | ...<string>) {\\n    |              ^ expected this delimiter to close\\n")
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
 ────────────
      Summary [   3.178s] 71/269 tests run: 55 passed, 16 failed, 5 skipped
         FAIL [   2.656s] world-wiki tests::ai_integration::test_ai_tools_chapters_list_and_get_chapter
@@ -578,4 +93,9 @@ src\tests\common.rs:41:10:
         FAIL [   2.518s] world-wiki tests::chat_operations_integration::edit_message_updates_content
 warning: 198/269 tests were not run due to test failure (run with --no-fail-fast to run all tests, or run with --max-fail)
 error: test run failed
-PS C:\Users\Kuzma\Desktop\WorldWiki\src-tauri>
+PS C:\\Users\\Kuzma\\Desktop\\WorldWiki\\src-tauri>
+SELECT id, name, type::string(id) AS raw_id FROM projects;
+SELECT id, title, project_id, type::string(project_id) AS raw_project_id FROM chapters;
+SELECT in, out, sort_order FROM contains;
+RETURN fn::get_chapter_hierarchy(projects:⟨Не один⟩);
+SELECT id, title, project_id FROM chapters WHERE project_id = projects:⟨Не один⟩;

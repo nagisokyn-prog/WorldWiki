@@ -24,6 +24,7 @@ pub fn run() {
             get_project_config,
             save_project_config,
             delete_project,
+            execute_raw_surql,
             // --- Универсальные Сущности ---
             get_entities,
             get_entities_batch,

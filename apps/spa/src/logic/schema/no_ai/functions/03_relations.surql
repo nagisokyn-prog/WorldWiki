@@ -13,8 +13,26 @@ DEFINE FUNCTION OVERWRITE fn::create_entity_relation(
     $start_chap: option<record<chapters> | null>,
     $end_chap: option<record<chapters> | null>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $existing = (
+        SELECT id FROM entity_rel 
+        WHERE in = $from AND out = $to AND rel_type = $rel_type AND project_id = $p_rec 
+        LIMIT 1
+    );
+
+    IF array::len($existing) > 0 {
+        LET $updated = (
+            UPDATE $existing[0].id SET
+                description = $desc,
+                strength = $strength,
+                attributes = IF $attrs != NONE { $attrs } ELSE { {} },
+                start_chapter = $start_chap,
+                end_chapter = $end_chap
+            RETURN AFTER
+        );
+        RETURN $updated[0];
+    };
+
     LET $res = (
         RELATE $from -> entity_rel -> $to CONTENT {
             project_id: $p_rec,
@@ -32,8 +50,7 @@ DEFINE FUNCTION OVERWRITE fn::create_entity_relation(
 
 -- 10. ПОЛУЧЕНИЕ СВЯЗЕЙ СУЩНОСТЕЙ ДЛЯ ГРАФА
 DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: record<projects>, $chap: option<record<chapters>>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     IF $chap != NONE {
         RETURN (
             SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
@@ -58,8 +75,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity_connections(
     $src: record<entities>,
     $connections: array<object>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     DELETE entity_rel WHERE (in = $src OR out = $src) AND project_id = $p_rec;
 
     FOR $c IN $connections {
@@ -89,8 +105,7 @@ DEFINE FUNCTION OVERWRITE fn::remove_entity_connections($src: record<entities>) 
 
 -- 19. ПОЛУЧЕНИЕ СПИСКА СВЯЗЕЙ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: record<projects>, $eid: option<record<entities>>) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     IF $eid != NONE {
         RETURN (
             SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
@@ -114,8 +129,7 @@ DEFINE FUNCTION OVERWRITE fn::batch_upsert_connections(
     $src: record<entities>,
     $connections: array<object>
 ) {
-    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($proj);
     DELETE entity_rel WHERE project_id = $p_rec AND (in = $src OR out = $src);
 
     FOR $c IN $connections {

@@ -56,6 +56,10 @@ export async function deleteProject(name: string): Promise<string> {
     return await invoke('delete_project', { name });
 }
 
+export async function executeRawSurql(query: string): Promise<unknown> {
+    return await invoke('execute_raw_surql', { query });
+}
+
 export async function getEntities(project: string, entityType: string | null): Promise<Entity[]> {
     return await invoke('get_entities', { project, entityType });
 }

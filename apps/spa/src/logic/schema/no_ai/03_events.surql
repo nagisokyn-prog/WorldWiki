@@ -11,8 +11,7 @@
 -- 1. КАСКАД УДАЛЕНИЯ ПРОЕКТА (BASE EDITION)
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
-    LET $clean = string::replace(string::replace(string::replace(type::string($pid), 'projects:', ''), '⟨', ''), '⟩', '');
-    LET $p_rec = type::record('projects', $clean);
+    LET $p_rec = fn::normalize_project_id($pid);
     
     -- 1. Иерархия, связи, участие и ревизии лора (удаляются до сущностей)
     DELETE contains WHERE in = $pid OR in = $p_rec OR in = $before.name;

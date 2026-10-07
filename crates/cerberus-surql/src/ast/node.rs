@@ -107,7 +107,7 @@ pub struct SelectNode {
     pub where_clause: Option<String>,
     pub group_by: Option<String>,
     pub order_by: Option<String>,
-    pub limit: Option<usize>,
+    pub limit: Option<String>,
     pub function_calls: Vec<FunctionCallInfo>,
     pub subqueries: Vec<SelectNode>,
     pub is_subquery_zero_indexed: bool,

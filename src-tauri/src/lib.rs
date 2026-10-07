@@ -70,14 +70,32 @@ pub async fn apply_schema_pipeline(
         include_str!("../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
     const DDL_NOAI_03_EVENTS: &str =
         include_str!("../../apps/spa/src/logic/schema/no_ai/03_events.surql");
-    const DDL_NOAI_04_FUNCTIONS: &str =
-        include_str!("../../apps/spa/src/logic/schema/no_ai/04_functions.surql");
+    const DDL_NOAI_04_01_ANALYTICS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/01_analytics.surql");
+    const DDL_NOAI_04_02_HIERARCHY: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/02_hierarchy.surql");
+    const DDL_NOAI_04_03_RELATIONS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/03_relations.surql");
+    const DDL_NOAI_04_04_ENTITIES: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/04_projects_and_entities.surql");
+    const DDL_NOAI_04_05_REVISIONS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql");
+    const DDL_NOAI_04_06_SCHEMAS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/06_schemas.surql");
+    const DDL_NOAI_04_07_NARRATIVE: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql");
 
     apply_ddl_module(db, "no_ai/00_analyzers", DDL_NOAI_00_ANALYZERS).await?;
     apply_ddl_module(db, "no_ai/01_tables", DDL_NOAI_01_TABLES).await?;
     apply_ddl_module(db, "no_ai/02_indexes", DDL_NOAI_02_INDEXES).await?;
     apply_ddl_module(db, "no_ai/03_events", DDL_NOAI_03_EVENTS).await?;
-    apply_ddl_module(db, "no_ai/04_functions", DDL_NOAI_04_FUNCTIONS).await?;
+    apply_ddl_module(db, "no_ai/functions/01_analytics", DDL_NOAI_04_01_ANALYTICS).await?;
+    apply_ddl_module(db, "no_ai/functions/02_hierarchy", DDL_NOAI_04_02_HIERARCHY).await?;
+    apply_ddl_module(db, "no_ai/functions/03_relations", DDL_NOAI_04_03_RELATIONS).await?;
+    apply_ddl_module(db, "no_ai/functions/04_projects_and_entities", DDL_NOAI_04_04_ENTITIES).await?;
+    apply_ddl_module(db, "no_ai/functions/05_revisions_and_blocks", DDL_NOAI_04_05_REVISIONS).await?;
+    apply_ddl_module(db, "no_ai/functions/06_schemas", DDL_NOAI_04_06_SCHEMAS).await?;
+    apply_ddl_module(db, "no_ai/functions/07_narrative_and_journey", DDL_NOAI_04_07_NARRATIVE).await?;
 
     // 2. ИИ-ПРОСТРАНСТВО (AI / ULTRA EDITION)
     const DDL_AI_01_WORKSPACE: &str =

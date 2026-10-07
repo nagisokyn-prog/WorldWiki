@@ -21,11 +21,16 @@ impl QueryParser {
             .and_then(|c| c.get(1))
             .map(|m| m.as_str().trim().to_string());
 
-        let group_re = Regex::new(r"(?i)\bGROUP\s+(?:BY\s+|ALL\b)([^;]+?)(?:\s+ORDER|\s+LIMIT|;|\z)").unwrap();
-        let group_by = group_re
-            .captures(raw)
-            .and_then(|c| c.get(1))
-            .map(|m| m.as_str().trim().to_string());
+        let group_by = if Regex::new(r"(?i)\bGROUP\s+ALL\b").unwrap().is_match(raw) {
+            Some("ALL".to_string())
+        } else {
+            let group_re = Regex::new(r"(?i)\bGROUP\s+BY\s+([^;)\n]+?)(?:\s+ORDER|\s+LIMIT|\s+FETCH|\)|;|\z)").unwrap();
+            group_re
+                .captures(raw)
+                .and_then(|c| c.get(1))
+                .map(|m| m.as_str().trim().to_string())
+                .filter(|s| !s.is_empty())
+        };
 
         let order_re = Regex::new(r"(?i)\bORDER\s+BY\s+([^;]+?)(?:\s+LIMIT|;|\z)").unwrap();
         let order_by = order_re
@@ -33,11 +38,11 @@ impl QueryParser {
             .and_then(|c| c.get(1))
             .map(|m| m.as_str().trim().to_string());
 
-        let limit_re = Regex::new(r"(?i)\bLIMIT\s+([0-9]+)").unwrap();
+        let limit_re = Regex::new(r"(?i)\bLIMIT\s+([0-9]+|\$[a-zA-Z0-9_]+)").unwrap();
         let limit = limit_re
             .captures(raw)
             .and_then(|c| c.get(1))
-            .and_then(|m| m.as_str().parse::<usize>().ok());
+            .map(|m| m.as_str().to_string());
 
         let mut function_calls = Vec::new();
         let fn_re = Regex::new(r"([a-zA-Z0-9_:]+)\s*\((.*?)\)").unwrap();
@@ -100,7 +105,14 @@ mod tests {
         assert_eq!(node.from_table, Some("users".to_string()));
         assert_eq!(node.where_clause, Some("is_active = true".to_string()));
         assert_eq!(node.order_by, Some("name ASC".to_string()));
-        assert_eq!(node.limit, Some(25));
+        assert_eq!(node.limit, Some("25".to_string()));
+    }
+
+    #[test]
+    fn test_parse_select_variable_limit() {
+        let raw = "SELECT id, name FROM entities WHERE project_id = $proj LIMIT $limit;";
+        let node = QueryParser::parse_select(raw, dummy_span());
+        assert_eq!(node.limit, Some("$limit".to_string()));
     }
 
     #[test]
@@ -120,5 +132,12 @@ mod tests {
         let raw_zero = "SELECT (SELECT id FROM users)[0] AS first_user FROM orders;";
         let node_zero = QueryParser::parse_select(raw_zero, dummy_span());
         assert!(node_zero.is_subquery_zero_indexed);
+    }
+
+    #[test]
+    fn test_parse_select_group_all() {
+        let raw = "SELECT math::max(sort_order) AS max_order FROM contains WHERE in = $p_rec GROUP ALL);";
+        let node = QueryParser::parse_select(raw, dummy_span());
+        assert_eq!(node.group_by, Some("ALL".to_string()));
     }
 }

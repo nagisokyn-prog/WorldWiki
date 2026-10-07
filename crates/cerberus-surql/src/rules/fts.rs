@@ -243,23 +243,25 @@ impl SurqlRule for Surql025MultipleFtsIndexesInOr {
         }
 
         let mut violations = Vec::new();
-        let or_fts_re = Regex::new(r"([a-zA-Z0-9_]+)\s+@[0-9]+@\s+[^\s)]+\s+OR\s+([a-zA-Z0-9_]+)\s+@[0-9]+@").unwrap();
+        let or_fts_re = Regex::new(r"([a-zA-Z0-9_]+)\s+@([0-9]+)@\s+[^\s)]+\s+OR\s+([a-zA-Z0-9_]+)\s+@([0-9]+)@").unwrap();
 
         for stmt in &doc.statements {
             let span = stmt.span();
             let snippet = &doc.source()[span.byte_range.clone()];
 
             for cap in or_fts_re.captures_iter(snippet) {
-                if let (Some(f1), Some(f2)) = (cap.get(1), cap.get(2)) {
-                    violations.push(create_violation(
-                        self,
-                        doc,
-                        span.start_line,
-                        span.start_col,
-                        &format!("{} OR {}", f1.as_str(), f2.as_str()),
-                        cap.get(0).map(|m| m.as_str()).unwrap_or(""),
-                        Some(&format!("Separate FTS predicates ({} @1@ $q OR {} @2@ $q) incur index split penalty. Merge into single multi-field index.", f1.as_str(), f2.as_str())),
-                    ));
+                if let (Some(f1), Some(idx1), Some(f2), Some(idx2)) = (cap.get(1), cap.get(2), cap.get(3), cap.get(4)) {
+                    if idx1.as_str() != idx2.as_str() {
+                        violations.push(create_violation(
+                            self,
+                            doc,
+                            span.start_line,
+                            span.start_col,
+                            &format!("{} OR {}", f1.as_str(), f2.as_str()),
+                            cap.get(0).map(|m| m.as_str()).unwrap_or(""),
+                            Some(&format!("Separate FTS predicates ({} @{}@ $q OR {} @{}@ $q) incur index split penalty. Merge into single multi-field index.", f1.as_str(), idx1.as_str(), f2.as_str(), idx2.as_str())),
+                        ));
+                    }
                 }
             }
         }
@@ -280,6 +282,7 @@ mod tests {
             SELECT * FROM articles WHERE content @@ 'rust';
             SELECT * FROM articles WHERE string::lowercase(title) CONTAINS 'rust';
             SELECT * FROM articles WHERE title @1@ $q OR body @2@ $q ORDER BY search::score(1) DESC, search::score(2) DESC;
+            SELECT * FROM articles WHERE title @1@ $q OR body @1@ $q ORDER BY search::score(1) DESC;
         "#;
         let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
         let mut schema = SchemaRegistry::new();

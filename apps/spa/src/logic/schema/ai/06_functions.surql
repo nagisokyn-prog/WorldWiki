@@ -1,14 +1,14 @@
 -- ==============================================================================
--- 06_FUNCTIONS.SURQL вЂ” РҐР РђРќРРњР«Р• РђРќРђР›РРўРР§Р•РЎРљРР• Р RAG Р¤РЈРќРљР¦РР (ULTRA EDITION)
+-- 06_FUNCTIONS.SURQL — ХРАНИМЫЕ АНАЛИТИЧЕСКИЕ И RAG ФУНКЦИИ (ULTRA EDITION)
 -- ==============================================================================
--- Р’РєР»СЋС‡Р°РµС‚:
--- 1. fn::upsert_global_web_page (РђС‚РѕРјР°СЂРЅР°СЏ С„СѓРЅРєС†РёСЏ РєСЌС€РёСЂРѕРІР°РЅРёСЏ РІРµР±-СЃС‚СЂР°РЅРёС†)
--- 2. fn::gather_rag_bundle (РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ СЃР±РѕСЂ РєРѕРЅС‚РµРєСЃС‚Р° СЃСѓС‰РЅРѕСЃС‚РµР№, С‡Р°РЅРєРѕРІ, РіР»Р°РІ Рё СЃРІСЏР·РµР№)
--- 3. fn::get_chapter_multi_hop_context (GraphRAG: РјРЅРѕРіРѕС€Р°РіРѕРІС‹Р№ РѕР±С…РѕРґ СЃРІСЏР·РµР№ Рё С‚Р°Р№РјР»Р°Р№РЅР° РіР»Р°РІС‹)
--- 4. fn::resolve_auto_skills (РђС‚РѕРјР°СЂРЅС‹Р№ СЂРµР·РѕР»РІ РЅР°РІС‹РєРѕРІ РїРѕ С‚СЂРёРіРіРµСЂР°Рј Рё BM25)
+-- Включает:
+-- 1. fn::upsert_global_web_page (Атомарная функция кэширования веб-страниц)
+-- 2. fn::gather_rag_bundle (Автоматический сбор контекста сущностей, чанков, глав и связей)
+-- 3. fn::get_chapter_multi_hop_context (GraphRAG: многошаговый обход связей и таймлайна главы)
+-- 4. fn::resolve_auto_skills (Атомарный резолв навыков по триггерам и BM25)
 -- ==============================================================================
 
--- 1. РђРўРћРњРђР РќРђРЇ Р¤РЈРќРљР¦РРЇ РљР­РЁРР РћР’РђРќРРЇ Р’Р•Р‘-РЎРўР РђРќРР¦Р«
+-- 1. АТОМАРНАЯ ФУНКЦИЯ КЭШИРОВАНИЯ ВЕБ-СТРАНИЦЫ
 DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
     $url: string,
     $canonical_url: string,
@@ -69,7 +69,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
     };
 };
 
--- 2. РЎР‘РћР  RAG-РљРћРќРўР•РљРЎРўРђ (РЎРЈР©РќРћРЎРўР, Р§РђРќРљР, Р“Р›РђР’Р«, РЎР’РЇР—Р)
+-- 2. СБОР RAG-КОНТЕКСТА (СУЩНОСТИ, ЧАНКИ, ГЛАВЫ, СВЯЗИ)
 DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $proj: record<projects>, 
     $q: string, 
@@ -123,9 +123,9 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     };
 };
 
--- 3. GRAPHRAG: РњРќРћР“РћРЁРђР“РћР’Р«Р™ РћР‘РҐРћР” РљРћРќРўР•РљРЎРўРђ Р“Р›РђР’Р«
+-- 3. GRAPHRAG: МНОГОШАГОВЫЙ ОБХОД КОНТЕКСТА ГЛАВЫ
 DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {
-    LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter);
+    LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter LIMIT 200);
     LET $relations = (
         SELECT 
             in.name AS source_entity,
@@ -134,14 +134,19 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
             out.name AS target_entity
         FROM entity_rel 
         WHERE in IN $participants AND out IN $participants
+        LIMIT 200
     );
     LET $timeline = (
-        SELECT * FROM timeline_events 
+        SELECT id, project_id, title, description, m_abs, calendar_id, created_at 
+        FROM timeline_events 
         WHERE chapter_id = $chapter
+        LIMIT 100
     );
     LET $promises = (
-        SELECT * FROM plot_promises 
+        SELECT id, project_id, chapter_id, kind, quote, note, status, resolved_in_volume, resolved_in_chapter, location_id, timeline_event_id, arc_id, created_at 
+        FROM plot_promises 
         WHERE chapter_id = $chapter OR (project_id = $chapter.project_id AND status != 'resolved')
+        LIMIT 100
     );
     RETURN {
         participants: $participants,
@@ -151,7 +156,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
     };
 };
 
--- 4. РђРўРћРњРђР РќР«Р™ Р Р•Р—РћР›Р’ РќРђР’Р«РљРћР’ (РўР РР“Р“Р•Р Р« + BM25)
+-- 4. АТОМАРНЫЙ РЕЗОЛВ НАВЫКОВ (ТРИГГЕРЫ + BM25)
 DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     $proj: option<record<projects>>,
     $query: string,
@@ -163,7 +168,7 @@ DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
         WHERE (project_id = $proj OR project_id = NONE)
           AND is_auto_trigger = true
           AND is_unlocked = true
-          AND (name @1@ $query OR description @2@ $query OR prompt_text @3@ $query)
+          AND (name @1@ $query OR description @1@ $query OR prompt_text @1@ $query)
         LIMIT $limit
     );
 
@@ -179,4 +184,3 @@ DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
 
     RETURN array::distinct(array::concat($trigger_matches, $bm25_matches));
 };
-

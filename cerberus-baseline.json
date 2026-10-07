@@ -1,179 +1,475 @@
 [
   {
-    "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/src/entity_search.rs",
+    "rule": "SURQL-001",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 492,
+    "symbol": "",
+    "message": "Stored function '' performs CREATE inside a FOR loop. Use batch INSERT instead.",
+    "fingerprint": "4503579078829dd0f699734dd28393b1e9bbee9c8bc780459d0b8b45b3e82afb"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 285,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' executes SELECT * from 'chapters' on server hot-path.",
+    "fingerprint": "a7591eced18e0a7c6576d19314de736da0c490a4ff3b2145cb718dd2a24d6b91"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 285,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' executes SELECT * from 'volumes' on server hot-path.",
+    "fingerprint": "a2f28fde2bf0ac06e1369095d7cce8f99f09b003fd6ee75bbec90a98ed82b51b"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 398,
+    "symbol": "fn::get_projects_list",
+    "message": "Stored function 'fn::get_projects_list' executes SELECT * from 'projects' on server hot-path.",
+    "fingerprint": "a5fe78c84f8e985382c82335a068b3ee134392b31a1b99ac7a709a998d17f7ce"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 405,
+    "symbol": "fn::get_project_config",
+    "message": "Stored function 'fn::get_project_config' executes SELECT * from 'projects' on server hot-path.",
+    "fingerprint": "d90ce441a2ae7b13d181296508044f1943f115a14a7080f223b8838428c93413"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 466,
+    "symbol": "fn::get_chapter_revisions",
+    "message": "Stored function 'fn::get_chapter_revisions' executes SELECT * from 'chapter_revisions' on server hot-path.",
+    "fingerprint": "5670875004d1db027552b2034c1c8c3d51be70abeff6a5a09cd0451c721e09d5"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 477,
+    "symbol": "fn::get_schema_history",
+    "message": "Stored function 'fn::get_schema_history' executes SELECT * from 'schema_history' on server hot-path.",
+    "fingerprint": "8a72afd760e8335984b696c61b0f7f9fbb69bcedb3ff1f1715ce1bd975cdaa44"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 482,
+    "symbol": "fn::get_entity_revisions",
+    "message": "Stored function 'fn::get_entity_revisions' executes SELECT * from 'entity_revisions' on server hot-path.",
+    "fingerprint": "7173e099a236a2f309e67b0339e24c9e8b27c128cd910e60b3cab6e7b177432f"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 525,
+    "symbol": "fn::get_relation_schemas",
+    "message": "Stored function 'fn::get_relation_schemas' executes SELECT * from 'relation_schemas' on server hot-path.",
+    "fingerprint": "4a1e6acbb830cb88962c045dc4bce5c12cf8ab1a19a2c0b9fe5c26164e3648fc"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 538,
+    "symbol": "fn::get_entity_schemas",
+    "message": "Stored function 'fn::get_entity_schemas' executes SELECT * from 'entity_schemas' on server hot-path.",
+    "fingerprint": "0bea690b1164400cbe51b831b7f4df671d20dd2c1738153bf3f30891080eb634"
+  },
+  {
+    "rule": "SURQL-003",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 693,
+    "symbol": "fn::get_entities_batch",
+    "message": "Stored function 'fn::get_entities_batch' executes SELECT * from 'entities' on server hot-path.",
+    "fingerprint": "0842a867e4e029b91af6ab244d7b5a9c273159d7c18f79f0e52390b8ef498cf5"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 2,
+    "symbol": "fn::get_cross_reference_matrix",
+    "message": "Stored function 'fn::get_cross_reference_matrix' performs non-aggregating query on 'chapters' without LIMIT clause.",
+    "fingerprint": "a1c28e31d5d38876486c57ca7d9ed76b79c3aff9a90fa3331267abb2a184d38b"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 7,
+    "symbol": "fn::get_cross_reference_matrix",
+    "message": "Stored function 'fn::get_cross_reference_matrix' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "3ce879d750e48b10fbb55a062231f0b181af97e71d156d52d46a42ea33550a20"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 53,
+    "symbol": "fn::get_timeline_inspector_data",
+    "message": "Stored function 'fn::get_timeline_inspector_data' performs non-aggregating query on 'timeline_events' without LIMIT clause.",
+    "fingerprint": "69ef8886c6a923eae7dc23d5a3d4684b6ded6ab979c319729de52b0e150e2ebd"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 74,
+    "symbol": "fn::get_timeline_inspector_data",
+    "message": "Stored function 'fn::get_timeline_inspector_data' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "be62b9b9e4f5d7069bf88c224c2ed613dc65eab021aa89c22dd89ea8e3da4cfe"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 113,
+    "symbol": "fn::get_timeline_inspector_data",
+    "message": "Stored function 'fn::get_timeline_inspector_data' performs non-aggregating query on 'chapters' without LIMIT clause.",
+    "fingerprint": "0441c0558b69198b8b9f34508b7cf3c7317f35302df837d0f0d33189c357b874"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 132,
+    "symbol": "fn::get_graph_time_slice",
+    "message": "Stored function 'fn::get_graph_time_slice' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "844bec66fb786356dbdb28d74e3b87c943b7d342fada57a2b9d9a2080fb81cd3"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 169,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'appears_in' without LIMIT clause.",
+    "fingerprint": "b45ce3ddd4564739a4c428258d9aa64f0a10bfb0523394b92ae14ff46bd0df54"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 169,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "be603a2698256f81f102bc63ca52325c9159c049eb34da3b45dcd3b1b6ab07cf"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 177,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'participates_in' without LIMIT clause.",
+    "fingerprint": "4d1534b62c64da83f04a868b30debf4dbc400d934af41bbc14f142d5f42ae30d"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 188,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'entity_rel' without LIMIT clause.",
+    "fingerprint": "49d2594cf42df40b55c006967581bc98a174d0177b0e8f6b769aa7b8cd2ecb49"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 200,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'plot_promises' without LIMIT clause.",
+    "fingerprint": "15b7d658c619f07eeedd260561d91d7f9caf2129cd9e82852eadf50d682a55c0"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 285,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' performs non-aggregating query on 'chapters' without LIMIT clause.",
+    "fingerprint": "9b88e8cebb379eb5c2949e0f986c6ac81a807f995e8ccbf7a9e3aebdbfb11470"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 285,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' performs non-aggregating query on 'volumes' without LIMIT clause.",
+    "fingerprint": "2679bb277d9823eb0b1907382bdec7cc254ac1fb9bddb7b83598bf2a4c926a50"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 286,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "3e8bc4c58ea2a610cc679b621d31e960d661f92e689139789b2943071c1c459e"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 287,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "3e8bc4c58ea2a610cc679b621d31e960d661f92e689139789b2943071c1c459e"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 288,
+    "symbol": "fn::get_chapter_hierarchy",
+    "message": "Stored function 'fn::get_chapter_hierarchy' performs non-aggregating query on 'contains' without LIMIT clause.",
+    "fingerprint": "c7719921eee4b18e230ae9b043e2bca6c41f83e930125f044f6ae1ecb2e90252"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 304,
+    "symbol": "fn::create_volume_node",
+    "message": "Stored function 'fn::create_volume_node' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "b6be5630d19cd17799826846bdeb3c2bdc640a00e358c3b83b2bf0ea12bb02de"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 398,
+    "symbol": "fn::get_projects_list",
+    "message": "Stored function 'fn::get_projects_list' performs non-aggregating query on 'projects' without LIMIT clause.",
+    "fingerprint": "10e959b4210b87d81c395df1047d6cd905401a2ec81acb7399fe4e2d064b00b0"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 418,
+    "symbol": "fn::get_entities_attributes",
+    "message": "Stored function 'fn::get_entities_attributes' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "d6de76a29b3d2228098282fc5cec2f925b546fa57845f9598df93ed2c57866f4"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 466,
+    "symbol": "fn::get_chapter_revisions",
+    "message": "Stored function 'fn::get_chapter_revisions' performs non-aggregating query on 'chapter_revisions' without LIMIT clause.",
+    "fingerprint": "0dc44146fdef576783a7cee03a3c238e43e5dd3056c44d075375a9fe18eed5d9"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 477,
+    "symbol": "fn::get_schema_history",
+    "message": "Stored function 'fn::get_schema_history' performs non-aggregating query on 'schema_history' without LIMIT clause.",
+    "fingerprint": "4d5f5648c31295ab6d0448c1dce003043cf9cd19b8e1b293aa1d2ea42662e1bf"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 482,
+    "symbol": "fn::get_entity_revisions",
+    "message": "Stored function 'fn::get_entity_revisions' performs non-aggregating query on 'entity_revisions' without LIMIT clause.",
+    "fingerprint": "9baa3f2b49378c3c2b5ce96b9a952a524b15745fdadf43eed4f83a70c02d9e55"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 525,
+    "symbol": "fn::get_relation_schemas",
+    "message": "Stored function 'fn::get_relation_schemas' performs non-aggregating query on 'relation_schemas' without LIMIT clause.",
+    "fingerprint": "2891815d69dbbb7842b74c5c3376505b4f657ec018fbb5fad84097b2495bd3f8"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 538,
+    "symbol": "fn::get_entity_schemas",
+    "message": "Stored function 'fn::get_entity_schemas' performs non-aggregating query on 'entity_schemas' without LIMIT clause.",
+    "fingerprint": "184f00c8cd94af1e6ec926b9674b7b1180c4ed0fe7d603931ef50fac13fcb4fa"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 563,
+    "symbol": "",
+    "message": "Stored function '' performs non-aggregating query on 'schema_history' without LIMIT clause.",
+    "fingerprint": "677113aa0fe126ab90834358abd812c8c2292f3af54f3cb5dd118916bf793426"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 600,
+    "symbol": "fn::delete_entity_schema",
+    "message": "Stored function 'fn::delete_entity_schema' performs non-aggregating query on 'relation_schemas' without LIMIT clause.",
+    "fingerprint": "6d5a15288fd7ea167ef0f9cc799b7c9b770d68b1b0b48d4e7d35f141a361649d"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 693,
+    "symbol": "fn::get_entities_batch",
+    "message": "Stored function 'fn::get_entities_batch' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "9633ec73e7a63da5d95339171802b2c17bcc86286c522e8cb72b19d0a419d1c6"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 808,
+    "symbol": "fn::get_multi_character_journey",
+    "message": "Stored function 'fn::get_multi_character_journey' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "2c0f1e6a11aea59e2f0e2bd6f8eb53b028b70a113a14c09eec6f9c6d30507ae3"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 811,
+    "symbol": "fn::get_multi_character_journey",
+    "message": "Stored function 'fn::get_multi_character_journey' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "3c5a93f5b561056153ce9f34d91802c20da35510cb3e30bbf9cd015c814d3fcc"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 819,
+    "symbol": "fn::get_multi_character_journey",
+    "message": "Stored function 'fn::get_multi_character_journey' performs non-aggregating query on 'appears_in' without LIMIT clause.",
+    "fingerprint": "c72125837ce382aab3fb79c75a2ebff9f713297cd12e5a8d4ef34e79652d660b"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 834,
+    "symbol": "fn::get_multi_character_journey",
+    "message": "Stored function 'fn::get_multi_character_journey' performs non-aggregating query on 'participates_in' without LIMIT clause.",
+    "fingerprint": "791b9089fdc0ff919e163581d2115c053526887909540f39517723f8d692af3c"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 849,
+    "symbol": "fn::get_multi_character_journey",
+    "message": "Stored function 'fn::get_multi_character_journey' performs non-aggregating query on 'plot_promises' without LIMIT clause.",
+    "fingerprint": "1ddc760d1568068be90af124f9fc1a767ee892bd6c5887e088ea9208c9ff1b6a"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 896,
+    "symbol": "fn::get_item_tracker",
+    "message": "Stored function 'fn::get_item_tracker' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "955b3d6032c1cbdb88607553e2329e7791faa6e3dc077b72246e57589d0e7825"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 903,
+    "symbol": "fn::get_item_tracker",
+    "message": "Stored function 'fn::get_item_tracker' performs non-aggregating query on 'chapters' without LIMIT clause.",
+    "fingerprint": "17e76e9cb7b8254c6d95af45cdb5ef9e4f29dc956a39ea50f02e22bfb888fc65"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 913,
+    "symbol": "fn::get_item_tracker",
+    "message": "Stored function 'fn::get_item_tracker' performs non-aggregating query on 'plot_promises' without LIMIT clause.",
+    "fingerprint": "737b2e2aeb9eca7feacb95e891a40096c0c22b3e95bfd19e5a5e30085c67d06e"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 959,
+    "symbol": "fn::get_item_journey",
+    "message": "Stored function 'fn::get_item_journey' performs non-aggregating query on 'entities' without LIMIT clause.",
+    "fingerprint": "e6c1ef23a38fb93e6725b3f64c2a387a3cd34d0d080e20655056c0727b0a01f3"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 969,
+    "symbol": "fn::get_item_journey",
+    "message": "Stored function 'fn::get_item_journey' performs non-aggregating query on 'chapters' without LIMIT clause.",
+    "fingerprint": "4c1d6fc9c5dc022b5add4e9e6bda9bb382533f327a9164e0e11cb723b7d490da"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 978,
+    "symbol": "fn::get_item_journey",
+    "message": "Stored function 'fn::get_item_journey' performs non-aggregating query on 'plot_promises' without LIMIT clause.",
+    "fingerprint": "0a7ff0eb1c3be34ab71135a9f960b191bd76e981bc520c94b947a25906a551c4"
+  },
+  {
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
     "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "1c814fb18ea3b84d6bcb028c3d8baa58514d8f12dc35a535ca54470b1b4e08d9"
+    "symbol": "fn::get_cross_reference_matrix",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "6b6913a19d05434f7e4f9f93fd224166a4bb3ebd0f6a1a5c3050bc4133dce5c6"
   },
   {
-    "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/src/entity_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "1c814fb18ea3b84d6bcb028c3d8baa58514d8f12dc35a535ca54470b1b4e08d9"
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 50,
+    "symbol": "fn::get_timeline_inspector_data",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "2da59e2c8bf70725943c3edc2ff15fbf95853ede4b7f90dac19209507bb5066a"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 17,
-    "symbol": "auto_approval_settings.project_id",
-    "message": "Foreign key field 'auto_approval_settings.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "8615d705df1bfc35c2a3bbb8f114f5729de83d10460b7406ff5fb73ea531327b"
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 892,
+    "symbol": "fn::get_item_tracker",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "567747782cbbd54d0a2d2e16526bbe23c628816e3bfeecf3c6d796b1f4ca1954"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 25,
-    "symbol": "ai_modes.project_id",
-    "message": "Foreign key field 'ai_modes.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "b4c5fdf3d500bd842c1cfeb5960a64ce9cc372a2cd4492f9298de8e4acf8a991"
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 948,
+    "symbol": "fn::get_item_journey",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "e34fa7ad33b9715f31a2c843f452cb5111dd79a82b13aacb63ae249277b41dc5"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 36,
-    "symbol": "chats.project_id",
-    "message": "Foreign key field 'chats.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "ca4e9f8518fe3507c9339fa61f651ef4b7d42376137b71a15f036c66fe045b95"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 308,
+    "symbol": "fn::assign_chapter_node",
+    "message": "Stored function 'fn::assign_chapter_node' executes 2 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "bd9088f2df5c77fc293bf94b818f508a8f8a4bf2a6f6fa3e475fea487220139b"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 44,
-    "symbol": "chat_messages.project_id",
-    "message": "Foreign key field 'chat_messages.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "6e0899f93243338c797fc2258abd213aca6d55497fe5595647d0aac62ed1d09c"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 361,
+    "symbol": "",
+    "message": "Stored function '' executes 2 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "b6d40b3d3193eace234ed62becd26df48e73cd301600a9e044b1e64705b9a457"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 64,
-    "symbol": "agent_memory.project_id",
-    "message": "Foreign key field 'agent_memory.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "e28be99ad777693417a985da477b3d04e46421c49c036f30d923c752e79f1e48"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 484,
+    "symbol": "",
+    "message": "Stored function '' executes 2 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "b6d40b3d3193eace234ed62becd26df48e73cd301600a9e044b1e64705b9a457"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 28,
-    "symbol": "web_evidence.page_id",
-    "message": "Foreign key field 'web_evidence.page_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "53ce0b655c43a58947f2fc2e3374755fe033afef27388b16fdd9602e3f06f6cc"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 527,
+    "symbol": "fn::delete_relation_schema",
+    "message": "Stored function 'fn::delete_relation_schema' executes 2 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "8d6e093b90381098031dd02f41409807805cd4dbea282b415b2a64ba1976407f"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 41,
-    "symbol": "research_sessions.project_id",
-    "message": "Foreign key field 'research_sessions.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "1306cc2210b4acf7f748dd097e8e7d3acba74e250819e835eb5e223ea5e875bf"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 596,
+    "symbol": "fn::delete_entity_schema",
+    "message": "Stored function 'fn::delete_entity_schema' executes 3 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "ef087f9a9cb5d67ce087edb27883a17e1fca60c71d2add6f9e9f640a5ea01a9b"
   },
   {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql",
-    "line": 11,
-    "symbol": "entity_chunks.project_id",
-    "message": "Foreign key field 'entity_chunks.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "1f3ba63edd6fff73ef0a1c6bd22447e0ac034b228a5d2dbfae59eb7fc11cceb7"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 42,
-    "symbol": "volumes.project_id",
-    "message": "Foreign key field 'volumes.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "d736eafddaa71f8c4a001f410a97e65156d2de3f6ef087eb56f466c29e5915a9"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 63,
-    "symbol": "story_arcs.project_id",
-    "message": "Foreign key field 'story_arcs.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "4f1ae51d0d4575ecc9cd45a69fa53322a8f6884fda65c7ca2fce96949cc4b516"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 85,
-    "symbol": "text_blocks.project_id",
-    "message": "Foreign key field 'text_blocks.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "b645df85a0b431ffb967fb301df89d97420bdc95cecec62517d6be9c8e84663e"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 97,
-    "symbol": "tags.project_id",
-    "message": "Foreign key field 'tags.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "510fd656b9e3295b136aecfeb80650bfae38ba8e1fc98450da646ddb3fb543b3"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 110,
-    "symbol": "entity_schemas.project_id",
-    "message": "Foreign key field 'entity_schemas.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "e5e02346aec9d582c68b52fb25dbd72a514e2319928b3e8b7e50a78c9f5c95e9"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 143,
-    "symbol": "relation_schemas.project_id",
-    "message": "Foreign key field 'relation_schemas.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "c3b005efdef5868d7c026a28ce2d97910225223db0b3873a41b66e6bb36cf883"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 168,
-    "symbol": "appears_in.project_id",
-    "message": "Foreign key field 'appears_in.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "3f6271fe5b21d0c3118f032f82d3ccc237462d3669ffe4ab184018f5ddeb03ac"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 176,
-    "symbol": "plans.project_id",
-    "message": "Foreign key field 'plans.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "b178114e20d723b69948ca50f105c2d751a359338b031a8b4cbaf03176776566"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 212,
-    "symbol": "entity_revisions.target_id",
-    "message": "Foreign key field 'entity_revisions.target_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "14a90912d73f490fb4721b50d6f0e32e2162fe1695e8fddd654347d733669160"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 232,
-    "symbol": "chapter_revisions.target_id",
-    "message": "Foreign key field 'chapter_revisions.target_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "a05732744527f6a0b391da40e2f9b7139a5a28e27609e46ccb9adffaefe019c9"
-  },
-  {
-    "rule": "SURQL-018",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
-    "line": 1,
-    "symbol": "chat_messages",
-    "message": "(Rust Inline SURQL) ORDER BY on field 'created_at' of table 'chat_messages' is not covered by any index.",
-    "fingerprint": "53d2cadee18787e08bda1f9a1cd48bf5dc8df3ef9f55c00a5f69c7c96efc393a"
-  },
-  {
-    "rule": "SURQL-018",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
-    "line": 1,
-    "symbol": "chats",
-    "message": "(Rust Inline SURQL) ORDER BY on field 'created_at' of table 'chats' is not covered by any index.",
-    "fingerprint": "08a271f441159fa2cd7254ff1750936498ac0ee71b908f10c38911cdc0f6c18c"
+    "rule": "SURQL-006",
+    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
+    "line": 735,
+    "symbol": "",
+    "message": "Stored function '' executes 2 mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).",
+    "fingerprint": "b6d40b3d3193eace234ed62becd26df48e73cd301600a9e044b1e64705b9a457"
   },
   {
     "rule": "SURQL-019",
@@ -190,29 +486,5 @@
     "symbol": "participant_ids",
     "message": "CONTAINS operator on array field 'participant_ids' for target '$info'. Consider native graph edges (->rel->) unless array order is required.",
     "fingerprint": "31ca1057d88cae87622747ecfeda750f7647169f13e05144b42774201a4a9aa6"
-  },
-  {
-    "rule": "SURQL-025",
-    "file": "./apps/spa/src/logic/schema/ai/06_functions.surql",
-    "line": 152,
-    "symbol": "name OR description",
-    "message": "Separate FTS predicates (name @1@ $q OR description @2@ $q) incur index split penalty. Merge into single multi-field index.",
-    "fingerprint": "556b6b1e76e73b98a7547741c5a73ad0c739c79a2200f5eef01411a2df6a6dc3"
-  },
-  {
-    "rule": "SURQL-025",
-    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
-    "line": 666,
-    "symbol": "name OR description",
-    "message": "Separate FTS predicates (name @1@ $q OR description @2@ $q) incur index split penalty. Merge into single multi-field index.",
-    "fingerprint": "3708343376e3cbe4bc6a2332d17fceb308983c62acd3fd038bfa03dff8851551"
-  },
-  {
-    "rule": "SURQL-025",
-    "file": "./apps/spa/src/logic/schema/no_ai/04_functions.surql",
-    "line": 666,
-    "symbol": "name OR description",
-    "message": "Separate FTS predicates (name @1@ $q OR description @2@ $q) incur index split penalty. Merge into single multi-field index.",
-    "fingerprint": "3708343376e3cbe4bc6a2332d17fceb308983c62acd3fd038bfa03dff8851551"
   }
 ]

@@ -159,7 +159,7 @@ impl SurqlRule for Surql018UnindexedOrderBy {
                         if let Some(first_col_cap) = field_re.captures(order) {
                             if let Some(col) = first_col_cap.get(1) {
                                 let col_name = col.as_str();
-                                if col_name != "id" && !schema.has_index_on_field(from, col_name) {
+                                if col_name != "id" && schema.tables.contains_key(from) && !schema.has_index_on_field(from, col_name) {
                                     violations.push(create_violation(
                                         self,
                                         doc,
@@ -258,6 +258,17 @@ mod tests {
         "#;
         let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
         let mut schema = SchemaRegistry::new();
+        schema.tables.insert(
+            "items".to_string(),
+            crate::schema::registry::TableMeta {
+                name: "items".to_string(),
+                is_schemfull: true,
+                is_schemaless: false,
+                is_relation: false,
+                in_table: None,
+                out_table: None,
+            },
+        );
         schema.indexes.insert(
             "orders".to_string(),
             vec![crate::schema::registry::IndexMeta {

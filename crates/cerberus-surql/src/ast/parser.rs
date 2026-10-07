@@ -31,6 +31,29 @@ impl SurqlParser {
         Self::parse(source, file_path.to_path_buf())
     }
 
+    /// Strips leading whitespace, line comments (`--`, `//`, `#`), and block comments (`/* ... */`).
+    pub fn strip_leading_comments(mut s: &str) -> &str {
+        loop {
+            s = s.trim_start();
+            if s.starts_with("--") || s.starts_with("//") || s.starts_with('#') {
+                if let Some(pos) = s.find('\n') {
+                    s = &s[pos + 1..];
+                } else {
+                    return "";
+                }
+            } else if s.starts_with("/*") {
+                if let Some(pos) = s.find("*/") {
+                    s = &s[pos + 2..];
+                } else {
+                    return "";
+                }
+            } else {
+                break;
+            }
+        }
+        s
+    }
+
     /// Dispatches and parses a single SurrealQL statement string into a typed AST `Statement`.
     pub fn parse_statement(
         raw: &str,
@@ -38,7 +61,7 @@ impl SurqlParser {
         full_source: &str,
         doc: &SurqlDocument,
     ) -> Option<Statement> {
-        let clean = raw.trim();
+        let clean = Self::strip_leading_comments(raw).trim();
         if clean.is_empty() {
             return None;
         }
@@ -185,5 +208,31 @@ mod tests {
         let doc = SurqlParser::parse(sql, PathBuf::from("query.surql"));
         assert_eq!(doc.statements.len(), 1);
         assert!(matches!(doc.statements[0], Statement::Select(_)));
+    }
+
+    #[test]
+    fn test_parse_statements_with_leading_comments() {
+        let sql = r#"
+            -- 1. Section Header Comment
+            -- Sub-comment line
+            DEFINE INDEX OVERWRITE idx_volume_project ON volumes FIELDS project_id;
+
+            /* Multi-line block comment
+               explaining the following statement */
+            DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
+
+            # Shell style comment
+            DEFINE FIELD OVERWRITE name ON volumes TYPE string;
+        "#;
+        let doc = SurqlParser::parse(sql, PathBuf::from("schema.surql"));
+        assert_eq!(doc.statements.len(), 3);
+        assert!(matches!(doc.statements[0], Statement::DefineIndex(_)));
+        if let Statement::DefineIndex(idx) = &doc.statements[0] {
+            assert_eq!(idx.index_name, "idx_volume_project");
+            assert_eq!(idx.table_name, "volumes");
+            assert_eq!(idx.fields, vec!["project_id"]);
+        }
+        assert!(matches!(doc.statements[1], Statement::DefineTable(_)));
+        assert!(matches!(doc.statements[2], Statement::DefineField(_)));
     }
 }

@@ -38,10 +38,11 @@ DEFINE INDEX OVERWRITE idx_schema_history_project ON schema_history FIELDS proje
 DEFINE INDEX OVERWRITE idx_schema_history_schema  ON schema_history FIELDS schema_id;
 
 -- 5. СУЩНОСТИ ЛОРА
-DEFINE INDEX OVERWRITE idx_entity_project ON entities FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entity_type;
-DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
-DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_project   ON entities FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_entity_type      ON entities FIELDS project_id, entity_type;
+DEFINE INDEX OVERWRITE idx_entity_text_bm25 ON entities FIELDS name, description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_name_ft   ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_desc_ft   ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 
 -- 6. СВЯЗИ И ОТНОШЕНИЯ
 DEFINE INDEX OVERWRITE idx_rel_schema_project ON relation_schemas FIELDS project_id;

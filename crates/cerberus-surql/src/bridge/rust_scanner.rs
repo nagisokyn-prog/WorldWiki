@@ -30,6 +30,11 @@ impl<'a> RustSurqlInlineScanner<'a> {
     }
 
     pub fn scan_syntax_tree(&self, syn_file: &syn::File, path: &Path) -> Vec<Violation> {
+        let path_str = path.to_string_lossy();
+        if path_str.contains("_macros") || path_str.contains("proc_macro") {
+            return Vec::new();
+        }
+
         let mut visitor = QueryCallVisitor {
             file_path: path,
             violations: Vec::new(),
@@ -43,6 +48,11 @@ impl<'a> RustSurqlInlineScanner<'a> {
     }
 
     pub fn scan_file(&self, path: &Path) -> Vec<Violation> {
+        let path_str = path.to_string_lossy();
+        if path_str.contains("_macros") || path_str.contains("proc_macro") {
+            return Vec::new();
+        }
+
         let content = match fs::read_to_string(path) {
             Ok(c) => c,
             Err(_) => return Vec::new(),

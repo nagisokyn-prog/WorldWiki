@@ -134,15 +134,12 @@ fn extract_participant_arcs(
     let mut arcs = Vec::new();
 
     for p in promises {
-        if p.matches_participant(part) {
-            if let Some(arc_id) = p.arc_id.as_deref() {
-                if arcs_set.insert(arc_id) {
-                    if let Some(dto) = p.to_arc_dto() {
+        if p.matches_participant(part)
+            && let Some(arc_id) = p.arc_id.as_deref()
+                && arcs_set.insert(arc_id)
+                    && let Some(dto) = p.to_arc_dto() {
                         arcs.push(dto);
                     }
-                }
-            }
-        }
     }
     arcs
 }

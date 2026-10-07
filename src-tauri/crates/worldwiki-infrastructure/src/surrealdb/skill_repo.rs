@@ -32,8 +32,8 @@ impl SkillRepositoryPort for SurrealSkillRepository {
         }
 
         // 1. Детерминированный явный вызов !"Название Навыка"
-        if let Some((_, after_bang)) = trimmed_query.split_once("!\"") {
-            if let Some((manual_name, _)) = after_bang.split_once('"') {
+        if let Some((_, after_bang)) = trimmed_query.split_once("!\"")
+            && let Some((manual_name, _)) = after_bang.split_once('"') {
                 let mut res = self
                     .db
                     .query("SELECT id, name, description, prompt_text, file_path FROM ai_skills WHERE string::lowercase(name) = string::lowercase($name) LIMIT 1")
@@ -61,7 +61,6 @@ impl SkillRepositoryPort for SurrealSkillRepository {
                     }]);
                 }
             }
-        }
 
         // 2. Вызов функции fn::resolve_auto_skills или прямого запроса по BM25 и триггерам
         let proj_clean = project_id.map(|p| clean_id_str(p, "projects:").to_string());

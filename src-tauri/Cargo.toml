@@ -3,7 +3,7 @@ name = "world-wiki"
 version = "0.85.0"
 description = "A Tauri App"
 authors = ["Danila"]
-edition = "2021"
+edition = "2024"
 
 [package.metadata.cerberus]
 layer = "tauri"

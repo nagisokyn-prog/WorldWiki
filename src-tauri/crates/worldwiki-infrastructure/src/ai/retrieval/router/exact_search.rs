@@ -20,9 +20,8 @@ pub(crate) async fn fetch_exact_chapter(
         .bind(("p_clean", p_clean.to_string()))
         .bind(("num_str", num_str))
         .await
-    {
-        if let Ok(rows) = resp.take::<Vec<Value>>(0) {
-            if !rows.is_empty() {
+        && let Ok(rows) = resp.take::<Vec<Value>>(0)
+            && !rows.is_empty() {
                 let mut doc_out = format!("### Документ: Глава {}\n", ch_num);
                 for r in rows {
                     let title = r.get("title").and_then(|v| v.as_str()).unwrap_or("Фрагмент");
@@ -32,8 +31,6 @@ pub(crate) async fn fetch_exact_chapter(
                 println!("[RetrievalRouter] Exact document fetch assembled {} characters", doc_out.len());
                 return Some(doc_out);
             }
-        }
-    }
     None
 }
 
@@ -51,8 +48,7 @@ pub(crate) async fn fetch_fuzzy_entities(
         .bind(("p_raw", p_raw.to_string()))
         .bind(("p_clean", p_clean.to_string()))
         .await
-    {
-        if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        && let Ok(rows) = resp.take::<Vec<Value>>(0) {
             for row in rows {
                 let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
                 let tags: Vec<String> = row
@@ -78,5 +74,4 @@ pub(crate) async fn fetch_fuzzy_entities(
                 }
             }
         }
-    }
 }

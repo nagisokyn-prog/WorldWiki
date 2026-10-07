@@ -1,6 +1,6 @@
 use std::sync::Arc;
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::analytics::{
@@ -27,7 +27,9 @@ use worldwiki_infrastructure::surrealdb::repos::{
     SurrealRelationRepository, SurrealStoryArcRepository, SurrealTimelineRepository,
 };
 use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
-use worldwiki_ports::ai::RAGContextPort;
+use worldwiki_ports::ai::{
+    AiProfileRepository, ChatRepository, LlmStreamPort, RAGContextPort, SkillRepositoryPort,
+};
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_ports::repositories::{
     AnalyticsRepositoryPort, ChapterRepository, EntityRepository, PlanRepository,
@@ -57,52 +59,44 @@ fn build_core_domain(
     events: Arc<dyn EventPublisherPort>,
 ) -> CoreDomainServices {
     let manuscript = Arc::new(ManuscriptServices::new(
-        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&repos.chapter),
         Arc::clone(&events),
     ));
     let save_chapter_workflow = Arc::new(SaveChapterWithMentionsWorkflow::new(
-        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&repos.chapter),
         Arc::clone(&events),
     ));
     let knowledge = Arc::new(KnowledgeServices::new(
-        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
-        Arc::clone(&repos.relation) as Arc<dyn RelationRepository>,
+        Arc::clone(&repos.entity),
+        Arc::clone(&repos.relation),
         Arc::clone(&events),
     ));
     let calendar = Arc::new(CalendarServices::new());
     let plot = Arc::new(PlotServices::new(
-        Arc::clone(&repos.promise) as Arc<dyn PlotPromiseRepository>,
-        Arc::clone(&repos.plan) as Arc<dyn PlanRepository>,
+        Arc::clone(&repos.promise),
+        Arc::clone(&repos.plan),
         Arc::clone(&events),
     ));
-    let story_arcs = Arc::new(StoryArcServices::new(
-        Arc::clone(&repos.story_arc) as Arc<dyn StoryArcRepository>,
-    ));
+    let story_arcs = Arc::new(StoryArcServices::new(Arc::clone(&repos.story_arc)));
     let consistency_workflow = Arc::new(ConsistencyAuditWorkflow::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
-        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
-        Arc::clone(&repos.timeline) as Arc<dyn TimelineEventRepository>,
-        Arc::clone(&repos.promise) as Arc<dyn PlotPromiseRepository>,
+        Arc::clone(&repos.analytics),
+        Arc::clone(&repos.entity),
+        Arc::clone(&repos.chapter),
+        Arc::clone(&repos.timeline),
+        Arc::clone(&repos.promise),
     ));
-    let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-    ));
-    let timeline_inspector_service = Arc::new(TimelineInspectorService::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-    ));
-    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-    ));
-    let character_journey_service = Arc::new(CharacterJourneyService::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-    ));
-    let item_tracker_service = Arc::new(ItemTrackerService::new(
-        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
-    ));
+    let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(Arc::clone(
+        &repos.analytics,
+    )));
+    let timeline_inspector_service =
+        Arc::new(TimelineInspectorService::new(Arc::clone(&repos.analytics)));
+    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(Arc::clone(&repos.analytics)));
+    let character_journey_service =
+        Arc::new(CharacterJourneyService::new(Arc::clone(&repos.analytics)));
+    let item_tracker_service = Arc::new(ItemTrackerService::new(Arc::clone(&repos.analytics)));
     let manuscript_stats_service = Arc::new(ManuscriptAnalyticsService::new(
-        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
-        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
+        Arc::clone(&repos.chapter),
+        Arc::clone(&repos.entity),
         Arc::clone(&plot.promise_repo),
     ));
     let job_manager = Arc::new(JobManager::new());
@@ -166,18 +160,18 @@ fn build_local_ai_layer() -> Arc<LocalAiServices> {
 }
 
 struct SurrealRepos {
-    chapter: Arc<SurrealChapterRepository>,
-    entity: Arc<SurrealEntityRepository>,
-    relation: Arc<SurrealRelationRepository>,
-    promise: Arc<SurrealPlotPromiseRepository>,
-    plan: Arc<SurrealPlanRepository>,
-    story_arc: Arc<SurrealStoryArcRepository>,
-    timeline: Arc<SurrealTimelineRepository>,
-    analytics: Arc<SurrealAnalyticsRepository>,
-    rag: Arc<SurrealRAGAdapter>,
-    chat: Arc<SurrealChatRepository>,
-    profile: Arc<SurrealAiProfileRepository>,
-    skill: Arc<SurrealSkillRepository>,
+    chapter: Arc<dyn ChapterRepository>,
+    entity: Arc<dyn EntityRepository>,
+    relation: Arc<dyn RelationRepository>,
+    promise: Arc<dyn PlotPromiseRepository>,
+    plan: Arc<dyn PlanRepository>,
+    story_arc: Arc<dyn StoryArcRepository>,
+    timeline: Arc<dyn TimelineEventRepository>,
+    analytics: Arc<dyn AnalyticsRepositoryPort>,
+    rag: Arc<dyn RAGContextPort>,
+    chat: Arc<dyn ChatRepository>,
+    profile: Arc<dyn AiProfileRepository>,
+    skill: Arc<dyn SkillRepositoryPort>,
 }
 
 impl SurrealRepos {
@@ -212,18 +206,18 @@ pub fn build_surreal_app_services(
     let repos = SurrealRepos::new(&db);
     let core = build_core_domain(&repos, Arc::clone(&event_publisher));
 
-    let workflows =
-        build_workflows_and_tools(&core, Arc::clone(&repos.rag) as Arc<dyn RAGContextPort>);
+    let workflows = build_workflows_and_tools(&core, Arc::clone(&repos.rag));
 
-    let stream_adapter = Arc::new(worldwiki_infrastructure::ai::ClawStreamAdapter::new());
+    let stream_adapter: Arc<dyn LlmStreamPort> =
+        Arc::new(worldwiki_infrastructure::ai::ClawStreamAdapter::new());
 
     let chat = Arc::new(ChatServices::new(
-        repos.chat,
-        repos.profile,
+        Arc::clone(&repos.chat),
+        Arc::clone(&repos.profile),
         stream_adapter,
         event_publisher,
-        Some(repos.rag),
-        Some(repos.skill),
+        Some(Arc::clone(&repos.rag)),
+        Some(Arc::clone(&repos.skill)),
         Some(Arc::clone(&workflows.ai_tools)),
     ));
 

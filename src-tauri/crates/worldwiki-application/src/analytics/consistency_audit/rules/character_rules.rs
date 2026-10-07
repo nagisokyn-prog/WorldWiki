@@ -10,24 +10,24 @@ pub fn eval_deceased_rules(
     anomalies: &mut Vec<ContradictionAnomaly>,
 ) {
     for ent in &matrix.entities {
-        if ent.is_deceased {
-            if let Some(death_m_abs) = ent.death_m_abs {
-                for ev in &timeline_data.events {
-                    if is_participant(&ev.participants, &ent.id) && ev.m_abs > death_m_abs {
-                        anomalies.push(ContradictionAnomaly {
-                            rule: ContradictionRule::DeceasedEntityActive,
-                            severity: ContradictionSeverity::Critical,
-                            title: format!("Погибший персонаж участвует в событии: {}", ent.name),
-                            description: format!(
-                                "Персонаж '{}' погиб в минуту {}, но участвует в событии '{}' (минута {})",
-                                ent.name, death_m_abs, ev.title, ev.m_abs
-                            ),
-                            entity_ids: vec![ent.id.clone()],
-                            chapter_ids: vec![],
-                            event_ids: vec![ev.event_id.clone()],
-                            promise_ids: vec![],
-                        });
-                    }
+        if ent.is_deceased
+            && let Some(death_m_abs) = ent.death_m_abs
+        {
+            for ev in &timeline_data.events {
+                if is_participant(&ev.participants, &ent.id) && ev.m_abs > death_m_abs {
+                    anomalies.push(ContradictionAnomaly {
+                        rule: ContradictionRule::DeceasedEntityActive,
+                        severity: ContradictionSeverity::Critical,
+                        title: format!("Погибший персонаж участвует в событии: {}", ent.name),
+                        description: format!(
+                            "Персонаж '{}' погиб в минуту {}, но участвует в событии '{}' (минута {})",
+                            ent.name, death_m_abs, ev.title, ev.m_abs
+                        ),
+                        entity_ids: vec![ent.id.clone()],
+                        chapter_ids: vec![],
+                        event_ids: vec![ev.event_id.clone()],
+                        promise_ids: vec![],
+                    });
                 }
             }
         }

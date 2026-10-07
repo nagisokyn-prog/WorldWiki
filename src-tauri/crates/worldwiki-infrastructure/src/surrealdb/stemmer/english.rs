@@ -23,21 +23,19 @@ pub(crate) fn stem_english(word: &str) -> String {
                 s.push('e');
             }
         }
-    } else if let Some(stem) = s.strip_suffix("ing") {
-        if stem.chars().any(is_english_vowel) {
+    } else if let Some(stem) = s.strip_suffix("ing")
+        && stem.chars().any(is_english_vowel) {
             s = stem.to_string();
             if s.ends_with("at") || s.ends_with("bl") || s.ends_with("iz") {
                 s.push('e');
             }
         }
-    }
 
     // Step 1c: y -> i if vowel in stem
-    if let Some(stem) = s.strip_suffix('y') {
-        if stem.chars().any(is_english_vowel) {
+    if let Some(stem) = s.strip_suffix('y')
+        && stem.chars().any(is_english_vowel) {
             s = format!("{stem}i");
         }
-    }
 
     s
 }

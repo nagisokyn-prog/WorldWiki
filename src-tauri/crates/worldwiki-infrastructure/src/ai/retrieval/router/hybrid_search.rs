@@ -28,8 +28,7 @@ pub(crate) async fn fetch_bm25_candidates(
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
         .await
-    {
-        if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        && let Ok(rows) = resp.take::<Vec<Value>>(0) {
             for row in rows {
                 let id = row.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
                 let name = row.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -55,7 +54,6 @@ pub(crate) async fn fetch_bm25_candidates(
                 });
             }
         }
-    }
 
     // 2. Entity Chunks — string::lowercase CONTAINS (надёжно в любом контексте)
     let chunk_query = "SELECT id, entity_id, content FROM entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (content != NONE AND string::lowercase(type::string(content)) CONTAINS string::lowercase($q)) LIMIT 6";
@@ -66,8 +64,7 @@ pub(crate) async fn fetch_bm25_candidates(
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
         .await
-    {
-        if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        && let Ok(rows) = resp.take::<Vec<Value>>(0) {
             for row in rows {
                 let ent_id = row.get("entity_id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
                 let content = row.get("content").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -86,7 +83,6 @@ pub(crate) async fn fetch_bm25_candidates(
                 });
             }
         }
-    }
 
     // 3. Chapters BM25
     let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (title @1@ $q OR content @2@ $q) LIMIT 4";
@@ -97,8 +93,7 @@ pub(crate) async fn fetch_bm25_candidates(
         .bind(("p_clean", scope.p_clean.to_string()))
         .bind(("q", scope.query))
         .await
-    {
-        if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        && let Ok(rows) = resp.take::<Vec<Value>>(0) {
             for row in rows {
                 let title = row.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string();
                 let content = row.get("content").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -120,7 +115,6 @@ pub(crate) async fn fetch_bm25_candidates(
                 });
             }
         }
-    }
 }
 
 pub(crate) async fn fetch_semantic_candidates(
@@ -139,8 +133,7 @@ pub(crate) async fn fetch_semantic_candidates(
             .bind(("p_clean", scope.p_clean.to_string()))
             .bind(("vec", query_vec.clone()))
             .await
-        {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+            && let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
                     let sim = row.get("sim").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                     if sim >= 0.65 {
@@ -159,7 +152,6 @@ pub(crate) async fn fetch_semantic_candidates(
                     }
                 }
             }
-        }
 
         // Vector search on entities
         let vec_ent_sql = "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND embeddings.nemotron != NONE ORDER BY sim DESC LIMIT 5";
@@ -170,8 +162,7 @@ pub(crate) async fn fetch_semantic_candidates(
             .bind(("p_clean", scope.p_clean.to_string()))
             .bind(("vec", query_vec))
             .await
-        {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+            && let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
                     let sim = row.get("sim").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
                     if sim >= 0.65 {
@@ -191,7 +182,6 @@ pub(crate) async fn fetch_semantic_candidates(
                     }
                 }
             }
-        }
     }
 }
 
@@ -209,8 +199,8 @@ pub(crate) async fn expand_graph_relations(
             })
             .collect();
         let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds LIMIT 10";
-        if let Ok(mut resp) = db.query(rel_sql).bind(("seeds", seed_list)).await {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        if let Ok(mut resp) = db.query(rel_sql).bind(("seeds", seed_list)).await
+            && let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for r in rows {
                     let from = r.get("in").and_then(|v| v.as_str()).unwrap_or_default();
                     let to = r.get("out").and_then(|v| v.as_str()).unwrap_or_default();
@@ -221,7 +211,6 @@ pub(crate) async fn expand_graph_relations(
                     ));
                 }
             }
-        }
     }
     relations_xml
 }

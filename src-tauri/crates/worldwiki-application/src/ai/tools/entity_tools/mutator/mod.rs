@@ -138,10 +138,10 @@ async fn upsert_entity(
 
     let tags = merge_entity_tags(existing_tags, obj.get("tags"));
 
-    if name.is_empty() {
-        if let Some(n) = base_attributes.get("название").and_then(|v| v.as_str()) {
-            name = n.trim().to_string();
-        }
+    if name.is_empty()
+        && let Some(n) = base_attributes.get("название").and_then(|v| v.as_str())
+    {
+        name = n.trim().to_string();
     }
 
     if name.is_empty() {

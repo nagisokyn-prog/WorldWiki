@@ -65,20 +65,20 @@ impl ChatServices {
     }
 
     pub fn respond_tool_approval(&self, call_id: &str, approved: bool) -> bool {
-        if let Ok(mut map) = self.pending_approvals.write() {
-            if let Some(tx) = map.remove(call_id) {
-                return tx.send(approved).is_ok();
-            }
+        if let Ok(mut map) = self.pending_approvals.write()
+            && let Some(tx) = map.remove(call_id)
+        {
+            return tx.send(approved).is_ok();
         }
         false
     }
 
     pub fn abort_generation(&self, chat_id: &str) -> bool {
-        if let Ok(map) = self.active_cancellations.read() {
-            if let Some(flag) = map.get(chat_id) {
-                flag.store(true, std::sync::atomic::Ordering::Relaxed);
-                return true;
-            }
+        if let Ok(map) = self.active_cancellations.read()
+            && let Some(flag) = map.get(chat_id)
+        {
+            flag.store(true, std::sync::atomic::Ordering::Relaxed);
+            return true;
         }
         false
     }

@@ -109,15 +109,14 @@ pub async fn list_yandex_disk_backups_inner(
                 item.get("name").and_then(|n| n.as_str()),
                 item.get("created").and_then(|c| c.as_str()),
                 item.get("size").and_then(|s| s.as_u64()),
-            ) {
-                if name.ends_with(".wwiki") || name.ends_with(".zip") {
+            )
+                && (name.ends_with(".wwiki") || name.ends_with(".zip")) {
                     backups.push(YandexBackupFile {
                         name: name.to_string(),
                         created: created.to_string(),
                         size,
                     });
                 }
-            }
         }
     }
 

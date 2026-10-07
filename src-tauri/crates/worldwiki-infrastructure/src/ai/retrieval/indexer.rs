@@ -65,8 +65,7 @@ pub async fn reindex_project_lore_inner(
         .bind(("p_raw", p_raw.clone()))
         .bind(("p_clean", p_clean.clone()))
         .await
-    {
-        if let Ok(chapters) = resp.take::<Vec<serde_json::Value>>(0) {
+        && let Ok(chapters) = resp.take::<Vec<serde_json::Value>>(0) {
             for chap in chapters {
                 let chap_id_str = chap
                     .get("id")
@@ -101,7 +100,6 @@ pub async fn reindex_project_lore_inner(
                 }
             }
         }
-    }
 
     // 3. Collect and chunk all entities
     let ent_query = "SELECT id, name, entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
@@ -110,8 +108,7 @@ pub async fn reindex_project_lore_inner(
         .bind(("p_raw", p_raw.clone()))
         .bind(("p_clean", p_clean.clone()))
         .await
-    {
-        if let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
+        && let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
             for ent in entities {
                 let ent_id_str = ent
                     .get("id")
@@ -149,7 +146,6 @@ pub async fn reindex_project_lore_inner(
                 }
             }
         }
-    }
 
     if pending_chunks.is_empty() {
         println!("[INDEXER] Проект '{project_id}' пуст, проиндексировано 0 чанков.");

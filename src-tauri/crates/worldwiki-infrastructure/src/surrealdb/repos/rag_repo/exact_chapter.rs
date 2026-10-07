@@ -27,13 +27,11 @@ pub(crate) async fn fetch_exact_chapter(
                 .bind(("p_clean", p_clean.to_string()))
                 .bind(("num_str", num_str))
                 .await
-            {
-                if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                && let Ok(rows) = resp.take::<Vec<Value>>(0) {
                     for r in rows {
                         list.push(r);
                     }
                 }
-            }
         }
     }
     list

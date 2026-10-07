@@ -146,26 +146,24 @@ pub(crate) async fn get_item_tracker_impl(
                 .participant_ids
                 .iter()
                 .any(|p| clean_id(p) == item_clean);
-            if matches {
-                if let Some(ref c_id) = prom.chapter_id {
+            if matches
+                && let Some(ref c_id) = prom.chapter_id {
                     let clean_cid = clean_id(c_id);
                     if let Some((order, _)) = chapter_map.get(clean_cid) {
                         appearance_chapter_orders.push(*order);
                     }
                 }
-            }
         }
 
         for ev in &events {
             let matches = ev.participants.iter().any(|p| clean_id(p) == item_clean);
-            if matches {
-                if let Some(ref c_id) = ev.chapter_id {
+            if matches
+                && let Some(ref c_id) = ev.chapter_id {
                     let clean_cid = clean_id(c_id);
                     if let Some((order, _)) = chapter_map.get(clean_cid) {
                         appearance_chapter_orders.push(*order);
                     }
                 }
-            }
         }
 
         appearance_chapter_orders.sort_unstable();

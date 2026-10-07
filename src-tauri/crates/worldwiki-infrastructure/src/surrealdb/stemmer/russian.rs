@@ -58,12 +58,11 @@ fn strip_russian_perfective_gerund(rv: &mut String) -> bool {
         }
     }
     for ending in endings_group1 {
-        if let Some(stripped) = rv.strip_suffix(ending) {
-            if stripped.ends_with('а') || stripped.ends_with('я') {
+        if let Some(stripped) = rv.strip_suffix(ending)
+            && (stripped.ends_with('а') || stripped.ends_with('я')) {
                 *rv = stripped.to_string();
                 return true;
             }
-        }
     }
     false
 }
@@ -105,12 +104,11 @@ fn strip_russian_participle(rv: &mut String) -> bool {
         }
     }
     for ending in endings_group1 {
-        if let Some(stripped) = rv.strip_suffix(ending) {
-            if stripped.ends_with('а') || stripped.ends_with('я') {
+        if let Some(stripped) = rv.strip_suffix(ending)
+            && (stripped.ends_with('а') || stripped.ends_with('я')) {
                 *rv = stripped.to_string();
                 return true;
             }
-        }
     }
     false
 }
@@ -133,12 +131,11 @@ fn strip_russian_verb(rv: &mut String) -> bool {
         }
     }
     for ending in endings_group1 {
-        if let Some(stripped) = rv.strip_suffix(ending) {
-            if stripped.ends_with('а') || stripped.ends_with('я') {
+        if let Some(stripped) = rv.strip_suffix(ending)
+            && (stripped.ends_with('а') || stripped.ends_with('я')) {
                 *rv = stripped.to_string();
                 return true;
             }
-        }
     }
     false
 }

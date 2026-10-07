@@ -10,8 +10,8 @@ fn update_point_if_auto_extend(
     let mut modified = false;
     match val {
         serde_json::Value::Object(map) => {
-            if let Some(auto_val) = map.get("is_auto_extend") {
-                if auto_val.as_bool() == Some(true) {
+            if let Some(auto_val) = map.get("is_auto_extend")
+                && auto_val.as_bool() == Some(true) {
                     if let Some(ch) = new_point.get("chapter_id") {
                         map.insert("chapter_id".to_string(), ch.clone());
                     }
@@ -20,7 +20,6 @@ fn update_point_if_auto_extend(
                     }
                     return true;
                 }
-            }
             for (_k, v) in map.iter_mut() {
                 if update_point_if_auto_extend(v, new_point) {
                     modified = true;
@@ -72,9 +71,9 @@ pub async fn auto_extend_entities_inner(
             .get("id")
             .and_then(|i| i.as_str())
             .map(|s| s.to_string());
-        if let Some(id_str) = id_opt {
-            if let Some(attr) = entity.get_mut("attributes") {
-                if update_point_if_auto_extend(attr, &new_point) {
+        if let Some(id_str) = id_opt
+            && let Some(attr) = entity.get_mut("attributes")
+                && update_point_if_auto_extend(attr, &new_point) {
                     let clean_id = id_str.trim_start_matches("entities:").to_string();
                     let _ = db
                         .query("fn::update_entity_attributes(type::record('entities', $id), $attr);")
@@ -83,8 +82,6 @@ pub async fn auto_extend_entities_inner(
                         .await;
                     updated_count += 1;
                 }
-            }
-        }
     }
 
     Ok(updated_count)
@@ -154,9 +151,9 @@ pub async fn heal_deleted_chapter_inner(
             .get("id")
             .and_then(|i| i.as_str())
             .map(|s| s.to_string());
-        if let Some(id_str) = id_opt {
-            if let Some(attr) = entity.get_mut("attributes") {
-                if heal_point_if_matches_chapter(
+        if let Some(id_str) = id_opt
+            && let Some(attr) = entity.get_mut("attributes")
+                && heal_point_if_matches_chapter(
                     attr,
                     deleted_chapter_id,
                     fallback_point.as_ref(),
@@ -169,8 +166,6 @@ pub async fn heal_deleted_chapter_inner(
                         .await;
                     updated_count += 1;
                 }
-            }
-        }
     }
 
     Ok(updated_count)

@@ -80,11 +80,10 @@ pub async fn download_and_restore_yandex(
         .await
         .map_err(IpcError::from)?;
 
-    if let Some(dir) = temp_file_path.parent() {
-        if let Err(e) = fs::remove_dir_all(dir) {
+    if let Some(dir) = temp_file_path.parent()
+        && let Err(e) = fs::remove_dir_all(dir) {
             eprintln!("[BACKUP] Temp dir clean error: {e}");
         }
-    }
 
     Ok(())
 }

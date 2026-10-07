@@ -32,40 +32,33 @@ pub async fn get_chapter_hierarchy_inner(
     let edges: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("relations")).and_then(|e| e.as_array()).cloned().unwrap_or_default();
 
     for vol in &mut volumes {
-        if let Some(id) = vol.get("id").and_then(|i| i.as_str()) {
-            if let Some(edge) = edges
+        if let Some(id) = vol.get("id").and_then(|i| i.as_str())
+            && let Some(edge) = edges
                 .iter()
                 .find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id))
-            {
-                if let Some(so) = edge.get("sort_order") {
-                    if let Some(obj) = vol.as_object_mut() {
+                && let Some(so) = edge.get("sort_order")
+                    && let Some(obj) = vol.as_object_mut() {
                         obj.insert("sort_order".to_string(), so.clone());
                     }
-                }
-            }
-        }
     }
 
     for chap in &mut chapters {
-        if let Some(id) = chap.get("id").and_then(|i| i.as_str()) {
-            if let Some(edge) = edges.iter().find(|e| {
+        if let Some(id) = chap.get("id").and_then(|i| i.as_str())
+            && let Some(edge) = edges.iter().find(|e| {
                 e.get("out")
                     .and_then(|o| o.as_str())
                     .map(|o| compare_record_ids(o, id))
                     .unwrap_or(false)
-            }) {
-                if let Some(obj) = chap.as_object_mut() {
-                    if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
-                        if parent.starts_with("volumes:") {
+            })
+                && let Some(obj) = chap.as_object_mut() {
+                    if let Some(parent) = edge.get("in").and_then(|i| i.as_str())
+                        && parent.starts_with("volumes:") {
                             obj.insert("volume_id".to_string(), serde_json::Value::String(parent.to_string()));
                         }
-                    }
                     if let Some(so) = edge.get("sort_order") {
                         obj.insert("sort_order".to_string(), so.clone());
                     }
                 }
-            }
-        }
     }
 
     volumes.sort_by_key(|v| v.get("sort_order").and_then(|s| s.as_i64()).unwrap_or(0));

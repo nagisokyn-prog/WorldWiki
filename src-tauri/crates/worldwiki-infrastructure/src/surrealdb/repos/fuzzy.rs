@@ -46,14 +46,13 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
             let prev_i = d.get(i - 1).and_then(|r| r.get(j)).copied().unwrap_or(0);
             let prev_j = d.get(i).and_then(|r| r.get(j - 1)).copied().unwrap_or(0);
             let prev_diag = d.get(i - 1).and_then(|r| r.get(j - 1)).copied().unwrap_or(0);
-            if let Some(r) = d.get_mut(i) {
-                if let Some(cell) = r.get_mut(j) {
+            if let Some(r) = d.get_mut(i)
+                && let Some(cell) = r.get_mut(j) {
                     *cell = std::cmp::min(
                         std::cmp::min(prev_i + 1, prev_j + 1),
                         prev_diag + cost,
                     );
                 }
-            }
         }
     }
     d.get(m).and_then(|r| r.get(n)).copied().unwrap_or(0)

@@ -67,13 +67,12 @@ impl RetrievalRouter {
             .to_string();
 
         // 0. Exact Document Retrieval (if user specifically asked for Chapter/Volume)
-        if let Some(ch_num) = intent.chapter_num {
-            if let Some(doc_out) =
+        if let Some(ch_num) = intent.chapter_num
+            && let Some(doc_out) =
                 exact_search::fetch_exact_chapter(db, &p_raw, &p_clean, ch_num).await
             {
                 return Some(doc_out);
             }
-        }
 
         let mut candidates: Vec<RetrievalCandidate> = Vec::new();
         let mut entity_ids: HashSet<String> = HashSet::new();

@@ -37,31 +37,31 @@ impl ContextAssembler {
         });
 
         // 2. Явный выделенный фрагмент (Ask WoWiLon reference - Приоритет 1)
-        if let Some(selection) = quoted_selection {
-            if !selection.trim().is_empty() {
-                let text = format!("\n[ЦИТИРУЕМЫЙ ФРАГМЕНТ ИЗ ПРЕДЫДУЩЕГО СООБЩЕНИЯ]:\n«{}»\n", selection);
-                items.push(ContextItem {
-                    source: ContextSource::ExplicitReference,
-                    source_id: Some("user_selection".to_string()),
-                    tokens: ContextBudgetManager::estimate_tokens(&text),
-                    priority: 1,
-                    content: text,
-                });
-            }
+        if let Some(selection) = quoted_selection
+            && !selection.trim().is_empty()
+        {
+            let text = format!("\n[ЦИТИРУЕМЫЙ ФРАГМЕНТ ИЗ ПРЕДЫДУЩЕГО СООБЩЕНИЯ]:\n«{}»\n", selection);
+            items.push(ContextItem {
+                source: ContextSource::ExplicitReference,
+                source_id: Some("user_selection".to_string()),
+                tokens: ContextBudgetManager::estimate_tokens(&text),
+                priority: 1,
+                content: text,
+            });
         }
 
         // 3. Скилл-инструкция (Приоритет 2)
-        if let Some(skill) = skill_instruction {
-            if !skill.trim().is_empty() {
-                let text = format!("\n[АКТИВНЫЙ НАВЫК ПИСАТЕЛЯ]:\n{}\n", skill);
-                items.push(ContextItem {
-                    source: ContextSource::ToolResult,
-                    source_id: Some("active_skill".to_string()),
-                    tokens: ContextBudgetManager::estimate_tokens(&text),
-                    priority: 2,
-                    content: text,
-                });
-            }
+        if let Some(skill) = skill_instruction
+            && !skill.trim().is_empty()
+        {
+            let text = format!("\n[АКТИВНЫЙ НАВЫК ПИСАТЕЛЯ]:\n{}\n", skill);
+            items.push(ContextItem {
+                source: ContextSource::ToolResult,
+                source_id: Some("active_skill".to_string()),
+                tokens: ContextBudgetManager::estimate_tokens(&text),
+                priority: 2,
+                content: text,
+            });
         }
 
         // 4. Окрестность диалога по дереву Lineage (Приоритет 2 для ±1..2, Приоритет 3 для остальных)

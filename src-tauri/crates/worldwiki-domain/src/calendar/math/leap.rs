@@ -15,10 +15,11 @@ pub fn get_days_in_year(calendar: &CalendarData, year: i32) -> i32 {
     let mut days = 0;
     for (i, month) in calendar.months.iter().enumerate() {
         let mut m_days = month.дней;
-        if let Some(rule) = &calendar.custom_leap_rule {
-            if rule.месяц == i as i32 && is_leap_year(calendar, year) {
-                m_days += rule.день_смещения;
-            }
+        if let Some(rule) = &calendar.custom_leap_rule
+            && rule.месяц == i as i32
+            && is_leap_year(calendar, year)
+        {
+            m_days += rule.день_смещения;
         }
         days += m_days;
     }

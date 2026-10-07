@@ -56,10 +56,10 @@ pub async fn inspect_entity(
 
     // 2. Try cleaned id with "entities:" prefix
     let cleaned_id = clean_record_id("entities", query);
-    if cleaned_id != query {
-        if let Ok(card) = knowledge.get_full_card(&cleaned_id).await {
-            return Ok(serde_json::to_value(card).unwrap_or_default());
-        }
+    if cleaned_id != query
+        && let Ok(card) = knowledge.get_full_card(&cleaned_id).await
+    {
+        return Ok(serde_json::to_value(card).unwrap_or_default());
     }
 
     // Fallback: search by name/query in the project

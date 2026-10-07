@@ -32,11 +32,10 @@ pub async fn get_entities_batch_inner(
     }
 
     for entity in entities {
-        if let Some(Value::Array(arr)) = result_map.get_mut(&entity.entity_type) {
-            if let Ok(val) = serde_json::to_value(entity) {
+        if let Some(Value::Array(arr)) = result_map.get_mut(&entity.entity_type)
+            && let Ok(val) = serde_json::to_value(entity) {
                 arr.push(val);
             }
-        }
     }
 
     Ok(result_map)

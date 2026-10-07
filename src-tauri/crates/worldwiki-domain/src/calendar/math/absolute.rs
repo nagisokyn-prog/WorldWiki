@@ -32,10 +32,11 @@ pub fn get_absolute_minute(
 
     for m in 0..month {
         let mut m_days = calendar.months.get(m as usize).map(|x| x.дней).unwrap_or(0);
-        if let Some(rule) = &calendar.custom_leap_rule {
-            if rule.месяц == m && is_leap_year(calendar, actual_year) {
-                m_days += rule.день_смещения;
-            }
+        if let Some(rule) = &calendar.custom_leap_rule
+            && rule.месяц == m
+            && is_leap_year(calendar, actual_year)
+        {
+            m_days += rule.день_смещения;
         }
         total_days += m_days as i64;
     }
@@ -94,10 +95,11 @@ pub fn get_date_from_absolute(
     let mut month = 0;
     for (m, m_data) in calendar.months.iter().enumerate() {
         let mut m_days = m_data.дней;
-        if let Some(rule) = &calendar.custom_leap_rule {
-            if rule.месяц == m as i32 && is_leap_year(calendar, year) {
-                m_days += rule.день_смещения;
-            }
+        if let Some(rule) = &calendar.custom_leap_rule
+            && rule.месяц == m as i32
+            && is_leap_year(calendar, year)
+        {
+            m_days += rule.день_смещения;
         }
         if total_days >= m_days as i64 {
             total_days -= m_days as i64;

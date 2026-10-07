@@ -24,11 +24,10 @@ pub fn flatten_thing(val: &mut Value) {
                         .or_else(|| id_field.as_str())
                         .map(|s| s.to_string())
                 });
-                if let (Some(tb), Some(id_str)) = (tb_opt, id_opt) {
-                    if !tb.is_empty() && !id_str.is_empty() {
+                if let (Some(tb), Some(id_str)) = (tb_opt, id_opt)
+                    && !tb.is_empty() && !id_str.is_empty() {
                         *v = Value::String(format!("{}:{}", tb, id_str));
                     }
-                }
             }
         }
     }

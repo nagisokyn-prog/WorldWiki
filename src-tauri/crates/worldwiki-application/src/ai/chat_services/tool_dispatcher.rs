@@ -29,7 +29,7 @@ impl ChatToolDispatcher {
             "\n🔥🔥🔥 [BACKEND TOOL EXECUTE] mode='{}' tool='{}' project='{}' chat='{}'\n├─ Input: {}",
             ctx.mode, ctx.name, ctx.project_id, ctx.chat_id, ctx.input
         );
-        let Some(ref tools) = ctx.ai_tools else {
+        let Some(tools) = ctx.ai_tools else {
             println!("└─ Error: AI tools not available in current environment");
             return (
                 "AI tools are not available in current environment".to_string(),
@@ -66,8 +66,8 @@ impl ChatToolDispatcher {
             && !ctx.chat_id.is_empty()
             && ctx.mode != "direct";
 
-        if is_consequential {
-            if let Err(msg) = super::approval::ConsequentialApproval::request_and_await_approval(
+        if is_consequential
+            && let Err(msg) = super::approval::ConsequentialApproval::request_and_await_approval(
                 ctx.pending_approvals,
                 ctx.event_publisher,
                 ctx.chat_id,
@@ -76,9 +76,8 @@ impl ChatToolDispatcher {
                 ctx.input,
             )
             .await
-            {
-                return (msg.to_string(), true);
-            }
+        {
+            return (msg.to_string(), true);
         }
 
         // 3. Execution with Project ID Auto-injection
@@ -113,10 +112,11 @@ impl ChatToolDispatcher {
             "entity_manage" | "manage_entity" => {
                 let action = ctx.input.get("action").and_then(|v| v.as_str()).unwrap_or("");
                 let mut payload = ctx.input.get("payload").cloned().unwrap_or(json!({}));
-                if let Value::Object(ref mut map) = payload {
-                    if !map.contains_key("project_id") && !ctx.project_id.is_empty() {
-                        map.insert("project_id".to_string(), Value::String(ctx.project_id.to_string()));
-                    }
+                if let Value::Object(ref mut map) = payload
+                    && !map.contains_key("project_id")
+                    && !ctx.project_id.is_empty()
+                {
+                    map.insert("project_id".to_string(), Value::String(ctx.project_id.to_string()));
                 }
                 tools.manage_entity(action, payload).await
             }
@@ -139,10 +139,11 @@ impl ChatToolDispatcher {
             "timeline_manage" | "chronology" | "timeline_manager" => {
                 let action = ctx.input.get("action").and_then(|v| v.as_str()).unwrap_or("");
                 let mut payload = ctx.input.get("payload").cloned().unwrap_or(json!({}));
-                if let Value::Object(ref mut map) = payload {
-                    if !map.contains_key("project_id") && !ctx.project_id.is_empty() {
-                        map.insert("project_id".to_string(), Value::String(ctx.project_id.to_string()));
-                    }
+                if let Value::Object(ref mut map) = payload
+                    && !map.contains_key("project_id")
+                    && !ctx.project_id.is_empty()
+                {
+                    map.insert("project_id".to_string(), Value::String(ctx.project_id.to_string()));
                 }
                 tools.chronology(action, payload).await
             }

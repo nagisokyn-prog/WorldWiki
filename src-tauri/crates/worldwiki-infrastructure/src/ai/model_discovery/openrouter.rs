@@ -36,11 +36,10 @@ pub(crate) async fn fetch_openrouter(trimmed_key: Option<&str>) -> Result<Vec<Ai
         reqwest::header::HeaderValue::from_static("WorldWiki"),
     );
 
-    if let Some(key) = trimmed_key {
-        if let Ok(val) = reqwest::header::HeaderValue::from_str(&format!("Bearer {}", key)) {
+    if let Some(key) = trimmed_key
+        && let Ok(val) = reqwest::header::HeaderValue::from_str(&format!("Bearer {}", key)) {
             headers.insert(reqwest::header::AUTHORIZATION, val);
         }
-    }
 
     let client = reqwest::Client::builder()
         .default_headers(headers)

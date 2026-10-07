@@ -26,22 +26,8 @@ impl LlmTokenizer {
         let c_text = CString::new(text)?;
         let mut tokens = vec![0 as llama_token; text.len() + 16];
 
-        let n_tokens = llama_tokenize(
-            vocab,
-            c_text.as_ptr(),
-            text.len() as i32,
-            tokens.as_mut_ptr(),
-            tokens.len() as i32,
-            add_bos,
-            parse_special,
-        );
-
-        if n_tokens < 0 {
-            // Negative value indicates required buffer size.
-            let required_size = (-n_tokens) as usize;
-            tokens.resize(required_size, 0);
-
-            let n2 = llama_tokenize(
+        let n_tokens = unsafe {
+            llama_tokenize(
                 vocab,
                 c_text.as_ptr(),
                 text.len() as i32,
@@ -49,9 +35,29 @@ impl LlmTokenizer {
                 tokens.len() as i32,
                 add_bos,
                 parse_special,
-            );
+            )
+        };
+
+        if n_tokens < 0 {
+            // Negative value indicates required buffer size.
+            let required_size = (-n_tokens) as usize;
+            tokens.resize(required_size, 0);
+
+            let n2 = unsafe {
+                llama_tokenize(
+                    vocab,
+                    c_text.as_ptr(),
+                    text.len() as i32,
+                    tokens.as_mut_ptr(),
+                    tokens.len() as i32,
+                    add_bos,
+                    parse_special,
+                )
+            };
             if n2 < 0 {
-                return Err(LlmError::TokenizationFailed("Second pass tokenization failed".into()));
+                return Err(LlmError::TokenizationFailed(
+                    "Second pass tokenization failed".into(),
+                ));
             }
             tokens.truncate(n2 as usize);
         } else {
@@ -65,21 +71,27 @@ impl LlmTokenizer {
     // SAFETY:
     // 1. Caller guarantees `vocab` is a valid, non-null pointer to model vocabulary.
     // 2. Caller guarantees `buf` is a valid, writable byte slice.
-    pub(crate) unsafe fn token_to_piece(vocab: *const llama_vocab, token: llama_token, buf: &mut [u8]) -> i32 {
-        llama_token_to_piece(
-            vocab,
-            token,
-            buf.as_mut_ptr() as *mut c_char,
-            buf.len() as i32,
-            0,
-            false,
-        )
+    pub(crate) unsafe fn token_to_piece(
+        vocab: *const llama_vocab,
+        token: llama_token,
+        buf: &mut [u8],
+    ) -> i32 {
+        unsafe {
+            llama_token_to_piece(
+                vocab,
+                token,
+                buf.as_mut_ptr() as *mut c_char,
+                buf.len() as i32,
+                0,
+                false,
+            )
+        }
     }
 
     /// Checks if a token represents an End-Of-Generation (EOG) token in the vocabulary.
     // SAFETY: Caller guarantees `vocab` is a valid, non-null pointer to model vocabulary.
     pub(crate) unsafe fn is_eog(vocab: *const llama_vocab, token: llama_token) -> bool {
-        llama_vocab_is_eog(vocab, token)
+        unsafe { llama_vocab_is_eog(vocab, token) }
     }
 
     /// Detects stop sequences for ChatML, Llama-3, and DeepSeek templates.

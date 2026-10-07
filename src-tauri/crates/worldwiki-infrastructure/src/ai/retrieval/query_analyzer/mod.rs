@@ -43,26 +43,24 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
         if is_chapter_kw || is_volume_kw {
             // Check preceding word (e.g. "первая глава", "3 глава")
             let mut num: Option<i64> = None;
-            if i > 0 {
-                if let Some(prev) = words.get(i - 1) {
+            if i > 0
+                && let Some(prev) = words.get(i - 1) {
                     num = prev
                         .parse::<i64>()
                         .ok()
                         .or_else(|| parse_roman_numeral(prev))
                         .or_else(|| parse_russian_ordinal(prev));
                 }
-            }
 
             // Check following word (e.g. "глава 1", "глава первая", "глава IV")
-            if num.is_none() {
-                if let Some(next) = words.get(i + 1) {
+            if num.is_none()
+                && let Some(next) = words.get(i + 1) {
                     num = next
                         .parse::<i64>()
                         .ok()
                         .or_else(|| parse_roman_numeral(next))
                         .or_else(|| parse_russian_ordinal(next));
                 }
-            }
 
             if let Some(n) = num {
                 if is_chapter_kw && intent.chapter_num.is_none() {
@@ -77,16 +75,15 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
     // Fallback: check standalone ordinal words if keyword was missing but obvious intent
     if intent.chapter_num.is_none() {
         for &word in &words {
-            if let Some(n) = parse_russian_ordinal(word) {
-                if lower.contains("глав")
+            if let Some(n) = parse_russian_ordinal(word)
+                && (lower.contains("глав")
                     || lower.contains("прочит")
                     || lower.contains("сюжет")
-                    || lower.contains("текст")
+                    || lower.contains("текст"))
                 {
                     intent.chapter_num = Some(n);
                     break;
                 }
-            }
         }
     }
 

@@ -41,8 +41,8 @@ impl ClawPayloadBuilder {
         };
 
         let mut extra_body = BTreeMap::new();
-        if let Some(ref effort) = reasoning_effort {
-            if provider == "openrouter" {
+        if let Some(ref effort) = reasoning_effort
+            && provider == "openrouter" {
                 extra_body.insert(
                     "reasoning".to_string(),
                     json!({
@@ -51,7 +51,6 @@ impl ClawPayloadBuilder {
                     }),
                 );
             }
-        }
 
         let input_messages = Self::convert_messages(request.messages);
         let tools = Self::convert_tools(request.tools);

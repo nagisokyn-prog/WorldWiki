@@ -31,29 +31,25 @@ pub async fn delete_chat_cascade(db: &Surreal<Db>, chat_id: &str) -> Result<(), 
         changed = false;
         // Проверяем прямое поле parent_id на записях chats
         for c in &all_chats {
-            if let Some(id_str) = c.get("id").and_then(clean_record_id) {
-                if !to_delete.contains(&id_str) {
-                    if let Some(parent_str) = c.get("parent_id").and_then(clean_record_id) {
-                        if to_delete.contains(&parent_str) {
+            if let Some(id_str) = c.get("id").and_then(clean_record_id)
+                && !to_delete.contains(&id_str)
+                    && let Some(parent_str) = c.get("parent_id").and_then(clean_record_id)
+                        && to_delete.contains(&parent_str) {
                             to_delete.insert(id_str.clone());
                             to_delete.insert(clean_id_str(&id_str, "chats:").to_string());
                             changed = true;
                         }
-                    }
-                }
-            }
         }
         // Проверяем рёбра contains (in = parent, out = child)
         for edge in &all_edges {
             let parent_opt = edge.get("in").and_then(clean_record_id);
             let child_opt = edge.get("out").and_then(clean_record_id);
-            if let (Some(parent_str), Some(child_str)) = (parent_opt, child_opt) {
-                if to_delete.contains(&parent_str) && !to_delete.contains(&child_str) {
+            if let (Some(parent_str), Some(child_str)) = (parent_opt, child_opt)
+                && to_delete.contains(&parent_str) && !to_delete.contains(&child_str) {
                     to_delete.insert(child_str.clone());
                     to_delete.insert(clean_id_str(&child_str, "chats:").to_string());
                     changed = true;
                 }
-            }
         }
     }
 

@@ -25,10 +25,10 @@ pub async fn find_existing_entity(
             .search(project_id, name, 5)
             .await
             .unwrap_or_default();
-        if let Some(matched) = search_res.iter().find(|e| e.name.eq_ignore_ascii_case(name)) {
-            if let Ok(card) = knowledge.get_full_card(&matched.id).await {
-                return Some(card.entity);
-            }
+        if let Some(matched) = search_res.iter().find(|e| e.name.eq_ignore_ascii_case(name))
+            && let Ok(card) = knowledge.get_full_card(&matched.id).await
+        {
+            return Some(card.entity);
         }
     }
 

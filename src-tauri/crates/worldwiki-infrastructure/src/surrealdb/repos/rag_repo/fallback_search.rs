@@ -107,8 +107,8 @@ pub(crate) async fn run_fallback_search(
             })
             .collect();
         let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds ORDER BY strength DESC LIMIT 10";
-        if let Ok(mut resp) = db.query(rel_sql).bind(("seeds", seed_list)).await {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+        if let Ok(mut resp) = db.query(rel_sql).bind(("seeds", seed_list)).await
+            && let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for r in rows {
                     list.push(serde_json::json!({
                         "source_type": "relation",
@@ -120,7 +120,6 @@ pub(crate) async fn run_fallback_search(
                     }));
                 }
             }
-        }
     }
 
     Ok(())

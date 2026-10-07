@@ -70,11 +70,10 @@ impl EmbedderService {
                 "input": text
             }));
 
-        if let Some(key) = &cfg.api_key {
-            if !key.trim().is_empty() {
+        if let Some(key) = &cfg.api_key
+            && !key.trim().is_empty() {
                 req = req.bearer_auth(key);
             }
-        }
 
         let resp = req
             .send()

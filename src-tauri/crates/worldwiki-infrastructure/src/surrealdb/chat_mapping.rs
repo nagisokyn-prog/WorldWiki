@@ -79,13 +79,10 @@ pub fn parse_chat_record(val: &Value, project_id: &str, edges: &[Value]) -> Chat
     if let Some(edge) = edges
         .iter()
         .find(|e| e.get("out").and_then(clean_record_id) == Some(id.clone()))
-    {
-        if let Some(p) = edge.get("in").and_then(clean_record_id) {
-            if p.starts_with("chats:") {
+        && let Some(p) = edge.get("in").and_then(clean_record_id)
+            && p.starts_with("chats:") {
                 parent_chat_id = Some(p);
             }
-        }
-    }
 
     Chat {
         id,

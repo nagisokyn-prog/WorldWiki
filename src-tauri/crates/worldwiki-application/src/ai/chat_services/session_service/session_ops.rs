@@ -52,10 +52,10 @@ fn build_message_branch(all_msgs: &[ChatMessage], target_idx: usize) -> Vec<&Cha
         });
     }
     branch.reverse();
-    if branch.is_empty() {
-        if let Some(slice) = all_msgs.get(..=target_idx) {
-            branch = slice.iter().collect();
-        }
+    if branch.is_empty()
+        && let Some(slice) = all_msgs.get(..=target_idx)
+    {
+        branch = slice.iter().collect();
     }
     branch
 }

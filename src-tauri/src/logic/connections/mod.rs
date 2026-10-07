@@ -38,21 +38,19 @@ pub async fn get_connections_inner(
                 s.split_once(':')
                     .map(|(e_type, e_id)| json!({ "entityType": e_type, "entityId": e_id }))
             });
-            if let Some(src_val) = source_replacement {
-                if let Some(obj) = c.as_object_mut() {
+            if let Some(src_val) = source_replacement
+                && let Some(obj) = c.as_object_mut() {
                     obj.insert("source".to_string(), src_val);
                 }
-            }
 
             let target_replacement = c.get("target").and_then(|v| v.as_str()).and_then(|t| {
                 t.split_once(':')
                     .map(|(e_type, e_id)| json!({ "entityType": e_type, "entityId": e_id }))
             });
-            if let Some(tgt_val) = target_replacement {
-                if let Some(obj) = c.as_object_mut() {
+            if let Some(tgt_val) = target_replacement
+                && let Some(obj) = c.as_object_mut() {
                     obj.insert("target".to_string(), tgt_val);
                 }
-            }
 
             c
         })

@@ -57,14 +57,13 @@ pub(crate) fn parse_dynamic_container(
     let mut item_fields: HashMap<String, NormalizedFieldDef> = HashMap::new();
 
     // 1. Поля из шаблона
-    if let Some(tpl_name) = dc.get("template").and_then(|v| v.as_str()) {
-        if let Some(tpl) = templates.get(tpl_name) {
-            if let Some(fields) = tpl.get("fields").and_then(|v| v.as_array()) {
-                for f in fields {
-                    if let Some(fd) = parse_field_def(f) {
-                        item_fields.insert(fd.key.clone(), fd);
-                    }
-                }
+    if let Some(tpl_name) = dc.get("template").and_then(|v| v.as_str())
+        && let Some(tpl) = templates.get(tpl_name)
+        && let Some(fields) = tpl.get("fields").and_then(|v| v.as_array())
+    {
+        for f in fields {
+            if let Some(fd) = parse_field_def(f) {
+                item_fields.insert(fd.key.clone(), fd);
             }
         }
     }

@@ -207,11 +207,10 @@ fn process_scenes_and_detect_flashbacks(
     scenes
         .into_iter()
         .map(|mut s| {
-            if let Some(prev) = last_seen_mabs {
-                if s.m_abs < prev {
+            if let Some(prev) = last_seen_mabs
+                && s.m_abs < prev {
                     s.is_flashback = true;
                 }
-            }
             last_seen_mabs = Some(s.m_abs);
             s
         })

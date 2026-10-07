@@ -29,13 +29,13 @@ impl MentionParser {
         Self::add_unique(results, Self::clean_entity_mention(name_raw));
 
         let trimmed = after_close.trim_start();
-        if let Some(stripped) = trimmed.strip_prefix('[') {
-            if let Some((meta_raw, rest)) = stripped.split_once(']') {
-                if let Some(id) = crate::manuscript::IdExtractor::extract_record_id_from_metadata(meta_raw) {
-                    Self::add_unique(results, id);
-                }
-                after_close = rest;
+        if let Some(stripped) = trimmed.strip_prefix('[')
+            && let Some((meta_raw, rest)) = stripped.split_once(']')
+        {
+            if let Some(id) = crate::manuscript::IdExtractor::extract_record_id_from_metadata(meta_raw) {
+                Self::add_unique(results, id);
             }
+            after_close = rest;
         }
         Some(after_close)
     }

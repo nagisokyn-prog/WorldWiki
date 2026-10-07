@@ -94,7 +94,7 @@ impl ChatContextBuilder {
     }
 
     pub async fn assemble_skills_and_prompt(params: AssemblePromptParams<'_>) -> String {
-        let detected_skills = if let Some(ref sr) = params.skill_repo {
+        let detected_skills = if let Some(sr) = params.skill_repo {
             if !params.last_user_query.is_empty() {
                 sr.resolve_active_skills(Some(params.project_id), params.last_user_query, 2)
                     .await

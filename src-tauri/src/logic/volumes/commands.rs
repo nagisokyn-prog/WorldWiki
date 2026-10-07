@@ -93,11 +93,10 @@ pub async fn heal_deleted_chapter(
         fallback_point.clone(),
     )
     .await?;
-    if let Some(ref fb) = fallback_point {
-        if let Err(e) = app.emit("ww:timeline-auto-extended", fb) {
+    if let Some(ref fb) = fallback_point
+        && let Err(e) = app.emit("ww:timeline-auto-extended", fb) {
             eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-auto-extended': {e:?}, payload: {fb:?}");
         }
-    }
     if let Err(e) = app.emit(
         "ww:timeline-healed",
         serde_json::json!({

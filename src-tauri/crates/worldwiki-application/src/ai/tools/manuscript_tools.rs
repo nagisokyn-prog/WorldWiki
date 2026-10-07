@@ -47,19 +47,18 @@ impl ManuscriptTools {
 
         // 2. Try cleaned id with "chapters:" prefix
         let cleaned_id = clean_record_id("chapters", query);
-        if cleaned_id != query {
-            if let Ok(ch) = manuscript.get_chapter(&cleaned_id).await {
-                return Ok(serde_json::to_value(ch).unwrap_or_default());
-            }
+        if cleaned_id != query
+            && let Ok(ch) = manuscript.get_chapter(&cleaned_id).await
+        {
+            return Ok(serde_json::to_value(ch).unwrap_or_default());
         }
 
         // Fallback 1: Integer index / chapter number (e.g. "1", 1)
-        if let Ok(order) = query.parse::<usize>() {
-            if order >= 1 && order <= chapters.len() {
-                if let Some(ch) = chapters.get(order - 1) {
-                    return Ok(serde_json::to_value(ch).unwrap_or_default());
-                }
-            }
+        if let Ok(order) = query.parse::<usize>()
+            && order >= 1 && order <= chapters.len()
+            && let Some(ch) = chapters.get(order - 1)
+        {
+            return Ok(serde_json::to_value(ch).unwrap_or_default());
         }
 
         // Fallback 2: Title search (case-insensitive substring or exact match)

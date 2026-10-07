@@ -57,18 +57,18 @@ impl IdExtractor {
         let mut result = String::with_capacity(s.len());
         let mut chars = s.chars().peekable();
         while let Some(c) = chars.next() {
-            if c == '%' {
-                if let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
-                    let hex = format!("{}{}", c1, c2);
-                    if let Ok(byte) = u8::from_str_radix(&hex, 16) {
-                        result.push(byte as char);
-                        continue;
-                    }
-                    result.push('%');
-                    result.push(c1);
-                    result.push(c2);
+            if c == '%'
+                && let (Some(c1), Some(c2)) = (chars.next(), chars.next())
+            {
+                let hex = format!("{}{}", c1, c2);
+                if let Ok(byte) = u8::from_str_radix(&hex, 16) {
+                    result.push(byte as char);
                     continue;
                 }
+                result.push('%');
+                result.push(c1);
+                result.push(c2);
+                continue;
             }
             result.push(c);
         }

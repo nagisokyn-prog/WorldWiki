@@ -17,7 +17,7 @@ mod win_mem {
     }
 
     // SAFETY: FFI declaration for WinAPI GlobalMemoryStatusEx.
-    extern "system" {
+    unsafe extern "system" {
         #[link_name = "GlobalMemoryStatusEx"]
         pub fn global_memory_status_ex(lp_buffer: *mut MemoryStatusEx) -> i32;
     }
@@ -41,7 +41,7 @@ mod win_gpu {
     }
 
     // SAFETY: FFI declarations for kernel32 DLL loading APIs.
-    extern "system" {
+    unsafe extern "system" {
         pub fn LoadLibraryA(lp_lib_file_name: *const u8) -> *mut c_void;
         pub fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const u8) -> *mut c_void;
         pub fn FreeLibrary(h_lib_module: *mut c_void) -> i32;

@@ -95,6 +95,9 @@ impl SurqlRule for Surql002SelectStar {
             if let Statement::Select(select) = stmt {
                 if select.is_wildcard {
                     let from = select.from_table.as_deref().unwrap_or("table");
+                    if from.starts_with("type::table") {
+                        continue;
+                    }
                     violations.push(create_violation(
                         self,
                         doc,

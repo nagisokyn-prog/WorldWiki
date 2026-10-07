@@ -1,22 +1,6 @@
 [
   {
     "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "70f291372a00f79b3f8bed3c03433579e16d211adea3361502c349c26fb10770"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/local_ai.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "da30c0e6295f90d3c17224091af8167bba559391205dd7c75dc1691b5831fc18"
-  },
-  {
-    "rule": "SEC-011",
     "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/src/entity_search.rs",
     "line": 1,
     "symbol": "format!(...)",
@@ -30,70 +14,6 @@
     "symbol": "format!(...)",
     "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
     "fingerprint": "1c814fb18ea3b84d6bcb028c3d8baa58514d8f12dc35a535ca54470b1b4e08d9"
-  },
-  {
-    "rule": "SURQL-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/read_ops.rs",
-    "line": 1,
-    "symbol": "type::table",
-    "message": "(Rust Inline SURQL) Ad-hoc query on 'type::table' uses SELECT * without explicit field projection.",
-    "fingerprint": "9bd4be31ff10ce7e4fd313d81f80bda9fa220292e18ceba929bda4d012d07265"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql",
-    "line": 17,
-    "symbol": "entity_chunks.embedding_nemotron",
-    "message": "Collection field 'entity_chunks.embedding_nemotron' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "ddc6d1081126269f00ef09c64c4aceb4653df0e9745c715a9b6ee457e2e90065"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql",
-    "line": 18,
-    "symbol": "entity_chunks.embedding_nomic",
-    "message": "Collection field 'entity_chunks.embedding_nomic' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "a7972dfa1f2a7688b3c5cc18bc23939c88b59a97b1fe4e5e257ff2776f8a201d"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql",
-    "line": 19,
-    "symbol": "entity_chunks.embedding_openai",
-    "message": "Collection field 'entity_chunks.embedding_openai' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "57f7a15d84eb99dad83bf71a346b8067139034c15b9d5f5705858a3e78bd26b7"
-  },
-  {
-    "rule": "SURQL-015",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
-    "line": 1,
-    "symbol": "",
-    "message": "(Rust Inline SURQL) Mass DELETE statement on table '' without WHERE clause.",
-    "fingerprint": "adbcf3e598b4c0a60684ed93918b2faf158aae02967da17b4a6a348fc21e64f4"
-  },
-  {
-    "rule": "SURQL-015",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
-    "line": 1,
-    "symbol": "",
-    "message": "(Rust Inline SURQL) Mass UPDATE statement on table '' without WHERE clause.",
-    "fingerprint": "d182505addff489d8bbe88d22f517f4eca9f7a33b2b843b692a14cd6a509f095"
-  },
-  {
-    "rule": "SURQL-015",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
-    "line": 1,
-    "symbol": "",
-    "message": "(Rust Inline SURQL) Mass UPDATE statement on table '' without WHERE clause.",
-    "fingerprint": "d182505addff489d8bbe88d22f517f4eca9f7a33b2b843b692a14cd6a509f095"
-  },
-  {
-    "rule": "SURQL-015",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
-    "line": 1,
-    "symbol": "",
-    "message": "(Rust Inline SURQL) Mass DELETE statement on table '' without WHERE clause.",
-    "fingerprint": "2cc2c76141638b20b3c1fd73d52d41c65df8dfaf28e40030b78422bbc77d6c15"
   },
   {
     "rule": "SURQL-017",
@@ -130,26 +50,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 45,
-    "symbol": "chat_messages.chat_id",
-    "message": "Foreign key field 'chat_messages.chat_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "0efb19f65fd3839692989e52116c6c9a84c9e2aa8405fb3e5436c4993819cc89"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
     "line": 64,
     "symbol": "agent_memory.project_id",
     "message": "Foreign key field 'agent_memory.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "e28be99ad777693417a985da477b3d04e46421c49c036f30d923c752e79f1e48"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 110,
-    "symbol": "user_dictionary.project_id",
-    "message": "Foreign key field 'user_dictionary.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "a83ddba6f28062e99fbc7dcba879b9c05188aba3a0c57736a509fddd72181b0f"
   },
   {
     "rule": "SURQL-017",
@@ -166,22 +70,6 @@
     "symbol": "research_sessions.project_id",
     "message": "Foreign key field 'research_sessions.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "1306cc2210b4acf7f748dd097e8e7d3acba74e250819e835eb5e223ea5e875bf"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 42,
-    "symbol": "research_sessions.conversation_id",
-    "message": "Foreign key field 'research_sessions.conversation_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "1667a7c4443d4830d92ccc560d5e8a2f43f08c81a3f97b1e133269bfe561f089"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 43,
-    "symbol": "research_sessions.user_message_id",
-    "message": "Foreign key field 'research_sessions.user_message_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "fe10313dac83350217a018b5736214eb74558666f014b6b8c8f24bb4ebb8815d"
   },
   {
     "rule": "SURQL-017",
@@ -202,34 +90,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 46,
-    "symbol": "chapters.project_id",
-    "message": "Foreign key field 'chapters.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "af05dd3b43ac5f459cec14b86ec0023f1f5954f9a4ba6d95c623d3e38c1b7a0d"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
     "line": 63,
     "symbol": "story_arcs.project_id",
     "message": "Foreign key field 'story_arcs.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "4f1ae51d0d4575ecc9cd45a69fa53322a8f6884fda65c7ca2fce96949cc4b516"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 74,
-    "symbol": "arc_entities.project_id",
-    "message": "Foreign key field 'arc_entities.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "c9cdfbc5b2286edb86d719ed48e40c2f5c2eb4a75f025bafc0b54b9190470f6a"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 79,
-    "symbol": "arc_chapters.project_id",
-    "message": "Foreign key field 'arc_chapters.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "773ac5c65df127d4b883b08d566aada2911ed800b8276690e6ac200cbcd3cfd7"
   },
   {
     "rule": "SURQL-017",
@@ -242,26 +106,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 86,
-    "symbol": "text_blocks.chapter_id",
-    "message": "Foreign key field 'text_blocks.chapter_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "6050101a5014a8b440f3b8c010d31e7b8c053054c4fb8f2955415cce5815c8ac"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
     "line": 97,
     "symbol": "tags.project_id",
     "message": "Foreign key field 'tags.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "510fd656b9e3295b136aecfeb80650bfae38ba8e1fc98450da646ddb3fb543b3"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 106,
-    "symbol": "calendars.project_id",
-    "message": "Foreign key field 'calendars.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "207781baba32685702376478ac4324eda0e7730ac698fa925dd742541ecddee3"
   },
   {
     "rule": "SURQL-017",
@@ -274,42 +122,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 121,
-    "symbol": "schema_history.schema_id",
-    "message": "Foreign key field 'schema_history.schema_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "fdab13c7658e3a2d46b8b2f4d260b349a3e790c6ee30d2dd6f45fa4e5642f8e5"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 123,
-    "symbol": "schema_history.project_id",
-    "message": "Foreign key field 'schema_history.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "4045f3bf8820ab751dd72ccb30ec5a9ea788539775cb2182f531f41c83bf8a7c"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 131,
-    "symbol": "entities.project_id",
-    "message": "Foreign key field 'entities.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "e613406dc764fc081c9efefa0105d016221d022815dcc648268ba39c181114df"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
     "line": 143,
     "symbol": "relation_schemas.project_id",
     "message": "Foreign key field 'relation_schemas.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "c3b005efdef5868d7c026a28ce2d97910225223db0b3873a41b66e6bb36cf883"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 154,
-    "symbol": "entity_rel.project_id",
-    "message": "Foreign key field 'entity_rel.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "eb957d8eeb8f74b56b505a87f13a827d3a76876f2c3752b403ff1988d074277b"
   },
   {
     "rule": "SURQL-017",
@@ -330,22 +146,6 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 187,
-    "symbol": "timeline_events.project_id",
-    "message": "Foreign key field 'timeline_events.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "585fc650039c136530cceefabf7ed03d532293cbc1f87cfb6a030021a282304a"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 197,
-    "symbol": "revealed_in.project_id",
-    "message": "Foreign key field 'revealed_in.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "cfdb8123509b2b2c2efa0fa07b747be20a81199d69b1725c5881d88139c8deb9"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
     "line": 212,
     "symbol": "entity_revisions.target_id",
     "message": "Foreign key field 'entity_revisions.target_id' (type record<...>) lacks a B-Tree index.",
@@ -354,74 +154,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 213,
-    "symbol": "entity_revisions.project_id",
-    "message": "Foreign key field 'entity_revisions.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "3c98812afcd336a98b3b4c21471c7ab1c8191e4e4637a4e952bcf4a78db4e026"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 221,
-    "symbol": "entity_rel_revisions.target_id",
-    "message": "Foreign key field 'entity_rel_revisions.target_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "acea8b5c8e9740b0460644fcd826a2e65e8935517ab2cfa61aa9ca6075050b27"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 222,
-    "symbol": "entity_rel_revisions.project_id",
-    "message": "Foreign key field 'entity_rel_revisions.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "6dc7234a3093d03ceb3e8e7ab4c992666e08498876d1319effed01aacb0b64be"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 223,
-    "symbol": "entity_rel_revisions.in_id",
-    "message": "Foreign key field 'entity_rel_revisions.in_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "49ae2ecabe4f7fe615cfa266a3e24991e2668fb2ec9ed24ee7f41d7d66473d90"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 224,
-    "symbol": "entity_rel_revisions.out_id",
-    "message": "Foreign key field 'entity_rel_revisions.out_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "692d958429c09430ec79f74ba82b62f89219b56c6020d0b877c4fd63cde5bb16"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
     "line": 232,
     "symbol": "chapter_revisions.target_id",
     "message": "Foreign key field 'chapter_revisions.target_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "a05732744527f6a0b391da40e2f9b7139a5a28e27609e46ccb9adffaefe019c9"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 233,
-    "symbol": "chapter_revisions.project_id",
-    "message": "Foreign key field 'chapter_revisions.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "c4ce29c64074632933db35145b4320785ec0af5f91541c94c912d1c5af81de59"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 241,
-    "symbol": "plot_promises.project_id",
-    "message": "Foreign key field 'plot_promises.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "2ff08493b82c0cb815fd0907c9cb55503295ba1779e9e897003545f7769b0346"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 242,
-    "symbol": "plot_promises.chapter_id",
-    "message": "Foreign key field 'plot_promises.chapter_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "ce4a091f3a6e297608b2c1d764ebb4d4c08be6c2e333cb6dfc22d6a7147143d9"
   },
   {
     "rule": "SURQL-018",

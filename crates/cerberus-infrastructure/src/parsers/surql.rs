@@ -124,8 +124,47 @@ mod tests {
         ).unwrap();
 
         let adapter = SurqlAstParserAdapter::new();
+        // Positive case: with sibling index file, SURQL-017 is resolved and violations are empty
         let violations = adapter.parse_file(&tables_path, "test_crate").unwrap();
-        // Since 02_indexes.surql defines idx_orders_user on user_id, SURQL-017 should not trigger
-        assert!(!violations.iter().any(|v| v.rule_id == "SURQL-017"));
+        assert!(violations.is_empty());
+
+        // Negative case: remove sibling index file, SURQL-017 must be triggered and detected
+        fs::remove_file(&indexes_path).unwrap();
+        let violations_without_idx = adapter.parse_file(&tables_path, "test_crate").unwrap();
+        assert!(!violations_without_idx.is_empty());
+        assert!(violations_without_idx.iter().any(|v| v.rule_id == "SURQL-017"));
+    }
+
+    #[test]
+    fn test_surql_adapter_unreadable_sibling_surql() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let tables_path = temp_dir.path().join("01_tables.surql");
+        // Create a directory ending with .surql to trigger fs::read_to_string Err branch on sibling
+        let unreadable_sibling = temp_dir.path().join("directory_sibling.surql");
+        fs::create_dir(&unreadable_sibling).unwrap();
+
+        fs::write(
+            &tables_path,
+            "DEFINE TABLE OVERWRITE user TYPE NORMAL SCHEMAFULL;\nDEFINE FIELD OVERWRITE name ON TABLE user TYPE string;\n",
+        ).unwrap();
+
+        let adapter = SurqlAstParserAdapter::new();
+        let violations = adapter.parse_file(&tables_path, "test_crate").unwrap();
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_surql_adapter_parent_edge_cases() {
+        let adapter = SurqlAstParserAdapter::new();
+
+        // 1. Path with empty/no parent directory
+        let no_parent_res = adapter.parse_file(Path::new(""), "test_crate");
+        assert!(no_parent_res.is_err());
+
+        // 2. Relative filename without directory components
+        let mut temp = NamedTempFile::new().unwrap();
+        writeln!(temp, "DEFINE TABLE OVERWRITE user TYPE NORMAL SCHEMAFULL;\nDEFINE FIELD OVERWRITE name ON TABLE user TYPE string;").unwrap();
+        let violations = adapter.parse_file(temp.path(), "test_crate").unwrap();
+        assert!(violations.is_empty());
     }
 }

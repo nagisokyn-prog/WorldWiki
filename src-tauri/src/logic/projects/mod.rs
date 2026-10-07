@@ -68,16 +68,42 @@ pub async fn delete_project_inner(
     db: &Surreal<Db>,
     name: &str,
 ) -> Result<String, ProjectError> {
-    let pid_raw = name.strip_prefix("projects:").unwrap_or(name).trim_matches('`');
     let mut attempts = 0;
     loop {
-        match db.delete::<Option<Value>>(("projects", pid_raw)).await {
-            Ok(_) => return Ok(name.to_string()),
+        let query_res = db
+            .query("RETURN fn::delete_project_cascade($name);")
+            .bind(("name", name.to_string()))
+            .await;
+
+        match query_res {
+            Ok(mut res) => match res.take::<Option<Value>>(0) {
+                Ok(_) => return Ok(name.to_string()),
+                Err(e) => {
+                    let err_str = e.to_string();
+                    if attempts < 15
+                        && (err_str.contains("Transaction conflict")
+                            || err_str.contains("can be retried")
+                            || err_str.contains("TransactionConflict")
+                            || err_str.contains("try again"))
+                    {
+                        attempts += 1;
+                        tokio::time::sleep(tokio::time::Duration::from_millis(100 * attempts))
+                            .await;
+                        continue;
+                    }
+                    return Err(ProjectError::from(e));
+                }
+            },
             Err(e) => {
                 let err_str = e.to_string();
-                if attempts < 5 && (err_str.contains("Transaction conflict") || err_str.contains("can be retried")) {
+                if attempts < 15
+                    && (err_str.contains("Transaction conflict")
+                        || err_str.contains("can be retried")
+                        || err_str.contains("TransactionConflict")
+                        || err_str.contains("try again"))
+                {
                     attempts += 1;
-                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(100 * attempts)).await;
                     continue;
                 }
                 return Err(ProjectError::from(e));

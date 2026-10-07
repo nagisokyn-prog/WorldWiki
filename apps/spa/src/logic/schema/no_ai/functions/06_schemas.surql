@@ -3,26 +3,30 @@
 
 -- 27. ПОЛУЧЕНИЕ СХЕМ СВЯЗЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: record<projects>) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     RETURN (SELECT id, project_id, rel_key, rel_name, icon, color, directed, from_types, to_types FROM relation_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 28. УДАЛЕНИЕ СХЕМЫ СВЯЗИ И СВЯЗАННЫХ РЕБЕР
 DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: record<projects>, $rel_key: string) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     DELETE entity_rel WHERE project_id = $p_rec AND rel_type = $rel_key;
     DELETE relation_schemas WHERE project_id = $p_rec AND rel_key = $rel_key;
 };
 
 -- 29. ПОЛУЧЕНИЕ СХЕМ СУЩНОСТЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     RETURN (SELECT id, project_id, type_key, type_name, icon, color, fields_schema, full_schema, created_at FROM entity_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 30. ПОИСК ID СХЕМЫ СУЩНОСТИ ПО TYPE_KEY
 DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: record<projects>, $tk: string) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $res = (SELECT id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $tk LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0].id } ELSE { NONE };
 };
@@ -38,7 +42,8 @@ DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
     $fields_schema: array,
     $full_schema: option<object | null>
 ) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $res = (
         UPSERT $id SET 
             project_id = $p_rec,
@@ -54,7 +59,8 @@ DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
 
 -- 33. КАСКАДНОЕ УДАЛЕНИЕ СХЕМЫ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::delete_entity_schema($proj: record<projects>, $type_key: string) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $matching_rel_keys = (
         SELECT VALUE rel_key FROM relation_schemas 
         WHERE project_id = $p_rec 

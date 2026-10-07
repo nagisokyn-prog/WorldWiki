@@ -8,7 +8,8 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $chap: record<chapters>,
     $data: object
 ) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $rec_id = type::record('plot_promises', $id);
     
     UPSERT $rec_id MERGE {
@@ -39,7 +40,8 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
 
 -- 41. СБОР МУЛЬТИ-ПЕРСОНАЖНОГО ПУТИ (MULTI-CHARACTER JOURNEY & CROSS-ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects>, $entity_ids: array) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $rec_ids = (
         SELECT VALUE type::record('entities', type::string($this).replace('entities:', '')) 
         FROM $entity_ids
@@ -131,7 +133,8 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
 -- 42. СБОР ТРЕКЕРА ЧЕХОВСКИХ РУЖЕЙ И ИНВЕНТАРЯ
 DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
 
     LET $entities = (
         SELECT 
@@ -191,7 +194,8 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
 
 -- 43. ХРОНОЛОГИЯ ПУТИ АРТЕФАКТА
 DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: record<entities>) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     LET $item_rec = type::record('entities', type::string($item).replace('entities:', ''));
 
     LET $item_info = (

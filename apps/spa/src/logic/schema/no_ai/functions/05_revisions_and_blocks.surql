@@ -13,7 +13,8 @@ DEFINE FUNCTION OVERWRITE fn::toggle_pin($target: record, $is_pinned: bool) {
 
 -- 23. ПОЛУЧЕНИЕ ИСТОРИИ СХЕМЫ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: record<projects>, $tk: string) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     RETURN (SELECT id, schema_id, project_id, type_key, snapshot, saved_at, is_pinned FROM schema_history WHERE project_id = $p_rec AND type_key = $tk ORDER BY saved_at DESC LIMIT 100);
 };
 
@@ -28,7 +29,8 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
     $chap: record<chapters>,
     $blocks: array<object>
 ) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     DELETE text_blocks WHERE chapter_id = $chap AND project_id = $p_rec;
 
     INSERT INTO text_blocks (
@@ -47,7 +49,8 @@ DEFINE FUNCTION OVERWRITE fn::save_global_timeline(
     $proj: record<projects>,
     $items: array<object>
 ) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     FOR $item IN $items {
         IF $item.chapter_id != NONE {
             LET $cid = type::record('chapters', $item.chapter_id);
@@ -68,7 +71,8 @@ DEFINE FUNCTION OVERWRITE fn::record_schema_history(
     $snapshot: object,
     $max_limit: int
 ) {
-    LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
+    LET $clean = string::replace(string::replace(string::replace(string::replace(type::string($proj), 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $p_rec = type::record('projects', $clean);
     CREATE schema_history SET
         schema_id = $schema_id,
         type_key = $type_key,

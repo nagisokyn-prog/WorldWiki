@@ -17,17 +17,19 @@ DEFINE EVENT OVERWRITE cascade_chat_delete ON TABLE chats WHEN $event = "DELETE"
 -- 2. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ ПРОЕКТА (ОЧИСТКА ИИ-ПРОСТРАНСТВА)
 DEFINE EVENT OVERWRITE cascade_project_ai_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
+    LET $clean = string::replace(string::replace(string::replace(type::string($pid), 'projects:', ''), '⟨', ''), '⟩', '');
+    LET $p_rec = type::record('projects', $clean);
     
     -- 1. ИИ-сессии, чаты, сообщения и память агента
-    DELETE chats WHERE project_id = $pid;
-    DELETE chat_messages WHERE project_id = $pid;
-    DELETE agent_memory WHERE project_id = $pid;
-    DELETE research_sessions WHERE project_id = $pid;
-    DELETE auto_approval_settings WHERE project_id = $pid;
+    DELETE chats WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE chat_messages WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE agent_memory WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE research_sessions WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE auto_approval_settings WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
 
     -- 2. Кастомные навыки и режимы проекта (не трогая глобальные)
-    DELETE ai_skills WHERE project_id = $pid AND (is_builtin != true OR is_builtin = NONE);
-    DELETE ai_modes WHERE project_id = $pid AND (is_global != true OR is_global = NONE);
+    DELETE ai_skills WHERE (project_id = $pid OR project_id = $p_rec OR project_id = $before.name) AND (is_builtin != true OR is_builtin = NONE);
+    DELETE ai_modes WHERE (project_id = $pid OR project_id = $p_rec OR project_id = $before.name) AND (is_global != true OR is_global = NONE);
 };
 
 -- 3. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ СУЩНОСТИ (ОЧИСТКА RAG-ЧАНКОВ)

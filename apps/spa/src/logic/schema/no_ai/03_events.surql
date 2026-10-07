@@ -11,33 +11,35 @@
 -- 1. КАСКАД УДАЛЕНИЯ ПРОЕКТА (BASE EDITION)
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
+    LET $clean = string::replace(string::replace(string::replace(type::string($pid), 'projects:', ''), '⟨', ''), '⟩', '');
+    LET $p_rec = type::record('projects', $clean);
     
     -- 1. Иерархия, связи, участие и ревизии лора (удаляются до сущностей)
-    DELETE contains WHERE in = $pid;
-    DELETE entity_rel WHERE project_id = $pid;
-    DELETE appears_in WHERE project_id = $pid;
-    DELETE participates_in WHERE project_id = $pid;
-    DELETE revealed_in WHERE project_id = $pid;
-    DELETE arc_entities WHERE project_id = $pid;
-    DELETE arc_chapters WHERE project_id = $pid;
-    DELETE story_arcs WHERE project_id = $pid;
-    DELETE entity_revisions WHERE project_id = $pid;
-    DELETE entity_rel_revisions WHERE project_id = $pid;
-    DELETE tags WHERE project_id = $pid;
+    DELETE contains WHERE in = $pid OR in = $p_rec OR in = $before.name;
+    DELETE entity_rel WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE appears_in WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE participates_in WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE revealed_in WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE arc_entities WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE arc_chapters WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE story_arcs WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE entity_revisions WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE entity_rel_revisions WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE tags WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
 
     -- 2. Сущности лора
-    DELETE entities WHERE project_id = $pid;
+    DELETE entities WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
 
     -- 3. Блоки текста, ревизии и главы рукописи
-    DELETE text_blocks WHERE project_id = $pid;
-    DELETE chapter_revisions WHERE project_id = $pid;
-    DELETE chapters WHERE project_id = $pid;
-    DELETE volumes WHERE project_id = $pid;
+    DELETE text_blocks WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE chapter_revisions WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE chapters WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE volumes WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
 
     -- 4. Планирование, таймлайн и сюжетные обещания
-    DELETE plans WHERE project_id = $pid;
-    DELETE plot_promises WHERE project_id = $pid;
-    DELETE timeline_events WHERE project_id = $pid;
+    DELETE plans WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE plot_promises WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE timeline_events WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
 };
 
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА

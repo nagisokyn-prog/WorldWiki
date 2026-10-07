@@ -1,195 +1,11 @@
 [
   {
     "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "366ad9d970429d38c98c681e327bb144ca8883a911aefc2961f377e2903ac4c1"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "366ad9d970429d38c98c681e327bb144ca8883a911aefc2961f377e2903ac4c1"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "366ad9d970429d38c98c681e327bb144ca8883a911aefc2961f377e2903ac4c1"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "366ad9d970429d38c98c681e327bb144ca8883a911aefc2961f377e2903ac4c1"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/exact_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "4fabadb795a915cd4775a5a6ad309292d893a4c9618b82737e9652041e32abff"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/exact_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "4fabadb795a915cd4775a5a6ad309292d893a4c9618b82737e9652041e32abff"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/hybrid_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "23eae1facbb711f756cc6073b293684db924a08cff9f5e065cba16f7345ef038"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/hybrid_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "23eae1facbb711f756cc6073b293684db924a08cff9f5e065cba16f7345ef038"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/hybrid_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "23eae1facbb711f756cc6073b293684db924a08cff9f5e065cba16f7345ef038"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/hybrid_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "23eae1facbb711f756cc6073b293684db924a08cff9f5e065cba16f7345ef038"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router/hybrid_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "23eae1facbb711f756cc6073b293684db924a08cff9f5e065cba16f7345ef038"
-  },
-  {
-    "rule": "SEC-011",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
     "line": 1,
     "symbol": "format!(...)",
     "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
     "fingerprint": "70f291372a00f79b3f8bed3c03433579e16d211adea3361502c349c26fb10770"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/chapter_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "67323e43951978f8ee06a33d295e298cba46380b251ffe5e0c9765b2309e7658"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/entity_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "b22648f9e4d04ba37a3ea4ca7749902ea446152377f8cdc1cb01ce8da0a9b920"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/entity_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "b22648f9e4d04ba37a3ea4ca7749902ea446152377f8cdc1cb01ce8da0a9b920"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/entity_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "b22648f9e4d04ba37a3ea4ca7749902ea446152377f8cdc1cb01ce8da0a9b920"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/exact_chapter.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "75c2d1b93b855654a7d6d987367ec34d35b04a2c328bd28f5fb241fa9c0e5c55"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "634581594176eea6715dc0977542983be119d65fffe96cec1fdd0e9a1bd4af23"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "634581594176eea6715dc0977542983be119d65fffe96cec1fdd0e9a1bd4af23"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "634581594176eea6715dc0977542983be119d65fffe96cec1fdd0e9a1bd4af23"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "634581594176eea6715dc0977542983be119d65fffe96cec1fdd0e9a1bd4af23"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/story_arc_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "484a78c5f77d6a195214f79d8e91866ebd0309d8973754dc9df778933e7912a6"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/timeline_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "675bfd18b86ecac8bd5a40523ab27b6aeb980b679200ea6b44b43b731dee003d"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/volume_repo.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "aebe419a3f7838de0f73470f73c026fb03a91a1d848701151434706fc27b0d28"
   },
   {
     "rule": "SEC-011",
@@ -201,35 +17,11 @@
   },
   {
     "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/read_ops.rs",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/src/entity_search.rs",
     "line": 1,
     "symbol": "format!(...)",
     "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "13b71ab0cd7ea15ee78d5317c753f1b097ab3e351e849573776a1b5ebb7aaabe"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/read_ops.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "13b71ab0cd7ea15ee78d5317c753f1b097ab3e351e849573776a1b5ebb7aaabe"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/write_ops.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "4bd7961fdda04862dadf038faed0970e6e335c75604b85096e4c5630c772176a"
-  },
-  {
-    "rule": "SEC-011",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/write_ops.rs",
-    "line": 1,
-    "symbol": "format!(...)",
-    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
-    "fingerprint": "4bd7961fdda04862dadf038faed0970e6e335c75604b85096e4c5630c772176a"
+    "fingerprint": "1c814fb18ea3b84d6bcb028c3d8baa58514d8f12dc35a535ca54470b1b4e08d9"
   },
   {
     "rule": "SEC-011",
@@ -241,43 +33,11 @@
   },
   {
     "rule": "SURQL-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/read_ops.rs",
     "line": 1,
-    "symbol": "chat_messages",
-    "message": "(Rust Inline SURQL) Ad-hoc query on 'chat_messages' uses SELECT * without explicit field projection.",
-    "fingerprint": "25f7763244cb1fbe83b769423963902803bcc89b3d399ea3009664a0b54074e3"
-  },
-  {
-    "rule": "SURQL-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
-    "line": 1,
-    "symbol": "chats",
-    "message": "(Rust Inline SURQL) Ad-hoc query on 'chats' uses SELECT * without explicit field projection.",
-    "fingerprint": "5af6c6ca913ddd6f744297d05f1dce45b4c247c74820ebbefbb457c02793ddc4"
-  },
-  {
-    "rule": "SURQL-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/profile_repo.rs",
-    "line": 1,
-    "symbol": "ai_profiles",
-    "message": "(Rust Inline SURQL) Ad-hoc query on 'ai_profiles' uses SELECT * without explicit field projection.",
-    "fingerprint": "0ee6ae2ba84037ee652f43ba41a30ce82e79e6713a76aae1836c97897fceeb43"
-  },
-  {
-    "rule": "SURQL-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
-    "line": 1,
-    "symbol": "ai_skills",
-    "message": "(Rust Inline SURQL) Ad-hoc query on 'ai_skills' uses SELECT * without explicit field projection.",
-    "fingerprint": "882337e4e1d89b654ebf11b850651e58b5fb885b8b6484bf9d9631d72b083369"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 49,
-    "symbol": "chat_messages.tool_logs",
-    "message": "Collection field 'chat_messages.tool_logs' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "af6febd17f0b676f357dcb25d9334bda7b6031236ac82b2cbeac7bfea4bb3025"
+    "symbol": "type::table",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'type::table' uses SELECT * without explicit field projection.",
+    "fingerprint": "9bd4be31ff10ce7e4fd313d81f80bda9fa220292e18ceba929bda4d012d07265"
   },
   {
     "rule": "SURQL-011",
@@ -302,158 +62,6 @@
     "symbol": "entity_chunks.embedding_openai",
     "message": "Collection field 'entity_chunks.embedding_openai' is nullable (array|object | null). Default to empty container instead.",
     "fingerprint": "57f7a15d84eb99dad83bf71a346b8067139034c15b9d5f5705858a3e78bd26b7"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 32,
-    "symbol": "projects.genres",
-    "message": "Collection field 'projects.genres' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "66d68f21d801c9f4020286be4f36b32e11e6d062ec597c2fc97b93796419a1d5"
-  },
-  {
-    "rule": "SURQL-011",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 253,
-    "symbol": "plot_promises.participant_ids",
-    "message": "Collection field 'plot_promises.participant_ids' is nullable (array|object | null). Default to empty container instead.",
-    "fingerprint": "33520d71432280877ff4775372f77872bcd47ca020eb676dc3210c05c70bb173"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 57,
-    "symbol": "chat_messages.parent_id",
-    "message": "Field 'chat_messages.parent_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "fbdcfc8d5fb201c44af6570ea3f5a843993d42823ccdf8abcb08e8f28c5380a4"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 73,
-    "symbol": "ai_profiles.project_id",
-    "message": "Field 'ai_profiles.project_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "5042df33a9661ff8a6c7772b82f5edcd772c1fb64285fec843489f0e5ad59211"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 77,
-    "symbol": "ai_profiles.api_key",
-    "message": "Field 'ai_profiles.api_key' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "446538b4b287ab8b88985dc5ef2771f1176edbb5b0648cc00d10c1fa9b78cc4c"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 84,
-    "symbol": "artifacts.project_id",
-    "message": "Field 'artifacts.project_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "1616af1e9ee70e072ec0262d1c5a1b9daa51b94a6bd896463c27e31a8bce70ad"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 85,
-    "symbol": "artifacts.chat_id",
-    "message": "Field 'artifacts.chat_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "dbf26552c7576e5b60d9ac5dfccad09b828e760e8f973e560578ada8f4cf1fed"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 94,
-    "symbol": "ai_skills.project_id",
-    "message": "Field 'ai_skills.project_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "d3372452e7b502057df2260725fb4488c64f70899c13050fdbdfc76786c94b39"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 102,
-    "symbol": "ai_skills.file_path",
-    "message": "Field 'ai_skills.file_path' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "01b20054078180bd4478e9cf5db7120575b5443177c3baa0a69e934ee25aead6"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 112,
-    "symbol": "user_dictionary.definition",
-    "message": "Field 'user_dictionary.definition' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "46c088254498db637a91edc37bbeece21768ce16d2519439dfec64cfe60a57c9"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 14,
-    "symbol": "web_pages.title",
-    "message": "Field 'web_pages.title' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "7bf3cbc71650688547af38d13b0ab701dae43e4a9d3a507cd9d57947c7f93b57"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 17,
-    "symbol": "web_pages.language",
-    "message": "Field 'web_pages.language' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "bc6dd5004d21c76f3ab1956be5a71abcb608be27f7eecee3f29042df0ba59599"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 20,
-    "symbol": "web_pages.extracted_markdown",
-    "message": "Field 'web_pages.extracted_markdown' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "967095b8bae6348a68b06f119adf0985d6c993256b3989936085c12f070235e0"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 24,
-    "symbol": "web_pages.expires_at",
-    "message": "Field 'web_pages.expires_at' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "fd21974e942ca1af77f13e3eb3ad86be193245e7ef7d27c3eb3d4e7ce6bc7ec4"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 29,
-    "symbol": "web_evidence.project_id",
-    "message": "Field 'web_evidence.project_id' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "c0551be327e5b5c84c808fceb31422fe244ccd7044aa917948a7aefe41c2cb50"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 34,
-    "symbol": "web_evidence.simhash",
-    "message": "Field 'web_evidence.simhash' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "dca325ee5c044826637d99ea11bf109f5ea4d36c3dd09336daa74716e0e4d244"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 55,
-    "symbol": "research_sessions.finished_at",
-    "message": "Field 'research_sessions.finished_at' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "394c44d94d37b108ac50cbd90c154b363ca3e56938a8ba69815145e85d89bb42"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 53,
-    "symbol": "chapters.created_at",
-    "message": "Field 'chapters.created_at' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "d32cfe1f409b5b4c64b8c0e8e590438f45d7c069ada391236bad1a989e85f3c7"
-  },
-  {
-    "rule": "SURQL-012",
-    "file": "./apps/spa/src/logic/schema/no_ai/01_tables.surql",
-    "line": 54,
-    "symbol": "chapters.updated_at",
-    "message": "Field 'chapters.updated_at' uses 'option<T>' without '| null'. This rejects explicit JSON null values.",
-    "fingerprint": "a702eaf632fcad7abb0b86b4a70ae74b65268cb4b6edee75a22de8e0727a844c"
   },
   {
     "rule": "SURQL-015",
@@ -530,50 +138,10 @@
   {
     "rule": "SURQL-017",
     "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 57,
-    "symbol": "chat_messages.parent_id",
-    "message": "Foreign key field 'chat_messages.parent_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "d0dab1ff3f803d1b1c8603f4f6d78200bf6cb823e70b285f7485c5d3401c4fce"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
     "line": 64,
     "symbol": "agent_memory.project_id",
     "message": "Foreign key field 'agent_memory.project_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "e28be99ad777693417a985da477b3d04e46421c49c036f30d923c752e79f1e48"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 73,
-    "symbol": "ai_profiles.project_id",
-    "message": "Foreign key field 'ai_profiles.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "4f7993e5187b201151b514801a669e86bbc2d923f6ff6b730b8c2a9116baac88"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 84,
-    "symbol": "artifacts.project_id",
-    "message": "Foreign key field 'artifacts.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "e8994ac7f3d53ffd70022f8dd26f44d54aa7732967c2ff0c42bac325c2a28ec5"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 85,
-    "symbol": "artifacts.chat_id",
-    "message": "Foreign key field 'artifacts.chat_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "dffb5fc35a5a06864a818f1fb2f4916e0df45f9c6ba77cbc87ca174a255fff8a"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/01_workspace_tables.surql",
-    "line": 94,
-    "symbol": "ai_skills.project_id",
-    "message": "Foreign key field 'ai_skills.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "dc4dc48c4c78ef71311a09ab799fd1863c0f28a4e2ecc96f31efd416e93ef87f"
   },
   {
     "rule": "SURQL-017",
@@ -590,14 +158,6 @@
     "symbol": "web_evidence.page_id",
     "message": "Foreign key field 'web_evidence.page_id' (type record<...>) lacks a B-Tree index.",
     "fingerprint": "53ce0b655c43a58947f2fc2e3374755fe033afef27388b16fdd9602e3f06f6cc"
-  },
-  {
-    "rule": "SURQL-017",
-    "file": "./apps/spa/src/logic/schema/ai/02_web_research_tables.surql",
-    "line": 29,
-    "symbol": "web_evidence.project_id",
-    "message": "Foreign key field 'web_evidence.project_id' (type record<...>) lacks a B-Tree index.",
-    "fingerprint": "779395ac6b22915075df913d6edc3879ba35911cabba2c2b4173b8c297dee5a4"
   },
   {
     "rule": "SURQL-017",

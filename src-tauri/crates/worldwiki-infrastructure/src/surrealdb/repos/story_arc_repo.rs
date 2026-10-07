@@ -7,7 +7,7 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, StoryArc};
 use worldwiki_ports::repositories::StoryArcRepository;
-use super::helpers::{project_where_clause, take_list, take_one};
+use super::helpers::{take_list, take_one};
 
 pub struct SurrealStoryArcRepository {
     db: Arc<Surreal<Db>>,

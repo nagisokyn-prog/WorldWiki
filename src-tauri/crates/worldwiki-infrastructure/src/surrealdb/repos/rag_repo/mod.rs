@@ -18,7 +18,7 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 use crate::surrealdb::chat_repo::clean_record_id;
-use crate::surrealdb::repos::helpers::{canonicalize_name, clean_id, project_where_clause};
+use crate::surrealdb::repos::helpers::{canonicalize_name, clean_id};
 use exact_chapter::fetch_exact_chapter;
 use fallback_search::run_fallback_search;
 use worldwiki_domain::errors::DomainError;
@@ -52,7 +52,6 @@ impl RAGContextPort for SurrealRAGAdapter {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let where_proj = project_where_clause("project_id");
 
         let q_trimmed = query.trim();
         let q_canon = canonicalize_name(q_trimmed);

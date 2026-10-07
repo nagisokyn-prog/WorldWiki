@@ -1,4 +1,3 @@
-use crate::bind_helpers::{bind_map_values, bind_tuple_values, build_upsert_clauses};
 use crate::error::SurrealDomainError;
 use crate::id_helpers::is_not_found;
 
@@ -18,11 +17,11 @@ where
     map.remove("id");
     map.retain(|_, v| !v.is_null());
 
-    let assign_clauses: Vec<String> = map.keys().map(|k| format!("{} = ${}", k, k)).collect();
-    let query = format!("CREATE {} SET {}", table, assign_clauses.join(", "));
-
-    let db_query = db.query(query);
-    let mut res = bind_map_values(db_query, map).await?;
+    let mut res = db
+        .query("CREATE type::table($table) CONTENT $data")
+        .bind(("table", table.to_string()))
+        .bind(("data", serde_json::Value::Object(map)))
+        .await?;
     let items: Vec<serde_json::Value> = res.take(0)?;
     let res_val = items
         .into_iter()
@@ -38,8 +37,8 @@ where
 pub(crate) async fn repo_save<T, Db: surrealdb::Connection>(
     db: &surrealdb::Surreal<Db>,
     table: &'static str,
-    fields: &[&str],
-    option_fields: &[&str],
+    _fields: &[&str],
+    _option_fields: &[&str],
     entity: &T,
 ) -> Result<T, SurrealDomainError>
 where
@@ -58,14 +57,11 @@ where
         };
         map.remove("id");
 
-        let (assign_clauses, bind_values) = build_upsert_clauses(fields, option_fields, map);
-
-        let query = format!("UPSERT $__record_id SET {}", assign_clauses.join(", "));
-        let db_query = db
-            .query(query)
-            .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)));
-
-        let mut res = bind_tuple_values(db_query, bind_values).await?;
+        let mut res = db
+            .query("UPSERT $__record_id MERGE $data")
+            .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)))
+            .bind(("data", serde_json::Value::Object(map)))
+            .await?;
         let items: Vec<serde_json::Value> = res.take(0)?;
         let saved_val = items
             .into_iter()

@@ -28,7 +28,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
 
         let mut res = self
             .db
-            .query("SELECT * FROM ai_profiles WHERE project_id = type::record($proj) OR is_global = true")
+            .query("SELECT id, project_id, name, provider, base_url, api_key, settings, is_active, is_global FROM ai_profiles WHERE project_id = type::record($proj) OR is_global = true")
             .bind(("proj", proj_id))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;

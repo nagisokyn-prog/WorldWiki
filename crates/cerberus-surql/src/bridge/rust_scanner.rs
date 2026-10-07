@@ -92,15 +92,23 @@ impl<'a, 'ast> Visit<'ast> for QueryCallVisitor<'a> {
         if macro_name == "format" {
             let tokens = node.mac.tokens.to_string();
             let upper = tokens.to_uppercase();
-            if upper.contains("SELECT ")
-                || upper.contains("UPDATE ")
-                || upper.contains("DELETE ")
-                || upper.contains("INSERT ")
-                || upper.contains("RELATE ")
-                || upper.contains("CREATE ")
-                || upper.contains("DEFINE ")
-                || upper.contains("UPSERT ")
-            {
+            let is_sql = upper.contains("\"SELECT ")
+                || upper.contains("\"UPDATE ")
+                || upper.contains("\"DELETE ")
+                || upper.contains("\"INSERT ")
+                || upper.contains("\"RELATE ")
+                || upper.contains("\"UPSERT ")
+                || upper.contains("\"DEFINE TABLE")
+                || upper.contains("\"DEFINE FIELD")
+                || upper.contains("\"DEFINE INDEX")
+                || (upper.contains("SELECT ") && (upper.contains(" FROM ") || upper.contains(" WHERE ")))
+                || (upper.contains("UPDATE ") && (upper.contains(" SET ") || upper.contains(" CONTENT ")))
+                || (upper.contains("DELETE ") && (upper.contains(" FROM ") || upper.contains(" WHERE ") || upper.contains(" TYPE::RECORD")))
+                || (upper.contains("CREATE ") && (upper.contains(" SET ") || upper.contains(" CONTENT ") || upper.contains(" TYPE::TABLE")))
+                || (upper.contains("UPSERT ") && (upper.contains(" SET ") || upper.contains(" MERGE ") || upper.contains(" CONTENT ")))
+                || (upper.contains("RELATE ") && upper.contains("->"));
+
+            if is_sql {
                 self.emit_sec011(
                     "format!(...)",
                     "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
@@ -115,13 +123,13 @@ impl<'a, 'ast> Visit<'ast> for QueryCallVisitor<'a> {
             let left_str = format!("{:?}", node.left);
             let right_str = format!("{:?}", node.right);
             let combined = format!("{} {}", left_str, right_str).to_uppercase();
-            if combined.contains("SELECT")
-                || combined.contains("UPDATE")
-                || combined.contains("DELETE")
-                || combined.contains("INSERT")
-                || combined.contains("RELATE")
-                || combined.contains("CREATE")
-            {
+            let is_sql = (combined.contains("SELECT ") && (combined.contains(" FROM ") || combined.contains(" WHERE ")))
+                || (combined.contains("UPDATE ") && (combined.contains(" SET ") || combined.contains(" CONTENT ")))
+                || (combined.contains("DELETE ") && (combined.contains(" FROM ") || combined.contains(" WHERE ")))
+                || (combined.contains("INSERT ") && combined.contains(" INTO "))
+                || (combined.contains("RELATE ") && combined.contains("->"));
+
+            if is_sql {
                 self.emit_sec011(
                     "string + string",
                     "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",

@@ -41,10 +41,8 @@ where
     let pid_backticked = format!("projects:`{}`", pid_raw);
 
     let mut res = db
-        .query(format!(
-            "SELECT * FROM {} WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_backticked",
-            table
-        ))
+        .query("SELECT * FROM type::table($table) WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_backticked")
+        .bind(("table", table.to_string()))
         .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
         .bind(("pid_str", pid_str))
         .bind(("pid_backticked", pid_backticked))

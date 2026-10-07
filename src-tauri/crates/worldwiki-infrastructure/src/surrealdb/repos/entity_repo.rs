@@ -7,7 +7,7 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::knowledge::Entity;
 use worldwiki_ports::repositories::EntityRepository;
-use super::helpers::{fuzzy_match_name, project_where_clause, take_list, take_one};
+use super::helpers::{fuzzy_match_name, take_list, take_one};
 
 pub struct SurrealEntityRepository {
     db: Arc<Surreal<Db>>,

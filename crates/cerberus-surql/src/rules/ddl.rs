@@ -246,6 +246,12 @@ impl SurqlRule for Surql011NullableCollection {
         let mut violations = Vec::new();
         for stmt in &doc.statements {
             if let Statement::DefineField(field) = stmt {
+                let is_embedding = field.field_name.to_lowercase().contains("embedding")
+                    || field.raw_type.to_lowercase().contains("array<float>")
+                    || field.raw_type.to_lowercase().contains("vector<");
+                if is_embedding {
+                    continue;
+                }
                 let surql_type = SurqlType::parse(&field.raw_type);
                 if surql_type.is_collection() && field.is_nullable {
                     violations.push(create_violation(
@@ -327,6 +333,7 @@ mod tests {
             DEFINE FIELD OVERWRITE flag ON logs TYPE bool | null;
             DEFINE FIELD OVERWRITE tags ON logs TYPE array<string> | null;
             DEFINE FIELD OVERWRITE title ON logs TYPE option<string>;
+            DEFINE FIELD OVERWRITE embedding_vec ON logs TYPE option<array<float> | null>;
         "#;
         let doc = SurqlParser::parse(surql, PathBuf::from("test.surql"));
         let mut schema = SchemaRegistry::new();

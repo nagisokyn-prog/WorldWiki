@@ -1,6 +1,6 @@
 //! SurrealDB implementation of ChapterRepository.
 
-use super::helpers::{project_where_clause, take_list, take_one};
+use super::helpers::{take_list, take_one};
 use async_trait::async_trait;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;

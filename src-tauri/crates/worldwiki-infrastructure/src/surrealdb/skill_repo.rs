@@ -36,7 +36,7 @@ impl SkillRepositoryPort for SurrealSkillRepository {
             if let Some((manual_name, _)) = after_bang.split_once('"') {
                 let mut res = self
                     .db
-                    .query("SELECT * FROM ai_skills WHERE string::lowercase(name) = string::lowercase($name) LIMIT 1")
+                    .query("SELECT id, name, description, prompt_text, file_path FROM ai_skills WHERE string::lowercase(name) = string::lowercase($name) LIMIT 1")
                     .bind(("name", manual_name.to_string()))
                     .await
                     .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
@@ -67,7 +67,7 @@ impl SkillRepositoryPort for SurrealSkillRepository {
         let proj_clean = project_id.map(|p| clean_id_str(p, "projects:").to_string());
         
         let q_sql = r#"
-            SELECT * FROM ai_skills
+            SELECT id, name, description, prompt_text, file_path, priority, triggers FROM ai_skills
             WHERE (project_id = type::record('projects', $p_clean) OR project_id = NONE OR project_id = null)
               AND is_auto_trigger != false
               AND is_unlocked != false

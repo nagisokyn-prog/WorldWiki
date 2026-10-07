@@ -1,6 +1,5 @@
 use crate::ai::chunker::DocumentChunker;
 use crate::ai::retrieval::embedder::EmbedderService;
-use crate::surrealdb::repos::project_where_clause;
 use serde_json::json;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
@@ -186,34 +185,21 @@ pub async fn reindex_project_lore_inner(
         }
     }
 
-    // Bulk Transaction Insertion into SurrealDB (Batches of 100)
+    // Bulk Insertion into SurrealDB (Batches of 100)
     let batch_size = 100;
     let mut saved_chunks = 0usize;
 
     for chunk_group in processed_chunks.chunks(batch_size) {
-        let mut query = String::from("BEGIN TRANSACTION;\n");
-        let mut bindings: Vec<(String, serde_json::Value)> = Vec::new();
+        let mut records = Vec::with_capacity(chunk_group.len());
 
-        for (i, c) in chunk_group.iter().enumerate() {
-            let p_chap = format!("chap_{i}");
-            let p_ent = format!("ent_{i}");
-            let p_title = format!("title_{i}");
-            let p_content = format!("content_{i}");
-            let p_idx = format!("idx_{i}");
-            let p_emb_nomic = format!("emb_nomic_{i}");
-            let p_emb_nemo = format!("emb_nemo_{i}");
-
-            query.push_str(&format!(
-                "CREATE entity_chunks SET project_id = $proj, chapter_id = IF ${p_chap} != NONE AND ${p_chap} != NULL {{ type::record('chapters', ${p_chap}) }} ELSE {{ NONE }}, entity_id = IF ${p_ent} != NONE AND ${p_ent} != NULL {{ type::record('entities', ${p_ent}) }} ELSE {{ NONE }}, title = ${p_title}, content = ${p_content}, chunk_index = ${p_idx}, embedding_nomic = ${p_emb_nomic}, embedding_nemotron = ${p_emb_nemo}, created_at = time::now();\n"
-            ));
-
+        for c in chunk_group {
             let chap_clean = c.chapter_id.as_ref().and_then(|id| {
                 let clean = id.strip_prefix("chapters:").unwrap_or(id).trim_matches('`').trim();
-                if clean.is_empty() { None } else { Some(clean.to_string()) }
+                if clean.is_empty() { None } else { Some(format!("chapters:{clean}")) }
             });
             let ent_clean = c.entity_id.as_ref().and_then(|id| {
                 let clean = id.strip_prefix("entities:").unwrap_or(id).trim_matches('`').trim();
-                if clean.is_empty() { None } else { Some(clean.to_string()) }
+                if clean.is_empty() { None } else { Some(format!("entities:{clean}")) }
             });
 
             let (emb_nomic, emb_nemo) = match c.embedding.as_ref() {
@@ -222,21 +208,29 @@ pub async fn reindex_project_lore_inner(
                 _ => (None, None),
             };
 
-            bindings.push((p_chap, json!(chap_clean)));
-            bindings.push((p_ent, json!(ent_clean)));
-            bindings.push((p_title, json!(c.title)));
-            bindings.push((p_content, json!(c.content)));
-            bindings.push((p_idx, json!(c.chunk_index as i64)));
-            bindings.push((p_emb_nomic, json!(emb_nomic)));
-            bindings.push((p_emb_nemo, json!(emb_nemo)));
+            let mut row = serde_json::Map::new();
+            row.insert("project_id".to_string(), json!(proj_rec.to_string()));
+            if let Some(ch) = chap_clean {
+                row.insert("chapter_id".to_string(), json!(ch));
+            }
+            if let Some(en) = ent_clean {
+                row.insert("entity_id".to_string(), json!(en));
+            }
+            row.insert("title".to_string(), json!(c.title));
+            row.insert("content".to_string(), json!(c.content));
+            row.insert("chunk_index".to_string(), json!(c.chunk_index as i64));
+            if let Some(nomic) = emb_nomic {
+                row.insert("embedding_nomic".to_string(), json!(nomic));
+            }
+            if let Some(nemo) = emb_nemo {
+                row.insert("embedding_nemotron".to_string(), json!(nemo));
+            }
+            records.push(serde_json::Value::Object(row));
         }
 
-        query.push_str("COMMIT TRANSACTION;\n");
-
-        let mut q = db.query(&query).bind(("proj", proj_rec.clone()));
-        for (k, v) in bindings {
-            q = q.bind((k, v));
-        }
+        let q = db
+            .query("INSERT INTO entity_chunks $records;")
+            .bind(("records", records));
 
         match q.await {
             Ok(mut res) => {
@@ -244,7 +238,7 @@ pub async fn reindex_project_lore_inner(
                 if errs.is_empty() {
                     saved_chunks += chunk_group.len();
                 } else {
-                    eprintln!("[INDEXER] Batch transaction errors: {:?}", errs);
+                    eprintln!("[INDEXER] Batch insert errors: {:?}", errs);
                 }
             }
             Err(e) => {

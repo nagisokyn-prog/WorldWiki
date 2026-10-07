@@ -7,7 +7,7 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::manuscript::Volume;
 use worldwiki_ports::repositories::VolumeRepository;
-use super::helpers::{prepare_data_for_upsert, project_where_clause, take_list, take_one};
+use super::helpers::{prepare_data_for_upsert, take_list, take_one};
 
 pub struct SurrealVolumeRepository {
     db: Arc<Surreal<Db>>,

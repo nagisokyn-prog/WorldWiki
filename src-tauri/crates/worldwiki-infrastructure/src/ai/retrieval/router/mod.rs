@@ -10,7 +10,6 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 use super::embedder::EmbedderService;
-use crate::surrealdb::repos::project_where_clause;
 
 #[derive(Default)]
 pub struct RetrievalRouter {

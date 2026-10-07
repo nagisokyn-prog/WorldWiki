@@ -7,7 +7,7 @@ use surrealdb::Surreal;
 use worldwiki_domain::calendar::{EventReveal, TimelineEvent};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::repositories::TimelineEventRepository;
-use super::helpers::{project_where_clause, take_list, take_one};
+use super::helpers::{take_list, take_one};
 
 pub struct SurrealTimelineRepository {
     db: Arc<Surreal<Db>>,

@@ -30,7 +30,7 @@ DEFINE FIELD OVERWRITE name        ON projects TYPE string;
 DEFINE FIELD OVERWRITE created_at  ON projects TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE data        ON projects TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE type        ON projects TYPE option<string | null>;
-DEFINE FIELD OVERWRITE genres      ON projects TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE genres      ON projects TYPE option<array<string> | null> DEFAULT [];
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string | null>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
@@ -54,9 +54,9 @@ DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes       ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [];
+DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE option<array | null> DEFAULT [];
 DEFINE FIELD OVERWRITE timeline_events.* ON chapters TYPE any;
-DEFINE FIELD OVERWRITE participants    ON chapters TYPE array DEFAULT [];
+DEFINE FIELD OVERWRITE participants    ON chapters TYPE option<array | null> DEFAULT [];
 DEFINE FIELD OVERWRITE participants.*  ON chapters TYPE any;
 
 -- 5. СЮЖЕТНЫЕ АРКИ (СТОРИЛАЙНЫ)
@@ -113,7 +113,7 @@ DEFINE FIELD OVERWRITE type_key      ON entity_schemas TYPE string;
 DEFINE FIELD OVERWRITE type_name     ON entity_schemas TYPE string;
 DEFINE FIELD OVERWRITE icon          ON entity_schemas TYPE string;
 DEFINE FIELD OVERWRITE color         ON entity_schemas TYPE string;
-DEFINE FIELD OVERWRITE fields_schema ON entity_schemas TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE fields_schema ON entity_schemas TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
 DEFINE FIELD OVERWRITE full_schema   ON entity_schemas TYPE option<object | null> FLEXIBLE;
 DEFINE FIELD OVERWRITE created_at    ON entity_schemas TYPE datetime DEFAULT time::now();
 
@@ -134,7 +134,7 @@ DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string;
 DEFINE FIELD OVERWRITE name         ON entities TYPE string;
 DEFINE FIELD OVERWRITE description  ON entities TYPE option<string | null>;
 DEFINE FIELD OVERWRITE attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE tags         ON entities TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE tags         ON entities TYPE option<array<string> | null> DEFAULT [];
 DEFINE FIELD OVERWRITE embeddings   ON entities TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE created_at   ON entities TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at   ON entities TYPE option<datetime | null> DEFAULT time::now();
@@ -147,8 +147,8 @@ DEFINE FIELD OVERWRITE rel_name   ON relation_schemas TYPE string;
 DEFINE FIELD OVERWRITE icon       ON relation_schemas TYPE string;
 DEFINE FIELD OVERWRITE color      ON relation_schemas TYPE string;
 DEFINE FIELD OVERWRITE directed   ON relation_schemas TYPE bool DEFAULT true;
-DEFINE FIELD OVERWRITE from_types ON relation_schemas TYPE array<string> DEFAULT [];
-DEFINE FIELD OVERWRITE to_types   ON relation_schemas TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE from_types ON relation_schemas TYPE option<array<string> | null> DEFAULT [];
+DEFINE FIELD OVERWRITE to_types   ON relation_schemas TYPE option<array<string> | null> DEFAULT [];
 
 -- 13. СВЯЗИ СУЩНОСТЕЙ
 DEFINE TABLE OVERWRITE entity_rel TYPE RELATION IN entities OUT entities SCHEMAFULL;
@@ -247,17 +247,17 @@ DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE block_id            ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE note                ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE status              ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
-DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
 DEFINE FIELD OVERWRITE resolution          ON plot_promises TYPE option<object | null> FLEXIBLE;
 DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<record<volumes> | string | null>;
 DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<record<chapters> | string | null>;
-DEFINE FIELD OVERWRITE participant_ids     ON plot_promises TYPE array<record<entities> | record<characters> | string> DEFAULT [];
+DEFINE FIELD OVERWRITE participant_ids     ON plot_promises TYPE option<array<record<entities> | record<characters> | string> | null> DEFAULT [];
 DEFINE FIELD OVERWRITE location_id         ON plot_promises TYPE option<record<entities> | string | null>;
 DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<timeline_events> | string | null>;
 DEFINE FIELD OVERWRITE arc_id              ON plot_promises TYPE option<record<story_arcs> | string | null>;
 DEFINE FIELD OVERWRITE arc_phase           ON plot_promises TYPE option<string | null>
   ASSERT $value IN [NONE, NULL, 'setup', 'escalation', 'climax', 'resolution'];
-DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
 DEFINE FIELD OVERWRITE m_abs               ON plot_promises TYPE option<int | null>;
 DEFINE FIELD OVERWRITE calendar_id         ON plot_promises TYPE option<record<calendars> | string | null>;
 DEFINE FIELD OVERWRITE date_fields         ON plot_promises TYPE option<object | null> FLEXIBLE;

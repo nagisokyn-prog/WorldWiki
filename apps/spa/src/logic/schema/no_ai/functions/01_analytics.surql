@@ -35,11 +35,22 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             } AS birth_m_abs,
             attributes['роль_в_истории'] AS role_in_story,
             attributes['статус_категория'] AS status_category,
-            ->appears_in.{
-                chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
-                source: source,
-                role: role
-            } AS appearances
+            array::concat(
+                (->appears_in.{
+                    chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
+                    source: source,
+                    role: role
+                }),
+                (SELECT 
+                    IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) } AS chapter_id,
+                    'scene' AS source,
+                    'scene_participant' AS role
+                 FROM plot_promises 
+                 WHERE project_id = $p_rec
+                   AND ($parent.id IN participant_ids 
+                        OR type::string($parent.id) IN participant_ids 
+                        OR ($parent.name != NONE AND $parent.name IN participant_ids)))
+            ) AS appearances
         FROM entities 
         WHERE project_id = $p_rec
         ORDER BY name ASC
@@ -66,6 +77,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             ->revealed_in.{
                 chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
                 chapter_title: out.title,
+                chapter_order: IF out.sort_order != NONE { out.sort_order } ELSE { 0 },
                 chapter_sort_order: IF out.sort_order != NONE { out.sort_order } ELSE { 0 },
                 pov_id: IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE },
                 kind: IF kind != NONE { kind } ELSE { 'direct' },
@@ -94,6 +106,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 {
                     chapter_id: IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) },
                     chapter_title: chapter_id.title,
+                    chapter_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     chapter_sort_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     pov_id: NONE,
                     kind: IF kind != NONE { kind } ELSE { 'direct' },

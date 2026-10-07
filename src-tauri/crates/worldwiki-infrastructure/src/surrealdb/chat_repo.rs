@@ -198,7 +198,7 @@ impl ChatRepository for SurrealChatRepository {
         let msg_rec = RecordId::new("chat_messages", msg_clean);
 
         self.db
-            .query("DELETE $msg;")
+            .query("DELETE chat_messages WHERE id = $msg;")
             .bind(("msg", msg_rec))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
@@ -298,6 +298,7 @@ mod tests {
     async fn setup_test_db() -> Arc<Surreal<Db>> {
         let db = Surreal::new::<Mem>(()).await.unwrap();
         db.use_ns("test").use_db("test").await.unwrap();
+        let _ = db.query("DEFINE TABLE OVERWRITE contains SCHEMALESS;").await;
         Arc::new(db)
     }
 

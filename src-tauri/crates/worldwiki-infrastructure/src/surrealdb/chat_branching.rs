@@ -57,11 +57,16 @@ pub async fn delete_chat_cascade(db: &Surreal<Db>, chat_id: &str) -> Result<(), 
     for cid in to_delete {
         let clean = clean_id_str(&cid, "chats:");
         let rec = RecordId::new("chats", clean);
-        let _ = db
-            .query("BEGIN TRANSACTION; DELETE chat_messages WHERE chat_id = $chat OR chat_id = $raw_id; DELETE contains WHERE out = $chat OR in = $chat; DELETE $chat; COMMIT TRANSACTION;")
+        let mut res = db
+            .query("DELETE chat_messages WHERE chat_id = $chat OR chat_id = $raw_id; DELETE contains WHERE out = $chat OR in = $chat; DELETE chats WHERE id = $chat OR id = $raw_id;")
             .bind(("chat", rec))
             .bind(("raw_id", format!("chats:{clean}")))
-            .await;
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let errs = res.take_errors();
+        if !errs.is_empty() {
+            eprintln!("[DELETE_CHAT_CASCADE] Errors: {:?}", errs);
+        }
     }
 
     Ok(())
@@ -97,7 +102,7 @@ pub async fn switch_message_variant(db: &Surreal<Db>, message_id: &str) -> Resul
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         } else {
-            db.query("BEGIN TRANSACTION; UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE; UPDATE $msg SET is_active = true; COMMIT TRANSACTION;")
+            db.query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE; UPDATE chat_messages SET is_active = true WHERE id = $msg;")
                 .bind(("chat", chat_rec))
                 .bind(("msg", msg_rec))
                 .await
@@ -125,7 +130,7 @@ pub async fn edit_message_branch(
     let msg_rec = RecordId::new("chat_messages", msg_clean);
 
     let mut check = db
-        .query("SELECT parent_id FROM $msg")
+        .query("SELECT parent_id FROM chat_messages WHERE id = $msg")
         .bind(("msg", msg_rec))
         .await
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
@@ -158,10 +163,8 @@ pub async fn edit_message_branch(
         let p_clean = clean_id_str(p_str, "chat_messages:");
         let p_rec = RecordId::new("chat_messages", p_clean);
         db.query(r#"
-            BEGIN TRANSACTION;
             CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
             CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
-            COMMIT TRANSACTION;
         "#)
         .bind(("uid", new_user_rec))
         .bind(("aid", new_assistant_rec))
@@ -173,10 +176,8 @@ pub async fn edit_message_branch(
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     } else {
         db.query(r#"
-            BEGIN TRANSACTION;
             CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
             CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
-            COMMIT TRANSACTION;
         "#)
         .bind(("uid", new_user_rec))
         .bind(("aid", new_assistant_rec))

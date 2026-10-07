@@ -7,6 +7,7 @@ pub mod repo;
 pub mod types;
 pub mod write_ops;
 
+pub use bind_helpers::*;
 pub use error::SurrealDomainError;
 pub use id_helpers::*;
 pub use mock::MockSurrealRepo;

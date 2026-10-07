@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::collections::HashSet;
 
 /// Bind map parameters into a surrealdb Query, converting record id strings to SurrealDB RecordIds.
-pub(crate) fn bind_map_values<Db: surrealdb::Connection>(
+pub fn bind_map_values<Db: surrealdb::Connection>(
     mut query: surrealdb::method::Query<'_, Db>,
     map: impl IntoIterator<Item = (String, Value)>,
 ) -> surrealdb::method::Query<'_, Db> {
@@ -22,7 +22,7 @@ pub(crate) fn bind_map_values<Db: surrealdb::Connection>(
 }
 
 /// Bind slice of (String, Value) tuples into a surrealdb Query.
-pub(crate) fn bind_tuple_values<Db: surrealdb::Connection>(
+pub fn bind_tuple_values<Db: surrealdb::Connection>(
     mut query: surrealdb::method::Query<'_, Db>,
     tuples: impl IntoIterator<Item = (String, Value)>,
 ) -> surrealdb::method::Query<'_, Db> {
@@ -41,7 +41,7 @@ pub(crate) fn bind_tuple_values<Db: surrealdb::Connection>(
 }
 
 /// Build assignment clauses and bind values for UPSERT queries.
-pub(crate) fn build_upsert_clauses(
+pub fn build_upsert_clauses(
     fields: &[&str],
     option_fields_slice: &[&str],
     map: serde_json::Map<String, Value>,

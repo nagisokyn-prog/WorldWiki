@@ -3,7 +3,6 @@ use crate::ai::retrieval::embedder::EmbedderService;
 use serde_json::json;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
-use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 
 #[derive(Clone, Debug)]
@@ -43,17 +42,14 @@ pub async fn reindex_project_lore_inner(
         .trim()
         .to_string();
 
-    let proj_rec = RecordId::new(
-        "projects",
-        if p_clean.is_empty() {
-            "default"
-        } else {
-            &p_clean
-        },
-    );
     // 1. Clear existing chunks for this project
     let del_query = "DELETE entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
-    if let Err(e) = db.query(del_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
+    if let Err(e) = db
+        .query(del_query)
+        .bind(("p_raw", p_raw.clone()))
+        .bind(("p_clean", p_clean.clone()))
+        .await
+    {
         eprintln!("[INDEXER] Warning while clearing old chunks: {e}");
     }
 
@@ -64,7 +60,12 @@ pub async fn reindex_project_lore_inner(
 
     // 2. Collect and chunk all chapters
     let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
-    if let Ok(mut resp) = db.query(chap_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
+    if let Ok(mut resp) = db
+        .query(chap_query)
+        .bind(("p_raw", p_raw.clone()))
+        .bind(("p_clean", p_clean.clone()))
+        .await
+    {
         if let Ok(chapters) = resp.take::<Vec<serde_json::Value>>(0) {
             for chap in chapters {
                 let chap_id_str = chap
@@ -104,7 +105,12 @@ pub async fn reindex_project_lore_inner(
 
     // 3. Collect and chunk all entities
     let ent_query = "SELECT id, name, entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
-    if let Ok(mut resp) = db.query(ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
+    if let Ok(mut resp) = db
+        .query(ent_query)
+        .bind(("p_raw", p_raw.clone()))
+        .bind(("p_clean", p_clean.clone()))
+        .await
+    {
         if let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
             for ent in entities {
                 let ent_id_str = ent
@@ -194,12 +200,28 @@ pub async fn reindex_project_lore_inner(
 
         for c in chunk_group {
             let chap_clean = c.chapter_id.as_ref().and_then(|id| {
-                let clean = id.strip_prefix("chapters:").unwrap_or(id).trim_matches('`').trim();
-                if clean.is_empty() { None } else { Some(format!("chapters:{clean}")) }
+                let clean = id
+                    .strip_prefix("chapters:")
+                    .unwrap_or(id)
+                    .trim_matches('`')
+                    .trim();
+                if clean.is_empty() {
+                    None
+                } else {
+                    Some(format!("chapters:{clean}"))
+                }
             });
             let ent_clean = c.entity_id.as_ref().and_then(|id| {
-                let clean = id.strip_prefix("entities:").unwrap_or(id).trim_matches('`').trim();
-                if clean.is_empty() { None } else { Some(format!("entities:{clean}")) }
+                let clean = id
+                    .strip_prefix("entities:")
+                    .unwrap_or(id)
+                    .trim_matches('`')
+                    .trim();
+                if clean.is_empty() {
+                    None
+                } else {
+                    Some(format!("entities:{clean}"))
+                }
             });
 
             let (emb_nomic, emb_nemo) = match c.embedding.as_ref() {
@@ -209,7 +231,10 @@ pub async fn reindex_project_lore_inner(
             };
 
             let mut row = serde_json::Map::new();
-            row.insert("project_id".to_string(), json!(proj_rec.to_string()));
+            row.insert(
+                "project_id".to_string(),
+                json!(format!("projects:{p_clean}")),
+            );
             if let Some(ch) = chap_clean {
                 row.insert("chapter_id".to_string(), json!(ch));
             }

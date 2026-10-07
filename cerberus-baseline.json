@@ -1,13 +1,5 @@
 [
   {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (214.1) exceeds warning limit (200.0)",
-    "fingerprint": "e9584ba0c43e1685f26287e6df3aebd3a4fe70f33ea6bb202bb2bb8905183518"
-  },
-  {
     "rule": "SURQL-001",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql",
     "line": 31,

@@ -9,15 +9,14 @@ pub use is_not_found as is_record_not_found;
 
 /// Safely parse a record id string into (table, raw_id) without slice indexing.
 pub fn parse_record_id_ref(s: &str) -> Option<(&str, &str)> {
-    if let Some((tb, id)) = s.split_once(':') {
-        if !tb.is_empty()
-            && tb.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-            && !id.is_empty()
-            && !s.contains('{')
-            && !s.contains('\n')
-        {
-            return Some((tb, id.trim_matches('`')));
-        }
+    if let Some((tb, id)) = s.split_once(':')
+        && !tb.is_empty()
+        && tb.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        && !id.is_empty()
+        && !s.contains('{')
+        && !s.contains('\n')
+    {
+        return Some((tb, id.trim_matches('`')));
     }
     None
 }
@@ -39,15 +38,15 @@ pub fn extract_target_id<'a>(table: &str, id: &'a str) -> Option<&'a str> {
 pub fn normalize_embedded_things(val: &mut Value) {
     if let Some(obj) = val.as_object_mut() {
         for (_k, v) in obj.iter_mut() {
-            if v.is_object() {
-                if let (Some(tb), Some(id_str)) = (
+            if v.is_object()
+                && let (Some(tb), Some(id_str)) = (
                     v.get("tb").and_then(|t| t.as_str()),
                     v.get("id").and_then(|i| i.as_str()),
-                ) {
-                    if !tb.is_empty() && !id_str.is_empty() {
-                        *v = Value::String(format!("{}:{}", tb, id_str));
-                    }
-                }
+                )
+                && !tb.is_empty()
+                && !id_str.is_empty()
+            {
+                *v = Value::String(format!("{}:{}", tb, id_str));
             }
         }
     }

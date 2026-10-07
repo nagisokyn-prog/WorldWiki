@@ -18,18 +18,18 @@ pub struct DefaultDataDirProvider;
 
 impl DataDirProvider for DefaultDataDirProvider {
     fn get_data_dir(&self) -> PathBuf {
-        if let Ok(custom_dir) = env::var("SURREAL_DATA_DIR") {
-            if !custom_dir.is_empty() {
-                return PathBuf::from(custom_dir);
-            }
+        if let Ok(custom_dir) = env::var("SURREAL_DATA_DIR")
+            && !custom_dir.is_empty()
+        {
+            return PathBuf::from(custom_dir);
         }
         if let Ok(exe) = env::current_exe() {
             let mut curr = exe.parent();
             while let Some(dir) = curr {
-                if dir.file_name().map(|n| n == "target").unwrap_or(false) {
-                    if let Some(root) = dir.parent() {
-                        return root.join("data");
-                    }
+                if dir.file_name().map(|n| n == "target").unwrap_or(false)
+                    && let Some(root) = dir.parent()
+                {
+                    return root.join("data");
                 }
                 curr = dir.parent();
             }

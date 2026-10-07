@@ -26,6 +26,7 @@ impl LlmTokenizer {
         let c_text = CString::new(text)?;
         let mut tokens = vec![0 as llama_token; text.len() + 16];
 
+        // SAFETY: Pointer to vocabulary and C-string memory are valid for the duration of the call.
         let n_tokens = unsafe {
             llama_tokenize(
                 vocab,
@@ -43,6 +44,7 @@ impl LlmTokenizer {
             let required_size = (-n_tokens) as usize;
             tokens.resize(required_size, 0);
 
+            // SAFETY: Buffer has been resized to required size and pointers remain valid.
             let n2 = unsafe {
                 llama_tokenize(
                     vocab,
@@ -76,6 +78,7 @@ impl LlmTokenizer {
         token: llama_token,
         buf: &mut [u8],
     ) -> i32 {
+        // SAFETY: Caller guarantees valid vocab pointer and buf slice pointer.
         unsafe {
             llama_token_to_piece(
                 vocab,
@@ -91,6 +94,7 @@ impl LlmTokenizer {
     /// Checks if a token represents an End-Of-Generation (EOG) token in the vocabulary.
     // SAFETY: Caller guarantees `vocab` is a valid, non-null pointer to model vocabulary.
     pub(crate) unsafe fn is_eog(vocab: *const llama_vocab, token: llama_token) -> bool {
+        // SAFETY: Caller guarantees vocab pointer is non-null and valid.
         unsafe { llama_vocab_is_eog(vocab, token) }
     }
 

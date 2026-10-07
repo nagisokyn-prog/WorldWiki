@@ -93,12 +93,11 @@ impl TestEnv {
     pub fn list_images(&self) -> std::io::Result<Vec<String>> {
         let mut files = Vec::new();
         for entry in std::fs::read_dir(&self.user_images_dir)?.flatten() {
-            if let Ok(ft) = entry.file_type() {
-                if ft.is_file() {
-                    if let Ok(name) = entry.file_name().into_string() {
-                        files.push(name);
-                    }
-                }
+            if let Ok(ft) = entry.file_type()
+                && ft.is_file()
+                && let Ok(name) = entry.file_name().into_string()
+            {
+                files.push(name);
             }
         }
         Ok(files)

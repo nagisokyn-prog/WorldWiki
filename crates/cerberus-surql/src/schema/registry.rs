@@ -1,5 +1,5 @@
 use crate::schema::types::SurqlType;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Default)]
 pub struct SchemaRegistry {
@@ -7,6 +7,7 @@ pub struct SchemaRegistry {
     pub fields: HashMap<(String, String), FieldMeta>,
     pub indexes: HashMap<String, Vec<IndexMeta>>,
     pub functions: HashMap<String, FunctionMeta>,
+    pub referenced_functions: HashSet<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -78,6 +79,25 @@ impl SchemaRegistry {
         } else {
             false
         }
+    }
+
+    pub fn record_function_reference(&mut self, name: &str) {
+        let clean_name = name.strip_prefix("fn::").unwrap_or(name);
+        self.referenced_functions.insert(clean_name.to_string());
+        self.referenced_functions.insert(name.to_string());
+        if !name.starts_with("fn::") {
+            self.referenced_functions.insert(format!("fn::{name}"));
+        }
+    }
+
+    pub fn is_function_referenced(&self, name: &str) -> bool {
+        if self.referenced_functions.is_empty() {
+            return true;
+        }
+        let clean_name = name.strip_prefix("fn::").unwrap_or(name);
+        self.referenced_functions.contains(clean_name)
+            || self.referenced_functions.contains(name)
+            || self.referenced_functions.contains(&format!("fn::{clean_name}"))
     }
 }
 

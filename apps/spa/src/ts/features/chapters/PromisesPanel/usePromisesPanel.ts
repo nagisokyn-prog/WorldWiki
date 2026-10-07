@@ -191,12 +191,20 @@ export function usePromisesPanel(
   const loadPromises = async () => {
     if (!props.project) return;
     loading.value = true;
+    const localKey = `ww_plot_promises_${props.project}`;
     try {
       const list = await api.getPlotPromises(props.project);
       promises.value = Array.isArray(list) ? (list as unknown as RichPlotPromise[]) : [];
+      try {
+        if (promises.value.length === 0) {
+          localStorage.removeItem(localKey);
+        } else {
+          localStorage.setItem(localKey, JSON.stringify(promises.value));
+        }
+      } catch { /* ignore */ }
       syncQuotesWithManuscript();
-    } catch {
-      const localKey = `ww_plot_promises_${props.project}`;
+    } catch (err) {
+      console.warn('[usePromisesPanel] Failed to load promises from backend:', err);
       try {
         const stored = localStorage.getItem(localKey);
         if (stored) {

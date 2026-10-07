@@ -134,7 +134,7 @@ impl DdlParser {
         F: FnOnce(&str, usize) -> Vec<Statement>,
     {
         let is_overwrite = raw.to_uppercase().contains("OVERWRITE");
-        let re = Regex::new(r"(?i)DEFINE\s+FUNCTION\s+(?:OVERWRITE\s+)?(fn::[a-zA-Z0-9_]+)\s*\((.*?)\)").unwrap();
+        let re = Regex::new(r"(?is)DEFINE\s+FUNCTION\s+(?:OVERWRITE\s+)?(fn::[a-zA-Z0-9_]+)\s*\((.*?)\)").unwrap();
         let (name, params_str) = if let Some(c) = re.captures(raw) {
             (
                 c.get(1).map(|m| m.as_str().to_string()).unwrap_or_default(),

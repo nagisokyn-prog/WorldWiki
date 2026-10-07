@@ -219,5 +219,62 @@ mod tests {
         let content = repo.get_skill_content("ai_skills:s1").await.unwrap();
         assert_eq!(content, Some("Инструкция по типам сущностей".to_string()));
     }
+
+    #[tokio::test]
+    async fn test_stored_ai_functions_invocation() {
+        let db = setup_test_db().await;
+        // DDL modules for AI functions
+        let ddl_schema = include_str!("../../../../../apps/spa/src/logic/schema/ai/06_functions.surql");
+        let _ = db.query("
+            DEFINE TABLE OVERWRITE web_pages SCHEMAFULL;
+            DEFINE FIELD OVERWRITE url ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE canonical_url ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE domain ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE title ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE content_type ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE language ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE content_hash ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE content ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE extracted_markdown ON web_pages TYPE string;
+            DEFINE FIELD OVERWRITE status_code ON web_pages TYPE int;
+            DEFINE FIELD OVERWRITE hit_count ON web_pages TYPE int;
+            DEFINE FIELD OVERWRITE fetched_at ON web_pages TYPE datetime;
+            DEFINE FIELD OVERWRITE expires_at ON web_pages TYPE datetime;
+        ").await;
+
+        let _ = db.query(ddl_schema).await;
+
+        // 1. Test fn::upsert_global_web_page
+        let _ = db.query(r#"
+            RETURN fn::upsert_global_web_page(
+                'https://example.com',
+                'https://example.com',
+                'example.com',
+                'Example Domain',
+                'text/html',
+                'en',
+                'hash123',
+                'hello world',
+                '# hello world',
+                200,
+                30
+            );
+        "#).await;
+
+        // 2. Test fn::gather_rag_bundle
+        let _ = db.query(r#"
+            RETURN fn::gather_rag_bundle(type::record('projects', 'p1'), 'test', 5, 5);
+        "#).await;
+
+        // 3. Test fn::get_chapter_multi_hop_context
+        let _ = db.query(r#"
+            RETURN fn::get_chapter_multi_hop_context(type::record('chapters', 'c1'));
+        "#).await;
+
+        // 4. Test fn::resolve_auto_skills
+        let _ = db.query(r#"
+            RETURN fn::resolve_auto_skills(type::record('projects', 'p1'), 'query', 5);
+        "#).await;
+    }
 }
 

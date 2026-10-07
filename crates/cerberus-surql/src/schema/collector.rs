@@ -13,9 +13,28 @@ impl SchemaCollector {
             for stmt in &doc.statements {
                 Self::visit_statement(stmt, &mut registry);
             }
+            Self::scan_document_references(doc, &mut registry);
         }
 
         registry
+    }
+
+    fn scan_document_references(doc: &SurqlDocument, registry: &mut SchemaRegistry) {
+        let fn_re = regex::Regex::new(r"fn::([a-zA-Z0-9_]+)").unwrap();
+        let source = doc.source();
+        for cap in fn_re.captures_iter(source) {
+            if let Some(m) = cap.get(1) {
+                let full_m = cap.get(0).unwrap();
+                let prefix = source[..full_m.start()].trim_end();
+                let upper_prefix = prefix.to_ascii_uppercase();
+                if upper_prefix.ends_with("DEFINE FUNCTION")
+                    || upper_prefix.trim_end_matches("OVERWRITE").trim_end().ends_with("DEFINE FUNCTION")
+                {
+                    continue;
+                }
+                registry.record_function_reference(m.as_str());
+            }
+        }
     }
 
     fn visit_statement(stmt: &Statement, registry: &mut SchemaRegistry) {

@@ -4,6 +4,7 @@
  */
 
 import * as api from '../api.client';
+import { purgeProjectStorage } from '@/utils/storage.purge';
 
 export interface ProjectConfig {
   type: string;
@@ -30,6 +31,7 @@ export const projectApi = {
   },
   deleteProject: async (name: string): Promise<{ success: boolean }> => {
     await api.deleteProject(name);
+    purgeProjectStorage(name);
     return { success: true };
   },
   saveProjectConfig: async (name: string, config: ProjectConfig): Promise<{ success: boolean }> => {

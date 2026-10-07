@@ -112,6 +112,49 @@ impl SurqlRule for Surql026DatetimeCoercedToString {
     }
 }
 
+// SURQL-027: Stored Function Coverage & Dead Code Firewall
+pub struct Surql027StoredFunctionCoverage;
+impl SurqlRule for Surql027StoredFunctionCoverage {
+    fn id(&self) -> &'static str {
+        "SURQL-027"
+    }
+
+    fn definition(&self) -> RuleDefinition {
+        RuleDefinition {
+            id: self.id().into(),
+            version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            title: "Stored Function Coverage & Dead Code Firewall".into(),
+            description: "Stored function defined in DDL schema is orphaned and never referenced across the scanned codebase.".into(),
+            remediation: "Remove orphaned DEFINE FUNCTION from .surql schema or implement corresponding call site in codebase.".into(),
+        }
+    }
+
+    fn check(&self, doc: &SurqlDocument, schema: &SchemaRegistry, _config: &SurqlConfig) -> Vec<Violation> {
+        let mut violations = Vec::new();
+        for stmt in &doc.statements {
+            if let Statement::DefineFunction(func) = stmt {
+                if !schema.is_function_referenced(&func.name) {
+                    violations.push(create_violation(
+                        self,
+                        doc,
+                        func.span.start_line,
+                        func.span.start_col,
+                        &func.name,
+                        &format!("DEFINE FUNCTION {}", func.name),
+                        Some(&format!(
+                            "Stored function '{}' is orphaned: 0 call sites found in codebase.",
+                            func.name
+                        )),
+                    ));
+                }
+            }
+        }
+        violations
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

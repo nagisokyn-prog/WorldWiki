@@ -145,6 +145,14 @@
   },
   {
     "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/plot/arc_services.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "d28e55ec195dd22be6d748f5d0689150dba4c3898c73ed1b35110e2202b7871f"
+  },
+  {
+    "rule": "ARCH-007",
     "file": "./crates/worldwiki-domain/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
@@ -182,6 +190,14 @@
     "symbol": "use",
     "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'character_journey::*')",
     "fingerprint": "682e2152ccf156f8beff9c535275bf60204fa9ad16748e2acc67ec993b99aa96"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'chekhov_guns::*')",
+    "fingerprint": "0636795a6df011651871bb80d253fa050ee79edd6f760fc74f45343c9a5f0640"
   },
   {
     "rule": "ARCH-007",
@@ -254,14 +270,6 @@
     "symbol": "use",
     "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'export::*')",
     "fingerprint": "5f454d94cf5fd868740008f86c337bdc93092a9b3de539d3e79ac12b54ea18c8"
-  },
-  {
-    "rule": "ARCH-007",
-    "file": "./crates/worldwiki-domain/src/lib.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'crate::analytics::*')",
-    "fingerprint": "f3a2d0827440924922a56e2f0586930f176f223ef302438776b135d8cfbbf783"
   },
   {
     "rule": "ARCH-007",
@@ -510,14 +518,6 @@
     "symbol": "use",
     "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
     "fingerprint": "89ddf94142af830cf97d87ce304cbaf1ccc5af7bbda5c1faf2bd0196bc41804d"
-  },
-  {
-    "rule": "ARCH-007",
-    "file": "./crates/worldwiki-infrastructure/src/surrealdb/memory_repos.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'worldwiki_ports::repositories::*')",
-    "fingerprint": "ce444e81e8ab34d4b1b67ea615a9e83efa554e439c1d62c7a4bef3a0527c49c5"
   },
   {
     "rule": "ARCH-007",
@@ -772,6 +772,14 @@
     "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
     "line": 1,
     "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'analytics::*')",
+    "fingerprint": "1f90b08cac9f8e790f5e1d87182adbacf47bd0c38d4c4d55e09aacca6a8a84b2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
     "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'backup::*')",
     "fingerprint": "48a8765b02df0cbba66d7fdf0552e6b06265d9e4a151c5d0c59cd64bdeda4502"
   },
@@ -830,6 +838,14 @@
     "symbol": "use",
     "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'plot::*')",
     "fingerprint": "9c451c172d89100b28a522acca9e2f9c4301c8da849080a77c2890d4244d7ba6"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'story_arcs::*')",
+    "fingerprint": "17861571fa4cc9c467a36b7646deb04a52250edec7f228baf4a682778ac0fb05"
   },
   {
     "rule": "ARCH-007",

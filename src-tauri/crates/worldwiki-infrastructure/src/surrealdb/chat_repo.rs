@@ -298,7 +298,7 @@ mod tests {
     async fn setup_test_db() -> Arc<Surreal<Db>> {
         let db = Surreal::new::<Mem>(()).await.unwrap();
         db.use_ns("test").use_db("test").await.unwrap();
-        let _ = db.query("DEFINE TABLE OVERWRITE contains SCHEMALESS;").await;
+        let _ = db.query("DEFINE TABLE OVERWRITE contains SCHEMAFULL;").await;
         Arc::new(db)
     }
 

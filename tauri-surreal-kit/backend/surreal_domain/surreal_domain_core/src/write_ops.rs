@@ -1,6 +1,18 @@
 use crate::error::SurrealDomainError;
 use crate::id_helpers::is_not_found;
 
+fn normalize_map_record_ids(map: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(pid_val) = map.get_mut("project_id") {
+        if let Some(pid_str) = pid_val.as_str() {
+            let clean = pid_str.replace(['⟨', '⟩', '`'], "");
+            let actual = clean.strip_prefix("projects:").unwrap_or(&clean);
+            if !actual.is_empty() {
+                *pid_val = serde_json::Value::String(format!("projects:⟨{}⟩", actual));
+            }
+        }
+    }
+}
+
 pub(crate) async fn repo_create<T, Db: surrealdb::Connection>(
     db: &surrealdb::Surreal<Db>,
     table: &'static str,
@@ -16,6 +28,7 @@ where
     };
     map.remove("id");
     map.retain(|_, v| !v.is_null());
+    normalize_map_record_ids(&mut map);
 
     let mut res = db
         .query("CREATE type::table($table) CONTENT $data")
@@ -56,6 +69,7 @@ where
             _ => return Err(SurrealDomainError::invalid_parameter("entity must serialize to a JSON object")),
         };
         map.remove("id");
+        normalize_map_record_ids(&mut map);
 
         let mut res = db
             .query("UPSERT $__record_id MERGE $data")

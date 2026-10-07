@@ -63,7 +63,18 @@ impl SurqlLinterPort for SurqlEngine {
             .collect();
 
         // 2. Pass 1: Build combined schema registry
-        let schema = SchemaCollector::collect(&docs);
+        let mut schema = SchemaCollector::collect(&docs);
+
+        let fn_re = regex::Regex::new(r"fn::([a-zA-Z0-9_]+)").unwrap();
+        for rf in &request.rust_files {
+            if let Ok(content) = fs::read_to_string(rf) {
+                for cap in fn_re.captures_iter(&content) {
+                    if let Some(m) = cap.get(1) {
+                        schema.record_function_reference(m.as_str());
+                    }
+                }
+            }
+        }
 
         // 3. Pass 2: Audit all .surql documents
         let mut all_violations: Vec<Violation> = docs

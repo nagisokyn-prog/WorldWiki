@@ -621,3 +621,45 @@ fn test_cross_file_schema_and_query_integration() {
         result.violations
     );
 }
+
+#[test]
+fn test_surql_027_stored_function_coverage() {
+    let dir = tempfile::tempdir().unwrap();
+    let schema_file = dir.path().join("schema.surql");
+    std::fs::write(
+        &schema_file,
+        r#"
+        DEFINE FUNCTION OVERWRITE fn::used_func($proj: string) {
+            RETURN 1;
+        };
+        DEFINE FUNCTION OVERWRITE fn::orphaned_func($proj: string) {
+            RETURN 2;
+        };
+        "#,
+    )
+    .unwrap();
+
+    let rust_file = dir.path().join("repo.rs");
+    std::fs::write(
+        &rust_file,
+        r#"
+        async fn call_db(db: &Surreal<Db>) {
+            let _ = db.query("RETURN fn::used_func('p1');").await;
+        }
+        "#,
+    )
+    .unwrap();
+
+    let request = SurqlScanRequest {
+        surql_files: vec![schema_file],
+        rust_files: vec![rust_file],
+        workspace_root: dir.path().to_path_buf(),
+    };
+
+    let engine = SurqlEngine::with_default_config();
+    let result = engine.scan(&request).unwrap();
+
+    let v027: Vec<_> = result.violations.iter().filter(|v| v.rule_id == "SURQL-027").collect();
+    assert_eq!(v027.len(), 1, "Expected exactly 1 orphaned function violation for fn::orphaned_func");
+    assert!(v027[0].symbol.contains("orphaned_func"));
+}

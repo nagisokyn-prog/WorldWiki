@@ -83,6 +83,7 @@ pub fn all_rules() -> Vec<Box<dyn SurqlRule>> {
         // Functions
         Box::new(functions::Surql020UntypedFunctionParam),
         Box::new(functions::Surql026DatetimeCoercedToString),
+        Box::new(functions::Surql027StoredFunctionCoverage),
         // FTS & BM25
         Box::new(fts::Surql021UnrankedPredicateSearch),
         Box::new(fts::Surql022DanglingScoreFunction),
@@ -101,7 +102,7 @@ mod tests {
     #[test]
     fn test_all_rules_have_unique_ids_and_metadata() {
         let rules = all_rules();
-        assert_eq!(rules.len(), 26);
+        assert_eq!(rules.len(), 27);
 
         let mut seen = HashSet::new();
         for rule in &rules {

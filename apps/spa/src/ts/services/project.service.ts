@@ -6,6 +6,7 @@
 
 import * as api from './api.client';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
+import { purgeProjectStorage } from '../utils/storage.purge';
 
 export interface ProjectStats {
   chapters?: number;
@@ -100,6 +101,7 @@ export const projectService = {
     const result = await api.deleteProject(projectName);
     invalidateCache('projects:all');
     invalidateCache(`project:config:${projectName}`);
+    purgeProjectStorage(projectName);
     return { success: !!result };
   },
 

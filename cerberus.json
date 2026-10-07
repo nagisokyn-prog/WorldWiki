@@ -27,9 +27,9 @@
     "**/*test.ts",
     "**/font-awesome.min.css",
     "**/*assets/**",
-    "apps/spa/src/ts/services/api.client.ts",
+    "**/api.client.ts",
     "scripts/",
-    "src-tauri/data/backup_latest.surql"
+    "**/data/backup_latest.surql"
   ],
   "extends": [
     "cerberus:rust-hexagonal",
@@ -42,32 +42,32 @@
   "layers": {
     "domain": {
       "patterns": [
-        "src-tauri/crates/worldwiki-domain/**",
-        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/**"
+        "**/crates/worldwiki-domain/**",
+        "**/surreal_domain/surreal_domain_macros/**"
       ],
       "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
       "allowed_deps": []
     },
     "application": {
       "patterns": [
-        "src-tauri/crates/worldwiki-application/**",
-        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/**"
+        "**/crates/worldwiki-application/**",
+        "**/surreal_domain/surreal_domain_facade/**"
       ],
       "forbidden_external": ["tauri"],
       "allowed_deps": ["domain", "ports", "infrastructure"]
     },
     "ports": {
       "patterns": [
-        "src-tauri/crates/worldwiki-ports/**"
+        "**/crates/worldwiki-ports/**"
       ],
       "forbidden_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain"]
     },
     "infrastructure": {
       "patterns": [
-        "src-tauri/crates/worldwiki-infrastructure/**",
-        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/**",
-        "src-tauri/llama-sys/**"
+        "**/crates/worldwiki-infrastructure/**",
+        "**/surreal_domain/surreal_domain_core/**",
+        "**/llama-sys/**"
       ],
       "allowed_deps": ["domain", "ports", "application"]
     },
@@ -75,8 +75,8 @@
       "aliases": ["adapter", "adapters", "tauri"],
       "patterns": [
         "src-tauri/**",
-        "src-tauri/crates/worldwiki-tauri/**",
-        "tauri-surreal-kit/backend/tauri_shell/**"
+        "**/crates/worldwiki-tauri/**",
+        "**/tauri_shell/**"
       ],
       "allowed_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain", "application", "ports", "infrastructure"]

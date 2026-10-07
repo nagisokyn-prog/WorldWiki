@@ -280,46 +280,58 @@ impl SurqlRule for Surql006MutationBlockWithoutTx {
 
     fn check(&self, doc: &SurqlDocument, _schema: &SchemaRegistry, _config: &SurqlConfig) -> Vec<Violation> {
         let mut violations = Vec::new();
+        // Stored functions (DEFINE FUNCTION) in SurrealDB are atomic execution blocks by specification.
+        // SURQL-006 checks top-level script mutation sequences outside transaction boundaries.
+        let mut mutation_count = 0;
+        let mut has_transaction = false;
+        let mut first_mutation_span: Option<&SourceSpan> = None;
+
         for stmt in &doc.statements {
-            if let Statement::DefineFunction(func) = stmt {
-                let mut mutation_count = 0;
-                let mut has_transaction = false;
-
-                for body_stmt in &func.body_statements {
-                    match body_stmt {
-                        Statement::Transaction(_) => has_transaction = true,
-                        Statement::Delete(_) | Statement::Relate(_) | Statement::Update(_) | Statement::ForLoop(_) => {
-                            mutation_count += 1;
-                        }
-                        Statement::Other(o) => {
-                            let upper = o.raw.to_uppercase();
-                            if upper.starts_with("CREATE") || upper.starts_with("INSERT") || upper.starts_with("DELETE") || upper.starts_with("UPDATE") || upper.starts_with("RELATE") {
-                                mutation_count += 1;
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
-                let func_snippet = &doc.source()[func.span.byte_range.clone()];
-                let func_upper = func_snippet.to_uppercase();
-                if func_upper.contains("BEGIN TRANSACTION") || func_upper.contains("BEGIN;") || func_upper.contains("BEGIN\n") {
+            let is_mutation = match stmt {
+                Statement::Transaction(_) => {
                     has_transaction = true;
+                    false
                 }
+                Statement::DefineFunction(_) => false,
+                Statement::Delete(_) | Statement::Relate(_) | Statement::Update(_) => true,
+                Statement::Other(o) => {
+                    let upper = o.raw.to_uppercase();
+                    upper.starts_with("CREATE")
+                        || upper.starts_with("INSERT")
+                        || upper.starts_with("DELETE")
+                        || upper.starts_with("UPDATE")
+                        || upper.starts_with("RELATE")
+                }
+                _ => false,
+            };
 
-                if mutation_count >= 2 && !has_transaction {
-                    violations.push(create_violation(
-                        self,
-                        doc,
-                        func.span.start_line,
-                        func.span.start_col,
-                        &func.name,
-                        &format!("DEFINE FUNCTION {}", func.name),
-                        Some(&format!("Stored function '{}' executes {} mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).", func.name, mutation_count)),
-                    ));
+            if is_mutation {
+                mutation_count += 1;
+                if first_mutation_span.is_none() {
+                    first_mutation_span = Some(stmt.span());
                 }
             }
         }
+
+        let doc_upper = doc.source().to_uppercase();
+        if doc_upper.contains("BEGIN TRANSACTION") || doc_upper.contains("BEGIN;") || doc_upper.contains("BEGIN\n") {
+            has_transaction = true;
+        }
+
+        if mutation_count >= 2 && !has_transaction {
+            if let Some(span) = first_mutation_span {
+                violations.push(create_violation(
+                    self,
+                    doc,
+                    span.start_line,
+                    span.start_col,
+                    "SCRIPT",
+                    "MUTATION_BLOCK",
+                    Some(&format!("Top-level script executes {} mutation operations without a transaction boundary (BEGIN TRANSACTION ... COMMIT).", mutation_count)),
+                ));
+            }
+        }
+
         violations
     }
 }
@@ -521,6 +533,9 @@ mod tests {
 
         let v05 = Surql005ProjectionSubqueryNPlusOne.check(&doc, &schema, &config);
         assert!(!v05.is_empty());
+
+        let v06 = Surql006MutationBlockWithoutTx.check(&doc, &schema, &config);
+        assert!(!v06.is_empty());
 
         let v13 = Surql013ScalarAggregateWithoutGroup.check(&doc, &schema, &config);
         assert!(!v13.is_empty());

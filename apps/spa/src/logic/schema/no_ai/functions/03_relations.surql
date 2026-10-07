@@ -34,16 +34,18 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: record<projects>, $c
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     IF $chap != NONE {
         RETURN (
-            SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
+            SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
             FROM entity_rel 
             WHERE project_id = $p_rec 
               AND (start_chapter = $chap OR end_chapter = $chap)
+            LIMIT 5000
         );
     } ELSE {
         RETURN (
-            SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
+            SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id 
             FROM entity_rel 
             WHERE project_id = $p_rec
+            LIMIT 5000
         );
     };
 };
@@ -87,15 +89,17 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: record<projects>, $eid
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     IF $eid != NONE {
         RETURN (
-            SELECT *, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
+            SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
             FROM entity_rel 
             WHERE project_id = $p_rec AND (in = $eid OR out = $eid)
+            LIMIT 5000
         );
     } ELSE {
         RETURN (
-            SELECT *, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
+            SELECT id, in, out, project_id, rel_type, description, strength, attributes, start_volume, start_chapter, end_volume, end_chapter, is_auto_extend, created_at, type::string(in) AS in, type::string(out) AS out, type::string(id) AS id 
             FROM entity_rel 
             WHERE project_id = $p_rec
+            LIMIT 5000
         );
     };
 };

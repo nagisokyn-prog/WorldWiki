@@ -4,7 +4,7 @@
 -- 27. ПОЛУЧЕНИЕ СХЕМ СВЯЗЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: record<projects>) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
-    RETURN (SELECT * FROM relation_schemas WHERE project_id = $p_rec);
+    RETURN (SELECT id, project_id, rel_key, rel_name, icon, color, directed, from_types, to_types FROM relation_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 28. УДАЛЕНИЕ СХЕМЫ СВЯЗИ И СВЯЗАННЫХ РЕБЕР
@@ -17,7 +17,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: record<projects>, $r
 -- 29. ПОЛУЧЕНИЕ СХЕМ СУЩНОСТЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
-    RETURN (SELECT * FROM entity_schemas WHERE project_id = $p_rec);
+    RETURN (SELECT id, project_id, type_key, type_name, icon, color, fields_schema, full_schema, created_at FROM entity_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 30. ПОИСК ID СХЕМЫ СУЩНОСТИ ПО TYPE_KEY
@@ -59,6 +59,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_entity_schema($proj: record<projects>, $typ
         SELECT VALUE rel_key FROM relation_schemas 
         WHERE project_id = $p_rec 
           AND (from_types CONTAINS $type_key OR to_types CONTAINS $type_key)
+        LIMIT 1000
     );
     DELETE entity_rel WHERE project_id = $p_rec AND rel_type IN $matching_rel_keys;
     DELETE entities WHERE project_id = $p_rec AND entity_type = $type_key;

@@ -229,14 +229,12 @@ fn test_surql_005_subquery_in_projection_n_plus_one() {
 #[test]
 fn test_surql_006_mutation_block_without_transaction() {
     let surql = r#"
-        DEFINE FUNCTION OVERWRITE fn::delete_and_relate($u: record<user>, $t: record<target>) {
-            DELETE user_rel WHERE in = $u;
-            RELATE $u -> user_rel -> $t;
-        };
+        DELETE user_rel WHERE in = $u;
+        RELATE $u -> user_rel -> $t;
     "#;
 
     let engine = SurqlEngine::with_default_config();
-    let violations = engine.scan_surql_content(surql, Path::new("fn.surql")).unwrap();
+    let violations = engine.scan_surql_content(surql, Path::new("migration.surql")).unwrap();
 
     assert!(violations.iter().any(|v| v.rule_id == "SURQL-006"));
 }

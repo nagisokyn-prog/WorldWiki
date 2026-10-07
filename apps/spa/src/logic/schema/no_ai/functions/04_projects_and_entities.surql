@@ -3,7 +3,7 @@
 
 -- 13. СПИСОК ВСЕХ ПРОЕКТОВ
 DEFINE FUNCTION OVERWRITE fn::get_projects_list() {
-    RETURN (SELECT *, type::string(id) AS id FROM projects ORDER BY created_at DESC);
+    RETURN (SELECT id, name, created_at, data, type, genres, perfLevel, type::string(id) AS id FROM projects ORDER BY created_at DESC LIMIT 1000);
 };
 
 -- 14. ПОЛУЧЕНИЕ КОНФИГУРАЦИИ ПРОЕКТА
@@ -13,7 +13,7 @@ DEFINE FUNCTION OVERWRITE fn::get_project_config($name: string) {
     };
     LET $clean = string::replace($name, 'projects:', '');
     LET $res = (
-        SELECT *, type::string(id) AS id FROM projects 
+        SELECT id, name, created_at, data, type, genres, perfLevel, type::string(id) AS id FROM projects 
         WHERE id = type::record('projects', $clean) OR name = $name OR name = $clean
         LIMIT 1
     );
@@ -26,6 +26,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: record<projects>) {
     RETURN (
         SELECT id, attributes FROM entities 
         WHERE project_id = $p_rec
+        LIMIT 10000
     );
 };
 
@@ -39,14 +40,16 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     IF $et != NONE {
         RETURN (
-            SELECT * FROM entities 
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
             WHERE project_id = $p_rec
               AND entity_type = $et
+            LIMIT 10000
         );
     } ELSE {
         RETURN (
-            SELECT * FROM entities 
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
             WHERE project_id = $p_rec
+            LIMIT 10000
         );
     };
 };
@@ -64,7 +67,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
 ) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     IF $id != NONE AND $id != NULL {
-        LET $existing = (SELECT * FROM ONLY $id);
+        LET $existing = (SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM ONLY $id);
         LET $res = (
             UPSERT $id SET
                 project_id = $p_rec,
@@ -96,7 +99,7 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     IF $et != NONE {
         RETURN (
-            SELECT * 
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
             FROM entities 
             WHERE project_id = $p_rec
               AND (name @1@ $q OR description @1@ $q)
@@ -105,7 +108,7 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
         );
     } ELSE {
         RETURN (
-            SELECT * 
+            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
             FROM entities 
             WHERE project_id = $p_rec
               AND (name @1@ $q OR description @1@ $q)
@@ -118,9 +121,10 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
 DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     RETURN (
-        SELECT * FROM entities 
+        SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
         WHERE project_id = $p_rec
           AND entity_type IN $types
+        LIMIT 5000
     );
 };
 

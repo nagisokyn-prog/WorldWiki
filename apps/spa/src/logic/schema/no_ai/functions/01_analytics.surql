@@ -14,6 +14,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
         FROM chapters 
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
+        LIMIT 1000
     );
 
     LET $entities = (
@@ -34,10 +35,15 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             } AS birth_m_abs,
             attributes['роль_в_истории'] AS role_in_story,
             attributes['статус_категория'] AS status_category,
-            (SELECT IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id, source, role FROM ->appears_in) AS appearances
+            ->appears_in.{
+                chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
+                source: source,
+                role: role
+            } AS appearances
         FROM entities 
         WHERE project_id = $p_rec
         ORDER BY name ASC
+        LIMIT 2000
     );
 
     RETURN {
@@ -57,21 +63,24 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             description,
             m_abs,
             IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
-            (
-                SELECT 
-                    IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id,
-                    out.title AS chapter_title,
-                    IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_sort_order,
-                    IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE } AS pov_id,
-                    IF kind != NONE { kind } ELSE { 'direct' } AS kind,
-                    block_id,
-                    false AS is_anachronism
-                FROM ->revealed_in
-            ) AS reveals,
-            (SELECT IF id.id != NONE { id.id } ELSE { type::string(id) } AS id, name, entity_type FROM <-participates_in<-entities) AS participants
+            ->revealed_in.{
+                chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
+                chapter_title: out.title,
+                chapter_sort_order: IF out.sort_order != NONE { out.sort_order } ELSE { 0 },
+                pov_id: IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE },
+                kind: IF kind != NONE { kind } ELSE { 'direct' },
+                block_id: block_id,
+                is_anachronism: false
+            } AS reveals,
+            <-participates_in<-entities.{
+                id: IF id.id != NONE { id.id } ELSE { type::string(id) },
+                name: name,
+                entity_type: entity_type
+            } AS participants
         FROM timeline_events
         WHERE project_id = $p_rec
         ORDER BY m_abs ASC
+        LIMIT 2000
     );
 
     LET $scene_events = (
@@ -92,22 +101,12 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     is_anachronism: false
                 }
             ] AS reveals,
-            IF participant_ids != NONE {
-                (
-                    SELECT 
-                        IF id.id != NONE { id.id } ELSE { type::string(id) } AS id,
-                        name,
-                        entity_type 
-                    FROM entities 
-                    WHERE id IN $parent.participant_ids OR type::string(id) IN $parent.participant_ids
-                )
-            } ELSE {
-                []
-            } AS participants
+            [] AS participants
         FROM plot_promises
         WHERE project_id = $p_rec
           AND m_abs != NONE
           AND (timeline_event_id = NONE OR timeline_event_id = NULL OR type::string(timeline_event_id) CONTAINS 'ev_scene_')
+        LIMIT 2000
     );
 
     LET $all_events = array::concat($events, $scene_events);
@@ -117,6 +116,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
         FROM chapters 
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
+        LIMIT 1000
     );
 
     RETURN {
@@ -133,6 +133,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
         SELECT id, name, entity_type, tags, attributes 
         FROM entities 
         WHERE project_id = $p_rec
+        LIMIT 2000
     );
 
     LET $edges = (
@@ -150,10 +151,11 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
             IF attributes.start_m_abs != NONE {
                 attributes.start_m_abs
             } ELSE {
-                (SELECT VALUE in.m_abs FROM revealed_in WHERE out = start_chapter LIMIT 1)[0]
+                NONE
             } AS inferred_start_m_abs
         FROM entity_rel 
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     RETURN {
@@ -164,7 +166,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
 
 -- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
-    LET $info = (SELECT id, name, entity_type, attributes FROM $entity);
+    LET $info = (SELECT id, name, entity_type, attributes FROM $entity LIMIT 1);
     LET $appearances = (
         SELECT 
             out.id AS chapter_id,
@@ -175,6 +177,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             created_at
         FROM appears_in 
         WHERE in = $entity
+        LIMIT 1000
     );
     LET $events = (
         SELECT 
@@ -186,6 +189,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             role
         FROM participates_in 
         WHERE in = $entity
+        LIMIT 1000
     );
     LET $relations = (
         SELECT 
@@ -197,6 +201,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             end_chapter.sort_order AS end_order
         FROM entity_rel 
         WHERE in = $entity OR out = $entity
+        LIMIT 1000
     );
     LET $promises = (
         SELECT 
@@ -224,10 +229,11 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             date_fields,
             timeline_event_id
         FROM plot_promises 
-        WHERE participant_ids CONTAINS type::string($entity) 
-           OR participant_ids CONTAINS $entity.id 
-           OR $entity IN participant_ids
-           OR ($info[0].name != NONE AND participant_ids CONTAINS $info[0].name)
+        WHERE $entity IN participant_ids
+           OR type::string($entity) IN participant_ids 
+           OR $entity.id IN participant_ids
+           OR ($info[0].name != NONE AND $info[0].name IN participant_ids)
+        LIMIT 1000
     );
 
     RETURN {
@@ -245,7 +251,7 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
     DELETE appears_in WHERE out = $chap AND source = 'mention';
 
     IF array::len($names) > 0 {
-        LET $lower_names = (SELECT VALUE string::lowercase($this) FROM $names);
+        LET $lower_names = (SELECT VALUE string::lowercase($this) FROM $names LIMIT 500);
         LET $targets = (
             SELECT VALUE id FROM entities 
             WHERE project_id = $p_rec
@@ -257,6 +263,7 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
                   OR string::lowercase(name) IN $lower_names 
                   OR (attributes.aliases != NONE AND array::len(array::intersect(attributes.aliases, $names)) > 0)
               )
+            LIMIT 1000
         );
         FOR $ent_id IN $targets {
             RELATE $ent_id->appears_in->$chap CONTENT {

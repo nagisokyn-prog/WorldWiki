@@ -43,6 +43,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
     LET $rec_ids = (
         SELECT VALUE type::record('entities', type::string($this).replace('entities:', '')) 
         FROM $entity_ids
+        LIMIT 500
     );
 
     LET $entities_info = (
@@ -54,6 +55,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             avatar_url
         FROM entities
         WHERE id IN $rec_ids
+        LIMIT 500
     );
 
     LET $appearances = (
@@ -69,6 +71,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             created_at
         FROM appears_in 
         WHERE in IN $rec_ids
+        LIMIT 2000
     );
 
     LET $events = (
@@ -83,6 +86,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             role
         FROM participates_in 
         WHERE in IN $rec_ids
+        LIMIT 2000
     );
 
     LET $promises = (
@@ -114,6 +118,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             participant_ids
         FROM plot_promises 
         WHERE project_id = $p_rec
+        LIMIT 2000
     );
 
     RETURN {
@@ -136,6 +141,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
             attributes
         FROM entities
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     LET $chapters = (
@@ -146,6 +152,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
         FROM chapters
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
+        LIMIT 1000
     );
 
     LET $promises = (
@@ -158,18 +165,20 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
             IF note != NONE { note } ELSE { '' } AS description
         FROM plot_promises
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            (SELECT VALUE type::string(out) FROM ->revealed_in LIMIT 1)[0] AS chapter_id, 
+            type::string(->revealed_in.out[0]) AS chapter_id, 
             m_abs, 
-            (SELECT VALUE type::string(in) FROM <-participates_in) AS participants, 
+            <-participates_in.in AS participants, 
             title, 
             IF description != NONE { description } ELSE { '' } AS description
         FROM timeline_events
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     RETURN {
@@ -192,6 +201,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
             entity_type, 
             attributes
         FROM $item_rec
+        LIMIT 1
     )[0];
 
     LET $characters = (
@@ -200,6 +210,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
             name
         FROM entities
         WHERE project_id = $p_rec AND entity_type = 'character'
+        LIMIT 1000
     );
 
     LET $chapters = (
@@ -210,6 +221,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
         FROM chapters
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
+        LIMIT 1000
     );
 
     LET $promises = (
@@ -222,18 +234,20 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
             IF note != NONE { note } ELSE { '' } AS description
         FROM plot_promises
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            (SELECT VALUE type::string(out) FROM ->revealed_in LIMIT 1)[0] AS chapter_id, 
+            type::string(->revealed_in.out[0]) AS chapter_id, 
             m_abs, 
-            (SELECT VALUE type::string(in) FROM <-participates_in) AS participants, 
+            <-participates_in.in AS participants, 
             title, 
             IF description != NONE { description } ELSE { '' } AS description
         FROM timeline_events
         WHERE project_id = $p_rec
+        LIMIT 5000
     );
 
     RETURN {

@@ -3,7 +3,7 @@
 
 -- 21. ПОЛУЧЕНИЕ РЕВИЗИЙ ГЛАВЫ
 DEFINE FUNCTION OVERWRITE fn::get_chapter_revisions($target: record<chapters>) {
-    RETURN (SELECT * FROM chapter_revisions WHERE target_id = $target ORDER BY created_at DESC);
+    RETURN (SELECT id, target_id, title, content, created_at, is_pinned, order_index FROM chapter_revisions WHERE target_id = $target ORDER BY created_at DESC LIMIT 100);
 };
 
 -- 22. ЗАКРЕПЛЕНИЕ/ОТКРЕПЛЕНИЕ РЕВИЗИИ ИЛИ ИСТОРИИ
@@ -14,12 +14,12 @@ DEFINE FUNCTION OVERWRITE fn::toggle_pin($target: record, $is_pinned: bool) {
 -- 23. ПОЛУЧЕНИЕ ИСТОРИИ СХЕМЫ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: record<projects>, $tk: string) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
-    RETURN (SELECT * FROM schema_history WHERE project_id = $p_rec AND type_key = $tk ORDER BY saved_at DESC);
+    RETURN (SELECT id, schema_id, project_id, type_key, snapshot, saved_at, is_pinned FROM schema_history WHERE project_id = $p_rec AND type_key = $tk ORDER BY saved_at DESC LIMIT 100);
 };
 
 -- 24. ПОЛУЧЕНИЕ РЕВИЗИЙ СУЩНОСТИ
 DEFINE FUNCTION OVERWRITE fn::get_entity_revisions($target: record<entities>) {
-    RETURN (SELECT * FROM entity_revisions WHERE target_id = $target ORDER BY created_at DESC);
+    RETURN (SELECT id, target_id, name, entity_type, attributes, created_at, is_pinned FROM entity_revisions WHERE target_id = $target ORDER BY created_at DESC LIMIT 100);
 };
 
 -- 25. СОХРАНЕНИЕ СЕМАНТИЧЕСКИХ ТЕКСТОВЫХ БЛОКОВ ГЛАВЫ
@@ -31,14 +31,15 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     DELETE text_blocks WHERE chapter_id = $chap AND project_id = $p_rec;
 
-    FOR $b IN $blocks {
-        CREATE text_blocks SET 
-            project_id = $p_rec,
-            chapter_id = $chap,
-            block_type = $b.block_type,
-            order_index = $b.order_index,
-            content = $b.content;
-    };
+    INSERT INTO text_blocks (
+        SELECT 
+            $p_rec AS project_id, 
+            $chap AS chapter_id, 
+            block_type, 
+            order_index, 
+            content 
+        FROM $blocks
+    );
 };
 
 -- 26. ПАКЕТНОЕ СОХРАНЕНИЕ ГЛОБАЛЬНОГО ТАЙМЛАЙНА ГЛАВ
@@ -76,7 +77,7 @@ DEFINE FUNCTION OVERWRITE fn::record_schema_history(
         saved_at = type::string(time::now()),
         is_pinned = false;
 
-    LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $schema_id AND is_pinned = false ORDER BY saved_at DESC);
+    LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $schema_id AND is_pinned = false ORDER BY saved_at DESC LIMIT 200);
     IF array::len($unpinned) > $max_limit {
         LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
         DELETE $to_delete;

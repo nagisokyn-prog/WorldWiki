@@ -36,7 +36,6 @@ DEFINE INDEX OVERWRITE idx_artifacts_chat    ON artifacts FIELDS chat_id;
 
 -- 8. НАВЫКИ И ИНСТРУКЦИИ
 DEFINE INDEX OVERWRITE idx_skills_project      ON ai_skills FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_skills_composite_ft ON ai_skills FIELDS name, description, prompt_text FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_skills_name_ft      ON ai_skills FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_skills_desc_ft      ON ai_skills FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_skills_prompt_ft    ON ai_skills FIELDS prompt_text FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;

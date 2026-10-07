@@ -4,13 +4,14 @@
 -- 6. СБОР ПОЛНОЙ ИЕРАРХИИ ГЛАВ И ТОМОВ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_chapter_hierarchy($proj: record<projects>) {
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
-    LET $volumes = (SELECT * FROM volumes WHERE project_id = $p_rec);
-    LET $chapters = (SELECT * FROM chapters WHERE project_id = $p_rec);
-    LET $vol_ids = (SELECT VALUE id FROM $volumes);
-    LET $chap_ids = (SELECT VALUE id FROM $chapters);
+    LET $volumes = (SELECT id, project_id, title, description, sort_order, created_at, updated_at FROM volumes WHERE project_id = $p_rec LIMIT 500);
+    LET $chapters = (SELECT id, project_id, title, order_index, description, content, word_count, is_pinned, created_at, updated_at FROM chapters WHERE project_id = $p_rec LIMIT 1000);
+    LET $vol_ids = (SELECT VALUE id FROM $volumes LIMIT 500);
+    LET $chap_ids = (SELECT VALUE id FROM $chapters LIMIT 1000);
     LET $relations = (
         SELECT in, out, sort_order FROM contains 
         WHERE out IN $vol_ids OR out IN $chap_ids
+        LIMIT 2000
     );
     RETURN {
         volumes: $volumes,
@@ -24,7 +25,7 @@ DEFINE FUNCTION OVERWRITE fn::create_volume_node($proj: record<projects>, $title
     LET $p_rec = type::record('projects', type::string($proj).replace('projects:', ''));
     LET $vol = (CREATE volumes SET project_id = $p_rec, title = $title RETURN VALUE id)[0];
     RELATE $p_rec -> contains -> $vol SET sort_order = $order;
-    LET $res = (SELECT id, title, project_id, $order AS sort_order FROM $vol);
+    LET $res = (SELECT id, title, project_id, $order AS sort_order FROM $vol LIMIT 1);
     RETURN $res[0];
 };
 

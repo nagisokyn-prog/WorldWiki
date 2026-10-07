@@ -1,6 +1,5 @@
 use crate::ai::chunker::DocumentChunker;
 use crate::ai::retrieval::embedder::EmbedderService;
-use serde_json::json;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -24,6 +23,7 @@ pub struct ProcessedChunk {
     pub embedding: Option<Vec<f32>>,
 }
 
+use serde_json::json;
 use worldwiki_domain::errors::DomainError;
 
 /// Core high-performance indexing logic (callable from tests and commands)
@@ -200,6 +200,8 @@ pub async fn reindex_project_lore_inner(
                     .strip_prefix("chapters:")
                     .unwrap_or(id)
                     .trim_matches('`')
+                    .trim_matches('⟨')
+                    .trim_matches('⟩')
                     .trim();
                 if clean.is_empty() {
                     None
@@ -212,6 +214,8 @@ pub async fn reindex_project_lore_inner(
                     .strip_prefix("entities:")
                     .unwrap_or(id)
                     .trim_matches('`')
+                    .trim_matches('⟨')
+                    .trim_matches('⟩')
                     .trim();
                 if clean.is_empty() {
                     None

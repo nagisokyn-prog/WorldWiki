@@ -9,9 +9,9 @@
 
 -- 1. ЧАНКИ ЛОРА И ЭНЦИКЛОПЕДИИ
 DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;
-DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE entity_id           ON entity_chunks TYPE option<record<entities> | null>;
+DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE entity_id           ON entity_chunks TYPE option<record<entities> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE title               ON entity_chunks TYPE string;
 DEFINE FIELD OVERWRITE content             ON entity_chunks TYPE string;
 DEFINE FIELD OVERWRITE chunk_index         ON entity_chunks TYPE int DEFAULT 0;

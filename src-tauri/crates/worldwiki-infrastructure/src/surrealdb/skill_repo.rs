@@ -182,6 +182,7 @@ mod tests {
 
         // Вставляем тестовые скиллы
         db.query(r#"
+            BEGIN TRANSACTION;
             CREATE ai_skills:s1 SET
                 name = 'Конструктор типов сущностей',
                 description = 'Схемы и диаграммы',
@@ -199,6 +200,7 @@ mod tests {
                 is_auto_trigger = true,
                 priority = 10,
                 is_unlocked = true;
+            COMMIT TRANSACTION;
         "#).await.unwrap();
 
         // 1. Тест авто-триггера

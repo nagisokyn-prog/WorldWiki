@@ -21,7 +21,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_hierarchy($proj: record<projects>) {
 };
 
 -- 7. СОЗДАНИЕ УЗЛА ТОМА И ПРИВЯЗКА К ПРОЕКТУ
-DEFINE FUNCTION OVERWRITE fn::create_volume_node($proj: record<projects>, $title: string, $order: int) {
+DEFINE FUNCTION OVERWRITE fn::create_volume_node($proj: record<projects>, $title: string, $order: number) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $vol = (CREATE volumes SET project_id = $p_rec, title = $title RETURN VALUE id)[0];
     RELATE $p_rec -> contains -> $vol SET sort_order = $order;
@@ -38,8 +38,8 @@ DEFINE FUNCTION OVERWRITE fn::assign_chapter_node($parent: record<projects> | re
 -- 17. МАКСИМАЛЬНЫЙ ПОРЯДОК СОРТИРОВКИ ТОМОВ
 DEFINE FUNCTION OVERWRITE fn::get_max_volume_sort_order($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $res = (SELECT math::max(sort_order) AS max_order FROM contains WHERE in = $p_rec GROUP ALL);
-    RETURN IF array::len($res) > 0 AND $res[0].max_order != NONE { $res[0].max_order } ELSE { -1 };
+    LET $res = (SELECT sort_order FROM contains WHERE in = $p_rec ORDER BY sort_order DESC LIMIT 1);
+    RETURN IF array::len($res) > 0 AND $res[0].sort_order != NONE { $res[0].sort_order } ELSE { -1 };
 };
 
 -- 18. ОБНОВЛЕНИЕ ЗАГОЛОВКА ТОМА
@@ -48,6 +48,6 @@ DEFINE FUNCTION OVERWRITE fn::update_volume_title($vol: record<volumes>, $title:
 };
 
 -- 20. ПЕРЕМЕЩЕНИЕ/ИЗМЕНЕНИЕ ПОРЯДКА УЗЛА
-DEFINE FUNCTION OVERWRITE fn::reorder_node($node: record<chapters> | record<volumes>, $order: int) {
+DEFINE FUNCTION OVERWRITE fn::reorder_node($node: record<chapters> | record<volumes>, $order: number) {
     UPDATE contains SET sort_order = $order WHERE out = $node;
 };

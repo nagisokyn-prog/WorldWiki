@@ -24,7 +24,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
 DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: record<projects>, $tk: string) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $res = (SELECT id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $tk LIMIT 1);
-    RETURN IF array::len($res) > 0 { $res[0].id } ELSE { NONE };
+    RETURN IF array::len($res) > 0 { type::string($res[0].id) } ELSE { NONE };
 };
 
 -- 32. СОХРАНЕНИЕ СХЕМЫ СУЩНОСТИ (UPSERT)

@@ -121,7 +121,7 @@ mod tests {
         let not_found = ConnectionError::NotFound("rel1".to_string());
         assert_eq!(not_found.to_string(), "Connection not found: rel1");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Connection not found: rel1");
 
         let inv = ConnectionError::InvalidData("no array".to_string());

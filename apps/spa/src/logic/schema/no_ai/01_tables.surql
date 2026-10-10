@@ -35,7 +35,7 @@ DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string | null>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
 DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | chats OUT volumes | chapters | chats SCHEMAFULL;
-DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE sort_order ON contains TYPE number DEFAULT 0;
 
 -- 3. ТОМА
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;

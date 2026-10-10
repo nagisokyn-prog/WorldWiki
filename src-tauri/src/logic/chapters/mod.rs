@@ -21,7 +21,7 @@ mod tests {
         let not_found = ChapterError::NotFound("c1".to_string());
         assert_eq!(not_found.to_string(), "Chapter not found: c1");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Chapter not found: c1");
 
         let inv = ChapterError::InvalidData("bad json".to_string());

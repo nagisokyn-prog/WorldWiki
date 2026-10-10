@@ -32,7 +32,7 @@ mod tests {
         let not_found = BatchError::NotFound("e99".to_string());
         assert_eq!(not_found.to_string(), "Item not found: e99");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Item not found: e99");
 
         let inv_data = BatchError::InvalidData("bad format".to_string());

@@ -21,7 +21,7 @@ mod tests {
         let not_found = VolumeError::NotFound("v1".to_string());
         assert_eq!(not_found.to_string(), "Volume not found: v1");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Volume not found: v1");
 
         let op_fail = VolumeError::OperationFailed("lock error".to_string());

@@ -88,7 +88,7 @@ mod tests {
         let not_found = EntityError::NotFound("e123".to_string());
         assert_eq!(not_found.to_string(), "Entity not found: e123");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Entity not found: e123");
 
         let op_failed = EntityError::OperationFailed("db error".to_string());

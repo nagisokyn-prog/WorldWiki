@@ -20,7 +20,7 @@ mod tests {
         let not_found = ProjectError::NotFound("proj1".to_string());
         assert_eq!(not_found.to_string(), "Project not found: proj1");
 
-        let err_str: String = not_found.into();
+        let err_str = not_found.to_string();
         assert_eq!(err_str, "Project not found: proj1");
 
         let inv = ProjectError::InvalidData("no name".to_string());

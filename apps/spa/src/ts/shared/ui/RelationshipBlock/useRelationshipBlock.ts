@@ -53,8 +53,30 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     notifyNestedItemUpdate
   } = useRelationshipNestedOps(props, emit, linkClass, getResolvedFields, foreignItem, loadForeignItem);
 
+  const formatLabel = (str: string) => {
+    if (!str) return '';
+    return str.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  };
+
+  const templateFields = computed(() => {
+    return (props.templateConf?.fields || []).map((cf) => ({
+      ...cf,
+      displayLabel: cf.label || formatLabel(cf.class || '')
+    }));
+  });
+
+  const getInputValue = (event: Event): string =>
+    (event.target as HTMLInputElement | HTMLTextAreaElement).value;
+
+  const getInputNumber = (event: Event): number =>
+    Number((event.target as HTMLInputElement).value);
+
   return {
     wheelHorizontal,
+    templateFields,
+    formatLabel,
+    getInputValue,
+    getInputNumber,
     foreignItem,
     foreignLoading,
     foreignError,

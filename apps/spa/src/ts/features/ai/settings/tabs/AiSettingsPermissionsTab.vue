@@ -53,19 +53,19 @@
     </div>
 
     <div v-else class="categories-list">
-      <div v-for="cat in categories" :key="cat.key" class="category-card">
+      <div v-for="cat in categoriesWithTools" :key="cat.key" class="category-card">
         <div class="category-header">
           <i class="fas" :class="cat.icon"></i>
           <h4>{{ cat.title }}</h4>
         </div>
 
         <div class="tools-table">
-          <div v-for="tool in getToolsByCategory(cat.key)" :key="tool.id" class="tool-row">
+          <div v-for="tool in cat.tools" :key="tool.id" class="tool-row">
             <div class="tool-info">
               <div class="tool-name-wrap">
-                <span class="tool-name">{{ getToolDisplayName(tool) }}</span>
+                <span class="tool-name">{{ tool.displayName }}</span>
                 <span class="risk-badge" :class="'risk-' + tool.risk">
-                  {{ getRiskLabel(tool.risk) }}
+                  {{ tool.riskLabel }}
                 </span>
               </div>
               <span class="tool-desc">{{ tool.description }}</span>
@@ -100,11 +100,8 @@ const emit = defineEmits<AiSettingsPermissionsTabEmits>();
 const {
   isLoading,
   permissionsMap,
-  categories,
+  categoriesWithTools,
   currentPreset,
-  getToolsByCategory,
-  getToolDisplayName,
-  getRiskLabel,
   applyPreset,
   handlePermissionChange
 } = useAiSettingsPermissionsTab(emit);

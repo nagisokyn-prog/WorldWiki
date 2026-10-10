@@ -186,9 +186,18 @@ export function useCalendarsPanel(props: { project?: string }) {
         });
     };
 
+    const displayCalendars = computed(() => {
+        return calendars.value.map((cal, idx) => ({
+            ...cal,
+            idx,
+            isExpanded: expandedCalendars.value.has(idx),
+        }));
+    });
+
     return {
         project,
         calendars,
+        displayCalendars,
         masterCalendar,
         expandedCalendars,
         isExpanded,

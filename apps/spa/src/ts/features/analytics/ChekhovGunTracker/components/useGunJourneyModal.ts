@@ -1,12 +1,10 @@
 import { computed } from 'vue';
-import type { ItemJourneyReport, ItemJourneyNode } from '../ChekhovGunTracker.model';
+import type { ItemJourneyReport } from '../ChekhovGunTracker.model';
 
 export function useGunJourneyModal(journeyGetter: () => ItemJourneyReport | null) {
   const journey = computed(() => journeyGetter());
 
   const hasNodes = computed(() => (journey.value?.nodes?.length ?? 0) > 0);
-
-  const nodes = computed<ItemJourneyNode[]>(() => journey.value?.nodes ?? []);
 
   const getNodeIcon = (nodeType: string): string => {
     switch (nodeType) {
@@ -37,6 +35,12 @@ export function useGunJourneyModal(journeyGetter: () => ItemJourneyReport | null
         return 'bg-surface-hover text-muted border-border';
     }
   };
+
+  const nodes = computed(() => (journey.value?.nodes ?? []).map((node) => ({
+    ...node,
+    icon: getNodeIcon(node.node_type),
+    badgeClass: getNodeBadgeClass(node.node_type),
+  })));
 
   return {
     journey,

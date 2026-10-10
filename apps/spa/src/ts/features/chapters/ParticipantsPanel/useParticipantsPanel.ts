@@ -8,6 +8,7 @@ export interface ParticipantItem {
     id: string;
     type: string;
     name?: string;
+    icon?: string;
     autoParsed?: boolean;
 }
 
@@ -222,13 +223,16 @@ export function useParticipantsPanel(
                 const explicitType = hasTypePrefix ? parts[0] : undefined;
                 const id = hasTypePrefix ? parts.slice(1).join(':') : p;
                 const info = findEntityInfo(id, explicitType);
-                return { id, type: info.type, name: info.name };
+                const itemType = explicitType || info.type;
+                return { id, type: itemType, name: info.name, icon: schemaIcons.value[itemType] || '📄' };
             }
             const info = findEntityInfo(p.id, p.type, p.name);
+            const resolvedType = p.type || info.type;
             return {
                 ...p,
-                type: p.type || info.type,
-                name: info.name
+                type: resolvedType,
+                name: info.name,
+                icon: schemaIcons.value[resolvedType] || '📄'
             };
         });
     };

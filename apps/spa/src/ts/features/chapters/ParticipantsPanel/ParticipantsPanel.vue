@@ -9,9 +9,9 @@
       
       <div v-for="(p, idx) in normalizedParticipants" :key="idx" class="participant-item">
         <div class="participant-info">
-          <i v-if="isFaIcon(getIcon(p.type))" :class="formatFaIcon(getIcon(p.type))"></i>
-          <span v-else>{{ getIcon(p.type) }}</span>
-          <span class="participant-name">{{ resolveEntityName(p.id, p.type, p.name) }}</span>
+          <i v-if="isFaIcon(p.icon)" :class="formatFaIcon(p.icon)"></i>
+          <span v-else>{{ p.icon }}</span>
+          <span class="participant-name">{{ p.name }}</span>
         </div>
         <button v-if="!p.autoParsed" class="participant-remove-btn" @click="removeParticipant(idx)">✕</button>
         <span v-else class="participant-auto-badge" title="Автоматически найдено в тексте">Авто</span>
@@ -37,8 +37,6 @@ const emit = defineEmits<{
 }>();
 
 const {
-  getIcon,
-  resolveEntityName,
   normalizedParticipants,
   removeParticipant
 } = useParticipantsPanel(props, emit as (event: 'update:participants' | 'change', ...args: unknown[]) => void);

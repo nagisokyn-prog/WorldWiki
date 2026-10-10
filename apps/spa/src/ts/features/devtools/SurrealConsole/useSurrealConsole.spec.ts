@@ -65,7 +65,7 @@ describe('useSurrealConsole', () => {
   });
 
   it('navigates history with navigateHistory', () => {
-    const { history, queryInput, navigateHistory, selectHistoryItem } = useSurrealConsole();
+    const { history, queryInput, navigateHistory } = useSurrealConsole();
     history.value = [
       { id: '1', query: 'QUERY 1', timestamp: '10:00', durationMs: 5, success: true },
       { id: '2', query: 'QUERY 2', timestamp: '10:01', durationMs: 10, success: true },

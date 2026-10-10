@@ -70,7 +70,16 @@ export function usePromiseContextMenu(
   const adjustedPos = ref({ x: 0, y: 0 });
 
   const activeExistingPromises = computed(() => {
-    return (props.existingPromises || []).filter((p) => p.status !== 'resolved');
+    return (props.existingPromises || [])
+      .filter((p) => p.status !== 'resolved')
+      .map((p) => {
+        const type = promiseTypes.find((t) => t.kind === p.kind);
+        return {
+          ...p,
+          kindIcon: type?.icon || '📌',
+          kindLabel: type?.label || 'Обещание',
+        };
+      });
   });
 
   const getKindIcon = (kind: string) => {

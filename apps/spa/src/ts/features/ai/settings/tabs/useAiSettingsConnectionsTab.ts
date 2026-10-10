@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { AiProfile } from '../../types/ai.types';
 
 export interface AiSettingsConnectionsTabProps {
@@ -59,11 +59,19 @@ export function useAiSettingsConnectionsTab(
     return map[provider] || 'https://api.openai.com/v1';
   };
 
+  const profilesWithLabels = computed(() => {
+    return props.profiles.map((p) => ({
+      ...p,
+      providerLabel: getProviderLabel(p.provider)
+    }));
+  });
+
   return {
     showApiKey,
     localProfile,
     handleSave,
     getProviderLabel,
-    getDefaultUrl
+    getDefaultUrl,
+    profilesWithLabels,
   };
 }

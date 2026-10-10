@@ -74,22 +74,22 @@
       </div>
 
       <div
-        v-for="block in linkedBlocks"
+        v-for="block in displayBlocks"
         :key="block.id || block.quote"
         class="arc-block-item"
         :title="block.quote ? `«${block.quote}»` : 'Перейти к фрагменту текста'"
         @click.stop="$emit('locate', { chapterId: block.chapter_id, paragraphIndex: block.paragraph_index, quote: block.quote, blockId: block.block_id || undefined })"
       >
         <div class="arc-block-meta">
-          <span class="phase-badge" :class="getPhaseInfo(block, arc.id).class">
-            {{ getPhaseInfo(block, arc.id).label }}
+          <span class="phase-badge" :class="block.phaseClass">
+            {{ block.phaseLabel }}
           </span>
           <span class="arc-block-location">
-            {{ formatChapterName(block.chapter_id) }} · абз.{{ block.paragraph_index }}
+            {{ block.formattedChapter }} · абз.{{ block.paragraph_index }}
           </span>
         </div>
         <span class="arc-block-status">
-          {{ getPromiseStatusLabel(block.status) }}
+          {{ block.statusLabel }}
         </span>
       </div>
     </div>
@@ -106,9 +106,7 @@ defineEmits<ArcCardEmits>();
 
 const {
   phaseCounts,
-  getPhaseInfo,
-  getPromiseStatusLabel,
-  formatChapterName,
+  displayBlocks,
   getArcTypeLabel,
 } = useArcCard(props);
 </script>

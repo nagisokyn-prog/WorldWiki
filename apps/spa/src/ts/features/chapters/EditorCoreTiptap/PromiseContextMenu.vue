@@ -56,7 +56,7 @@
         class="existing-promise-card"
       >
         <div class="existing-promise-info">
-          <span class="promise-kind-badge">{{ getKindIcon(p.kind) }} {{ getKindLabel(p.kind) }}</span>
+          <span class="promise-kind-badge">{{ p.kindIcon }} {{ p.kindLabel }}</span>
           <div class="promise-quote-preview">«{{ p.quote }}»</div>
         </div>
         
@@ -101,8 +101,6 @@ const {
   adjustedPos,
   promiseTypes,
   activeExistingPromises,
-  getKindIcon,
-  getKindLabel,
   selectItem,
   selectMilestone
 } = usePromiseContextMenu(props, emit);

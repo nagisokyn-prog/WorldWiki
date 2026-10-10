@@ -19,7 +19,7 @@
             :style="{ '--font-family': font.val }" 
             @click="settings.fonts.family = font.val; save()"
           >
-            {{ t(font.titleKey) }}
+            {{ font.label }}
           </div>
         </div>
         
@@ -37,10 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import type { AppSettings } from '../../../ts/types/settings.js';
-
-const { t } = useI18n();
+import { useSettingsTypography } from './useSettingsTypography';
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
@@ -48,11 +46,5 @@ defineProps<{
   save: () => Promise<void>;
 }>();
 
-const fontOptions = [
-  { val: 'Inter', titleKey: 'settings.fonts.interDefault' },
-  { val: 'Roboto', titleKey: 'settings.fonts.roboto' },
-  { val: 'SF Pro Display', titleKey: 'settings.fonts.sfPro' },
-  { val: 'Segoe UI', titleKey: 'settings.fonts.segoe' },
-  { val: 'Fira Code', titleKey: 'settings.fonts.firaCode' }
-];
+const { t, fontOptions } = useSettingsTypography();
 </script>

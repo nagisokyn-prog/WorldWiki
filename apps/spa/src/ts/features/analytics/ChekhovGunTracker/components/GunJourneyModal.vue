@@ -41,9 +41,9 @@
             <!-- Bullet Icon -->
             <div
               class="absolute -left-[31px] top-1.5 w-6 h-6 rounded-full border flex items-center justify-center text-xs shadow-xs"
-              :class="getNodeBadgeClass(node.node_type)"
+              :class="node.badgeClass"
             >
-              {{ getNodeIcon(node.node_type) }}
+              {{ node.icon }}
             </div>
 
             <!-- Content Card -->
@@ -97,5 +97,5 @@ import { useGunJourneyModal } from './useGunJourneyModal';
 const props = defineProps<GunJourneyModalProps>();
 defineEmits<GunJourneyModalEmits>();
 
-const { journey, hasNodes, nodes, getNodeIcon, getNodeBadgeClass } = useGunJourneyModal(() => props.journey);
+const { journey, hasNodes, nodes } = useGunJourneyModal(() => props.journey);
 </script>

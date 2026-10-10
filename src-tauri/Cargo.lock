@@ -7588,6 +7588,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "thiserror 2.0.20",
+ "tracing",
  "uuid",
 ]
 
@@ -9275,6 +9276,7 @@ dependencies = [
  "surrealdb",
  "thiserror 2.0.20",
  "tokio",
+ "tracing",
  "uuid",
  "worldwiki-domain",
  "worldwiki-ports",

@@ -248,8 +248,16 @@ export function useExplorerTree(
     return val;
   };
 
+  const displaySections = computed(() => {
+    return props.sections.map((sect) => ({
+      ...sect,
+      upperTitle: (sect.title || '').toUpperCase(),
+    }));
+  });
+
   return {
     expandedSections,
+    displaySections,
     draggedNode,
     expanded,
     selected,

@@ -16,11 +16,11 @@
 
     <!-- Body -->
     <div class="tree-body">
-      <div v-for="sect in sections" :key="sect.id" class="tree-section">
+      <div v-for="sect in displaySections" :key="sect.id" class="tree-section">
         <!-- Section Header -->
         <div class="tree-section-header" @click="toggleSection(sect.id)">
           <i :class="expandedSections.has(sect.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
-          <span>{{ sect.title.toUpperCase() }}</span>
+          <span>{{ sect.upperTitle }}</span>
           <div class="section-actions">
             <i v-if="sect.canEdit" class="fas fa-trash btn-action-danger" title="Удалить схему" @click.stop="$emit('delete-section', sect.id)"></i>
             <i v-if="sect.canEdit" class="fas fa-pen btn-action-dim" title="Настроить сущности" @click.stop="$emit('edit-section', sect.id)"></i>
@@ -121,6 +121,7 @@ const vFocus = {
 
 const {
   expandedSections,
+  displaySections,
   expanded,
   selected,
   renaming,

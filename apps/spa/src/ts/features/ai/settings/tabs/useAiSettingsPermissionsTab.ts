@@ -94,11 +94,25 @@ export function useAiSettingsPermissionsTab(emit: AiSettingsPermissionsTabEmits)
     await loadToolsCatalog();
   });
 
+  const categoriesWithTools = computed(() => {
+    return categories.value.map((cat) => ({
+      ...cat,
+      tools: tools.value
+        .filter((t) => t.category === cat.key)
+        .map((tool) => ({
+          ...tool,
+          displayName: getToolDisplayName(tool),
+          riskLabel: getRiskLabel(tool.risk),
+        })),
+    }));
+  });
+
   return {
     isLoading,
     tools,
     permissionsMap,
     categories,
+    categoriesWithTools,
     currentPreset,
     getToolsByCategory,
     getToolDisplayName,

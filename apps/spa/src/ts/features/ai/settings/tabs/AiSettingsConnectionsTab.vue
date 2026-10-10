@@ -16,8 +16,8 @@
             class="input-base profile-select" 
             @change="$emit('select-profile', ($event.target as HTMLSelectElement).value)"
           >
-            <option v-for="p in profiles" :key="p.id" :value="p.id">
-              {{ p.name }} ({{ getProviderLabel(p.provider) }})
+            <option v-for="p in profilesWithLabels" :key="p.id" :value="p.id">
+              {{ p.name }} ({{ p.providerLabel }})
             </option>
           </select>
           <button class="btn-secondary-outline" title="Создать новое подключение" @click="$emit('create-profile')">
@@ -118,8 +118,8 @@ const {
   showApiKey,
   localProfile,
   handleSave,
-  getProviderLabel,
-  getDefaultUrl
+  getDefaultUrl,
+  profilesWithLabels
 } = useAiSettingsConnectionsTab(props, emit);
 </script>
 

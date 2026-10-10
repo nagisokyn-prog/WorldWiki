@@ -49,18 +49,25 @@ export function useEntityLinkSelector(
       const schema = schemaMap.value.get(entityType);
 
       let tags: string[] = [];
+      let cleanTags: string[] = [];
       if (Array.isArray(r.tags)) {
         tags = r.tags.map(t => String(t).trim()).filter(Boolean);
+        cleanTags = tags.map(t => t.replace(/^#/, ''));
       }
+
+      const entityId = String(r.id || '');
+      const shortId = entityId.split(':').pop() || '';
 
       return {
         ...r,
-        id: String(r.id || ''),
+        id: entityId,
+        shortId,
         name,
         entity_type: entityType,
         type_name: schema?.name || entityType,
         type_icon: schema?.icon || '📌',
-        tags
+        tags,
+        cleanTags
       };
     });
   });

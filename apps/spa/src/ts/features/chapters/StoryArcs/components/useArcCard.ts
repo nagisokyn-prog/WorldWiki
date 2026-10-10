@@ -85,8 +85,22 @@ export function useArcCard(props: ArcCardProps) {
     }
   };
 
+  const displayBlocks = computed(() => {
+    return props.linkedBlocks.map((block) => {
+      const phaseInfo = getPhaseInfo(block, props.arc.id);
+      return {
+        ...block,
+        phaseClass: phaseInfo.class,
+        phaseLabel: phaseInfo.label,
+        formattedChapter: formatChapterName(block.chapter_id),
+        statusLabel: getPromiseStatusLabel(block.status),
+      };
+    });
+  });
+
   return {
     phaseCounts,
+    displayBlocks,
     getPhaseInfo,
     getPromiseStatusLabel,
     formatChapterName,

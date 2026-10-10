@@ -68,8 +68,8 @@
       <div class="calendar-wrapper">
         <div class="calendar-grid" :style="{ '--days-in-week': daysInWeek }">
           <!-- Weekdays Header -->
-          <div v-for="(dayName, idx) in weekdayNames" :key="'w'+idx" class="weekday-header">
-            {{ dayName.slice(0, 3) }}
+          <div v-for="(dayName, idx) in shortWeekdayNames" :key="'w'+idx" class="weekday-header">
+            {{ dayName }}
           </div>
           
           <!-- Empty slots for offset -->
@@ -81,7 +81,7 @@
                class="day-cell" 
                :class="{ 'is-holiday': day.holidayText, 'is-origin': day.isOrigin }"
                :style="{ '--season-color': filters.seasons ? day.seasonColor : 'transparent' }"
-               :title="getDayTooltip(day)">
+               :title="day.tooltip">
             
             <div class="day-number">{{ day.day }}</div>
             
@@ -133,13 +133,12 @@ const {
   filters,
   origin,
   daysInWeek,
-  weekdayNames,
+  shortWeekdayNames,
   prevMonth,
   nextMonth,
   currentDaysCount,
   startWeekdayOffset,
   gridDays,
-  getDayTooltip,
   isSignificantPhase
 } = useCalendarPlayground(props, emit);
 </script>

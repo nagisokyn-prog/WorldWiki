@@ -16,22 +16,22 @@
         Нет календарей в проекте. Создайте первый календарь!
       </div>
       
-      <div v-for="(cal, idx) in calendars" :key="cal.id || idx" class="timeline-event-item">
+      <div v-for="(cal, idx) in displayCalendars" :key="cal.id || idx" class="timeline-event-item">
         <div class="event-header cursor-pointer" @click="toggleExpand(idx)">
           <div class="header-left">
-            <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
+            <span class="expand-icon">{{ cal.isExpanded ? '▼' : '▶' }}</span>
             <span class="event-title">{{ cal.data?.название || 'Новый календарь' }}</span>
             <span v-if="cal.is_master" class="badge-master">🌍 Календарь Мира</span>
             <span v-else-if="cal.is_default" class="badge-default-accent">По умолчанию</span>
           </div>
           <div class="flex gap-2">
-            <button type="button" class="btn-icon interactive-el" :class="cal.is_default ? 'is-default' : 'is-dimmed'" title="Сделать основным" @click.stop="setDefault(idx)">🌟</button>
-            <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(idx)">💾</button>
-            <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
+            <button type="button" class="btn-icon interactive-el" :class="cal.is_default ? 'is-default' : 'is-dimmed'" title="Сделать основным" @click.stop="setDefault(cal.idx)">🌟</button>
+            <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(cal.idx)">💾</button>
+            <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(cal.idx)">🗑️</button>
           </div>
         </div>
         
-        <div v-if="isExpanded(idx)" class="event-content">
+        <div v-if="cal.isExpanded" class="event-content">
           
           <div class="calendar-settings-section">
             <div class="grid-2">
@@ -107,8 +107,8 @@ const props = defineProps<{ project?: string }>();
 const {
   project,
   calendars,
+  displayCalendars,
   masterCalendar,
-  isExpanded,
   toggleExpand,
   addCalendar,
   saveCalendar,

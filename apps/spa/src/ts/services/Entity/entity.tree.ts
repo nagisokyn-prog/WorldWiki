@@ -3,7 +3,7 @@
  * @description Composable for managing entity tree state
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { entityApi } from './entity.api';
 import * as api from '../api.client';
 import { getCached, setCache } from '../../utils/requestCache';

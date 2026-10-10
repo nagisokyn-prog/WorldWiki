@@ -55,6 +55,10 @@ export function useCalendarPlayground(
     return Array.from({ length: daysInWeek.value }).map((_, i) => names[i] || `День ${i + 1}`);
   });
 
+  const shortWeekdayNames = computed(() => {
+    return weekdayNames.value.map((name) => name.slice(0, 3));
+  });
+
   const prevMonth = () => {
     if (origin.value.месяц > 0) {
       origin.value.месяц--;
@@ -131,6 +135,19 @@ export function useCalendarPlayground(
     'Осень': 'var(--error-bg)',
   };
 
+  const getDayTooltip = (day: { day: number; seasonName?: string; holidayText?: string; moons?: Array<{ emoji?: string; name?: string; moon?: { name?: string } }>; isOrigin?: boolean }) => {
+    const lines = [`День ${day.day}`];
+    if (day.seasonName && filters.value.seasons) lines.push(`❄️ ${day.seasonName}`);
+    if (day.holidayText && filters.value.holidays) lines.push(`🎉 Праздник: ${day.holidayText}`);
+    if (day.moons && day.moons.length && filters.value.moons) {
+      day.moons.forEach((m) => {
+        lines.push(`${m.emoji || ''} ${m.moon?.name || ''}: ${m.name || ''}`);
+      });
+    }
+    if (day.isOrigin) lines.push(`🌟 Точка отсчета (День 0)`);
+    return lines.join('\n');
+  };
+
   const gridDays = computed(() => {
     const days = [];
     const count = currentDaysCount.value;
@@ -160,7 +177,7 @@ export function useCalendarPlayground(
       
       const isOrigin = (origin.value.год === inputDate.year && origin.value.месяц === inputDate.month && origin.value.день === i);
 
-      days.push({
+      const dayObj = {
         day: i,
         absMinute,
         moons,
@@ -168,23 +185,15 @@ export function useCalendarPlayground(
         seasonColor,
         holidayText: holiday ? holiday.название : '',
         isOrigin
+      };
+
+      days.push({
+        ...dayObj,
+        tooltip: getDayTooltip(dayObj)
       });
     }
     return days;
   });
-
-  const getDayTooltip = (day: { day: number; seasonName?: string; holidayText?: string; moons?: Array<{ emoji?: string; name?: string; moon?: { name?: string } }>; isOrigin?: boolean }) => {
-    const lines = [`День ${day.day}`];
-    if (day.seasonName && filters.value.seasons) lines.push(`❄️ ${day.seasonName}`);
-    if (day.holidayText && filters.value.holidays) lines.push(`🎉 Праздник: ${day.holidayText}`);
-    if (day.moons && day.moons.length && filters.value.moons) {
-      day.moons.forEach((m) => {
-        lines.push(`${m.emoji || ''} ${m.moon?.name || ''}: ${m.name || ''}`);
-      });
-    }
-    if (day.isOrigin) lines.push(`🌟 Точка отсчета (День 0)`);
-    return lines.join('\n');
-  };
 
   return {
     isCollapsed,
@@ -194,6 +203,7 @@ export function useCalendarPlayground(
     origin,
     daysInWeek,
     weekdayNames,
+    shortWeekdayNames,
     prevMonth,
     nextMonth,
     currentDaysCount,

@@ -25,9 +25,9 @@
           🟣 СТОРОНА А ({{ myLabel }})
         </div>
 
-        <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" class="mb-3">
+        <div v-for="cf in templateFields" :key="'a-' + cf.class" class="mb-3">
           <div class="field-label-row">
-            <label class="form-label-micro text-accent">{{ cf.label || formatLabel(cf.class || '') }}</label>
+            <label class="form-label-micro text-accent">{{ cf.displayLabel }}</label>
           </div>
           
           <template v-if="cf.class === linkClass">
@@ -130,9 +130,9 @@
           Сначала выберите сущность
         </div>
         <div v-else>
-          <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" class="mb-3">
+          <div v-for="cf in templateFields" :key="'b-' + cf.class" class="mb-3">
             <div class="field-label-row">
-              <label class="form-label-micro text-info">{{ cf.label || formatLabel(cf.class || '') }}</label>
+              <label class="form-label-micro text-info">{{ cf.displayLabel }}</label>
             </div>
             
             <template v-if="cf.class === linkClass">
@@ -242,18 +242,11 @@ const props = withDefaults(defineProps<RelationshipBlockProps>(), {
 
 const emit = defineEmits(['remove', 'modified', 'foreign-update', 'item-updated', 'update:modelValue']);
 
-const formatLabel = (str: string) => {
-  if (!str) return '';
-  return str.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
-};
-
-const getInputValue = (event: Event): string =>
-  (event.target as HTMLInputElement | HTMLTextAreaElement).value;
-
-const getInputNumber = (event: Event): number =>
-  Number((event.target as HTMLInputElement).value);
-
 const {
+  templateFields,
+  formatLabel,
+  getInputValue,
+  getInputNumber,
   foreignItem,
   foreignLoading,
   linkClass,

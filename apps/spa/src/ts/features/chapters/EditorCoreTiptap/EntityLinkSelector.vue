@@ -56,11 +56,11 @@
                 <span class="item-name">{{ entity.name }}</span>
                 <span class="item-type-badge">({{ entity.type_name }})</span>
               </div>
-              <div v-if="entity.tags && entity.tags.length > 0" class="item-tags">
-                <span v-for="tag in entity.tags" :key="tag" class="tag-badge">#{{ tag.replace(/^#/, '') }}</span>
+              <div v-if="entity.cleanTags && entity.cleanTags.length > 0" class="item-tags">
+                <span v-for="tag in entity.cleanTags" :key="tag" class="tag-badge">#{{ tag }}</span>
               </div>
             </div>
-            <span class="item-id">{{ entity.id.split(':').pop() }}</span>
+            <span class="item-id">{{ entity.shortId }}</span>
           </div>
 
           <!-- Кнопка быстрого создания новой сущности -->

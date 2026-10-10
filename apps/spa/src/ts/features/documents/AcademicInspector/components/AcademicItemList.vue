@@ -6,14 +6,14 @@
     </div>
     <ul v-else class="ww-inspector-list">
       <li
-        v-for="item in items"
+        v-for="item in displayItems"
         :key="item.id"
         class="ww-inspector-item"
         :style="item.level ? { paddingLeft: `${((item.level || 1) - 1) * 12 + 8}px` } : undefined"
       >
         <div class="ww-inspector-item-content" @click="$emit('jump', item.id)">
           <span class="ww-inspector-num">
-            {{ formatNumber ? formatNumber(item.number) : item.number }}
+            {{ item.displayNumber }}
           </span>
           <span class="ww-inspector-label" :title="item.title">{{ item.title }}</span>
         </div>
@@ -33,19 +33,17 @@
 </template>
 
 <script setup lang="ts">
+import { useAcademicItemList, type AcademicItemListProps } from './useAcademicItemList';
 import type { InspectorItem } from '../AcademicInspector.model';
 
 export type AcademicItem = InspectorItem;
 
-defineProps<{
-  sectionTitle: string;
-  emptyMessage: string;
-  items: InspectorItem[];
-  formatNumber?: (num?: string | number) => string;
-}>();
+const props = defineProps<AcademicItemListProps>();
 
 defineEmits<{
   (e: 'jump', id: string): void;
   (e: 'insert', item: InspectorItem): void;
 }>();
+
+const { displayItems } = useAcademicItemList(props);
 </script>

@@ -201,12 +201,31 @@ export function useTimelinePanel(
     }
   };
 
+  const displayEvents = computed(() => {
+    return (props.events || []).map((ev, idx) => {
+      const calendarDisplays = getDisplayCalendarIds(ev)
+        .map((calId) => {
+          const info = convertedDateInfoMap.value.get(`${idx}:${calId}`);
+          return { calId, info };
+        })
+        .filter((d): d is { calId: string; info: NonNullable<typeof d.info> } => Boolean(d.info));
+
+      return {
+        ...ev,
+        idx,
+        isExpanded: expandedIndices.value.has(idx),
+        calendarDisplays
+      };
+    });
+  });
+
   return {
     wheelHorizontal,
     calendarOptions,
     availableCalendars,
     selectedCalendarIds,
     toggleCalendarSelection,
+    displayEvents,
     isExpanded,
     toggleExpand,
     removeEvent,

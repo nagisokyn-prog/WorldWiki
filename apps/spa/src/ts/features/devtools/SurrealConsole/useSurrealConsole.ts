@@ -82,8 +82,8 @@ export function useSurrealConsole(props?: SurrealConsoleProps) {
         STORAGE_KEY_HISTORY,
         JSON.stringify(history.value.slice(0, MAX_HISTORY_ITEMS))
       );
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('[useSurrealConsole] Failed to save history to localStorage:', err);
     }
   };
 

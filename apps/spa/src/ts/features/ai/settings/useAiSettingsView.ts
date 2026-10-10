@@ -2,6 +2,7 @@ import { ref, onMounted, watch } from 'vue';
 import type { AiProfile, AiProfileSettings } from '../types/ai.types';
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';
+import { projectRecordId } from '../../../services/api/project.api';
 
 export type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions' | 'skills';
 
@@ -27,11 +28,11 @@ export function useAiSettingsView() {
   if (hash.includes('?')) {
     const hashParams = new URLSearchParams(hash.split('?')[1]);
     const p = hashParams.get('project');
-    if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+    if (p) currentProject = projectRecordId(p);
   } else {
     const searchParams = new URLSearchParams(window.location.search);
     const p = searchParams.get('project');
-    if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+    if (p) currentProject = projectRecordId(p);
   }
 
   const { 

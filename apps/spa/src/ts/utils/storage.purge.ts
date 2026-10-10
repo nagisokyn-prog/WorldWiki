@@ -30,8 +30,8 @@ export function purgeProjectStorage(projectName?: string | null): void {
   staticKeys.forEach((k) => {
     try {
       localStorage.removeItem(k);
-    } catch {
-      // Игнорируем ошибки доступа к localStorage
+    } catch (err) {
+      console.warn(`[storage.purge] Failed to remove static key ${k}:`, err);
     }
   });
 
@@ -55,11 +55,11 @@ export function purgeProjectStorage(projectName?: string | null): void {
     keysToRemove.forEach((k) => {
       try {
         localStorage.removeItem(k);
-      } catch {
-        // ignore
+      } catch (err) {
+        console.warn(`[storage.purge] Failed to remove dynamic key ${k}:`, err);
       }
     });
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn('[storage.purge] Failed to scan localStorage keys:', err);
   }
 }

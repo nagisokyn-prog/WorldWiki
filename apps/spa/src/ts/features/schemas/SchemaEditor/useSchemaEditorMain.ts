@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import * as api from '../../../services/api.client';
+import { projectRecordId } from '../../../services/api/project.api';
 import { invalidateCache } from '../../../utils/requestCache';
 import { useSchemaStore } from '../../../stores/schema';
 import { useSchemaData } from './hooks/useSchemaData';
@@ -97,7 +98,7 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
 
             const dataToSave: EntitySchema = {
                 id: (dataHook.schemaRecordId.value as string) || null,
-                project_id: props.project ? `projects:${props.project}` : null,
+                project_id: props.project ? projectRecordId(props.project) : null,
                 type_key: targetTypeKey,
                 type_name: targetTypeName,
                 icon: schemaCopy.icon || '📄',

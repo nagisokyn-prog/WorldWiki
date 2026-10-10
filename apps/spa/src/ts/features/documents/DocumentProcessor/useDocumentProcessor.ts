@@ -14,7 +14,7 @@ export function useDocumentProcessor(props: DocumentProcessorProps) {
   const editor = shallowRef<Editor | null>(null);
   const profilesStore = useDocumentProfilesStore();
 
-  const semanticDoc = ref<SemanticDocument>(
+  const semanticDoc = shallowRef<SemanticDocument>(
     props.initialDocument ||
       normalizeSemanticDocument({
         metadata: {

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as api from '../services/api.client';
+import { projectRecordId } from '../services/api/project.api';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 import type { CalendarData } from '../services/Calendars/calendar.types';
 import { CalendarMath } from '../services/Calendars/calendar.math';
@@ -145,7 +146,7 @@ export const useCalendarStore = defineStore('calendar', () => {
         data: dataPayload,
         is_default: is_default ?? true,
         is_master: is_master ?? false,
-        project_id: `projects:${projectName}`,
+        project_id: projectRecordId(projectName),
       };
       if (calId) payload.id = calId;
       await api.saveCalendar(projectName, payload as unknown as Calendar);

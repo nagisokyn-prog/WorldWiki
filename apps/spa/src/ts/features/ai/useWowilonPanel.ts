@@ -11,6 +11,7 @@ import { useAiStreamExecution } from './composables/useAiStreamExecution';
 import type { WowilonPanelProps, WowilonPanelEmits, ChatMessage, MessageVariantGroup } from './types/aiPanel.model';
 import type { AiSkillItem } from './skills/aiSkills.model';
 import { DEFAULT_BUILTIN_SKILLS } from './skills/defaultBuiltinSkills';
+import { projectRecordId } from '../../services/api/project.api';
 
 export type { ChatMessage, MessageVariantGroup, WowilonPanelProps, WowilonPanelEmits };
 export type UseWowilonPanelReturn = ReturnType<typeof useWowilonPanel>;
@@ -24,11 +25,11 @@ export function useWowilonPanel(
   if (hash.includes('?')) {
     const hashParams = new URLSearchParams(hash.split('?')[1]);
     const p = hashParams.get('project');
-    if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+    if (p) currentProject = projectRecordId(p);
   } else {
     const searchParams = new URLSearchParams(window.location.search);
     const p = searchParams.get('project');
-    if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+    if (p) currentProject = projectRecordId(p);
   }
 
   const md = new MarkdownIt({ html: true, breaks: true, linkify: true });

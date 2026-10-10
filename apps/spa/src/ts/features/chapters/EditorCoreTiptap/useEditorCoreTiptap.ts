@@ -207,12 +207,15 @@ export function useEditorCoreTiptap(
           // Пульсирующая подсветка для ВСЕХ абзацев сцены одновременно
           for (const el of targetElements) {
             el.classList.remove('promise-highlight-target');
-            void el.offsetWidth;
-            el.classList.add('promise-highlight-target');
-            setTimeout(() => {
-              el.classList.remove('promise-highlight-target');
-            }, 2500);
           }
+          requestAnimationFrame(() => {
+            for (const el of targetElements) {
+              el.classList.add('promise-highlight-target');
+              setTimeout(() => {
+                el.classList.remove('promise-highlight-target');
+              }, 2500);
+            }
+          });
         }
       }
     }

@@ -22,7 +22,12 @@ class EntityService {
 
       return entities.map(item => {
         if (typeof item === 'string') {
-          try { return JSON.parse(item) as EntityData; } catch { return null; }
+          try {
+            return JSON.parse(item) as EntityData;
+          } catch (e) {
+            console.warn('[entity.service] Failed to parse entity JSON string:', e);
+            return null;
+          }
         }
         return item as EntityData;
       }).filter((item): item is EntityData => item !== null);

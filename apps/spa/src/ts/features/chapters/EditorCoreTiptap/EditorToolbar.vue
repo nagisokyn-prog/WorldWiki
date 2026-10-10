@@ -93,43 +93,9 @@
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import ChapterArcTags from './components/ChapterArcTags.vue';
-import type { Editor } from '@tiptap/vue-3';
-import type { AppSettings } from '@worldwiki/components';
+import type { EditorToolbarProps } from './EditorToolbar.model';
 
-export interface EditorModeOption {
-  value: string;
-  label: string;
-}
-
-export interface EditorCommands {
-  toggleBold?: () => boolean | undefined;
-  toggleItalic?: () => boolean | undefined;
-  toggleStrike?: () => boolean | undefined;
-  setHeading?: (level: number) => boolean | undefined;
-  toggleBlockquote?: () => boolean | undefined;
-  toggleBulletList?: () => boolean | undefined;
-  toggleOrderedList?: () => boolean | undefined;
-  insertImage?: () => void;
-  insertTable?: () => void;
-  insertLink?: () => void;
-  clearFormatting?: () => void;
-  toggleLinkLock?: () => void;
-  analyzeText?: () => void;
-  [key: string]: unknown;
-}
-
-defineProps<{
-  project?: string;
-  chapterId?: string | null;
-  editor: Editor | null | undefined;
-  editorMode: string;
-  modeOptions: EditorModeOption[];
-  hasUnsavedChanges: boolean;
-  settings: AppSettings | null;
-  commands: EditorCommands;
-  title?: string;
-  changedFields?: string[];
-}>();
+defineProps<EditorToolbarProps>();
 
 defineEmits(['update:editorMode', 'update:title', 'save', 'toggle-history', 'export', 'change']);
 </script>

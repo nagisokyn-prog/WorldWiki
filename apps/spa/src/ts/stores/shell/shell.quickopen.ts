@@ -37,7 +37,9 @@ export function useShellQuickOpen(deps: QuickOpenDeps) {
           data: c as unknown as Record<string, unknown>
         });
       }
-    } catch { /* skip */ }
+    } catch (err) {
+      console.warn('[shell.quickopen] Failed to load chapters for quickopen:', err);
+    }
 
     for (const tab of deps.sidebarItems.value) {
       if (tab.type === 'entity' && tab.entityType) {
@@ -54,7 +56,9 @@ export function useShellQuickOpen(deps: QuickOpenDeps) {
               data: { ...e, entityType: tab.entityType } as Record<string, unknown>
             });
           }
-        } catch { /* skip */ }
+        } catch (err) {
+          console.warn(`[shell.quickopen] Failed to load entities of type ${tab.entityType} for quickopen:`, err);
+        }
       }
     }
     return items;

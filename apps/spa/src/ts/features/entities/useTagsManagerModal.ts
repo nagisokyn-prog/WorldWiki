@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import * as api from '../../services/api.client';
+import { projectRecordId } from '../../services/api/project.api';
 import type { Tag } from '../../types/generated/Tag';
 
 export function useTagsManagerModal(props: { project: string }) {
@@ -24,7 +25,7 @@ export function useTagsManagerModal(props: { project: string }) {
         if (!newTagName.value.trim()) return;
         try {
             await api.saveTag(props.project, {
-                project_id: `projects:${props.project}`,
+                project_id: projectRecordId(props.project),
                 name: newTagName.value.trim(),
                 color: newTagColor.value,
                 id: null

@@ -36,9 +36,26 @@ impl FeErrorRulesChecker {
                     && !trimmed.contains("emit");
 
                 // Check multi-line empty catch
-                let is_multiline_empty = if (trimmed.ends_with("catch {") || (trimmed.contains("catch (") && trimmed.ends_with('{'))) && idx + 1 < lines.len() {
-                    let next_line = lines[idx + 1].trim();
-                    next_line == "}" || (next_line.starts_with("/*") && next_line.ends_with("*/") && idx + 2 < lines.len() && lines[idx + 2].trim() == "}")
+                let is_multiline_empty = if trimmed.ends_with("catch {") || (trimmed.contains("catch (") && trimmed.ends_with('{')) {
+                    let mut lookahead = idx + 1;
+                    let mut empty = false;
+                    while lookahead < lines.len() {
+                        let l = lines[lookahead].trim();
+                        if l.is_empty()
+                            || l.starts_with("//")
+                            || (l.starts_with("/*") && l.ends_with("*/"))
+                            || l.starts_with('*')
+                            || l.starts_with("/*")
+                        {
+                            lookahead += 1;
+                        } else if l == "}" || l.starts_with('}') {
+                            empty = true;
+                            break;
+                        } else {
+                            break;
+                        }
+                    }
+                    empty
                 } else {
                     false
                 };
@@ -47,7 +64,17 @@ impl FeErrorRulesChecker {
                     let snippet = if is_single_line_empty {
                         trimmed.to_string()
                     } else {
-                        format!("{}\n{}", trimmed, lines[idx + 1].trim())
+                        let mut snippet_lines = vec![trimmed];
+                        let mut lookahead = idx + 1;
+                        while lookahead < lines.len() && lookahead <= idx + 4 {
+                            let l = lines[lookahead].trim();
+                            snippet_lines.push(l);
+                            if l == "}" || l.starts_with('}') {
+                                break;
+                            }
+                            lookahead += 1;
+                        }
+                        snippet_lines.join("\n")
                     };
 
                     let fp = compute_fingerprint("FE-ERR-001", "1.0", file_stem, &snippet);

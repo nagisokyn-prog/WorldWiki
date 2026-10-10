@@ -142,8 +142,8 @@ export function useParticipantsPanel(
         if (!val) return '';
         try {
             val = decodeURIComponent(val);
-        } catch {
-            // Игнорируем ошибки некорректного URI
+        } catch (err) {
+            console.warn('[useParticipantsPanel] URI decode error on ID:', val, err);
         }
         return val.trim();
     };

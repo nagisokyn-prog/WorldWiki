@@ -253,8 +253,8 @@ export function useManuscriptPointPicker(
           }
         }
       );
-    } catch {
-      // Игнорируем в окружении без Tauri
+    } catch (e) {
+      console.warn('[useManuscriptPointPicker] Tauri event listener setup failed (running in browser?):', e);
     }
 
     // Если уже включено автопродление, выставляем последнюю актуальную точку

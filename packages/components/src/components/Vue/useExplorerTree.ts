@@ -95,8 +95,8 @@ export function useExplorerTree(
         const sec = localStorage.getItem(`${props.storageKey}:sections`);
         if (exp) expanded.value = new Set(JSON.parse(exp));
         if (sec) expandedSections.value = new Set(JSON.parse(sec));
-      } catch {
-        /* ignore */
+      } catch (err) {
+        console.warn('[useExplorerTree] Failed to restore tree expanded state from localStorage:', err);
       }
     }
   });

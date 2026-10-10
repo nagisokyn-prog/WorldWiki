@@ -103,8 +103,8 @@ export function useEntityDynamicOps(ctx: UseEntityDynamicOpsContext) {
           if (newItem['начальная_глава'] !== undefined) newItem['начальная_глава'] = { ...initialPoint, is_auto_extend: false };
           if (newItem['конечная_глава'] !== undefined) newItem['конечная_глава'] = { ...initialPoint, is_auto_extend: true };
         }
-      } catch {
-        // Игнорируем вне контекста Pinia
+      } catch (err) {
+        console.warn('[useEntityDynamicOps] Failed to read chapter hierarchy from pinia store:', err);
       }
     }
 

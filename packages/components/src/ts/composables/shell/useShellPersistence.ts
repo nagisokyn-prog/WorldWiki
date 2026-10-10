@@ -78,7 +78,7 @@ export function useShellPersistence(config: ShellPersistenceConfig) {
   };
 
   watch(activePanelTab, () => { if (!isRestoring) saveState(); });
-  watch(eg.groups, saveState, { deep: true });
+  watch(eg.groups, saveState, { deep: 1 });
 
   return {
     showSettings,

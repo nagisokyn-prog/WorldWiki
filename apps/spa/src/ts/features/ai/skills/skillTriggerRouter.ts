@@ -103,15 +103,15 @@ export async function resolveSkillContent(skill: AiSkillItem): Promise<string> {
     try {
       const res = await fetch('/skills/Конструктор_типов_сущностей.md');
       if (res.ok) content = await res.text();
-    } catch {
-      // fallback
+    } catch (e) {
+      console.warn('[skillTriggerRouter] Failed to fetch fallback Конструктор skill:', e);
     }
   } else if (skill.name.toLowerCase().includes('заполнение') && !content.includes('## 1. Литературный ввод')) {
     try {
       const res = await fetch('/skills/Заполнение_сущностей.md');
       if (res.ok) content = await res.text();
-    } catch {
-      // fallback
+    } catch (e) {
+      console.warn('[skillTriggerRouter] Failed to fetch fallback Заполнение skill:', e);
     }
   }
 

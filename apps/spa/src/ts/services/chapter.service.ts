@@ -4,7 +4,8 @@
  * @rust-ready ✅ CRUD глав
  */
 
-import * as api from './api.client';;
+import * as api from './api.client';
+import { projectRecordId } from './api/project.api';
 
 import type { Chapter } from '../types/generated/Chapter';
 import type { ChapterWithHierarchy } from '../stores/chapter.store';
@@ -25,7 +26,7 @@ class ChapterService {
     if (!data.id.startsWith('chapters:')) {
       data.id = `chapters:${data.id}`;
     }
-    data.project_id = project.startsWith('projects:') ? project : `projects:${project}`;
+    data.project_id = projectRecordId(project);
 
     // Rust бэкенд строго ожидает Option<Vec<String>> для participants
     if (Array.isArray(data.participants)) {

@@ -17,7 +17,9 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     if (!proj) return;
     try {
       localStorage.setItem(`ww_plot_promises_${proj}`, JSON.stringify(promises.value));
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('[usePromiseActions] Failed to backup promises to localStorage:', err);
+    }
   };
 
   const persist = async (item: RichPlotPromise, logMsg: string) => {
@@ -162,7 +164,9 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     if (!item.id) return;
     try {
       await api.deletePlotPromise(item.id);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('[usePromiseActions] Failed to delete promise from backend:', err);
+    }
     promises.value = promises.value.filter((p) => p.id !== item.id);
     syncLocalBackup();
     emit('change');

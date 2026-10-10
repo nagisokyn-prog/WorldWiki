@@ -1,1 +1,346 @@
-[]
+[
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/components/chat/AiMessageItem/AiMessageItem.vue",
+    "line": 34,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "68adbf237f47bc43d7f52717d9d422621a16beba45cf5e1e5a4d7cc9af3f7247"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
+    "line": 20,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "799abe7b78d3ea870b4a2cd63a7b0d1976a712cb4458cab2262af1bdb61bd063"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/AiSettingsPermissionsTab.vue",
+    "line": 66,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "bd5809ebeb72280a5341dfb7cfc2c0c8fa7fa9c54d31ca1e56a6934c34677f56"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/AiSettingsPermissionsTab.vue",
+    "line": 68,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "c2db0342462268c449424bbab1fabecdb63d35e5d3a10f61297677b09dff5c5f"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/components/AiRagConfigCard.vue",
+    "line": 18,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "c77c080ded518f38ce3766d0825d6bcccd2d496fa5f0b2ee20d0b312f3fb4580"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+    "line": 37,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "7163b9e17377f6ef629a29443abdd16bc5fbf201e4c21e84e6fe135c70a7966f"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiLibrary.vue",
+    "line": 28,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "732c6c731b235d13ece292b2cb8ed1266a5b79df7374a8e700cc5aec0db70aa0"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/ChekhovGunTracker/components/GunJourneyModal.vue",
+    "line": 46,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "959f60726e4f8c52863fa1fefcd0c1964028218825cffac1747e725dc64a95fc"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/ConsistencyChecker/components/AuditAnomalyCard.vue",
+    "line": 44,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "6f94df7b42916e731d98e5637466362dcad55add5ce7c0024887159e8a0121da"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/ConsistencyChecker/components/AuditAnomalyCard.vue",
+    "line": 54,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "daa0901002216403f3bce2558b03d17fbb3397b218ed4198cb4a919091396bf7"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
+    "line": 100,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "368cd8c5ede3bd978d970585a65a0de6c40424248dd09c16bac863a2437f79a2"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
+    "line": 102,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "6efad4d08e5c823b191bd9043e0856cf7ff88f329256d7d6719cb2ea1ce80fd6"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/EntityLinkSelector.vue",
+    "line": 57,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "5d828588f390a954ce3c69c291eee8d517129651fcf9f1baee4ed1aac7b9b5a1"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
+    "line": 59,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "8650e6280ce8c5c7e316b406937cd007bf6189071af1d66c5a5e7f6467996e96"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+    "line": 13,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "2763a3bbf8dd87d33f738d42126ed13bb388018c015b961045675b0c99da9448"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+    "line": 14,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "5e8dc33c18ce9fd764d44d36dfd80588a7d02e751a2311f93edc78af405405dd"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCard.vue",
+    "line": 85,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "924cef1952baf1f0845a202d8396284f504bd9917b3d5225300ee5f57c3742e0"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardMeta.vue",
+    "line": 17,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "67014c76c23bb14f7e2f2201b1c0fb083c2486549563245a7f179079f50af528"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardParticipants.vue",
+    "line": 20,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "a2a17f5cfb9613deeeab125a16fd9913203205831f76d2dc80728fd7bd39562b"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/StoryArcs/components/ArcCard.vue",
+    "line": 85,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "78118b5f69008bb684fecba1afc7e59883db11fa6e4352cc336bd7a185cc4b1b"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/chapters/StoryArcs/components/ArcCard.vue",
+    "line": 88,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "a4c7b963f495ed4f66c61078d4bdfd0db0fd39c7f71bbc19f860362dc5bbb627"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/documents/AcademicInspector/components/AcademicItemList.vue",
+    "line": 16,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "d7ff23aa319d46f81b9e8458f571d835a46a2608868b6804bec8168b97223460"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/components/JourneyArcGroups.vue",
+    "line": 55,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "bc02a50b12bef3cc2b04e1442dfa4cace04d39bad179df6a06285f7d6f81629d"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/components/JourneyArcGroups.vue",
+    "line": 60,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "e21a311b2c87ad6ac937629f312dd6b12316e506c6fb6428c27cdf96b204eff2"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/components/JourneyArcGroups.vue",
+    "line": 139,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "79d2a7e81d5effa5aa06c74b65684ac438aac5f9abac90510902b938e1220cf6"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/components/JourneyMultiSelector.vue",
+    "line": 35,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "df73bfe23e5711fecf8bb7295991e3ccad06dd08eb5e2b693de1582d695ebbff"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/components/JourneyTimelineList.vue",
+    "line": 77,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "3b39cb93c7d05920b4e9dac02ad6d66d2f0c1e2513cf933a7b5386cc6cd7b91c"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+    "line": 36,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "657508ab8e66894a2f96fa20399e35244176087c05c065e18ffde2b27bb48ed3"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+    "line": 126,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "f1666b2dde5d0a7560d16610e9ea67a52807444f3febb04a440d4fd008e56012"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+    "line": 178,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "a6b775549192ba580c05b9b23dd4434e06ec243b4c241f35f47c5cdc706cf0d0"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+    "line": 48,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "dd0cb0db00bdde95053215660e54b1e22fb206c55640bc8129fe836566e03714"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/shell/ProjectLauncher.vue",
+    "line": 134,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "b1dc4830c2d14e2ee7213d07fac7bf0337a432a048c28c4fa1bac7d32b7f53a9"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+    "line": 72,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "53d979b866bf09f58aae9aa6826cad467f691e48304ddd45c7c0214ab29e9e54"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/CalendarTimezones.vue",
+    "line": 60,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "01d6e60536dcde5f0472defb5982b744637de800a40456329c2ae0f27da28607"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/TimeAtlasWorldTab.vue",
+    "line": 41,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "63a1801e7a833154d742222e46bbbfa0e06f4da873a3a8f54e1310c11d14d1da"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+    "line": 32,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "e5cdf81eb6ed6ab6e66a256287d5aed8f439e4a7eda17bba7e308582be565c06"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+    "line": 48,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "caea09320bd790f6a30946636e9a86914e6c3f84f2aa40aa1e777e8973152f43"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
+    "line": 22,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "0aa8b11b90674311b54c7dac620022faa78e6a8e08261a81e4d9364b53d5e400"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
+    "line": 52,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "6715125bee4ff8c241aa5830de2ddd31d31c6e7c4a914b8efe9445effebace85"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 30,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "5aee186d85bd61af23432485d2e2537f8bea44f92a29500e36ea382938aa5e43"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 135,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "0b637910940c5237b9ee1edc6cf5e21dbe12a204fdbd057463098fd11317066c"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./packages/components/src/components/Vue/ExplorerTree.vue",
+    "line": 23,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "38e197cef2805fbdeb16597e647a10fe2ab81201144e48ff22489efc552fd192"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./packages/components/src/components/Vue/Settings/SettingsTypography.vue",
+    "line": 22,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "aa8509d18dc898a812b266c558c7cf4b8c0adec32b0065b044a2ea23d04dcb7c"
+  }
+]

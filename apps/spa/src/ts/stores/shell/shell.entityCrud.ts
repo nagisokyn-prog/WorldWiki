@@ -6,6 +6,7 @@
 import { type Ref, triggerRef } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
 import * as api from '../../services/api.client';
+import { projectRecordId } from '../../services/api/project.api';
 import { entityApi } from '../../services/Entity/entity.api';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { useSchemaStore } from '../schema';
@@ -93,7 +94,7 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
         if (newChapterTitle === null) return;
         const newChapter: Chapter = {
           id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          project_id: `projects:${deps.projectName.value}`,
+          project_id: projectRecordId(deps.projectName.value),
           title: newChapterTitle || 'Новая глава',
           content: '# Начните писать\n\n',
           summary: undefined,

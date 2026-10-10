@@ -1,5 +1,7 @@
 use crate::frontend::css_rules::CssRuleChecker;
+use crate::frontend::fe_error_rules::FeErrorRulesChecker;
 use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
+use crate::frontend::perf_rules::PerfRulesChecker;
 use crate::frontend::sfc_parser::VueSfcParser;
 use crate::frontend::vue_rules::VueRuleChecker;
 use crate::metrics::SlocCalculator;
@@ -47,6 +49,8 @@ impl AstParserPort for VueSfcParserAdapter {
                     path,
                     self.config.as_ref(),
                 ));
+                violations.extend(FeErrorRulesChecker::check_source(&content, path));
+                violations.extend(PerfRulesChecker::check_source(&content, path));
 
                 // Check SFC Effective SLOC limits (excluding boilerplate glue)
                 let (warn_sloc, deny_sloc, max_destructure) = if let Some(cfg) = &self.config {
@@ -80,6 +84,8 @@ impl AstParserPort for VueSfcParserAdapter {
                     path,
                     self.config.as_ref(),
                 ));
+                violations.extend(FeErrorRulesChecker::check_source(&content, path));
+                violations.extend(PerfRulesChecker::check_source(&content, path));
 
                 let sloc = SlocCalculator::count_sloc(&content, path);
                 let filename = path.file_name().and_then(|f| f.to_str()).unwrap_or("");

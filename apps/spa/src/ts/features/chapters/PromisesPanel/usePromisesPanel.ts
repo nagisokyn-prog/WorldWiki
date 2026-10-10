@@ -181,10 +181,12 @@ export function usePromisesPanel(
       if (hasChanges && props.project) {
         try {
           localStorage.setItem(`ww_plot_promises_${props.project}`, JSON.stringify(promises.value));
-        } catch { /* ignore */ }
+        } catch (err) {
+          console.warn('[usePromisesPanel] Failed to save promises to localStorage:', err);
+        }
       }
-    } catch {
-      // Swallow DOMParser / querySelector errors
+    } catch (err) {
+      console.warn('[usePromisesPanel] DOMParser/querySelector error during quote sync:', err);
     }
   };
 
@@ -201,7 +203,9 @@ export function usePromisesPanel(
         } else {
           localStorage.setItem(localKey, JSON.stringify(promises.value));
         }
-      } catch { /* ignore */ }
+      } catch (err) {
+        console.warn('[usePromisesPanel] Failed to sync promises cache with localStorage:', err);
+      }
       syncQuotesWithManuscript();
     } catch (err) {
       console.warn('[usePromisesPanel] Failed to load promises from backend:', err);
@@ -211,7 +215,9 @@ export function usePromisesPanel(
           promises.value = JSON.parse(stored);
           syncQuotesWithManuscript();
         }
-      } catch { /* ignore */ }
+      } catch (e) {
+        console.warn('[usePromisesPanel] Failed to restore promises from local fallback:', e);
+      }
     } finally {
       loading.value = false;
     }

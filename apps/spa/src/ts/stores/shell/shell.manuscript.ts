@@ -5,6 +5,7 @@
 
 import type { Ref } from 'vue';
 import * as api from '../../services/api.client';
+import { projectRecordId } from '../../services/api/project.api';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { EditorTab } from './shell.types';
 
@@ -81,7 +82,7 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       deps.addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
       const newCh: Chapter = {
         id: `chapters:chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        project_id: `projects:${deps.projectName.value}`,
+        project_id: projectRecordId(deps.projectName.value),
         title: `Глава ${num}`,
         content: '# Новая глава\n\n',
         summary: undefined,

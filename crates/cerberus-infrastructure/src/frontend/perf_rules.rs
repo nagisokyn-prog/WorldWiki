@@ -96,10 +96,23 @@ impl PerfRulesChecker {
                 in_v_for_template = true;
             }
             if in_v_for_template {
-                if is_vue_file && trimmed.contains("{{") && trimmed.contains('(') && trimmed.contains(')') && !trimmed.contains("v-for=") {
+                if is_vue_file && has_call_in_interpolation(trimmed) {
                     check_v_for_template_call(trimmed, file_path, line_num, &mut violations);
                 }
-                if trimmed.contains("</template>") || trimmed.contains("</div>") {
+                if trimmed.contains("</template>")
+                    || trimmed.contains("</div>")
+                    || trimmed.contains("</option>")
+                    || trimmed.contains("</span>")
+                    || trimmed.contains("</li>")
+                    || trimmed.contains("</select>")
+                    || trimmed.contains("</ul>")
+                    || trimmed.contains("</ol>")
+                    || trimmed.contains("</details>")
+                    || trimmed.contains("</tr>")
+                    || trimmed.contains("</td>")
+                    || trimmed.contains("</table>")
+                    || (trimmed.starts_with("</") && trimmed.ends_with('>'))
+                {
                     in_v_for_template = false;
                 }
             }
@@ -250,6 +263,27 @@ fn check_raf_allocation(trimmed: &str, file_path: &Path, line: usize, out: &mut 
     }
 }
 
+fn has_call_in_interpolation(trimmed: &str) -> bool {
+    let mut rest = trimmed;
+    while let Some((_, after_open)) = rest.split_once("{{") {
+        if let Some((inside, after_close)) = after_open.split_once("}}") {
+            let expr = inside.trim();
+            if let Some((before_paren, after_paren)) = expr.split_once('(') {
+                if after_paren.contains(')') {
+                    let ident = before_paren.trim_end();
+                    if ident.chars().last().is_some_and(|c| c.is_alphanumeric() || c == '_') {
+                        return true;
+                    }
+                }
+            }
+            rest = after_close;
+        } else {
+            break;
+        }
+    }
+    false
+}
+
 fn check_v_for_template_call(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<Violation>) {
     out.push(Violation {
         rule_id: "VUE-009".into(),
@@ -352,5 +386,18 @@ mod tests {
         assert!(violations.iter().any(|v| v.rule_id == "PERF-005"));
         assert!(violations.iter().any(|v| v.rule_id == "PERF-DOM-001"));
         assert!(violations.iter().any(|v| v.rule_id == "VUE-009"));
+    }
+
+    #[test]
+    fn test_vue_009_no_false_positive_on_plain_text_parens() {
+        let code = r#"
+            <template>
+                <div v-for="loc in locations" :key="loc.id">
+                    <span>{{ loc.name }} (сущность)</span>
+                </div>
+            </template>
+        "#;
+        let violations = PerfRulesChecker::check_source(code, Path::new("Test.vue"));
+        assert!(!violations.iter().any(|v| v.rule_id == "VUE-009"));
     }
 }

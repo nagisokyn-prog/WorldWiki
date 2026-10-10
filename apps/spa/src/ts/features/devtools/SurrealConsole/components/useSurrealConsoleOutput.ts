@@ -20,8 +20,8 @@ export function useSurrealConsoleOutput(props: SurrealConsoleOutputProps) {
       copyTimeout = setTimeout(() => {
         copied.value = false;
       }, 2000);
-    } catch {
-      // ignore clipboard error
+    } catch (err) {
+      console.warn('[useSurrealConsoleOutput] Failed to write to clipboard:', err);
     }
   };
 

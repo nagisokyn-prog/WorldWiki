@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as api from '../services/api.client';
+import { projectRecordId } from '../services/api/project.api';
 import type { Tag } from '../types/generated/Tag';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
@@ -47,7 +48,7 @@ export const useTagsStore = defineStore('tags', () => {
 
     isCreatingTag.value = true;
     try {
-      const newTag: Tag = { project_id: `projects:${project.value}`, name, color: 'var(--accent)', id: null };
+      const newTag: Tag = { project_id: projectRecordId(project.value || ''), name, color: 'var(--accent)', id: null };
       await api.saveTag(project.value, newTag);
       globalTags.value.push({ name, color: 'var(--accent)' });
       invalidateCache(`tags:${project.value}`);
@@ -71,7 +72,7 @@ export const useTagsStore = defineStore('tags', () => {
     const existingTag = globalTags.value.find(t => t.name === oldName);
     
     const tagToSave: Tag = {
-      project_id: `projects:${project.value}`,
+      project_id: projectRecordId(project.value),
       id: existingTag?.id || null,
       name: newName,
       color: color

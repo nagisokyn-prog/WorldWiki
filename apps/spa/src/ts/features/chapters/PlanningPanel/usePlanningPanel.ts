@@ -1,5 +1,6 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '@/services/api.client';
+import { projectRecordId } from '@/services/api/project.api';
 
 export interface PlanItem {
     id: string;
@@ -67,7 +68,7 @@ export function usePlanningPanel(props: PlanningPanelProps) {
         try {
             const planToSave = {
                 id: item.id || null,
-                project_id: `projects:${props.project}`,
+                project_id: projectRecordId(props.project),
                 parent_type: props.parentType || '',
                 parent_ref: props.parentId || '',
                 title: item.text,
@@ -139,7 +140,11 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     const deleteItem = async (item: PlanItem, idx: number) => {
         items.value.splice(idx, 1);
         if (item.id) {
-            try { await api.deletePlan(item.id); } catch { /* ignore */ }
+            try {
+                await api.deletePlan(item.id);
+            } catch (err) {
+                console.warn('[usePlanningPanel] Failed to delete plan item:', err);
+            }
         }
         items.value.forEach((it, i) => { it.sort_order = i; });
     };

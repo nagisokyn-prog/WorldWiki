@@ -56,8 +56,8 @@ export function insertSectionWithOrientation(
           break;
         }
       }
-    } catch {
-      // Узел section отсутствует в схеме — ориентация остаётся только в layout
+    } catch (err) {
+      console.warn('[SectionOrientation] Section node not present in schema, fallback to layout orientation:', err);
     }
 
     // Переключаем геометрию листа (глобально: PaginationPlus + rk pageLayout)

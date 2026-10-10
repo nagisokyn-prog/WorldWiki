@@ -39,18 +39,6 @@ export function useEntityTree(project: string, emit: (event: string, ...args: un
   const entityKey = (type: string, id: unknown) => `entity:${type}:${String(id)}`;
   const entityCtx = ref<EntityCtxState | null>(null);
 
-  // DEBUG: watch reactive state changes
-  watch(entitySections, (v) => console.log('[TREE DEBUG] entitySections changed:', JSON.stringify(v)), { deep: true });
-  watch(entities, (v) => {
-    const counts = Object.fromEntries(Object.entries(v).map(([k, a]) => [k, a.length]));
-    console.log('[TREE DEBUG] entities changed, counts:', counts);
-    for (const [type, list] of Object.entries(v)) {
-      if (list.length > 0) {
-        console.log(`[TREE DEBUG]   ${type}[0] =`, JSON.stringify(list[0]));
-      }
-    }
-  }, { deep: true });
-
   const entityCtxStyle = computed(() => {
     if (!entityCtx.value) return {};
     const x = entityCtx.value.x + 220 > window.innerWidth ? entityCtx.value.x - 220 : entityCtx.value.x;

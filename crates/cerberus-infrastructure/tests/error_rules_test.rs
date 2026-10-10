@@ -130,6 +130,22 @@ fn test_fe_err_001_empty_catch_block() {
     let path = Path::new("apps/spa/src/features/notes/useNotes.ts");
     let violations = FeErrorRulesChecker::check_source(code, path);
     assert!(violations.iter().any(|v| v.rule_id == "FE-ERR-001"));
+
+    let code_single = r#"
+        try { localStorage.setItem("k", "v"); } catch { /* ignore */ }
+    "#;
+    let v_single = FeErrorRulesChecker::check_source(code_single, path);
+    assert!(v_single.iter().any(|v| v.rule_id == "FE-ERR-001"));
+
+    let code_comment = r#"
+        try {
+            const doc = parser.parseFromString(xml, "text/html");
+        } catch {
+            // Swallow DOMParser / querySelector errors
+        }
+    "#;
+    let v_comment = FeErrorRulesChecker::check_source(code_comment, path);
+    assert!(v_comment.iter().any(|v| v.rule_id == "FE-ERR-001"));
 }
 
 #[test]
@@ -342,5 +358,20 @@ fn test_dynamic_unlogged_from_str_flagged_as_err_004() {
         violations.iter().any(|v| v.rule_id == "ERR-004"),
         "Dynamic untrusted from_str without logging MUST trigger ERR-004"
     );
+}
+
+#[test]
+fn test_vue_sfc_parser_adapter_catches_fe_errors() {
+    use cerberus_infrastructure::VueSfcParserAdapter;
+    use cerberus_ports::AstParserPort;
+
+    let adapter = VueSfcParserAdapter::new();
+    let temp = tempfile::tempdir().unwrap();
+    let ts_file = temp.path().join("apps/spa/src/features/useDemo.ts");
+    std::fs::create_dir_all(ts_file.parent().unwrap()).unwrap();
+    std::fs::write(&ts_file, "try { run(); } catch { /* ignore */ }").unwrap();
+
+    let violations = adapter.parse_file(&ts_file, "spa").unwrap();
+    assert!(violations.iter().any(|v| v.rule_id == "FE-ERR-001"));
 }
 

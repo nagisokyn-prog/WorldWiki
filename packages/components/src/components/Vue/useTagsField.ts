@@ -21,6 +21,11 @@ export interface TagsFieldEmits {
   (e: 'modified'): void;
 }
 
+function projectRecordId(p: string): string {
+  const clean = (p || 'default').replace(/^projects:/, '').replace(/[`'"]/g, '');
+  return `projects:${clean}`;
+}
+
 export function useTagsField(
   props: TagsFieldProps,
   emit: TagsFieldEmits
@@ -39,7 +44,7 @@ export function useTagsField(
     },
     saveTag: async (project: string, tagData: Partial<TagItem>) => {
       try {
-        const data = { ...tagData, project_id: `projects:${project}` };
+        const data = { ...tagData, project_id: projectRecordId(project) };
         const res = await invoke<TagItem>('save_tag', { data });
         return processIds(res);
       } catch (e) {

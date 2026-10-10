@@ -22,10 +22,10 @@ pub async fn create_volume_inner(
         .query("RETURN fn::get_max_volume_sort_order(type::record('projects', $p));")
         .bind(("p", clean_pid.clone()))
         .await?;
-    let max_order: i64 = max_order_res
-        .take::<Option<i64>>(0)
-        .unwrap_or(None)
-        .unwrap_or(-1);
+    let max_order: i64 = match max_order_res.take::<Option<i64>>(0)? {
+        Some(order) => order,
+        None => -1,
+    };
     let next_order = max_order + 1;
 
     let query = "RETURN fn::create_volume_node(type::record('projects', $p), $title, $order);";
@@ -36,7 +36,7 @@ pub async fn create_volume_inner(
         .bind(("order", next_order))
         .await?;
 
-    let vol: Option<serde_json::Value> = create_res.take(0).unwrap_or(None);
+    let vol: Option<serde_json::Value> = create_res.take(0)?;
     Ok(serde_json::json!(vol))
 }
 

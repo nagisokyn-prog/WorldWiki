@@ -104,8 +104,10 @@ impl ClawStreamConsumer {
                 },
                 StreamEvent::ContentBlockStop(_) => {
                     if let Some(a) = assembler.take() {
-                        let input = serde_json::from_str(&a.input_buf)
-                            .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
+                        let input = serde_json::from_str(&a.input_buf).unwrap_or_else(|err| {
+                            tracing::warn!("Failed to parse tool call input JSON for '{}': {err}. Using raw input.", a.name);
+                            json!({ "raw": a.input_buf })
+                        });
                         if sender
                             .send(StreamEventDto {
                                 text_delta: None,
@@ -175,8 +177,10 @@ impl ClawStreamConsumer {
         }
 
         if let Some(a) = assembler.take() {
-            let input = serde_json::from_str(&a.input_buf)
-                .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
+            let input = serde_json::from_str(&a.input_buf).unwrap_or_else(|err| {
+                tracing::warn!("Failed to parse tool call input JSON for '{}': {err}. Using raw input.", a.name);
+                json!({ "raw": a.input_buf })
+            });
             if let Err(e) = sender
                 .send(StreamEventDto {
                     text_delta: None,

@@ -99,12 +99,14 @@ pub(crate) async fn fetch_bm25_candidates(
                 let content = row.get("content").and_then(|v| v.as_str()).unwrap_or_default().to_string();
                 let raw_score = row.get("bm25_score").and_then(|v| v.as_f64()).unwrap_or(1.0);
                 let score = (0.65 + (raw_score / (raw_score + 2.0)) * 0.30) as f32;
-                let snippet = row
+                let snippet = match row
                     .get("bm25_snippet")
                     .and_then(|v| v.as_str())
                     .filter(|s| !s.is_empty())
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| content.chars().take(400).collect());
+                {
+                    Some(s) => s.to_string(),
+                    None => content.chars().take(400).collect(),
+                };
 
                 candidates.push(RetrievalCandidate {
                     source_type: "Chapter".to_string(),

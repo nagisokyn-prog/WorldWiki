@@ -58,7 +58,11 @@ fn try_read_theme_file(path: &Path) -> Result<Option<Value>, SystemError> {
         return Err(SystemError::OperationFailed(format!("{} is a directory", path.display())));
     }
     let content = fs::read_to_string(path)?;
-    Ok(Some(serde_json::from_str(&content).unwrap_or(Value::Null)))
+    let theme = serde_json::from_str(&content).unwrap_or_else(|err| {
+        tracing::warn!("Failed to parse theme file {}: {err}. Returning empty null.", path.display());
+        Value::Null
+    });
+    Ok(Some(theme))
 }
 
 /// List all custom themes stored in data/themes/ or data/settings-theme-<name>.json

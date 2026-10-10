@@ -45,14 +45,6 @@ impl From<serde_json::Error> for ConnectionError {
     }
 }
 
-impl From<ConnectionError> for String {
-    fn from(err: ConnectionError) -> Self {
-        let msg = err.to_string();
-        eprintln!("[IPC ERROR][Connection] {}", msg);
-        msg
-    }
-}
-
 impl serde::Serialize for ConnectionError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

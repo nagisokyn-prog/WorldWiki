@@ -19,8 +19,8 @@ pub async fn delete_chat_cascade(db: &Surreal<Db>, chat_id: &str) -> Result<(), 
         .await
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-    let all_chats: Vec<Value> = res.take(0).unwrap_or_default();
-    let all_edges: Vec<Value> = res.take(1).unwrap_or_default();
+    let all_chats: Vec<Value> = res.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let all_edges: Vec<Value> = res.take(1).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
     let mut to_delete = HashSet::new();
     to_delete.insert(initial_rec.clone());
@@ -83,7 +83,7 @@ pub async fn switch_message_variant(db: &Surreal<Db>, message_id: &str) -> Resul
         .await
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-    let orig: Option<Value> = res.take(0).unwrap_or_default();
+    let orig: Option<Value> = res.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     if let Some(orig) = orig {
         let chat_id_str = clean_record_id(orig.get("chat_id").unwrap_or(&Value::Null)).unwrap_or_default();
         let chat_clean = clean_id_str(&chat_id_str, "chats:");
@@ -135,7 +135,7 @@ pub async fn edit_message_branch(
         .await
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-    let orig: Option<Value> = check.take(0).unwrap_or_default();
+    let orig: Option<Value> = check.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     let parent_id_val = orig.as_ref().and_then(|v| v.get("parent_id").cloned());
     let parent_clean = parent_id_val.as_ref().and_then(clean_record_id);
 
@@ -219,7 +219,7 @@ pub async fn regenerate_assistant_variant(
         .await
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-    let user_msg: Option<Value> = check_user.take(0).unwrap_or_default();
+    let user_msg: Option<Value> = check_user.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     let user_text = user_msg
         .and_then(|v| {
             v.get("content")

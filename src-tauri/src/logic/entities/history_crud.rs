@@ -19,7 +19,7 @@ pub async fn get_schema_history_inner(
         .bind(("pid", clean_pid))
         .bind(("tk", type_key.to_string()))
         .await?;
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 
@@ -46,7 +46,7 @@ pub async fn get_entity_revisions_inner(
         .bind(("id", actual_id))
         .await?;
 
-    let revisions: Vec<Value> = result.take(0).unwrap_or_default();
+    let revisions: Vec<Value> = result.take(0)?;
     Ok(revisions)
 }
 

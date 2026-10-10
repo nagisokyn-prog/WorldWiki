@@ -21,7 +21,12 @@ impl StaticPermissionsCatalog {
 
 impl PermissionsPort for StaticPermissionsCatalog {
     fn get_tool_permissions_catalog(&self) -> Vec<ToolPermissionConfig> {
-        let user_map = self.user_permissions.read().map(|m| m.clone()).unwrap_or_default();
+        let user_map = self.user_permissions.read()
+            .map(|m| m.clone())
+            .unwrap_or_else(|poison| {
+                tracing::warn!("user_permissions RwLock poisoned, recovering inner state: {poison}");
+                poison.into_inner().clone()
+            });
         let mut list = vec![
 
             // 1. ПОИСК ПО ВСЕЛЕННОЙ (READ)

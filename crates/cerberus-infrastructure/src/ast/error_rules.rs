@@ -1,5 +1,6 @@
-use cerberus_domain::{compute_fingerprint, Category, RuleDefinition, Severity, Violation};
+use cerberus_domain::{compute_location_fingerprint, Category, RuleDefinition, Severity, Violation};
 use std::path::PathBuf;
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 use syn::{Expr, File, ItemFn, ItemImpl, Stmt, Visibility};
 
@@ -20,16 +21,42 @@ impl<'a> ErrorRulesChecker<'a> {
 
     pub fn check_file(&self, syntax: &File) -> Vec<Violation> {
         let mut violations = Vec::new();
+        let mut known_constants = std::collections::HashSet::new();
+        for item in &syntax.items {
+            match item {
+                syn::Item::Const(c) => {
+                    known_constants.insert(c.ident.to_string());
+                }
+                syn::Item::Static(s) => {
+                    known_constants.insert(s.ident.to_string());
+                }
+                _ => {}
+            }
+        }
+
         let mut visitor = ErrorRulesVisitor {
             checker: self,
             violations: &mut violations,
             in_drop_impl: false,
+            current_fn: None,
+            known_constants,
         };
         visitor.visit_file(syntax);
         violations
     }
 
-    fn check_stmt(&self, stmt: &Stmt, in_drop: bool, violations: &mut Vec<Violation>) {
+    fn check_stmt(
+        &self,
+        stmt: &Stmt,
+        in_drop: bool,
+        current_fn: Option<&str>,
+        violations: &mut Vec<Violation>,
+    ) {
+        let span = stmt.span();
+        let line = span.start().line;
+        let column = span.start().column;
+        let symbol = current_fn.unwrap_or("unknown_fn");
+
         if let Stmt::Local(local) = stmt {
             // ERR-001: let _ = result;
             if self.is_rule_enabled("ERR-001") {
@@ -46,8 +73,13 @@ impl<'a> ErrorRulesChecker<'a> {
                             || expr_str.contains("flush")
                         {
                             let snippet = format!("let _ = {}", expr_str);
-                            let fp =
-                                compute_fingerprint("ERR-001", "1.0", "wildcard_let", &snippet);
+                            let fp = compute_location_fingerprint(
+                                "ERR-001",
+                                "1.0",
+                                self.file_path,
+                                symbol,
+                                &snippet,
+                            );
 
                             violations.push(Violation {
                                 rule_id: "ERR-001".into(),
@@ -55,9 +87,9 @@ impl<'a> ErrorRulesChecker<'a> {
                                 category: Category::ErrorHandling,
                                 severity: self.get_severity("ERR-001", Severity::Deny),
                                 file: PathBuf::from(self.file_path),
-                                line: 1,
-                                column: 1,
-                                symbol: "wildcard_let".into(),
+                                line,
+                                column,
+                                symbol: symbol.to_string(),
                                 message: "Silent error suppression 'let _ = ...' drops critical operation errors.".into(),
                                 snippet,
                                 remediation: "Handle Result explicitly or propagate error via '?'; log failures before ignoring.".into(),
@@ -77,7 +109,14 @@ impl<'a> ErrorRulesChecker<'a> {
                 || stmt_str.contains("panic !")
             {
                 let snippet = stmt_str;
-                let fp = compute_fingerprint("ERR-002", "1.0", "drop_panic", &snippet);
+                let drop_symbol = current_fn.unwrap_or("Drop::drop");
+                let fp = compute_location_fingerprint(
+                    "ERR-002",
+                    "1.0",
+                    self.file_path,
+                    drop_symbol,
+                    &snippet,
+                );
 
                 violations.push(Violation {
                     rule_id: "ERR-002".into(),
@@ -85,9 +124,9 @@ impl<'a> ErrorRulesChecker<'a> {
                     category: Category::ErrorHandling,
                     severity: self.get_severity("ERR-002", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
-                    symbol: "drop_panic".into(),
+                    line,
+                    column,
+                    symbol: drop_symbol.to_string(),
                     message: "Unwrapping or panicking inside 'Drop' implementation risks double-panic and immediate process abort during stack unwinding.".into(),
                     snippet,
                     remediation: "Handle errors gracefully inside Drop by logging via 'tracing::error!' without calling .unwrap() or panic!.".into(),
@@ -115,7 +154,13 @@ impl<'a> ErrorRulesChecker<'a> {
 
                     if macro_name == "panic" || macro_name == "unimplemented" {
                         let snippet = format!("{}!(...)", macro_name);
-                        let fp = compute_fingerprint("ERR-005", "1.0", &macro_name, &snippet);
+                        let fp = compute_location_fingerprint(
+                            "ERR-005",
+                            "1.0",
+                            self.file_path,
+                            symbol,
+                            &snippet,
+                        );
 
                         violations.push(Violation {
                             rule_id: "ERR-005".into(),
@@ -123,9 +168,9 @@ impl<'a> ErrorRulesChecker<'a> {
                             category: Category::ErrorHandling,
                             severity: self.get_severity("ERR-005", Severity::Deny),
                             file: PathBuf::from(self.file_path),
-                            line: 1,
-                            column: 1,
-                            symbol: macro_name,
+                            line,
+                            column,
+                            symbol: symbol.to_string(),
                             message: "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.".into(),
                             snippet,
                             remediation: "Replace panic!/unimplemented! with structured Result::Err(Error) return value.".into(),
@@ -145,9 +190,18 @@ impl<'a> ErrorRulesChecker<'a> {
         if let Visibility::Public(_) = &item_fn.vis {
             if is_untyped_result_error(&item_fn.sig.output) {
                 let name = item_fn.sig.ident.to_string();
+                let span = item_fn.sig.ident.span();
+                let line = span.start().line;
+                let column = span.start().column;
                 let ret_str = quote::quote!(#item_fn.sig.output).to_string();
                 let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
-                let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
+                let fp = compute_location_fingerprint(
+                    "ERR-003",
+                    "1.0",
+                    self.file_path,
+                    &name,
+                    &snippet,
+                );
 
                 violations.push(Violation {
                     rule_id: "ERR-003".into(),
@@ -155,8 +209,8 @@ impl<'a> ErrorRulesChecker<'a> {
                     category: Category::ErrorHandling,
                     severity: self.get_severity("ERR-003", Severity::Warn),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
+                    line,
+                    column,
                     symbol: name,
                     message: "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.".into(),
                     snippet,
@@ -167,7 +221,12 @@ impl<'a> ErrorRulesChecker<'a> {
         }
     }
 
-    fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {
+    fn check_library_panic(
+        &self,
+        expr: &Expr,
+        current_fn: Option<&str>,
+        violations: &mut Vec<Violation>,
+    ) {
         if !self.is_rule_enabled("ERR-005") {
             return;
         }
@@ -190,8 +249,18 @@ impl<'a> ErrorRulesChecker<'a> {
                 .unwrap_or_default();
 
             if macro_name == "panic" || macro_name == "unimplemented" {
+                let span = expr.span();
+                let line = span.start().line;
+                let column = span.start().column;
+                let symbol = current_fn.unwrap_or(&macro_name);
                 let snippet = format!("{}!(...)", macro_name);
-                let fp = compute_fingerprint("ERR-005", "1.0", &macro_name, &snippet);
+                let fp = compute_location_fingerprint(
+                    "ERR-005",
+                    "1.0",
+                    self.file_path,
+                    symbol,
+                    &snippet,
+                );
 
                 violations.push(Violation {
                     rule_id: "ERR-005".into(),
@@ -199,9 +268,9 @@ impl<'a> ErrorRulesChecker<'a> {
                     category: Category::ErrorHandling,
                     severity: self.get_severity("ERR-005", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
-                    symbol: macro_name,
+                    line,
+                    column,
+                    symbol: symbol.to_string(),
                     message: "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.".into(),
                     snippet,
                     remediation: "Replace panic!/unimplemented! with structured Result::Err(Error) return value.".into(),
@@ -228,29 +297,151 @@ impl<'a> ErrorRulesChecker<'a> {
         }
         default
     }
-    fn check_expr(&self, expr: &Expr, violations: &mut Vec<Violation>) {
-        self.check_library_panic(expr, violations);
+
+    fn is_compile_time_expr(
+        expr: &Expr,
+        known_constants: &std::collections::HashSet<String>,
+    ) -> bool {
+        match expr {
+            Expr::Lit(lit) => matches!(lit.lit, syn::Lit::Str(_)),
+            Expr::Macro(m) => {
+                let name = m
+                    .mac
+                    .path
+                    .segments
+                    .last()
+                    .map(|s| s.ident.to_string())
+                    .unwrap_or_default();
+                name == "include_str" || name == "concat" || name == "env"
+            }
+            Expr::Path(p) => {
+                if let Some(last_seg) = p.path.segments.last() {
+                    let name = last_seg.ident.to_string();
+                    name.starts_with("BUILTIN_")
+                        || name.starts_with("DEFAULT_")
+                        || name.starts_with("STATIC_")
+                        || name.starts_with("EMBEDDED_")
+                        || known_constants.contains(&name)
+                } else {
+                    false
+                }
+            }
+            Expr::Reference(r) => Self::is_compile_time_expr(&r.expr, known_constants),
+            Expr::Group(g) => Self::is_compile_time_expr(&g.expr, known_constants),
+            _ => false,
+        }
+    }
+
+    fn is_from_str_with_compile_time_source(
+        expr: &Expr,
+        known_constants: &std::collections::HashSet<String>,
+    ) -> bool {
+        match expr {
+            Expr::Call(call) => {
+                let func_str = quote::quote!(#call.func).to_string();
+                if func_str.contains("from_str") || func_str.contains("from_slice") {
+                    if let Some(first_arg) = call.args.first() {
+                        return Self::is_compile_time_expr(first_arg, known_constants);
+                    }
+                }
+                false
+            }
+            Expr::MethodCall(mc) => {
+                if mc.method == "from_str" || mc.method == "from_slice" {
+                    if let Some(first_arg) = mc.args.first() {
+                        return Self::is_compile_time_expr(first_arg, known_constants);
+                    }
+                }
+                Self::is_from_str_with_compile_time_source(&mc.receiver, known_constants)
+            }
+            Expr::Reference(r) => Self::is_from_str_with_compile_time_source(&r.expr, known_constants),
+            Expr::Group(g) => Self::is_from_str_with_compile_time_source(&g.expr, known_constants),
+            _ => false,
+        }
+    }
+
+    fn check_expr(
+        &self,
+        expr: &Expr,
+        current_fn: Option<&str>,
+        known_constants: &std::collections::HashSet<String>,
+        violations: &mut Vec<Violation>,
+    ) {
+        self.check_library_panic(expr, current_fn, violations);
 
         if let Expr::MethodCall(mc) = expr {
+            let span = mc.span();
+            let line = span.start().line;
+            let column = span.start().column;
+            let symbol = current_fn.unwrap_or("unknown_fn");
             let method_name = mc.method.to_string();
             let receiver_str = quote::quote!(#mc.receiver).to_string();
 
+            // Observability barrier: if unwrap_or_else closure explicitly logs the error,
+            // this is an observable, intentional graceful degradation.
+            let has_observability_barrier = if method_name == "unwrap_or_else" {
+                if let Some(arg) = mc.args.first() {
+                    let arg_str = quote::quote!(#arg).to_string();
+                    arg_str.contains("tracing :: warn")
+                        || arg_str.contains("tracing :: error")
+                        || arg_str.contains("tracing :: info")
+                        || arg_str.contains("log :: warn")
+                        || arg_str.contains("log :: error")
+                        || arg_str.contains("log :: info")
+                        || arg_str.contains("warn !")
+                        || arg_str.contains("error !")
+                } else {
+                    false
+                }
+            } else {
+                false
+            };
+
+            let is_try = matches!(&*mc.receiver, Expr::Try(_)) || receiver_str.trim_end().ends_with('?');
+            let is_sdb_take = !is_try && (receiver_str.contains("take (") || receiver_str.contains(". take"));
+            let is_lock_call = receiver_str.contains("lock (") || receiver_str.contains(". lock");
+            let is_rwlock_call = receiver_str.contains("read ()")
+                || receiver_str.contains("read ( )")
+                || receiver_str.contains(". read ()")
+                || receiver_str.contains("write ()")
+                || receiver_str.contains("write ( )")
+                || receiver_str.contains(". write ()")
+                || receiver_str.contains("permissions . read")
+                || receiver_str.contains("user_permissions . read")
+                || receiver_str.contains("rwlock . read")
+                || receiver_str.contains("lock . read")
+                || receiver_str.contains("state . read")
+                || receiver_str.contains("states . read")
+                || receiver_str.contains("cache . read")
+                || receiver_str.contains("store . read");
+            let is_in_memory_lock = is_lock_call || is_rwlock_call;
+
+            let is_compile_time_source = Self::is_from_str_with_compile_time_source(&mc.receiver, known_constants);
+
             // SDB-009: res.take(0).unwrap_or_default() or res.take(0).unwrap_or(None)
+            // Specialized for SurrealDB Statement Take error handling
             if self.is_rule_enabled("SDB-009")
-                && (method_name == "unwrap_or_default" || method_name == "unwrap_or")
-                && (receiver_str.contains("take (") || receiver_str.contains(". take"))
+                && (method_name == "unwrap_or_default" || method_name == "unwrap_or" || method_name == "unwrap_or_else")
+                && !has_observability_barrier
+                && is_sdb_take
             {
                 let snippet = quote::quote!(#mc).to_string();
-                let fp = compute_fingerprint("SDB-009", "1.0", "res_take_swallow", &snippet);
+                let fp = compute_location_fingerprint(
+                    "SDB-009",
+                    "1.0",
+                    self.file_path,
+                    symbol,
+                    &snippet,
+                );
                 violations.push(Violation {
                     rule_id: "SDB-009".into(),
                     rule_version: "1.0".into(),
                     category: Category::DataIntegrity,
                     severity: self.get_severity("SDB-009", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
-                    symbol: "res_take_swallow".into(),
+                    line,
+                    column,
+                    symbol: symbol.to_string(),
                     message: "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.".into(),
                     snippet,
                     remediation: "Propagate statement execution errors with res.take(index)? or map to domain error.".into(),
@@ -259,10 +450,14 @@ impl<'a> ErrorRulesChecker<'a> {
             }
 
             // ERR-004: unwrap_or_default() on fallible operations
+            // EXCLUDING take( (which is SDB-009), in-memory lock (CONC-010), compile-time const sources, and observable fallbacks
             if self.is_rule_enabled("ERR-004")
-                && (method_name == "unwrap_or_default" || method_name == "unwrap_or")
-                && (receiver_str.contains("take (")
-                    || receiver_str.contains("query (")
+                && (method_name == "unwrap_or_default" || method_name == "unwrap_or" || method_name == "unwrap_or_else")
+                && !has_observability_barrier
+                && !is_compile_time_source
+                && !is_sdb_take
+                && !is_in_memory_lock
+                && (receiver_str.contains("query (")
                     || receiver_str.contains("read (")
                     || receiver_str.contains("write (")
                     || receiver_str.contains("send (")
@@ -270,23 +465,58 @@ impl<'a> ErrorRulesChecker<'a> {
                     || receiver_str.contains("from_str (")
                     || receiver_str.contains("from_slice (")
                     || receiver_str.contains("parse (")
-                    || receiver_str.contains("lock (")
                     || receiver_str.contains(". save"))
             {
                 let snippet = quote::quote!(#mc).to_string();
-                let fp = compute_fingerprint("ERR-004", "1.0", "result_swallow", &snippet);
+                let fp = compute_location_fingerprint(
+                    "ERR-004",
+                    "1.0",
+                    self.file_path,
+                    symbol,
+                    &snippet,
+                );
                 violations.push(Violation {
                     rule_id: "ERR-004".into(),
                     rule_version: "1.0".into(),
                     category: Category::ErrorHandling,
                     severity: self.get_severity("ERR-004", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
-                    symbol: "result_swallow".into(),
+                    line,
+                    column,
+                    symbol: symbol.to_string(),
                     message: "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.".into(),
                     snippet,
                     remediation: "Propagate Result with ? operator or map to explicit domain error enum.".into(),
+                    fingerprint: fp,
+                });
+            }
+
+            // CONC-010: Poison Swallowing on In-Memory Lock (Mutex/RwLock)
+            if self.is_rule_enabled("CONC-010")
+                && (method_name == "unwrap_or_default" || method_name == "unwrap_or" || method_name == "unwrap_or_else")
+                && !has_observability_barrier
+                && is_in_memory_lock
+            {
+                let snippet = quote::quote!(#mc).to_string();
+                let fp = compute_location_fingerprint(
+                    "CONC-010",
+                    "1.0",
+                    self.file_path,
+                    symbol,
+                    &snippet,
+                );
+                violations.push(Violation {
+                    rule_id: "CONC-010".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Concurrency,
+                    severity: self.get_severity("CONC-010", Severity::Warn),
+                    file: PathBuf::from(self.file_path),
+                    line,
+                    column,
+                    symbol: symbol.to_string(),
+                    message: "Calling .unwrap_or_default() / .unwrap_or() on Mutex lock() or RwLock read()/write() hides thread panics without poison recovery.".into(),
+                    snippet,
+                    remediation: "Handle PoisonError explicitly with tracing::error! or propagate error.".into(),
                     fingerprint: fp,
                 });
             }
@@ -305,16 +535,22 @@ impl<'a> ErrorRulesChecker<'a> {
                     || receiver_str.contains("execute ("))
             {
                 let snippet = quote::quote!(#mc).to_string();
-                let fp = compute_fingerprint("ERR-006", "1.0", "lossy_ok", &snippet);
+                let fp = compute_location_fingerprint(
+                    "ERR-006",
+                    "1.0",
+                    self.file_path,
+                    symbol,
+                    &snippet,
+                );
                 violations.push(Violation {
                     rule_id: "ERR-006".into(),
                     rule_version: "1.0".into(),
                     category: Category::ErrorHandling,
                     severity: self.get_severity("ERR-006", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
-                    symbol: "lossy_ok".into(),
+                    line,
+                    column,
+                    symbol: symbol.to_string(),
                     message:
                         "Calling .ok()? on database query erases critical failure reason into None."
                             .into(),
@@ -337,18 +573,27 @@ impl<'a> ErrorRulesChecker<'a> {
                 if (trait_str.contains("From <") || trait_str.starts_with("From<"))
                     && (trait_str.contains("for String") || self_str == "String")
                 {
+                    let span = item.span();
+                    let line = span.start().line;
+                    let column = span.start().column;
+                    let symbol = format!("From<{}> for String", self_str);
                     let snippet = quote::quote!(#item).to_string();
-                    let fp =
-                        compute_fingerprint("ERR-007", "1.0", "raw_string_ipc_error", &snippet);
+                    let fp = compute_location_fingerprint(
+                        "ERR-007",
+                        "1.0",
+                        self.file_path,
+                        &symbol,
+                        &snippet,
+                    );
                     violations.push(Violation {
                         rule_id: "ERR-007".into(),
                         rule_version: "1.0".into(),
                         category: Category::ErrorHandling,
                         severity: self.get_severity("ERR-007", Severity::Deny),
                         file: PathBuf::from(self.file_path),
-                        line: 1,
-                        column: 1,
-                        symbol: "raw_string_ipc_error".into(),
+                        line,
+                        column,
+                        symbol,
                         message: "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.".into(),
                         snippet,
                         remediation: "Implement structured IpcError { code, message, details } contract instead of raw String conversion.".into(),
@@ -364,6 +609,8 @@ struct ErrorRulesVisitor<'a, 'b> {
     checker: &'a ErrorRulesChecker<'a>,
     violations: &'b mut Vec<Violation>,
     in_drop_impl: bool,
+    current_fn: Option<String>,
+    known_constants: std::collections::HashSet<String>,
 }
 
 impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
@@ -382,24 +629,39 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
 
     fn visit_stmt(&mut self, item: &Stmt) {
         self.checker
-            .check_stmt(item, self.in_drop_impl, self.violations);
+            .check_stmt(item, self.in_drop_impl, self.current_fn.as_deref(), self.violations);
         syn::visit::visit_stmt(self, item);
     }
 
     fn visit_item_fn(&mut self, item: &ItemFn) {
+        let prev_fn = self.current_fn.take();
+        self.current_fn = Some(item.sig.ident.to_string());
         self.checker.check_pub_fn(item, self.violations);
         syn::visit::visit_item_fn(self, item);
+        self.current_fn = prev_fn;
     }
 
     fn visit_impl_item(&mut self, item: &syn::ImplItem) {
         if let syn::ImplItem::Fn(method) = item {
+            let prev_fn = self.current_fn.take();
+            let name = method.sig.ident.to_string();
+            self.current_fn = Some(name.clone());
+
             if self.checker.is_rule_enabled("ERR-003") {
                 if let Visibility::Public(_) = &method.vis {
                     if is_untyped_result_error(&method.sig.output) {
-                        let name = method.sig.ident.to_string();
+                        let span = method.sig.ident.span();
+                        let line = span.start().line;
+                        let column = span.start().column;
                         let ret_str = quote::quote!(#method.sig.output).to_string();
                         let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
-                        let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
+                        let fp = compute_location_fingerprint(
+                            "ERR-003",
+                            "1.0",
+                            self.checker.file_path,
+                            &name,
+                            &snippet,
+                        );
 
                         self.violations.push(Violation {
                             rule_id: "ERR-003".into(),
@@ -407,8 +669,8 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
                             category: Category::ErrorHandling,
                             severity: self.checker.get_severity("ERR-003", Severity::Warn),
                             file: PathBuf::from(self.checker.file_path),
-                            line: 1,
-                            column: 1,
+                            line,
+                            column,
                             symbol: name,
                             message: "Public method returns untyped 'Result<T, String>'.".into(),
                             snippet,
@@ -419,12 +681,17 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
                     }
                 }
             }
+
+            syn::visit::visit_impl_item(self, item);
+            self.current_fn = prev_fn;
+        } else {
+            syn::visit::visit_impl_item(self, item);
         }
-        syn::visit::visit_impl_item(self, item);
     }
 
     fn visit_expr(&mut self, item: &Expr) {
-        self.checker.check_expr(item, self.violations);
+        self.checker
+            .check_expr(item, self.current_fn.as_deref(), &self.known_constants, self.violations);
         syn::visit::visit_expr(self, item);
     }
 }

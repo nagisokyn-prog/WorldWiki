@@ -14,7 +14,7 @@ pub async fn get_relation_schemas_inner(
         .query("RETURN fn::get_relation_schemas(type::record('projects', $p));")
         .bind(("p", clean_pid))
         .await?;
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 

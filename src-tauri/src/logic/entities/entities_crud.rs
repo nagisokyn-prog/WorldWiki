@@ -22,7 +22,7 @@ pub async fn get_entities_inner(
         .bind(("et", entity_type))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 
@@ -122,7 +122,7 @@ pub async fn search_entities_inner(
         .bind(("et", entity_type))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 
@@ -148,7 +148,7 @@ pub async fn get_entities_cursor_inner(
         .bind(("limit", limit))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 
@@ -166,7 +166,7 @@ pub async fn get_entities_batch_inner(
         .bind(("types", types))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 

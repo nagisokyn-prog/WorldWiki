@@ -13,7 +13,7 @@ cerberus-domain = { path = "../cerberus-domain" }
 cerberus-ports = { path = "../cerberus-ports" }
 cerberus-surql = { path = "../cerberus-surql" }
 syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
-proc-macro2 = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
 quote = "1.0"
 petgraph = "0.8.3"
 keyring = "4.2.0"

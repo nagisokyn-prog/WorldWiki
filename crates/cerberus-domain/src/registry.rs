@@ -86,6 +86,7 @@ impl BuiltinRuleRegistry {
             r("CONC-002", Category::Concurrency, Severity::Deny, "Orphan Background Tokio Task", "tokio::spawn without storing JoinHandle or passing CancellationToken risks task leakage.", "Store JoinHandle or attach CancellationToken."),
             r("CONC-006", Category::Concurrency, Severity::Deny, "Double Lock Deadlock Vector", "Acquiring same Mutex/RwLock twice within single execution scope guarantees deadlock.", "Decompose lock guards into distinct lexical blocks."),
             r("CONC-008", Category::Concurrency, Severity::Deny, "Mutable Static State", "static mut causes undefined behavior and data races.", "Use Atomic types or OnceLock<Mutex<T>>."),
+            r("CONC-010", Category::Concurrency, Severity::Warn, "Swallowing PoisonError on In-Memory Lock", "Calling unwrap_or_default() on Mutex/RwLock lock() hides thread panics without poison recovery.", "Handle PoisonError explicitly with tracing::error! or propagate error."),
 
             // 7. Error Handling & Observability Rules
             r("ERR-001", Category::ErrorHandling, Severity::Deny, "Silent Result Dropping via Wildcard Let", "let _ = result; silently suppresses error propagation on fallible operations.", "Handle error explicitly or propagate with ? operator."),
@@ -230,6 +231,7 @@ impl BuiltinRuleRegistry {
             ("fe/project-record-id", "FE-ERR-003"),
             ("fe/no-catch-as-any", "FE-ERR-004"),
             ("fe/rethrow-with-cause", "FE-ERR-007"),
+            ("conc/no-poison-swallow", "CONC-010"),
         ];
 
         let mut map = HashMap::new();

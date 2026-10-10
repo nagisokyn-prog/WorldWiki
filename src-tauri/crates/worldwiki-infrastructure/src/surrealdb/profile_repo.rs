@@ -33,7 +33,9 @@ impl AiProfileRepository for SurrealAiProfileRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let rows: Vec<Value> = res.take(0).unwrap_or_default();
+        let rows: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let mut profiles = Vec::with_capacity(rows.len());
 
         for v in rows {

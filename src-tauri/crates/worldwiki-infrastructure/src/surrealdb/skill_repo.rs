@@ -41,7 +41,9 @@ impl SkillRepositoryPort for SurrealSkillRepository {
                     .await
                     .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-                let manual_skills: Vec<Value> = res.take(0).unwrap_or_default();
+                let manual_skills: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
                 if let Some(skill_val) = manual_skills.into_iter().next() {
                     let id = clean_record_id(skill_val.get("id").unwrap_or(&Value::Null))
                         .unwrap_or_else(|| skill_val.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string());
@@ -79,7 +81,9 @@ impl SkillRepositoryPort for SurrealSkillRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw_skills: Vec<Value> = res.take(0).unwrap_or_default();
+        let raw_skills: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let lower_query = trimmed_query.to_lowercase();
 
         let mut matches: Vec<SkillMatch> = Vec::new();
@@ -154,7 +158,9 @@ impl SkillRepositoryPort for SurrealSkillRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let rows: Vec<Value> = res.take(0).unwrap_or_default();
+        let rows: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         if let Some(row) = rows.into_iter().next() {
             let prompt = row.get("prompt_text").and_then(|v| v.as_str()).map(|s| s.to_string());
             return Ok(prompt);

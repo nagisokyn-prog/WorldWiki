@@ -24,7 +24,7 @@ pub async fn get_entity_relations_inner(
         .bind(("eid", clean_eid))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 

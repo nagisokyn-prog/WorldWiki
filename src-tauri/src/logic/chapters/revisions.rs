@@ -14,7 +14,7 @@ pub async fn get_chapter_revisions_inner(
         .bind(("id", actual_id))
         .await?;
 
-    let revisions: Vec<Value> = result.take(0).unwrap_or_default();
+    let revisions: Vec<Value> = result.take(0)?;
     Ok(revisions)
 }
 

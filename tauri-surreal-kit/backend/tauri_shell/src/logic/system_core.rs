@@ -133,7 +133,11 @@ pub async fn load_settings_core() -> Result<Value, SystemError> {
     let path = get_data_dir().join("settings.json");
     if path.exists() {
         let content = fs::read_to_string(&path)?;
-        Ok(serde_json::from_str(&content).unwrap_or(Value::Null))
+        let settings = serde_json::from_str(&content).unwrap_or_else(|err| {
+            tracing::warn!("Failed to parse settings JSON from {}: {err}. Falling back to default null.", path.display());
+            Value::Null
+        });
+        Ok(settings)
     } else {
         Ok(Value::Null)
     }

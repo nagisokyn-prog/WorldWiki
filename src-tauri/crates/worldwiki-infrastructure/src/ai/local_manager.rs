@@ -193,7 +193,12 @@ fn scan_gguf_files_in_dir(
 
 impl LocalModelManagerPort for FsLocalModelManager {
     fn list_installed(&self) -> Result<Vec<InstalledModelInfo>, DomainError> {
-        let states = self.states.lock().map(|g| g.clone()).unwrap_or_default();
+        let states = self.states.lock()
+            .map(|g| g.clone())
+            .unwrap_or_else(|poison| {
+                tracing::warn!("LocalModelManager states lock poisoned, recovering inner state: {poison}");
+                poison.into_inner().clone()
+            });
         let mut installed = Vec::new();
         let mut seen_filenames = HashSet::new();
 

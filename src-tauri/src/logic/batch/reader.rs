@@ -24,7 +24,7 @@ pub async fn get_entities_batch_inner(
         .bind(("types", entity_types.clone()))
         .await?;
 
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     let entities: Vec<Entity> = deserialize_list(values);
 
     for entity_type in entity_types {

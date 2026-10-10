@@ -29,7 +29,7 @@ pub async fn get_connections_inner(
         .bind(("ch", chap_clean))
         .await?;
 
-    let connections: Vec<Value> = res.take(0).unwrap_or_default();
+    let connections: Vec<Value> = res.take(0)?;
 
     let formatted: Vec<Value> = connections
         .into_iter()

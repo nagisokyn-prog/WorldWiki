@@ -18,7 +18,7 @@ pub async fn get_entity_schemas_inner(
         .query("RETURN fn::get_entity_schemas(type::record('projects', $p));")
         .bind(("p", clean_pid))
         .await?;
-    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
 
@@ -37,7 +37,7 @@ pub async fn save_entity_schema_inner(
         .bind(("tk", schema.type_key.as_str()))
         .await?;
 
-    let found_id: Option<String> = res.take(0).unwrap_or(None);
+    let found_id: Option<String> = res.take(0)?;
 
     let actual_id_str = if let Some(id_val) = found_id {
         id_val

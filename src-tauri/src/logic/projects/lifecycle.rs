@@ -6,7 +6,7 @@ pub async fn get_projects_inner(db: &Surreal<Db>) -> Result<Vec<Value>, ProjectE
     let mut res = db
         .query("RETURN fn::get_projects_list();")
         .await?;
-    let projects: Vec<Value> = res.take(0).unwrap_or_default();
+    let projects: Vec<Value> = res.take(0)?;
     Ok(projects)
 }
 

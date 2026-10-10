@@ -79,11 +79,25 @@ impl RAGContextPort for SurrealRAGAdapter {
             .bind(("rel_limit", rel_limit))
             .await
         {
-            Ok(mut resp) => {
-                let raw_val: Option<Value> = resp.take(0).ok().flatten();
-                raw_val.and_then(|v| serde_json::from_value::<RagBundleDto>(v).ok())
+            Ok(mut resp) => match resp.take::<Option<Value>>(0) {
+                Ok(raw_val) => raw_val.and_then(|v| {
+                    match serde_json::from_value::<RagBundleDto>(v) {
+                        Ok(b) => Some(b),
+                        Err(e) => {
+                            tracing::warn!("Failed to deserialize RagBundleDto: {e}");
+                            None
+                        }
+                    }
+                }),
+                Err(err) => {
+                    tracing::warn!("Failed to take bundle from SurrealDB response: {err}");
+                    None
+                }
+            },
+            Err(err) => {
+                tracing::warn!("Failed to query fn::gather_rag_bundle: {err}");
+                None
             }
-            Err(_) => None,
         };
 
         if let Some(bundle) = bundle_opt {
@@ -160,7 +174,9 @@ impl RAGContextPort for SurrealRAGAdapter {
             .bind(("chapter_id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let ctx: Option<Value> = res.take(0).unwrap_or_default();
+        let ctx: Option<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(ctx.unwrap_or(serde_json::json!({})))
     }
 }

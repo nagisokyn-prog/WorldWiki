@@ -40,7 +40,9 @@ pub(crate) async fn run_fallback_search(
             .bind(("limit", top_k))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
+        let chaps: Vec<Value> = res_ch
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         let en_sql = if !q_trimmed.is_empty() {
             "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) LIMIT $limit"
@@ -55,7 +57,9 @@ pub(crate) async fn run_fallback_search(
             .bind(("limit", top_k))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
+        let ents: Vec<Value> = res_en
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         for raw_item in chaps.into_iter().chain(ents) {
             let is_entity = raw_item.get("source_type").and_then(|v| v.as_str()) == Some("entity")

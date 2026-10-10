@@ -68,7 +68,7 @@ pub async fn save_chapter_inner(
         if !errors.is_empty() {
             eprintln!("[SAVE_CHAPTER ERROR] Errors during fn::sync_chapter_mentions: {:?}", errors);
         } else {
-            let debug_info: Option<serde_json::Value> = res.take(0).unwrap_or(None);
+            let debug_info: Option<serde_json::Value> = res.take(0)?;
             eprintln!("[SAVE_CHAPTER SUCCESS] fn::sync_chapter_mentions executed. Result: {:?}", debug_info);
         }
     }

@@ -26,7 +26,7 @@ pub async fn get_chapter_hierarchy_inner(
         .bind(("p", pid_raw))
         .await?;
 
-    let raw: Option<serde_json::Value> = res.take(0).unwrap_or(None);
+    let raw: Option<serde_json::Value> = res.take(0)?;
     let mut volumes: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("volumes")).and_then(|v| v.as_array()).cloned().unwrap_or_default();
     let mut chapters: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("chapters")).and_then(|c| c.as_array()).cloned().unwrap_or_default();
     let edges: Vec<serde_json::Value> = raw.as_ref().and_then(|r| r.get("relations")).and_then(|e| e.as_array()).cloned().unwrap_or_default();

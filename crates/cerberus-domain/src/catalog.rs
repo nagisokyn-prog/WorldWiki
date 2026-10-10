@@ -213,6 +213,18 @@ impl RuleCatalog {
                 configuration_hint: "\"rules\": { \"SEC-001\": \"deny\" }".to_string(),
             },
             RuleDocEntry {
+                id: "CONC-010".to_string(),
+                name: "Swallowing PoisonError on In-Memory Lock".to_string(),
+                category: Category::Concurrency,
+                default_severity: Severity::Warn,
+                summary: "Calling .unwrap_or_default() on Mutex/RwLock lock() suppresses thread panics without poison recovery.".to_string(),
+                rationale: "When a thread holding a lock panics, the lock becomes poisoned. Swallowing PoisonError masks broken invariants in shared memory.".to_string(),
+                bad_example: "let cache = self.cache.lock().unwrap_or_default();".to_string(),
+                good_example: "let cache = self.cache.lock().unwrap_or_else(|e| { tracing::error!(\"Lock poisoned: {}\", e); e.into_inner() });".to_string(),
+                remediation_recipe: "Log poisoned state with tracing::error! or use poison-tolerant recovery explicitly.".to_string(),
+                configuration_hint: "\"rules\": { \"CONC-010\": \"warn\" }".to_string(),
+            },
+            RuleDocEntry {
                 id: "ERR-001".to_string(),
                 name: "Silent Result Dropping via Wildcard Let".to_string(),
                 category: Category::ErrorHandling,

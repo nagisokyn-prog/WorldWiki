@@ -39,7 +39,9 @@ impl ChatRepository for SurrealChatRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw_chats: Vec<Value> = res.take(0).unwrap_or_default();
+        let raw_chats: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         let mut edges_res = self
             .db
@@ -54,7 +56,9 @@ impl ChatRepository for SurrealChatRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let edges: Vec<Value> = edges_res.take(0).unwrap_or_default();
+        let edges: Vec<Value> = edges_res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let chats = raw_chats
             .into_iter()
             .map(|val| parse_chat_record(&val, project_id, &edges))
@@ -73,7 +77,9 @@ impl ChatRepository for SurrealChatRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw_msgs: Vec<Value> = res.take(0).unwrap_or_default();
+        let raw_msgs: Vec<Value> = res
+            .take(0)
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let messages = raw_msgs
             .into_iter()
             .map(|val| parse_chat_message_record(&val, chat_id))

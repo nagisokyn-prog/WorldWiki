@@ -63,7 +63,7 @@ pub async fn auto_extend_entities_inner(
         .bind(("p", clean_pid))
         .await?;
 
-    let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+    let mut entities: Vec<serde_json::Value> = res.take(0)?;
     let mut updated_count: u64 = 0;
 
     for entity in &mut entities {
@@ -143,7 +143,7 @@ pub async fn heal_deleted_chapter_inner(
         .bind(("p", clean_pid))
         .await?;
 
-    let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+    let mut entities: Vec<serde_json::Value> = res.take(0)?;
     let mut updated_count: u64 = 0;
 
     for entity in &mut entities {

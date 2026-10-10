@@ -41,14 +41,6 @@ impl From<serde_json::Error> for VolumeError {
     }
 }
 
-impl From<VolumeError> for String {
-    fn from(err: VolumeError) -> Self {
-        let msg = err.to_string();
-        eprintln!("[IPC ERROR][Volume] {}", msg);
-        msg
-    }
-}
-
 impl serde::Serialize for VolumeError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

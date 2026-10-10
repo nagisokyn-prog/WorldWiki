@@ -45,14 +45,6 @@ impl From<serde_json::Error> for ProjectError {
     }
 }
 
-impl From<ProjectError> for String {
-    fn from(err: ProjectError) -> Self {
-        let msg = err.to_string();
-        eprintln!("[IPC ERROR][Project] {}", msg);
-        msg
-    }
-}
-
 impl serde::Serialize for ProjectError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

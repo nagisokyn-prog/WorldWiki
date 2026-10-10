@@ -3,9 +3,9 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct LayerRule {
-    #[serde(default)]
+    #[serde(default, alias = "allowed_deps")]
     pub allowed_dependencies: Vec<String>,
-    #[serde(default)]
+    #[serde(default, alias = "forbidden_external")]
     pub forbidden_external_dependencies: Vec<String>,
     #[serde(default)]
     pub allowed_external: Vec<String>,

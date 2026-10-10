@@ -46,7 +46,8 @@ impl<'a> ErrorRulesChecker<'a> {
                             || expr_str.contains("flush")
                         {
                             let snippet = format!("let _ = {}", expr_str);
-                            let fp = compute_fingerprint("ERR-001", "1.0", "wildcard_let", &snippet);
+                            let fp =
+                                compute_fingerprint("ERR-001", "1.0", "wildcard_let", &snippet);
 
                             violations.push(Violation {
                                 rule_id: "ERR-001".into(),
@@ -227,6 +228,136 @@ impl<'a> ErrorRulesChecker<'a> {
         }
         default
     }
+    fn check_expr(&self, expr: &Expr, violations: &mut Vec<Violation>) {
+        self.check_library_panic(expr, violations);
+
+        if let Expr::MethodCall(mc) = expr {
+            let method_name = mc.method.to_string();
+            let receiver_str = quote::quote!(#mc.receiver).to_string();
+
+            // SDB-009: res.take(0).unwrap_or_default() or res.take(0).unwrap_or(None)
+            if self.is_rule_enabled("SDB-009")
+                && (method_name == "unwrap_or_default" || method_name == "unwrap_or")
+                && (receiver_str.contains("take (") || receiver_str.contains(". take"))
+            {
+                let snippet = quote::quote!(#mc).to_string();
+                let fp = compute_fingerprint("SDB-009", "1.0", "res_take_swallow", &snippet);
+                violations.push(Violation {
+                    rule_id: "SDB-009".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::DataIntegrity,
+                    severity: self.get_severity("SDB-009", Severity::Deny),
+                    file: PathBuf::from(self.file_path),
+                    line: 1,
+                    column: 1,
+                    symbol: "res_take_swallow".into(),
+                    message: "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.".into(),
+                    snippet,
+                    remediation: "Propagate statement execution errors with res.take(index)? or map to domain error.".into(),
+                    fingerprint: fp,
+                });
+            }
+
+            // ERR-004: unwrap_or_default() on fallible operations
+            if self.is_rule_enabled("ERR-004")
+                && (method_name == "unwrap_or_default" || method_name == "unwrap_or")
+                && (receiver_str.contains("take (")
+                    || receiver_str.contains("query (")
+                    || receiver_str.contains("read (")
+                    || receiver_str.contains("write (")
+                    || receiver_str.contains("send (")
+                    || receiver_str.contains("execute (")
+                    || receiver_str.contains("from_str (")
+                    || receiver_str.contains("from_slice (")
+                    || receiver_str.contains("parse (")
+                    || receiver_str.contains("lock (")
+                    || receiver_str.contains(". save"))
+            {
+                let snippet = quote::quote!(#mc).to_string();
+                let fp = compute_fingerprint("ERR-004", "1.0", "result_swallow", &snippet);
+                violations.push(Violation {
+                    rule_id: "ERR-004".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::ErrorHandling,
+                    severity: self.get_severity("ERR-004", Severity::Deny),
+                    file: PathBuf::from(self.file_path),
+                    line: 1,
+                    column: 1,
+                    symbol: "result_swallow".into(),
+                    message: "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.".into(),
+                    snippet,
+                    remediation: "Propagate Result with ? operator or map to explicit domain error enum.".into(),
+                    fingerprint: fp,
+                });
+            }
+
+            // ERR-006: Lossy .ok()? on database/IO
+            if self.is_rule_enabled("ERR-006")
+                && method_name == "ok"
+                && (receiver_str.contains("query (")
+                    || receiver_str.contains("take (")
+                    || receiver_str.contains("read (")
+                    || receiver_str.contains("write (")
+                    || receiver_str.contains("select (")
+                    || receiver_str.contains("fetch (")
+                    || receiver_str.contains("send (")
+                    || receiver_str.contains("recv (")
+                    || receiver_str.contains("execute ("))
+            {
+                let snippet = quote::quote!(#mc).to_string();
+                let fp = compute_fingerprint("ERR-006", "1.0", "lossy_ok", &snippet);
+                violations.push(Violation {
+                    rule_id: "ERR-006".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::ErrorHandling,
+                    severity: self.get_severity("ERR-006", Severity::Deny),
+                    file: PathBuf::from(self.file_path),
+                    line: 1,
+                    column: 1,
+                    symbol: "lossy_ok".into(),
+                    message:
+                        "Calling .ok()? on database query erases critical failure reason into None."
+                            .into(),
+                    snippet,
+                    remediation:
+                        "Propagate fallible Result with ? instead of erasing context into Option."
+                            .into(),
+                    fingerprint: fp,
+                });
+            }
+        }
+    }
+
+    fn check_item_impl(&self, item: &ItemImpl, violations: &mut Vec<Violation>) {
+        if self.is_rule_enabled("ERR-007") {
+            if let Some((trait_path, _)) = &item.trait_ {
+                let trait_str = quote::quote!(#trait_path).to_string();
+                let self_ty = &item.self_ty;
+                let self_str = quote::quote!(#self_ty).to_string();
+                if (trait_str.contains("From <") || trait_str.starts_with("From<"))
+                    && (trait_str.contains("for String") || self_str == "String")
+                {
+                    let snippet = quote::quote!(#item).to_string();
+                    let fp =
+                        compute_fingerprint("ERR-007", "1.0", "raw_string_ipc_error", &snippet);
+                    violations.push(Violation {
+                        rule_id: "ERR-007".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::ErrorHandling,
+                        severity: self.get_severity("ERR-007", Severity::Deny),
+                        file: PathBuf::from(self.file_path),
+                        line: 1,
+                        column: 1,
+                        symbol: "raw_string_ipc_error".into(),
+                        message: "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.".into(),
+                        snippet,
+                        remediation: "Implement structured IpcError { code, message, details } contract instead of raw String conversion.".into(),
+                        fingerprint: fp,
+                    });
+                }
+            }
+        }
+    }
 }
 
 struct ErrorRulesVisitor<'a, 'b> {
@@ -244,6 +375,7 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
                 self.in_drop_impl = true;
             }
         }
+        self.checker.check_item_impl(item, self.violations);
         syn::visit::visit_item_impl(self, item);
         self.in_drop_impl = prev_in_drop;
     }
@@ -280,7 +412,8 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
                             symbol: name,
                             message: "Public method returns untyped 'Result<T, String>'.".into(),
                             snippet,
-                            remediation: "Define domain-specific typed error enum using thiserror.".into(),
+                            remediation: "Define domain-specific typed error enum using thiserror."
+                                .into(),
                             fingerprint: fp,
                         });
                     }
@@ -291,7 +424,7 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
     }
 
     fn visit_expr(&mut self, item: &Expr) {
-        self.checker.check_library_panic(item, self.violations);
+        self.checker.check_expr(item, self.violations);
         syn::visit::visit_expr(self, item);
     }
 }
@@ -484,7 +617,10 @@ mod tests {
 
         let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &off_rules);
         let violations = checker.check_file(&syntax);
-        assert!(violations.is_empty(), "Expected 0 violations when all error rules are Off");
+        assert!(
+            violations.is_empty(),
+            "Expected 0 violations when all error rules are Off"
+        );
     }
 
     #[test]
@@ -597,7 +733,13 @@ mod tests {
         let err001_count = count_rule(&violations, "ERR-001");
         let err002_count = count_rule(&violations, "ERR-002");
 
-        assert_eq!(err001_count, 3, "Expected 3 ERR-001 violations (send, execute, flush)");
-        assert_eq!(err002_count, 2, "Expected 2 ERR-002 violations (unwrap, expect)");
+        assert_eq!(
+            err001_count, 3,
+            "Expected 3 ERR-001 violations (send, execute, flush)"
+        );
+        assert_eq!(
+            err002_count, 2,
+            "Expected 2 ERR-002 violations (unwrap, expect)"
+        );
     }
 }

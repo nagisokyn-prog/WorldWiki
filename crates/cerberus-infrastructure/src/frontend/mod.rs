@@ -1,6 +1,7 @@
 pub mod css_perf_rules;
 pub mod css_rules;
 pub mod design_system_rules;
+pub mod fe_error_rules;
 pub mod fsd_rules;
 pub mod lifecycle_rules;
 pub mod perf_rules;
@@ -12,6 +13,7 @@ use cerberus_domain::Violation;
 pub use crate::frontend::css_perf_rules::CssPerfRuleChecker;
 pub use crate::frontend::css_rules::CssRuleChecker;
 pub use crate::frontend::design_system_rules::DesignSystemRuleChecker;
+pub use crate::frontend::fe_error_rules::FeErrorRulesChecker;
 pub use crate::frontend::fsd_rules::{FsdLayer, FsdRulesChecker};
 pub use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
 pub use crate::frontend::perf_rules::PerfRulesChecker;
@@ -30,9 +32,10 @@ impl FrontendAnalyzer {
         let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
         let mut violations = Vec::new();
 
-        // 1. Common FSD and Performance checks across all frontend files
+        // 1. Common FSD, Performance and Error Integrity checks across all frontend files
         violations.extend(FsdRulesChecker::check_source(&content, path));
         violations.extend(PerfRulesChecker::check_source(&content, path));
+        violations.extend(FeErrorRulesChecker::check_source(&content, path));
 
         match ext {
             "vue" => {

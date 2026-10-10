@@ -125,3 +125,48 @@ pub async fn search_entities_inner(
     let values: Vec<Value> = res.take(0).unwrap_or_default();
     Ok(deserialize_list(values))
 }
+
+pub async fn get_entities_cursor_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    entity_type: Option<String>,
+    cursor_id: Option<String>,
+    limit: i64,
+) -> Result<Vec<Entity>, EntityError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_cursor = cursor_id.map(|c| {
+        let raw = c.split_once(':').map(|(_, rest)| rest).unwrap_or(&c);
+        raw.trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string()
+    });
+
+    let sql = "RETURN fn::get_entities_cursor(type::record('projects', $p), $et, IF $cursor != NONE { type::record('entities', $cursor) } ELSE { NONE }, $limit);";
+    let mut res = db
+        .query(sql)
+        .bind(("p", clean_pid))
+        .bind(("et", entity_type))
+        .bind(("cursor", clean_cursor))
+        .bind(("limit", limit))
+        .await?;
+
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    Ok(deserialize_list(values))
+}
+
+pub async fn get_entities_batch_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    types: Vec<String>,
+) -> Result<Vec<Entity>, EntityError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let sql = "RETURN fn::get_entities_batch(type::record('projects', $p), $types);";
+
+    let mut res = db
+        .query(sql)
+        .bind(("p", clean_pid))
+        .bind(("types", types))
+        .await?;
+
+    let values: Vec<Value> = res.take(0).unwrap_or_default();
+    Ok(deserialize_list(values))
+}
+

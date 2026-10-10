@@ -37,6 +37,11 @@
     "perf/shallow-ref-for-heavy-ast": "deny",
     "perf/no-reactive-canvas-three": "deny",
     "perf/no-allocations-in-raf": "deny",
-    "leak/uncleaned-ipc-listener": "deny"
+    "leak/uncleaned-ipc-listener": "deny",
+    "FE-ERR-001": "deny",
+    "FE-ERR-002": "deny",
+    "FE-ERR-003": "deny",
+    "FE-ERR-004": "deny",
+    "FE-ERR-007": "deny"
   }
 }

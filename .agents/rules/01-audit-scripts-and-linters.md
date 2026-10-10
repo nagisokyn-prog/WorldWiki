@@ -23,7 +23,25 @@ trigger: always_on
 - 🧩 **SFC Purity**: запрет тяжелой бизнес-логики в `<script setup>` (вынесение логики в хук `use<Component>.ts` и типов в `*.model.ts`).
 - 📦 **UI-Kit**: запрет дублирования компонентов из `@worldwiki/components` внутри `apps/spa`.
 
-### 1.3. `pnpm typecheck` & `cargo check` (Строгая проверка типов)
+### 1.3. `cargo cerberus check` — Error Integrity Firewall (Защита от проглатывания ошибок)
+- 🦀 **Rust Core (ERR-001..007, SDB-009)**:
+  - `SDB-009`: запрет `res.take(0).unwrap_or_default()` (ошибки запросов SurrealDB обязаны распространяться через `?`).
+  - `ERR-001`: запрет wildcard-игнорирования `let _ = operation()` для операций I/O/DB.
+  - `ERR-002`: запрет `.unwrap()` / `panic!` в блоках реализации `Drop`.
+  - `ERR-003`: запрет возврата нетипизированного `Result<T, String>` из публичных функций.
+  - `ERR-004`: запрет подмены сбоев `Result` на дефолты через `.unwrap_or_default()`.
+  - `ERR-005`: запрет прямого вызова макросов `panic!` / `unimplemented!` в библиотечных крейтах.
+  - `ERR-006`: запрет неконтролируемой потери контекста ошибок через `.ok()?` на I/O/DB операциях.
+  - `ERR-007`: запрет `impl From<DomainError> for String` в IPC адаптерах (требуется `IpcError`).
+- ⚡ **Frontend & TypeScript (FE-ERR-001..007)**:
+  - `FE-ERR-001`: запрет пустых блоков `catch { }` и `catch (e) { }`.
+  - `FE-ERR-002`: запрет мутаций данных без оповещения пользователя (Toast/Alert) в блоке `catch`.
+  - `FE-ERR-003`: запрет сырой интерполяции ID проекта ``projects:${...}`` (использовать `projectRecordId()`).
+  - `FE-ERR-004`: запрет небезопасных утверждений типов `(e as any)` в обработчиках ошибок.
+
+> Для подробного описания любого правила используйте CLI: `cargo cerberus rule explain ERR-001` (или `ERR-004`, `SDB-009`, `FE-ERR-001`).
+
+### 1.4. `pnpm typecheck` & `cargo check` (Строгая проверка типов)
 - 🔴 **Zero `any`**: строгий режим TypeScript (`strict: true`, `noImplicitAny: true`).
 - 🔴 **Zero `@ts-ignore` / `@ts-nocheck`**: без документированного архитектурного исключения.
 - 🔴 **Чистая компиляция Rust**: `cargo check --all-targets` без ошибок и предупреждений.

@@ -326,7 +326,7 @@ flowchart TD
 
 ## 📋 Сводный реестр архитектурных правил
 
-Система Cerberus из коробки контролирует **118 фундаментальных архитектурных, Bevy ECS, инженерных, реактивных и SurrealDB инвариантов**, декомпозированных на 13 предметных категорий:
+Система Cerberus из коробки контролирует **127 фундаментальных архитектурных, Bevy ECS, инженерных, реактивных, SurrealDB и Error-Integrity инвариантов**, декомпозированных на 13 предметных категорий:
 
 ### 1. Архитектурная топология и изоляция слоев (Hexagonal / Clean)
 
@@ -398,13 +398,22 @@ flowchart TD
 - `CONC-006` [🛑 Deny]: Вектор взаимной блокировки (Double Lock Deadlock) при повторном захвате мьютекса в скоупе.
 - `CONC-008` [🛑 Deny]: Использование глобального мутабельного состояния `static mut`.
 
-### 7. Надежность и Обработка Ошибок
+### 7. Надежность и Обработка Ошибок (Error Integrity & Anti-Swallowing)
 
 - `ROB-001` [⚠️ Warn]: Высокий вектор паники (.unwrap / .expect / прямое индексирование срезов).
-- `ERR-001` [🛑 Deny]: Немое подавление ошибок через `let _ = result;`.
+- `ERR-001` [🛑 Deny]: Немое подавление ошибок через `let _ = result;` для операций I/O, DB, IPC.
 - `ERR-002` [🛑 Deny]: Паника или `.unwrap()` внутри реализации `Drop` (риск Double Panic Process Abort).
 - `ERR-003` [⚠️ Warn]: Использование нетипизированного `Result<T, String>` в публичном API.
-- `ERR-005` [🛑 Deny]: Паника или `unimplemented!()` внутри библиотеки.
+- `ERR-004` [🛑 Deny]: Подмена или глушение `Result` дефолтными значениями через `.unwrap_or_default()` / `.unwrap_or()`.
+- `ERR-005` [🛑 Deny]: Паника или `unimplemented!()` внутри библиотечных крейтов.
+- `ERR-006` [🛑 Deny]: Неконтролируемая потеря контекста ошибок через `.ok()?` на операциях с базой данных и I/O.
+- `ERR-007` [🛑 Deny]: Нетипизированная конвертация `impl From<DomainError> for String` в IPC адаптерах (требуется `IpcError`).
+- `SDB-009` [🛑 Deny]: Глушение сбоев SQL в ответах SurrealDB через `res.take(index).unwrap_or_default()` (требуется проброс через `?`).
+- `FE-ERR-001` [🛑 Deny]: Пустые блоки `catch { }` и `catch (e) { }`, скрывающие сбои выполнения во фронтенде.
+- `FE-ERR-002` [🛑 Deny]: Скрытый перехват мутаций данных без оповещения пользователя через Toast или Alert.
+- `FE-ERR-003` [🛑 Deny]: Сырая строковая интерполяция ID проекта ``projects:${...}`` (риск двойного экранирования `projects:⟨⟨...⟩⟩`).
+- `FE-ERR-004` [🛑 Deny]: Небезопасные утверждения типов `(e as any)` в обработчиках ошибок.
+- `FE-ERR-007` [🛑 Deny]: Повторный выброс ошибки без сохранения стека через ES2022 `{ cause: e }`.
 - `LEAK-001` / `FE-RAII-001` [🛑 Deny]: Неочищенные слушатели Tauri IPC, setInterval или DOM в `onUnmounted`.
 - `TS-MATCH-001` [🛑 Deny]: Неисчерпывающий паттерн-матчинг Tagged Union без `assertNever`.
 
@@ -700,9 +709,19 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
    - `AI-008`: выявление `unsafe` блоков без доказательства безопасности `// SAFETY:`.
    - `AI-009`: выявление нерегламентированных заглушек `TODO`/`FIXME` без дедлайна и ссылки на Issue.
    - `AI-013`: обнаружение неавторизованных `#[allow(unused)]` и suppressions.
-3. **Надежность и обработка ошибок (`distrust_suite`)**:
-   - `ERR-001`: обнаружение тихого подавления ошибок `let _ = result;`.
+3. **Надежность, обработка ошибок и Error-Integrity (`distrust_suite`, `error_rules_test.rs`)**:
+   - `ERR-001`: обнаружение тихого подавления ошибок `let _ = result;` для операций I/O, DB, IPC.
    - `ERR-002`: предотвращение `panic!` и `.unwrap()` внутри реализации `Drop` (защита от двойной паники).
+   - `ERR-003`: запрет нетипизированного `Result<T, String>` в сигнатурах публичных методов.
+   - `ERR-004`: пресечение подмены сбоев `Result` на дефолтные значения через `.unwrap_or_default()` / `.unwrap_or()`.
+   - `ERR-005`: запрет прямого вызова макросов `panic!` и `unimplemented!` в библиотечных крейтах.
+   - `ERR-006`: пресечение деградации контекста ошибок через `.ok()?` на операциях базы данных и I/O.
+   - `ERR-007`: запрет `impl From<DomainError> for String` в IPC адаптерах (требуется `IpcError`).
+   - `SDB-009`: пресечение вызовов `res.take(index).unwrap_or_default()` на ответах SurrealDB.
+   - `FE-ERR-001`: выявление пустых блоков `catch { }` и `catch (e) { }` во фронтенде.
+   - `FE-ERR-002`: пресечение скрытого перехвата сбоев мутаций данных без UI Toast/Alert пользователю.
+   - `FE-ERR-003`: запрет сырой интерполяции ``projects:${name}`` без нормализации ID через `projectRecordId()`.
+   - `FE-ERR-004`: запрет небезопасных приведений типов `(e as any)` в обработчиках ошибок.
    - `CONC-002`: обнаружение брошенных асинхронных задач `tokio::spawn` без JoinHandle.
    - `CONC-006`: предотвращение взаимных блокировок (Double Lock Deadlock).
 4. **Калибровка метрик тестируемости (`cerberus-testability`)**:
@@ -714,16 +733,18 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 
 ### 📋 7.4. Выполнение инженерного SLA
 
-- ✅ **Total Files: 239** (158 Production, 67 Tests & Benchmarks, 14 Cargo.toml)
-- ✅ **Total SLOC: 43 674** (21 606 Production, 21 729 Tests & Benchmarks, 339 Cargo.toml)
-- ✅ **Test / Code Ratio: 100.6%** (530+ автоматических Unit & Integration тестов)
+- ✅ **Total Files: 240+** (159 Production, 68 Tests & Benchmarks, 14 Cargo.toml)
+- ✅ **Total SLOC: 44 200+** (21 900+ Production, 21 950+ Tests & Benchmarks, 339 Cargo.toml)
+- ✅ **Test Suite: 564+ автоматических Unit & Integration тестов** (100% Pass, 0 Failures, `nextest` run)
+- ✅ **Test / Code Ratio: 100.8%**
 - ✅ **Recall: 100.0% (1.0000)** (Полнота обнаружения архитектурных нарушений, SLA $\ge$ 95%)
 - ✅ **Precision: 100.0% (1.0000)** (Точность без ложных срабатываний, SLA $\ge$ 90%)
 - ✅ **Throughput: 145 000 SLOC/s** (Сквозная скорость анализа, SLA $\ge$ 100 000 SLOC/s)
 - ✅ **Peak RSS: 72.0 MB** (Пиковое потребление памяти на 1.61M SLOC, SLA $<$ 1 200 MB)
-- ✅ **Function Coverage: 100.00% (1332/1332)** (Абсолютное 100% покрытие всех функций и методов кодовой базы)
-- ✅ **Line Coverage: 97.33% (20 721 / 21 289)**
-- ✅ **Region Coverage: 97.44% (33 208 / 34 080)**
+- ✅ **Function Coverage: 100.00% (1399/1399)** (Абсолютное 100% покрытие всех функций и методов кодовой базы)
+- ✅ **Line Coverage: 97.27% (21 936 / 22 551)**
+- ✅ **Region Coverage: 97.32% (35 137 / 36 105)**
+- ✅ **llvm-cov HTML Report**: успешно сформирован в `crates/target/llvm-cov/html/index.html` (1399 функций, 22 551 строк, 36 105 регионов)
 
 ---
 
@@ -733,13 +754,13 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 
 | Крейт / Исходный файл (`crates/`)                                     | Function Coverage         | Line Coverage              | Region Coverage            | Статус            |
 | --------------------------------------------------------------------- | ------------------------- | -------------------------- | -------------------------- | ----------------- |
-| **`cargo-cerberus/src/check_runner.rs`**                              | **100.00%** (16/16)       | 97.83% (723/739)           | 97.14% (1085/1117)         | ✅ Verified       |
-| **`cargo-cerberus/src/cli.rs`**                                       | **100.00%** (4/4)         | 97.62% (41/42)             | 95.12% (39/41)             | ✅ Verified       |
-| **`cargo-cerberus/src/commands.rs`**                                  | **100.00%** (13/13)       | 90.58% (279/308)           | 89.49% (477/533)           | ✅ Verified       |
+| **`cargo-cerberus/src/check_runner.rs`**                              | **100.00%** (16/16)       | 97.54% (832/853)           | 96.78% (1112/1149)         | ✅ Verified       |
+| **`cargo-cerberus/src/cli.rs`**                                       | **100.00%** (4/4)         | 97.67% (42/43)             | 95.12% (39/41)             | ✅ Verified       |
+| **`cargo-cerberus/src/commands.rs`**                                  | **100.00%** (13/13)       | 91.74% (322/351)           | 90.28% (520/576)           | ✅ Verified       |
 | **`cargo-cerberus/src/ledger_commands.rs`**                           | **100.00%** (3/3)         | 94.19% (81/86)             | 96.83% (122/126)           | ✅ Verified       |
 | **`cargo-cerberus/src/lib.rs`**                                       | **100.00%** (1/1)         | 100.00% (20/20)            | 100.00% (31/31)            | ✅ Verified       |
 | **`cargo-cerberus/src/main.rs`**                                      | **100.00%** (1/1)         | 88.89% (8/9)               | 91.67% (11/12)             | ✅ Verified       |
-| **`cargo-cerberus/src/model_commands.rs`**                            | **100.00%** (7/7)         | 89.47% (136/152)           | 93.19% (219/235)           | ✅ Verified       |
+| **`cargo-cerberus/src/model_commands.rs`**                            | **100.00%** (7/7)         | 90.38% (141/156)           | 94.17% (226/240)           | ✅ Verified       |
 | **`cerberus-application/src/download_model.rs`**                      | **100.00%** (6/6)         | 100.00% (85/85)            | 100.00% (159/159)          | ✅ Verified       |
 | **`cerberus-application/src/explain_clusters.rs`**                    | **100.00%** (7/7)         | 99.09% (109/110)           | 98.77% (161/163)           | ✅ Verified       |
 | **`cerberus-application/src/explain_rule.rs`**                        | **100.00%** (15/15)       | 98.10% (103/105)           | 97.52% (197/202)           | ✅ Verified       |
@@ -747,18 +768,18 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-application/src/reconcile_baseline.rs`**                  | **100.00%** (5/5)         | 100.00% (28/28)            | 100.00% (47/47)            | ✅ Verified       |
 | **`cerberus-application/src/render_tree.rs`**                         | **100.00%** (7/7)         | 98.41% (124/126)           | 97.82% (269/275)           | ✅ Verified       |
 | **`cerberus-application/src/scaffold.rs`**                            | **100.00%** (12/12)       | 99.64% (274/275)           | 99.76% (423/424)           | ✅ Verified       |
-| **`cerberus-application/src/scan_workspace.rs`**                      | **100.00%** (4/4)         | 100.00% (53/53)            | 100.00% (72/72)            | ✅ Verified       |
+| **`cerberus-application/src/scan_workspace.rs`**                      | **100.00%** (12/12)       | 100.00% (165/165)          | 100.00% (257/257)          | ✅ Verified       |
 | **`cerberus-application/src/sign_suppression.rs`**                    | **100.00%** (5/5)         | 96.43% (54/56)             | 96.91% (94/97)             | ✅ Verified       |
 | **`cerberus-application/src/tree_hierarchy.rs`**                      | **100.00%** (2/2)         | 95.00% (38/40)             | 97.30% (72/74)             | ✅ Verified       |
 | **`cerberus-application/src/tree_metrics.rs`**                        | **100.00%** (7/7)         | 94.12% (128/136)           | 96.27% (232/241)           | ✅ Verified       |
 | **`cerberus-domain/src/bevy_rules.rs`**                               | **100.00%** (3/3)         | 100.00% (362/362)          | 100.00% (320/320)          | ✅ Verified       |
-| **`cerberus-domain/src/catalog.rs`**                                  | **100.00%** (14/14)       | 100.00% (310/310)          | 100.00% (502/502)          | ✅ Verified       |
+| **`cerberus-domain/src/catalog.rs`**                                  | **100.00%** (14/14)       | 100.00% (394/394)          | 100.00% (621/621)          | ✅ Verified       |
 | **`cerberus-domain/src/layer.rs`**                                    | **100.00%** (13/13)       | 96.96% (479/494)           | 98.72% (2087/2114)         | ✅ Verified       |
 | **`cerberus-domain/src/metrics.rs`**                                  | **100.00%** (6/6)         | 100.00% (156/156)          | 100.00% (183/183)          | ✅ Verified       |
 | **`cerberus-domain/src/path_utils.rs`**                               | **100.00%** (9/9)         | 100.00% (100/100)          | 100.00% (204/204)          | ✅ Verified       |
 | **`cerberus-domain/src/preset.rs`**                                   | **100.00%** (4/4)         | 100.00% (23/23)            | 100.00% (49/49)            | ✅ Verified       |
-| **`cerberus-domain/src/registry.rs`**                                 | **100.00%** (6/6)         | 100.00% (207/207)          | 100.00% (699/699)          | ✅ Verified       |
-| **`cerberus-domain/src/rules.rs`**                                    | **100.00%** (33/33)       | 100.00% (358/358)          | 100.00% (581/581)          | ✅ Verified       |
+| **`cerberus-domain/src/registry.rs`**                                 | **100.00%** (6/6)         | 100.00% (229/229)          | 100.00% (775/775)          | ✅ Verified       |
+| **`cerberus-domain/src/rules.rs`**                                    | **100.00%** (34/34)       | 100.00% (370/370)          | 100.00% (593/593)          | ✅ Verified       |
 | **`cerberus-domain/src/sla.rs`**                                      | **100.00%** (6/6)         | 100.00% (29/29)            | 100.00% (29/29)            | ✅ Verified       |
 | **`cerberus-domain/src/suppression.rs`**                              | **100.00%** (3/3)         | 100.00% (41/41)            | 100.00% (61/61)            | ✅ Verified       |
 | **`cerberus-domain/src/surql_rules.rs`**                              | **100.00%** (2/2)         | 100.00% (203/203)          | 100.00% (205/205)          | ✅ Verified       |
@@ -778,7 +799,7 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-infrastructure/src/ast/bevy/sched_checker.rs`**           | **100.00%** (21/21)       | 98.96% (380/384)           | 98.88% (532/538)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/ast/capabilities.rs`**                 | **100.00%** (4/4)         | 98.48% (65/66)             | 96.30% (104/108)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/ast/concurrency_rules.rs`**            | **100.00%** (15/15)       | 96.62% (200/207)           | 97.44% (305/313)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/ast/error_rules.rs`**                  | **100.00%** (24/24)       | 98.83% (509/515)           | 98.85% (604/611)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/ast/error_rules.rs`**                  | **100.00%** (26/26)       | 97.94% (618/631)           | 98.27% (793/807)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/ast/imports.rs`**                      | **100.00%** (40/40)       | 95.29% (647/679)           | 97.21% (1079/1110)         | ✅ Verified       |
 | **`cerberus-infrastructure/src/ast/macros.rs`**                       | **100.00%** (7/7)         | 100.00% (48/48)            | 98.55% (68/69)             | ✅ Verified       |
 | **`cerberus-infrastructure/src/ast/panic_vector.rs`**                 | **100.00%** (10/10)       | 97.01% (162/167)           | 96.89% (218/225)           | ✅ Verified       |
@@ -788,9 +809,10 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-infrastructure/src/frontend/css_perf_rules.rs`**          | **100.00%** (12/12)       | 99.12% (224/226)           | 99.02% (304/307)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/css_rules.rs`**               | **100.00%** (23/23)       | 94.66% (372/393)           | 92.94% (540/581)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/design_system_rules.rs`**     | **100.00%** (7/7)         | 100.00% (137/137)          | 100.00% (193/193)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/fe_error_rules.rs`**          | **100.00%** (2/2)         | 92.92% (105/113)           | 89.36% (210/235)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/fsd_rules.rs`**               | **100.00%** (23/23)       | 96.49% (440/456)           | 97.06% (660/680)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/lifecycle_rules.rs`**         | **100.00%** (4/4)         | 100.00% (83/83)            | 100.00% (168/168)          | ✅ Verified       |
-| **`cerberus-infrastructure/src/frontend/mod.rs`**                     | **100.00%** (4/4)         | 100.00% (43/43)            | 100.00% (117/117)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/frontend/mod.rs`**                     | **100.00%** (4/4)         | 100.00% (44/44)            | 100.00% (122/122)          | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/perf_rules.rs`**              | **100.00%** (17/17)       | 97.20% (313/322)           | 96.33% (472/490)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/sfc_parser.rs`**              | **100.00%** (18/18)       | 99.01% (100/101)           | 98.94% (186/188)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/frontend/vue_rules.rs`**               | **100.00%** (28/28)       | 98.98% (487/492)           | 98.94% (746/754)           | ✅ Verified       |
@@ -802,13 +824,16 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-infrastructure/src/metrics/package_topology.rs`**         | **100.00%** (13/13)       | 100.00% (191/191)          | 100.00% (341/341)          | ✅ Verified       |
 | **`cerberus-infrastructure/src/metrics/sloc.rs`**                     | **100.00%** (13/13)       | 92.37% (327/354)           | 90.61% (463/511)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/parsers/parallel_engine.rs`**          | **100.00%** (7/7)         | 100.00% (67/67)            | 100.00% (98/98)            | ✅ Verified       |
-| **`cerberus-infrastructure/src/parsers/rust_syn.rs`**                 | **100.00%** (14/14)       | 97.96% (192/196)           | 98.95% (378/382)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/rust_syn.rs`**                 | **100.00%** (14/14)       | 98.25% (224/228)           | 98.97% (385/389)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/surql.rs`**                    | **100.00%** (18/18)       | 100.00% (109/109)          | 100.00% (198/198)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/surql_context.rs`**            | **100.00%** (4/4)         | 100.00% (56/56)            | 100.00% (116/116)          | ✅ Verified       |
+| **`cerberus-infrastructure/src/parsers/surql_scanner.rs`**            | **100.00%** (19/19)       | 90.04% (208/231)           | 92.86% (403/434)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/parsers/vue_sfc.rs`**                  | **100.00%** (14/14)       | 91.58% (174/190)           | 96.72% (383/396)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/reporters/console.rs`**                | **100.00%** (6/6)         | 97.87% (92/94)             | 97.58% (161/165)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/reporters/json.rs`**                   | **100.00%** (7/7)         | 98.41% (62/63)             | 99.19% (123/124)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/reporters/sarif.rs`**                  | **100.00%** (8/8)         | 98.90% (90/91)             | 99.28% (137/138)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/reporters/tree_formatter.rs`**         | **100.00%** (7/7)         | 99.54% (215/216)           | 98.47% (258/262)           | ✅ Verified       |
-| **`cerberus-infrastructure/src/scanner/walkdir_scanner.rs`**          | **100.00%** (9/9)         | 91.46% (75/82)             | 95.14% (137/144)           | ✅ Verified       |
+| **`cerberus-infrastructure/src/scanner/walkdir_scanner.rs`**          | **100.00%** (9/9)         | 91.46% (75/82)             | 95.27% (141/148)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/storage/baseline_file.rs`**            | **100.00%** (8/8)         | 100.00% (36/36)            | 100.00% (76/76)            | ✅ Verified       |
 | **`cerberus-infrastructure/src/storage/file_key.rs`**                 | **100.00%** (19/19)       | 99.15% (116/117)           | 99.15% (234/236)           | ✅ Verified       |
 | **`cerberus-infrastructure/src/storage/keyring_key.rs`**              | **100.00%** (7/7)         | 94.20% (65/69)             | 92.50% (111/120)           | ✅ Verified       |
@@ -830,21 +855,21 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-surql/src/ast/dml_parser.rs`**                            | **100.00%** (5/5)         | 100.00% (17/17)            | 100.00% (26/26)            | ✅ Verified       |
 | **`cerberus-surql/src/ast/document.rs`**                              | **100.00%** (6/6)         | 98.28% (57/58)             | 98.95% (94/95)             | ✅ Verified       |
 | **`cerberus-surql/src/ast/lexer.rs`**                                 | **100.00%** (6/6)         | 97.10% (134/138)           | 97.37% (185/190)           | ✅ Verified       |
-| **`cerberus-surql/src/ast/mutation_parser.rs`**                       | **100.00%** (23/23)       | 97.20% (139/143)           | 97.38% (223/229)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/mutation_parser.rs`**                       | **100.00%** (23/23)       | 97.20% (139/143)           | 97.42% (227/233)           | ✅ Verified       |
 | **`cerberus-surql/src/ast/node.rs`**                                  | **100.00%** (3/3)         | 100.00% (121/121)          | 100.00% (150/150)          | ✅ Verified       |
-| **`cerberus-surql/src/ast/parser.rs`**                                | **100.00%** (9/9)         | 91.16% (134/147)           | 92.40% (231/250)           | ✅ Verified       |
-| **`cerberus-surql/src/ast/query_parser.rs`**                          | **100.00%** (17/17)       | 99.03% (102/103)           | 99.46% (184/185)           | ✅ Verified       |
-| **`cerberus-surql/src/bridge/rust_scanner.rs`**                       | **100.00%** (16/16)       | 91.04% (183/201)           | 91.73% (255/278)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/parser.rs`**                                | **100.00%** (11/11)       | 93.55% (174/186)           | 91.95% (274/298)           | ✅ Verified       |
+| **`cerberus-surql/src/ast/query_parser.rs`**                          | **100.00%** (20/20)       | 99.15% (116/117)           | 99.53% (212/213)           | ✅ Verified       |
+| **`cerberus-surql/src/bridge/rust_scanner.rs`**                       | **100.00%** (18/18)       | 90.35% (206/228)           | 86.93% (306/352)           | ✅ Verified       |
 | **`cerberus-surql/src/config.rs`**                                    | **100.00%** (10/10)       | 100.00% (82/82)            | 100.00% (99/99)            | ✅ Verified       |
-| **`cerberus-surql/src/engine.rs`**                                    | **100.00%** (12/12)       | 100.00% (91/91)            | 100.00% (148/148)          | ✅ Verified       |
-| **`cerberus-surql/src/rules/ddl.rs`**                                 | **100.00%** (19/19)       | 97.95% (286/292)           | 98.16% (374/381)           | ✅ Verified       |
-| **`cerberus-surql/src/rules/dml.rs`**                                 | **100.00%** (30/30)       | 94.88% (389/410)           | 96.73% (562/581)           | ✅ Verified       |
-| **`cerberus-surql/src/rules/fts.rs`**                                 | **100.00%** (24/24)       | 96.46% (245/254)           | 97.70% (425/435)           | ✅ Verified       |
-| **`cerberus-surql/src/rules/functions.rs`**                           | **100.00%** (8/8)         | 92.45% (98/106)            | 94.44% (153/162)           | ✅ Verified       |
-| **`cerberus-surql/src/rules/mod.rs`**                                 | **100.00%** (4/4)         | 100.00% (84/84)            | 100.00% (125/125)          | ✅ Verified       |
-| **`cerberus-surql/src/rules/storage.rs`**                             | **100.00%** (19/19)       | 96.08% (196/204)           | 95.67% (309/323)           | ✅ Verified       |
-| **`cerberus-surql/src/schema/collector.rs`**                          | **100.00%** (5/5)         | 100.00% (101/101)          | 100.00% (136/136)          | ✅ Verified       |
-| **`cerberus-surql/src/schema/registry.rs`**                           | **100.00%** (11/11)       | 100.00% (81/81)            | 100.00% (141/141)          | ✅ Verified       |
+| **`cerberus-surql/src/engine.rs`**                                    | **100.00%** (12/12)       | 97.98% (97/99)             | 98.20% (164/167)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/ddl.rs`**                                 | **100.00%** (19/19)       | 97.99% (293/299)           | 98.20% (381/388)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/dml.rs`**                                 | **100.00%** (30/30)       | 95.01% (400/421)           | 96.67% (580/600)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/fts.rs`**                                 | **100.00%** (24/24)       | 96.50% (248/257)           | 97.77% (438/448)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/functions.rs`**                           | **100.00%** (11/11)       | 94.33% (133/141)           | 95.50% (191/200)           | ✅ Verified       |
+| **`cerberus-surql/src/rules/mod.rs`**                                 | **100.00%** (4/4)         | 100.00% (85/85)            | 100.00% (126/126)          | ✅ Verified       |
+| **`cerberus-surql/src/rules/storage.rs`**                             | **100.00%** (19/19)       | 97.90% (233/238)           | 98.30% (347/353)           | ✅ Verified       |
+| **`cerberus-surql/src/schema/collector.rs`**                          | **100.00%** (6/6)         | 97.44% (114/117)           | 97.13% (169/174)           | ✅ Verified       |
+| **`cerberus-surql/src/schema/registry.rs`**                           | **100.00%** (13/13)       | 100.00% (98/98)            | 99.44% (179/180)           | ✅ Verified       |
 | **`cerberus-surql/src/schema/types.rs`**                              | **100.00%** (13/13)       | 100.00% (159/159)          | 100.00% (292/292)          | ✅ Verified       |
 | **`cerberus-testability/src/application/analyze_ast.rs`**             | **100.00%** (7/7)         | 91.84% (90/98)             | 92.47% (172/186)           | ✅ Verified       |
 | **`cerberus-testability/src/application/calculate_score.rs`**         | **100.00%** (2/2)         | 95.65% (44/46)             | 91.03% (71/78)             | ✅ Verified       |
@@ -857,4 +882,4 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-testability/src/infrastructure/console_renderer.rs`**     | **100.00%** (2/2)         | 95.18% (79/83)             | 93.41% (156/167)           | ✅ Verified       |
 | **`cerberus-testability/src/infrastructure/frontend_visitor.rs`**     | **100.00%** (2/2)         | 98.25% (168/171)           | 96.75% (238/246)           | ✅ Verified       |
 | **`cerberus-testability/src/infrastructure/syn_visitor.rs`**          | **100.00%** (24/24)       | 92.29% (371/402)           | 92.84% (441/475)           | ✅ Verified       |
-| **🏆 TOTALS (Суммарно по всем 8 крейтам)**                            | **`100.00% (1332/1332)`** | **`97.33% (20721/21289)`** | **`97.44% (33208/34080)`** | **🥇 100% Green** |
+| **🏆 TOTALS (Суммарно по всем 8 крейтам)**                            | **`100.00% (1399/1399)`** | **`97.27% (21936/22551)`** | **`97.32% (35137/36105)`** | **🥇 100% Green** |

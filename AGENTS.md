@@ -114,6 +114,7 @@ src-tauri/src/
 Прежде чем отрапортовать пользователю о завершении работы, агент **ОБЯЗАН** выполнить самопроверку по чек-листу:
 
 - [ ] 🛡️ **Cerberus Firewall**: `cargo cerberus check` и `cerberus-sfc check` проходят без новых `[DENY]` нарушений.
+- [ ] 🚨 **Целостность Ошибок (Zero Swallowed Errors)**: Соблюдены `ERR-001..ERR-007` и `FE-ERR-001..FE-ERR-007`: 0 вызовов `.unwrap_or_default()` на `Result` в Rust, 0 пустых `catch`-блоков во Vue/TS, все мутации данных показывают Toast/Alert пользователю при сбое.
 - [ ] 🧪 **Тесты**: Написаны и успешно проходят unit-тесты (`pnpm test`, `cargo test`). Покрыты сценарии успеха, ошибки и граничные случаи.
 - [ ] 🔍 **TypeScript & Rust**: Выполнен `pnpm --filter @worldwiki/spa typecheck` — 0 ошибок. `cargo check` — 0 ошибок.
 - [ ] 🗄️ **SurrealDB & Схема**: Соблюдены стандарты [07-surrealdb.md](.agents/rules/07-surrealdb.md): нет строковой конкатенации в SQL, DDL содержит `OVERWRITE`, в ревизии не попадают float-векторы.

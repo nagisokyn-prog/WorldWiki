@@ -123,9 +123,15 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
         Arc::new(VueSfcParserAdapter::with_config(
             options.rules_repo.cerberus_config.clone(),
         )),
-        Arc::new(cerberus_infrastructure::SurqlAstParserAdapter::with_config(
-            cerberus_surql::config::SurqlConfig::default(),
-        )),
+        Arc::new(
+            cerberus_infrastructure::SurqlAstParserAdapter::with_config(
+                cerberus_surql::config::SurqlConfig::default(),
+            )
+            .with_cerberus_config(
+                options.rules_repo.cerberus_config.clone(),
+                Some(options.path.to_path_buf()),
+            ),
+        ),
     ];
 
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));

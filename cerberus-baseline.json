@@ -1,1 +1,666 @@
-[]
+[
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "5622cb732864ba25a7bf40fd61291639727741ee9a4306d84d2735798eb39236"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/permissions.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "86e666fd543f2d452c3f01fa62b0f3e826fba5ef8e851dd26887cbe427bce26a"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "6c226c23cac34c8c4a78014a50cc45e7d8a0bab15f12d21d21765f0a2b053a75"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "6c226c23cac34c8c4a78014a50cc45e7d8a0bab15f12d21d21765f0a2b053a75"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "7cf5249b83e93235dc40ba361157a5b98619aa2519baddf088a7a9f5f3811be8"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "9999f63f5d011cc10a24242917f58a6f7a00c170debaf010643f9942898ed3e8"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "ec718bfc6129fc73453318f580868457c5240d276b8dacdb0443a4783091a93f"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "b5807dd0c6d296505dc063169bf5ffaedbcc4bff571036c5855e3b2794da682c"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "b5807dd0c6d296505dc063169bf5ffaedbcc4bff571036c5855e3b2794da682c"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "c7c2bebe3ad438d9e86a07adfc5bac7f8cbc5615736bc363c856dbf798e1daa1"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/profile_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0584c0515918f382aaec27541d26228f652d1e3f25cc36783244c572ceddbd64"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "384a67a352a370c82482ec18c0648a7a59de4ca055e637a035ce6dceaf0ba5ad"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "e4ce4e79ebde3bf7f84ed81c8bc48c20df2fa810bf38ff188bf6c3491a9009c0"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/mod.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "7e131391675cf58bf7e22a9791aba1dac0fd64845e54bab75b3a0a5cfaddbf61"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "c8931cf676fcd9a2106ed0d8d22342048048f40827fec76f34ee28bf4c547edb"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "c8931cf676fcd9a2106ed0d8d22342048048f40827fec76f34ee28bf4c547edb"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "c8931cf676fcd9a2106ed0d8d22342048048f40827fec76f34ee28bf4c547edb"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/batch/reader.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "cf50d2c1d7217145712020e41698446c88aff676f088c78a9cfa5ba87cc047b7"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/chapters/crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "f6802fb5bcce92228be5a038e255a7566b5b26fdf678d921981593e45a542cf0"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/chapters/revisions.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "04c90e387b4d38c0ce86727600cfd5475b89a84513af2c25e8c2260a60b393ed"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/connections/mod.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "45e83843aa5d29f1987b68932844fe7929cf01e326faa98683bc06207e22d650"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0d9b5a924373ac4342f40aa17f5912d538c3a1904169ff5cdeafca3e36e9eae2"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0d9b5a924373ac4342f40aa17f5912d538c3a1904169ff5cdeafca3e36e9eae2"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0d9b5a924373ac4342f40aa17f5912d538c3a1904169ff5cdeafca3e36e9eae2"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0d9b5a924373ac4342f40aa17f5912d538c3a1904169ff5cdeafca3e36e9eae2"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "904c9aaba996d1a925366648f258dfcc3941ea5f207bbc76568535e97c32b12c"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "b20c3bf849d9c6c99a280a8045c7ecdf4751a16a217f011c15055bf21fcfd0bf"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/relation_schemas.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "04415b2927951c6409d70b3f6f077d8f433fd214ed038c73d48bfd0289f73efb"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "1fc97db5cf27b76cbdd098f495059b67da5f544037747707016ca570374254c1"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "20f918558dbbdc9b01786b654c5ff414883c97a8ed61252fe5321d54a5b25d87"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "9818a0ea12a17f7e8416d326cdc9bfcda62050fdbc3511616fc20a898afcd8bc"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/projects/lifecycle.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "eba125f1b6fa70f93d8d710310a15c6e6496a58dbb309236aa0a41a420018eb5"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/volumes/auto_extend.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "6595c526dac36528a76a0102b1e3feab74fda1dedfeefd43b8fa167d0a2bee99"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/volumes/auto_extend.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "6595c526dac36528a76a0102b1e3feab74fda1dedfeefd43b8fa167d0a2bee99"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "0122e29e6ff44b8f26c40240d4b0c21018a30001230bc3491beca09759df400c"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./src-tauri/src/logic/volumes/lifecycle.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "d3365f18eb667128cf52d9ce09b733b0385f7618d38f2034ef91b31c45b04dbd"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "bbc49ca36d176d6b7e26d78aa6a68c5c17268fc7f4cf2d2d99f965113d59fc70"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/theme.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "1c7f9fddb1c65363a40043ee34bfc6db70c741ebadafb0a1c95af8361571c83d"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/theme.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "62c3bb2f58b22d3dbdcfb0f3fe72ae0f24379da455eec906b20094dc71b06bd2"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/theme.rs",
+    "line": 1,
+    "symbol": "result_swallow",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "675101c73ccb52bc890f1dac36b399c77e60e7cc9b59daa4da8497696307f527"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/mod.rs",
+    "line": 1,
+    "symbol": "lossy_ok",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "3281c24df34044c59671b162b917f75b3874008c47107d241c827192daff42b3"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/batch/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "0f63c87336869cf2c48b308f72825c1f508ed4e1ba60a690a2939286aaf8aba8"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/chapters/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "1a8add8c5a89400bc9c98fb72583aa43901304ad12c819ed9081da8e05460bc7"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/connections/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "63ec6bc48d605f6b98f703a64930646f0c3340864e1a52a4bff5bb7de47757e9"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/entities/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "3efbde06ddb5cf1f467f881227e1806e3ca9bbf43876efb24941096ae9d5426d"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/projects/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "30602c5ac79f986bd6fa7a27f2d0eff5fc5528f3846d4f668cb319cead04648c"
+  },
+  {
+    "rule": "ERR-007",
+    "file": "./src-tauri/src/logic/volumes/errors.rs",
+    "line": 1,
+    "symbol": "raw_string_ipc_error",
+    "message": "Converting domain error into raw 'String' for Tauri IPC is prohibited. Use structured IpcError.",
+    "fingerprint": "96589692f8781420b21f2d665780cf6ed9550502598af3903842694aee7dd7ee"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "6cda0e70e13464c3131c7624366c29aaa9af346d57fe3bcb02ebbccad077ae7a"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "6cda0e70e13464c3131c7624366c29aaa9af346d57fe3bcb02ebbccad077ae7a"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "8ceda8c5ee249d26c6e53046f1e34e1e448447c690d6c14d0cc7f84967b94f66"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "a2720bb0aaf2b71218c658b4851ba9376e23d840c88c7d80813742743adc88e6"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_branching.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "a3922e6677fe13aabf623ab3c76e00a9debb2f2ecba1df1579c66372e5c8a83c"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "287e3e8e053a7599e638859bd9d4a4ae35e49f4f0a8122011184b9e217e2c053"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "287e3e8e053a7599e638859bd9d4a4ae35e49f4f0a8122011184b9e217e2c053"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "8b36b34d7be662c68bb83b666a0177c33ddf7d6835f280f640b8e7eb60b66c4a"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/profile_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "523eba38b5509e799bc7a38cdccb8e3eb46f063808fb915ac7d968f793e6da4a"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "32b6cfb566508aa3e4ecf118be4b99b1111b8d82efdc873b9c1bfd9650c9383e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/fallback_search.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "778998a87117fee5a0a39fca88f0e4c3b6e890c5a7b9346fed1c72383957388c"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo/mod.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "869b424f8a382416921700c6670ccd36031d9426c318c59d2cf301e58f99f41b"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "20d9ed3fa7e61f2ef57344cef84f1d35edca6222c494741ad7d35ce22002e8bb"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "20d9ed3fa7e61f2ef57344cef84f1d35edca6222c494741ad7d35ce22002e8bb"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "20d9ed3fa7e61f2ef57344cef84f1d35edca6222c494741ad7d35ce22002e8bb"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/batch/reader.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "7e8dbd5576bcc4fd66e567f97df7a083721d6c17084ea24c7a3694bfb34ff1a3"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/chapters/crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "a0837e24843931515edadbd4de3dfa816232342084531aabe49b1d1c474e7813"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/chapters/revisions.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "246b3c59ac48338e47883817e972255234e44e5b4cd4383374b9f8ce9c3066ad"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/connections/mod.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "fd86e206196826994948eba9ee427744276169a8e25cd5f07e3642e8346ae5e7"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "83270be4aff6e7759473c5b768bbfed4f1710e36efdcb1c5ff3e1d843f81b76e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "83270be4aff6e7759473c5b768bbfed4f1710e36efdcb1c5ff3e1d843f81b76e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "83270be4aff6e7759473c5b768bbfed4f1710e36efdcb1c5ff3e1d843f81b76e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "83270be4aff6e7759473c5b768bbfed4f1710e36efdcb1c5ff3e1d843f81b76e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "3c240cb73a8117921366edd08f345e64b507628f443031e0b57cd444ab96083d"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "994a8f334acd8137568e6aa62a0a0525a9d114e901dba94710071edc16e8a50e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/relation_schemas.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "8e5d9129b59d989c27525e427badbe9a9047fcdf4f5b4b7747ff9294208a9fe7"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "29c62a8d31afe9226c42f4bd06bc40be59a8badf1eed1800627280ae2daa05f7"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "965cb55059a494046b94b4097074f0739dfd1ba0d1368d50c3095055194be540"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "b88e473bf20182b8645c88ab104a805ec56d8b248e0d084bf525dc52a4d28c31"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/projects/lifecycle.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "fde3e559dbb5f6f61c3623cd3a95ce1ced4fe013ae11400effcab93e1f7a9168"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/auto_extend.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "0a820d67fe6e779ec14d2ef6524b369c8c7a54e74e637b39f792e2a7677230db"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/auto_extend.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "0a820d67fe6e779ec14d2ef6524b369c8c7a54e74e637b39f792e2a7677230db"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "fa5e844a5f7ffb98feb93bc50674bfc6edeb1f206a6b8eb39db07906ccf3f733"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/lifecycle.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "20142b9281c9ae6ef880507862ada0528aafd324d2371220c887c8f7438c6c22"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/lifecycle.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "8dcf6880020f5ebeaf6564db4bc550ed5ea6fa981a321ca3107e1510ad4cffb7"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/logic/volumes/lifecycle.rs",
+    "line": 1,
+    "symbol": "res_take_swallow",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "91acfc247a3fdf5cf0b68c9d67d26f2d9ce246f0aae9974a78a2936a38d85c76"
+  }
+]

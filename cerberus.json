@@ -240,6 +240,20 @@
     "perf/no-template-methods-in-loops": "deny",
     "perf/no-cascading-watchers": "deny",
 
-    "leak/uncleaned-ipc-listener": "deny"
+    "leak/uncleaned-ipc-listener": "deny",
+
+    "ERR-001": "deny",
+    "ERR-002": "deny",
+    "ERR-003": "deny",
+    "ERR-004": "deny",
+    "ERR-005": "deny",
+    "ERR-006": "deny",
+    "ERR-007": "deny",
+    "SDB-009": "deny",
+    "FE-ERR-001": "deny",
+    "FE-ERR-002": "deny",
+    "FE-ERR-003": "deny",
+    "FE-ERR-004": "deny",
+    "FE-ERR-007": "deny"
   }
 }

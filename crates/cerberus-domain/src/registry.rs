@@ -88,10 +88,19 @@ impl BuiltinRuleRegistry {
             r("CONC-008", Category::Concurrency, Severity::Deny, "Mutable Static State", "static mut causes undefined behavior and data races.", "Use Atomic types or OnceLock<Mutex<T>>."),
 
             // 7. Error Handling & Observability Rules
-            r("ERR-001", Category::ErrorHandling, Severity::Deny, "Silent Result Dropping", "let _ = result; silently suppresses error propagation.", "Handle error explicitly or propagate with ? operator."),
+            r("ERR-001", Category::ErrorHandling, Severity::Deny, "Silent Result Dropping via Wildcard Let", "let _ = result; silently suppresses error propagation on fallible operations.", "Handle error explicitly or propagate with ? operator."),
             r("ERR-002", Category::ErrorHandling, Severity::Deny, "Panic or Unwrap in Drop Implementation", "Unwrapping or panicking inside Drop during stack unwinding causes double-panic process abort.", "Log error via tracing::error! without panicking."),
             r("ERR-003", Category::ErrorHandling, Severity::Warn, "Untyped String Error in Public API", "Result<T, String> loses structured error context.", "Define strongly typed enum Error with thiserror."),
+            r("ERR-004", Category::ErrorHandling, Severity::Deny, "Result Swallowing via unwrap_or_default / unwrap_or", "Calling .unwrap_or_default() or .unwrap_or() on Result hides database/IO failures as default values.", "Propagate Result with ? or map to domain error."),
             r("ERR-005", Category::ErrorHandling, Severity::Deny, "Panic or Unimplemented in Library Target", "Libraries must not panic or abort host applications.", "Return Result<T, Error> instead of panicking."),
+            r("ERR-006", Category::ErrorHandling, Severity::Deny, "Lossy .ok()? on Fallible I/O or Database", "Calling .ok()? on database/IO Result erases the failure reason into None.", "Propagate Result with ? instead of erasing context into Option."),
+            r("ERR-007", Category::ErrorHandling, Severity::Deny, "Tauri IPC Command Error Stringification", "Converting domain errors to raw String in Tauri IPC handlers breaks typed client handling.", "Return structured Result<T, IpcError> from commands."),
+            r("SDB-009", Category::DataIntegrity, Severity::Deny, "SurrealDB Statement Result Take Without Error Check", "Calling res.take(index).unwrap_or_default() ignores SQL runtime and schema coercion failures.", "Check statement error with res.take(index)? and map to domain error."),
+            r("FE-ERR-001", Category::Frontend, Severity::Deny, "Empty Catch Block in Store or Composable", "try { ... } catch { } swallows runtime exceptions without analysis or recovery.", "Log error with context or rethrow."),
+            r("FE-ERR-002", Category::Frontend, Severity::Deny, "Silent Mutation Catch Without User Notification", "Catching errors in create/save/delete/update operations without showing Toast/Alert leaves user in the dark.", "Show user notification via addToast or appAlert in catch block."),
+            r("FE-ERR-003", Category::Frontend, Severity::Deny, "Raw Project ID String Interpolation", "Directly concatenating projects:${name} with unescaped angle brackets causes SurrealDB record coercion errors.", "Use projectRecordId(name) utility."),
+            r("FE-ERR-004", Category::Frontend, Severity::Deny, "Unchecked (e as any) in Catch Block", "Casting caught error to any or Error crashes at runtime if a string or custom object was thrown.", "Use formatErrorMessage(e) or instanceof Error narrowing."),
+            r("FE-ERR-007", Category::Frontend, Severity::Deny, "Error Rethrow Without ES2022 Cause", "throw new Error(msg) inside catch block without { cause: e } erases original stack trace.", "Pass { cause: e } into new Error constructor."),
             r("OBS-007", Category::Observability, Severity::Deny, "Sensitive Secret Leakage in Log Macro", "Passing api_key, password or secret into tracing/println log macros.", "Redact sensitive fields with secrecy or #[debug(skip)]."),
 
             // 8. AI-Agent Defense & Zero-Trust Rules
@@ -208,6 +217,19 @@ impl BuiltinRuleRegistry {
             ("leak/uncleaned-ipc-listener", "LEAK-001"),
             ("fe/raii-cleanup", "FE-RAII-001"),
             ("tauri/dto-drift", "TAURI-DRIFT-001"),
+            ("err/no-silent-wildcard-let", "ERR-001"),
+            ("err/no-drop-panic", "ERR-002"),
+            ("err/no-untyped-string-err", "ERR-003"),
+            ("err/no-result-swallow", "ERR-004"),
+            ("err/no-lib-panic", "ERR-005"),
+            ("err/no-lossy-ok", "ERR-006"),
+            ("err/typed-ipc-error", "ERR-007"),
+            ("sdb/explicit-take-check", "SDB-009"),
+            ("fe/no-empty-catch", "FE-ERR-001"),
+            ("fe/mutation-toast-required", "FE-ERR-002"),
+            ("fe/project-record-id", "FE-ERR-003"),
+            ("fe/no-catch-as-any", "FE-ERR-004"),
+            ("fe/rethrow-with-cause", "FE-ERR-007"),
         ];
 
         let mut map = HashMap::new();

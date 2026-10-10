@@ -293,6 +293,8 @@ pub struct CerberusConfig {
     #[serde(default)]
     pub overrides: Vec<RuleOverride>,
     #[serde(default)]
+    pub layers: HashMap<String, crate::layer::LayerRule>,
+    #[serde(default)]
     pub frontend_layers: HashMap<String, FrontendLayerConfig>,
     #[serde(default)]
     pub design_tokens: Option<DesignTokensConfig>,
@@ -310,6 +312,7 @@ impl Default for CerberusConfig {
             limits: LimitsConfig::default(),
             rules: HashMap::new(),
             overrides: Vec::new(),
+            layers: HashMap::new(),
             frontend_layers: HashMap::new(),
             design_tokens: None,
             css_perf: None,

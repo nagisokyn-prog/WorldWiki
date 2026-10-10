@@ -10,10 +10,10 @@ pub mod storage;
 pub mod taint;
 pub mod vector;
 
-pub use ast::MacroVisitor;
+pub use ast::{ErrorRulesChecker, MacroVisitor};
 pub use frontend::{
-    CssPerfRuleChecker, CssRuleChecker, DesignSystemRuleChecker, FsdLayer, FsdRulesChecker,
-    PerfRulesChecker,
+    CssPerfRuleChecker, CssRuleChecker, DesignSystemRuleChecker, FeErrorRulesChecker, FsdLayer,
+    FsdRulesChecker, PerfRulesChecker,
 };
 pub use hooks::GitHooksInstaller;
 pub use manifest::{CargoMetadataManifestAdapter, TransitiveCapabilityChecker};

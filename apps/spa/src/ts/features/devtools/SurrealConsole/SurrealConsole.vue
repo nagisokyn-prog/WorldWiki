@@ -56,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import './SurrealConsole.css';
 import type { SurrealConsoleProps } from './SurrealConsole.model';
 import { useSurrealConsole } from './useSurrealConsole';
 import SurrealConsolePresets from './components/SurrealConsolePresets.vue';
@@ -90,33 +91,3 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 </script>
-
-<style scoped>
-.surreal-console-root {
-  background: var(--bg-base);
-  height: 100%;
-}
-
-.query-input-bar {
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.query-textarea {
-  width: 100%;
-  resize: vertical;
-  background: var(--bg-input, var(--bg-surface-elevated));
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  line-height: 1.4;
-  outline: none;
-  min-height: 48px;
-}
-
-.query-textarea:focus {
-  border-color: var(--border-focus, #3498db);
-  box-shadow: 0 0 0 1px var(--border-focus, #3498db);
-}
-</style>

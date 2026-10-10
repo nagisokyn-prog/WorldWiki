@@ -62,12 +62,18 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     }
   };
 
+  const formatColor = (color?: string): string => {
+    if (color && /^#[0-9a-fA-F]{6}$/.test(color)) return color;
+    return '#3b82f6';
+  };
+
   return {
     isCollapsed,
     moveItem,
     addSeason,
     removeSeason,
     isMonthInSeason,
-    toggleMonthInSeason
+    toggleMonthInSeason,
+    formatColor,
   };
 }

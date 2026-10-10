@@ -14,7 +14,7 @@
         >
           <div class="season-top-row">
             <input
-              :value="season.цвет || '#3b82f6'"
+              :value="formatColor(season.цвет)"
               type="color"
               class="season-color-picker interactive-el"
               title="Цвет сезона"
@@ -86,7 +86,7 @@ import type { CalendarSeasonsProps } from './useCalendarSeasons';
 
 const props = defineProps<CalendarSeasonsProps>();
 
-const { isCollapsed, moveItem, addSeason, removeSeason } = useCalendarSeasons(props);
+const { isCollapsed, moveItem, addSeason, removeSeason, formatColor } = useCalendarSeasons(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarSeasons.css"></style>

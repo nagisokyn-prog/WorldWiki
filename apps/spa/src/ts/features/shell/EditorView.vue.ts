@@ -1,4 +1,4 @@
-import { defineComponent, computed, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShellStore } from '@/stores/shell';
 import { useConsoleStore } from '@/stores/console';
@@ -81,6 +81,14 @@ export default defineComponent({
     // Initialize shell with project name
     shell.projectName = routeProject;
     shell.sidebarItems = [];
+
+    watch(() => route.query.project, async (newProj) => {
+      const p = typeof newProj === 'string' && newProj.trim() !== '' ? newProj : 'default';
+      if (shell.projectName !== p) {
+        shell.projectName = p;
+        await shell.restoreState();
+      }
+    });
 
     // Computed refs for template reactivity
     const projectName = computed(() => shell.projectName);

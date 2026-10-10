@@ -63,6 +63,15 @@ fn add_directory_files_to_zip<F>(
     }
 }
 
+fn get_base_data_dir() -> PathBuf {
+    if let Ok(custom_dir) = env::var("SURREAL_DATA_DIR")
+        && !custom_dir.is_empty()
+    {
+        return PathBuf::from(custom_dir);
+    }
+    env::current_dir().unwrap_or_default().join("data")
+}
+
 /// Экспортирует дамп БД в `.surql`, упаковывает его в `.wwiki` (zip)
 /// вместе с картинками и настройками, возвращает путь к созданному файлу.
 pub async fn create_cloud_backup_inner(
@@ -101,15 +110,12 @@ pub async fn create_cloud_backup_inner(
     }
 
     // 2. Add user images (if any)
-    let images_dir = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("user_images");
+    let base_data_dir = get_base_data_dir();
+    let images_dir = base_data_dir.join("user_images");
     add_directory_files_to_zip(&mut zip, &images_dir, "images", |_| true, options);
 
     // 3. Add settings files
-    let data_dir = env::current_dir().unwrap_or_default().join("data");
-    add_directory_files_to_zip(&mut zip, &data_dir, "settings", |name| name.ends_with(".json"), options);
+    add_directory_files_to_zip(&mut zip, &base_data_dir, "settings", |name| name.ends_with(".json"), options);
 
     zip.finish()
         .map_err(|e| DomainError::Validation(format!("Failed to finalize zip: {}", e)))?;

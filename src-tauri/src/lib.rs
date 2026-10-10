@@ -2,8 +2,7 @@ pub mod bootstrap;
 pub mod logic;
 
 pub use bootstrap::database::{apply_ddl_module, apply_schema_pipeline, init_database};
-pub use bootstrap::lifecycle::{handle_window_event, setup_application, AgentTasks, AppState};
-
+pub use bootstrap::lifecycle::{AgentTasks, AppState, handle_window_event, setup_application};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -144,6 +143,7 @@ pub fn run() {
             // --- Новые модульные IPC-команды (worldwiki-tauri) ---
             worldwiki_tauri::commands::get_entity_full_card,
             worldwiki_tauri::commands::add_entity_relation,
+            worldwiki_tauri::commands::get_plot_promises,
             worldwiki_tauri::commands::plant_plot_promise,
             worldwiki_tauri::commands::save_plot_promise,
             worldwiki_tauri::commands::complete_plan,

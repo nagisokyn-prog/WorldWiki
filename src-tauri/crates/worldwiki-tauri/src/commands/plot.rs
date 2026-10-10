@@ -5,6 +5,24 @@ use crate::error::IpcError;
 use crate::state::AppState;
 
 #[tauri::command]
+pub async fn get_plot_promises(
+    project: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<serde_json::Value>, IpcError> {
+    let clean = project.trim_start_matches("projects:").to_string();
+    let sql = "SELECT * FROM plot_promises WHERE project_id = fn::normalize_project_id($p);";
+    let mut res = state
+        .services
+        .db
+        .query(sql)
+        .bind(("p", clean))
+        .await
+        .map_err(|e| IpcError::from(e.to_string()))?;
+    let items: Vec<serde_json::Value> = res.take(0).map_err(|e| IpcError::from(e.to_string()))?;
+    Ok(items)
+}
+
+#[tauri::command]
 pub async fn plant_plot_promise(
     state: State<'_, AppState>,
     promise: PlotPromise,

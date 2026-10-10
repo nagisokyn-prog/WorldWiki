@@ -6,6 +6,15 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 
+fn get_base_data_dir() -> std::path::PathBuf {
+    if let Ok(custom_dir) = env::var("SURREAL_DATA_DIR")
+        && !custom_dir.is_empty()
+    {
+        return std::path::PathBuf::from(custom_dir);
+    }
+    env::current_dir().unwrap_or_default().join("data")
+}
+
 fn extract_archive_file<R: std::io::Read>(
     file: &mut zip::read::ZipFile<'_, R>,
     file_name: &str,
@@ -19,10 +28,9 @@ fn extract_archive_file<R: std::io::Read>(
         return Ok(true);
     }
     
+    let base_data_dir = get_base_data_dir();
     if let Some(sub) = file_name.strip_prefix("images/") {
-        let out_path = env::current_dir()
-            .unwrap_or_default()
-            .join("data")
+        let out_path = base_data_dir
             .join("user_images")
             .join(sub);
         if let Some(p) = out_path.parent() {
@@ -32,9 +40,7 @@ fn extract_archive_file<R: std::io::Read>(
             let _res = std::io::copy(file, &mut out);
         }
     } else if let Some(sub) = file_name.strip_prefix("settings/") {
-        let out_path = env::current_dir()
-            .unwrap_or_default()
-            .join("data")
+        let out_path = base_data_dir
             .join(sub);
         if let Some(p) = out_path.parent() {
             let _ = fs::create_dir_all(p);

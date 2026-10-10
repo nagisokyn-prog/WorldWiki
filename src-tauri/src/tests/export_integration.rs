@@ -78,6 +78,9 @@ async fn create_cloud_backup_creates_wwiki_with_database_dump() {
     seed_project(&db, "backup_proj", "Backup Project").await;
 
     let dir = tmp_dir("backup");
+    let test_data = dir.join("test_data");
+    std::fs::create_dir_all(&test_data).ok();
+    unsafe { std::env::set_var("SURREAL_DATA_DIR", &test_data); }
 
     let zip_path = create_cloud_backup_inner(&db, &dir)
         .await
@@ -106,6 +109,10 @@ async fn restore_from_backup_roundtrip_restores_project() {
     seed_project(&src, "roundtrip_proj", "Roundtrip Project").await;
 
     let dir = tmp_dir("roundtrip");
+    let test_data = dir.join("test_data");
+    std::fs::create_dir_all(&test_data).ok();
+    unsafe { std::env::set_var("SURREAL_DATA_DIR", &test_data); }
+
     let zip_path = create_cloud_backup_inner(&src, &dir)
         .await
         .expect("backup");

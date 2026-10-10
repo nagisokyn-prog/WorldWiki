@@ -47,7 +47,10 @@ export function useShellPersistence(deps: PersistenceDeps) {
 
   const restoreState = async (): Promise<boolean> => {
     const saved = localStorage.getItem(getStateKey());
-    if (!saved) return false;
+    if (!saved) {
+      deps.eg.closeAll(true);
+      return false;
+    }
     isRestoring = true;
     try {
       const state = JSON.parse(saved);

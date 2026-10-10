@@ -44,7 +44,7 @@ impl ChapterRepository for SurrealChapterRepository {
             UPSERT type::record('chapters', $c_id) MERGE {
                 title: $title,
                 content: $content,
-                project_id: type::record('projects', $p_id),
+                project_id: fn::normalize_project_id($p_id),
                 word_count: $word_count,
                 updated_at: time::now()
             };

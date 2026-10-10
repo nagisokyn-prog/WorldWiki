@@ -11,11 +11,21 @@ pub async fn execute_raw_surql_inner(
         .await
         .map_err(|e| ProjectError::InvalidData(e.to_string()))?;
 
+    let errors = res.take_errors();
+    if let Some((_, err)) = errors.into_iter().next() {
+        return Err(ProjectError::InvalidData(err.to_string()));
+    }
+
     let mut results: Vec<Value> = Vec::new();
-    let mut idx: usize = 0;
-    while let Ok(Some(val)) = res.take::<Option<Value>>(idx) {
-        results.push(val);
-        idx += 1;
+    let num_stmts = res.num_statements();
+    for idx in 0..num_stmts {
+        if let Ok(vals) = res.take::<Vec<Value>>(idx) {
+            for v in vals {
+                results.push(v);
+            }
+        } else if let Ok(Some(val)) = res.take::<Option<Value>>(idx) {
+            results.push(val);
+        }
     }
 
     if results.is_empty() {

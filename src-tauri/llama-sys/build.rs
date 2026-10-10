@@ -125,7 +125,7 @@ fn main() {
     if cfg!(target_os = "windows") {
         let target = env::var("TARGET").unwrap_or_else(|_| "x86_64-pc-windows-msvc".to_string());
         if let Some(tool) = cc::windows_registry::find_tool(&target, "cl.exe") {
-            for (k, v) in tool.env() {
+            for (k, v) in tool.get_envs() {
                 if k.to_string_lossy().eq_ignore_ascii_case("INCLUDE") {
                     for path in env::split_paths(&v) {
                         if path.exists() {

@@ -20,6 +20,10 @@
     "test:guard": "cargo test --manifest-path crates/Cargo.toml --workspace",
     "cov:guard": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace",
     "cov:guard:html": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace --html --open",
+    "build:test-addon": "cargo build --manifest-path e2e/Cargo.toml",
+    "test:e2e:rust": "cargo test --manifest-path e2e/Cargo.toml --test \"*\"",
+    "test:e2e:ui": "vitest run --config e2e/fullstack/vitest.e2e.config.ts",
+    "test:e2e": "pnpm test:e2e:rust && pnpm test:e2e:ui",
 
     "generate:api": "node scripts/codegen.js",
     "audit:god-files": "node detect_god_files.js"

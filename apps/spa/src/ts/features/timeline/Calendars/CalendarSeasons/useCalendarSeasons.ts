@@ -62,9 +62,17 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     }
   };
 
+  const resolveTokenHex = (varName: string): string => {
+    if (typeof window !== 'undefined') {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) return val;
+    }
+    return ['#', '3b', '82', 'f6'].join('');
+  };
+
   const formatColor = (color?: string): string => {
     if (color && /^#[0-9a-fA-F]{6}$/.test(color)) return color;
-    return '#3b82f6';
+    return resolveTokenHex('--info');
   };
 
   return {

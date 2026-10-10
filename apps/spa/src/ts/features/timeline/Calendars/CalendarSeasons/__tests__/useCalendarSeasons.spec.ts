@@ -86,4 +86,14 @@ describe('useCalendarSeasons', () => {
     hook.toggleMonthInSeason(2, 3);
     expect(props.modelValue.сезоны[2].месяцы).toEqual([3]);
   });
+
+  it('formats color correctly for valid hex and fallback values', () => {
+    const hook = useCalendarSeasons(props);
+    expect(hook.formatColor('#123456')).toBe('#123456');
+    expect(hook.formatColor('#AABBCC')).toBe('#AABBCC');
+    // Fallback when invalid or missing
+    const fallback = hook.formatColor('invalid-color');
+    expect(fallback).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(hook.formatColor(undefined)).toMatch(/^#[0-9a-fA-F]{6}$/);
+  });
 });

@@ -1,6 +1,6 @@
 fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
-        println!("cargo:rustc-link-arg=/NODEFAULTLIB:libcmt.lib");
+        println!("cargo:rustc-link-arg-bins=/NODEFAULTLIB:libcmt.lib");
         // Интеграционные тесты (tests/*.rs) не получают манифест от tauri_build
         // (тот линкует его только в bins через .res-ресурс). Без манифеста с
         // Common-Controls v6 тестовый exe биндится на comctl32 v5, где нет

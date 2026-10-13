@@ -11,7 +11,7 @@ layer = "tauri"
 worldwiki-domain = { path = "../worldwiki-domain" }
 worldwiki-ports = { path = "../worldwiki-ports" }
 worldwiki-application = { path = "../worldwiki-application" }
-worldwiki-infrastructure = { path = "../worldwiki-infrastructure" }
+worldwiki-infrastructure = { path = "../worldwiki-infrastructure", default-features = false, features = ["ai-cloud"] }
 tauri = { version = "2", features = ["protocol-asset"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

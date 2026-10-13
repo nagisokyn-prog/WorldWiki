@@ -1,0 +1,4 @@
+# При вызове cargo непосредственно из директории e2e
+# этот конфиг переопределяет линкер на системный MSVC link.exe
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "linker=link.exe"]

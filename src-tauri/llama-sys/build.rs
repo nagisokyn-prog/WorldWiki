@@ -123,15 +123,12 @@ fn main() {
         .allowlist_var("GGML_.*");
 
     if cfg!(target_os = "windows") {
-        let target = env::var("TARGET").unwrap_or_else(|_| "x86_64-pc-windows-msvc".to_string());
-        if let Some(tool) = cc::windows_registry::find_tool(&target, "cl.exe") {
-            for (k, v) in tool.get_envs() {
-                if k.to_string_lossy().eq_ignore_ascii_case("INCLUDE") {
-                    for path in env::split_paths(&v) {
-                        if path.exists() {
-                            builder = builder.clang_arg(format!("-I{}", path.display()));
-                        }
-                    }
+        // get_envs() появился только в cc >1.6.0; читаем INCLUDE напрямую из окружения —
+        // rustup/MSVC developer prompt всегда выставляет эту переменную.
+        if let Ok(include_env) = env::var("INCLUDE") {
+            for path in env::split_paths(&include_env) {
+                if path.exists() {
+                    builder = builder.clang_arg(format!("-I{}", path.display()));
                 }
             }
         }

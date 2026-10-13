@@ -14,7 +14,7 @@ napi-build = "2"
 worldwiki-domain = { path = "../src-tauri/crates/worldwiki-domain" }
 worldwiki-ports = { path = "../src-tauri/crates/worldwiki-ports" }
 worldwiki-application = { path = "../src-tauri/crates/worldwiki-application" }
-worldwiki-infrastructure = { path = "../src-tauri/crates/worldwiki-infrastructure", default-features = false }
+worldwiki-infrastructure = { path = "../src-tauri/crates/worldwiki-infrastructure", default-features = false, features = ["ai-cloud"] }
 worldwiki-tauri = { path = "../src-tauri/crates/worldwiki-tauri" }
 world-wiki = { package = "world-wiki", path = "../src-tauri", default-features = false }
 

@@ -43,6 +43,7 @@ src-tauri/llama-sys/prebuilt-libs/
 rust-analyzer/
 build/
 target/
+e2e/target/
 coverage/
 **/coverage/
 

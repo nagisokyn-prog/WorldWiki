@@ -9,6 +9,7 @@ fn default_epoch() -> DateTime<Utc> {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Chapter {
+    #[serde(default)]
     pub id: String,
     pub project_id: String,
     pub volume_id: Option<String>,

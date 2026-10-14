@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"],
+    "paths": {
+      "@/*": ["../apps/spa/src/ts/*"],
+      "@worldwiki/components": ["../packages/components/src/index.ts"],
+      "@worldwiki/resources": ["../packages/resources/src/index.ts"]
+    }
+  },
+  "include": ["fullstack/**/*.ts"]
+}

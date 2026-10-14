@@ -229,6 +229,7 @@ async fn save_project_config_merges_without_losing_fields() {
 async fn delete_project_preserves_global_knowledge_base() {
     let db = create_test_db().await;
     seed_project(&db, "proj_keep_global", "Keep Global Test").await;
+    seed_project(&db, "proj_to_delete", "Project to Delete").await;
 
     // 1. Создаем вечные глобальные сущности
     db.query(
@@ -246,7 +247,7 @@ async fn delete_project_preserves_global_knowledge_base() {
     ).await.unwrap();
 
     // 2. Удаляем проект
-    delete_project_inner(&db, "proj_keep_global").await.expect("delete project");
+    delete_project_inner(&db, "proj_to_delete").await.expect("delete project");
 
     // 3. Проверяем, что ВСЕ вечные глобальные сущности сохранились в целости
     let mut w_res = db.query("SELECT count() FROM web_evidence GROUP ALL").await.unwrap();

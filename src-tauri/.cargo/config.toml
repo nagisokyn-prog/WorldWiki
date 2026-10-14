@@ -3,7 +3,7 @@ rustc-wrapper = "sccache"
 rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
 
 [target.x86_64-pc-windows-msvc]
-rustflags = ["--cfg", "surrealdb_unstable", "-C", "linker=lld-link.exe", "-C", "link-arg=/NODEFAULTLIB:libcmt.lib", "-C", "link-arg=/STACK:33554432"]
+rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
 
 [alias]
 cov = 'llvm-cov nextest --workspace --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'

@@ -468,6 +468,10 @@ export async function addEntityRelation(relation: unknown): Promise<void> {
     return await invoke('add_entity_relation', { relation });
 }
 
+export async function getPlotPromises(project: string): Promise<unknown[]> {
+    return await invoke('get_plot_promises', { project });
+}
+
 export async function plantPlotPromise(promise: PlotPromise): Promise<void> {
     return await invoke('plant_plot_promise', { promise });
 }
@@ -627,10 +631,6 @@ export async function savePlan(project: string, data: Plan): Promise<Plan> {
 
 export async function deletePlan(id: string): Promise<void> {
     return await invoke('delete_plan', { id });
-}
-
-export async function getPlotPromises(project: string): Promise<PlotPromise[]> {
-    return await invoke('get_plot_promises', { project });
 }
 
 export async function getPlotPromise(id: string): Promise<PlotPromise | null> {

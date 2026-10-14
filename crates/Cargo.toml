@@ -19,7 +19,8 @@ resolver = "2"
 
 [profile.dev]
 opt-level = 1
-debug = 1
+debug = 0
+strip = "debuginfo"
 incremental = false
 
 [profile.dev.package."*"]

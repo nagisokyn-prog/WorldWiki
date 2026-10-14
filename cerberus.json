@@ -29,7 +29,9 @@
     "**/*assets/**",
     "**/api.client.ts",
     "scripts/",
-    "**/data/backup_latest.surql"
+    "**/data/backup_latest.surql",
+    "**/e2e/",
+    "/src-tauri/llama-sys/prebuilt-libs/bindings.rs"
   ],
   "extends": [
     "cerberus:rust-hexagonal",

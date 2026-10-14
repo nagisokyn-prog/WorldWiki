@@ -17,5 +17,6 @@ export default defineConfig({
       '@worldwiki/components': resolve(__dirname, '../../packages/components/src'),
       '@worldwiki/resources': resolve(__dirname, '../../packages/resources/src'),
     },
+    dedupe: ['vue', 'pinia', '@tauri-apps/api', '@tauri-apps/api/core'],
   },
 });

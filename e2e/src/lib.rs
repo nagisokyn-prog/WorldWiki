@@ -2,30 +2,18 @@
 //!
 //! Provides the N-API bridge for Vitest fullstack tests and boots in-memory SurrealDB.
 
+pub mod commands;
 pub mod test_state;
 
+pub use commands::*;
 pub use serde_json::Value;
 pub use tauri::AppHandle;
 
-// Selective command and model re-exports without glob collisions
+// Selective model and remaining re-exports
+pub use world_wiki::bootstrap::lifecycle::AppState;
 pub use world_wiki::logic::models::*;
 
-pub use world_wiki::logic::projects::{
-    create_project, delete_project, execute_raw_surql, get_project_config, get_projects,
-    save_project_config,
-};
-
-pub use world_wiki::logic::volumes::{
-    assign_chapter, create_volume, get_chapter_hierarchy, reorder_node, update_volume,
-};
-
-pub use world_wiki::logic::chapters::{
-    create_chapter, delete_chapter, get_chapter, get_chapters, save_chapter,
-    toggle_chapter_history_pin,
-};
-
 pub use world_wiki::logic::batch::{get_entities_batch, save_entity_with_relations};
-
 pub use world_wiki::logic::entities::{
     create_entity_relation, delete_entity, delete_entity_relation, delete_entity_schema,
     delete_relation_schema, get_entities, get_entity, get_entity_relations,

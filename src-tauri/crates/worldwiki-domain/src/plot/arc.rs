@@ -21,8 +21,13 @@ pub enum ArcStatus {
     Abandoned,
 }
 
+fn default_datetime() -> DateTime<Utc> {
+    DateTime::UNIX_EPOCH
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StoryArc {
+    #[serde(default)]
     pub id: String,
     pub project_id: String,
     pub title: String,
@@ -30,7 +35,9 @@ pub struct StoryArc {
     pub arc_type: ArcType,
     pub status: ArcStatus,
     pub color: Option<String>,
+    #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "default_datetime")]
     pub updated_at: DateTime<Utc>,
 }
 

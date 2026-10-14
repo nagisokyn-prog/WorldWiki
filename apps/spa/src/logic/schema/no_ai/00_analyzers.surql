@@ -12,11 +12,8 @@ DEFINE ANALYZER OVERWRITE autocomplete_analyzer TOKENIZERS class, blank FILTERS 
 
 -- 3. БАЗОВАЯ НОРМАЛИЗАЦИЯ RECORD ID ПРОЕКТА (0ns Fast-Path)
 DEFINE FUNCTION OVERWRITE fn::normalize_project_id($p: any) {
-    IF type::is_record($p) {
-        RETURN $p;
-    };
     LET $str = type::string($p);
-    LET $clean = string::replace(string::replace(string::replace(string::replace($str, 'projects:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $clean = string::replace(string::replace(string::replace(string::replace(string::replace($str, 'projects:', ''), '⟨', ''), '⟩', ''), '`', ''), '\\', '');
     RETURN type::record('projects', $clean);
 };
 

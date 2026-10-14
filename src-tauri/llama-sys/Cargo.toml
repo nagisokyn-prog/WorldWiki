@@ -7,8 +7,8 @@ edition = "2024"
 layer = "infrastructure"
 
 [build-dependencies]
-bindgen = "0.72.1"
-cc = "1.2"
+bindgen = "0.71.1"
+cc = "1.8.0"
 
 [dependencies]
-libc = "0.2.189"
+libc = "0.2.190"

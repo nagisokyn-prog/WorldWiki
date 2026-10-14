@@ -8,6 +8,7 @@ fn default_epoch() -> DateTime<Utc> {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Volume {
+    #[serde(default)]
     pub id: String,
     pub project_id: String,
     pub title: String,

@@ -1182,16 +1182,16 @@ async fn test_multi_character_journey_union_and_intersection() {
     // 3. Создаем появления:
     // hero_a появляется в ch1, ch2, ch5
     // hero_b появляется в ch1, ch5 (пропускает ch2, ch3, ch4)
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'tag'")
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key)).await.expect("a in ch1");
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch2')) SET project_id = type::record('projects', $p), source = 'tag'")
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch2')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key)).await.expect("a in ch2");
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'tag'")
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key)).await.expect("a in ch5");
 
-    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'tag'")
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key)).await.expect("b in ch1");
-    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'tag'")
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key)).await.expect("b in ch5");
 
     // Создаем сцену-обещание в ch1 с датой m_abs = 10_512_000 (20 лет от нуля)

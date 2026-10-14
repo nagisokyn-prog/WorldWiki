@@ -3,6 +3,7 @@ use serde_json::Value;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EntityRelation {
+    #[serde(default)]
     pub id: String,
     pub project_id: String,
     #[serde(alias = "from", alias = "from_entity", alias = "source_id", alias = "from_id")]

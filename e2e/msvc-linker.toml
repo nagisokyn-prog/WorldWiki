@@ -7,4 +7,7 @@ rustflags = [
     "-C", "link-arg=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\lib\\x64\\msvcrt.lib",
     "-C", "link-arg=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\lib\\x64\\vcruntime.lib",
     "-C", "link-arg=C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64\\ucrt.lib",
+    "-C", "link-arg=/MANIFEST:EMBED",
+    "-C", "link-arg=/MANIFESTINPUT:C:\\Users\\Kuzma\\Desktop\\WorldWiki\\src-tauri\\tests.manifest",
+    "-C", "link-arg=/MANIFESTUAC:NO",
 ]

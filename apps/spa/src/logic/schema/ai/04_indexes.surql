@@ -10,8 +10,8 @@
 DEFINE INDEX OVERWRITE idx_auto_approval_project ON auto_approval_settings FIELDS project_id;
 
 -- 2. РЕЖИМЫ И РОЛИ ИИ
-DEFINE INDEX OVERWRITE idx_aimode_project ON ai_modes FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_aimode_slug    ON ai_modes FIELDS slug;
+DEFINE INDEX OVERWRITE idx_aimode_project   ON ai_modes FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_aimode_proj_slug ON ai_modes FIELDS project_id, slug UNIQUE;
 
 -- 3. ДЕРЕВО ЧАТОВ
 DEFINE INDEX OVERWRITE idx_chats_project    ON chats FIELDS project_id;
@@ -35,14 +35,15 @@ DEFINE INDEX OVERWRITE idx_artifacts_project ON artifacts FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_artifacts_chat    ON artifacts FIELDS chat_id;
 
 -- 8. НАВЫКИ И ИНСТРУКЦИИ
-DEFINE INDEX OVERWRITE idx_skills_project      ON ai_skills FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_skills_project   ON ai_skills FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_skills_proj_slug ON ai_skills FIELDS project_id, slug UNIQUE;
 DEFINE INDEX OVERWRITE idx_skills_name_ft      ON ai_skills FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_skills_desc_ft      ON ai_skills FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_skills_prompt_ft    ON ai_skills FIELDS prompt_text FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 
 -- 9. ПОЛЬЗОВАТЕЛЬСКИЙ СЛОВАРЬ ЛОРА
 DEFINE INDEX OVERWRITE idx_dict_project ON user_dictionary FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_dict_word    ON user_dictionary FIELDS project_id, word;
+DEFINE INDEX OVERWRITE idx_dict_word    ON user_dictionary FIELDS project_id, word UNIQUE;
 
 -- 10. ВЕБ-СТРАНИЦЫ И КЭШ
 DEFINE INDEX OVERWRITE idx_web_pages_canonical ON web_pages FIELDS canonical_url UNIQUE;

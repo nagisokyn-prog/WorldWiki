@@ -27,7 +27,7 @@ DEFINE FIELD OVERWRITE expires_at          ON web_pages TYPE option<datetime | n
 -- 2. ВЕЧНЫЕ ВЕБ-ДОКАЗАТЕЛЬСТВА (WEB EVIDENCE)
 DEFINE TABLE OVERWRITE web_evidence SCHEMAFULL;
 DEFINE FIELD OVERWRITE page_id             ON web_evidence TYPE record<web_pages>;
-DEFINE FIELD OVERWRITE project_id          ON web_evidence TYPE option<record<projects> | null>;
+DEFINE FIELD OVERWRITE project_id          ON web_evidence TYPE option<record<projects> | string | null> VALUE IF $value != NONE AND $value != NULL THEN fn::normalize_project_id($value) ELSE NONE END;
 DEFINE FIELD OVERWRITE chunk_index         ON web_evidence TYPE int;
 DEFINE FIELD OVERWRITE text                ON web_evidence TYPE string;
 DEFINE FIELD OVERWRITE start_offset        ON web_evidence TYPE int;
@@ -39,11 +39,13 @@ DEFINE FIELD OVERWRITE created_at          ON web_evidence TYPE datetime DEFAULT
 
 -- 3. СЕССИИ ПОИСКОВЫХ ИССЛЕДОВАНИЙ
 DEFINE TABLE OVERWRITE research_sessions SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id          ON research_sessions TYPE record<projects>;
-DEFINE FIELD OVERWRITE conversation_id     ON research_sessions TYPE record<chats>;
-DEFINE FIELD OVERWRITE user_message_id     ON research_sessions TYPE record<chat_messages>;
-DEFINE FIELD OVERWRITE mode                ON research_sessions TYPE string; -- 'direct' | 'research' | 'deep_research'
-DEFINE FIELD OVERWRITE status              ON research_sessions TYPE string; -- 'planning' | 'searching' | 'reading' | 'synthesizing' | 'verifying' | 'completed' | 'failed'
+DEFINE FIELD OVERWRITE project_id          ON research_sessions TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE conversation_id     ON research_sessions TYPE record<chats> | string;
+DEFINE FIELD OVERWRITE user_message_id     ON research_sessions TYPE record<chat_messages> | string;
+DEFINE FIELD OVERWRITE mode                ON research_sessions TYPE string
+  ASSERT $value IN ['direct', 'research', 'deep_research'];
+DEFINE FIELD OVERWRITE status              ON research_sessions TYPE string
+  ASSERT $value IN ['planning', 'searching', 'reading', 'synthesizing', 'verifying', 'completed', 'failed'];
 DEFINE FIELD OVERWRITE objective           ON research_sessions TYPE string;
 DEFINE FIELD OVERWRITE plan                ON research_sessions TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE events              ON research_sessions TYPE array<object> FLEXIBLE DEFAULT [];

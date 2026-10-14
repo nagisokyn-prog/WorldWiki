@@ -47,6 +47,9 @@ e2e/target/
 coverage/
 **/coverage/
 
+# Prebuilt static libs
+e2e/prebuilt/
+
 # Legacy and local-only backup directories
 .logic_legacy/
 src/.logic_legacy/

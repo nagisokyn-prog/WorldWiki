@@ -20,7 +20,7 @@
     "test:guard": "cargo test --manifest-path crates/Cargo.toml --workspace",
     "cov:guard": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace",
     "cov:guard:html": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace --html --open",
-    "build:test-addon": "cargo build --manifest-path e2e/Cargo.toml --config e2e/msvc-linker.toml --target-dir e2e/target",
+    "build:test-addon": "cargo build --manifest-path e2e/Cargo.toml --config e2e/msvc-linker.toml --target-dir e2e/target && node -e \"require('node:fs').copyFileSync('e2e/target/debug/worldwiki_e2e.dll', 'e2e/prebuilt/worldwiki_e2e.node'); require('node:fs').copyFileSync('e2e/target/debug/worldwiki_e2e.dll', 'e2e/target/debug/worldwiki_e2e.node');\"",
     "test:e2e:rust": "cargo test --manifest-path e2e/Cargo.toml --config e2e/msvc-linker.toml --target-dir e2e/target --test \"*\"",
     "test:e2e:ui": "vitest run --config e2e/fullstack/vitest.e2e.config.ts",
     "test:e2e": "pnpm test:e2e:rust && pnpm test:e2e:ui",

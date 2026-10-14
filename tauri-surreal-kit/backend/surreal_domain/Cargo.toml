@@ -15,3 +15,7 @@ ports = { allowed_dependencies = ["domain"] }
 infrastructure = { allowed_dependencies = ["domain", "ports"] }
 application = { allowed_dependencies = ["domain", "ports", "infrastructure"] }
 
+[profile.dev]
+debug = 0
+strip = "debuginfo"
+

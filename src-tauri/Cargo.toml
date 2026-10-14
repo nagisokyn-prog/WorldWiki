@@ -34,7 +34,7 @@ cli = { allowed_dependencies = ["domain", "ports", "application", "infrastructur
 
 [lib]
 name = "world_wiki_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["staticlib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -80,5 +80,6 @@ llama-sys = { path = "llama-sys", optional = true }
 mock-anthropic-service = { path = "../vendor/claw-code/rust/crates/mock-anthropic-service" }
 
 [profile.dev]
-debug = 1
+debug = 0
+strip = "debuginfo"
 split-debuginfo = "unpacked"

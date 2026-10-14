@@ -11,7 +11,7 @@ use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_tauri::state::AppState as TauriAppState;
 
 pub fn init_test_state() -> (AppState, TauriAppState) {
-    tauri::async_runtime::block_on(async {
+    let init_future = async {
         let db = Surreal::new::<Mem>(())
             .await
             .expect("Failed to initialize in-memory SurrealDB engine");
@@ -35,5 +35,11 @@ pub fn init_test_state() -> (AppState, TauriAppState) {
         };
 
         (legacy_app_state, tauri_app_state)
-    })
+    };
+
+    if let Ok(handle) = tokio::runtime::Handle::try_current() {
+        tokio::task::block_in_place(|| handle.block_on(init_future))
+    } else {
+        tauri::async_runtime::block_on(init_future)
+    }
 }

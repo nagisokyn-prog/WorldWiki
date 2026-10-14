@@ -8,7 +8,9 @@ fn default_epoch() -> DateTime<Utc> {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Entity {
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub project_id: String,
     /// Тип сущности: "character", "location", "faction", "item".
     /// В схеме БД поле называется `entity_type`, но в Rust используем `type_key`.
@@ -22,9 +24,9 @@ pub struct Entity {
     pub attributes: Value,
     #[serde(default)]
     pub tags: Vec<String>,
-    #[serde(default = "default_epoch")]
+    #[serde(default = "default_epoch", skip_deserializing)]
     pub created_at: DateTime<Utc>,
-    #[serde(default = "default_epoch")]
+    #[serde(default = "default_epoch", skip_deserializing)]
     pub updated_at: DateTime<Utc>,
 }
 

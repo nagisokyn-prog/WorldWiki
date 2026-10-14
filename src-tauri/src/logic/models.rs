@@ -291,12 +291,12 @@ pub struct Entity {
     pub attributes: serde_json::Value,
     #[serde(default)]
     pub tags: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
     #[ts(type = "Record<string, unknown> | null")]
     pub embeddings: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub created_at: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub updated_at: Option<String>,
 }
 
@@ -312,6 +312,7 @@ pub struct EntitySchema {
     pub fields_schema: Vec<FieldDef>,
     #[ts(type = "Record<string, unknown> | null")]
     pub full_schema: Option<serde_json::Value>,
+    #[serde(skip_deserializing)]
     pub created_at: Option<String>,
 }
 
@@ -344,6 +345,7 @@ pub struct EntityRel {
     pub attributes: serde_json::Value,
     pub start_chapter: Option<String>,
     pub end_chapter: Option<String>,
+    #[serde(skip_deserializing)]
     pub created_at: Option<String>,
 }
 

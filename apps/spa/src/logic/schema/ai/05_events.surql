@@ -16,19 +16,24 @@ DEFINE EVENT OVERWRITE cascade_chat_delete ON TABLE chats WHEN $event = "DELETE"
 
 -- 2. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ ПРОЕКТА (ОЧИСТКА ИИ-ПРОСТРАНСТВА)
 DEFINE EVENT OVERWRITE cascade_project_ai_delete ON TABLE projects WHEN $event = "DELETE" THEN {
-    LET $pid = $before.id;
-    LET $p_rec = fn::normalize_project_id($pid);
+    LET $p_rec = fn::normalize_project_id($before.id);
     
     -- 1. ИИ-сессии, чаты, сообщения и память агента
-    DELETE chats WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
-    DELETE chat_messages WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
-    DELETE agent_memory WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
-    DELETE research_sessions WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
-    DELETE auto_approval_settings WHERE project_id = $pid OR project_id = $p_rec OR project_id = $before.name;
+    DELETE chats WHERE project_id = $p_rec;
+    DELETE chat_messages WHERE project_id = $p_rec;
+    DELETE agent_memory WHERE project_id = $p_rec;
+    DELETE research_sessions WHERE project_id = $p_rec;
+    DELETE auto_approval_settings WHERE project_id = $p_rec;
 
-    -- 2. Кастомные навыки и режимы проекта (не трогая глобальные)
-    DELETE ai_skills WHERE (project_id = $pid OR project_id = $p_rec OR project_id = $before.name) AND (is_builtin != true OR is_builtin = NONE);
-    DELETE ai_modes WHERE (project_id = $pid OR project_id = $p_rec OR project_id = $before.name) AND (is_global != true OR is_global = NONE);
+    -- 2. Артефакты, словарь лора, проектные профили и улики ресёрча
+    DELETE artifacts WHERE project_id = $p_rec;
+    DELETE user_dictionary WHERE project_id = $p_rec;
+    DELETE ai_profiles WHERE project_id = $p_rec;
+    DELETE web_evidence WHERE project_id = $p_rec;
+
+    -- 3. Кастомные навыки и режимы проекта (не трогая глобальные)
+    DELETE ai_skills WHERE project_id = $p_rec AND (is_builtin != true OR is_builtin = NONE);
+    DELETE ai_modes WHERE project_id = $p_rec AND (is_global != true OR is_global = NONE);
 };
 
 -- 3. АДДИТИВНЫЙ КАСКАД УДАЛЕНИЯ СУЩНОСТИ (ОЧИСТКА RAG-ЧАНКОВ)

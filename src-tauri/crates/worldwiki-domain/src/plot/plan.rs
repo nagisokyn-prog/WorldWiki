@@ -9,16 +9,25 @@ pub enum PlanParentType {
     Plan,
 }
 
+fn default_epoch() -> DateTime<Utc> {
+    DateTime::UNIX_EPOCH
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Plan {
+    #[serde(default)]
     pub id: String,
     pub project_id: String,
     pub title: String,
     pub parent_ref: Option<String>,
     pub parent_type: PlanParentType,
+    #[serde(default)]
     pub sort_order: i32,
+    #[serde(default)]
     pub completed: bool,
+    #[serde(default = "default_epoch")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "default_epoch")]
     pub updated_at: DateTime<Utc>,
 }
 

@@ -1,3 +1,25 @@
+export interface LocalMoment {
+  planet_id: string;
+  world_day: number;
+  day_tick: number;
+}
+
+export interface DialUnit {
+  name: string;
+  subdivisions: number;
+}
+
+export interface DialHierarchy {
+  units: DialUnit[];
+}
+
+export interface LeapHarmonic {
+  weight: number;
+  multiplier_a: number;
+  shift_b: number;
+  divisor_c: number;
+}
+
 export interface CalendarDate {
   absolute_minute: number;
   calendar_id: string;

@@ -11,6 +11,8 @@ layer = "tauri"
 [workspace]
 members = [
     ".",
+    "crates/worldwiki-calendar-core",
+    "crates/worldwiki-calendar-wasm",
     "crates/worldwiki-domain",
     "crates/worldwiki-ports",
     "crates/worldwiki-application",
@@ -23,13 +25,14 @@ resolver = "2"
 preset = "hexagonal-strict"
 
 [workspace.metadata.cerberus.layers]
-domain = { allowed_dependencies = [] }
-ports = { allowed_dependencies = ["domain"] }
-application = { allowed_dependencies = ["domain", "ports"] }
-infrastructure = { allowed_dependencies = ["domain", "ports", "application"] }
-adapter = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
-tauri = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
-cli = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
+core = { allowed_dependencies = [] }
+domain = { allowed_dependencies = ["core"] }
+ports = { allowed_dependencies = ["domain", "core"] }
+application = { allowed_dependencies = ["domain", "ports", "core"] }
+infrastructure = { allowed_dependencies = ["domain", "ports", "application", "core"] }
+adapter = { allowed_dependencies = ["domain", "ports", "application", "infrastructure", "core"] }
+tauri = { allowed_dependencies = ["domain", "ports", "application", "infrastructure", "core"] }
+cli = { allowed_dependencies = ["domain", "ports", "application", "infrastructure", "core"] }
 
 
 [lib]

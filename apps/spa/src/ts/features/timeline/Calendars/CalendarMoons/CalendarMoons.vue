@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { useCalendarMoons } from './useCalendarMoons';
-import type { CalendarMoonsProps } from './useCalendarMoons';
+import type { CalendarMoonsProps } from './CalendarMoons.model';
 import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
 const props = defineProps<CalendarMoonsProps>();

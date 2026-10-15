@@ -43,8 +43,9 @@
 
 <script setup lang="ts">
 import { useCalendarSettings } from './useCalendarSettings';
-import type { CalendarSettingsProps } from './useCalendarSettings';
+import type { CalendarSettingsProps } from './CalendarSettings.model';
 import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+
 
 const props = withDefaults(defineProps<CalendarSettingsProps>(), {
   isMaster: false

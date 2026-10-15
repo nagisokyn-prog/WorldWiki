@@ -7,4 +7,5 @@ pub use models::*;
 pub use math::CalendarMath;
 pub use reveal::EventReveal;
 pub use timeline_event::TimelineEvent;
+pub use worldwiki_calendar_core as core;
 

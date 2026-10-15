@@ -1,0 +1,17 @@
+[package]
+name = "worldwiki-calendar-core"
+version = "0.85.0"
+edition = "2024"
+description = "Pure mathematical, no_std, formally verifiable calendar core for WorldWiki"
+
+[package.metadata.cerberus]
+layer = "core"
+
+[dependencies]
+
+[features]
+default = []
+kani = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

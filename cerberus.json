@@ -42,13 +42,21 @@
     "cerberus:css-design-tokens"
   ],
   "layers": {
+    "core": {
+      "patterns": [
+        "**/crates/worldwiki-calendar-core/**",
+        "**/crates/worldwiki-calendar-wasm/**"
+      ],
+      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
+      "allowed_deps": []
+    },
     "domain": {
       "patterns": [
         "**/crates/worldwiki-domain/**",
         "**/surreal_domain/surreal_domain_macros/**"
       ],
       "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
-      "allowed_deps": []
+      "allowed_deps": ["core"]
     },
     "application": {
       "patterns": [

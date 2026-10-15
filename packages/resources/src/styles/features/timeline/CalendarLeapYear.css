@@ -44,3 +44,30 @@
   padding: 4px 8px;
   border-radius: var(--radius-xs);
 }
+
+.leap-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drift-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.drift-warning-banner {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--text-warning);
+  border: 1px solid var(--border-color);
+  font-size: 12px;
+  line-height: 1.4;
+}
+

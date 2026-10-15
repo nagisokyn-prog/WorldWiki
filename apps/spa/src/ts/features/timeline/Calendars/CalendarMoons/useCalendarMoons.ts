@@ -1,9 +1,7 @@
 import { computed, ref } from 'vue';
 import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+import type { CalendarMoonsProps } from './CalendarMoons.model';
 
-export interface CalendarMoonsProps {
-  modelValue: CalendarData;
-}
 
 export function useCalendarMoons(props: CalendarMoonsProps, emit: (event: 'update:modelValue', val: CalendarData) => void) {
   const isCollapsed = ref(false);

@@ -118,9 +118,9 @@
 import { useCalendarPlayground } from './useCalendarPlayground';
 import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-const props = defineProps<{
-  calendar: CalendarData;
-}>();
+import type { CalendarPlaygroundProps } from './CalendarPlayground.model';
+
+const props = defineProps<CalendarPlaygroundProps>();
 
 const emit = defineEmits<{
   (e: 'set-origin'): void;

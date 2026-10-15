@@ -1,9 +1,10 @@
 import { ref, computed, watch } from 'vue';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 import type { CalendarData, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
+import type { CalendarPlaygroundProps } from './CalendarPlayground.model';
 
 export function useCalendarPlayground(
-  props: { calendar: CalendarData },
+  props: CalendarPlaygroundProps,
   emit?: (event: 'set-origin') => void
 ) {
   const isCollapsed = ref(true);

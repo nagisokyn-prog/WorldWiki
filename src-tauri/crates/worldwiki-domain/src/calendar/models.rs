@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
+use worldwiki_calendar_core::{
+    self as core, CoreEra, DialHierarchy, DialUnit, EraCountingMode, LeapHarmonic, LeapTarget,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct CalendarMonth {
@@ -42,8 +45,12 @@ pub struct CalendarSettings {
     pub учитывать_сезонную_длительность_дня: bool,
 }
 
-fn default_24() -> i32 { 24 }
-fn default_60() -> i32 { 60 }
+fn default_24() -> i32 {
+    24
+}
+fn default_60() -> i32 {
+    60
+}
 
 impl Default for CalendarSettings {
     fn default() -> Self {
@@ -101,6 +108,12 @@ pub struct SyncAnchor {
     pub master_anchor_date: Option<SyncAnchorDate>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct DialUnitModel {
+    pub name: String,
+    pub subdivisions: i64,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct CalendarData {
     #[serde(alias = "name")]
@@ -119,4 +132,158 @@ pub struct CalendarData {
     pub time_settings: Option<CalendarSettings>,
     pub moons: Option<Vec<MoonConfig>>,
     pub sync_anchor: Option<SyncAnchor>,
+    #[serde(default)]
+    pub planet_id: Option<String>,
+    #[serde(default)]
+    pub ticks_per_day: Option<i64>,
+    #[serde(default)]
+    pub day_start_offset: Option<i64>,
+    #[serde(default)]
+    pub retrograde: Option<bool>,
+    #[serde(default)]
+    pub dial_hierarchy: Option<Vec<DialUnitModel>>,
+}
+
+impl CalendarData {
+    pub fn get_harmonics(&self) -> Vec<LeapHarmonic> {
+        let rule = self.leap_year_rule.as_str();
+        if rule == "григорианское" || rule == "gregorian" {
+            vec![
+                LeapHarmonic {
+                    weight: 1,
+                    multiplier_a: 1,
+                    shift_b: 0,
+                    divisor_c: 4,
+                },
+                LeapHarmonic {
+                    weight: -1,
+                    multiplier_a: 1,
+                    shift_b: 0,
+                    divisor_c: 100,
+                },
+                LeapHarmonic {
+                    weight: 1,
+                    multiplier_a: 1,
+                    shift_b: 0,
+                    divisor_c: 400,
+                },
+            ]
+        } else if rule == "каждый 4 год" || rule == "julian" {
+            vec![LeapHarmonic {
+                weight: 1,
+                multiplier_a: 1,
+                shift_b: 0,
+                divisor_c: 4,
+            }]
+        } else {
+            Vec::new()
+        }
+    }
+
+    pub fn get_base_days(&self) -> i64 {
+        let sum: i32 = self.months.iter().map(|m| m.дней).sum();
+        if sum > 0 {
+            sum as i64
+        } else {
+            365
+        }
+    }
+
+    pub fn get_leap_offset(&self) -> i64 {
+        self.custom_leap_rule
+            .as_ref()
+            .map(|r| r.день_смещения as i64)
+            .unwrap_or(1)
+    }
+
+    pub fn to_core_config<'a>(
+        &'a self,
+        harmonics_buf: &'a mut Vec<LeapHarmonic>,
+        months_buf: &'a mut Vec<i32>,
+        eras_buf: &'a mut Vec<CoreEra>,
+        dial_buf: &'a mut DialHierarchy,
+    ) -> core::CalendarCultureConfig<'a> {
+        *harmonics_buf = self.get_harmonics();
+        *months_buf = self.months.iter().map(|m| m.дней).collect();
+
+        *eras_buf = self
+            .eras
+            .iter()
+            .map(|e| CoreEra {
+                name: e.название.clone(),
+                start_year: e.год_начала as i64,
+                start_month: None,
+                start_day: None,
+                end_year: if e.год_конца > 0 {
+                    Some(e.год_конца as i64)
+                } else {
+                    None
+                },
+                end_month: None,
+                end_day: None,
+                is_count_down: e.обратный_отсчет,
+                counting_mode: EraCountingMode::ByCalendarYear,
+            })
+            .collect();
+
+        if let Some(custom_dial) = &self.dial_hierarchy {
+            *dial_buf = DialHierarchy {
+                units: custom_dial
+                    .iter()
+                    .map(|u| DialUnit {
+                        name: u.name.clone(),
+                        subdivisions: u.subdivisions.max(1),
+                    })
+                    .collect(),
+            };
+        } else {
+            let settings = self.time_settings.clone().unwrap_or_default();
+            let hours = settings.часов_в_сутках.max(1) as i64;
+            let minutes = settings.минут_в_часе.max(1) as i64;
+
+            *dial_buf = DialHierarchy {
+                units: vec![
+                    DialUnit {
+                        name: String::from("Hour"),
+                        subdivisions: hours,
+                    },
+                    DialUnit {
+                        name: String::from("Minute"),
+                        subdivisions: minutes,
+                    },
+                ],
+            };
+        }
+
+        let ticks_per_day = self
+            .ticks_per_day
+            .unwrap_or_else(|| core::total_dial_subdivisions(dial_buf));
+
+        let planet_id = self.planet_id.as_deref().unwrap_or("default");
+        let day_start_offset = self.day_start_offset.unwrap_or(0);
+
+        let leap_target = if let Some(rule) = &self.custom_leap_rule {
+            LeapTarget::InMonth {
+                target_month: rule.месяц.max(0) as usize,
+            }
+        } else if months_buf.len() > 1 {
+            LeapTarget::InMonth { target_month: 1 }
+        } else {
+            LeapTarget::InExtraDays
+        };
+
+        core::CalendarCultureConfig {
+            planet_id,
+            ticks_per_day,
+            day_start_offset,
+            base_year_days: self.get_base_days(),
+            regular_months: months_buf.as_slice(),
+            harmonics: harmonics_buf.as_slice(),
+            leap_target,
+            leap_day_offset: self.get_leap_offset(),
+            calendar_origin_day: 0,
+            dial: dial_buf,
+            eras: eras_buf.as_slice(),
+        }
+    }
 }

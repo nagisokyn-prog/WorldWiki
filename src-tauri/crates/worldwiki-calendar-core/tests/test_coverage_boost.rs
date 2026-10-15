@@ -470,6 +470,101 @@ fn test_coverage_seasons_all_branches() {
     assert!(!is_season_conflicting_with_solstice(&[11, 0], false, 0, 12));
 }
 
+#[test]
+fn test_coverage_convergents_edge_cases() {
+    use worldwiki_calendar_core::convergents::*;
+
+    // 1. trop_den <= 0
+    assert!(calculate_leap_convergents(365, 0, 5).is_empty());
+    assert!(calculate_leap_convergents(365, -10, 5).is_empty());
+
+    // 2. max_convergents == 0
+    assert!(calculate_leap_convergents(3652422, 10000, 0).is_empty());
+
+    // 3. frac_num == 0 (целое число дней в году)
+    assert!(calculate_leap_convergents(365, 1, 5).is_empty());
+
+    // 4. Валидное вычисление для тропического года
+    let approx = calculate_leap_convergents(3652422, 10000, 3);
+    assert_eq!(approx.len(), 3);
+}
+
+
+#[test]
+fn test_coverage_linked_anchor_countdown_era() {
+    let dial_24 = DialHierarchy {
+        units: vec![DialUnit { name: "Hour".into(), subdivisions: 24 }],
+    };
+    let months = [30; 12];
+    let harmonics = [];
+
+    let master_config = CalendarCultureConfig {
+        planet_id: "terra",
+        ticks_per_day: 86400,
+        day_start_offset: 0,
+        base_year_days: 360,
+        regular_months: &months,
+        harmonics: &harmonics,
+        leap_target: LeapTarget::InExtraDays,
+        leap_day_offset: 0,
+        calendar_origin_day: 0,
+        dial: &dial_24,
+        eras: &[],
+    };
+
+    // Локальный календарь с обратным отсчетом (is_count_down = true)
+    let countdown_era = CoreEra {
+        name: "Cataclysm Countdown".into(),
+        start_year: 500,
+        start_month: Some(1),
+        start_day: Some(1),
+        end_year: Some(1000),
+        end_month: Some(12),
+        end_day: Some(30),
+        is_count_down: true,
+        counting_mode: EraCountingMode::ByCalendarYear,
+    };
+    let local_eras = [countdown_era];
+
+    let local_config = CalendarCultureConfig {
+        planet_id: "terra",
+        ticks_per_day: 86400,
+        day_start_offset: 0,
+        base_year_days: 360,
+        regular_months: &months,
+        harmonics: &harmonics,
+        leap_target: LeapTarget::InExtraDays,
+        leap_day_offset: 0,
+        calendar_origin_day: 0,
+        dial: &dial_24,
+        eras: &local_eras,
+    };
+
+    let master_date = DateCoordinate {
+        era_index: 0,
+        year: 100,
+        month: 0,
+        day: 1,
+        unit_values: vec![0],
+    };
+    let local_date_countdown = DateCoordinate {
+        era_index: 0, // era с is_count_down = true
+        year: 10,
+        month: 2,
+        day: 5,
+        unit_values: vec![0],
+    };
+
+    let anchor = calculate_linked_anchor_world_day(
+        &master_date,
+        &master_config,
+        &local_date_countdown,
+        &local_config,
+    );
+    assert!(anchor != 0);
+}
+
+
 
 
 

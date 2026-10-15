@@ -5,6 +5,7 @@ extern crate alloc;
 pub mod age;
 pub mod astronomy;
 pub mod conversion;
+pub mod convergents;
 pub mod dial;
 pub mod eras;
 pub mod holidays;
@@ -22,7 +23,9 @@ pub mod verify;
 pub use age::*;
 pub use astronomy::*;
 pub use conversion::*;
+pub use convergents::*;
 pub use dial::*;
+
 pub use eras::*;
 pub use holidays::*;
 pub use intervals::*;

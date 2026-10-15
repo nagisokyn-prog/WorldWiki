@@ -79,7 +79,8 @@ pub fn era_year_number(
     match era.counting_mode {
         EraCountingMode::ByCalendarYear => {
             if era.is_count_down {
-                era.start_year - year + 1
+                let target_year = era.end_year.unwrap_or(era.start_year);
+                target_year - year + 1
             } else {
                 year - era.start_year + 1
             }
@@ -93,7 +94,8 @@ pub fn era_year_number(
             let passed_anniversary = compare_dates(0, month, day, 0, start_m, start_d).is_ge();
 
             if era.is_count_down {
-                let years_diff = era.start_year - year;
+                let target_year = era.end_year.unwrap_or(era.start_year);
+                let years_diff = target_year - year;
                 if passed_anniversary {
                     years_diff + 1
                 } else {
@@ -109,4 +111,5 @@ pub fn era_year_number(
             }
         }
     }
+
 }

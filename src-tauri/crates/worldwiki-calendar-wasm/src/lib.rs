@@ -235,30 +235,34 @@ impl WasmCalendarEngine {
     }
 
     /// Параметрический расчет возраста персонажа
-    pub fn calculate_age(
-        &self,
-        birth_year: i64,
-        birth_month: usize,
-        birth_day: i64,
-        current_year: i64,
-        current_month: usize,
-        current_day: i64,
-        age_at_birth: i32,
-        step_on_new_year: bool,
-        year_only: bool,
-        max_days_in_birth_month: i64,
-    ) -> i32 {
+    pub fn calculate_age(&self, params: JsValue) -> Result<i32, JsValue> {
+        #[derive(serde::Deserialize)]
+        struct WasmAgeParams {
+            birth_year: i64,
+            birth_month: usize,
+            birth_day: i64,
+            current_year: i64,
+            current_month: usize,
+            current_day: i64,
+            age_at_birth: i32,
+            step_on_new_year: bool,
+            year_only: bool,
+            max_days_in_birth_month: i64,
+        }
+
+        let p: WasmAgeParams = serde_wasm_bindgen::from_value(params)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
         let rule = AgeRule {
-            age_at_birth,
-            step_on_new_year,
-            year_only,
+            age_at_birth: p.age_at_birth,
+            step_on_new_year: p.step_on_new_year,
+            year_only: p.year_only,
         };
-        calculate_age(
-            CalDate::new(birth_year, birth_month, birth_day),
-            CalDate::new(current_year, current_month, current_day),
+        Ok(calculate_age(
+            CalDate::new(p.birth_year, p.birth_month, p.birth_day),
+            CalDate::new(p.current_year, p.current_month, p.current_day),
             &rule,
-            max_days_in_birth_month,
-        )
+            p.max_days_in_birth_month,
+        ))
     }
 
     /// Проверка пересечения временных интервалов
@@ -287,5 +291,11 @@ impl WasmCalendarEngine {
     pub fn check_death_violation(&self, s: i64, e: i64, death_t_abs: i64) -> bool {
         let interval = TimeInterval { start: s, end: e };
         check_death_violation(&interval, death_t_abs)
+    }
+}
+
+impl Default for WasmCalendarEngine {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -4,7 +4,10 @@ use worldwiki_calendar_core::conversion::*;
 use worldwiki_calendar_core::dial::*;
 use worldwiki_calendar_core::eras::*;
 use worldwiki_calendar_core::leap::*;
+use worldwiki_calendar_core::holidays::*;
+use worldwiki_calendar_core::seasons::*;
 use worldwiki_calendar_core::types::*;
+use worldwiki_calendar_core::weekdays::*;
 use worldwiki_calendar_core::year_finder::year_from_days_o1;
 
 #[test]
@@ -134,8 +137,8 @@ fn test_coverage_eras_all_branches() {
 
     // 2. find_active_era с пустым списком и датами вне диапазона
     assert_eq!(find_active_era(&[], 150, 1, 1), None);
-    assert_eq!(find_active_era(&[closed_era.clone()], 50, 1, 1), None);
-    assert_eq!(find_active_era(&[closed_era.clone()], 250, 1, 1), None);
+    assert_eq!(find_active_era(core::slice::from_ref(&closed_era), 50, 1, 1), None);
+    assert_eq!(find_active_era(core::slice::from_ref(&closed_era), 250, 1, 1), None);
 
     // 3. era_year_number с ByAnniversary и is_count_down: true
     let countdown_anniv_era = CoreEra {
@@ -354,4 +357,119 @@ fn test_coverage_astronomy_zenith_distance_half_day_wrap() {
     let sunlight = sunlight_basis_points(80000, 86400, 90_000, false);
     assert_eq!(sunlight, 0); // Солнце глубоко под горизонтом ночью
 }
+
+#[test]
+fn test_coverage_weekdays_zero_and_edge_branches() {
+    assert_eq!(calculate_weekday(100, 0, 0, 0), 0);
+    assert_eq!(calculate_weekday(100, 0, 0, 7), 2);
+
+    let zero_cfg = WeekdayPauseConfig {
+        days_in_regular_months: 360,
+        extra_days_base: 5,
+        extra_days_leap: 0,
+        harmonics: &[],
+        origin_year: 1,
+        origin_day: 0,
+        start_weekday: 0,
+        weekdays_count: 0,
+    };
+    assert_eq!(calculate_weekday_with_pause(1, 0, &zero_cfg), Some(0));
+}
+
+#[test]
+fn test_coverage_astronomy_daylight_zero_and_branches() {
+    let zero_ticks_ctx = PlanetSunContext {
+        solstice_world_day: 0,
+        ticks_per_day: 0,
+        tropical_year_num: 365,
+        tropical_year_den: 1,
+        summer_day_fraction_bp: 7000,
+        winter_day_fraction_bp: 3000,
+        is_north_hemisphere: true,
+        longitude_mdeg: 0,
+        retrograde: false,
+    };
+    let zero_ticks = calculate_daylight_and_sun_events(0, &zero_ticks_ctx);
+    assert_eq!(zero_ticks.daylight_ticks, 0);
+
+    let zero_year_ctx = PlanetSunContext {
+        ticks_per_day: 86400,
+        tropical_year_num: 0,
+        ..zero_ticks_ctx
+    };
+    let zero_year = calculate_daylight_and_sun_events(0, &zero_year_ctx);
+    assert_eq!(zero_year.daylight_ticks, 0);
+
+    // Вторая половина года (year_fraction_bp >= 5000)
+    let autumn_ctx = PlanetSunContext {
+        tropical_year_num: 365,
+        ..zero_year_ctx
+    };
+    let autumn = calculate_daylight_and_sun_events(270, &autumn_ctx);
+    assert!(autumn.daylight_ticks > 0);
+}
+
+#[test]
+fn test_coverage_holidays_and_month_rotation() {
+    // 1. to_internal_month и to_cultural_month
+    assert_eq!(to_internal_month(2, 2, 12), 0); // Март (индекс 2) становится месяцем 0
+    assert_eq!(to_cultural_month(0, 2, 12), 2); // Восстановление
+    assert_eq!(to_internal_month(5, 0, 0), 0);  // total_months == 0
+    assert_eq!(to_cultural_month(5, 0, 0), 0);  // total_months == 0
+
+    // 2. is_holiday_active: обычный диапазон внутри года (1 мая - 9 мая)
+    assert!(is_holiday_active(4, 5, 4, 1, 4, 9));   // Внутри (5 мая)
+    assert!(is_holiday_active(4, 1, 4, 1, 4, 9));   // Граница начала
+    assert!(is_holiday_active(4, 9, 4, 1, 4, 9));   // Граница конца
+    assert!(!is_holiday_active(4, 10, 4, 1, 4, 9)); // После
+    assert!(!is_holiday_active(3, 30, 4, 1, 4, 9)); // До
+
+    // 3. is_holiday_active: переход через Новый Год (25 декабря - 6 января)
+    assert!(is_holiday_active(11, 28, 11, 25, 0, 6)); // Декабрь (28-е)
+    assert!(is_holiday_active(0, 2, 11, 25, 0, 6));   // Январь (2-е)
+    assert!(is_holiday_active(11, 25, 11, 25, 0, 6)); // Граница 25 дек
+    assert!(is_holiday_active(0, 6, 11, 25, 0, 6));   // Граница 6 янв
+    assert!(!is_holiday_active(5, 15, 11, 25, 0, 6)); // Летом не активно
+}
+
+#[test]
+fn test_coverage_seasons_all_branches() {
+    let summer = CoreSeason {
+        name: "Summer".into(),
+        color: "yellow".into(),
+        months: vec![5, 6, 7],
+    };
+    let winter = CoreSeason {
+        name: "Winter".into(),
+        color: "blue".into(),
+        months: vec![11, 0, 1],
+    };
+    let seasons = [summer.clone(), winter];
+
+    // find_season_index
+    assert_eq!(find_season_index(6, &seasons), Some(0)); // Summer
+    assert_eq!(find_season_index(0, &seasons), Some(1)); // Winter
+    assert_eq!(find_season_index(3, &seasons), None);    // Spring (нет в списке)
+
+    // is_month_in_season
+    assert!(is_month_in_season(6, &summer));
+    assert!(!is_month_in_season(3, &summer));
+
+    // is_season_conflicting_with_solstice
+    // total_months == 0
+    assert!(!is_season_conflicting_with_solstice(&[0], true, 0, 0));
+
+    // Лето включает зимнее солнцестояние (месяц 0) -> конфликт!
+    assert!(is_season_conflicting_with_solstice(&[0, 1], true, 0, 12));
+    // Лето не включает зимнее солнцестояние -> нет конфликта
+    assert!(!is_season_conflicting_with_solstice(&[5, 6], true, 0, 12));
+
+    // Зима включает летнее солнцестояние (месяц 0 + 6 = 6) -> конфликт!
+    assert!(is_season_conflicting_with_solstice(&[6, 7], false, 0, 12));
+    // Зима не включает летнее солнцестояние -> нет конфликта
+    assert!(!is_season_conflicting_with_solstice(&[11, 0], false, 0, 12));
+}
+
+
+
 

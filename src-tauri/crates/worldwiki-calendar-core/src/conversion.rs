@@ -148,3 +148,47 @@ pub fn convert_calendar_date(
     let t_abs = date_to_t_abs(source_date, source_config);
     t_abs_to_date(t_abs, target_config)
 }
+
+/// Вычисляет anchor_world_day для сопряжения связного календаря культуры с мастер-календарем (Карточка 4.1)
+pub fn calculate_linked_anchor_world_day(
+    master_date: &DateCoordinate,
+    master_config: &CalendarCultureConfig,
+    local_date: &DateCoordinate,
+    local_config: &CalendarCultureConfig,
+) -> i64 {
+    let t_abs_master = date_to_t_abs(master_date, master_config);
+    let master_moment = t_abs_to_local_moment(
+        t_abs_master,
+        master_config.planet_id,
+        master_config.ticks_per_day,
+        master_config.day_start_offset,
+    );
+
+    let era = local_config.eras.get(local_date.era_index);
+    let is_reverse = era.map(|e| e.is_count_down).unwrap_or(false);
+    let start_year = era.map(|e| e.start_year).unwrap_or(1);
+    let actual_year = if is_reverse {
+        start_year - local_date.year + 1
+    } else {
+        start_year + local_date.year - 1
+    };
+
+    let days_before_year = days_up_to_year(
+        actual_year,
+        local_config.base_year_days,
+        local_config.leap_day_offset,
+        local_config.harmonics,
+    );
+    let days_in_prev_months = days_up_to_month(
+        actual_year,
+        local_date.month,
+        local_config.regular_months,
+        &local_config.leap_target,
+        local_config.leap_day_offset,
+        local_config.harmonics,
+    );
+    let d_local = days_before_year + days_in_prev_months + (local_date.day - 1);
+
+    master_moment.world_day - d_local
+}
+

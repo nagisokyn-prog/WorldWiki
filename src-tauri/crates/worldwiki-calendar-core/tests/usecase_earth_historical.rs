@@ -1,8 +1,11 @@
 use worldwiki_calendar_core::age::calculate_age;
+use worldwiki_calendar_core::conversion::{convert_calendar_date, date_to_t_abs, CalendarCultureConfig};
 use worldwiki_calendar_core::dial::{day_tick_to_units, units_to_day_tick};
 use worldwiki_calendar_core::eras::{era_year_number, find_active_era};
-use worldwiki_calendar_core::leap::{days_in_month, days_in_year, drift_per_century_f64, is_leap_year};
+use worldwiki_calendar_core::leap::{days_in_month, days_in_year, days_up_to_year, drift_per_century_f64, is_leap_year};
 use worldwiki_calendar_core::types::*;
+use worldwiki_calendar_core::weekdays::{calculate_weekday_with_pause, WeekdayPauseConfig};
+use worldwiki_calendar_core::year_finder::year_from_days_o1;
 
 #[test]
 fn usecase_russian_calendar_julian_to_gregorian_shift() {
@@ -222,3 +225,225 @@ fn usecase_french_republican_decimal_calendar_1793_1795() {
     assert_eq!(days_in_month(4, 12, &months, &leap_target, 1, &harmonics), 6);
     assert_eq!(days_in_year(4, 365, 1, &harmonics), 366);
 }
+
+#[test]
+fn usecase_time_traveler_french_republican_to_russian_empire_julian() {
+    // СЮЖЕТ: 18 Брюмера VIII года Республики (9 ноября 1799 года), переворот Наполеона Бонапарта.
+    // Наполеон в Париже в 4:50:00 десятичного времени (4.50 из 10 часов) отправляет секретную депешу.
+    // Депеша моментально попадает в Санкт-Петербург императору Павлу I.
+
+    // 1. Конфигурация Франции (Республиканский календарь)
+    // 10 часов по 100 минут по 100 секунд = 100 000 единиц циферблата
+    let french_dial = DialHierarchy {
+        units: vec![
+            DialUnit { name: "Heure".into(), subdivisions: 10 },
+            DialUnit { name: "Minute".into(), subdivisions: 100 },
+            DialUnit { name: "Seconde".into(), subdivisions: 100 },
+        ],
+    };
+    let french_months = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 5];
+    // Франсиада: високосными были III, VII, XI годы (shift_b = 1)
+    let french_harmonics = vec![
+        LeapHarmonic { multiplier_a: 1, shift_b: 1, divisor_c: 4, weight: 1 },
+    ];
+    let french_eras = vec![
+        CoreEra {
+            name: "Republique".into(),
+            start_year: 1, // 1792 год н.э.
+            start_month: Some(1),
+            start_day: Some(1),
+            end_year: None,
+            end_month: None,
+            end_day: None,
+            is_count_down: false,
+            counting_mode: EraCountingMode::ByCalendarYear,
+        },
+    ];
+
+    // Точка отсчета Французского календаря: 1 Вандемьера I года = 22 сентября 1792 г. н.э.
+    // В сутках Земли 86 400 секунд
+    let earth_ticks_per_day = 86_400;
+
+    let french_config = CalendarCultureConfig {
+        planet_id: "earth",
+        ticks_per_day: earth_ticks_per_day,
+        day_start_offset: 0, // Полночь в Париже
+        base_year_days: 365,
+        regular_months: &french_months,
+        harmonics: &french_harmonics,
+        leap_target: LeapTarget::InMonth { target_month: 12 },
+        leap_day_offset: 1,
+        calendar_origin_day: 654_416, // Точное смещение эры республики относительно 1 г. н.э.
+        dial: &french_dial,
+        eras: &french_eras,
+    };
+
+    // 18 Брюмера VIII года: месяц Брюмер (индекс 1), день 18, время 4:50:00
+    let napoleon_coup_date = DateCoordinate {
+        era_index: 0,
+        year: 8,
+        month: 1, // Брюмер (2-й месяц)
+        day: 18,
+        unit_values: vec![4, 50, 0], // 4 часа 50 минут десятичных (45% суток)
+    };
+
+    let _t_abs = date_to_t_abs(&napoleon_coup_date, &french_config);
+
+    // 2. Конфигурация Российской Империи (Юлианский календарь, старый стиль)
+    // 24 часа по 60 минут по 60 секунд (86 400 секунд)
+    let russian_dial = DialHierarchy {
+        units: vec![
+            DialUnit { name: "Hour".into(), subdivisions: 24 },
+            DialUnit { name: "Minute".into(), subdivisions: 60 },
+            DialUnit { name: "Second".into(), subdivisions: 60 },
+        ],
+    };
+    let russian_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let russian_harmonics = vec![
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4, weight: 1 },
+    ];
+    let russian_eras = vec![
+        CoreEra {
+            name: "AD".into(),
+            start_year: 1,
+            start_month: Some(1),
+            start_day: Some(1),
+            end_year: None,
+            end_month: None,
+            end_day: None,
+            is_count_down: false,
+            counting_mode: EraCountingMode::ByCalendarYear,
+        },
+    ];
+
+    // Санкт-Петербург находится на Пулковском меридиане (~30° в.д., +2 часа = +7200 сек от Парижа)
+    let spb_timezone_offset = 7200;
+
+    let russian_config = CalendarCultureConfig {
+        planet_id: "earth",
+        ticks_per_day: earth_ticks_per_day,
+        day_start_offset: -spb_timezone_offset, // Смещение часового пояса СПб
+        base_year_days: 365,
+        regular_months: &russian_months,
+        harmonics: &russian_harmonics,
+        leap_target: LeapTarget::InMonth { target_month: 1 }, // Февраль
+        leap_day_offset: 1,
+        calendar_origin_day: 0, // 1 января 1 года н.э.
+        dial: &russian_dial,
+        eras: &russian_eras,
+    };
+
+    // Перегоняем дату Наполеона в Санкт-Петербург
+    let pavel_date = convert_calendar_date(&napoleon_coup_date, &french_config, &russian_config);
+
+    // 1. Год в России: 1799 год
+    assert_eq!(pavel_date.year, 1799);
+    // 2. Месяц: Октябрь (индекс 9)
+    assert_eq!(pavel_date.month, 9);
+    // 3. День: ровно 29 октября (старый стиль, на 11 дней раньше 9 ноября григорианского!)
+    assert_eq!(pavel_date.day, 29);
+
+    // 4. Время: 4.50 десятичных часов = 0.45 суток = 10 часов 48 минут утра в Париже.
+    // В Санкт-Петербурге (+2 часа): 12 часов 48 минут дня!
+    assert_eq!(pavel_date.unit_values[0], 12); // Часы
+    assert_eq!(pavel_date.unit_values[1], 48); // Минуты
+
+    // Обратная конвертация: из Санкт-Петербурга обратно в Париж Наполеону
+    let restored_french = convert_calendar_date(&pavel_date, &russian_config, &french_config);
+    assert_eq!(restored_french.year, 8);
+    assert_eq!(restored_french.month, 1);
+    assert_eq!(restored_french.day, 18);
+    assert_eq!(restored_french.unit_values[0], 4);
+    assert_eq!(restored_french.unit_values[1], 50);
+}
+
+#[test]
+fn usecase_paused_weekday_cycles_and_intercalary_days() {
+    // СЮЖЕТ: Французский республиканский календарь и пауза недели.
+    // 12 месяцев по 3 декады (30 дней) = 360 дней.
+    // Дни декады: 0: Примиди, 1: Дуоди, ..., 9: Декади (10 дней в неделе).
+    // Дни 361..365 — это 5 Санкюлотид (празднества добродетели, таланта, труда, мнений, наград).
+    // Чекбокс: "Приостанавливать недельный счет на дни празднеств года".
+    let french_harmonics = vec![
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4, weight: 1 },
+    ];
+
+    let pause_config = WeekdayPauseConfig {
+        days_in_regular_months: 360,
+        extra_days_base: 5,
+        extra_days_leap: 1,
+        harmonics: &french_harmonics,
+        origin_year: 1,
+        origin_day: 0,
+        start_weekday: 0,
+        weekdays_count: 10,
+    };
+
+    // День 359 (30 Фрюктидора, последний день 12-го месяца)
+    // Должен быть Декади (индекс 9)
+    let weekday_last_regular = calculate_weekday_with_pause(1, 359, &pause_config);
+    assert_eq!(weekday_last_regular, Some(9)); // Декади!
+
+    // Дни 360..364 — Санкюлотиды (дни вне месяцев и вне недели)
+    for holiday_day in 360..365 {
+        let weekday_holiday = calculate_weekday_with_pause(1, holiday_day, &pause_config);
+        assert_eq!(weekday_holiday, None, "Санкюлотиды обязаны быть вне недели!");
+    }
+
+    // Новый Год (2-й год республики, день 0 — 1 Вандемьера):
+    // Неделя ВОЗОБНОВЛЯЕТСЯ ровно с Примиди (индекс 0), без сдвига на 5 дней!
+    let weekday_new_year = calculate_weekday_with_pause(2, 0, &pause_config);
+    assert_eq!(weekday_new_year, Some(0), "1 Вандемьера обязано начаться строго с Примиди (0)!");
+}
+
+#[test]
+fn usecase_herschel_rule_4000_year_anomaly() {
+    // СЮЖЕТ: Правило Джона Гершеля / астрономическая отмена високоса в 4000 году.
+    // Григорианский календарь дает ошибку в 1 день за ~3300 лет.
+    // Чтобы устранить ее, правило Гершеля отменяет високосность каждого года, кратного 4000.
+    let herschel_harmonics = vec![
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4, weight: 1 },
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 100, weight: -1 },
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 400, weight: 1 },
+        LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4000, weight: -1 }, // Исключение Гершеля!
+    ];
+
+    // 1. Год 3996: високосный (делится на 4)
+    assert_eq!(is_leap_year(3996, &herschel_harmonics), 1);
+    assert_eq!(days_in_year(3996, 365, 1, &herschel_harmonics), 366);
+
+    // 2. ГОД 4000: НЕВИСОКОСНЫЙ! (хотя делится на 400, но отменен правилом 4000)
+    assert_eq!(is_leap_year(4000, &herschel_harmonics), 0);
+    assert_eq!(days_in_year(4000, 365, 1, &herschel_harmonics), 365);
+
+    // 3. Год 4004: снова високосный (делится на 4)
+    assert_eq!(is_leap_year(4004, &herschel_harmonics), 1);
+    assert_eq!(days_in_year(4004, 365, 1, &herschel_harmonics), 366);
+
+    // 4. Проверка векового дрейфа относительно точного тропического года (365.24219 суток)
+    let drift_gregorian = drift_per_century_f64(
+        365,
+        &[
+            LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4, weight: 1 },
+            LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 100, weight: -1 },
+            LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 400, weight: 1 },
+        ],
+        365.24219,
+    );
+    let drift_herschel = drift_per_century_f64(365, &herschel_harmonics, 365.24219);
+
+    // Правило Гершеля на порядок точнее обычного григорианского!
+    assert!(drift_herschel.abs() < drift_gregorian.abs());
+
+    // 5. Проверка алгоритма O(1) Year Finder на стыке 4000 года
+    let days_before_4000 = days_up_to_year(4000, 365, 1, &herschel_harmonics);
+    let (found_year_3999, _) = year_from_days_o1(days_before_4000 - 1, 365, &herschel_harmonics, 1);
+    let (found_year_4000, day_in_4000) = year_from_days_o1(days_before_4000, 365, &herschel_harmonics, 1);
+    let (found_year_4001, _) = year_from_days_o1(days_before_4000 + 365, 365, &herschel_harmonics, 1);
+
+    assert_eq!(found_year_3999, 3999);
+    assert_eq!(found_year_4000, 4000);
+    assert_eq!(day_in_4000, 0);
+    assert_eq!(found_year_4001, 4001);
+}
+

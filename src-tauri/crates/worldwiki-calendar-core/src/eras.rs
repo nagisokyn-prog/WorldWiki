@@ -60,7 +60,7 @@ pub fn find_active_era(
         return None;
     }
 
-    let candidate = &sorted_eras[idx - 1];
+    let candidate = sorted_eras.get(idx - 1)?;
     if era_contains_date(candidate, year, month, day) {
         Some(candidate)
     } else {

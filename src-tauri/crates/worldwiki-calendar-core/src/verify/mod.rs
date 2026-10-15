@@ -15,4 +15,5 @@ pub mod verify_eras;
 pub mod verify_intervals;
 pub mod verify_leap;
 pub mod verify_scalar;
+pub mod verify_weekdays;
 pub mod verify_year;

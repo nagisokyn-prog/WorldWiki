@@ -8,9 +8,11 @@ description = "Pure mathematical, no_std, formally verifiable calendar core for 
 layer = "core"
 
 [dependencies]
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
 
 [features]
 default = []
+serde = ["dep:serde"]
 kani = []
 
 [lints.rust]

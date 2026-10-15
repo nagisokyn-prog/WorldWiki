@@ -3,6 +3,7 @@ use crate::scalar::euclidean_div_rem;
 
 /// Фаза луны (8 классических секторов)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MoonPhaseName {
     NewMoon,
     WaxingCrescent,
@@ -138,3 +139,95 @@ pub fn moon_phase_rational(
 
     (current_bp, phase_name)
 }
+
+/// Результат расчета астрономических событий солнца для конкретного дня
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct SunEvents {
+    /// Продолжительность светового дня в тиках
+    pub daylight_ticks: i64,
+    /// Момент истинного полудня (зенита)
+    pub noon_tick: i64,
+    /// Момент восхода солнца в тиках суток
+    pub sunrise_tick: i64,
+    /// Момент захода солнца в тиках суток
+    pub sunset_tick: i64,
+}
+
+/// Контекст астрономических параметров планеты и региона
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct PlanetSunContext {
+    pub solstice_world_day: i64,
+    pub ticks_per_day: i64,
+    pub tropical_year_num: i64,
+    pub tropical_year_den: i64,
+    pub summer_day_fraction_bp: i64, // Базисные пункты: от 0 до 10_000
+    pub winter_day_fraction_bp: i64, // Базисные пункты: от 0 до 10_000
+    pub is_north_hemisphere: bool,
+    pub longitude_mdeg: i64,
+    pub retrograde: bool,
+}
+
+/// Вычисляет длину светового дня, зенит, восход и закат на основе параметров солнцестояния планеты
+/// (Спецификация раздел 3.10)
+pub fn calculate_daylight_and_sun_events(
+    world_day: i64,
+    ctx: &PlanetSunContext,
+) -> SunEvents {
+    if ctx.ticks_per_day <= 0 || ctx.tropical_year_num <= 0 || ctx.tropical_year_den <= 0 {
+        return SunEvents {
+            daylight_ticks: 0,
+            noon_tick: 0,
+            sunrise_tick: 0,
+            sunset_tick: 0,
+        };
+    }
+
+    // 1. Фаза года от базового зимнего солнцестояния
+    let diff_days = world_day - ctx.solstice_world_day;
+    let cycle_step = (diff_days as i128 * ctx.tropical_year_den as i128)
+        .rem_euclid(ctx.tropical_year_num as i128);
+    // Доля года в базисных пунктах от 0 до 10_000 (0 = зимнее солнцестояние, 5000 = летнее солнцестояние)
+    let year_fraction_bp = ((cycle_step * 10_000) / ctx.tropical_year_num as i128) as i64;
+
+    // 2. Косинусоидальная волна сезонных колебаний в диапазоне [-10_000, 10_000]
+    // В точке 0 (зима): wave = -10_000
+    // В точке 2500 (весеннее равноденствие): wave = 0
+    // В точке 5000 (лето): wave = +10_000
+    // В точке 7500 (осеннее равноденствие): wave = 0
+    let wave = if year_fraction_bp < 5000 {
+        // От -10_000 до +10_000: параболическая гладкая гармоника
+        let x = year_fraction_bp - 2500; // от -2500 до +2500
+        (x * 10_000) / 2500
+    } else {
+        // От +10_000 до -10_000
+        let x = 7500 - year_fraction_bp; // от +2500 до -2500
+        (x * 10_000) / 2500
+    };
+
+    let hemisphere_sign = if ctx.is_north_hemisphere { 1 } else { -1 };
+    let signed_wave = wave * hemisphere_sign;
+
+    // 3. Длина светового дня в базисных пунктах
+    let mid_fraction = (ctx.summer_day_fraction_bp + ctx.winter_day_fraction_bp) / 2;
+    let amp_fraction = (ctx.summer_day_fraction_bp - ctx.winter_day_fraction_bp) / 2;
+    let day_fraction_bp = (mid_fraction + (signed_wave * amp_fraction) / 10_000).clamp(0, 10_000);
+
+    let daylight_ticks = (day_fraction_bp as i128 * ctx.ticks_per_day as i128 / 10_000) as i64;
+
+    // 4. Зенит, восход и закат
+    let noon = solar_noon_tick(ctx.ticks_per_day, ctx.longitude_mdeg, ctx.retrograde);
+    let half_day = daylight_ticks / 2;
+
+    let (_, sunrise) = euclidean_div_rem(noon - half_day, ctx.ticks_per_day);
+    let (_, sunset) = euclidean_div_rem(noon + half_day, ctx.ticks_per_day);
+
+    SunEvents {
+        daylight_ticks,
+        noon_tick: noon,
+        sunrise_tick: sunrise,
+        sunset_tick: sunset,
+    }
+}
+

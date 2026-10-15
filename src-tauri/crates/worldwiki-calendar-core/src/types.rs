@@ -4,6 +4,7 @@ use alloc::vec::Vec;
 
 /// Локальный момент физических суток на планете
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LocalMoment {
     pub planet_id: String,
     pub world_day: i64,
@@ -12,6 +13,7 @@ pub struct LocalMoment {
 
 /// Единица произвольного деления суток (от старшей к младшей)
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DialUnit {
     pub name: String,
     pub subdivisions: i64,
@@ -19,12 +21,14 @@ pub struct DialUnit {
 
 /// Иерархия циферблата культуры
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DialHierarchy {
     pub units: Vec<DialUnit>,
 }
 
 /// Гармоника високосности: w * floor_div(a * Y + b, c)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LeapHarmonic {
     pub weight: i32,
     pub multiplier_a: i64,
@@ -34,6 +38,7 @@ pub struct LeapHarmonic {
 
 /// Направление високосной добавки
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum LeapTarget {
     InMonth { target_month: usize },
     #[default]
@@ -42,6 +47,7 @@ pub enum LeapTarget {
 
 /// Конфигурация високосных правил
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LeapRuleConfig {
     pub harmonics: Vec<LeapHarmonic>,
     pub days_offset: i32,
@@ -50,6 +56,7 @@ pub struct LeapRuleConfig {
 
 /// Физический диапазон времени сцены [start, end) в абсолютных тиках t_abs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TimeInterval {
     pub start: i64,
     pub end: i64,
@@ -57,6 +64,7 @@ pub struct TimeInterval {
 
 /// Уровень точности указания даты
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PrecisionLevel {
     #[default]
     ExactTick,
@@ -70,6 +78,7 @@ pub enum PrecisionLevel {
 
 /// Режим отсчета номера года эры
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum EraCountingMode {
     #[default]
     ByCalendarYear,
@@ -78,6 +87,7 @@ pub enum EraCountingMode {
 
 /// Хронологическая эра для бинарного поиска
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CoreEra {
     pub name: String,
     pub start_year: i64,
@@ -92,6 +102,7 @@ pub struct CoreEra {
 
 /// Параметрическое правило возраста
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AgeRule {
     pub age_at_birth: i32,
     pub step_on_new_year: bool,
@@ -100,6 +111,7 @@ pub struct AgeRule {
 
 /// Точка отсчета календаря
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CalendarOrigin {
     pub year: i64,
     pub month: usize,
@@ -109,6 +121,7 @@ pub struct CalendarOrigin {
 
 /// Календарная дата культуры для межпланетного преобразования
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DateCoordinate {
     pub era_index: usize,
     pub year: i64,
@@ -119,6 +132,7 @@ pub struct DateCoordinate {
 
 /// Календарная дата года, месяца и дня (без времени и эры)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CalDate {
     pub year: i64,
     pub month: usize,
@@ -130,5 +144,3 @@ impl CalDate {
         Self { year, month, day }
     }
 }
-
-

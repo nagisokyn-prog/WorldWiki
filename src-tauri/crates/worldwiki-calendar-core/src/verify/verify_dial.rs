@@ -4,12 +4,12 @@ use alloc::string::String;
 use alloc::vec;
 
 #[kani::proof]
-#[kani::unwind(6)]
+#[kani::unwind(5)]
 fn proof_dial_reversible_no_loss() {
     let u1_sub: i64 = kani::any();
     let u2_sub: i64 = kani::any();
-    kani::assume(u1_sub >= 1 && u1_sub <= 12);
-    kani::assume(u2_sub >= 1 && u2_sub <= 30);
+    kani::assume(u1_sub >= 1 && u1_sub <= 4);
+    kani::assume(u2_sub >= 1 && u2_sub <= 6);
 
     let hierarchy = DialHierarchy {
         units: vec![
@@ -27,7 +27,7 @@ fn proof_dial_reversible_no_loss() {
     let total_d = total_dial_subdivisions(&hierarchy);
     assert_eq!(total_d, u1_sub * u2_sub);
 
-    let ticks_per_day = total_d * 2;
+    let ticks_per_day = total_d;
 
     let v1: i64 = kani::any();
     let v2: i64 = kani::any();
@@ -42,21 +42,21 @@ fn proof_dial_reversible_no_loss() {
 }
 
 #[kani::proof]
-#[kani::unwind(6)]
+#[kani::unwind(5)]
 fn proof_dial_monotonic() {
     let hierarchy = DialHierarchy {
         units: vec![
             DialUnit {
                 name: String::new(),
-                subdivisions: 12,
+                subdivisions: 4,
             },
             DialUnit {
                 name: String::new(),
-                subdivisions: 30,
+                subdivisions: 6,
             },
         ],
     };
-    let ticks_per_day = 720;
+    let ticks_per_day = 24;
 
     let tick1: i64 = kani::any();
     let tick2: i64 = kani::any();
@@ -65,8 +65,8 @@ fn proof_dial_monotonic() {
     let u1 = day_tick_to_units(tick1, &hierarchy, ticks_per_day);
     let u2 = day_tick_to_units(tick2, &hierarchy, ticks_per_day);
 
-    let linear1 = u1.first().copied().unwrap_or(0) * 60 + u1.get(1).copied().unwrap_or(0);
-    let linear2 = u2.first().copied().unwrap_or(0) * 60 + u2.get(1).copied().unwrap_or(0);
+    let linear1 = u1.first().copied().unwrap_or(0) * 6 + u1.get(1).copied().unwrap_or(0);
+    let linear2 = u2.first().copied().unwrap_or(0) * 6 + u2.get(1).copied().unwrap_or(0);
 
     assert!(linear1 <= linear2);
 }

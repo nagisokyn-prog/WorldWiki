@@ -1,4 +1,4 @@
-use worldwiki_calendar_core::astronomy::solar_noon_tick;
+use worldwiki_calendar_core::astronomy::{calculate_daylight_and_sun_events, solar_noon_tick, PlanetSunContext};
 use worldwiki_calendar_core::conversion::{date_to_t_abs, t_abs_to_date, CalendarCultureConfig};
 use worldwiki_calendar_core::dial::units_to_day_tick;
 use worldwiki_calendar_core::scalar::{local_moment_to_t_abs, t_abs_to_local_moment};
@@ -154,3 +154,91 @@ fn usecase_cross_planetary_synchronization_coruscant_tatooine_lothal() {
     assert_eq!(restored_from_tatooine, galactic_event_t_abs);
     assert_eq!(restored_from_lothal, galactic_event_t_abs);
 }
+
+#[test]
+fn usecase_astronomy_solstice_seasons_and_polar_white_nights() {
+    // СЮЖЕТ: Планета Илум (Холодный мир джедаев, наклон оси аналогичен Земле).
+    // Сутки = 86 400 тиков. Год = 365.2422 суток.
+    // Базовое зимнее солнцестояние в world_day = 0.
+    // На северном форпосте (широта 60°):
+    // - Летом: белые ночи (доля дня 77% = 18.5 часов света)
+    // - Зимой: полярные сумерки (доля дня 23% = 5.5 часов света)
+    let ticks_per_day = 86_400;
+    let tropical_num = 3652422;
+    let tropical_den = 10000;
+    let summer_bp = 7700; // 77%
+    let winter_bp = 2300; // 23%
+
+    let north_ctx = PlanetSunContext {
+        solstice_world_day: 0,
+        ticks_per_day,
+        tropical_year_num: tropical_num,
+        tropical_year_den: tropical_den,
+        summer_day_fraction_bp: summer_bp,
+        winter_day_fraction_bp: winter_bp,
+        is_north_hemisphere: true,
+        longitude_mdeg: 0,
+        retrograde: false,
+    };
+
+    // 1. ДЕНЬ ЗИМНЕГО СОЛНЦЕСТОЯНИЯ (world_day = 0)
+    let winter_solstice = calculate_daylight_and_sun_events(0, &north_ctx);
+    // Длина дня ровно 23% от 86400 = 19 872 тика (~5.5 часов света)
+    assert_eq!(winter_solstice.daylight_ticks, 19872);
+    // Полдень на 0° меридиане строго в 43 200 (12:00)
+    assert_eq!(winter_solstice.noon_tick, 43200);
+    // Восход в 43200 - 9936 = 33264 (09:14:24 утра)
+    assert_eq!(winter_solstice.sunrise_tick, 33264);
+    // Закат в 43200 + 9936 = 53136 (14:45:36 дня)
+    assert_eq!(winter_solstice.sunset_tick, 53136);
+
+    // 2. ДЕНЬ ЛЕТНЕГО СОЛНЦЕСТОЯНИЯ (полгода спустя, ~182 день)
+    let summer_solstice = calculate_daylight_and_sun_events(182, &north_ctx);
+    // Длина дня максимальна: 76.8%..77.0% от суток (~18.5 часов света)
+    assert!(summer_solstice.daylight_ticks > 66_000);
+    // Солнце встает очень рано (~02:45) и садится очень поздно (~21:15)
+    assert!(summer_solstice.sunrise_tick < 11_000);
+    assert!(summer_solstice.sunset_tick > 75_000);
+
+    // 3. ЮЖНОЕ ПОЛУШАРИЕ (В тот же день 0 на юге царит ЛЕТО!)
+    let south_ctx = PlanetSunContext {
+        is_north_hemisphere: false,
+        ..north_ctx
+    };
+    let south_pole_day0 = calculate_daylight_and_sun_events(0, &south_ctx);
+    // На юге в этот же день длина светового дня максимальна!
+    assert_eq!(south_pole_day0.daylight_ticks, 66528); // 77% света
+}
+
+#[test]
+fn usecase_sunset_day_start_offset_jerusalem_vs_rome() {
+    // СЮЖЕТ: Культурная смена даты на закате против полуночи (спецификация раздел 1.3 и 7.1).
+    // Римлянин: смена дня в полночь (day_start_offset = 0).
+    // Иудей: смена дня на закате в 18:00 (day_start_offset = -21600 сек, т.е. закат предыдущих суток).
+    let ticks_per_day = 86_400;
+    let sunset_offset = -21_600; // 18:00
+
+    // Событие: Тайная вечеря / Встреча в пятницу в 19:30 (тик 70 200 физических суток 100)
+    // t_abs = 100 * 86400 + 70200 = 8 710 200 секунд
+    let meeting_t_abs = 100 * 86400 + 70200;
+
+    // 1. По календарю Рима (смена в 00:00)
+    let rome_moment = t_abs_to_local_moment(meeting_t_abs, "earth", ticks_per_day, 0);
+    assert_eq!(rome_moment.world_day, 100); // Еще 100-й день (пятница)!
+    assert_eq!(rome_moment.day_tick, 70200); // 19:30
+
+    // 2. По календарю Иерусалима (смена в 18:00 на закате)
+    // Солнце уже село 1.5 часа назад (в 18:00)!
+    let jerusalem_moment = t_abs_to_local_moment(meeting_t_abs, "earth", ticks_per_day, sunset_offset);
+    assert_eq!(jerusalem_moment.world_day, 101); // УЖЕ 101-Й ДЕНЬ (СУББОТА / ШАББАТ)!
+    // Время внутри дня: прошло 1.5 часа от заката (5400 секунд от начала субботы)
+    assert_eq!(jerusalem_moment.day_tick, 5400);
+
+    // 3. ОБРАТИМОСТЬ: Оба наблюдателя восстанавливают СТРОГО один и тот же t_abs!
+    let restored_rome = local_moment_to_t_abs(&rome_moment, ticks_per_day, 0);
+    let restored_jerusalem = local_moment_to_t_abs(&jerusalem_moment, ticks_per_day, sunset_offset);
+
+    assert_eq!(restored_rome, meeting_t_abs);
+    assert_eq!(restored_jerusalem, meeting_t_abs);
+}
+

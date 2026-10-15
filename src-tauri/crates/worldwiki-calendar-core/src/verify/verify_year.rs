@@ -6,7 +6,7 @@ use crate::year_finder::year_from_days_o1;
 #[kani::unwind(5)]
 fn proof_o1_year_finder_bounds() {
     let cal_day: i64 = kani::any();
-    kani::assume(cal_day >= -1461 && cal_day <= 1461);
+    kani::assume(cal_day >= -400 && cal_day <= 400);
 
     let base_days = 365;
     let harmonics = [

@@ -99,6 +99,12 @@ pub fn validate_calendar_config(
     crate::leap::validate_harmonics_step(config.harmonics)
         .map_err(CalendarConfigValidationError::LeapError)?;
 
+    crate::leap::validate_leap_days_offset(config.leap_day_offset as i32, config.base_year_days)
+        .map_err(CalendarConfigValidationError::LeapError)?;
+
+    crate::leap::validate_leap_target(&config.leap_target, config.regular_months.len())
+        .map_err(CalendarConfigValidationError::LeapError)?;
+
     crate::eras::validate_eras_slice(config.eras)
         .map_err(CalendarConfigValidationError::EraError)?;
 
@@ -238,9 +244,7 @@ pub fn t_abs_to_date(t_abs: i64, config: &CalendarCultureConfig) -> DateCoordina
     let mut year = actual_year;
 
     if let Some(active_era) = find_active_era(config.eras, actual_year, month + 1, day) {
-        if let Some(pos) = config.eras.iter().position(|e| e.name == active_era.name) {
-            era_index = pos;
-        }
+        era_index = config.eras.iter().position(|e| e.name == active_era.name).unwrap_or(0);
         let max_days_in_target = days_in_month(
             actual_year,
             month,

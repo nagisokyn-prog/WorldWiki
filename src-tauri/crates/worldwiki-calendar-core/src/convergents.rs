@@ -53,18 +53,9 @@ pub fn calculate_leap_convergents(
         d = rem;
 
         // Рекуррентная формула Гаусса-Эйлера: p_{k} = a_k * p_{k-1} + p_{k-2}
-        let p_next = match a.checked_mul(p_curr).and_then(|v| v.checked_add(p_prev)) {
-            Some(v) => v,
-            None => break,
-        };
-        let q_next = match a.checked_mul(q_curr).and_then(|v| v.checked_add(q_prev)) {
-            Some(v) => v,
-            None => break,
-        };
+        let p_next = a * p_curr + p_prev;
+        let q_next = a * q_curr + q_prev;
 
-        if p_next > i64::MAX as i128 || q_next > i64::MAX as i128 {
-            break;
-        }
 
         p_prev = p_curr;
         q_prev = q_curr;

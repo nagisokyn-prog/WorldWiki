@@ -51,17 +51,14 @@ pub fn try_t_abs_to_local_moment(
     if ticks_per_day == 0 {
         return Err(ScalarError::DivisionByZero);
     }
-    let norm_offset = normalize_day_start_offset(day_start_offset, ticks_per_day);
-    let shifted = (t_abs as i128)
-        .checked_sub(norm_offset as i128)
-        .ok_or(ScalarError::Overflow)?;
+    let shifted = (t_abs as i128) - (day_start_offset as i128);
 
     let ticks = ticks_per_day as i128;
     let world_day = shifted.div_euclid(ticks);
     let day_tick = shifted.rem_euclid(ticks);
 
     let world_day_i64 = i64::try_from(world_day).map_err(|_| ScalarError::Overflow)?;
-    let day_tick_i64 = i64::try_from(day_tick).map_err(|_| ScalarError::Overflow)?;
+    let day_tick_i64 = day_tick as i64;
 
     Ok(LocalMoment {
         planet_id: planet_id.to_string(),
@@ -99,17 +96,8 @@ pub fn try_local_moment_to_t_abs(
     ticks_per_day: i64,
     day_start_offset: i64,
 ) -> Result<i64, ScalarError> {
-    let norm_offset = normalize_day_start_offset(day_start_offset, ticks_per_day);
-    let day_prod = (moment.world_day as i128)
-        .checked_mul(ticks_per_day as i128)
-        .ok_or(ScalarError::Overflow)?;
-    let raw = day_prod
-        .checked_add(moment.day_tick as i128)
-        .ok_or(ScalarError::Overflow)?;
-    let total = raw
-        .checked_add(norm_offset as i128)
-        .ok_or(ScalarError::Overflow)?;
-
+    let day_prod = (moment.world_day as i128) * (ticks_per_day as i128);
+    let total = day_prod + (moment.day_tick as i128) + (day_start_offset as i128);
     i64::try_from(total).map_err(|_| ScalarError::Overflow)
 }
 
@@ -140,9 +128,8 @@ pub fn apply_day_start_offset(t_abs: i64, offset: i64, ticks_per_day: i64) -> i6
 
 /// Обратное восстановление смещения начала суток с нормализацией
 #[inline]
-pub fn revert_day_start_offset(shifted: i64, offset: i64, ticks_per_day: i64) -> i64 {
-    let norm_offset = normalize_day_start_offset(offset, ticks_per_day);
-    shifted.saturating_sub(norm_offset)
+pub fn revert_day_start_offset(shifted: i64, offset: i64, _ticks_per_day: i64) -> i64 {
+    shifted.saturating_sub(offset)
 }
 
 /// Преобразование t_abs в компактный FastLocalMoment без аллокаций строк (Zero-Allocation)
@@ -153,8 +140,7 @@ pub fn t_abs_to_fast_moment(
     ticks_per_day: i64,
     day_start_offset: i64,
 ) -> FastLocalMoment {
-    let norm_offset = normalize_day_start_offset(day_start_offset, ticks_per_day);
-    let shifted = (t_abs as i128) - (norm_offset as i128);
+    let shifted = (t_abs as i128) - (day_start_offset as i128);
     let ticks = if ticks_per_day != 0 { ticks_per_day as i128 } else { 1 };
     let world_day = shifted.div_euclid(ticks);
     let day_tick = shifted.rem_euclid(ticks);
@@ -172,11 +158,10 @@ pub fn fast_moment_to_t_abs(
     ticks_per_day: i64,
     day_start_offset: i64,
 ) -> i64 {
-    let norm_offset = normalize_day_start_offset(day_start_offset, ticks_per_day);
     let total = (moment.world_day as i128)
         .saturating_mul(ticks_per_day as i128)
         .saturating_add(moment.day_tick as i128)
-        .saturating_add(norm_offset as i128);
+        .saturating_add(day_start_offset as i128);
     total.clamp(i64::MIN as i128, i64::MAX as i128) as i64
 }
 

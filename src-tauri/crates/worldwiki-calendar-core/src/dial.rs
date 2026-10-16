@@ -75,9 +75,7 @@ pub fn checked_total_dial_subdivisions(hierarchy: &DialHierarchy) -> Result<i64,
         if u.subdivisions <= 0 {
             return Err(DialError::ZeroOrNegativeSubdivision);
         }
-        cap = cap
-            .checked_mul(u.subdivisions as i128)
-            .ok_or(DialError::CapacityOverflow)?;
+        cap *= u.subdivisions as i128;
         if cap > i64::MAX as i128 {
             return Err(DialError::CapacityOverflow);
         }

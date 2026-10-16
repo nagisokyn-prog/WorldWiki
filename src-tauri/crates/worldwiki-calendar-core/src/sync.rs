@@ -98,11 +98,7 @@ where
             return Err(ConversionError::MaxChainDepthExceeded);
         }
 
-        if let Some(slot) = visited.get_mut(depth) {
-            *slot = current;
-        } else {
-            return Err(ConversionError::MaxChainDepthExceeded);
-        }
+        visited[depth] = current;
         depth += 1;
 
         match get_parent(current)? {

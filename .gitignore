@@ -50,6 +50,8 @@ coverage/
 # Prebuilt static libs
 e2e/prebuilt/
 
+*.rar
+
 # Legacy and local-only backup directories
 .logic_legacy/
 src/.logic_legacy/

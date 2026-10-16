@@ -1,28 +1,17 @@
 extern crate alloc;
 use crate::scalar::euclidean_div_rem;
-
-/// Фаза луны (8 классических секторов)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum MoonPhaseName {
-    NewMoon,
-    WaxingCrescent,
-    FirstQuarter,
-    WaxingGibbous,
-    FullMoon,
-    WaningGibbous,
-    LastQuarter,
-    WaningCrescent,
-}
+pub use crate::moons::*;
 
 /// Вычисляет позицию истинного полудня (солнечного зенита) в тиках суток
 /// с учетом прямого или ретроградного вращения планеты.
 ///
 /// Долгота передается в миллиградусах: от -180_000 до +180_000 (360_000 миллиградусов = 360 градусов).
-/// При прямом вращении (retrograde = false) солнце движется с востока на запад,
-/// поэтому на восточных долготах (+lon) полдень наступает раньше.
-/// При ретроградном вращении (retrograde = true) планета вращается в обратную сторону,
-/// солнце восходит на западе, и знак смещения долготы инвертируется.
+/// - При прямом вращении (retrograde = false) солнце движется с востока на запад,
+///   поэтому на восточных долготах (+lon) полдень наступает раньше.
+/// - При ретроградном вращении (retrograde = true) планета вращается в обратную сторону,
+///   солнце восходит на западе, и знак смещения долготы инвертируется (п. 9.4).
+/// - На нулевом меридиане (lon = 0) полдень наступает ровно в середине суток (ticks_per_day / 2).
+/// - На антиподе (lon = 180_000 или -180_000) полдень сдвинут ровно на половину суток.
 pub fn solar_noon_tick(
     ticks_per_day: i64,
     longitude_mdeg: i64,
@@ -92,54 +81,6 @@ pub fn sunlight_basis_points(
     }
 }
 
-/// Рациональный расчет фазы луны без погрешности с плавающей запятой
-///
-/// Синодический период задается как rational: period_days_num / period_days_den.
-/// Сдвиг начальной фазы: initial_phase_basis_points в диапазоне 0..10_000 (0 = новолуние, 5000 = полнолуние).
-/// Возвращает текущую фазу в базисных пунктах [0, 10_000) и сектор фазы.
-pub fn moon_phase_rational(
-    t_abs: i64,
-    ticks_per_day: i64,
-    period_days_num: i64,
-    period_days_den: i64,
-    initial_phase_basis_points: i64,
-) -> (i64, MoonPhaseName) {
-    if ticks_per_day <= 0 || period_days_num <= 0 || period_days_den <= 0 {
-        return (0, MoonPhaseName::NewMoon);
-    }
-
-    // Полный период в тиках выражается через дробь:
-    // T_cycle = (period_days_num * ticks_per_day) / period_days_den
-    let num_ticks = period_days_num as i128 * ticks_per_day as i128;
-    let den_ticks = period_days_den as i128;
-
-    // Фазовый сдвиг в масштабе числителя:
-    // shift_ticks = (initial_phase_bp * num_ticks) / (10_000 * den_ticks)
-    // Масштабируем t_abs к общему знаменателю den_ticks:
-    // scaled_t = t_abs * den_ticks + (initial_phase_bp * num_ticks / 10_000)
-    let phase_shift_scaled = (initial_phase_basis_points as i128 * num_ticks) / 10_000;
-    let total_scaled = t_abs as i128 * den_ticks + phase_shift_scaled;
-
-    // Остаток по модулю num_ticks (длины цикла):
-    let rem = total_scaled.rem_euclid(num_ticks);
-
-    // Доля цикла в базисных пунктах: (rem * 10_000) / num_ticks
-    let current_bp = ((rem * 10_000) / num_ticks) as i64;
-
-    let phase_name = match current_bp {
-        bp if (0..625).contains(&bp) || (9375..10_000).contains(&bp) => MoonPhaseName::NewMoon,
-        bp if (625..1875).contains(&bp) => MoonPhaseName::WaxingCrescent,
-        bp if (1875..3125).contains(&bp) => MoonPhaseName::FirstQuarter,
-        bp if (3125..4375).contains(&bp) => MoonPhaseName::WaxingGibbous,
-        bp if (4375..5625).contains(&bp) => MoonPhaseName::FullMoon,
-        bp if (5625..6875).contains(&bp) => MoonPhaseName::WaningGibbous,
-        bp if (6875..8125).contains(&bp) => MoonPhaseName::LastQuarter,
-        _ => MoonPhaseName::WaningCrescent,
-    };
-
-    (current_bp, phase_name)
-}
-
 /// Результат расчета астрономических событий солнца для конкретного дня
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -154,7 +95,23 @@ pub struct SunEvents {
     pub sunset_tick: i64,
 }
 
+impl SunEvents {
+    /// Проверяет, является ли день полярным (солнце не заходит за горизонт)
+    pub fn is_polar_day(&self, ticks_per_day: i64) -> bool {
+        self.daylight_ticks >= ticks_per_day && ticks_per_day > 0
+    }
+
+    /// Проверяет, является ли день полярной ночью (солнце не восходит)
+    pub fn is_polar_night(&self) -> bool {
+        self.daylight_ticks <= 0
+    }
+}
+
 /// Контекст астрономических параметров планеты и региона
+///
+/// Обратите внимание (п. 9.1, 9.2):
+/// Все параметры задаются в базисных пунктах (bp, 1 bp = 0.01%) и целочисленных дробях.
+/// Вычисления не используют float, тригонометрические библиотеки libm::cos и строго детерминированы.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PlanetSunContext {
@@ -171,6 +128,15 @@ pub struct PlanetSunContext {
 
 /// Вычисляет длину светового дня, зенит, восход и закат на основе параметров солнцестояния планеты
 /// (Спецификация раздел 3.10)
+///
+/// Хронологический статус (п. 9.1, 9.2):
+/// `SunEvents` является презентационно-визуальным интерфейсом для UI (отрисовка карты неба,
+/// полосы дня/ночи и расписания сумерек). Он не изменяет дискретный ход абсолютного времени `t_abs`.
+///
+/// Обработка полярных широт (п. 9.3):
+/// - При полярном дне `daylight_ticks == ticks_per_day`, солнце не заходит.
+/// - При полярной ночи `daylight_ticks == 0`, солнце не восходит.
+/// - Деление на 0 математически исключено благодаря проверкам входных делителей.
 pub fn calculate_daylight_and_sun_events(
     world_day: i64,
     ctx: &PlanetSunContext,
@@ -191,17 +157,15 @@ pub fn calculate_daylight_and_sun_events(
     // Доля года в базисных пунктах от 0 до 10_000 (0 = зимнее солнцестояние, 5000 = летнее солнцестояние)
     let year_fraction_bp = ((cycle_step * 10_000) / ctx.tropical_year_num as i128) as i64;
 
-    // 2. Косинусоидальная волна сезонных колебаний в диапазоне [-10_000, 10_000]
+    // 2. Сезонная волна в диапазоне [-10_000, 10_000] (п. 9.2: чистая целочисленная арифметика)
     // В точке 0 (зима): wave = -10_000
     // В точке 2500 (весеннее равноденствие): wave = 0
     // В точке 5000 (лето): wave = +10_000
     // В точке 7500 (осеннее равноденствие): wave = 0
     let wave = if year_fraction_bp < 5000 {
-        // От -10_000 до +10_000: параболическая гладкая гармоника
         let x = year_fraction_bp - 2500; // от -2500 до +2500
         (x * 10_000) / 2500
     } else {
-        // От +10_000 до -10_000
         let x = 7500 - year_fraction_bp; // от +2500 до -2500
         (x * 10_000) / 2500
     };
@@ -209,7 +173,7 @@ pub fn calculate_daylight_and_sun_events(
     let hemisphere_sign = if ctx.is_north_hemisphere { 1 } else { -1 };
     let signed_wave = wave * hemisphere_sign;
 
-    // 3. Длина светового дня в базисных пунктах
+    // 3. Длина светового дня в базисных пунктах: строго зажимается в [0, 10_000]
     let mid_fraction = (ctx.summer_day_fraction_bp + ctx.winter_day_fraction_bp) / 2;
     let amp_fraction = (ctx.summer_day_fraction_bp - ctx.winter_day_fraction_bp) / 2;
     let day_fraction_bp = (mid_fraction + (signed_wave * amp_fraction) / 10_000).clamp(0, 10_000);
@@ -230,4 +194,3 @@ pub fn calculate_daylight_and_sun_events(
         sunset_tick: sunset,
     }
 }
-

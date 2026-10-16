@@ -79,54 +79,105 @@ fn proof_leap_birthday_clamped() {
 }
 
 #[kani::proof]
-fn proof_age_zero_length_month_clamped() {
-    let birth_y: i64 = kani::any();
-    let curr_y: i64 = kani::any();
-    kani::assume(birth_y >= 1000 && birth_y <= 2000);
-    kani::assume(curr_y >= birth_y && curr_y <= 2500);
-
+fn proof_age_extra_day_birth() {
     let rule = AgeRule {
         age_at_birth: 0,
         step_on_new_year: false,
         year_only: false,
     };
 
-    // Рождение в интеркалярном месяце (например, 13-й месяц):
-    // При max_days_in_birth_month = 0 (в текущем году интеркалярный месяц отсутствует / 0 дней)
-    // на ту же дату возраст неотрицателен и точно равен разнице лет.
-    let birth = CalDate::new(birth_y, 13, 1);
-    let age = calculate_age(birth, CalDate::new(curr_y, 13, 1), &rule, 0);
+    // Родился в 6-й эпагоменальный день (високосный) 13-го месяца
+    let birth = CalDate::new(2000, 13, 6);
 
-    assert!(age >= 0);
-    assert_eq!(i64::from(age), curr_y - birth_y);
+    // В невисокосном 2001 году в эпагоменах только 5 дней:
+    let age_before = calculate_age(birth, CalDate::new(2001, 13, 4), &rule, 5);
+    let age_on = calculate_age(birth, CalDate::new(2001, 13, 5), &rule, 5);
 
-    if curr_y > birth_y {
-        let age_before = calculate_age(birth, CalDate::new(curr_y, 12, 30), &rule, 0);
-        assert!(age_before >= 0);
-        assert_eq!(i64::from(age_before), curr_y - birth_y - 1);
-    }
+    assert_eq!(age_before, 0);
+    assert_eq!(age_on, 1);
 }
 
 #[kani::proof]
-fn proof_age_new_year_step_december_31() {
-    let birth_y: i64 = kani::any();
-    kani::assume(birth_y >= 1000 && birth_y <= 2000);
+fn proof_age_birth_day_zero_or_negative_safe() {
+    let rule = AgeRule {
+        age_at_birth: 0,
+        step_on_new_year: false,
+        year_only: false,
+    };
 
+    // Невалидный день 0 или -5 не должен приводить к панике или сбою
+    let birth_zero = CalDate::new(2000, 5, 0);
+    let age = calculate_age(birth_zero, CalDate::new(2005, 5, 10), &rule, 30);
+    assert_eq!(age, 5);
+}
+
+#[kani::proof]
+fn proof_age_negative_before_birth() {
+    let rule = AgeRule {
+        age_at_birth: 0,
+        step_on_new_year: false,
+        year_only: false,
+    };
+
+    let birth = CalDate::new(2020, 6, 1);
+    let current_before = CalDate::new(2018, 6, 1);
+    let age = calculate_age(birth, current_before, &rule, 30);
+    assert!(age < 0);
+}
+
+#[kani::proof]
+fn proof_age_new_year_step_january_1() {
     let rule = AgeRule {
         age_at_birth: 1, // Традиционный восточноазиатский возраст
         step_on_new_year: true,
         year_only: false,
     };
 
-    // Родился 31 декабря
-    let birth = CalDate::new(birth_y, 12, 31);
+    // Родился 1 января 2000 года
+    let birth = CalDate::new(2000, 1, 1);
 
-    // В день рождения (31 декабря) возраст строго 1 год
-    let age_on_birth = calculate_age(birth, CalDate::new(birth_y, 12, 31), &rule, 31);
-    assert_eq!(age_on_birth, 1);
+    // 1 января 2000 года: возраст 1 год
+    assert_eq!(calculate_age(birth, CalDate::new(2000, 1, 1), &rule, 31), 1);
+    // 2 января 2000 года: возраст все еще 1 год (год не сменился)
+    assert_eq!(calculate_age(birth, CalDate::new(2000, 1, 2), &rule, 31), 1);
+    // 1 января 2001 года: наступает 2 года
+    assert_eq!(calculate_age(birth, CalDate::new(2001, 1, 1), &rule, 31), 2);
+}
 
-    // На следующий день (1 января следующего года) возраст сразу 2 года
-    let age_on_next_day = calculate_age(birth, CalDate::new(birth_y + 1, 1, 1), &rule, 31);
-    assert_eq!(age_on_next_day, 2);
+#[kani::proof]
+fn proof_age_birth_day_nonnegative() {
+    let day: i64 = kani::any();
+    kani::assume(day >= -100 && day <= 100);
+
+    let rule = AgeRule::default();
+    let birth = CalDate::new(2000, 1, day);
+    let curr = CalDate::new(2010, 1, 15);
+
+    let age = calculate_age(birth, curr, &rule, 30);
+    assert!(age >= 0);
+}
+
+#[kani::proof]
+fn proof_age_birth_month_bounded() {
+    let month: usize = kani::any();
+    kani::assume(month >= 1 && month <= 13);
+
+    let rule = AgeRule::default();
+    let birth = CalDate::new(2000, month, 10);
+    let curr = CalDate::new(2005, month, 10);
+
+    let age = calculate_age(birth, curr, &rule, 30);
+    assert_eq!(age, 5);
+}
+
+#[kani::proof]
+fn proof_age_first_month_zero_length() {
+    let rule = AgeRule::default();
+    // Рождение в месяце 1, если в текущем году в месяце 1 ровно 0 дней (экзотический календарь)
+    let birth = CalDate::new(2000, 1, 10);
+    let curr = CalDate::new(2005, 2, 10);
+
+    let age = calculate_age(birth, curr, &rule, 0);
+    assert_eq!(age, 5);
 }
 

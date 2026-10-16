@@ -1,22 +1,31 @@
 use crate::types::{LeapHarmonic, LeapTarget};
+pub use crate::drift::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LeapValidationError {
     NonPositiveDivisor,
+    DuplicateHarmonicDivisor { divisor: i64 },
     NegativeLeapDays,
     InvalidTargetMonth,
-    HarmonicsStepViolation,
+    HarmonicsStepViolation { year: i64, actual_step: i64 },
     LcmExceedsLimit { lcm: i64, limit: i64 },
 }
 
 pub const MAX_ALLOWED_HARMONICS_LCM: i64 = 1_000_000;
 
 /// Проверяет, что все знаменатели гармоник строго положительны (c_i > 0)
+/// и не содержат дубликатов (каждый период гармоники обязан быть уникальным)
 #[inline]
 pub fn validate_harmonics_divisors(harmonics: &[LeapHarmonic]) -> Result<(), LeapValidationError> {
-    for h in harmonics {
-        if h.divisor_c <= 0 {
+    for (i, h) in harmonics.iter().enumerate() {
+        let c_i = h.divisor_c;
+        if c_i <= 0 {
             return Err(LeapValidationError::NonPositiveDivisor);
+        }
+        for other in harmonics.iter().skip(i + 1) {
+            if c_i == other.divisor_c {
+                return Err(LeapValidationError::DuplicateHarmonicDivisor { divisor: c_i });
+            }
         }
     }
     Ok(())
@@ -121,8 +130,28 @@ pub fn days_up_to_month(
     sum
 }
 
+/// Вычисление дней до месяца M за O(1) с использованием префиксных сумм месяцев (п. 20.3)
+/// Исключает цикл O(M) для календарей с сотнями месяцев.
+#[inline]
+pub fn days_up_to_month_with_prefix(
+    y: i64,
+    m: usize,
+    prefix_sums: &[i64],
+    target: &LeapTarget,
+    d: i64,
+    harmonics: &[LeapHarmonic],
+) -> i64 {
+    let limit = m.min(prefix_sums.len().saturating_sub(1));
+    let base = prefix_sums.get(limit).copied().unwrap_or(0);
+    let addition = match target {
+        LeapTarget::InMonth { target_month } if *target_month < limit => d * is_leap_year(y, harmonics),
+        _ => 0,
+    };
+    base + addition
+}
+
 /// Дни от произвольной эпохи (origin_year) до начала года Y (включая год 0 и отрицательные века)
-/// Формула вычисляется строго в i128 во избежание переполнения
+/// Формула вычисляется строго в i128 с насыщением, полностью исключая панику при i64::MIN / i64::MAX
 #[inline]
 pub fn days_up_to_year_from_origin(
     y: i64,
@@ -131,48 +160,19 @@ pub fn days_up_to_year_from_origin(
     d: i64,
     harmonics: &[LeapHarmonic],
 ) -> i64 {
-    let base_days = (y as i128 - origin_year as i128) * (base as i128);
-    let leap_days = (d as i128)
-        * ((leaps_count(y - 1, harmonics) - leaps_count(origin_year - 1, harmonics)) as i128);
-    (base_days + leap_days) as i64
+    let diff_y = (y as i128).saturating_sub(origin_year as i128);
+    let base_days = diff_y.saturating_mul(base as i128);
+    let leap_diff = (leaps_count(y.saturating_sub(1), harmonics) as i128)
+        .saturating_sub(leaps_count(origin_year.saturating_sub(1), harmonics) as i128);
+    let leap_days = (d as i128).saturating_mul(leap_diff);
+    let total = base_days.saturating_add(leap_days);
+    total.clamp(i64::MIN as i128, i64::MAX as i128) as i64
 }
 
 /// Дни от начала времен (год 1) до начала года Y (включая год 0 и отрицательные века)
 #[inline]
 pub fn days_up_to_year(y: i64, base: i64, d: i64, harmonics: &[LeapHarmonic]) -> i64 {
     days_up_to_year_from_origin(y, 1, base, d, harmonics)
-}
-
-/// Наибольший общий делитель (НОД)
-pub fn gcd(mut a: i64, mut b: i64) -> i64 {
-    a = a.abs();
-    b = b.abs();
-    while b != 0 {
-        let t = b;
-        b = a % b;
-        a = t;
-    }
-    if a == 0 { 1 } else { a }
-}
-
-/// Наименьшее общее кратное (НОК)
-pub fn lcm(a: i64, b: i64) -> i64 {
-    if a == 0 || b == 0 {
-        return 1;
-    }
-    let g = gcd(a, b);
-    (a.abs() / g) * b.abs()
-}
-
-/// Вычисление периода гармоник через общий наименьший знаменатель (LCM)
-pub fn harmonics_lcm(harmonics: &[LeapHarmonic]) -> i64 {
-    let mut period = 1i64;
-    for h in harmonics {
-        if h.divisor_c > 0 {
-            period = lcm(period, h.divisor_c);
-        }
-    }
-    period
 }
 
 /// Алгоритм строгой валидации гармоник:
@@ -216,108 +216,11 @@ pub fn validate_harmonics_step(harmonics: &[LeapHarmonic]) -> Result<(), LeapVal
     for y in 0..p {
         let step = is_leap_year(y, harmonics);
         if step != 0 && step != 1 {
-            return Err(LeapValidationError::HarmonicsStepViolation);
+            return Err(LeapValidationError::HarmonicsStepViolation {
+                year: y,
+                actual_step: step,
+            });
         }
     }
     Ok(())
 }
-
-
-/// Рациональное представление векового дрейфа календаря (чистая целочисленная арифметика i128)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct RationalDrift {
-    pub numerator_days: i128,
-    pub denominator_years: i128,
-}
-
-impl RationalDrift {
-    /// Возвращает дрейф в милли-сутках за 100 лет (целочисленный промилле, 1.0 сутки = 1000)
-    #[inline]
-    pub fn to_milli_days_per_century(&self) -> i64 {
-        if self.denominator_years == 0 {
-            return 0;
-        }
-        ((self.numerator_days * 1000) / self.denominator_years) as i64
-    }
-
-    /// Преобразует в f64 исключительно для презентационного слоя UI
-    #[inline]
-    pub fn to_f64(&self) -> f64 {
-        if self.denominator_years == 0 {
-            0.0
-        } else {
-            self.numerator_days as f64 / self.denominator_years as f64
-        }
-    }
-}
-
-/// Точный рациональный расчет векового дрейфа (без единого числа с плавающей точкой)
-pub fn drift_per_century_rational(
-    base: i64,
-    harmonics: &[LeapHarmonic],
-    trop_num: i64,
-    trop_den: i64,
-) -> RationalDrift {
-    if trop_den == 0 {
-        return RationalDrift {
-            numerator_days: 0,
-            denominator_years: 1,
-        };
-    }
-
-    let q_den = harmonics_lcm(harmonics);
-    let mut sum_w_a = 0i128;
-    for h in harmonics {
-        if h.divisor_c > 0 {
-            let weight = h.weight as i128;
-            let a = h.multiplier_a as i128;
-            let c = h.divisor_c as i128;
-            sum_w_a += weight * a * (q_den as i128 / c);
-        }
-    }
-
-    let cal_year_num = (base as i128) * (q_den as i128) + sum_w_a;
-    let cal_year_den = q_den as i128;
-
-    let trop_year_num = trop_num as i128;
-    let trop_year_den = trop_den as i128;
-
-    let diff_num = cal_year_num * trop_year_den - trop_year_num * cal_year_den;
-    let num_100 = 100i128 * diff_num;
-    let den_100 = cal_year_den * trop_year_den;
-
-    RationalDrift {
-        numerator_days: num_100,
-        denominator_years: den_100,
-    }
-}
-
-/// Расчет векового дрейфа (в сутках за 100 лет) относительно тропического года планеты
-pub fn drift_per_century(
-    base: i64,
-    harmonics: &[LeapHarmonic],
-    trop_num: i64,
-    trop_den: i64,
-) -> f64 {
-    drift_per_century_rational(base, harmonics, trop_num, trop_den).to_f64()
-}
-
-/// Расчет векового дрейфа (в сутках за 100 лет) относительно целевой длины года в f64
-pub fn drift_per_century_f64(
-    base: i64,
-    harmonics: &[LeapHarmonic],
-    planet_year_len: f64,
-) -> f64 {
-    let mut leap_fraction = 0.0f64;
-    for h in harmonics {
-        if h.divisor_c != 0 {
-            leap_fraction += (h.weight as f64 * h.multiplier_a as f64) / (h.divisor_c as f64);
-        }
-    }
-    let rule_year_len = base as f64 + leap_fraction;
-    100.0 * (rule_year_len - planet_year_len)
-}
-
-
-

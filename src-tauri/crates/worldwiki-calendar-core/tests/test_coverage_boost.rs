@@ -134,6 +134,7 @@ fn test_coverage_eras_all_branches() {
         end_day: Some(31),
         is_count_down: false,
         counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
     };
     assert!(!era_contains_date(&closed_era, 205, 1, 1));
     assert!(!era_contains_date(&closed_era, 50, 1, 1));
@@ -154,6 +155,7 @@ fn test_coverage_eras_all_branches() {
         end_day: None,
         is_count_down: true,
         counting_mode: EraCountingMode::ByAnniversary,
+        priority: 0,
     };
     // До годовщины в том же году
     assert_eq!(era_year_number(&countdown_anniv_era, 450, 5, 1, 31), 50);
@@ -171,6 +173,7 @@ fn test_coverage_eras_all_branches() {
         end_day: None,
         is_count_down: false,
         counting_mode: EraCountingMode::ByAnniversary,
+        priority: 0,
     };
     assert_eq!(era_year_number(&forward_anniv_era, 505, 5, 1, 31), 5);
     assert_eq!(era_year_number(&forward_anniv_era, 505, 7, 1, 31), 6);
@@ -197,6 +200,7 @@ fn test_coverage_conversion_convert_calendar_date() {
             end_day: None,
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
     ];
 
@@ -441,11 +445,13 @@ fn test_coverage_seasons_all_branches() {
         name: "Summer".into(),
         color: "yellow".into(),
         months: vec![5, 6, 7],
+        hemisphere: Hemisphere::Northern,
     };
     let winter = CoreSeason {
         name: "Winter".into(),
         color: "blue".into(),
         months: vec![11, 0, 1],
+        hemisphere: Hemisphere::Northern,
     };
     let seasons = [summer.clone(), winter];
 
@@ -526,6 +532,7 @@ fn test_coverage_linked_anchor_countdown_era() {
         end_day: Some(30),
         is_count_down: true,
         counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
     };
     let local_eras = [countdown_era];
 

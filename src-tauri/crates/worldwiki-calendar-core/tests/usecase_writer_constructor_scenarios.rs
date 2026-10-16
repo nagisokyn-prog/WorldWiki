@@ -13,7 +13,7 @@ use worldwiki_calendar_core::holidays::{is_holiday_active, to_cultural_month, to
 use worldwiki_calendar_core::leap::{days_in_month, drift_per_century, validate_harmonics_lcm};
 
 use worldwiki_calendar_core::seasons::{
-    CoreSeason, find_season_index, is_month_in_season, is_season_conflicting_with_solstice,
+    CoreSeason, Hemisphere, find_season_index, is_month_in_season, is_season_conflicting_with_solstice,
 };
 use worldwiki_calendar_core::types::*;
 use worldwiki_calendar_core::weekdays::{WeekdayPauseConfig, calculate_weekday_with_pause};
@@ -270,21 +270,25 @@ fn usecase_card_4_7_seasons_and_solstice_conflict_warning() {
             name: "Winter".into(),
             color: "#00f".into(),
             months: vec![11, 0, 1],
+            hemisphere: Hemisphere::Northern,
         },
         CoreSeason {
             name: "Spring".into(),
             color: "#0f0".into(),
             months: vec![2, 3, 4],
+            hemisphere: Hemisphere::Northern,
         },
         CoreSeason {
             name: "Summer".into(),
             color: "#f00".into(),
             months: vec![5, 6, 7],
+            hemisphere: Hemisphere::Northern,
         },
         CoreSeason {
             name: "Autumn".into(),
             color: "#ff0".into(),
             months: vec![8, 9, 10],
+            hemisphere: Hemisphere::Northern,
         },
     ];
 
@@ -433,6 +437,7 @@ fn usecase_card_4_10_eras_countdown_and_coronation_anniversary() {
         end_day: Some(31),
         is_count_down: true,
         counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
     };
     // В 998 году: (1000 - 998) + 1 = 3-й год до Падения
     let yr_998 = era_year_number(&countdown_era, 998, 5, 1, 30);
@@ -455,6 +460,7 @@ fn usecase_card_4_10_eras_countdown_and_coronation_anniversary() {
         end_day: None,
         is_count_down: false,
         counting_mode: EraCountingMode::ByAnniversary,
+        priority: 0,
     };
     // В невисокосном 2001 году 27 февраля — все еще 1-й год правления
     let yr_2001_early = era_year_number(&monarch_era, 2001, 2, 27, 28);

@@ -145,3 +145,37 @@ fn proof_weekdays_nonempty() {
     }
 }
 
+#[kani::proof]
+fn proof_holiday_with_rotated_months() {
+    let cultural_m: usize = kani::any();
+    let m_start: usize = kani::any();
+    let total_months: usize = kani::any();
+
+    kani::assume(total_months >= 1 && total_months <= 20);
+    kani::assume(m_start < total_months);
+    kani::assume(cultural_m < total_months);
+
+    let internal_m = to_internal_month(cultural_m, m_start, total_months);
+    let restored_m = to_cultural_month(internal_m, m_start, total_months);
+
+    assert_eq!(cultural_m, restored_m);
+}
+
+#[kani::proof]
+fn proof_holiday_extra_days_valid() {
+    let m: usize = kani::any();
+    let total_regular: usize = 12;
+    let extra_days_count: usize = 5;
+
+    // Месяц m может указывать на регулярный месяц (0..12) или на эпагоменальный блок (>= 12)
+    kani::assume(m < total_regular + extra_days_count);
+
+    if m >= total_regular {
+        // Эпагомены не ротируются по модулю месяцев
+        let internal = to_internal_month(m, 3, total_regular);
+        assert_eq!(internal, m);
+    }
+}
+
+
+

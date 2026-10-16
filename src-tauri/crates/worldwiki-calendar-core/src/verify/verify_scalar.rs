@@ -28,14 +28,14 @@ fn proof_day_tick_bounded() {
 }
 
 #[kani::proof]
-fn proof_scalar_reconstruction() {
+fn proof_scalar_no_overflow_reconstruction() {
     let t_abs: i64 = kani::any();
     let day_start_offset: i64 = kani::any();
-    let ticks_per_day: i64 = 1440;
+    let ticks_per_day: i64 = 86_400;
     kani::assume(t_abs >= -1_000_000 && t_abs <= 1_000_000);
     kani::assume(day_start_offset >= 0 && day_start_offset < ticks_per_day);
 
-    let moment = t_abs_to_local_moment(t_abs, "p1", ticks_per_day, day_start_offset);
+    let moment = t_abs_to_local_moment(t_abs, "planet", ticks_per_day, day_start_offset);
     let reconstructed = local_moment_to_t_abs(&moment, ticks_per_day, day_start_offset);
 
     assert_eq!(t_abs, reconstructed);
@@ -67,5 +67,28 @@ fn proof_day_start_offset_bounded() {
     assert!(normalized >= 0);
     assert!(normalized < ticks_per_day);
 }
+
+#[kani::proof]
+fn proof_cross_calendar_bijection() {
+    let t_abs: i64 = kani::any();
+    kani::assume(t_abs >= -1_000_000 && t_abs <= 1_000_000);
+
+    let ticks_a: i64 = 1440;
+    let offset_a: i64 = 360;
+
+    let ticks_b: i64 = 86400;
+    let offset_b: i64 = 21600;
+
+    // Шаг 1: t_abs -> Calendar A -> t_abs
+    let moment_a = t_abs_to_local_moment(t_abs, "planet_a", ticks_a, offset_a);
+    let t_abs_restored_a = local_moment_to_t_abs(&moment_a, ticks_a, offset_a);
+    assert_eq!(t_abs, t_abs_restored_a);
+
+    // Шаг 2: t_abs -> Calendar B -> t_abs
+    let moment_b = t_abs_to_local_moment(t_abs, "planet_b", ticks_b, offset_b);
+    let t_abs_restored_b = local_moment_to_t_abs(&moment_b, ticks_b, offset_b);
+    assert_eq!(t_abs, t_abs_restored_b);
+}
+
 
 

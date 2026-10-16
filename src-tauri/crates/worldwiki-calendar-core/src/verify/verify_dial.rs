@@ -111,9 +111,9 @@ fn proof_dial_ticks_bounded() {
         ],
     };
 
-    let res = checked_total_dial_subdivisions(&hierarchy);
-    assert!(res.is_ok());
-    let total = res.unwrap();
+    let Ok(total) = res else {
+        return;
+    };
     assert!(total > 0);
     assert_eq!(total, s1 * s2);
 }

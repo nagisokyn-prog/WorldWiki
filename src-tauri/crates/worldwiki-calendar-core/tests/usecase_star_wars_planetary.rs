@@ -29,6 +29,7 @@ fn usecase_coruscant_galactic_standard_calendar_bby_aby() {
             end_day: Some(368),
             is_count_down: true,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
         CoreEra {
             name: "ABY".into(), // After Battle of Yavin
@@ -40,6 +41,7 @@ fn usecase_coruscant_galactic_standard_calendar_bby_aby() {
             end_day: None,
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
     ];
 

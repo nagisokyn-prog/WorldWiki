@@ -17,21 +17,38 @@ pub fn validate_weekdays_count(count: usize) -> Result<(), WeekdayError> {
     }
 }
 
-/// Непрерывный расчет дня недели (без пауз)
+/// Непрерывный расчет дня недели с возвратом ошибки при пустом списке дней недели
+#[inline]
+pub fn try_calculate_weekday(
+    cal_day: i64,
+    origin_day: i64,
+    start_weekday: usize,
+    weekdays_count: usize,
+) -> Result<usize, WeekdayError> {
+    if weekdays_count == 0 {
+        return Err(WeekdayError::EmptyWeekdays);
+    }
+    let d_local = cal_day - origin_day;
+    Ok((d_local + start_weekday as i64).rem_euclid(weekdays_count as i64) as usize)
+}
+
+/// Непрерывный расчет дня недели (без пауз, безопасный дефолт 0 при count == 0)
 pub fn calculate_weekday(
     cal_day: i64,
     origin_day: i64,
     start_weekday: usize,
     weekdays_count: usize,
 ) -> usize {
-    if weekdays_count == 0 {
-        return 0;
-    }
-    let d_local = cal_day - origin_day;
-    (d_local + start_weekday as i64).rem_euclid(weekdays_count as i64) as usize
+    try_calculate_weekday(cal_day, origin_day, start_weekday, weekdays_count).unwrap_or(0)
 }
 
-/// Конфигурация расчета недели с приостановкой
+/// Конфигурация расчета недели с приостановкой на дни вне месяцев.
+///
+/// ВАЖНО (Архитектурный инвариант):
+/// Пауза недели распространяется СТРОГО на интеркалярные дни вне сетки месяцев (эпагомены,
+/// санкюлотиды, Ayyam-i-Ha). Обычные внутримесячные праздники (Новый Год, Масленица, Рождество)
+/// НЕ замораживают течение недели; они моделируются независимо через модуль `holidays.rs`
+/// и наступают в текущий день недели по непрерывному календарному циклу.
 #[derive(Debug, Clone, Copy)]
 pub struct WeekdayPauseConfig<'a> {
     pub days_in_regular_months: i64,
@@ -44,8 +61,12 @@ pub struct WeekdayPauseConfig<'a> {
     pub weekdays_count: usize,
 }
 
-/// Расчет дня недели с приостановкой на дни вне месяцев (спецификация раздел 3.6, случай 2)
-/// Возвращает None, если день попадает в праздничный блок года (празднество вне недели)
+/// Расчет дня недели с приостановкой на дни вне месяцев (спецификация раздел 3.6, случай 2).
+///
+/// Семантика заморозки:
+/// 1. Все дополнительные дни вне месяцев (эпагомены) исключаются из счета дней недели и возвращают `None`.
+/// 2. Количество эпагоменов может быть любым (даже больше длины недели, например 10 эпагоменов при 5-дневной неделе).
+/// 3. После завершения блока эпагоменов счет недели возобновляется СТРОГО со следующего дня недели (без разрывов).
 pub fn calculate_weekday_with_pause(
     year: i64,
     day_in_year: i64,

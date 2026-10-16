@@ -143,6 +143,7 @@ fn usecase_japanese_pre1873_nengo_eras() {
             end_day: Some(20),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
         CoreEra {
             name: "Genji".into(),
@@ -154,6 +155,7 @@ fn usecase_japanese_pre1873_nengo_eras() {
             end_day: Some(7),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 1,
         },
         CoreEra {
             name: "Keio".into(),
@@ -165,6 +167,7 @@ fn usecase_japanese_pre1873_nengo_eras() {
             end_day: Some(23),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 2,
         },
         CoreEra {
             name: "Meiji".into(),
@@ -176,6 +179,7 @@ fn usecase_japanese_pre1873_nengo_eras() {
             end_day: Some(30),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 3,
         },
     ];
 
@@ -257,6 +261,7 @@ fn usecase_time_traveler_french_republican_to_russian_empire_julian() {
             end_day: None,
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
     ];
 
@@ -313,6 +318,7 @@ fn usecase_time_traveler_french_republican_to_russian_empire_julian() {
             end_day: None,
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
     ];
 

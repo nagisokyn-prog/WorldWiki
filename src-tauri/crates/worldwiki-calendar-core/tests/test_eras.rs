@@ -23,6 +23,7 @@ fn test_find_active_era_binary_search() {
             end_day: Some(30),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
         CoreEra {
             name: "Taisho".into(),
@@ -34,6 +35,7 @@ fn test_find_active_era_binary_search() {
             end_day: Some(25),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 1, // Тайсе имеет приоритет при смене дня
         },
         CoreEra {
             name: "Showa".into(),
@@ -45,6 +47,7 @@ fn test_find_active_era_binary_search() {
             end_day: Some(7),
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 2,
         },
     ];
 
@@ -77,6 +80,7 @@ fn test_era_year_number_coronation_leap_day() {
         end_day: None,
         is_count_down: false,
         counting_mode: EraCountingMode::ByAnniversary,
+        priority: 0,
     };
 
     // В 2000 году (год интронизации)
@@ -90,4 +94,107 @@ fn test_era_year_number_coronation_leap_day() {
     assert_eq!(era_year_number(&era, 2001, 2, 28, 28), 2);
     // 1 марта - 2-й год правления
     assert_eq!(era_year_number(&era, 2001, 3, 1, 31), 2);
+}
+
+#[test]
+fn test_era_validation_and_gaps() {
+    // 8.4: Countdown без end_year
+    let bad_countdown = CoreEra {
+        name: "BadCountdown".into(),
+        start_year: 100,
+        start_month: None,
+        start_day: None,
+        end_year: None,
+        end_month: None,
+        end_day: None,
+        is_count_down: true,
+        counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
+    };
+    assert_eq!(
+        validate_era(&bad_countdown, true),
+        Err(EraValidationError::CountdownMissingEndYear)
+    );
+
+    // 8.3: Нетерминальная эра без end_year
+    let bad_non_terminal = CoreEra {
+        name: "BadNonTerminal".into(),
+        start_year: 100,
+        start_month: None,
+        start_day: None,
+        end_year: None,
+        end_month: None,
+        end_day: None,
+        is_count_down: false,
+        counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
+    };
+    assert_eq!(
+        validate_era(&bad_non_terminal, false),
+        Err(EraValidationError::OpenNonTerminalEra)
+    );
+
+    // 8.2: Разрыв между эрами (gap) возвращает None
+    let eras_with_gap = vec![
+        CoreEra {
+            name: "First".into(),
+            start_year: 100,
+            start_month: Some(1),
+            start_day: Some(1),
+            end_year: Some(150),
+            end_month: Some(12),
+            end_day: Some(31),
+            is_count_down: false,
+            counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
+        },
+        CoreEra {
+            name: "Second".into(),
+            start_year: 200,
+            start_month: Some(1),
+            start_day: Some(1),
+            end_year: None,
+            end_month: None,
+            end_day: None,
+            is_count_down: false,
+            counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
+        },
+    ];
+
+    // Год 175 находится в разрыве (151..199) -> None
+    assert_eq!(find_active_era(&eras_with_gap, 175, 6, 1), None);
+}
+
+#[test]
+fn test_era_year_zero_and_negative() {
+    let era_zero = CoreEra {
+        name: "ZeroEra".into(),
+        start_year: 0,
+        start_month: Some(1),
+        start_day: Some(1),
+        end_year: None,
+        end_month: None,
+        end_day: None,
+        is_count_down: false,
+        counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
+    };
+    assert_eq!(era_year_number(&era_zero, 0, 1, 1, 30), 1);
+    assert_eq!(era_year_number(&era_zero, 1, 1, 1, 30), 2);
+
+    let era_neg = CoreEra {
+        name: "BCE".into(),
+        start_year: -100,
+        start_month: Some(1),
+        start_day: Some(1),
+        end_year: None,
+        end_month: None,
+        end_day: None,
+        is_count_down: false,
+        counting_mode: EraCountingMode::ByCalendarYear,
+        priority: 0,
+    };
+    assert_eq!(era_year_number(&era_neg, -100, 1, 1, 30), 1);
+    assert_eq!(era_year_number(&era_neg, -99, 1, 1, 30), 2);
 }

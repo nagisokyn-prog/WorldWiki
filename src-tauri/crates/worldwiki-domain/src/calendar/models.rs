@@ -223,6 +223,7 @@ impl CalendarData {
                 end_day: None,
                 is_count_down: e.обратный_отсчет,
                 counting_mode: EraCountingMode::ByCalendarYear,
+                priority: 0,
             })
             .collect();
 

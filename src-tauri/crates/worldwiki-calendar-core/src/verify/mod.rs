@@ -10,6 +10,7 @@
 //! - verify_intervals: Полнота алгебры Аллена, обнаружение билокации и посмертных сцен
 
 pub mod verify_age;
+pub mod verify_astronomy;
 pub mod verify_dial;
 pub mod verify_eras;
 pub mod verify_intervals;

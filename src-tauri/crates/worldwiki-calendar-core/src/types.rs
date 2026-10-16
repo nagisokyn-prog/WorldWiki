@@ -2,6 +2,58 @@ extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
+/// Типобезопасный идентификатор планеты (п. 14.1)
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct PlanetId(pub String);
+
+impl PlanetId {
+    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
+        let s = id.into();
+        if s.trim().is_empty() {
+            return Err("PlanetId cannot be empty");
+        }
+        Ok(Self(s))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl core::ops::Deref for PlanetId {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+/// Типобезопасный идентификатор календаря (п. 14.1)
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CalendarId(pub String);
+
+impl CalendarId {
+    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
+        let s = id.into();
+        if s.trim().is_empty() {
+            return Err("CalendarId cannot be empty");
+        }
+        Ok(Self(s))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl core::ops::Deref for CalendarId {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// Компактный идентификатор планеты в горячем пути расчетов (без аллокаций строк)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -90,13 +142,16 @@ pub enum PrecisionLevel {
     Unknown,
 }
 
-/// Режим отсчета номера года эры
+/// Режим отсчета номера года эры (п. 14.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 pub enum EraCountingMode {
     #[default]
     ByCalendarYear,
     ByAnniversary,
+    #[cfg_attr(feature = "serde", serde(other))]
+    Unknown,
 }
 
 /// Хронологическая эра для бинарного поиска
@@ -112,6 +167,8 @@ pub struct CoreEra {
     pub end_day: Option<i64>,
     pub is_count_down: bool,
     pub counting_mode: EraCountingMode,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub priority: i32,
 }
 
 /// Параметрическое правило возраста
@@ -157,4 +214,21 @@ impl CalDate {
     pub const fn new(year: i64, month: usize, day: i64) -> Self {
         Self { year, month, day }
     }
+}
+
+/// Валидация уникальности имен дней недели (п. 14.2)
+pub fn validate_unique_weekdays(weekdays: &[String]) -> Result<(), &'static str> {
+    for (i, name) in weekdays.iter().enumerate() {
+        for other in weekdays.iter().skip(i + 1) {
+            if name == other {
+                return Err("Duplicate weekday name found");
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Санитизация списка лун при удалении сиротских записей (п. 14.3)
+pub fn sanitize_moon_ids(active_moon_ids: &[&str], configured_moons: &mut Vec<String>) {
+    configured_moons.retain(|moon_id| active_moon_ids.contains(&moon_id.as_str()));
 }

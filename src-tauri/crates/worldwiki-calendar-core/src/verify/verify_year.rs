@@ -41,3 +41,23 @@ fn proof_o1_year_finder_bounds() {
     assert!(day_in_year < total_in_year);
     assert_eq!(cal_day, days_before + day_in_year);
 }
+
+#[kani::proof]
+#[kani::unwind(5)]
+fn proof_year_finder_terminates() {
+    use crate::year_finder::try_year_from_days_o1;
+
+    let cal_day: i64 = kani::any();
+    kani::assume(cal_day >= -10_000 && cal_day <= 10_000);
+
+    let harmonics = [LeapHarmonic {
+        weight: 1,
+        multiplier_a: 1,
+        shift_b: 0,
+        divisor_c: 4,
+    }];
+
+    let res = try_year_from_days_o1(cal_day, 365, &harmonics, 1);
+    assert!(res.is_ok());
+}
+

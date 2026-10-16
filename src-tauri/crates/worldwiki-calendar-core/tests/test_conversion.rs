@@ -48,6 +48,7 @@ fn test_conversion_reversibility() {
             end_day: None,
             is_count_down: false,
             counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
         },
     ];
 
@@ -70,3 +71,31 @@ fn test_conversion_reversibility() {
         assert_eq!(restored.unit_values, orig_date.unit_values, "Time mismatch");
     }
 }
+
+#[test]
+fn test_sync_chain_resolution_and_cycles() {
+    // Успешная цепочка: Local -> Regional -> Master
+    let chain_result = resolve_sync_chain("local", |id| match id {
+        "local" => Ok(Some("regional")),
+        "regional" => Ok(Some("master")),
+        "master" => Ok(None),
+        _ => Err(ConversionError::MasterCalendarNotFound),
+    });
+    assert_eq!(chain_result, Ok("master"));
+
+    // Циклическая зависимость: A -> B -> A
+    let cycle_result = resolve_sync_chain("A", |id| match id {
+        "A" => Ok(Some("B")),
+        "B" => Ok(Some("A")),
+        _ => Err(ConversionError::MasterCalendarNotFound),
+    });
+    assert_eq!(cycle_result, Err(ConversionError::CyclicSyncDependency));
+
+    // Несуществующий мастер
+    let missing_result = resolve_sync_chain("leaf", |id| match id {
+        "leaf" => Ok(Some("non_existent")),
+        _ => Err(ConversionError::MasterCalendarNotFound),
+    });
+    assert_eq!(missing_result, Err(ConversionError::MasterCalendarNotFound));
+}
+

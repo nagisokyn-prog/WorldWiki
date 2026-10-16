@@ -2,6 +2,21 @@ extern crate alloc;
 use crate::leap::{days_up_to_year, leaps_count};
 use crate::types::LeapHarmonic;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WeekdayError {
+    EmptyWeekdays,
+}
+
+/// Валидация списка дней недели (защита от деления на 0 при rem_euclid)
+#[inline]
+pub fn validate_weekdays_count(count: usize) -> Result<(), WeekdayError> {
+    if count == 0 {
+        Err(WeekdayError::EmptyWeekdays)
+    } else {
+        Ok(())
+    }
+}
+
 /// Непрерывный расчет дня недели (без пауз)
 pub fn calculate_weekday(
     cal_day: i64,

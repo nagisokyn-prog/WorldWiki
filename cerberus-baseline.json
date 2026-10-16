@@ -1,10 +1,1 @@
-[
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-calendar-core/src/leap.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (219.2) exceeds warning limit (200.0)",
-    "fingerprint": "8a564cb35053b6fa751448286e80456e96b8d2b78f50468cd66ef42b83d3467c"
-  }
-]
+[]

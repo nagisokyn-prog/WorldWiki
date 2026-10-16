@@ -85,3 +85,41 @@ fn test_dial_edge_cases() {
     let units_overflow = day_tick_to_units(100000, &dial, 86400);
     assert_eq!(units_overflow, vec![23]);
 }
+
+#[test]
+fn test_dial_bijectivity_and_validation() {
+    let bijective_dial = DialHierarchy {
+        units: vec![
+            DialUnit { name: "Hour".into(), subdivisions: 24 },
+            DialUnit { name: "Minute".into(), subdivisions: 60 },
+        ],
+    };
+    // 24 * 60 = 1440. 86400 % 1440 == 0 -> строго биективен
+    assert!(is_dial_strictly_bijective(&bijective_dial, 86400));
+    assert_eq!(dial_quantum_remainder(&bijective_dial, 86400), 0);
+    assert!(validate_dial_bijection(&bijective_dial, 86400).is_ok());
+
+    let non_bijective_dial = DialHierarchy {
+        units: vec![
+            DialUnit { name: "Third".into(), subdivisions: 3 },
+        ],
+    };
+    // 100 тиков не делится на 3 -> потеря биективности
+    assert!(!is_dial_strictly_bijective(&non_bijective_dial, 100));
+    assert_eq!(dial_quantum_remainder(&non_bijective_dial, 100), 1);
+    assert!(validate_dial_bijection(&non_bijective_dial, 100).is_err());
+}
+
+#[test]
+fn test_dial_duplicate_unit_name() {
+    let duplicate_dial = DialHierarchy {
+        units: vec![
+            DialUnit { name: "Стража".into(), subdivisions: 4 },
+            DialUnit { name: "Стража".into(), subdivisions: 6 },
+        ],
+    };
+    let res = validate_dial_hierarchy(&duplicate_dial);
+    assert_eq!(res, Err(DialError::DuplicateUnitName("Стража".into())));
+}
+
+

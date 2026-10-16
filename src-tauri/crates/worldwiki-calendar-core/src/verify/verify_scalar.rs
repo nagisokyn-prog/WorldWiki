@@ -55,3 +55,17 @@ fn proof_day_start_offset_bijection() {
     assert_eq!(t_abs, reverted);
 }
 
+#[kani::proof]
+fn proof_day_start_offset_bounded() {
+    use crate::scalar::normalize_day_start_offset;
+
+    let offset: i64 = kani::any();
+    let ticks_per_day: i64 = kani::any();
+    kani::assume(ticks_per_day > 0 && ticks_per_day <= 100_000);
+
+    let normalized = normalize_day_start_offset(offset, ticks_per_day);
+    assert!(normalized >= 0);
+    assert!(normalized < ticks_per_day);
+}
+
+

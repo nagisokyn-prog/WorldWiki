@@ -162,5 +162,145 @@ fn proof_leap_convergents_recurrence_monotone() {
     assert!(p_next > 0 && q_next > 0);
 }
 
+#[kani::proof]
+fn proof_leap_divisor_positive() {
+    use crate::leap::validate_harmonics_divisors;
+
+    let c: i64 = kani::any();
+    let harmonics = [LeapHarmonic {
+        weight: 1,
+        multiplier_a: 1,
+        shift_b: 0,
+        divisor_c: c,
+    }];
+
+    if c <= 0 {
+        assert!(validate_harmonics_divisors(&harmonics).is_err());
+    } else {
+        assert!(validate_harmonics_divisors(&harmonics).is_ok());
+    }
+}
+
+#[kani::proof]
+fn proof_leap_days_offset_monotonic() {
+    use crate::leap::days_up_to_year;
+
+    let y: i64 = kani::any();
+    let d: i32 = kani::any();
+    kani::assume(y >= -1_000 && y <= 1_000);
+    kani::assume(d >= 0 && d <= 10); // d >= 0 гарантия неотрицательности високоса
+
+    let harmonics = [LeapHarmonic {
+        weight: 1,
+        multiplier_a: 1,
+        shift_b: 0,
+        divisor_c: 4,
+    }];
+    let base = 365i64;
+
+    let days_curr = days_up_to_year(y, base, d as i64, &harmonics);
+    let days_next = days_up_to_year(y + 1, base, d as i64, &harmonics);
+
+    // Каждый следующий год обязан начинаться строго позже предыдущего (строгая монотонность)
+    assert!(days_next > days_curr);
+}
+
+#[kani::proof]
+fn proof_leap_target_month_bounded() {
+    use crate::leap::validate_leap_target;
+    use crate::types::LeapTarget;
+
+    let target_m: usize = kani::any();
+    let months_count: usize = kani::any();
+    kani::assume(months_count > 0 && months_count <= 20);
+
+    let target = LeapTarget::InMonth {
+        target_month: target_m,
+    };
+    if target_m >= months_count {
+        assert!(validate_leap_target(&target, months_count).is_err());
+    } else {
+        assert!(validate_leap_target(&target, months_count).is_ok());
+    }
+}
+
+#[kani::proof]
+fn proof_leap_lcm_bounded() {
+    use crate::leap::{harmonics_lcm, MAX_ALLOWED_HARMONICS_LCM};
+
+    let c1: i64 = kani::any();
+    let c2: i64 = kani::any();
+    kani::assume(c1 >= 1 && c1 <= 100);
+    kani::assume(c2 >= 1 && c2 <= 100);
+
+    let harmonics = [
+        LeapHarmonic {
+            weight: 1,
+            multiplier_a: 1,
+            shift_b: 0,
+            divisor_c: c1,
+        },
+        LeapHarmonic {
+            weight: 1,
+            multiplier_a: 1,
+            shift_b: 0,
+            divisor_c: c2,
+        },
+    ];
+
+    let lcm = harmonics_lcm(&harmonics);
+    assert!(lcm > 0);
+    assert!(lcm <= MAX_ALLOWED_HARMONICS_LCM);
+}
+
+#[kani::proof]
+fn proof_negative_weight_step_bounded() {
+    use crate::leap::validate_harmonics_step;
+
+    // Невалидные гармоники с отрицательным шагом: w = [+1, -1], c = [2, 3] дают шаг -1 на году 3
+    let invalid_harmonics = [
+        LeapHarmonic {
+            weight: 1,
+            multiplier_a: 1,
+            shift_b: 0,
+            divisor_c: 2,
+        },
+        LeapHarmonic {
+            weight: -1,
+            multiplier_a: 1,
+            shift_b: 0,
+            divisor_c: 3,
+        },
+    ];
+    assert!(validate_harmonics_step(&invalid_harmonics).is_err());
+}
+
+#[kani::proof]
+fn proof_days_up_to_year_negative_eras() {
+    use crate::leap::days_up_to_year;
+
+    let y: i64 = kani::any();
+    kani::assume(y >= -1_000_000 && y <= 1_000_000);
+
+    let harmonics = [LeapHarmonic {
+        weight: 1,
+        multiplier_a: 1,
+        shift_b: 0,
+        divisor_c: 4,
+    }];
+
+    let d_curr = days_up_to_year(y, 365, 1, &harmonics);
+    let d_next = days_up_to_year(y + 1, 365, 1, &harmonics);
+
+    let len = d_next - d_curr;
+    assert!(len == 365 || len == 366);
+}
+
+
+
+
+
+
+
 
 

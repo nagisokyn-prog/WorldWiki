@@ -2,11 +2,25 @@ extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
+/// Компактный идентификатор планеты в горячем пути расчетов (без аллокаций строк)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct PlanetKey(pub u32);
+
 /// Локальный момент физических суток на планете
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LocalMoment {
     pub planet_id: String,
+    pub world_day: i64,
+    pub day_tick: i64,
+}
+
+/// Легковесный локальный момент для горячего пути (Zero-Allocation, Copy, 24 байта)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct FastLocalMoment {
+    pub planet_key: PlanetKey,
     pub world_day: i64,
     pub day_tick: i64,
 }

@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(unstable_features)]
 
 extern crate alloc;
 

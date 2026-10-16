@@ -77,3 +77,56 @@ fn proof_leap_birthday_clamped() {
     assert_eq!(age_on, 1);
     assert_eq!(age_after, 1);
 }
+
+#[kani::proof]
+fn proof_age_zero_length_month_clamped() {
+    let birth_y: i64 = kani::any();
+    let curr_y: i64 = kani::any();
+    kani::assume(birth_y >= 1000 && birth_y <= 2000);
+    kani::assume(curr_y >= birth_y && curr_y <= 2500);
+
+    let rule = AgeRule {
+        age_at_birth: 0,
+        step_on_new_year: false,
+        year_only: false,
+    };
+
+    // Рождение в интеркалярном месяце (например, 13-й месяц):
+    // При max_days_in_birth_month = 0 (в текущем году интеркалярный месяц отсутствует / 0 дней)
+    // на ту же дату возраст неотрицателен и точно равен разнице лет.
+    let birth = CalDate::new(birth_y, 13, 1);
+    let age = calculate_age(birth, CalDate::new(curr_y, 13, 1), &rule, 0);
+
+    assert!(age >= 0);
+    assert_eq!(i64::from(age), curr_y - birth_y);
+
+    if curr_y > birth_y {
+        let age_before = calculate_age(birth, CalDate::new(curr_y, 12, 30), &rule, 0);
+        assert!(age_before >= 0);
+        assert_eq!(i64::from(age_before), curr_y - birth_y - 1);
+    }
+}
+
+#[kani::proof]
+fn proof_age_new_year_step_december_31() {
+    let birth_y: i64 = kani::any();
+    kani::assume(birth_y >= 1000 && birth_y <= 2000);
+
+    let rule = AgeRule {
+        age_at_birth: 1, // Традиционный восточноазиатский возраст
+        step_on_new_year: true,
+        year_only: false,
+    };
+
+    // Родился 31 декабря
+    let birth = CalDate::new(birth_y, 12, 31);
+
+    // В день рождения (31 декабря) возраст строго 1 год
+    let age_on_birth = calculate_age(birth, CalDate::new(birth_y, 12, 31), &rule, 31);
+    assert_eq!(age_on_birth, 1);
+
+    // На следующий день (1 января следующего года) возраст сразу 2 года
+    let age_on_next_day = calculate_age(birth, CalDate::new(birth_y + 1, 1, 1), &rule, 31);
+    assert_eq!(age_on_next_day, 2);
+}
+

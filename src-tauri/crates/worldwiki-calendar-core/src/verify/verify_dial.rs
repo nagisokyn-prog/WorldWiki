@@ -70,3 +70,52 @@ fn proof_dial_monotonic() {
 
     assert!(linear1 <= linear2);
 }
+
+#[kani::proof]
+fn proof_dial_subdivisions_nonzero() {
+    use crate::dial::validate_dial_hierarchy;
+
+    let sub: i64 = kani::any();
+    let hierarchy = DialHierarchy {
+        units: vec![DialUnit {
+            name: String::new(),
+            subdivisions: sub,
+        }],
+    };
+    if sub <= 0 {
+        assert!(validate_dial_hierarchy(&hierarchy).is_err());
+    } else {
+        assert!(validate_dial_hierarchy(&hierarchy).is_ok());
+    }
+}
+
+#[kani::proof]
+fn proof_dial_ticks_bounded() {
+    use crate::dial::checked_total_dial_subdivisions;
+
+    let s1: i64 = kani::any();
+    let s2: i64 = kani::any();
+    kani::assume(s1 > 0 && s1 <= 1_000_000);
+    kani::assume(s2 > 0 && s2 <= 1_000_000);
+
+    let hierarchy = DialHierarchy {
+        units: vec![
+            DialUnit {
+                name: String::new(),
+                subdivisions: s1,
+            },
+            DialUnit {
+                name: String::new(),
+                subdivisions: s2,
+            },
+        ],
+    };
+
+    let res = checked_total_dial_subdivisions(&hierarchy);
+    assert!(res.is_ok());
+    let total = res.unwrap();
+    assert!(total > 0);
+    assert_eq!(total, s1 * s2);
+}
+
+

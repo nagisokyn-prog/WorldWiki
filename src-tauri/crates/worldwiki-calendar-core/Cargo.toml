@@ -17,3 +17,4 @@ kani = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+unstable_features = "allow"

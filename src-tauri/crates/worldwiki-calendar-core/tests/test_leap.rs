@@ -106,4 +106,12 @@ fn test_secular_drift() {
     // В Юлианском средний год = 365.25, ошибка = 365.25 - 365.2422 = 0.0078 сут/год = 0.78 сут/век
     let julian_drift = drift_per_century_f64(365, &julian, 365.2422);
     assert!(julian_drift > 0.70 && julian_drift < 0.85);
+
+    // Рациональный расчет без float
+    let rat_greg = worldwiki_calendar_core::leap::drift_per_century_rational(365, &gregorian, 3652422, 10000);
+    assert_eq!(rat_greg.to_milli_days_per_century(), 30); // ~0.03 суток = 30 милли-суток за 100 лет
+
+    let rat_julian = worldwiki_calendar_core::leap::drift_per_century_rational(365, &julian, 3652422, 10000);
+    assert_eq!(rat_julian.to_milli_days_per_century(), 780); // ~0.78 суток = 780 милли-суток за 100 лет
 }
+

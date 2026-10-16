@@ -53,6 +53,9 @@ fn test_coverage_leap_all_functions_and_branches() {
     assert!(drift > 0.70 && drift < 0.85);
     // тропический знаменатель 0
     assert_eq!(drift_per_century(365, &h, 3652422, 0), 0.0);
+    let zero_den = worldwiki_calendar_core::leap::RationalDrift { numerator_days: 10, denominator_years: 0 };
+    assert_eq!(zero_den.to_milli_days_per_century(), 0);
+    assert_eq!(zero_den.to_f64(), 0.0);
 
     // 3. days_in_month выход за границы
     let months = [30, 31];

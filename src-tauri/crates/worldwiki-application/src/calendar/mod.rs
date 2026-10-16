@@ -93,7 +93,23 @@ pub struct CalculateCharacterAgeParams {
     pub year_only: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidateMasterCalendarMutationParams {
+    pub old_master_calendar: CalendarData,
+    pub new_master_calendar: CalendarData,
+    pub linked_calendars: Vec<CalendarData>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RecalculateLinkedAnchorsParams {
+    pub master_calendar: CalendarData,
+    pub linked_calendars: Vec<CalendarData>,
+}
+
 pub struct CalendarServices;
+
 
 impl CalendarServices {
     pub fn new() -> Self {
@@ -336,6 +352,103 @@ impl CalendarServices {
         Ok(serde_json::json!({ "age": age }))
     }
 
+    /// Карточка 4.1 / UX инвариант: Валидация каскадного сдвига при изменении мастер-календаря
+    pub fn validate_master_calendar_mutation(
+        &self,
+        params: &ValidateMasterCalendarMutationParams,
+    ) -> Result<Value, ApplicationError> {
+        let mut affected = Vec::new();
+
+        for linked in &params.linked_calendars {
+            let Some(anchor) = &linked.sync_anchor else { continue };
+            if !anchor.linked_to_master { continue };
+            let Some(master_date) = &anchor.master_anchor_date else { continue };
+
+            let old_abs = CalendarMath::get_absolute_minute(
+                &params.old_master_calendar,
+                master_date.era_index,
+                master_date.year,
+                master_date.month,
+                master_date.day,
+                master_date.hour,
+                master_date.minute,
+            );
+            let new_abs = CalendarMath::get_absolute_minute(
+                &params.new_master_calendar,
+                master_date.era_index,
+                master_date.year,
+                master_date.month,
+                master_date.day,
+                master_date.hour,
+                master_date.minute,
+            );
+            let drift_minutes = new_abs - old_abs;
+
+            if drift_minutes != 0 {
+                affected.push(serde_json::json!({
+                    "calendarName": linked.название,
+                    "oldMasterMinute": old_abs,
+                    "newMasterMinute": new_abs,
+                    "driftMinutes": drift_minutes,
+                    "localAnchorDate": anchor.local_anchor_date,
+                    "masterAnchorDate": master_date,
+                }));
+            }
+        }
+
+        let has_drift = !affected.is_empty();
+        Ok(serde_json::json!({
+            "hasDrift": has_drift,
+            "affectedCalendarsCount": affected.len(),
+            "affectedCalendars": affected
+        }))
+    }
+
+    /// Пакетный пересчет опорных якорей для связных календарей
+    pub fn recalculate_linked_anchors(
+        &self,
+        params: &RecalculateLinkedAnchorsParams,
+    ) -> Result<Value, ApplicationError> {
+        let mut updated_calendars = Vec::new();
+
+        for mut linked in params.linked_calendars.clone() {
+            let Some(anchor) = linked.sync_anchor.clone() else { continue };
+            if !anchor.linked_to_master { continue };
+            let (Some(master_date), Some(local_date)) =
+                (&anchor.master_anchor_date, &anchor.local_anchor_date) else { continue };
+
+            let master_t_abs = CalendarMath::get_absolute_minute(
+                &params.master_calendar,
+                master_date.era_index,
+                master_date.year,
+                master_date.month,
+                master_date.day,
+                master_date.hour,
+                master_date.minute,
+            );
+            let local_t_day = CalendarMath::get_absolute_minute(
+                &linked,
+                local_date.era_index,
+                local_date.year,
+                local_date.month,
+                local_date.day,
+                local_date.hour,
+                local_date.minute,
+            );
+
+            if let Some(ref mut a) = linked.sync_anchor {
+                a.master_absolute_minute = master_t_abs;
+                a.local_absolute_minute = local_t_day;
+            }
+            updated_calendars.push(linked);
+        }
+
+        Ok(serde_json::json!({
+            "updatedCount": updated_calendars.len(),
+            "updatedCalendars": updated_calendars
+        }))
+    }
+
 }
 
 impl Default for CalendarServices {
@@ -435,6 +548,88 @@ mod tests {
         };
         let res = services.calculate_character_age(&params).expect("Failed age");
         assert_eq!(res["age"], 26);
+    }
+
+    #[test]
+    fn test_validate_and_recalculate_master_calendar_drift() {
+        let services = CalendarServices::new();
+
+        let old_master = CalendarData {
+            название: "Empire Master".into(),
+            calendar_type: Some("solar".into()),
+            is_master: Some(true),
+            months: vec![],
+            eras: vec![],
+            leap_year_rule: "gregorian".into(),
+            custom_leap_rule: None,
+            time_settings: None,
+            moons: None,
+            sync_anchor: None,
+            planet_id: None,
+            ticks_per_day: Some(86400),
+            day_start_offset: None,
+            retrograde: None,
+            dial_hierarchy: None,
+        };
+
+        let mut new_master = old_master.clone();
+        new_master.leap_year_rule = "none".into(); // Изменили правило високоса мастера!
+
+        let linked_cal = CalendarData {
+            название: "Mars Colony".into(),
+            calendar_type: Some("solar".into()),
+            is_master: Some(false),
+            months: vec![],
+            eras: vec![],
+            leap_year_rule: "none".into(),
+            custom_leap_rule: None,
+            time_settings: None,
+            moons: None,
+            sync_anchor: Some(worldwiki_domain::calendar::models::SyncAnchor {
+                master_calendar_id: Some("master_1".into()),
+                local_absolute_minute: 0,
+                master_absolute_minute: 0,
+                linked_to_master: true,
+                local_anchor_date: Some(DateCoordinate {
+                    era_index: 0,
+                    year: 1,
+                    month: 1,
+                    day: 1,
+                    hour: 0,
+                    minute: 0,
+                }),
+                master_anchor_date: Some(DateCoordinate {
+                    era_index: 0,
+                    year: 100,
+                    month: 1,
+                    day: 1,
+                    hour: 0,
+                    minute: 0,
+                }),
+            }),
+            planet_id: None,
+            ticks_per_day: Some(86400),
+            day_start_offset: None,
+            retrograde: None,
+            dial_hierarchy: None,
+        };
+
+        let val_params = ValidateMasterCalendarMutationParams {
+            old_master_calendar: old_master,
+            new_master_calendar: new_master.clone(),
+            linked_calendars: vec![linked_cal.clone()],
+        };
+
+        let val_res = services.validate_master_calendar_mutation(&val_params).expect("Failed validation");
+        assert_eq!(val_res["hasDrift"], true);
+        assert_eq!(val_res["affectedCalendarsCount"], 1);
+
+        let recalc_params = RecalculateLinkedAnchorsParams {
+            master_calendar: new_master,
+            linked_calendars: vec![linked_cal],
+        };
+        let recalc_res = services.recalculate_linked_anchors(&recalc_params).expect("Failed recalculation");
+        assert_eq!(recalc_res["updatedCount"], 1);
     }
 }
 

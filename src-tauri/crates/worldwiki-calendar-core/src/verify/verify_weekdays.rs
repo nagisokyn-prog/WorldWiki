@@ -132,3 +132,16 @@ fn proof_season_detection_soundness() {
         assert!(!is_month_in_season(m, &seasons[1]));
     }
 }
+
+#[kani::proof]
+fn proof_weekdays_nonempty() {
+    use crate::weekdays::validate_weekdays_count;
+
+    let count: usize = kani::any();
+    if count == 0 {
+        assert!(validate_weekdays_count(count).is_err());
+    } else {
+        assert!(validate_weekdays_count(count).is_ok());
+    }
+}
+

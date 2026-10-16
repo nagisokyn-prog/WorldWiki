@@ -50,3 +50,44 @@ fn test_day_start_offset_symmetry() {
     let reverted = revert_day_start_offset(shifted, offset, ticks);
     assert_eq!(reverted, t);
 }
+
+#[test]
+fn test_scalar_overflow_protection() {
+    use worldwiki_calendar_core::types::LocalMoment;
+
+    // world_day около i64::MAX умноженный на 86400 должен выдать ScalarError::Overflow
+    let extreme_moment = LocalMoment {
+        planet_id: "coruscant".into(),
+        world_day: i64::MAX / 2,
+        day_tick: 100,
+    };
+    let res = try_local_moment_to_t_abs(&extreme_moment, 86400, 0);
+    assert_eq!(res, Err(ScalarError::Overflow));
+
+    // Не падает в обычном методе, а насыщается
+    let saturated = local_moment_to_t_abs(&extreme_moment, 86400, 0);
+    assert_eq!(saturated, i64::MAX);
+
+    // Деление на 0 тиков в try_t_abs_to_local_moment
+    let zero_ticks_res = try_t_abs_to_local_moment(100, "planet", 0, 0);
+    assert_eq!(zero_ticks_res, Err(ScalarError::DivisionByZero));
+}
+
+#[test]
+fn test_fast_local_moment_bijection() {
+    use worldwiki_calendar_core::types::PlanetKey;
+
+    let planet = PlanetKey(42);
+    let t_abs = 987654321i64;
+    let ticks = 86400i64;
+    let offset = 21600i64;
+
+    let fast_moment = t_abs_to_fast_moment(t_abs, planet, ticks, offset);
+    assert_eq!(fast_moment.planet_key, planet);
+    assert!(fast_moment.day_tick >= 0 && fast_moment.day_tick < ticks);
+
+    let restored = fast_moment_to_t_abs(fast_moment, ticks, offset);
+    assert_eq!(restored, t_abs);
+}
+
+

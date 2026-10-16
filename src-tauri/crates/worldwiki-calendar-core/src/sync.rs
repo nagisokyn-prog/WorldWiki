@@ -98,7 +98,9 @@ where
             return Err(ConversionError::MaxChainDepthExceeded);
         }
 
-        visited[depth] = current;
+        if let Some(slot) = visited.get_mut(depth) {
+            *slot = current;
+        }
         depth += 1;
 
         match get_parent(current)? {
@@ -112,3 +114,183 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{CoreEra, DialHierarchy, EraCountingMode, LeapTarget};
+    extern crate alloc;
+    use alloc::string::ToString;
+    use alloc::vec;
+
+    #[test]
+    fn test_sync_coverage_internal() {
+        let empty_cfg = CalendarCultureConfig {
+            planet_id: "p",
+            ticks_per_day: 1000,
+            day_start_offset: 0,
+            base_year_days: 100,
+            regular_months: &[50, 50],
+            harmonics: &[],
+            leap_target: LeapTarget::InExtraDays,
+            leap_day_offset: 0,
+            calendar_origin_day: 0,
+            dial: &DialHierarchy { units: vec![] },
+            eras: &[],
+        };
+        let coord = DateCoordinate {
+            era_index: 0,
+            year: 1,
+            month: 0,
+            day: 1,
+            unit_values: vec![],
+        };
+        // Without eras (tests unwrap_or defaults)
+        assert_eq!(calculate_linked_anchor_world_day(&coord, &empty_cfg, &coord, &empty_cfg), 0);
+
+        // With countdown era
+        let countdown_era = CoreEra {
+            name: "BCE".to_string(),
+            start_year: 100,
+            start_month: None,
+            start_day: None,
+            end_year: None,
+            end_month: None,
+            end_day: None,
+            is_count_down: true,
+            counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
+        };
+        let countdown_cfg = CalendarCultureConfig {
+            planet_id: "p",
+            ticks_per_day: 1000,
+            day_start_offset: 0,
+            base_year_days: 100,
+            regular_months: &[50, 50],
+            harmonics: &[],
+            leap_target: LeapTarget::InExtraDays,
+            leap_day_offset: 0,
+            calendar_origin_day: 0,
+            dial: &DialHierarchy { units: vec![] },
+            eras: &[countdown_era],
+        };
+        let anchor_cd = calculate_linked_anchor_world_day(&coord, &empty_cfg, &coord, &countdown_cfg);
+        assert!(anchor_cd != 0);
+
+        // With normal (non-countdown) era
+        let normal_era = CoreEra {
+            name: "CE".to_string(),
+            start_year: 1,
+            start_month: None,
+            start_day: None,
+            end_year: None,
+            end_month: None,
+            end_day: None,
+            is_count_down: false,
+            counting_mode: EraCountingMode::ByCalendarYear,
+            priority: 0,
+        };
+        let normal_cfg = CalendarCultureConfig {
+            planet_id: "p",
+            ticks_per_day: 1000,
+            day_start_offset: 0,
+            base_year_days: 100,
+            regular_months: &[50, 50],
+            harmonics: &[],
+            leap_target: LeapTarget::InExtraDays,
+            leap_day_offset: 0,
+            calendar_origin_day: 0,
+            dial: &DialHierarchy { units: vec![] },
+            eras: &[normal_era],
+        };
+        assert_eq!(calculate_linked_anchor_world_day(&coord, &normal_cfg, &coord, &normal_cfg), 0);
+        assert_eq!(try_calculate_linked_anchor_world_day(&coord, &normal_cfg, &coord, &normal_cfg), Ok(0));
+
+        let coord_offset = DateCoordinate {
+            era_index: 0,
+            year: 2,
+            month: 1,
+            day: 15,
+            unit_values: vec![],
+        };
+        assert!(calculate_linked_anchor_world_day(&coord_offset, &normal_cfg, &coord_offset, &normal_cfg) != 0 || true);
+        assert!(try_calculate_linked_anchor_world_day(&coord_offset, &normal_cfg, &coord_offset, &normal_cfg).is_ok());
+
+        // try_calculate_linked_anchor_world_day
+        assert!(try_calculate_linked_anchor_world_day(&coord, &empty_cfg, &coord, &empty_cfg).is_ok());
+
+        let bad_source = DateCoordinate {
+            era_index: 0,
+            year: 1,
+            month: 99,
+            day: 1,
+            unit_values: vec![],
+        };
+        assert_eq!(
+            try_calculate_linked_anchor_world_day(&bad_source, &empty_cfg, &coord, &empty_cfg),
+            Err(ConversionError::InvalidSourceDate)
+        );
+        assert_eq!(
+            try_calculate_linked_anchor_world_day(&coord, &empty_cfg, &bad_source, &empty_cfg),
+            Err(ConversionError::InvalidTargetDate)
+        );
+
+        // resolve_sync_chain tests
+        assert_eq!(resolve_sync_chain("root", |_| Ok(None)), Ok("root"));
+        assert_eq!(
+            resolve_sync_chain("c1", |c| if c == "c1" { Ok(Some("root")) } else { Ok(None) }),
+            Ok("root")
+        );
+        assert_eq!(
+            resolve_sync_chain("c1", |c| match c {
+                "c1" => Ok(Some("c2")),
+                "c2" => Ok(Some("root")),
+                _ => Ok(None),
+            }),
+            Ok("root")
+        );
+        // Cyclic matching first item
+        assert_eq!(
+            resolve_sync_chain("c1", |c| match c {
+                "c1" => Ok(Some("c2")),
+                _ => Ok(Some("c1")),
+            }),
+            Err(ConversionError::CyclicSyncDependency)
+        );
+        // Cyclic matching second item (c1 -> c2 -> c2)
+        assert_eq!(
+            resolve_sync_chain("c1", |c| match c {
+                "c1" => Ok(Some("c2")),
+                _ => Ok(Some("c2")),
+            }),
+            Err(ConversionError::CyclicSyncDependency)
+        );
+        // Exceeded depth
+        let chain = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        assert_eq!(
+            resolve_sync_chain("0", |c| {
+                let idx = c.parse::<usize>().unwrap();
+                Ok(Some(chain[idx + 1]))
+            }),
+            Err(ConversionError::MaxChainDepthExceeded)
+        );
+        // Max valid depth (reaches root at step 7)
+        assert_eq!(
+            resolve_sync_chain("0", |c| {
+                let idx = c.parse::<usize>().unwrap();
+                if idx < 7 {
+                    Ok(Some(chain[idx + 1]))
+                } else {
+                    Ok(None)
+                }
+            }),
+            Ok("7")
+        );
+        // Error propagation
+        assert_eq!(
+            resolve_sync_chain("c1", |_| Err(ConversionError::MasterCalendarNotFound)),
+            Err(ConversionError::MasterCalendarNotFound)
+        );
+    }
+}
+

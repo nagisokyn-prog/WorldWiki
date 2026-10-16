@@ -90,6 +90,7 @@ fn proof_dial_subdivisions_nonzero() {
 }
 
 #[kani::proof]
+#[kani::unwind(5)]
 fn proof_dial_ticks_bounded() {
     use crate::dial::checked_total_dial_subdivisions;
 
@@ -111,6 +112,7 @@ fn proof_dial_ticks_bounded() {
         ],
     };
 
+    let res = checked_total_dial_subdivisions(&hierarchy);
     let Ok(total) = res else {
         return;
     };

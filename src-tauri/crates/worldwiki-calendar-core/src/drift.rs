@@ -127,3 +127,48 @@ pub fn drift_per_century_f64(
     let rule_year_len = base as f64 + leap_fraction;
     100.0 * (rule_year_len - planet_year_len)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    extern crate alloc;
+    use alloc::format;
+
+    #[test]
+    fn test_drift_coverage_internal() {
+        let rd1 = RationalDrift { numerator_days: 10, denominator_years: 100 };
+        let rd2 = RationalDrift { numerator_days: 20, denominator_years: 100 };
+        let rd3 = RationalDrift { numerator_days: 10, denominator_years: 200 };
+        assert_eq!(rd1.clone(), rd1);
+        assert!(rd1 != rd2);
+        assert!(rd1 != rd3);
+        let _ = format!("{rd1:?}");
+
+        assert_eq!(gcd(0, 0), 1);
+        assert_eq!(gcd(12, 18), 6);
+        assert_eq!(lcm(0, 5), 1);
+        assert_eq!(lcm(5, 0), 1);
+        assert_eq!(lcm(12, 18), 36);
+
+        let h_valid = LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 4, weight: 1 };
+        let h_zero = LeapHarmonic { multiplier_a: 1, shift_b: 0, divisor_c: 0, weight: 1 };
+        assert_eq!(harmonics_lcm(&[]), 1);
+        assert_eq!(harmonics_lcm(&[h_valid, h_zero]), 4);
+
+        assert_eq!(RationalDrift { numerator_days: 1, denominator_years: 0 }.to_milli_days_per_century(), 0);
+        assert_eq!(rd1.to_milli_days_per_century(), 100);
+        assert_eq!(RationalDrift { numerator_days: 1, denominator_years: 0 }.to_f64(), 0.0);
+        assert_eq!(rd1.to_f64(), 0.1);
+
+        let r_zero = drift_per_century_rational(365, &[h_valid, h_zero], 365, 0);
+        assert_eq!(r_zero.denominator_years, 1);
+        let r_val = drift_per_century_rational(365, &[h_valid, h_zero], 36525, 100);
+        assert_eq!(r_val.numerator_days, 0);
+
+        assert_eq!(drift_per_century(365, &[], 365, 0), 0.0);
+        assert_eq!(drift_per_century(365, &[h_valid], 36525, 100), 0.0);
+
+        assert_eq!(drift_per_century_f64(365, &[h_zero], 365.0), 0.0);
+        assert_eq!(drift_per_century_f64(365, &[h_valid], 365.25), 0.0);
+    }
+}

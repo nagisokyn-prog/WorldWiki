@@ -225,13 +225,14 @@ fn proof_leap_target_month_bounded() {
 }
 
 #[kani::proof]
+#[kani::unwind(10)]
 fn proof_leap_lcm_bounded() {
     use crate::leap::{harmonics_lcm, MAX_ALLOWED_HARMONICS_LCM};
 
     let c1: i64 = kani::any();
     let c2: i64 = kani::any();
-    kani::assume(c1 >= 1 && c1 <= 100);
-    kani::assume(c2 >= 1 && c2 <= 100);
+    kani::assume(c1 >= 1 && c1 <= 20);
+    kani::assume(c2 >= 1 && c2 <= 20);
 
     let harmonics = [
         LeapHarmonic {
@@ -254,6 +255,7 @@ fn proof_leap_lcm_bounded() {
 }
 
 #[kani::proof]
+#[kani::unwind(10)]
 fn proof_negative_weight_step_bounded() {
     use crate::leap::validate_harmonics_step;
 

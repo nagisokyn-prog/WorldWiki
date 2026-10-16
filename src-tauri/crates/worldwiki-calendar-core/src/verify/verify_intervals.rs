@@ -1,5 +1,5 @@
 use crate::intervals::{
-    allen_relation, check_bilocation, check_bilocation_with_precision, check_death_violation,
+    allen_relation, check_bilocation_with_precision,
     check_lifecycle_anomaly, interval_duration, intervals_overlap, AllenRelation, AnomalySeverity,
 };
 use crate::types::{PrecisionLevel, TimeInterval};
@@ -40,6 +40,7 @@ fn proof_allen_interval_inverse_symmetry() {
 #[kani::proof]
 fn proof_empty_interval_never_overlaps() {
     let s: i64 = kani::any();
+    kani::assume(s >= -1_000_000 && s <= 1_000_000);
     let empty = TimeInterval { start: s, end: s };
     let other = TimeInterval { start: s - 10, end: s + 10 };
 

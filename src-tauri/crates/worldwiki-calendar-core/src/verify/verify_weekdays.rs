@@ -1,5 +1,5 @@
 use crate::holidays::{is_holiday_active, to_cultural_month, to_internal_month};
-use crate::seasons::{find_season_index, is_month_in_season, CoreSeason};
+use crate::seasons::{find_season_index, is_month_in_season, CoreSeason, Hemisphere};
 use crate::types::LeapHarmonic;
 use crate::weekdays::{calculate_weekday, calculate_weekday_with_pause, WeekdayPauseConfig};
 
@@ -115,12 +115,14 @@ fn proof_season_detection_soundness() {
         name: alloc::string::String::new(),
         color: alloc::string::String::new(),
         months: alloc::vec![5, 6],
+        hemisphere: Hemisphere::Northern,
     };
 
     let season_winter = CoreSeason {
         name: alloc::string::String::new(),
         color: alloc::string::String::new(),
         months: alloc::vec![0, 1],
+        hemisphere: Hemisphere::Northern,
     };
 
     let seasons = [season_summer, season_winter];

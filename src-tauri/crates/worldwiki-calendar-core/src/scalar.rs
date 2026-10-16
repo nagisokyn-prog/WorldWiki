@@ -165,3 +165,39 @@ pub fn fast_moment_to_t_abs(
     total.clamp(i64::MIN as i128, i64::MAX as i128) as i64
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    extern crate alloc;
+    use alloc::format;
+
+    #[test]
+    fn test_scalar_coverage_internal() {
+        let se1 = ScalarError::Overflow;
+        let se2 = ScalarError::DivisionByZero;
+        assert_eq!(se1.clone(), se1);
+        assert_eq!(se2.clone(), se2);
+        assert!(se1 != se2);
+        let _ = format!("{se1:?}{se2:?}");
+
+        assert!(!validate_t_abs_bound(i64::MIN));
+        assert!(!validate_t_abs_bound(i64::MAX));
+        assert!(validate_t_abs_bound(0));
+        assert_eq!(normalize_day_start_offset(50, 0), 0);
+        assert_eq!(normalize_day_start_offset(50, -10), 0);
+        assert_eq!(revert_day_start_offset(100, 20, 1000), 80);
+
+        assert_eq!(try_t_abs_to_local_moment(100, "p", 0, 0), Err(ScalarError::DivisionByZero));
+        assert_eq!(try_t_abs_to_local_moment(i64::MAX, "p", 1, i64::MIN), Err(ScalarError::Overflow));
+
+        let huge = LocalMoment { planet_id: "p".into(), world_day: i64::MAX, day_tick: i64::MAX };
+        assert_eq!(try_local_moment_to_t_abs(&huge, 1000, 0), Err(ScalarError::Overflow));
+        assert_eq!(local_moment_to_t_abs(&huge, 1000, 0), i64::MAX);
+
+        let fast = t_abs_to_fast_moment(100, PlanetKey(1), 0, 0);
+        assert_eq!(fast.world_day, 100);
+        assert_eq!(fast_moment_to_t_abs(fast, 1000, 0), 100 * 1000);
+    }
+}
+
+

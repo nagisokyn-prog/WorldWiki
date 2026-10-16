@@ -51,10 +51,14 @@ pub fn day_tick_to_units(
     for i in (1..count).rev() {
         let sub = hierarchy.units.get(i).map(|u| u.subdivisions).unwrap_or(1);
         if sub > 0 {
-            out[i] = units_of_day.rem_euclid(sub);
+            if let Some(slot) = out.get_mut(i) {
+                *slot = units_of_day.rem_euclid(sub);
+            }
             units_of_day = floor_div(units_of_day, sub);
         }
     }
-    out[0] = units_of_day;
+    if let Some(first) = out.first_mut() {
+        *first = units_of_day;
+    }
     out
 }

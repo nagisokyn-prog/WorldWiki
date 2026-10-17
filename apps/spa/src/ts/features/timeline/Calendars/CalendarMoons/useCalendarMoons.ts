@@ -25,7 +25,7 @@ export function useCalendarMoons(props: CalendarMoonsProps, emit: (event: 'updat
         full: 'Полнолуние',
         waning: 'Убывающая'
       }
-    } as any);
+    });
   };
 
   const moveItem = <T>(arr: T[] | undefined, idx: number, dir: number) => {

@@ -65,15 +65,16 @@ export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event
 
   // Расчет векового дрейфа
   const driftPerCentury = computed(() => {
-    const cal = props.modelValue as CalendarData;
+    const cal = props.modelValue as CalendarData & { target_year_length_days?: number };
     const baseDays = cal.месяцы?.reduce((acc, m) => acc + (m.дней || 0), 0) || 365;
-    const targetLength = (props.modelValue as any).target_year_length_days || 365.24219;
+    const targetLength = cal.target_year_length_days || 365.24219;
     return engine.calculateDriftPerCentury(baseDays, currentHarmonics.value, targetLength);
   });
 
   // Пресеты цепных дробей
   const convergents = computed(() => {
-    const targetLength = (props.modelValue as any).target_year_length_days || 365.24219;
+    const cal = props.modelValue as CalendarData & { target_year_length_days?: number };
+    const targetLength = cal.target_year_length_days || 365.24219;
     const frac = targetLength - Math.floor(targetLength);
     const num = Math.round(frac * 100000);
     return engine.calculateLeapConvergents(num, 100000, 5);

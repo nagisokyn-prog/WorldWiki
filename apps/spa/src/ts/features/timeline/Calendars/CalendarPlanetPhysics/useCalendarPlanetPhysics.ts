@@ -5,6 +5,14 @@
 
 import { computed, ref } from 'vue';
 import type { CalendarPlanetPhysicsProps, CalendarPlanetPhysicsEmits } from './CalendarPlanetPhysics.model';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+
+export interface PlanetPhysicsConfig {
+  planet_id: string;
+  retrograde: boolean;
+  axial_tilt_deg: number;
+  day_start_mode: string;
+}
 
 export function useCalendarPlanetPhysics(
   props: CalendarPlanetPhysicsProps,
@@ -12,8 +20,8 @@ export function useCalendarPlanetPhysics(
 ) {
   const isCollapsed = ref(false);
 
-  const physics = computed(() => {
-    const data = props.modelValue as any;
+  const physics = computed((): PlanetPhysicsConfig => {
+    const data = props.modelValue as CalendarData & { planet_physics?: PlanetPhysicsConfig };
     if (!data.planet_physics) {
       data.planet_physics = {
         planet_id: 'earth',

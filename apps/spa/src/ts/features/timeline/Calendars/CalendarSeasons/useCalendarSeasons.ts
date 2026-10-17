@@ -63,14 +63,6 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     }
   };
 
-  const resolveTokenHex = (varName: string): string => {
-    if (typeof window !== 'undefined') {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(val)) return val;
-    }
-    return ['#', '3b', '82', 'f6'].join('');
-  };
-
   const checkSeasonConflict = (season: CalendarSeason): boolean => {
     if (!season.месяцы || season.месяцы.length === 0) return false;
     const name = (season.название || '').toLowerCase();
@@ -87,8 +79,7 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
   };
 
   const formatColor = (color?: string): string => {
-    if (!color) return '#3b82f6';
-    return color.startsWith('#') ? color : '#3b82f6';
+    return color || 'var(--info)';
   };
 
   return {

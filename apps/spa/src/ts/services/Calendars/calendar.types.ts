@@ -78,15 +78,19 @@ export interface MoonPhaseNames {
 
 export interface MoonConfig {
   name: string;
-  period_days: number;
-  initial_phase: number;
+  period_days?: number;
+  initial_phase?: number;
   phase_names?: MoonPhaseNames;
+  period_days_num?: number;
+  period_days_den?: number;
+  initial_phase_bp?: number;
 }
 
 export interface MoonPhaseResult {
   moon: MoonConfig;
   phase: number;
   name: string;
+  phaseName?: string;
   emoji: string;
   dayInCycle: number;
 }

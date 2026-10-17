@@ -66,12 +66,12 @@
           :model-value="modelValue.первый_месяц_года || 0"
           :horizontal="wheelHorizontal"
           :options="
-            (modelValue.месяцы || []).map((m: any, idx: number) => ({
+            (modelValue.месяцы || []).map((m, idx: number) => ({
               value: idx,
               label: `${m.название} (стиль ${idx + 1}-го месяца)`,
             }))
           "
-          @update:model-value="val => modelValue.первый_месяц_года = Number(val)"
+          @update:model-value="val => updateFirstMonth(Number(val))"
         >
         </XboxWheel>
       </div>
@@ -88,7 +88,11 @@ const props = defineProps<{
   modelValue: CalendarData;
 }>();
 
-const { isCollapsed, wheelHorizontal, getDaysInMonth, updateOriginField } = useCalendarOrigin(props);
+const emit = defineEmits<{
+  (e: 'update:modelValue', val: CalendarData): void;
+}>();
+
+const { isCollapsed, wheelHorizontal, getDaysInMonth, updateOriginField, updateFirstMonth } = useCalendarOrigin(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarOrigin.css"></style>

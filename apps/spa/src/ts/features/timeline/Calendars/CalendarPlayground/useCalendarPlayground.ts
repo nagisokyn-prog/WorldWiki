@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { CalendarMath, useCalendarEngine } from '../../../../services/Calendars/useCalendarEngine';
+import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
 import type { CalendarData, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
 import type { CalendarPlaygroundProps } from './CalendarPlayground.model';
 
@@ -149,51 +149,10 @@ export function useCalendarPlayground(
     return lines.join('\n');
   };
 
-  const engine = useCalendarEngine();
-
   const gridDays = computed(() => {
     const days = [];
     const count = currentDaysCount.value;
     const cal = props.calendar;
-    const year = origin.value.год;
-    const month = origin.value.месяц;
-
-    const cultureConfig = {
-      planet_id: cal._id || 'world',
-      ticks_per_day: (cal.настройки_времени?.часов_в_сутках || 24) * (cal.настройки_времени?.минут_в_часе || 60) * 60,
-      day_start_offset: 0,
-      base_year_days: cal.месяцы?.reduce((a, m) => a + (m.дней || 0), 0) || 365,
-      regular_months: cal.месяцы?.map((m) => m.дней || 30) || [30],
-      harmonics: [
-        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
-        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
-        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
-      ],
-      leap_target: { InMonth: { target_month: cal.пользовательское_високосное_правило?.месяц ?? 1 } },
-      leap_day_offset: cal.пользовательское_високосное_правило?.день_смещения ?? 1,
-      calendar_origin_day: 0,
-      dial: {
-        units: [
-          { name: 'Hour', subdivisions: cal.настройки_времени?.часов_в_сутках || 24 },
-          { name: 'Minute', subdivisions: cal.настройки_времени?.минут_в_часе || 60 },
-        ],
-      },
-      eras: (cal.эпохи || []).map((e) => ({
-        name: e.название || 'Era',
-        start_year: e.год_начала ?? 1,
-        is_count_down: e.обратный_отсчет ?? false,
-        counting_mode: 'by_calendar_year' as const,
-      })),
-    };
-
-    const bundle = engine.getMonthGridBundle({
-      year,
-      month,
-      config: cultureConfig,
-      first_month_of_year: cal.первый_месяц_года || 0,
-      weekdays_count: daysInWeek.value,
-      start_weekday: cal.точка_отсчета?.день_недели || 0,
-    });
 
     for (let i = 1; i <= count; i++) {
       const inputDate = { era_index: origin.value.эпоха ?? 0, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };

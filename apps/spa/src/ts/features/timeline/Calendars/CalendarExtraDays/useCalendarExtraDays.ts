@@ -5,6 +5,14 @@
 
 import { computed, ref } from 'vue';
 import type { CalendarExtraDaysProps, CalendarExtraDaysEmits } from './CalendarExtraDays.model';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+
+export interface EpagomenalConfig {
+  extra_days_base: number;
+  extra_days_leap: number;
+  pause_on_extra_days: boolean;
+  name: string;
+}
 
 export function useCalendarExtraDays(
   props: CalendarExtraDaysProps,
@@ -12,8 +20,8 @@ export function useCalendarExtraDays(
 ) {
   const isCollapsed = ref(false);
 
-  const extraDaysConfig = computed(() => {
-    const data = props.modelValue as any;
+  const extraDaysConfig = computed((): EpagomenalConfig => {
+    const data = props.modelValue as CalendarData & { epagomenal_config?: EpagomenalConfig };
     if (!data.epagomenal_config) {
       data.epagomenal_config = {
         extra_days_base: 0,

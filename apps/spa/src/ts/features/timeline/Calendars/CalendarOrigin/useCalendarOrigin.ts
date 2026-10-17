@@ -1,9 +1,12 @@
 import { ref, onMounted } from "vue";
-import { settingsService } from '@worldwiki/components';
+import { settingsService, type AppSettings } from '@worldwiki/components';
 import { CalendarMath } from "../../../../services/Calendars/useCalendarEngine";
 import type { CalendarData } from "../../../../services/Calendars/calendar.types";
 
-export function useCalendarOrigin(props: { modelValue: CalendarData }, _emit?: (event: string, ...args: unknown[]) => void) {
+export function useCalendarOrigin(
+  props: { modelValue: CalendarData },
+  _emit?: (e: 'update:modelValue', val: CalendarData) => void
+) {
   const isCollapsed = ref(false);
 
   const getDaysInMonth = (cal: CalendarData, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
@@ -27,10 +30,16 @@ export function useCalendarOrigin(props: { modelValue: CalendarData }, _emit?: (
     }
   });
 
+  const updateFirstMonth = (val: number) => {
+    props.modelValue.первый_месяц_года = val;
+    _emit?.('update:modelValue', props.modelValue);
+  };
+
   return {
     isCollapsed,
     wheelHorizontal,
     getDaysInMonth,
-    updateOriginField
+    updateOriginField,
+    updateFirstMonth
   };
 }

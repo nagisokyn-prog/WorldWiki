@@ -116,8 +116,6 @@
 
 <script setup lang="ts">
 import { useCalendarPlayground } from './useCalendarPlayground';
-import type { CalendarData } from '../../../../services/Calendars/calendar.types';
-
 import type { CalendarPlaygroundProps } from './CalendarPlayground.model';
 
 const props = defineProps<CalendarPlaygroundProps>();

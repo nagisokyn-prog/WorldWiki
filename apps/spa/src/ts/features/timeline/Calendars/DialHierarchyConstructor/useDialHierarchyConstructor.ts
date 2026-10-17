@@ -6,6 +6,7 @@
 import { computed, ref } from 'vue';
 import type { DialHierarchyConstructorProps, DialHierarchyConstructorEmits } from './DialHierarchyConstructor.model';
 import type { DialUnit } from '@worldwiki/calendar-wasm';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
 export function useDialHierarchyConstructor(
   props: DialHierarchyConstructorProps,
@@ -15,7 +16,7 @@ export function useDialHierarchyConstructor(
 
   const dialUnits = computed<DialUnit[]>({
     get: () => {
-      const data = props.modelValue as any;
+      const data = props.modelValue as CalendarData & { dial_hierarchy?: { units?: DialUnit[] } };
       if (!data.dial_hierarchy?.units) {
         data.dial_hierarchy = {
           units: [
@@ -24,10 +25,10 @@ export function useDialHierarchyConstructor(
           ],
         };
       }
-      return data.dial_hierarchy.units;
+      return data.dial_hierarchy.units ?? [];
     },
     set: (val: DialUnit[]) => {
-      const data = props.modelValue as any;
+      const data = props.modelValue as CalendarData & { dial_hierarchy?: { units?: DialUnit[] } };
       if (!data.dial_hierarchy) data.dial_hierarchy = {};
       data.dial_hierarchy.units = val;
       emit('update:modelValue', props.modelValue);

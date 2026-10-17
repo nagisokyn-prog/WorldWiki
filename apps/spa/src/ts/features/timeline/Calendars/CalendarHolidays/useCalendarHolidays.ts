@@ -1,5 +1,5 @@
 import { ref, onMounted } from "vue";
-import { settingsService } from '@worldwiki/components';
+import { settingsService, type AppSettings } from '@worldwiki/components';
 import { CalendarMath } from "../../../../services/Calendars/useCalendarEngine";
 import type { CalendarData } from "../../../../services/Calendars/calendar.types";
 

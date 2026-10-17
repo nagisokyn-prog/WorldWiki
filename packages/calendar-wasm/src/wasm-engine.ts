@@ -6,11 +6,8 @@
 
 import type {
   CalendarAuditReport,
-  CoreEra,
   CoreHoliday,
-  CoreSeason,
   DateCoordinate,
-  DialHierarchy,
   Hemisphere,
   LeapApproximation,
   LeapHarmonic,
@@ -504,7 +501,7 @@ export class WasmCalendarEngine {
     const results: LeapApproximation[] = [];
     if (trop_num <= 0 || trop_den <= 0 || max_convergents === 0) return results;
 
-    let fracNum = trop_num % trop_den;
+    const fracNum = trop_num % trop_den;
     if (fracNum === 0) return results;
 
     const maxDepth = Math.min(max_convergents, 10);

@@ -31,7 +31,20 @@
           </div>
         </div>
       </div>
-      <button class="btn-add interactive-el" @click.prevent="addMoon">➕ Добавить луну</button>
+      <div class="flex gap-2 items-center mt-2 flex-wrap">
+        <button class="btn-add interactive-el" @click.prevent="addMoon">➕ Добавить луну</button>
+        <button
+          v-if="(calendar.moons?.length || 0) >= 2"
+          type="button"
+          class="btn-secondary interactive-el"
+          @click.prevent="searchDoubleFullMoon(0, 1)"
+        >
+          🔮 Найти Двойное Полнолуние
+        </button>
+      </div>
+      <div v-if="doubleFullMoonResult" class="text-xs text-muted mt-2">
+        {{ doubleFullMoonResult }}
+      </div>
     </div>
   </div>
 </template>
@@ -47,7 +60,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', val: CalendarData): void;
 }>();
 
-const { isCollapsed, calendar, addMoon, moveItem } = useCalendarMoons(props, emit);
+const { isCollapsed, calendar, addMoon, moveItem, doubleFullMoonResult, searchDoubleFullMoon } = useCalendarMoons(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarMoons.css"></style>

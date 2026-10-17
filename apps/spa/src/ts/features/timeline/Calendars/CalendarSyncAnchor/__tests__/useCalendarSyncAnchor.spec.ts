@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { reactive } from 'vue';
 import { useCalendarSyncAnchor } from '../useCalendarSyncAnchor';
-import { CalendarMath } from '../../../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../../../services/Calendars/useCalendarEngine';
 import type { CalendarData } from '../../../../../services/Calendars/calendar.types';
 
 describe('useCalendarSyncAnchor', () => {

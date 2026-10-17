@@ -19,7 +19,7 @@ apps/spa/src/ts/services/
 ├── footnote.service.ts                 # Индексация и резолв сносок
 │
 ├── Calendars/                          # Сервисы подсистемы времени
-│   ├── calendar.math.ts                # Математическое ядро расчетов времени, фаз лун и солнца
+│   ├── useCalendarEngine.ts            # Реактивный фасад математического ядра календаря (WASM)
 │   ├── calendar.types.ts               # DTO интерфейсы календарей
 │   └── timeline-panel.ts               # Сервис привязки событий к главам рукописи
 │
@@ -58,7 +58,7 @@ flowchart TD
         ChapSvc["chapter.service.ts"]
         EditSvc["editor.service.ts & uiEditorService.ts"]
         DocEngine["services/document (ASTAdapter & Export)"]
-        CalMath["services/Calendars/calendar.math.ts"]
+        CalMath["services/Calendars/useCalendarEngine.ts"]
         EntitySvc["services/Entity/entity.service.ts"]
         ApiClient["api.client.ts (Tauri IPC Bridge)"]
     end

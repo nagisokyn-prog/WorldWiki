@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useTimeAtlasModal } from '../useTimeAtlasModal';
-import { CalendarMath } from '../../../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../../../services/Calendars/useCalendarEngine';
 
 vi.mock('../../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({

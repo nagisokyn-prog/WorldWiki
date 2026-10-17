@@ -2,7 +2,7 @@ import { ref, watch, computed } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
 import type { CalendarRecord } from '../../../stores/calendar.store';
 import type { CalendarData } from '../../../services/Calendars/calendar.types';
-import { CalendarMath } from '../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../services/Calendars/useCalendarEngine';
 
 export interface PanelCalendarItem {
     id?: string;
@@ -194,6 +194,14 @@ export function useCalendarsPanel(props: { project?: string }) {
         }));
     });
 
+    const isAuditOpen = ref(false);
+    const selectedAuditCalendar = ref<CalendarData | null>(null);
+
+    const openAudit = (calData: CalendarData) => {
+        selectedAuditCalendar.value = calData;
+        isAuditOpen.value = true;
+    };
+
     return {
         project,
         calendars,
@@ -207,6 +215,9 @@ export function useCalendarsPanel(props: { project?: string }) {
         removeCalendar,
         setDefault,
         setStoryOrigin,
-        saveAll
+        saveAll,
+        isAuditOpen,
+        selectedAuditCalendar,
+        openAudit,
     };
 }

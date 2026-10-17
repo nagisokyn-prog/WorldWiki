@@ -50,7 +50,7 @@ apps/spa/src/ts/
 │   ├── chapter.service.ts              # Сервис рукописи и сохранения глав
 │   ├── editor.service.ts               # Координатор активных редакторов и вкладок
 │   ├── footnote.service.ts             # Индексация и нумерация сносок
-│   ├── Calendars/                      # calendar.math.ts (Математика времени, луны, солнце)
+│   ├── Calendars/                      # useCalendarEngine.ts (Математическое ядро @worldwiki/calendar-wasm)
 │   ├── Entity/                         # entity.service.ts (Сущности лора и связи)
 │   └── document/                       # Комплексный документный движок (ASTAdapter, ГОСТ, экспорт)
 │

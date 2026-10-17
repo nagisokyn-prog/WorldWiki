@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { getTimelineInspectorData } from '@/services/api.client';
-import { CalendarMath } from '@/services/Calendars/calendar.math';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
 import { useCalendarStore } from '@/stores/calendar.store';

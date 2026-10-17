@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, type Ref } from 'vue';
-import { CalendarMath } from '../../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
 import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
 
 export function useTimeAtlasMatrix(

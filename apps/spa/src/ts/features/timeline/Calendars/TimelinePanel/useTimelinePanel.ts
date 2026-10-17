@@ -1,7 +1,7 @@
 import { ref, onMounted, computed, toRef } from 'vue';
 import { useCalendarStore } from '../../../../stores/calendar.store';
 import type { CalendarRecord } from '../../../../stores/calendar.store';
-import { CalendarMath } from '../../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
 import type { CalendarData, CalendarEra, CalendarMonth } from '../../../../services/Calendars/calendar.types';
 import { settingsService, type AppSettings } from '@worldwiki/components';
 import { useTimelineEventConversion } from './useTimelineEventConversion';
@@ -219,6 +219,29 @@ export function useTimelinePanel(
     });
   });
 
+  const sortByAbsoluteTime = () => {
+    const list = [...props.events];
+    list.sort((a, b) => {
+      const calA = getCalendar(a.calendar_id || 'default');
+      const calB = getCalendar(b.calendar_id || 'default');
+      const minA = calA ? CalendarMath.getAbsoluteMinute({ ...a.date, era_index: a.date.era, ...a.time }, calA) : 0;
+      const minB = calB ? CalendarMath.getAbsoluteMinute({ ...b.date, era_index: b.date.era, ...b.time }, calB) : 0;
+      return minA - minB;
+    });
+    emit('update:events', list);
+  };
+
+  const checkEventOverlap = (idx1: number, idx2: number) => {
+    const ev1 = props.events[idx1];
+    const ev2 = props.events[idx2];
+    if (!ev1 || !ev2) return false;
+    const cal1 = getCalendar(ev1.calendar_id || 'default');
+    const cal2 = getCalendar(ev2.calendar_id || 'default');
+    const min1 = cal1 ? CalendarMath.getAbsoluteMinute({ ...ev1.date, era_index: ev1.date.era, ...ev1.time }, cal1) : 0;
+    const min2 = cal2 ? CalendarMath.getAbsoluteMinute({ ...ev2.date, era_index: ev2.date.era, ...ev2.time }, cal2) : 0;
+    return min1 < min2 + 60 && min2 < min1 + 60;
+  };
+
   return {
     wheelHorizontal,
     calendarOptions,
@@ -246,6 +269,8 @@ export function useTimelinePanel(
     createNextEvent,
     addEvent,
     getUniversalDateObject,
-    updateEventFullDate
+    updateEventFullDate,
+    sortByAbsoluteTime,
+    checkEventOverlap,
   };
 }

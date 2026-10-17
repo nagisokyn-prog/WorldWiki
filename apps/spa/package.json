@@ -32,6 +32,7 @@
     "@tiptap/vue-3": "^3.27.3",
     "@vueuse/motion": "^3.0.3",
     "@worldwiki/components": "workspace:*",
+    "@worldwiki/calendar-wasm": "workspace:*",
     "@worldwiki/resources": "workspace:*",
     "@worldwiki/word-vibe": "workspace:*",
     "katex": "^0.18.5",

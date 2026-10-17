@@ -1,5 +1,5 @@
 import { ref, computed, type Ref } from 'vue';
-import { CalendarMath } from '@/services/Calendars/calendar.math';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import type { CalendarData, CalendarMonth, CalendarEra } from '@/services/Calendars/calendar.types';
 import type { CalendarRecord } from '@/stores/calendar.store';
 import type { DatePickerModelValue } from '@/shared/ui/UniversalDatePicker/useUniversalDatePicker';

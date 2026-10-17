@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
-import { CalendarMath } from '../../../services/Calendars/calendar.math';
+import { CalendarMath } from '../../../services/Calendars/useCalendarEngine';
 import { settingsService } from '@worldwiki/components';
 import type { AppSettings } from '@worldwiki/components';
 import type { CalendarData, CalendarEra, CalendarMonth } from '../../../services/Calendars/calendar.types';

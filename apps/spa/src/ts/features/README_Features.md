@@ -151,7 +151,7 @@ flowchart TD
 | **`schemas`**   | Студия мета-моделирования (Schema Studio): визуальное проектирование типов сущностей и правил связей      | `schema.store.ts`, HTML5 DnD, `useSchemaTemplates`              | [README_Schemas.md](./schemas/README_Schemas.md)           |
 | **`shell`**     | Каркас приложения: сплэш-диагностика, лаунчер вселенных, навигационный хаб `EditorView`, горячие клавиши  | `project.store.ts`, `project.service.ts`, `settings.service.ts` | [README_Shell.md](./shell/README_Shell.md)                 |
 | **`sync`**      | Сквозная E2EE синхронизация проектов (WorldWiki Cloud, WebDAV, Git), версионирование Vector Clocks        | `sync.service.ts`, Tauri Crypto (AES-GCM-256), Rust Sync        | [README_Sync.md](./sync/README_Sync.md)                    |
-| **`timeline`**  | Единый континуум времени ($M_{\text{abs}}$), авторские календари, луны, солнце, реестр и селекторы даты   | `calendar.store.ts`, `calendar.math.ts`, `timeline.store.ts`    | [README_Timeline.md](./timeline/README_Timeline.md)        |
+| **`timeline`**  | Единый континуум времени ($M_{\text{abs}}$), авторские календари, луны, солнце, реестр и селекторы даты   | `calendar.store.ts`, `useCalendarEngine.ts`, `timeline.store.ts`    | [README_Timeline.md](./timeline/README_Timeline.md)        |
 
 ---
 

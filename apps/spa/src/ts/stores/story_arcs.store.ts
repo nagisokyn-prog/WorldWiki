@@ -92,8 +92,6 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
         arc_type: arc.arc_type || 'event',
         status: arc.status || 'in_progress',
         color: arc.color ?? null,
-        created_at: arc.created_at || now,
-        updated_at: now
       };
       const savedId = await saveStoryArc(payload);
       const saved: StoryArc = {

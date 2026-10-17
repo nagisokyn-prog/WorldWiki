@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { CalendarMath } from '../../../../services/Calendars/calendar.math';
+import { CalendarMath, useCalendarEngine } from '../../../../services/Calendars/useCalendarEngine';
 import type { CalendarData, CalendarEra, CalendarMonth, SyncAnchorDate } from '../../../../services/Calendars/calendar.types';
 
 export function useCalendarSyncAnchor(props: {
@@ -128,6 +128,60 @@ export function useCalendarSyncAnchor(props: {
     return `Летоисчисление культуры началось за ${yearsBefore} г. до Календаря Мира.`;
   });
 
+  const linkedAnchorWorldDay = computed(() => {
+    if (!props.masterCalendar || !isLinked.value) return 0;
+    const engine = useCalendarEngine();
+    const toCulture = (cal: CalendarData) => ({
+      planet_id: cal._id || 'world',
+      ticks_per_day: (cal.настройки_времени?.часов_в_сутках || 24) * 3600,
+      day_start_offset: 0,
+      base_year_days: cal.месяцы?.reduce((a, m) => a + (m.дней || 0), 0) || 365,
+      regular_months: cal.месяцы?.map((m) => m.дней || 30) || [30],
+      harmonics: [
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
+      ],
+      leap_target: { InMonth: { target_month: cal.пользовательское_високосное_правило?.месяц ?? 1 } },
+      leap_day_offset: cal.пользовательское_високосное_правило?.день_смещения ?? 1,
+      calendar_origin_day: 0,
+      dial: {
+        units: [
+          { name: 'Hour', subdivisions: cal.настройки_времени?.часов_в_сутках || 24 },
+          { name: 'Minute', subdivisions: cal.настройки_времени?.минут_в_часе || 60 },
+        ],
+      },
+      eras: (cal.эпохи || []).map((e) => ({
+        name: e.название || 'Era',
+        start_year: e.год_начала ?? 1,
+        is_count_down: e.обратный_отсчет ?? false,
+        counting_mode: 'by_calendar_year' as const,
+      })),
+    });
+
+    const mCoord = {
+      era_index: masterAnchorDate.value.era_index || 0,
+      year: masterAnchorDate.value.year || 1,
+      month: masterAnchorDate.value.month || 0,
+      day: masterAnchorDate.value.day || 1,
+      unit_values: [masterAnchorDate.value.hour || 0, masterAnchorDate.value.minute || 0],
+    };
+    const lCoord = {
+      era_index: localAnchorDate.value.era_index || 0,
+      year: localAnchorDate.value.year || 1,
+      month: localAnchorDate.value.month || 0,
+      day: localAnchorDate.value.day || 1,
+      unit_values: [localAnchorDate.value.hour || 0, localAnchorDate.value.minute || 0],
+    };
+
+    return engine.calculateLinkedAnchorWorldDay(
+      mCoord,
+      toCulture(props.masterCalendar),
+      lCoord,
+      toCulture(props.modelValue)
+    );
+  });
+
   return {
     isCollapsed,
     isLinked,
@@ -143,5 +197,6 @@ export function useCalendarSyncAnchor(props: {
     masterStartYear,
     showAdvanced,
     offsetDescription,
+    linkedAnchorWorldDay,
   };
 }

@@ -99,7 +99,7 @@ apps/spa/src/ts/features/timeline/
 ```
 apps/spa/src/ts/
 ├── services/Calendars/
-│   ├── calendar.math.ts                # TypeScript ядро математики календаря, форматтер солнца, explainDate()
+│   ├── useCalendarEngine.ts            # Реактивный фасад математического ядра календаря (@worldwiki/calendar-wasm)
 │   ├── calendar.types.ts               # DTO интерфейсы: CalendarData, LoreDateExplanation, DaylightResult
 │   └── timeline-panel.ts               # Мост связи событий с главами
 │

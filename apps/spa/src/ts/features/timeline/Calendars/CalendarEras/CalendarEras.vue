@@ -51,10 +51,18 @@
               </button>
             </div>
           </div>
-          <div class="era-reverse-row">
+          <div class="era-reverse-row flex gap-4 items-center flex-wrap">
             <label class="era-checkbox-label">
               <input v-model="era.обратный_отсчет" type="checkbox" />
               Считать назад (До нашей эры)
+            </label>
+            <label class="era-checkbox-label">
+              <input
+                type="checkbox"
+                :checked="era.counting_mode === 'by_anniversary'"
+                @change="(era as any).counting_mode = (($event.target as HTMLInputElement).checked ? 'by_anniversary' : 'by_calendar_year')"
+              />
+              👑 Эра коронации (годовщина)
             </label>
           </div>
         </div>

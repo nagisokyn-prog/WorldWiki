@@ -60,6 +60,21 @@
         >
         </XboxWheel>
       </div>
+      <div class="calendar-field mt-3">
+        <label>Первый месяц года (ротация стиля года)</label>
+        <XboxWheel
+          :model-value="modelValue.первый_месяц_года || 0"
+          :horizontal="wheelHorizontal"
+          :options="
+            (modelValue.месяцы || []).map((m: any, idx: number) => ({
+              value: idx,
+              label: `${m.название} (стиль ${idx + 1}-го месяца)`,
+            }))
+          "
+          @update:model-value="val => modelValue.первый_месяц_года = Number(val)"
+        >
+        </XboxWheel>
+      </div>
     </div>
   </div>
 </template>

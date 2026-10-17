@@ -3,8 +3,7 @@ import { settingsService } from '@worldwiki/components';
 import type { AppSettings } from '@worldwiki/components';
 import type { CalendarLeapYearProps } from './CalendarLeapYear.model';
 import { useCalendarEngine } from '../../../../services/Calendars/useCalendarEngine';
-import { CalendarCycles } from '../../../../services/Calendars/calendar.cycles';
-import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+import type { CalendarData, LeapHarmonic } from '../../../../services/Calendars/calendar.types';
 
 export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
@@ -49,13 +48,35 @@ export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event
     },
   });
 
+  const currentHarmonics = computed<LeapHarmonic[]>(() => {
+    const rule = props.modelValue.правило_високосного_года;
+    if (rule === 'григорианское' || rule === 'григорианский') {
+      return [
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
+      ];
+    }
+    if (rule === 'каждый 4 год') {
+      return [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 }];
+    }
+    return [];
+  });
+
   // Расчет векового дрейфа
   const driftPerCentury = computed(() => {
     const cal = props.modelValue as CalendarData;
-    const baseDays = CalendarCycles.getBaseDaysInYear(cal);
-    const harmonics = CalendarCycles.getHarmonics(cal);
-    const targetLength = props.modelValue.target_year_length_days || 365.24219;
-    return engine.calculateDriftPerCentury(baseDays, harmonics, targetLength);
+    const baseDays = cal.месяцы?.reduce((acc, m) => acc + (m.дней || 0), 0) || 365;
+    const targetLength = (props.modelValue as any).target_year_length_days || 365.24219;
+    return engine.calculateDriftPerCentury(baseDays, currentHarmonics.value, targetLength);
+  });
+
+  // Пресеты цепных дробей
+  const convergents = computed(() => {
+    const targetLength = (props.modelValue as any).target_year_length_days || 365.24219;
+    const frac = targetLength - Math.floor(targetLength);
+    const num = Math.round(frac * 100000);
+    return engine.calculateLeapConvergents(num, 100000, 5);
   });
 
   // Предупреждение о вековом расхождении
@@ -76,5 +97,6 @@ export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event
     customRuleDays,
     driftPerCentury,
     driftWarning,
+    convergents,
   };
 }

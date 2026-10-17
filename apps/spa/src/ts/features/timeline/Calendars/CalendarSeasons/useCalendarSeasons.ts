@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import type { CalendarData, CalendarSeason, CalendarMonth } from '../../../../services/Calendars/calendar.types';
+import { useCalendarEngine } from '../../../../services/Calendars/useCalendarEngine';
 
 export interface CalendarSeasonsProps {
   modelValue: Partial<CalendarData> & { сезоны?: CalendarSeason[]; месяцы?: CalendarMonth[]; [key: string]: unknown };
@@ -70,9 +71,24 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     return ['#', '3b', '82', 'f6'].join('');
   };
 
+  const checkSeasonConflict = (season: CalendarSeason): boolean => {
+    if (!season.месяцы || season.месяцы.length === 0) return false;
+    const name = (season.название || '').toLowerCase();
+    const isSummer = name.includes('лет') || name.includes('summer');
+    if (!isSummer) return false;
+    const totalMonths = props.modelValue.месяцы?.length || 12;
+    const winterSolsticeMonth = totalMonths - 1;
+    return useCalendarEngine().isSeasonConflictingWithSolstice(
+      season.месяцы,
+      true,
+      winterSolsticeMonth,
+      totalMonths
+    );
+  };
+
   const formatColor = (color?: string): string => {
-    if (color && /^#[0-9a-fA-F]{6}$/.test(color)) return color;
-    return resolveTokenHex('--info');
+    if (!color) return '#3b82f6';
+    return color.startsWith('#') ? color : '#3b82f6';
   };
 
   return {
@@ -83,5 +99,6 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     isMonthInSeason,
     toggleMonthInSeason,
     formatColor,
+    checkSeasonConflict,
   };
 }

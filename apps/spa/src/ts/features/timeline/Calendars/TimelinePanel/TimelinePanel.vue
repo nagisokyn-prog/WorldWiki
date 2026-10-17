@@ -1,6 +1,17 @@
 <template>
   <div class="tool-section timeline-section">
-    <h4><i class="fas fa-calendar-alt"></i> Таймлайн главы</h4>
+    <div class="flex items-center justify-between mb-2">
+      <h4 class="m-0"><i class="fas fa-calendar-alt"></i> Таймлайн главы</h4>
+      <button
+        v-if="events.length > 1"
+        type="button"
+        class="glass-btn btn-sm interactive-el"
+        title="Упорядочить хронологически по абсолютному времени"
+        @click="sortByAbsoluteTime"
+      >
+        ⏱️ По хронологии
+      </button>
+    </div>
     
     <!-- Селектор типа календаря -->
     <div class="calendar-selector multi-calendar-selector">
@@ -113,7 +124,8 @@ const {
   onChange,
   relativeInput,
   createNextEvent,
-  addEvent
+  addEvent,
+  sortByAbsoluteTime,
 } = useTimelinePanel(props, emit as (event: string, ...args: unknown[]) => void);
 </script>
 <style src="@worldwiki/resources/styles/features/timeline/TimelinePanel.css" scoped></style>

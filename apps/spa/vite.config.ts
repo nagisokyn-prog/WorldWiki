@@ -58,6 +58,7 @@ export default defineConfig({
       { find: 'vue-i18n', replacement: 'vue-i18n/dist/vue-i18n.esm-bundler.js' },
       { find: '@worldwiki/components', replacement: resolve(__dirname, '../../packages/components/src') },
       { find: '@worldwiki/resources', replacement: resolve(__dirname, '../../packages/resources/src') },
+      { find: '@worldwiki/calendar-wasm', replacement: resolve(__dirname, '../../packages/calendar-wasm/src') },
       { find: '@services', replacement: resolve(__dirname, 'src/ts/services') },
       { find: '@components', replacement: resolve(__dirname, 'src/ts/components') },
       { find: '@utils', replacement: resolve(__dirname, 'src/ts/utils') },

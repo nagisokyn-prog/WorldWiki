@@ -72,6 +72,12 @@
             >
               ⚠️ Выберите месяцы для сезона
             </div>
+            <div
+              v-else-if="checkSeasonConflict(season)"
+              class="season-warning"
+            >
+              ⚠️ Конфликт: лето совпадает с зимним солнцестоянием!
+            </div>
           </div>
         </div>
       </div>
@@ -86,7 +92,7 @@ import type { CalendarSeasonsProps } from './useCalendarSeasons';
 
 const props = defineProps<CalendarSeasonsProps>();
 
-const { isCollapsed, moveItem, addSeason, removeSeason, formatColor } = useCalendarSeasons(props);
+const { isCollapsed, moveItem, addSeason, removeSeason, formatColor, checkSeasonConflict } = useCalendarSeasons(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarSeasons.css"></style>

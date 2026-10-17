@@ -25,6 +25,7 @@
             <span v-else-if="cal.is_default" class="badge-default-accent">По умолчанию</span>
           </div>
           <div class="flex gap-2">
+            <button type="button" class="btn-icon interactive-el" title="Диагностический аудит календаря" @click.stop="openAudit(cal.data)">🔍</button>
             <button type="button" class="btn-icon interactive-el" :class="cal.is_default ? 'is-default' : 'is-dimmed'" title="Сделать основным" @click.stop="setDefault(cal.idx)">🌟</button>
             <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(cal.idx)">💾</button>
             <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(cal.idx)">🗑️</button>
@@ -57,10 +58,15 @@
 
           <div class="calendar-top-row-grid">
             <CalendarSettings v-model="cal.data" :is-master="cal.is_master" />
+            <CalendarPlanetPhysics v-model="cal.data" />
+            <DialHierarchyConstructor v-model="cal.data" />
             <CalendarWeekdays v-model="cal.data" />
             <CalendarMonths v-model="cal.data" />
+            <CalendarExtraDays v-model="cal.data" />
+            <CalendarOrigin v-model="cal.data" />
             <CalendarLeapYear v-model="cal.data" />
             <CalendarEras v-model="cal.data" />
+            <CharacterAgeSettings v-model="cal.data" />
           </div>
 
           <div class="calendar-middle-row-grid">
@@ -84,22 +90,34 @@
       <button v-if="project" type="button" class="glass-btn btn-add-event btn-add-calendar-full interactive-el" @click.prevent="addCalendar">
         <i class="fas fa-plus"></i> Создать новый календарь
       </button>
+
+      <CalendarAuditModal
+        v-if="selectedAuditCalendar"
+        v-model="isAuditOpen"
+        :calendar="selectedAuditCalendar"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import CalendarSettings from "../Calendars/CalendarSettings/CalendarSettings.vue";
+import CalendarPlanetPhysics from "../Calendars/CalendarPlanetPhysics/CalendarPlanetPhysics.vue";
+import DialHierarchyConstructor from "../Calendars/DialHierarchyConstructor/DialHierarchyConstructor.vue";
 import CalendarWeekdays from "../Calendars/CalendarWeekdays/CalendarWeekdays.vue";
 import CalendarMonths from "../Calendars/CalendarMonths/CalendarMonths.vue";
+import CalendarExtraDays from "../Calendars/CalendarExtraDays/CalendarExtraDays.vue";
+import CalendarOrigin from "../Calendars/CalendarOrigin/CalendarOrigin.vue";
 import CalendarLeapYear from "../Calendars/CalendarLeapYear/CalendarLeapYear.vue";
 import CalendarEras from "../Calendars/CalendarEras/CalendarEras.vue";
+import CharacterAgeSettings from "../Calendars/CharacterAgeSettings/CharacterAgeSettings.vue";
 import CalendarSeasons from "../Calendars/CalendarSeasons/CalendarSeasons.vue";
 import CalendarMoons from "../Calendars/CalendarMoons/CalendarMoons.vue";
 import CalendarTimezones from "../Calendars/CalendarTimezones/CalendarTimezones.vue";
 import CalendarHolidays from "../Calendars/CalendarHolidays/CalendarHolidays.vue";
 import CalendarPlayground from "../Calendars/CalendarPlayground/CalendarPlayground.vue";
 import CalendarSyncAnchor from "../Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue";
+import CalendarAuditModal from "../Calendars/CalendarAuditModal/CalendarAuditModal.vue";
 import { useCalendarsPanel } from './useCalendarsPanel';
 
 const props = defineProps<{ project?: string }>();
@@ -115,7 +133,10 @@ const {
   removeCalendar,
   setDefault,
   setStoryOrigin,
-  saveAll
+  saveAll,
+  isAuditOpen,
+  selectedAuditCalendar,
+  openAudit,
 } = useCalendarsPanel(props);
 
 defineExpose({ saveAll });

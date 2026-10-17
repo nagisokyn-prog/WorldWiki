@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CalendarMath } from '../calendar.math';
+import { CalendarMath } from '../useCalendarEngine';
 import type { CalendarData } from '../calendar.types';
 
 describe('CalendarMath', () => {

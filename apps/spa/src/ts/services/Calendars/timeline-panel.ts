@@ -1,12 +1,9 @@
 import { defineComponent, type PropType } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
-import { UniversalDatePicker } from '@/shared/ui';
 import {
-  useLegacyTimelinePanel,
+  useTimelinePanel,
   type TimelineEvent,
-  type UseLegacyTimelineProps,
-  type UseLegacyTimelineEmits
-} from './useLegacyTimelinePanel';
+} from '@/features/timeline/Calendars/TimelinePanel/useTimelinePanel';
 
 export type { TimelineEvent };
 
@@ -14,7 +11,6 @@ export default defineComponent({
   name: 'TimelinePanel',
   components: {
     XboxWheel,
-    UniversalDatePicker
   },
   props: {
     project: { type: String, required: true },
@@ -22,9 +18,9 @@ export default defineComponent({
   },
   emits: ['update:events', 'change'],
   setup(props, { emit }) {
-    return useLegacyTimelinePanel(
-      props as UseLegacyTimelineProps,
-      emit as unknown as UseLegacyTimelineEmits
+    return useTimelinePanel(
+      props,
+      emit as unknown as (event: string, ...args: unknown[]) => void
     );
   }
 });

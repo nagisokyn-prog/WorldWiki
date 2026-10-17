@@ -4,7 +4,7 @@ import * as api from '../services/api.client';
 import { projectRecordId } from '../services/api/project.api';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 import type { CalendarData } from '../services/Calendars/calendar.types';
-import { CalendarMath } from '../services/Calendars/calendar.math';
+import { CalendarMath } from '../services/Calendars/useCalendarEngine';
 import type { Calendar } from '../types/generated/Calendar';
 
 export interface CalendarRecord {

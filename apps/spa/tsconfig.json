@@ -13,6 +13,12 @@
     "checkJs": false,
     "types": ["vite/client"],
     "paths": {
+      "@worldwiki/calendar-wasm": [
+        "../../packages/calendar-wasm/src/index.ts"
+      ],
+      "@worldwiki/calendar-wasm/*": [
+        "../../packages/calendar-wasm/src/*"
+      ],
       "@worldwiki/components": [
         "../../packages/components/src/index.ts"
       ],
@@ -44,6 +50,7 @@
     "src/ts/**/*.d.ts",
     "src/ts/**/*.vue",
     "src/vite-env.d.ts",
+    "../../packages/calendar-wasm/src/**/*.ts",
     "../../packages/components/src/**/*.ts",
     "../../packages/components/src/**/*.vue",
     "../../packages/resources/src/**/*.ts"

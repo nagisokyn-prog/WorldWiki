@@ -31,7 +31,8 @@
     "scripts/",
     "**/data/backup_latest.surql",
     "**/e2e/",
-    "/src-tauri/llama-sys/prebuilt-libs/bindings.rs"
+    "/src-tauri/llama-sys/prebuilt-libs/bindings.rs",
+    "packages/calendar-wasm/pkg/**"
   ],
   "extends": [
     "cerberus:rust-hexagonal",

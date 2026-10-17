@@ -50,45 +50,4 @@ const emit = defineEmits<CalendarPlanetPhysicsEmits>();
 const { isCollapsed, planetId, retrograde, axialTilt, dayStartMode } = useCalendarPlanetPhysics(props, emit);
 </script>
 
-<style scoped>
-.planet-physics-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--space-3, 12px);
-}
-
-.planet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.badge-planet {
-  background: var(--primary-bg, rgba(59, 130, 246, 0.15));
-  color: var(--primary);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm, 4px);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.select-field {
-  width: 100%;
-  padding: var(--space-2, 8px);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 4px);
-  color: var(--text-primary);
-}
-
-.glass-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 8px);
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarPlanetPhysics.css"></style>

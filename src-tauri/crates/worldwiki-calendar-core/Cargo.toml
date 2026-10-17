@@ -18,3 +18,7 @@ kani = []
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
 unstable_features = "allow"
+
+[dev-dependencies]
+serde_json = "1.0"
+

@@ -1,0 +1,126 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal, 1000);
+}
+
+.modal-dialog.audit-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  width: 90%;
+  max-width: 600px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: var(--space-4, 16px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal-body.audit-body {
+  padding: var(--space-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.audit-status-badge {
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-valid {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.status-invalid {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.errors-block {
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  color: var(--error);
+}
+
+.warnings-block {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  color: var(--warning);
+}
+
+.metric-card {
+  background: var(--bg-surface);
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+}
+
+.year-input {
+  width: 90px;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-primary);
+}
+
+.months-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--space-2, 8px);
+}
+
+.month-preview-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 4px);
+  padding: var(--space-2, 8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.m-days {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.modal-footer {
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}

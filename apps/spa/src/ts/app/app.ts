@@ -20,7 +20,7 @@ import { i18n, setLocale, settingsService } from '@worldwiki/components';
 import AppSwitcher from '../features/shell/AppSwitcher.vue';
 import { router } from './router';
 
-// ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу
+import { ensureWasmInitialized } from '../services/Calendars/calendar.wasm-bridge';
 import ChapterTreeVue from '../features/chapters/ChapterTree/ChapterTree.vue';
 import ChaptersMainVue from '../features/chapters/ChaptersMain/ChaptersMain.vue';
 import {
@@ -54,6 +54,9 @@ async function init() {
   } catch (e) {
     console.warn('Failed to load schemas:', e);
   }
+
+  // Инициализируем WebAssembly-движок календаря
+  await ensureWasmInitialized().catch(e => console.warn('Failed to initialize calendar WASM:', e));
 
   // Применяем настройки
   settingsService.applySettings();

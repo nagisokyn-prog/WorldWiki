@@ -35,43 +35,4 @@ const emit = defineEmits<CharacterAgeSettingsEmits>();
 const { isCollapsed, selectedSystem, sampleAge } = useCharacterAgeSettings(props, emit);
 </script>
 
-<style scoped>
-.age-settings-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--space-3, 12px);
-}
-
-.age-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.badge-age {
-  background: var(--info-bg, rgba(6, 182, 212, 0.15));
-  color: var(--info);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm, 4px);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.select-field {
-  width: 100%;
-  padding: var(--space-2, 8px);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 4px);
-  color: var(--text-primary);
-}
-
-.age-sample-box {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 4px);
-  padding: var(--space-2, 8px);
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CharacterAgeSettings.css"></style>

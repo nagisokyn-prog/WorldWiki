@@ -45,36 +45,4 @@ const emit = defineEmits<CalendarExtraDaysEmits>();
 const { isCollapsed, baseDays, leapDays, pauseWeek, name } = useCalendarExtraDays(props, emit);
 </script>
 
-<style scoped>
-.extra-days-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--space-3, 12px);
-}
-
-.extra-days-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.badge-count {
-  background: var(--accent-bg, rgba(99, 102, 241, 0.15));
-  color: var(--accent);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm, 4px);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.glass-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 8px);
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarExtraDays.css"></style>

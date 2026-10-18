@@ -73,17 +73,8 @@ pub fn calculate_leap_convergents(
     results
 }
 
+use crate::drift::gcd;
 use crate::types::LeapHarmonic;
-
-/// Наибольший общий делитель для сокращения дробей
-fn gcd(mut a: i64, mut b: i64) -> i64 {
-    while b != 0 {
-        let t = b;
-        b = a % b;
-        a = t;
-    }
-    a.abs().max(1)
-}
 
 /// Универсальный алгоритм разложения рациональной дроби p/q в знаковые единичные гармоники:
 /// p/q = sum_i (w_i / c_i), где w_i in {+1, -1}, multiplier_a = 1.
@@ -94,7 +85,7 @@ pub fn decompose_fraction_to_unit_harmonics(
     max_harmonics: usize,
 ) -> alloc::vec::Vec<LeapHarmonic> {
     let mut harmonics = alloc::vec::Vec::new();
-    if p <= 0 || q <= 0 || max_harmonics == 0 {
+    if p <= 0 || q <= 0 || p >= q || max_harmonics == 0 {
         return harmonics;
     }
 
@@ -155,37 +146,64 @@ mod tests {
     fn test_decompose_julian() {
         let h = decompose_fraction_to_unit_harmonics(1, 4, 3);
         assert_eq!(h.len(), 1);
-        assert_eq!(h[0].weight, 1);
-        assert_eq!(h[0].divisor_c, 4);
+        if let Some(first) = h.first() {
+            assert_eq!(first.weight, 1);
+            assert_eq!(first.divisor_c, 4);
+        }
     }
 
     #[test]
     fn test_decompose_madler_31_128() {
         let h = decompose_fraction_to_unit_harmonics(31, 128, 3);
         assert_eq!(h.len(), 2);
-        assert_eq!(h[0].weight, 1);
-        assert_eq!(h[0].divisor_c, 4);
-        assert_eq!(h[1].weight, -1);
-        assert_eq!(h[1].divisor_c, 128);
+        if let Some(first) = h.first() {
+            assert_eq!(first.weight, 1);
+            assert_eq!(first.divisor_c, 4);
+        }
+        if let Some(second) = h.get(1) {
+            assert_eq!(second.weight, -1);
+            assert_eq!(second.divisor_c, 128);
+        }
     }
 
     #[test]
     fn test_decompose_khayyam_8_33() {
         let h = decompose_fraction_to_unit_harmonics(8, 33, 3);
         assert_eq!(h.len(), 2);
-        assert_eq!(h[0].weight, 1);
-        assert_eq!(h[0].divisor_c, 4);
-        assert_eq!(h[1].weight, -1);
-        assert_eq!(h[1].divisor_c, 132);
+        if let Some(first) = h.first() {
+            assert_eq!(first.weight, 1);
+            assert_eq!(first.divisor_c, 4);
+        }
+        if let Some(second) = h.get(1) {
+            assert_eq!(second.weight, -1);
+            assert_eq!(second.divisor_c, 132);
+        }
     }
 
     #[test]
     fn test_decompose_mars_3_5() {
         let h = decompose_fraction_to_unit_harmonics(3, 5, 3);
         assert_eq!(h.len(), 2);
-        assert_eq!(h[0].weight, 1);
-        assert_eq!(h[0].divisor_c, 2);
-        assert_eq!(h[1].weight, 1);
-        assert_eq!(h[1].divisor_c, 10);
+        if let Some(first) = h.first() {
+            assert_eq!(first.weight, 1);
+            assert_eq!(first.divisor_c, 2);
+        }
+        if let Some(second) = h.get(1) {
+            assert_eq!(second.weight, 1);
+            assert_eq!(second.divisor_c, 10);
+        }
+    }
+
+    #[test]
+    fn test_decompose_edge_cases() {
+        assert!(decompose_fraction_to_unit_harmonics(0, 4, 3).is_empty());
+        assert!(decompose_fraction_to_unit_harmonics(-1, 4, 3).is_empty());
+        assert!(decompose_fraction_to_unit_harmonics(1, 0, 3).is_empty());
+        assert!(decompose_fraction_to_unit_harmonics(4, 4, 3).is_empty());
+        assert!(decompose_fraction_to_unit_harmonics(5, 4, 3).is_empty());
+        assert!(decompose_fraction_to_unit_harmonics(1, 4, 0).is_empty());
+        assert_eq!(gcd(12, 18), 6);
+        assert_eq!(gcd(0, 5), 5);
+        assert_eq!(gcd(7, 0), 7);
     }
 }

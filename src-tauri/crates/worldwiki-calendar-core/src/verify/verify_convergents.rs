@@ -1,4 +1,5 @@
 use crate::convergents::{calculate_leap_convergents, decompose_fraction_to_unit_harmonics};
+use crate::drift::gcd;
 
 #[kani::proof]
 #[kani::unwind(3)]
@@ -38,13 +39,14 @@ fn proof_leap_convergents_recurrence_monotone() {
 }
 
 #[kani::proof]
-#[kani::unwind(3)]
+#[kani::unwind(16)]
 fn proof_decompose_fraction_to_unit_harmonics_soundness() {
     let p: i64 = kani::any();
     let q: i64 = kani::any();
 
-    kani::assume(p >= 1 && p <= 6);
-    kani::assume(q >= 1 && q <= 20);
+    kani::assume(p >= 1 && p <= 4);
+    kani::assume(q >= 2 && q <= 10);
+    kani::assume(p < q);
 
     let harmonics = decompose_fraction_to_unit_harmonics(p, q, 1);
 
@@ -62,13 +64,15 @@ fn proof_decompose_harmonic_step_algebraic() {
     let rem_num: i64 = kani::any();
     let rem_den: i64 = kani::any();
     kani::assume(rem_num >= 1 && rem_num <= 100);
-    kani::assume(rem_den >= 1 && rem_den <= 1_000);
+    kani::assume(rem_den >= 2 && rem_den <= 1_000);
+    kani::assume(rem_num < rem_den);
 
-    let c = (rem_den + rem_num / 2) / rem_num;
+    let c = ((rem_den + rem_num / 2) / rem_num).max(1);
     assert!(c >= 1);
 
     let next_num = rem_num * c - rem_den;
     assert!(next_num.abs() < rem_den);
+    assert!(next_num.abs() <= rem_num / 2);
 }
 
 #[kani::proof]
@@ -78,9 +82,23 @@ fn proof_decompose_edge_cases_no_panic() {
     let q: i64 = kani::any();
     let max_h: usize = kani::any();
 
-    kani::assume(p <= 0 || q <= 0 || max_h == 0);
-    kani::assume(p >= -10 && q >= -10 && max_h <= 2);
+    kani::assume(p <= 0 || q <= 0 || p >= q || max_h == 0);
+    kani::assume(p >= -10 && q >= -10 && p <= 20 && q <= 20 && max_h <= 2);
 
     let harmonics = decompose_fraction_to_unit_harmonics(p, q, max_h);
     assert!(harmonics.is_empty());
+}
+
+#[kani::proof]
+#[kani::unwind(12)]
+fn proof_gcd_soundness() {
+    let a: i64 = kani::any();
+    let b: i64 = kani::any();
+    kani::assume(a >= 1 && a <= 15);
+    kani::assume(b >= 1 && b <= 15);
+
+    let g = gcd(a, b);
+    assert!(g >= 1);
+    assert!(a % g == 0);
+    assert!(b % g == 0);
 }

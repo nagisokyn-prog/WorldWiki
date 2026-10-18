@@ -2,11 +2,11 @@
 
 Крейт `worldwiki-calendar-core` представляет собой изолированное, высокопроизводительное, математически строгое ядро универсального времени и календарей WorldWiki (`#![no_std]`, `alloc`). 
 
-Ядро реализует **мультипланетную вселенскую шкалу времени `t_abs`**, алгоритмы обратного поиска года O(1), произвольные циферблаты (`DialHierarchy`), гармонический расчет високосных циклов с контролем векового дрейфа, сезоны, праздники с переходом через границу года, паузы в днях недели, астрономию восходов/закатов/лунных фаз и параметрический расчет возраста без переполнений.
+Ядро реализует **мультипланетную вселенскую шкалу времени `t_abs`**, алгоритмы обратного поиска года O(1), произвольные циферблаты (`DialHierarchy`), гармонический расчет високосных циклов с контролем векового дрейфа, сезоны, праздники с переходом через границу года, паузы в днях недели, астрономию восходов/закатов/лунных фаз, параметрический расчет возраста без переполнений, историческую преемственность календарей и реформы (`CalendarSuccession` с режимами `DiscontinuousGap`, `TransitionalYear`, `EpochReset`) и сезонный перевод стрелок (`DstPolicy`, `PlanetTimezone`).
 
 ---
 
-## 📊 Таблица покрытия кода (100.00% Function Coverage, 99.84% Line Coverage)
+## 📊 Таблица покрытия кода (100.00% Function Coverage, 98.62% Line Coverage)
 
 Отчет сгенерирован компилятором через `cargo llvm-cov -p worldwiki-calendar-core --html`:
 
@@ -16,11 +16,12 @@
 | [`src/allen.rs`](./src/allen.rs) | **100.00%** (1/1) | **100.00%** (31/31) | **100.00%** (36/36) |
 | [`src/astronomy.rs`](./src/astronomy.rs) | **100.00%** (6/6) | **100.00%** (90/90) | **100.00%** (116/116) |
 | [`src/audit.rs`](./src/audit.rs) | **100.00%** (2/2) | **100.00%** (118/118) | **100.00%** (112/112) |
-| [`src/convergents.rs`](./src/convergents.rs) | **100.00%** (1/1) | **100.00%** (39/39) | 98.18% (54/55) |
+| [`src/convergents.rs`](./src/convergents.rs) | **100.00%** (8/8) | 91.30% (126/138) | 94.12% (192/204) |
 | [`src/conversion.rs`](./src/conversion.rs) | **100.00%** (7/7) | **100.00%** (161/161) | **100.00%** (228/228) |
 | [`src/dial.rs`](./src/dial.rs) | **100.00%** (8/8) | 99.35% (153/154) | 99.59% (245/246) |
-| [`src/dial_quantize.rs`](./src/dial_quantize.rs) | **100.00%** (2/2) | **100.00%** (44/44) | **100.00%** (87/87) |
+| [`src/dial_quantize.rs`](./src/dial_quantize.rs) | **100.00%** (2/2) | **100.00%** (48/48) | 97.85% (91/93) |
 | [`src/drift.rs`](./src/drift.rs) | **100.00%** (9/9) | **100.00%** (120/120) | **100.00%** (171/171) |
+| [`src/dst.rs`](./src/dst.rs) | **100.00%** (8/8) | 91.19% (145/159) | 90.07% (136/151) |
 | [`src/eras.rs`](./src/eras.rs) | **100.00%** (18/18) | **100.00%** (134/134) | **100.00%** (234/234) |
 | [`src/holidays.rs`](./src/holidays.rs) | **100.00%** (4/4) | **100.00%** (59/59) | **100.00%** (60/60) |
 | [`src/intervals.rs`](./src/intervals.rs) | **100.00%** (7/7) | **100.00%** (71/71) | **100.00%** (74/74) |
@@ -28,11 +29,12 @@
 | [`src/moons.rs`](./src/moons.rs) | **100.00%** (5/5) | **100.00%** (97/97) | **100.00%** (137/137) |
 | [`src/scalar.rs`](./src/scalar.rs) | **100.00%** (14/14) | **100.00%** (131/131) | **100.00%** (209/209) |
 | [`src/seasons.rs`](./src/seasons.rs) | **100.00%** (6/6) | **100.00%** (50/50) | **100.00%** (53/53) |
-| [`src/sync.rs`](./src/sync.rs) | **100.00%** (12/12) | 99.07% (212/214) | 98.84% (255/258) |
+| [`src/succession.rs`](./src/succession.rs) | **100.00%** (17/17) | 98.45% (191/194) | 98.60% (212/215) |
+| [`src/sync.rs`](./src/sync.rs) | **100.00%** (12/12) | 99.07% (214/216) | 98.47% (258/262) |
 | [`src/types.rs`](./src/types.rs) | **100.00%** (10/10) | **100.00%** (41/41) | **100.00%** (59/59) |
 | [`src/weekdays.rs`](./src/weekdays.rs) | **100.00%** (4/4) | **100.00%** (54/54) | **100.00%** (63/63) |
 | [`src/year_finder.rs`](./src/year_finder.rs) | **100.00%** (4/4) | **100.00%** (60/60) | 99.04% (103/104) |
-| **ИТОГО (Totals)** | **100.00% (136/136)** | **99.84% (1856/1859)** | **99.73% (2570/2577)** |
+| **ИТОГО (Totals)** | **100.00% (168/168)** | **98.62% (2285/2317)** | **98.74% (3063/3102)** |
 
 ---
 
@@ -83,6 +85,7 @@
 
 ### 6. [`src/convergents.rs`](./src/convergents.rs) — Цепные дроби и математика високосных приближений
 - **`calculate_leap_convergents`**: алгоритм разложения дробной части года в непрерывные цепные дроби (Continued Fractions).
+- **`decompose_fraction_to_unit_harmonics`**: разложение любого рационального приближения $p/q$ в систему канонических гармоник `LeapHarmonic` с весами $\pm 1$.
 - **`LeapApproximation { leap_years, cycle_years }`**: несократимые рациональные дроби `p_k / q_k` (например, 1/4 -> 7/29 -> 8/33 -> 31/128 -> 97/400).
 - Предоставляет писателю в конструкторе математически строгие пресеты правил високосности без ручного подбора гармоник с лимитом глубины `MAX_CONTINUED_FRACTION_DEPTH = 10`.
 
@@ -164,12 +167,35 @@
 - Физические структуры: `LocalMoment`, `FastLocalMoment`, `TimeInterval`, `PrecisionLevel`.
 - Календарные координаты: `CalDate`, `DateCoordinate`, `CivilDate`.
 - Конфигурации: `DialUnit`, `DialHierarchy`, `LeapHarmonic`, `LeapTarget`, `AgeRule`, `CoreEra`, `EraCountingMode`, `CoreSeason`, `Hemisphere`.
+- Преемственность и реформы: `CalendarSuccession`, `CalendarStyleEra`, `ReformMode`.
+- Часовые пояса и сезонный перевод часов (DST): `PlanetTimezone`, `DstPolicy`, `WeekdayOccurrence`, `WeekdayRule`.
+
+### 21. [`src/succession.rs`](./src/succession.rs) — Преемственность календарей и исторические реформы
+- **`CalendarSuccession` & `CalendarStyleEra`**: моделирование эволюции календарных систем культуры сквозь эпохи с привязкой к шкале абсолютных минут $M_{\text{abs}}$.
+- **`ReformMode`**: поддержка всех канонических типов календарных реформ:
+  - `DiscontinuousGap { dropped_days }` — дискретный скачок дат с выпадением дней (Григорианская реформа 1582 года: 4 октября -> 15 октября, декрет 1918 года в Советской России: 31 января -> 14 февраля, реформа Британской империи 1752 года: 2 сентября -> 14 сентября).
+  - `TransitionalYear { transitional_year_length_days }` — переходный год нестандартной длины (46 г. до н.э. Юлия Цезаря, «Год замешательства» длительностью 445 дней).
+  - `EpochReset { new_epoch_world_day }` — фундаментальный перезапуск календарного летоисчисления с новой эпохи.
+- **`validate_succession` & `validate_style_era`**: проверка валидности цепочки реформ (отсутствие пересечений диапазонов, нетерминальных открытых эр, отрицательных интервалов).
+- **`sort_succession`**: детерминированная сортировка эр преемственности по хронологии $M_{\text{abs}}$.
+- **`find_active_calendar_era`**: бинарный поиск действующего календарного стиля для любого исторического момента времени $M_{\text{abs}}$.
+
+### 22. [`src/dst.rs`](./src/dst.rs) — Сезонный перевод часов и часовые пояса планеты
+- **`DstPolicy`**: универсальная политика летнего/зимнего времени (Daylight Saving Time):
+  - `DstPolicy::None` — фиксированное стандартное время без сезонных переводов.
+  - `DstPolicy::FixedCalendarDate` — перевод часов в жестко фиксированные календарные даты (например, 25 марта и 25 октября) со смещением `shift_minutes` (по умолчанию +60 минут, поддержка +120, +30 или произвольных величин).
+  - `DstPolicy::RelativeWeekday` — перевод часов по плавающим дням недели (например, последнее воскресенье марта и последнее воскресенье октября).
+- **`PlanetTimezone`**: модель часового пояса планеты со стандартным смещением `standard_offset_minutes` и назначенной политикой `dst_policy`.
+- **`validate_dst_policy`**: строгая валидация номеров месяцев, положительности дней и непревышения смещением суток (до ±1440 минут).
+- **`is_dst_active_fixed` & `DstFixedTransitionWindow`**: аналитическое определение активности летнего времени для фиксированных дат без паник.
+- **`is_dst_active_relative` & `calculate_relative_transition_day`**: вычисление точного календарного дня относительного перехода (`First`, `Second`, `Third`, `Fourth`, `Last` день недели месяца).
+- **`get_timezone_effective_offset`**: расчет результирующего смещения часового пояса планеты с учетом сезонного сдвига для любого момента года.
 
 ---
 
 ## 🧪 Комплексный набор тестов (`tests/`)
 
-Тестовая база крейта состоит из 13 специализированных тестовых файлов (более 75 детальных тестовых сценариев), полностью покрывающих все функциональные требования, исторические прецеденты и краевые случаи:
+Тестовая база крейта состоит из 16 специализированных тестовых файлов и встроенных модульных сьютов (более 120 детальных тестовых сценариев), полностью покрывающих все функциональные требования, исторические прецеденты и краевые случаи с 100.00% покрытием всех функций ядра:
 
 ### 1. [`tests/usecase_writer_constructor_scenarios.rs`](./tests/usecase_writer_constructor_scenarios.rs) — Все карточки конструктора писателя (Раздел 4 спецификации)
 
@@ -303,22 +329,32 @@
 - **[`tests/test_year_finder.rs`](./tests/test_year_finder.rs)**:
   - `test_year_from_days_o1_gregorian_exact_bijection` — O(1) поиск года в диапазоне [-50 000; +100 000].
   - `test_year_from_days_o1_no_harmonics` — поиск года в календарях без гармоник (по 365 дней).
+- **[`src/succession.rs`](./src/succession.rs)** (встроенный набор тестов реформ):
+  - `test_validate_succession_empty` & `test_validate_succession_overlapping` — детекция коллизий и пустых цепочек стилей.
+  - `test_sort_succession` — детерминированная хронологическая сортировка стилей.
+  - `test_find_active_era_discontinuous_gap` — бинарный поиск действующей эры для Григорианской реформы и выпавших дней.
+  - `test_find_active_era_out_of_bounds` — корректная обработка дат до и после периода действия цепочки.
+- **[`src/dst.rs`](./src/dst.rs)** (встроенный набор тестов DST):
+  - `test_dst_none` — инвариантность смещения при отсутствии сезонного перевода.
+  - `test_dst_fixed_dates_active_inactive` — активность летнего времени в весенне-осеннем окне.
+  - `test_dst_relative_rule` — перевод часов в последнее воскресенье марта и октября.
+  - `test_dst_validation_excessive_shift` — валидация чрезмерных смещений (> 1440 минут).
 - **[`tests/test_coverage_boost.rs`](./tests/test_coverage_boost.rs)**:
-  - 18 стресс-тестов экстремальных граничных условий, нулевых делителей, отрицательных широт, эпагоменов за пределами всех месяцев, декрементов поиска года и ветвей цепных дробей, обеспечивших 100.00% покрытия строк и функций.
+  - 35+ стресс-тестов экстремальных граничных условий, разложения цепных дробей в канонические гармоники, нулевых делителей, отрицательных широт, эпагоменов за пределами всех месяцев, декрементов поиска года, часовых поясов и реформ, обеспечивших 100.00% покрытия всех функций крейта.
 
 ---
 
 ## 🔒 Формальная верификация Kani (Kani Formal Verifier)
 
-В директории [`src/verify/`](./src/verify) расположены **63 математических харнесса** Kani CBMC (100% формально доказанных инвариантов):
+В директории [`src/verify/`](./src/verify) расположены **70 математических харнессов** Kani CBMC (100% формально доказанных инвариантов):
 
 ```text
 Manual Harness Summary:
-Complete - 63 successfully verified harnesses, 0 failures, 63 total.
+Complete - 70 successfully verified harnesses, 0 failures, 70 total.
 VERIFICATION:- SUCCESSFUL (0 unwinding failures, 0 assertion errors)
 ```
 
-### Реестр доказанных харнессов (63/63):
+### Реестр доказанных харнессов (70/70):
 
 1. **[`src/verify/verify_year.rs`](./src/verify/verify_year.rs)** (2 харнеса):
    - `proof_o1_year_finder_bounds` — строгое доказательство того, что обратный поиск года O(1) гарантированно находит верный год за 0, 1 или 2 шага коррекции для любого дня в интервале от -400 до +400.
@@ -328,21 +364,26 @@ VERIFICATION:- SUCCESSFUL (0 unwinding failures, 0 assertion errors)
    - `proof_dial_monotonic` — доказательство монотонности прямого хода времени на любых иерархических шкалах.
    - `proof_dial_subdivisions_nonzero` — доказательство обязательной положительности делений циферблата в валидаторе.
    - `proof_dial_ticks_bounded` — отсутствие переполнений и точность вычисления общего числа тиков суток `checked_total_dial_subdivisions`.
-3. **[`src/verify/verify_leap.rs`](./src/verify/verify_leap.rs)** (13 харнессов):
+3. **[`src/verify/verify_leap.rs`](./src/verify/verify_leap.rs)** (11 харнессов):
    - `proof_gregorian_leap_step_bounded` — шаг високосности григорианского календаря строго принадлежит множеству {0, 1}.
    - `proof_islamic_leap_step_bounded` — шаг високосности табличного исламского цикла принадлежит {0, 1}.
    - `proof_metonic_leap_step_bounded` — шаг високосности 19-летнего Метонова цикла принадлежит {0, 1}.
    - `proof_jalali_leap_step_bounded` — шаг високосности 33-летнего цикла Джалали принадлежит {0, 1}.
    - `proof_i128_overflow_free` — отсутствие целочисленных переполнений в 128-битных расчетах дней до года.
-   - `proof_leap_convergents_soundness` — строгая положительность числителей и знаменателей в цепных дробях при символическом расчете.
-   - `proof_leap_convergents_recurrence_monotone` — строгая монотонность и отсутствие переполнений при рекуррентном вычислении приближений цепных дробей.
    - `proof_leap_divisor_positive` — валидатор гармоник отклоняет нулевые и отрицательные делители.
    - `proof_leap_days_offset_monotonic` — строгая монотонность начала каждого следующего года относительно предыдущего.
    - `proof_leap_target_month_bounded` — валидатор целевого месяца високосной добавки гарантирует непревышение числа месяцев.
    - `proof_leap_lcm_bounded` — вычисление общего наименьшего кратного (LCM) гармоник всегда строго положительно и ограничено лимитом.
    - `proof_negative_weight_step_bounded` — обнаружение и отклонение невалидных гармоник с отрицательным результирующим шагом года.
    - `proof_days_up_to_year_negative_eras` — корректность и непрерывность вычисления длины года для глубоко отрицательных эр.
-4. **[`src/verify/verify_weekdays.rs`](./src/verify/verify_weekdays.rs)** (9 харнессов):
+4. **[`src/verify/verify_convergents.rs`](./src/verify/verify_convergents.rs)** (6 харнессов):
+   - `proof_leap_convergents_soundness` — строгая положительность числителей и знаменателей в цепных дробях при символическом расчете.
+   - `proof_leap_convergents_recurrence_monotone` — строгая монотонность и отсутствие переполнений при рекуррентном вычислении приближений цепных дробей.
+   - `proof_decompose_fraction_to_unit_harmonics_soundness` — корректность разложения рациональной дроби в гармоники с весами ±1 и положительными делителями.
+   - `proof_decompose_harmonic_step_algebraic` — алгебраическое доказательство уменьшения остатка числителя при жадном разложении в единичные гармоники.
+   - `proof_decompose_edge_cases_no_panic` — отсутствие паник при разложении некорректных дробей ($p \le 0$, $p \ge q$, $q \le 0$).
+   - `proof_gcd_soundness` — инварианты алгоритма Евклида для вычисления наибольшего общего делителя (делит оба аргумента без остатка).
+5. **[`src/verify/verify_weekdays.rs`](./src/verify/verify_weekdays.rs)** (9 харнессов):
    - `proof_weekday_bounded` — расчет дня недели всегда строго меньше количества дней в неделе (`w < N`).
    - `proof_weekday_periodicity` — периодичность недели по модулю N: сдвиг на ровно N дней дает тот же день недели.
    - `proof_weekday_pause_soundness` — корректность паузы недели на эпагоменах без нарушения фазы недели в обычном году.
@@ -352,7 +393,7 @@ VERIFICATION:- SUCCESSFUL (0 unwinding failures, 0 assertion errors)
    - `proof_weekdays_nonempty` — отклонение нулевого количества дней недели при валидации.
    - `proof_holiday_with_rotated_months` — сохранение инварианта циклического поворота месяцев в праздничных модулях.
    - `proof_holiday_extra_days_valid` — независимость счета эпагоменов от циклической ротации регулярных месяцев.
-5. **[`src/verify/verify_age.rs`](./src/verify/verify_age.rs)** (10 харнессов):
+6. **[`src/verify/verify_age.rs`](./src/verify/verify_age.rs)** (10 харнессов):
    - `proof_age_non_negative_after_birth` — неотрицательность возраста после даты рождения.
    - `proof_age_monotonic` — строгая монотонность возраста с течением лет.
    - `proof_leap_birthday_clamped` — отсутствие паник и корректность переноса високосного 29 февраля на 28 февраля.
@@ -363,7 +404,7 @@ VERIFICATION:- SUCCESSFUL (0 unwinding failures, 0 assertion errors)
    - `proof_age_birth_day_nonnegative` — устойчивость к широкому диапазону входных значений дней.
    - `proof_age_birth_month_bounded` — точность расчета возраста для любых номеров месяцев в сетке года.
    - `proof_age_first_month_zero_length` — устойчивость к интеркалярным месяцам нулевой длины (экзотические календари).
-6. **[`src/verify/verify_eras.rs`](./src/verify/verify_eras.rs)** (7 харнессов):
+7. **[`src/verify/verify_eras.rs`](./src/verify/verify_eras.rs)** (7 харнессов):
    - `proof_open_era_unbounded` — корректность открытых эр без даты окончания (`end_year = None`).
    - `proof_coronation_day_clamped` — адаптивная монархическая годовщина коронации 29 февраля в невисокосные годы.
    - `proof_era_validation_countdown` — обязательность даты окончания для эр обратного отсчета.
@@ -371,28 +412,33 @@ VERIFICATION:- SUCCESSFUL (0 unwinding failures, 0 assertion errors)
    - `proof_era_priority_tie_breaking` — детерминированное разрешение коллизий пересекающихся эр по приоритету.
    - `proof_era_countdown_has_end` — формальная проверка валидатора правил обратного отсчета.
    - `proof_era_no_overlap` — полнота покрытия и отсутствие ложных срабатываний в стыках смежных эр.
-7. **[`src/verify/verify_intervals.rs`](./src/verify/verify_intervals.rs)** (6 харнессов):
+8. **[`src/verify/verify_intervals.rs`](./src/verify/verify_intervals.rs)** (6 харнессов):
    - `proof_allen_interval_inverse_symmetry` — полнота и инверсная симметрия 13 интервальных отношений Аллена.
    - `proof_empty_interval_never_overlaps` — пустопорожний интервал нулевой длительности никогда не пересекается с другими.
    - `proof_interval_duration_overflow_free` — отсутствие переполнений при вычислении длительности интервала от i64::MIN до i64::MAX.
    - `proof_bilocation_unknown_precision_suspect` — классификация аномалии пространственной билокации при неточной хронологии (Suspect).
    - `proof_death_before_birth_violation` — доказательство детекции нарушений жизненного цикла (смерть раньше рождения).
    - `proof_interval_start_le_end` — инвариант неотрицательности длительности интервалов и обработка инвертированных отрезков.
-8. **[`src/verify/verify_scalar.rs`](./src/verify/verify_scalar.rs)** (6 харнессов):
+9. **[`src/verify/verify_scalar.rs`](./src/verify/verify_scalar.rs)** (6 харнессов):
    - `proof_euclidean_no_panic` — отсутствие паник при евклидовом делении любых отрицательных координат `t_abs`.
    - `proof_day_tick_bounded` — строгая ограниченность `day_tick` в интервале `[0, ticks_per_day)`.
    - `proof_scalar_no_overflow_reconstruction` — точное восстановление `t_abs` из `LocalMoment` с учетом смещения начала суток.
    - `proof_day_start_offset_bijection` — биективность прямого и обратного смещения момента смены суток.
    - `proof_day_start_offset_bounded` — нормализация смещения начала суток строго в диапазон `[0, ticks_per_day)`.
    - `proof_cross_calendar_bijection` — биективность кросс-календарного преобразования через общий `t_abs`.
-9. **[`src/verify/verify_astronomy.rs`](./src/verify/verify_astronomy.rs)** (6 харнессов):
-   - `proof_solar_noon_bounded_for_all_longitudes` — полдень всегда строго внутри суток для любых долгот и типов вращения.
-   - `proof_daylight_ticks_bounded` — длина светового дня, моменты восхода и захода всегда зажаты в физические границы суток.
-   - `proof_moon_phase_rational_bounded` — рациональная фаза луны строго в базисных пунктах `[0, 10_000)`.
-   - `proof_moon_phase_exact_consistency` — точность ключевых фаз луны (новолуние = 0 bp, полнолуние = 5000 bp).
-   - `proof_moon_period_positive` — валидация конфигурации спутников (период обязан быть строго положительным).
-   - `proof_solar_noon_longitude_bounded` — устойчивость вычисления зенита солнца на граничных меридианах -180..+180.
+10. **[`src/verify/verify_astronomy.rs`](./src/verify/verify_astronomy.rs)** (6 харнессов):
+    - `proof_solar_noon_bounded_for_all_longitudes` — полдень всегда строго внутри суток для любых долгот и типов вращения.
+    - `proof_daylight_ticks_bounded` — длина светового дня, моменты восхода и захода всегда зажаты в физические границы суток.
+    - `proof_moon_phase_rational_bounded` — рациональная фаза луны строго в базисных пунктах `[0, 10_000)`.
+    - `proof_moon_phase_exact_consistency` — точность ключевых фаз луны (новолуние = 0 bp, полнолуние = 5000 bp).
+    - `proof_moon_period_positive` — валидация конфигурации спутников (период обязан быть строго положительным).
+    - `proof_solar_noon_longitude_bounded` — устойчивость вычисления зенита солнца на граничных меридианах -180..+180.
+11. **[`src/verify/verify_succession.rs`](./src/verify/verify_succession.rs)** (1 харнес):
+    - `proof_succession_two_eras_exhaustive` — исчерпывающее доказательство отсутствия паник и корректности бинарного поиска активной календарной эры для любого момента шкалы $M_{\text{abs}}$.
+12. **[`src/verify/verify_dst.rs`](./src/verify/verify_dst.rs)** (2 харнеса):
+    - `proof_dst_none_is_invariant` — инвариантность эффективного смещения часового пояса планеты при отключенной политике DST (`DstPolicy::None`).
+    - `proof_dst_fixed_bounded` — доказательство корректности и строгой ограниченности временных окон перевода стрелок для фиксированных дат.
 
-Все **63 формальных доказательства Kani** завершаются со статусом `VERIFICATION:- SUCCESSFUL` (0 failures, 0 unwinding errors).
+Все **70 формальных доказательств Kani** завершаются со статусом `VERIFICATION:- SUCCESSFUL` (0 failures, 0 unwinding errors).
 
 

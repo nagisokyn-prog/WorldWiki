@@ -26,7 +26,8 @@
 -- 5.2. arc_chapters (Охват глав сюжетной аркой)
 -- 6. text_blocks (Семантические блоки текста)
 -- 7. tags (Теги)
--- 8. calendars (Календари и эпохи)
+-- 8. planets (Планеты)
+-- 8.1. calendars (Календари и эпохи)
 -- 9. entity_schemas (Мета-схемы сущностей лора)
 -- 10. schema_history (История версий мета-схем)
 -- 11. entities (Сущности лора / энциклопедии)
@@ -122,13 +123,28 @@ DEFINE FIELD OVERWRITE name       ON tags TYPE string;
 DEFINE FIELD OVERWRITE color      ON tags TYPE string;
 DEFINE FIELD OVERWRITE project_id ON tags TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 
--- 8. КАЛЕНДАРИ
+-- 8. ПЛАНЕТЫ
+DEFINE TABLE OVERWRITE planets SCHEMAFULL;
+DEFINE FIELD OVERWRITE name             ON planets TYPE string;
+DEFINE FIELD OVERWRITE ticks_per_day    ON planets TYPE int;
+DEFINE FIELD OVERWRITE axial_tilt_mdeg  ON planets TYPE option<int | null>;
+DEFINE FIELD OVERWRITE orbit_days_num   ON planets TYPE option<int | null>;
+DEFINE FIELD OVERWRITE orbit_days_den   ON planets TYPE option<int | null>;
+DEFINE FIELD OVERWRITE moons            ON planets TYPE array<object> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
+DEFINE FIELD OVERWRITE created_at       ON planets TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at       ON planets TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE project_id       ON planets TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+
+-- 8.1. КАЛЕНДАРИ
 DEFINE TABLE OVERWRITE calendars SCHEMAFULL;
 DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
 DEFINE FIELD OVERWRITE description ON calendars TYPE option<string | null>;
 DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_master   ON calendars TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE planet_id   ON calendars TYPE option<record<planets> | null>;
+DEFINE FIELD OVERWRITE created_at  ON calendars TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at  ON calendars TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 
 -- 9. МЕТА-СХЕМЫ СУЩНОСТЕЙ

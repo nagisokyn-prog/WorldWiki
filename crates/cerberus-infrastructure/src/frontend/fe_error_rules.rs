@@ -150,7 +150,18 @@ impl FeErrorRulesChecker {
         {
             // If the file contains deps.addLog(...) inside catch without addToast / appAlert
             if content.contains("deps.addLog") && !content.contains("deps.addToast") && !content.contains("appAlert") {
-                let snippet = "deps.addLog(..., 'error') without UI notification".to_string();
+                let (line, snippet) = lines
+                    .iter()
+                    .enumerate()
+                    .find_map(|(idx, l)| {
+                        if l.contains("deps.addLog") {
+                            Some((idx + 1, l.trim().to_string()))
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or((1, "deps.addLog(..., 'error') without UI notification".to_string()));
+
                 let fp = compute_fingerprint("FE-ERR-002", "1.0", file_stem, &snippet);
                 violations.push(Violation {
                     rule_id: "FE-ERR-002".into(),
@@ -158,7 +169,7 @@ impl FeErrorRulesChecker {
                     category: Category::Frontend,
                     severity: Severity::Deny,
                     file: file_path.to_path_buf(),
-                    line: 1,
+                    line,
                     column: 1,
                     symbol: "silent_mutation_catch".into(),
                     message: "Mutation function catches errors into internal log without showing Toast or Alert to user.".into(),

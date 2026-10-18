@@ -1,7 +1,7 @@
 import { ref, watch, computed } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
 import type { CalendarRecord } from '../../../stores/calendar.store';
-import type { CalendarData } from '../../../services/Calendars/calendar.types';
+import type { CalendarData, PlanetEntity } from '../../../services/Calendars/calendar.types';
 import { CalendarMath } from '../../../services/Calendars/useCalendarEngine';
 
 export interface PanelCalendarItem {
@@ -15,15 +15,29 @@ export interface PanelCalendarItem {
 export function useCalendarsPanel(props: { project?: string }) {
     const project = computed(() => props.project || '');
     const calendars = ref<PanelCalendarItem[]>([]);
-    const expandedCalendars = ref<Set<number>>(new Set());
+    const planets = ref<PlanetEntity[]>([]);
 
-    const isExpanded = (idx: number) => expandedCalendars.value.has(idx);
+    const selectedPlanet = ref<PlanetEntity | null>(null);
+    const selectedCalendarIdx = ref<number | null>(null);
 
-    const toggleExpand = (idx: number) => {
-        if (expandedCalendars.value.has(idx)) {
-            expandedCalendars.value.delete(idx);
-        } else {
-            expandedCalendars.value.add(idx);
+    const selectedId = computed<string>(() => {
+        if (selectedPlanet.value) {
+            return `planet:${selectedPlanet.value.id}`;
+        }
+        if (selectedCalendarIdx.value !== null && selectedCalendarIdx.value >= 0) {
+            return `cal:${selectedCalendarIdx.value}`;
+        }
+        return '';
+    });
+
+    const loadPlanets = () => {
+        if (!project.value) {
+            planets.value = [];
+            return;
+        }
+        planets.value = useCalendarStore().getPlanets(project.value);
+        if (planets.value.length > 0 && !selectedPlanet.value && selectedCalendarIdx.value === null) {
+            selectedPlanet.value = planets.value[0];
         }
     };
 
@@ -34,11 +48,12 @@ export function useCalendarsPanel(props: { project?: string }) {
         }
 
         try {
+            loadPlanets();
             const list = await useCalendarStore().getCalendars(project.value);
 
-            // Auto-create default calendar if none exist
             if (list.length === 0) {
                 const defaultData = CalendarMath.getDefaultCalendar();
+                defaultData.planet_id = 'earth';
                 await useCalendarStore().saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
                 const newList = await useCalendarStore().getCalendars(project.value);
                 calendars.value = newList.map((c: CalendarRecord) => ({
@@ -48,24 +63,26 @@ export function useCalendarsPanel(props: { project?: string }) {
                     data: (c.data || c) as CalendarData
                 }));
             } else {
-                calendars.value = list.map((c: CalendarRecord) => ({
-                    id: c.id,
-                    is_default: c.is_default,
-                    is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
-                    data: (c.data || c) as CalendarData
-                }));
+                calendars.value = list.map((c: CalendarRecord) => {
+                    const d = (c.data || c) as CalendarData;
+                    if (!d.planet_id) {
+                        d.planet_id = 'earth';
+                    }
+                    return {
+                        id: c.id,
+                        is_default: c.is_default,
+                        is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
+                        data: d
+                    };
+                });
             }
 
-            // Календарь Мира (is_master) всегда закреплен сверху первым.
-            // Все остальные локальные календари сохраняют порядок добавления внизу.
-            calendars.value.sort((a, b) => {
-                if (a.is_master && !b.is_master) return -1;
-                if (!a.is_master && b.is_master) return 1;
-                return 0;
-            });
-
-            if (calendars.value.length > 0 && expandedCalendars.value.size === 0) {
-                expandedCalendars.value.add(0);
+            if (selectedCalendarIdx.value === null && !selectedPlanet.value) {
+                if (planets.value.length > 0) {
+                    selectedPlanet.value = planets.value[0];
+                } else if (calendars.value.length > 0) {
+                    selectedCalendarIdx.value = 0;
+                }
             }
         } catch (error) {
             console.error('Ошибка при загрузке календарей:', error);
@@ -76,8 +93,65 @@ export function useCalendarsPanel(props: { project?: string }) {
         loadCalendars();
     }, { immediate: true });
 
-    const addCalendar = async () => {
+    const selectPlanet = (planet: PlanetEntity) => {
+        selectedPlanet.value = planet;
+        selectedCalendarIdx.value = null;
+    };
+
+    const selectCalendar = (calIdx: number) => {
+        const cal = calendars.value[calIdx];
+        if (cal && (cal.is_master || cal.data?.название === 'Календарь Мира' || cal.data?.calendar_type === 'master')) {
+            const pId = cal.data?.planet_id || 'earth';
+            const foundPlanet = planets.value.find(p => p.id === pId) || planets.value[0];
+            if (foundPlanet) {
+                selectPlanet(foundPlanet);
+                return;
+            }
+        }
+        selectedCalendarIdx.value = calIdx;
+        selectedPlanet.value = null;
+    };
+
+    const addPlanet = () => {
+        if (!project.value) return;
+        const newId = `planet_${Date.now()}`;
+        const newPlanet: PlanetEntity = {
+            id: newId,
+            project_id: project.value,
+            name: `Планета ${planets.value.length + 1}`,
+            ticks_per_day: 86400,
+            orbit_days: 365.2422,
+            axial_tilt: 23.44,
+            is_retrograde: false,
+            moons: []
+        };
+        useCalendarStore().savePlanet(project.value, newPlanet);
+        loadPlanets();
+        selectPlanet(newPlanet);
+    };
+
+    const savePlanet = (planet: PlanetEntity) => {
+        if (!project.value) return;
+        useCalendarStore().savePlanet(project.value, planet);
+        loadPlanets();
+    };
+
+    const deletePlanet = (planetId: string) => {
+        if (!project.value) return;
+        useCalendarStore().deletePlanet(project.value, planetId);
+        loadPlanets();
+        if (selectedPlanet.value?.id === planetId) {
+            if (planets.value.length > 0) {
+                selectPlanet(planets.value[0]);
+            } else if (calendars.value.length > 0) {
+                selectCalendar(0);
+            }
+        }
+    };
+
+    const addCalendar = async (planetId: string = 'earth') => {
         const newCal = CalendarMath.getDefaultCalendar();
+        newCal.planet_id = planetId;
         newCal.название = `Новый календарь ${calendars.value.length + 1}`;
 
         const tempPayload = {
@@ -90,14 +164,15 @@ export function useCalendarsPanel(props: { project?: string }) {
         if (project.value) {
             await useCalendarStore().saveCalendar(project.value, tempPayload);
             await loadCalendars();
-            // Новый календарь создается свернутым внизу списка
+            selectCalendar(calendars.value.length - 1);
         }
     };
 
     const saveCalendar = async (idx: number, skipReload = false) => {
         if (!project.value) return;
-
         const cal = calendars.value[idx];
+        if (!cal) return;
+
         const idStr = String(cal.id || '').replace(/["'⟨⟩]/g, '').trim();
         let rawData = cal.data;
         if (rawData && typeof rawData === 'object' && 'data' in rawData && typeof (rawData as Record<string, unknown>).data === 'object') {
@@ -106,6 +181,7 @@ export function useCalendarsPanel(props: { project?: string }) {
 
         const payload: CalendarData & { [key: string]: unknown } = {
             ...rawData,
+            planet_id: rawData.planet_id || 'earth',
             название: rawData.название || 'Календарь',
             is_default: cal.is_default,
             is_master: cal.is_master,
@@ -115,7 +191,6 @@ export function useCalendarsPanel(props: { project?: string }) {
         try {
             const success = await useCalendarStore().saveCalendar(project.value, payload);
             if (success && !skipReload) {
-                // Reload to get real IDs only for single manual save
                 await loadCalendars();
             }
             return success;
@@ -141,8 +216,7 @@ export function useCalendarsPanel(props: { project?: string }) {
             confirmed = typeof window !== 'undefined' ? window.confirm('Вы уверены, что хотите удалить этот календарь?') : true;
         }
 
-        if (!confirmed) return;
-        if (!project.value) return;
+        if (!confirmed || !project.value) return;
 
         const cal = calendars.value[idx];
         if (cal) {
@@ -157,17 +231,20 @@ export function useCalendarsPanel(props: { project?: string }) {
             }
         }
         calendars.value.splice(idx, 1);
-        expandedCalendars.value.delete(idx);
+        if (selectedCalendarIdx.value === idx) {
+            selectedCalendarIdx.value = calendars.value.length > 0 ? 0 : null;
+        }
     };
 
     const setDefault = async (idx: number) => {
         calendars.value.forEach((c, i) => {
             c.is_default = (i === idx);
+            c.is_master = (i === idx);
+            if (c.data) {
+                c.data.is_master = (i === idx);
+                c.data.calendar_type = (i === idx) ? 'master' : 'local';
+            }
         });
-        await saveAll();
-    };
-
-    const saveAll = async () => {
         for (let i = 0; i < calendars.value.length; i++) {
             await saveCalendar(i, true);
         }
@@ -186,14 +263,6 @@ export function useCalendarsPanel(props: { project?: string }) {
         });
     };
 
-    const displayCalendars = computed(() => {
-        return calendars.value.map((cal, idx) => ({
-            ...cal,
-            idx,
-            isExpanded: expandedCalendars.value.has(idx),
-        }));
-    });
-
     const isAuditOpen = ref(false);
     const selectedAuditCalendar = ref<CalendarData | null>(null);
 
@@ -202,14 +271,26 @@ export function useCalendarsPanel(props: { project?: string }) {
         isAuditOpen.value = true;
     };
 
+    const saveAll = async () => {
+        for (let i = 0; i < calendars.value.length; i++) {
+            await saveCalendar(i, true);
+        }
+        await loadCalendars();
+    };
+
     return {
         project,
         calendars,
-        displayCalendars,
+        planets,
+        selectedPlanet,
+        selectedCalendarIdx,
+        selectedId,
+        selectPlanet,
+        selectCalendar,
+        addPlanet,
+        savePlanet,
+        deletePlanet,
         masterCalendar,
-        expandedCalendars,
-        isExpanded,
-        toggleExpand,
         addCalendar,
         saveCalendar,
         removeCalendar,

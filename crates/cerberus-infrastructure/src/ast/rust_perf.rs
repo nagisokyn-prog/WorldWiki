@@ -1,5 +1,6 @@
 use cerberus_domain::{compute_fingerprint, Category, RuleDefinition, Severity, Violation};
 use std::path::PathBuf;
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 use syn::{ExprCall, ExprForLoop, ExprWhile, File, ItemImpl};
 
@@ -25,7 +26,7 @@ impl<'a> RustPerfChecker<'a> {
         violations
     }
 
-    fn check_call(&self, path_str: &str, in_loop: bool, in_drop: bool, violations: &mut Vec<Violation>) {
+    fn check_call(&self, item: &ExprCall, path_str: &str, in_loop: bool, in_drop: bool, violations: &mut Vec<Violation>) {
         // PERF-011: I/O in Loop
         if in_loop && self.is_rule_enabled("PERF-011") {
             let io_signatures = [
@@ -43,6 +44,7 @@ impl<'a> RustPerfChecker<'a> {
                 if path_str.contains(io_fn) {
                     let snippet = path_str.to_string();
                     let fp = compute_fingerprint("PERF-011", "1.0", "loop_io", &snippet);
+                    let span = item.span();
 
                     violations.push(Violation {
                         rule_id: "PERF-011".into(),
@@ -50,8 +52,8 @@ impl<'a> RustPerfChecker<'a> {
                         category: Category::Performance,
                         severity: self.get_severity("PERF-011", Severity::Warn),
                         file: PathBuf::from(self.file_path),
-                        line: 1,
-                        column: 1,
+                        line: span.start().line,
+                        column: span.start().column + 1,
                         symbol: "loop_io".into(),
                         message: format!(
                             "Blocking I/O operation '{}' invoked inside iteration loop causing N+1 performance bottleneck.",
@@ -70,6 +72,7 @@ impl<'a> RustPerfChecker<'a> {
         if self.is_rule_enabled("PERF-012") && path_str.contains("unbounded_channel") {
             let snippet = path_str.to_string();
             let fp = compute_fingerprint("PERF-012", "1.0", "unbounded_channel", &snippet);
+            let span = item.span();
 
             violations.push(Violation {
                 rule_id: "PERF-012".into(),
@@ -77,8 +80,8 @@ impl<'a> RustPerfChecker<'a> {
                 category: Category::Performance,
                 severity: self.get_severity("PERF-012", Severity::Warn),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: "unbounded_channel".into(),
                 message: "Unbounded channel 'mpsc::unbounded_channel()' risks uncontrolled memory exhaustion under high throughput.".into(),
                 snippet,
@@ -94,6 +97,7 @@ impl<'a> RustPerfChecker<'a> {
         {
             let snippet = path_str.to_string();
             let fp = compute_fingerprint("PERF-006", "1.0", "drop_blocking_io", &snippet);
+            let span = item.span();
 
             violations.push(Violation {
                 rule_id: "PERF-006".into(),
@@ -101,8 +105,8 @@ impl<'a> RustPerfChecker<'a> {
                 category: Category::Performance,
                 severity: self.get_severity("PERF-006", Severity::Deny),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: "drop_blocking_io".into(),
                 message: format!(
                     "Blocking I/O call '{}' inside 'Drop' implementation stalls runtime worker threads.",
@@ -174,6 +178,7 @@ impl<'a, 'b> Visit<'_> for RustPerfVisitor<'a, 'b> {
             }
             let path_str = parts.join("::");
             self.checker.check_call(
+                item,
                 &path_str,
                 self.loop_depth > 0,
                 self.in_drop_impl,

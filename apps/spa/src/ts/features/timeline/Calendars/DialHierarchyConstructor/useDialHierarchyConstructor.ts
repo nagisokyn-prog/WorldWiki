@@ -28,9 +28,8 @@ export function useDialHierarchyConstructor(
       return data.dial_hierarchy.units ?? [];
     },
     set: (val: DialUnit[]) => {
-      const data = props.modelValue as CalendarData & { dial_hierarchy?: { units?: DialUnit[] } };
-      if (!data.dial_hierarchy) data.dial_hierarchy = {};
-      data.dial_hierarchy.units = val;
+      const data = props.modelValue as CalendarData;
+      data.dial_hierarchy = { units: val };
       emit('update:modelValue', props.modelValue);
     },
   });

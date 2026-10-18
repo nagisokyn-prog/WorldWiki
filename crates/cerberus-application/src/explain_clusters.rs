@@ -158,3 +158,211 @@ fn build_cluster_summaries(mut cluster_map: HashMap<usize, Vec<Violation>>) -> V
 
     clusters
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cerberus_domain::{Category, Severity, Violation};
+    use cerberus_ports::{ClustererPort, VectorEmbedderPort};
+    use std::path::PathBuf;
+    use std::sync::Arc;
+
+    struct MockEmbedder {
+        fail: bool,
+    }
+
+    impl VectorEmbedderPort for MockEmbedder {
+        fn dimension(&self) -> usize {
+            3
+        }
+
+        fn embed_texts(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
+            if self.fail {
+                return Err("Mock embedder intentional failure".into());
+            }
+            Ok(texts.iter().map(|_| vec![0.1, 0.2, 0.3]).collect())
+        }
+    }
+
+    struct MockClusterer {
+        fail: bool,
+        assignments: Vec<Option<usize>>,
+    }
+
+    impl ClustererPort for MockClusterer {
+        fn cluster(
+            &self,
+            _embeddings: &[Vec<f32>],
+            _eps: f32,
+            _min_points: usize,
+        ) -> Result<Vec<Option<usize>>, String> {
+            if self.fail {
+                return Err("Mock clusterer intentional failure".into());
+            }
+            Ok(self.assignments.clone())
+        }
+    }
+
+    fn make_test_violation(rule_id: &str, line: usize) -> Violation {
+        Violation {
+            rule_id: rule_id.to_string(),
+            rule_version: "1.0".to_string(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from(format!("src/{}.rs", rule_id.to_lowercase())),
+            line,
+            column: 1,
+            symbol: format!("sym_{}", rule_id),
+            snippet: format!("// snippet for {}", rule_id),
+            message: format!("Violation of {}", rule_id),
+            remediation: format!("Fix {}", rule_id),
+            fingerprint: format!("fp_{}_{}", rule_id, line),
+        }
+    }
+
+    #[test]
+    fn test_explain_clusters_new_positive() {
+        let embedder = Arc::new(MockEmbedder { fail: false });
+        let clusterer = Arc::new(MockClusterer {
+            fail: false,
+            assignments: vec![Some(0), Some(0)],
+        });
+
+        let use_case = ExplainClustersUseCase::new(embedder.clone(), clusterer);
+        assert_eq!(embedder.dimension(), 3);
+        assert_eq!(use_case.eps, 0.836);
+        assert_eq!(use_case.min_points, 5);
+
+        let v1 = make_test_violation("ARCH-001", 10);
+        let v2 = make_test_violation("ARCH-002", 20);
+        let violations = vec![v1, v2];
+
+        let report = use_case.execute(&violations).expect("Should succeed");
+        assert_eq!(report.total_violations, 2);
+        assert_eq!(report.total_clusters, 1);
+        assert_eq!(report.noise_count, 0);
+        assert_eq!(report.clusters.len(), 1);
+        assert_eq!(report.clusters[0].cluster_id, 0);
+        assert_eq!(report.clusters[0].count, 2);
+        assert_eq!(report.clusters[0].rule_ids, vec!["ARCH-001", "ARCH-002"]);
+    }
+
+    #[test]
+    fn test_explain_clusters_with_params_positive() {
+        let embedder = Arc::new(MockEmbedder { fail: false });
+        let clusterer = Arc::new(MockClusterer {
+            fail: false,
+            assignments: vec![Some(1), None],
+        });
+
+        let use_case = ExplainClustersUseCase::with_params(embedder, clusterer, 0.42, 3);
+        assert_eq!(use_case.eps, 0.42);
+        assert_eq!(use_case.min_points, 3);
+
+        let v1 = make_test_violation("SEC-001", 5);
+        let v2 = make_test_violation("SEC-002", 15);
+        let violations = vec![v1, v2];
+
+        let report = use_case.execute(&violations).expect("Should succeed");
+        assert_eq!(report.total_violations, 2);
+        assert_eq!(report.total_clusters, 1);
+        assert_eq!(report.noise_count, 1);
+        assert_eq!(report.clusters.len(), 1);
+        assert_eq!(report.clusters[0].cluster_id, 1);
+        assert_eq!(report.clusters[0].count, 1);
+    }
+
+    #[test]
+    fn test_explain_clusters_empty_violations() {
+        let embedder = Arc::new(MockEmbedder { fail: false });
+        let clusterer = Arc::new(MockClusterer {
+            fail: false,
+            assignments: vec![],
+        });
+
+        let use_case = ExplainClustersUseCase::new(embedder, clusterer);
+        let report = use_case.execute(&[]).expect("Empty violations should return Ok report");
+        assert_eq!(report.total_violations, 0);
+        assert_eq!(report.total_clusters, 0);
+        assert_eq!(report.noise_count, 0);
+        assert!(report.clusters.is_empty());
+    }
+
+    #[test]
+    fn test_explain_clusters_embedder_failure_negative() {
+        let embedder = Arc::new(MockEmbedder { fail: true });
+        let clusterer = Arc::new(MockClusterer {
+            fail: false,
+            assignments: vec![Some(0)],
+        });
+
+        let use_case = ExplainClustersUseCase::new(embedder, clusterer);
+        let violations = vec![make_test_violation("ARCH-001", 1)];
+        let result = use_case.execute(&violations);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Mock embedder intentional failure"));
+    }
+
+    #[test]
+    fn test_explain_clusters_clusterer_failure_negative() {
+        let embedder = Arc::new(MockEmbedder { fail: false });
+        let clusterer = Arc::new(MockClusterer {
+            fail: true,
+            assignments: vec![],
+        });
+
+        let use_case = ExplainClustersUseCase::new(embedder, clusterer);
+        let violations = vec![make_test_violation("ARCH-001", 1)];
+        let result = use_case.execute(&violations);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Mock clusterer intentional failure"));
+    }
+
+    #[test]
+    fn test_explain_clusters_many_rules_break_branch() {
+        // Cluster with 6 distinct rules to hit `if sample_violations.len() >= 5 { break; }`
+        let violations = vec![
+            make_test_violation("RULE-A", 1),
+            make_test_violation("RULE-B", 2),
+            make_test_violation("RULE-C", 3),
+            make_test_violation("RULE-D", 4),
+            make_test_violation("RULE-E", 5),
+            make_test_violation("RULE-F", 6),
+            make_test_violation("RULE-G", 7),
+        ];
+
+        let embedder = Arc::new(MockEmbedder { fail: false });
+        let clusterer = Arc::new(MockClusterer {
+            fail: false,
+            assignments: vec![Some(0); violations.len()],
+        });
+
+        let use_case = ExplainClustersUseCase::new(embedder, clusterer);
+        let report = use_case.execute(&violations).expect("Should succeed");
+        assert_eq!(report.total_clusters, 1);
+        let cluster = &report.clusters[0];
+        assert_eq!(cluster.sample_violations.len(), 5);
+        assert_eq!(cluster.count, 7);
+    }
+
+    #[test]
+    fn test_group_by_cluster_mismatched_assignments_bounds() {
+        // Tests line 90: when assignments has more entries than violations slice
+        let violations = vec![make_test_violation("RULE-1", 1)];
+        let assignments = vec![Some(0), Some(0), None];
+
+        let (cluster_map, noise_count) = group_by_cluster(&violations, assignments);
+        assert_eq!(noise_count, 1);
+        assert_eq!(cluster_map.get(&0).map(|v| v.len()), Some(1));
+    }
+
+    #[test]
+    fn test_format_violation_prompt() {
+        let v = make_test_violation("TEST-001", 42);
+        let prompt = format_violation_prompt(&v);
+        assert!(prompt.contains("Rule: TEST-001"));
+        assert!(prompt.contains("42"));
+        assert!(prompt.contains("sym_TEST-001"));
+        assert!(prompt.contains("Fix TEST-001"));
+    }
+}

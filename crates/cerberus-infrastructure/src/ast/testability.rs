@@ -1,5 +1,6 @@
 use cerberus_domain::{compute_fingerprint, Category, RuleDefinition, Severity, Violation};
 use std::path::PathBuf;
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 use syn::{ExprCall, ExprPath, File, ItemStatic, ItemUse};
 
@@ -28,7 +29,7 @@ impl<'a> TestabilityChecker<'a> {
         violations
     }
 
-    fn check_call_path(&self, path_str: &str, violations: &mut Vec<Violation>) {
+    fn check_call_path(&self, item: &ExprCall, path_str: &str, violations: &mut Vec<Violation>) {
         let is_domain = self.crate_name.contains("domain") || self.file_path.contains("domain");
         let is_app = self.crate_name.contains("application") || self.file_path.contains("application");
 
@@ -49,6 +50,7 @@ impl<'a> TestabilityChecker<'a> {
                 if path_str.contains(bad_call) {
                     let snippet = path_str.to_string();
                     let fp = compute_fingerprint("TEST-005", "1.0", "system_call", &snippet);
+                    let span = item.span();
 
                     violations.push(Violation {
                         rule_id: "TEST-005".into(),
@@ -56,8 +58,8 @@ impl<'a> TestabilityChecker<'a> {
                         category: Category::Testability,
                         severity: self.get_severity("TEST-005", Severity::Deny),
                         file: PathBuf::from(self.file_path),
-                        line: 1,
-                        column: 1,
+                        line: span.start().line,
+                        column: span.start().column + 1,
                         symbol: "system_call".into(),
                         message: format!(
                             "Non-deterministic system call '{}' invoked directly inside domain crate '{}'. Domain logic must remain 100% deterministic and pure.",
@@ -79,6 +81,7 @@ impl<'a> TestabilityChecker<'a> {
         {
             let snippet = path_str.to_string();
             let fp = compute_fingerprint("TEST-003", "1.0", "adapter_instantiation", &snippet);
+            let span = item.span();
 
             violations.push(Violation {
                 rule_id: "TEST-003".into(),
@@ -86,8 +89,8 @@ impl<'a> TestabilityChecker<'a> {
                 category: Category::Testability,
                 severity: self.get_severity("TEST-003", Severity::Warn),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: "adapter_instantiation".into(),
                 message: format!(
                     "Direct concrete adapter instantiation '{}' inside '{}' violates Dependency Inversion Principle.",
@@ -110,6 +113,7 @@ impl<'a> TestabilityChecker<'a> {
         if use_str.contains("SystemTime") || use_str.contains("Instant") || use_str.contains("chrono :: Utc") {
             let snippet = use_str;
             let fp = compute_fingerprint("TEST-005", "1.0", "time_import", &snippet);
+            let span = item_use.span();
 
             violations.push(Violation {
                 rule_id: "TEST-005".into(),
@@ -117,8 +121,8 @@ impl<'a> TestabilityChecker<'a> {
                 category: Category::Testability,
                 severity: self.get_severity("TEST-005", Severity::Deny),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: "time_import".into(),
                 message: "Direct import of system clock types into domain violates deterministic domain purity.".into(),
                 snippet,
@@ -139,6 +143,7 @@ impl<'a> TestabilityChecker<'a> {
             let name = item.ident.to_string();
             let snippet = format!("static {}: {}", name, ty_str);
             let fp = compute_fingerprint("TEST-002", "1.0", &name, &snippet);
+            let span = item.span();
 
             violations.push(Violation {
                 rule_id: "TEST-002".into(),
@@ -146,8 +151,8 @@ impl<'a> TestabilityChecker<'a> {
                 category: Category::Testability,
                 severity: self.get_severity("TEST-002", Severity::Deny),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: name,
                 message: "Mutable global static state hinders deterministic isolated testing and parallel test execution.".into(),
                 snippet,
@@ -189,7 +194,7 @@ impl<'a, 'b> Visit<'_> for TestabilityVisitor<'a, 'b> {
                 parts.push(s.ident.to_string());
             }
             let path_str = parts.join("::");
-            self.checker.check_call_path(&path_str, self.violations);
+            self.checker.check_call_path(item, &path_str, self.violations);
         }
         syn::visit::visit_expr_call(self, item);
     }

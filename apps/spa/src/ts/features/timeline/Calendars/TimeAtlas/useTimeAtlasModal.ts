@@ -109,14 +109,14 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     if (!props.project) return;
     loading.value = true;
     try {
-      const list = await useCalendarStore().getCalendars(props.project);
-      const sorted = (list || []).slice().sort((a, b) => (b.is_master ? 1 : 0) - (a.is_master ? 1 : 0));
+      const list: CalendarRecord[] = await useCalendarStore().getCalendars(props.project);
+      const sorted = (list || []).slice().sort((a: CalendarRecord, b: CalendarRecord) => (b.is_master ? 1 : 0) - (a.is_master ? 1 : 0));
       allCalendars.value = sorted;
 
-      const master = sorted.find(c => c.is_master) || sorted[0];
+      const master = sorted.find((c: CalendarRecord) => c.is_master) || sorted[0];
       if (master && selectedCalIds.value.length === 0) {
-        selectedCalIds.value = sorted.map(c => c.id!).filter(Boolean);
-        matrixBaseCalId.value = sorted.find(c => !c.is_master)?.id || master.id || '';
+        selectedCalIds.value = sorted.map((c: CalendarRecord) => c.id!).filter(Boolean);
+        matrixBaseCalId.value = sorted.find((c: CalendarRecord) => !c.is_master)?.id || master.id || '';
         matrixCompareCalId.value = master.id || '';
       }
     } finally {

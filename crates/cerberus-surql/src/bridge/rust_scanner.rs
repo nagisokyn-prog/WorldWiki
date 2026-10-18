@@ -7,6 +7,7 @@ use cerberus_domain::{
 };
 use std::fs;
 use std::path::Path;
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 use syn::{Expr, ExprLit, ExprMacro, ExprMethodCall, Lit};
 
@@ -119,7 +120,10 @@ impl<'a, 'ast> Visit<'ast> for QueryCallVisitor<'a> {
                 || (upper.contains("RELATE ") && upper.contains("->"));
 
             if is_sql {
+                let span = node.span();
                 self.emit_sec011(
+                    span.start().line,
+                    span.start().column + 1,
                     "format!(...)",
                     "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
                 );
@@ -140,7 +144,10 @@ impl<'a, 'ast> Visit<'ast> for QueryCallVisitor<'a> {
                 || (combined.contains("RELATE ") && combined.contains("->"));
 
             if is_sql {
+                let span = node.span();
                 self.emit_sec011(
+                    span.start().line,
+                    span.start().column + 1,
                     "string + string",
                     "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",
                 );
@@ -172,7 +179,10 @@ impl<'a> QueryCallVisitor<'a> {
                     .unwrap_or_default();
 
                 if macro_name == "format" && !self.violations.iter().any(|v| v.rule_id == "SEC-011") {
+                    let span = expr.span();
                     self.emit_sec011(
+                        span.start().line,
+                        span.start().column + 1,
                         "format!(...)",
                         "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
                     );
@@ -180,7 +190,10 @@ impl<'a> QueryCallVisitor<'a> {
             }
             Expr::Binary(binary) if matches!(binary.op, syn::BinOp::Add(_)) => {
                 if !self.violations.iter().any(|v| v.rule_id == "SEC-011") {
+                    let span = expr.span();
                     self.emit_sec011(
+                        span.start().line,
+                        span.start().column + 1,
                         "string + string",
                         "Building SurrealQL query via string concatenation (+). Pass parameterized bind values via .bind() instead.",
                     );
@@ -192,18 +205,27 @@ impl<'a> QueryCallVisitor<'a> {
             }) => {
                 let sql_text = lit_str.value();
                 let doc = SurqlParser::parse_inline(&sql_text, self.file_path);
+                let base_span = lit_str.span();
+                let base_line = base_span.start().line;
+                let base_column = base_span.start().column + 1;
 
                 for rule in self.rules {
                     let surql_violations = rule.check(&doc, self.schema, self.config);
                     for v in surql_violations {
+                        let line = base_line + (v.line.saturating_sub(1));
+                        let column = if v.line <= 1 {
+                            base_column + (v.column.saturating_sub(1))
+                        } else {
+                            v.column
+                        };
                         self.violations.push(Violation {
                             rule_id: v.rule_id,
                             rule_version: v.rule_version,
                             category: v.category,
                             severity: v.severity,
                             file: self.file_path.to_path_buf(),
-                            line: 1, // Line within the string / file
-                            column: 1,
+                            line,
+                            column,
                             symbol: v.symbol,
                             snippet: v.snippet,
                             message: format!("(Rust Inline SURQL) {}", v.message),
@@ -217,7 +239,7 @@ impl<'a> QueryCallVisitor<'a> {
         }
     }
 
-    fn emit_sec011(&mut self, symbol: &str, message: &str) {
+    fn emit_sec011(&mut self, line: usize, column: usize, symbol: &str, message: &str) {
         let file_str = self.file_path.to_string_lossy().to_string();
         let fingerprint = compute_location_fingerprint(
             "SEC-011",
@@ -233,8 +255,8 @@ impl<'a> QueryCallVisitor<'a> {
             category: Category::Security,
             severity: Severity::Deny,
             file: self.file_path.to_path_buf(),
-            line: 1,
-            column: 1,
+            line,
+            column,
             symbol: symbol.to_string(),
             snippet: format!("db.query({})", symbol),
             message: message.to_string(),

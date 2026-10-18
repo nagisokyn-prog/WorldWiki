@@ -103,7 +103,7 @@ export function useTimelinePanel(
     try {
       const calendarsList = await useCalendarStore().getCalendars(props.project);
 
-      availableCalendars.value = calendarsList.map(c => ({
+      availableCalendars.value = calendarsList.map((c: CalendarRecord) => ({
         id: c.id,
         is_default: c.is_default,
         data: c.data || CalendarMath.getDefaultCalendar()

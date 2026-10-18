@@ -179,3 +179,22 @@
 .col-span-3 {
   grid-column: span 3;
 }
+
+.sync-direction-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-input);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+.sync-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+

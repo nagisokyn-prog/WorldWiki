@@ -66,7 +66,9 @@ export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event
   // Расчет векового дрейфа
   const driftPerCentury = computed(() => {
     const cal = props.modelValue as CalendarData & { target_year_length_days?: number };
-    const baseDays = cal.месяцы?.reduce((acc, m) => acc + (m.дней || 0), 0) || 365;
+    const monthsDays = cal.месяцы?.reduce((acc, m) => acc + (m.дней || 0), 0) || 365;
+    const extra = cal.extra_days_config?.base_days ?? cal.extra_days ?? 0;
+    const baseDays = monthsDays + extra;
     const targetLength = cal.target_year_length_days || 365.24219;
     return engine.calculateDriftPerCentury(baseDays, currentHarmonics.value, targetLength);
   });

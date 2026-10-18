@@ -25,18 +25,55 @@ impl VueRuleChecker {
             || full_script.contains("invoke(")
             || full_script.contains("window.__TAURI__")
         {
-            let snippet = full_script
-                .lines()
-                .filter(|l| {
-                    l.contains("@tauri-apps/api")
-                        || l.contains("invoke(")
-                        || l.contains("__TAURI__")
-                })
-                .take(3)
-                .collect::<Vec<_>>()
-                .join("\n");
+            let mut snippet_lines = Vec::new();
+            for l in full_script.lines() {
+                if l.contains("@tauri-apps/api")
+                    || l.contains("@tauri-apps/plugin-shell")
+                    || l.contains("invoke(")
+                    || l.contains("__TAURI__")
+                {
+                    snippet_lines.push(l.trim());
+                    if snippet_lines.len() >= 3 {
+                        break;
+                    }
+                }
+            }
+            let snippet = snippet_lines.join("\n");
 
             let fingerprint = compute_fingerprint("TAURI-002", "1.0", file_stem, &snippet);
+
+            let mut line = None;
+            if let Some(setup) = &sfc.script_setup {
+                for (idx, l) in setup.lines().enumerate() {
+                    if l.contains("@tauri-apps/api")
+                        || l.contains("@tauri-apps/plugin-shell")
+                        || l.contains("invoke(")
+                        || l.contains("window.__TAURI__")
+                    {
+                        line = Some(sfc.script_setup_start_line + idx);
+                        break;
+                    }
+                }
+            }
+            if line.is_none() {
+                if let Some(script) = &sfc.script {
+                    for (idx, l) in script.lines().enumerate() {
+                        if l.contains("@tauri-apps/api")
+                            || l.contains("@tauri-apps/plugin-shell")
+                            || l.contains("invoke(")
+                            || l.contains("window.__TAURI__")
+                        {
+                            line = Some(idx + 1);
+                            break;
+                        }
+                    }
+                }
+            }
+            let line = line.unwrap_or(if sfc.script_setup_start_line > 0 {
+                sfc.script_setup_start_line
+            } else {
+                1
+            });
 
             violations.push(Violation {
                 rule_id: "TAURI-002".into(),
@@ -44,7 +81,7 @@ impl VueRuleChecker {
                 category: Category::Architecture,
                 severity: Severity::Deny,
                 file: file_path.to_path_buf(),
-                line: 1,
+                line,
                 column: 1,
                 symbol: file_stem.to_string(),
                 snippet,
@@ -412,6 +449,7 @@ mod tests {
         assert!(VueRuleChecker::is_prop_mutation("props.count += 1"));
         assert!(VueRuleChecker::is_prop_mutation("props.count -= 1"));
         assert!(VueRuleChecker::is_prop_mutation("doAction(); props.active = true"));
+        assert!(VueRuleChecker::is_prop_mutation("x = props.tags.push('item');"));
         assert!(VueRuleChecker::is_prop_mutation("{ props.selected = id }"));
         assert!(VueRuleChecker::is_prop_mutation("props.items[0].name = 'test'"));
     }
@@ -435,6 +473,11 @@ mod tests {
         assert!(!VueRuleChecker::is_prop_mutation("props.count != 1"));
         assert!(!VueRuleChecker::is_prop_mutation("props.count <= 1"));
         assert!(!VueRuleChecker::is_prop_mutation("props.count >= 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count == = 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count != = 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count <= = 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count >= = 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("flag = props.count == 1"));
         assert!(!VueRuleChecker::is_prop_mutation("const flag = props.val == 2;"));
     }
 
@@ -562,9 +605,9 @@ mod tests {
         assert!(violations.iter().any(|v| v.rule_id == "VUE-001"));
         assert!(violations.iter().any(|v| v.rule_id == "VUE-002"));
 
-        // When component has no parent directory
-        let standalone_violations = VueRuleChecker::check(&sfc, Path::new("Component.vue"));
-        assert!(standalone_violations.iter().any(|v| v.rule_id == "VUE-002"));
+        // When component has no parent directory (Path::new("") has parent None)
+        let root_violations = VueRuleChecker::check(&sfc, Path::new(""));
+        assert!(root_violations.iter().any(|v| v.rule_id == "VUE-002"));
 
         // Companion hook + clean glue code satisfies both VUE-001 and VUE-002
         std::fs::write(
@@ -580,5 +623,58 @@ mod tests {
         };
         let violations_with_hook = VueRuleChecker::check(&clean_glue_sfc, &comp_path);
         assert!(violations_with_hook.is_empty());
+    }
+
+    #[test]
+    fn test_vue_rule_checker_tauri_002_setup_and_plain_script() {
+        // 1. In script setup
+        let sfc_setup = VueSfc {
+            script_setup: Some("import { invoke } from '@tauri-apps/api';\ninvoke('save_chapter');".into()),
+            script_setup_start_line: 10,
+            ..Default::default()
+        };
+        let violations1 = VueRuleChecker::check(&sfc_setup, Path::new("src/Component.vue"));
+        assert!(violations1.iter().any(|v| v.rule_id == "TAURI-002" && v.line == 10));
+
+        // 2. In plain script without setup
+        let sfc_script = VueSfc {
+            script: Some("import { invoke } from '@tauri-apps/plugin-shell';\nwindow.__TAURI__.call();".into()),
+            ..Default::default()
+        };
+        let violations2 = VueRuleChecker::check(&sfc_script, Path::new("src/Legacy.vue"));
+        assert!(violations2.iter().any(|v| v.rule_id == "TAURI-002" && v.line == 1));
+
+        // 3. Plain script with invoke/window.__TAURI__ on first matching line
+        let sfc_script_invoke = VueSfc {
+            script: Some("invoke('save_chapter');".into()),
+            ..Default::default()
+        };
+        let violations_invoke = VueRuleChecker::check(&sfc_script_invoke, Path::new("src/Invoke.vue"));
+        assert_eq!(violations_invoke.len(), 1);
+
+        let sfc_script_tauri = VueSfc {
+            script: Some("window.__TAURI__.call();".into()),
+            ..Default::default()
+        };
+        let violations_tauri = VueRuleChecker::check(&sfc_script_tauri, Path::new("src/Tauri.vue"));
+        assert_eq!(violations_tauri.len(), 1);
+
+        // 4. More than 3 Tauri snippet lines to trigger break
+        let sfc_multi = VueSfc {
+            script_setup: Some(
+                "import { invoke } from '@tauri-apps/api';\nimport { shell } from '@tauri-apps/plugin-shell';\ninvoke('a');\nwindow.__TAURI__.call();".into(),
+            ),
+            ..Default::default()
+        };
+        let violations_multi = VueRuleChecker::check(&sfc_multi, Path::new("src/Multi.vue"));
+        assert_eq!(violations_multi.len(), 1);
+
+        // 5. Clean component without Tauri API calls
+        let sfc_clean = VueSfc {
+            script_setup: Some("const greeting = 'hello';".into()),
+            ..Default::default()
+        };
+        let violations3 = VueRuleChecker::check(&sfc_clean, Path::new("src/Clean.vue"));
+        assert!(violations3.is_empty());
     }
 }

@@ -1,5 +1,6 @@
 use cerberus_domain::{compute_fingerprint, Category, RuleDefinition, Severity, Violation};
 use std::path::PathBuf;
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 use syn::{File, ItemStatic, Stmt};
 
@@ -32,6 +33,7 @@ impl<'a> ConcurrencyRulesChecker<'a> {
             let name = item.ident.to_string();
             let snippet = format!("static mut {}: ...", name);
             let fp = compute_fingerprint("CONC-008", "1.0", &name, &snippet);
+            let span = item.span();
 
             violations.push(Violation {
                 rule_id: "CONC-008".into(),
@@ -39,8 +41,8 @@ impl<'a> ConcurrencyRulesChecker<'a> {
                 category: Category::Concurrency,
                 severity: self.get_severity("CONC-008", Severity::Deny),
                 file: PathBuf::from(self.file_path),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: name,
                 message: "Global 'static mut' variable causes undefined behavior and data races under concurrent execution.".into(),
                 snippet,
@@ -60,6 +62,7 @@ impl<'a> ConcurrencyRulesChecker<'a> {
             if self.is_orphan_async_spawn(expr) {
                 let snippet = quote::quote!(#expr).to_string();
                 let fp = compute_fingerprint("CONC-002", "1.0", "orphan_spawn", &snippet);
+                let span = expr.span();
 
                 violations.push(Violation {
                     rule_id: "CONC-002".into(),
@@ -67,8 +70,8 @@ impl<'a> ConcurrencyRulesChecker<'a> {
                     category: Category::Concurrency,
                     severity: self.get_severity("CONC-002", Severity::Deny),
                     file: PathBuf::from(self.file_path),
-                    line: 1,
-                    column: 1,
+                    line: span.start().line,
+                    column: span.start().column + 1,
                     symbol: "orphan_spawn".into(),
                     message: "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.".into(),
                     snippet,

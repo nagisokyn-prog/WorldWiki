@@ -3,6 +3,7 @@ use cerberus_domain::{
     Violation,
 };
 use std::path::Path;
+use syn::spanned::Spanned;
 use syn::{ItemUse, UsePath, UseTree};
 
 pub struct ImportChecker<'a> {
@@ -580,6 +581,7 @@ impl<'a> ImportChecker<'a> {
         let snippet = quote::quote!(#item_use).to_string();
         let symbol = "use".to_string();
         let fingerprint = compute_fingerprint(rule_id, "1.0", &symbol, &snippet);
+        let span = item_use.span();
 
         Violation {
             rule_id: rule_id.to_string(),
@@ -587,8 +589,8 @@ impl<'a> ImportChecker<'a> {
             category: Category::Architecture,
             severity: Severity::Deny,
             file: self.current_file.to_path_buf(),
-            line: 1,
-            column: 1,
+            line: span.start().line,
+            column: span.start().column + 1,
             symbol,
             snippet,
             message: message.to_string(),

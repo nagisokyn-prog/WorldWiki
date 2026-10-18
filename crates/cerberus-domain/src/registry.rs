@@ -24,9 +24,14 @@ impl BuiltinRuleRegistry {
             r("ARCH-002", Category::Architecture, Severity::Deny, "Application layer cannot import Tauri", "Application use cases must not depend on UI/IPC framework types (tauri::*).", "Pass UI parameters as clean DTOs into use case methods."),
             r("ARCH-003", Category::Architecture, Severity::Deny, "Ports layer cannot depend on infrastructure SDKs", "Ports layer defines pure traits and interfaces only.", "Move concrete client SDKs to infrastructure adapters."),
             r("ARCH-005", Category::Architecture, Severity::Deny, "Only adapters/tauri crate is authorized to import Tauri", "UI/IPC framework commands and dependencies are strictly isolated to authorized adapter layer.", "Move UI/IPC commands and dependencies to authorized adapter layer (adapters/tauri)."),
+            r("ARCH-007", Category::Architecture, Severity::Deny, "Layer Topology Inversion", "Lower layer cannot import from higher layers in the architectural matrix.", "Refactor code to respect the layer hierarchy defined in workspace matrix."),
+            r("MOD-001", Category::Architecture, Severity::Deny, "Module Boundary & Encapsulation Violation", "Cannot access private/internal submodule of another bounded module.", "Expose clean public interfaces via module api.rs or lib.rs."),
+            r("CQRS-001", Category::Architecture, Severity::Deny, "CQRS Command/Query Pipeline Isolation", "Write command pipeline cannot import Read projections or Read models.", "Query data exclusively through query repositories or event bus projections."),
+            r("EVT-001", Category::Architecture, Severity::Deny, "Event Producer Direct Consumer Coupling", "Event Producer must not synchronously import or invoke Consumers.", "Publish domain events to the EventBus trait without referencing specific subscriber implementations."),
             r("ARCH-020", Category::Architecture, Severity::Deny, "Layer Dependency Hierarchy Violation in Cargo.toml", "Crate dependencies in Cargo.toml must strictly comply with the allowed dependency matrix.", "Invert dependency direction: pure domain/ports layers cannot depend on outer layers."),
             r("ARCH-013", Category::Architecture, Severity::Warn, "Package entered Zone of Pain (High Coupling with Zero Abstraction)", "Package has high afferent coupling (Ca > 3) with low instability (I < 0.2) and low abstractness (A < 0.2).", "Introduce abstract traits and interfaces to reduce direct coupling to concrete types."),
             r("ARCH-021", Category::Architecture, Severity::Warn, "Missing Architectural Layer Metadata", "Every workspace crate should explicitly declare [package.metadata.cerberus] layer = \"...\" in Cargo.toml.", "Add [package.metadata.cerberus] layer = \"domain|ports|application|infrastructure|adapter\" to Cargo.toml."),
+            r("ARCH-022", Category::Architecture, Severity::Deny, "Cyclic Package Dependency in Cargo Graph", "Workspace packages cannot form circular dependency loops.", "Break package cycle by extracting shared types into a common crate."),
             r("ARCH-030", Category::Architecture, Severity::Warn, "High Architectural Pressure Score (S_arch)", "File exceeds configured multi-dimensional Architectural Pressure threshold.", "Decompose module into smaller single-responsibility components and pure domain models."),
             r("ARCH-031", Category::Architecture, Severity::Deny, "Source Lines of Code (SLOC) limit exceeded", "File SLOC exceeds layer threshold.", "Extract helper functions and logic into cohesive submodules."),
             r("ARCH-032", Category::Architecture, Severity::Deny, "Too Many Functions in Single Module", "File exceeds maximum allowed function count. High function density breaks Single Responsibility and hampers unit testing.", "Decompose large module into cohesive submodules with dedicated responsibilities."),
@@ -232,6 +237,11 @@ impl BuiltinRuleRegistry {
             ("fe/no-catch-as-any", "FE-ERR-004"),
             ("fe/rethrow-with-cause", "FE-ERR-007"),
             ("conc/no-poison-swallow", "CONC-010"),
+            ("arch/layer-inversion", "ARCH-007"),
+            ("arch/module-boundary", "MOD-001"),
+            ("arch/cqrs-isolation", "CQRS-001"),
+            ("arch/event-decoupling", "EVT-001"),
+            ("arch/cyclic-dependency", "ARCH-022"),
         ];
 
         let mut map = HashMap::new();
@@ -239,6 +249,9 @@ impl BuiltinRuleRegistry {
             map.insert(k.to_string(), v.to_string());
         }
         for (k, v) in crate::bevy_rules::bevy_alias_pairs() {
+            map.insert(k.to_string(), v.to_string());
+        }
+        for (k, v) in crate::surql_rules::surql_alias_pairs() {
             map.insert(k.to_string(), v.to_string());
         }
         map

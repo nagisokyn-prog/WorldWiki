@@ -42,7 +42,7 @@ describe('useCalendarSeasons', () => {
     expect(props.modelValue.сезоны.length).toBe(3);
     expect(props.modelValue.сезоны[2].название).toBe('Сезон 3');
     expect(props.modelValue.сезоны[2].месяцы).toEqual([3]);
-    expect(props.modelValue.сезоны[2].цвет).toBe('var(--info)');
+    expect(props.modelValue.сезоны[2].цвет).toBe('#3b82f6');
 
     hook.removeSeason(1);
     expect(props.modelValue.сезоны.length).toBe(2);

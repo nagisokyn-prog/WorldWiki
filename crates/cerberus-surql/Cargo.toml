@@ -16,7 +16,7 @@ path = "src/lib.rs"
 cerberus-domain = { path = "../cerberus-domain" }
 cerberus-ports = { path = "../cerberus-ports" }
 syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
-proc-macro2 = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
 quote = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

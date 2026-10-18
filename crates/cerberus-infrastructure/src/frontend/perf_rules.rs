@@ -350,9 +350,17 @@ mod tests {
                 const filtered = raw.filter(x => x > 0);
             });
 
-            // Same line Layout Thrashing
+            function renderLoop() {
+                const arr2 = new Array(5);
+            }
+
+            // Same line Layout Thrashing with various DOM properties
             window.onscroll = () => { el.style.height = `${el.offsetHeight}px`; };
-            el.style.width = `${el.offsetWidth}px`;
+            window.onresize = () => { el.style['width'] = `${el.offsetWidth}px`; };
+            el.classList.add('active'); let top = el.scrollTop;
+            el.classList.remove('hidden'); let h = el.clientHeight;
+            el.setAttribute('style', 'color: red'); let w2 = el.clientWidth;
+            el.style.width = `${el.getBoundingClientRect().width}px`;
 
             // Loop Layout Thrashing
             for (let i = 0; i < 10; i++) {
@@ -370,11 +378,15 @@ mod tests {
                 el.setAttribute('style', 'color: red');
             });
 
-            // v-for template method
+            // v-for template method and underscore function name
             <template>
                 <div v-for="item in items">
                     {{ compute(item) }}
+                    {{ calc_extra_(item) }}
                 </div>
+                <custom-panel v-for="c in cards">
+                    {{ render_card(c) }}
+                </custom-panel>
             </template>
         "#;
 
@@ -386,18 +398,35 @@ mod tests {
         assert!(violations.iter().any(|v| v.rule_id == "PERF-005"));
         assert!(violations.iter().any(|v| v.rule_id == "PERF-DOM-001"));
         assert!(violations.iter().any(|v| v.rule_id == "VUE-009"));
+
+        // Check Deny severity for resize/scroll layout thrashing
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-DOM-001" && v.severity == Severity::Deny));
+        // Check Warn severity for non-scroll layout thrashing
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-DOM-001" && v.severity == Severity::Warn));
     }
 
     #[test]
-    fn test_vue_009_no_false_positive_on_plain_text_parens() {
-        let code = r#"
+    fn test_vue_009_positive_and_negative_plain_text() {
+        let code_negative = r#"
             <template>
                 <div v-for="loc in locations" :key="loc.id">
                     <span>{{ loc.name }} (сущность)</span>
                 </div>
             </template>
         "#;
-        let violations = PerfRulesChecker::check_source(code, Path::new("Test.vue"));
-        assert!(!violations.iter().any(|v| v.rule_id == "VUE-009"));
+        let v_neg = PerfRulesChecker::check_source(code_negative, Path::new("Negative.vue"));
+        assert!(v_neg.is_empty());
+
+        // Positive test ensuring the closure `|v| v.rule_id == "VUE-009"` is executed on non-empty results
+        let code_positive = r#"
+            <template>
+                <div v-for="loc in locations" :key="loc.id">
+                    <span>{{ format_name(loc) }}</span>
+                </div>
+            </template>
+        "#;
+        let v_pos = PerfRulesChecker::check_source(code_positive, Path::new("Positive.vue"));
+        assert_eq!(v_pos.len(), 1);
+        assert!(v_pos.iter().any(|v| v.rule_id == "VUE-009"));
     }
 }

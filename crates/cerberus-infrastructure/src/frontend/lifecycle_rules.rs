@@ -49,13 +49,28 @@ impl LifecycleRuleChecker {
                 let file_stem = file_path.file_stem().map_or("ts_module", |s| s.to_str().unwrap_or("ts_module"));
                 let fingerprint = compute_fingerprint("LEAK-001", "1.0", file_stem, &snippet);
 
+                let line = content
+                    .lines()
+                    .enumerate()
+                    .find_map(|(idx, l)| {
+                        if l.contains("addEventListener(")
+                            || l.contains("setInterval(")
+                            || l.contains("listen(")
+                        {
+                            Some(idx + 1)
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(1);
+
                 violations.push(Violation {
                     rule_id: "LEAK-001".into(),
                     rule_version: "1.0".into(),
                     category: Category::Robustness,
                     severity: Severity::Deny,
                     file: file_path.to_path_buf(),
-                    line: 1,
+                    line,
                     column: 1,
                     symbol: file_stem.to_string(),
                     snippet,

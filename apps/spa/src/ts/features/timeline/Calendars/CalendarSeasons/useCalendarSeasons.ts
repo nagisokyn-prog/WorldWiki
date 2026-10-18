@@ -29,7 +29,7 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     props.modelValue.сезоны.push({
       название: `Сезон ${props.modelValue.сезоны.length + 1}`,
       месяцы: available.slice(0, 3),
-      цвет: 'var(--info)',
+      цвет: '#3b82f6',
     });
   };
 
@@ -79,7 +79,10 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
   };
 
   const formatColor = (color?: string): string => {
-    return color || 'var(--info)';
+    if (color && /^#[0-9a-fA-F]{6}$/i.test(color)) {
+      return color;
+    }
+    return '#3b82f6';
   };
 
   return {

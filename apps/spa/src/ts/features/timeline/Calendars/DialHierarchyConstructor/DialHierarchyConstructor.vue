@@ -2,9 +2,13 @@
   <div class="calendar-section dial-card">
     <div class="section-header dial-header" @click="isCollapsed = !isCollapsed">
       <div class="flex items-center gap-2">
-        <h4 class="m-0">⏰ Фэнтезийный циферблат</h4>
-        <span class="badge-dial" :class="isBijective ? 'badge-success' : 'badge-warning'">
-          {{ isBijective ? 'Биективен' : 'Квантуется' }}
+        <h4 class="m-0">⏰ Деление суток (Циферблат)</h4>
+        <span
+          class="badge-dial"
+          :class="isBijective ? 'badge-success' : 'badge-warning'"
+          :title="isBijective ? 'Сутки планеты делятся ровно без остатка секунд' : 'Деления не укладываются ровно в сутки, будет погрешность в секундах'"
+        >
+          {{ isBijective ? '✓ Точное деление' : '⚠️ С остатком' }}
         </span>
       </div>
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
@@ -12,8 +16,8 @@
 
     <div v-if="!isCollapsed" class="mt-3">
       <div class="dial-metrics flex justify-between text-xs text-muted mb-2">
-        <span>Вместимость: <strong>{{ totalCapacity }}</strong></span>
-        <span>Квант: <strong>{{ quantumErrorSec }} сек/ед</strong></span>
+        <span>Делений в сутках: <strong>{{ totalCapacity }}</strong></span>
+        <span>Шаг единицы: <strong>{{ quantumErrorSec }} сек</strong></span>
       </div>
 
       <div class="units-list mb-3">

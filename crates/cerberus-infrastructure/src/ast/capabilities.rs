@@ -1,5 +1,6 @@
 use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
 use std::path::Path;
+use syn::spanned::Spanned;
 use syn::visit::{self, Visit};
 use syn::ExprCall;
 
@@ -36,7 +37,7 @@ impl<'a, 'ast> Visit<'ast> for CapabilitiesVisitor<'a> {
                     let snippet = call_str;
                     let symbol = "build_rs_command".to_string();
                     let fingerprint = compute_fingerprint("SEC-001", "1.0", &symbol, &snippet);
-
+                    let span = node.span();
 
                     self.violations.push(Violation {
                         rule_id: "SEC-001".into(),
@@ -44,8 +45,8 @@ impl<'a, 'ast> Visit<'ast> for CapabilitiesVisitor<'a> {
                         category: Category::Security,
                         severity: Severity::Deny,
                         file: self.current_file.to_path_buf(),
-                        line: 1,
-                        column: 1,
+                        line: span.start().line,
+                        column: span.start().column + 1,
                         symbol,
                         snippet,
                         message: "build.rs cannot invoke network-downloading commands (curl/wget/nc)".into(),

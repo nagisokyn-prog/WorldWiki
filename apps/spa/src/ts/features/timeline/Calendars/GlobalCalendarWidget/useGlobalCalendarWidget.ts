@@ -23,8 +23,8 @@ export function useGlobalCalendarWidget(props: { project: string }) {
 
   const loadCalendars = async () => {
     const list = await useCalendarStore().getCalendars(props.project);
-    masterCalendar.value = list.find(c => c.is_master) || null;
-    localCalendars.value = list.filter(c => !c.is_master);
+    masterCalendar.value = list.find((c: CalendarRecord) => c.is_master) || null;
+    localCalendars.value = list.filter((c: CalendarRecord) => !c.is_master);
     if (localCalendars.value.length > 0 && !selectedLocalCal.value) {
       selectedLocalCal.value = localCalendars.value[0].id || null;
     }

@@ -183,12 +183,21 @@
     "arch/missing-layer": "warn",
     "arch/zone-of-pain": "warn",
     "arch/god-object-blast-radius": "warn",
+    "arch/layer-inversion": "deny",
+    "arch/module-boundary": "deny",
+    "arch/cqrs-isolation": "deny",
+    "arch/event-decoupling": "deny",
+    "arch/cyclic-dependency": "deny",
 
     "code/max-pressure": "warn",
     "code/max-sloc": "deny",
 
     "async/no-sync-mutex-in-await": "deny",
     "async/no-zombie-spawn": "warn",
+    "conc/no-orphan-spawn": "warn",
+    "conc/no-double-lock": "deny",
+    "conc/no-static-mut": "deny",
+    "conc/no-poison-swallow": "deny",
 
     "robustness/no-raw-unwrap-panic": "warn",
     "quality/ai-slop-detector": "warn",
@@ -250,8 +259,13 @@
     "perf/no-allocations-in-raf": "deny",
     "perf/no-template-methods-in-loops": "deny",
     "perf/no-cascading-watchers": "deny",
+    "perf/layout-thrashing": "deny",
 
     "leak/uncleaned-ipc-listener": "deny",
+    "fe/raii-cleanup": "deny",
+
+    "ts/store-aliasing": "deny",
+    "ts/exhaustive-match": "deny",
 
     "ERR-001": "deny",
     "ERR-002": "deny",

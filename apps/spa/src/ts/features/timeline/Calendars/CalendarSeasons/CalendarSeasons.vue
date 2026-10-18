@@ -18,7 +18,7 @@
               type="color"
               class="season-color-picker interactive-el"
               title="Цвет сезона"
-              @input="season.цвет = ($event.target as HTMLInputElement).value || 'var(--info)'"
+              @input="season.цвет = ($event.target as HTMLInputElement).value || '#3b82f6'"
             />
             <input
               v-model="season.название"

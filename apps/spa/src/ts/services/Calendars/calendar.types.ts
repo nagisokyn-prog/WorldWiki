@@ -130,25 +130,93 @@ export interface SyncAnchor {
   master_absolute_minute?: number;
 }
 
+export interface PlanetEntity {
+  id: string;              // "earth", "mars"
+  project_id: string;
+  name: string;            // "Земля", "Марс"
+  ticks_per_day: number;   // Физические сутки (86_400 или 1440)
+  orbit_days: number;      // 365.2422 (длина года)
+  axial_tilt?: number;     // 23.44 (наклон оси)
+  is_retrograde?: boolean; // Прямое или обратное вращение
+  solstice_world_day?: number; // День зимнего солнцестояния на физической оси мира (в сутках)
+  moons?: MoonConfig[];    // Луны с периодами
+  timezones?: WorldTimezone[];
+  regions?: WorldRegion[];
+}
+
+export interface AgeRule {
+  age_at_birth: number;
+  step_on_new_year: boolean;
+  year_only: boolean;
+}
+
+export interface ExtraDaysConfig {
+  base_days: number;
+  leap_days: number;
+  pause_weekdays: boolean;
+  name: string;
+  target_mode: 'in_month' | 'in_extra_days';
+  target_month_index?: number;
+  placement?: 'end_of_year' | 'mid_year' | 'start_of_year' | 'after_month';
+  after_month_index?: number;
+  day_names?: string[];
+}
+
 export interface CalendarData {
   _id?: string;
+  project_id?: string;
+  planet_id?: string; // 👈 Связь с физической планетой
   название: string;
   calendar_type?: 'master' | 'local';
   is_master?: boolean;
   is_story_origin?: boolean;
+
+  // Циферблат и смещение суток
+  dial_hierarchy?: DialHierarchy;
+  day_start_offset?: number;
+
+  // Месяцы и недели
   дней_в_неделе: number;
   названия_дней_недели: string[];
   первый_месяц_года: number;
   месяцы: CalendarMonth[];
   эпохи: CalendarEra[];
-  правило_високосного_года: string;
-  пользовательское_високосное_правило?: { месяц: number; день_смещения: number };
+
+  // Дни вне месяцев (Праздники)
+  extra_days?: number;
+  extra_day_names?: string[];
+  pause_weekdays_on_extra_days?: boolean;
+  extra_days_config?: ExtraDaysConfig;
+  epagomenal_config?: {
+    extra_days_base: number;
+    extra_days_leap: number;
+    pause_on_extra_days: boolean;
+    name: string;
+  };
+
+  // Правила високосов
+  правило_високосного_года?: string;
+  пользовательское_високосное_правило?: { месяц: number; день_смещения: number; период?: number };
+  високосные_правила?: LeapHarmonic[];
+
+  // Точка отсчета
   точка_отсчета?: { эпоха?: number; год: number; месяц: number; день: number; день_недели: number };
-  настройки_времени?: CalendarSettings;
+
+  // Сезоны и праздники
   сезоны?: CalendarSeason[];
   праздники?: CalendarHoliday[];
-  
+
+  // Возраст персонажей культуры
+  age_rule?: AgeRule;
+
+  // Сопряжение
   sync_anchor?: SyncAnchor;
+
+  default_region_id?: string;
+  default_timezone_id?: string;
+
+  // Поля обратной совместимости
+  настройки_времени?: CalendarSettings;
   timezone_regions?: Array<{
     id: string;
     name: string;
@@ -161,8 +229,6 @@ export interface CalendarData {
   };
   timezones?: WorldTimezone[];
   regions?: WorldRegion[];
-  default_region_id?: string;
-  default_timezone_id?: string;
   
   [key: string]: unknown;
 }

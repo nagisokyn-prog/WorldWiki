@@ -2,6 +2,7 @@ use cerberus_domain::{
     compute_fingerprint, Category, Severity, Violation,
 };
 use std::path::Path;
+use syn::spanned::Spanned;
 use syn::visit::{self, Visit};
 use syn::{ExprIndex, ExprMethodCall, ItemFn, ItemMod};
 
@@ -87,14 +88,15 @@ impl<'a, 'ast> Visit<'ast> for PanicVectorVisitor<'a> {
             if !self.is_test_file && !self.in_test_context {
                 let snippet = quote::quote!(#node).to_string();
                 let fingerprint = compute_fingerprint("ROB-001", "1.0", "unwrap", &snippet);
+                let span = node.span();
                 self.violations.push(Violation {
                     rule_id: "ROB-001".into(),
                     rule_version: "1.0".into(),
                     category: Category::Robustness,
                     severity: Severity::Warn,
                     file: self.file_path.to_path_buf(),
-                    line: 1,
-                    column: 1,
+                    line: span.start().line,
+                    column: span.start().column + 1,
                     symbol: "unwrap".into(),
                     snippet,
                     message: "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.".into(),
@@ -107,14 +109,15 @@ impl<'a, 'ast> Visit<'ast> for PanicVectorVisitor<'a> {
             if !self.is_test_file && !self.in_test_context {
                 let snippet = quote::quote!(#node).to_string();
                 let fingerprint = compute_fingerprint("ROB-001", "1.0", "expect", &snippet);
+                let span = node.span();
                 self.violations.push(Violation {
                     rule_id: "ROB-001".into(),
                     rule_version: "1.0".into(),
                     category: Category::Robustness,
                     severity: Severity::Warn,
                     file: self.file_path.to_path_buf(),
-                    line: 1,
-                    column: 1,
+                    line: span.start().line,
+                    column: span.start().column + 1,
                     symbol: "expect".into(),
                     snippet,
                     message: "Direct .expect() call detected. Can trigger panic on runtime failure.".into(),
@@ -132,14 +135,15 @@ impl<'a, 'ast> Visit<'ast> for PanicVectorVisitor<'a> {
         if !self.is_test_file && !self.in_test_context {
             let snippet = quote::quote!(#node).to_string();
             let fingerprint = compute_fingerprint("ROB-001", "1.0", "slice_index", &snippet);
+            let span = node.span();
             self.violations.push(Violation {
                 rule_id: "ROB-001".into(),
                 rule_version: "1.0".into(),
                 category: Category::Robustness,
                 severity: Severity::Warn,
                 file: self.file_path.to_path_buf(),
-                line: 1,
-                column: 1,
+                line: span.start().line,
+                column: span.start().column + 1,
                 symbol: "slice_index".into(),
                 snippet,
                 message: "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.".into(),

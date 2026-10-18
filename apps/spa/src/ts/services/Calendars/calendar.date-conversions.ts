@@ -21,9 +21,16 @@ export const CalendarDateConversions = {
   isLeapYear(cal: CalendarData, year: number): boolean {
     if (!cal) return false;
     const rule = cal.правило_високосного_года;
-    if (rule === 'нет') return false;
+    if (rule === 'нет' || rule === 'отсутствует') return false;
     if (rule === 'каждый 4 год') {
       return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 }], 0);
+    }
+    if (rule === 'пользовательское') {
+      if (cal.високосные_правила && cal.високосные_правила.length > 0) {
+        return defaultWasmEngine.is_leap_year(BigInt(year), cal.високосные_правила, 0);
+      }
+      const period = cal.пользовательское_високосное_правило?.период || 4;
+      return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: period }], 0);
     }
     if (rule === 'григорианский' || rule === 'григорианское' || !rule) {
       return defaultWasmEngine.is_leap_year(BigInt(year), [
@@ -36,15 +43,20 @@ export const CalendarDateConversions = {
   },
 
   getBaseDaysInYear(cal: CalendarData): number {
-    if (!cal || !cal.месяцы) return 365;
-    return cal.месяцы.reduce((acc, m) => acc + (m.дней || 0), 0);
+    if (!cal) return 365;
+    const monthsDays = cal.месяцы ? cal.месяцы.reduce((acc, m) => acc + (m.дней || 0), 0) : 365;
+    const extra = cal.extra_days_config?.base_days ?? cal.extra_days ?? cal.epagomenal_config?.extra_days_base ?? 0;
+    return monthsDays + extra;
   },
 
   getDaysInYear(cal: CalendarData, year: number): number {
     const base = this.getBaseDaysInYear(cal);
     if (this.isLeapYear(cal, year)) {
-      const offset = cal.пользовательское_високосное_правило?.день_смещения ?? 1;
-      return base + offset;
+      const targetMode = cal.extra_days_config?.target_mode;
+      const leapDays = targetMode === 'in_extra_days'
+        ? (cal.extra_days_config?.leap_days ?? cal.epagomenal_config?.extra_days_leap ?? 1)
+        : (cal.пользовательское_високосное_правило?.день_смещения ?? 1);
+      return base + leapDays;
     }
     return base;
   },
@@ -55,9 +67,13 @@ export const CalendarDateConversions = {
     }
     let days = cal.месяцы[monthIdx]?.дней || 30;
     const isLeap = this.isLeapYear(cal, year);
-    const custom = cal.пользовательское_високосное_правило;
-    if (isLeap && custom && custom.месяц === monthIdx) {
-      days += custom.день_смещения ?? 1;
+    const targetMode = cal.extra_days_config?.target_mode ?? 'in_month';
+    if (isLeap && targetMode === 'in_month') {
+      const custom = cal.пользовательское_високосное_правило;
+      const targetMonth = cal.extra_days_config?.target_month_index ?? custom?.месяц ?? 1;
+      if (targetMonth === monthIdx) {
+        days += custom?.день_смещения ?? cal.extra_days_config?.leap_days ?? 1;
+      }
     }
     return days;
   },

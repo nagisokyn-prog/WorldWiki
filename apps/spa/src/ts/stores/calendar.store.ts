@@ -3,9 +3,47 @@ import { ref } from 'vue';
 import * as api from '../services/api.client';
 import { projectRecordId } from '../services/api/project.api';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
-import type { CalendarData } from '../services/Calendars/calendar.types';
+import type { CalendarData, PlanetEntity } from '../services/Calendars/calendar.types';
 import { CalendarMath } from '../services/Calendars/useCalendarEngine';
 import type { Calendar } from '../types/generated/Calendar';
+
+export function getDefaultPlanet(projectName: string): PlanetEntity {
+  return {
+    id: 'earth',
+    project_id: projectName,
+    name: 'Земля',
+    ticks_per_day: 86400,
+    orbit_days: 365.2422,
+    axial_tilt: 23.44,
+    is_retrograde: false,
+    solstice_world_day: 355,
+    timezones: [
+      { id: 'tz_utc', name: 'Гринвич (UTC)', code: 'UTC', base_offset_hours: 0 },
+      { id: 'tz_msk', name: 'Москва (MSK)', code: 'MSK', base_offset_hours: 3 },
+    ],
+    regions: [
+      {
+        id: 'reg_default',
+        name: 'Умеренные широты',
+        timezone_id: 'tz_utc',
+        latitude: 55.75,
+        longitude: 37.61,
+        summer_day_hours: 17.5,
+        winter_day_hours: 7.0,
+      },
+    ],
+    moons: [
+      {
+        name: 'Луна',
+        period_days: 29.53,
+        period_days_num: 2953,
+        period_days_den: 100,
+        initial_phase: 0,
+        initial_phase_bp: 0
+      }
+    ]
+  };
+}
 
 export interface CalendarRecord {
   id?: string;
@@ -58,9 +96,13 @@ export const useCalendarStore = defineStore('calendar', () => {
         if (calData && typeof calData === 'object' && 'data' in calData && typeof (calData as Record<string, unknown>).data === 'object' && !Array.isArray((calData as Record<string, unknown>).data)) {
           calData = (calData as Record<string, unknown>).data as CalendarData;
         }
+        if (calData && (calData.название === 'Календарь Мира' || !calData.название)) {
+          calData.название = 'Григорианский';
+        }
         return {
           ...c,
           id: normalizeCalendarId(c.id),
+          name: (c.name === 'Календарь Мира' ? 'Григорианский' : (c.name || 'Григорианский')),
           ...(calData ? { data: calData as CalendarData } : {})
         };
       });
@@ -76,9 +118,9 @@ export const useCalendarStore = defineStore('calendar', () => {
             if (defaultCal.data) {
               defaultCal.data.is_master = true;
               defaultCal.data.calendar_type = 'master';
-              if (list.length === 1) {
-                defaultCal.data.название = 'Календарь Мира';
-                defaultCal.name = 'Календарь Мира';
+              if (list.length === 1 && (!defaultCal.data.название || defaultCal.data.название === 'Календарь Мира')) {
+                defaultCal.data.название = 'Григорианский';
+                defaultCal.name = 'Григорианский';
               }
             }
             await saveCalendar(projectName, { ...(defaultCal.data || {}), id: defaultCal.id, is_default: defaultCal.is_default, is_master: true } as unknown as CalendarData);
@@ -93,7 +135,8 @@ export const useCalendarStore = defineStore('calendar', () => {
           const defaultCalData = CalendarMath.getDefaultCalendar();
           defaultCalData.is_master = true;
           defaultCalData.calendar_type = 'master';
-          defaultCalData.название = 'Календарь Мира';
+          defaultCalData.planet_id = 'Земля';
+          defaultCalData.название = 'Григорианский';
           await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as unknown as CalendarData);
           const rawNewList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
           const newList = (rawNewList || []).map((c) => ({
@@ -172,12 +215,65 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
-  function isValidCalendar(calendar: CalendarData): boolean {
-    return calendar &&
-      Array.isArray(calendar.месяцы) &&
-      calendar.месяцы.length > 0 &&
-      Array.isArray(calendar.эпохи) &&
-      calendar.эпохи.length > 0;
+  function readPlanetsFromStorage(projectName: string): PlanetEntity[] | null {
+    const key = `worldwiki:planets:${projectName}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse planets from storage:', e);
+    }
+    return null;
+  }
+
+  function getPlanets(projectName: string): PlanetEntity[] {
+    const existing = readPlanetsFromStorage(projectName);
+    if (existing) return existing;
+    const defaultPlanet = getDefaultPlanet(projectName);
+    const key = `worldwiki:planets:${projectName}`;
+    try {
+      localStorage.setItem(key, JSON.stringify([defaultPlanet]));
+    } catch (e) {
+      console.error('Failed to save default planet:', e);
+    }
+    return [defaultPlanet];
+  }
+
+  function savePlanet(projectName: string, planet: PlanetEntity): void {
+    const key = `worldwiki:planets:${projectName}`;
+    const list = readPlanetsFromStorage(projectName) || [getDefaultPlanet(projectName)];
+    const idx = list.findIndex(p => p.id === planet.id);
+    if (idx >= 0) {
+      list[idx] = planet;
+    } else {
+      list.push(planet);
+    }
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch (e) {
+      console.error('Failed to save planet:', e);
+    }
+  }
+
+  function isValidCalendar(cal: unknown): boolean {
+    if (!cal || typeof cal !== 'object') return false;
+    const c = cal as Record<string, unknown>;
+    const months = c.месяцы;
+    const eras = c.эпохи;
+    return Array.isArray(months) && months.length > 0 && Array.isArray(eras) && eras.length > 0;
+  }
+
+  function deletePlanet(projectName: string, planetId: string): void {
+    const key = `worldwiki:planets:${projectName}`;
+    const list = (readPlanetsFromStorage(projectName) || []).filter(p => p.id !== planetId);
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch (e) {
+      console.error('Failed to delete planet:', e);
+    }
   }
 
   return {
@@ -186,6 +282,9 @@ export const useCalendarStore = defineStore('calendar', () => {
     loadCalendar,
     saveCalendar,
     deleteCalendar,
-    isValidCalendar
+    isValidCalendar,
+    getPlanets,
+    savePlanet,
+    deletePlanet
   };
 });

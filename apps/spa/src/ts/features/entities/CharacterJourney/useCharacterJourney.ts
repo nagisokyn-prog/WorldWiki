@@ -48,7 +48,7 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
     try {
       const cals = await calendarStore.getCalendars(projectId);
       if (cals && cals.length > 0) {
-        const master = cals.find((c) => c.is_master) || cals.find((c) => c.is_default) || cals[0];
+        const master = cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_master) || cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_default) || cals[0];
         calendarData.value = (master?.data as CalendarData) || (master as unknown as CalendarData) || null;
       }
       if (!calendarData.value) {

@@ -27,7 +27,7 @@ export function useCalendarExtraDays(
         extra_days_base: 0,
         extra_days_leap: 0,
         pause_on_extra_days: false,
-        name: 'Эпагомены',
+        name: 'Праздничные дни',
       };
     }
     return data.epagomenal_config;
@@ -37,6 +37,10 @@ export function useCalendarExtraDays(
     get: () => extraDaysConfig.value.extra_days_base || 0,
     set: (val: number) => {
       extraDaysConfig.value.extra_days_base = Math.max(0, val);
+      props.modelValue.extra_days = extraDaysConfig.value.extra_days_base;
+      if (props.modelValue.extra_days_config) {
+        props.modelValue.extra_days_config.base_days = extraDaysConfig.value.extra_days_base;
+      }
       emit('update:modelValue', props.modelValue);
     },
   });
@@ -45,6 +49,9 @@ export function useCalendarExtraDays(
     get: () => extraDaysConfig.value.extra_days_leap || 0,
     set: (val: number) => {
       extraDaysConfig.value.extra_days_leap = Math.max(0, val);
+      if (props.modelValue.extra_days_config) {
+        props.modelValue.extra_days_config.leap_days = extraDaysConfig.value.extra_days_leap;
+      }
       emit('update:modelValue', props.modelValue);
     },
   });
@@ -53,12 +60,16 @@ export function useCalendarExtraDays(
     get: () => extraDaysConfig.value.pause_on_extra_days || false,
     set: (val: boolean) => {
       extraDaysConfig.value.pause_on_extra_days = val;
+      props.modelValue.pause_weekdays_on_extra_days = val;
+      if (props.modelValue.extra_days_config) {
+        props.modelValue.extra_days_config.pause_weekdays = val;
+      }
       emit('update:modelValue', props.modelValue);
     },
   });
 
   const name = computed({
-    get: () => extraDaysConfig.value.name || 'Эпагомены',
+    get: () => extraDaysConfig.value.name || 'Праздничные дни',
     set: (val: string) => {
       extraDaysConfig.value.name = val;
       emit('update:modelValue', props.modelValue);

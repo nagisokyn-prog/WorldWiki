@@ -1,1 +1,130 @@
-[]
+[
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (310) exceeds strict limit (265)",
+    "fingerprint": "6fdd4a58a8d833b9ba470f4edd8d85157fdca05fcb84affc5e6d560bd44a5eb3"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (432) exceeds recommended limit (265)",
+    "fingerprint": "35aab779d309742e5cc937833d79ce39a57570960e0ef4ca6a672f3628fc2368"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/useCalendarSyncAnchor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (267) exceeds recommended limit (265)",
+    "fingerprint": "3da5ebf970a813ad1edb09bc65cca804f8721bb5f366c822208e11a6b09bb92a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/PlanetEditor/PlanetEditor.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (451) exceeds strict limit (265)",
+    "fingerprint": "5f21cc28b6963d18eab8292a26d1e153e342086724f7e88813d6cda4494fe4f4"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/PlanetEditor/usePlanetEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (279) exceeds recommended limit (265)",
+    "fingerprint": "e72142591a6baa042a7c67af8dd220f9ea0b3fe51960a936211b51f2163ff55f"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarsPanel/useCalendarsPanel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (272) exceeds recommended limit (265)",
+    "fingerprint": "8a1b45d0f9e9754fb896a8ba8a4f485d4fc35ffdd3203eb971b91fcbfac7e60d"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
+    "line": 32,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "ac161c89ca4dba6939890dde02daa308577077ff5ea21d4a819fa535c452f65e"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
+    "line": 85,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "ac3bc983a0e2e07d7404f3b0b79653e6a76eb8993d1579e7971e15508d90cd17"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 93,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 276,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 318,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 372,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/PlanetCalendarTree.css",
+    "line": 76,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "174a56f4c9d7b9baa113a81068f22d95f2a1927ee66fab2ae99a10cd1527e040"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/PlanetEditor.css",
+    "line": 209,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "fed27e9a6df7b97c24e356af0c7e9eaf6f7b9602a1368436bd4fc42ffebff327"
+  },
+  {
+    "rule": "FE-ERR-001",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
+    "line": 293,
+    "symbol": "empty_catch_block",
+    "message": "Empty catch block silently swallows runtime exceptions without analysis, recovery or telemetry.",
+    "fingerprint": "5602981a67a6ab43584e06f42d9fae58775dfbbe0a59b29dfa5607907db3356a"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
+    "line": 300,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "98c0f745d10f864f90928e482b49cf10adc225d1cc73e470eae19950a5dedc78"
+  }
+]

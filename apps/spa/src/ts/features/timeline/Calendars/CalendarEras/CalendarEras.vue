@@ -62,7 +62,7 @@
                 :checked="era.counting_mode === 'by_anniversary'"
                 @change="(era as any).counting_mode = (($event.target as HTMLInputElement).checked ? 'by_anniversary' : 'by_calendar_year')"
               />
-              👑 Эра коронации (годовщина)
+              📅 Счёт по годовщинам события (со дня основания/события)
             </label>
           </div>
         </div>

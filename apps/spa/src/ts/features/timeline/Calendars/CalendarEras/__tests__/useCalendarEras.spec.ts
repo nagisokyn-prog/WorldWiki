@@ -26,7 +26,7 @@ describe('useCalendarEras', () => {
     hook.addEra();
     expect(emptyProps.modelValue.эпохи.length).toBe(1);
     expect(emptyProps.modelValue.эпохи[0].год_начала).toBe(1);
-    expect(emptyProps.modelValue.эпохи[0].год_конца).toBe(1000);
+    expect(emptyProps.modelValue.эпохи[0].год_конца).toBe(101);
   });
 
   it('moves items within bounds and ignores out of bounds moves', () => {

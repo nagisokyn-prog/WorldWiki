@@ -447,10 +447,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Опорные исторические события Календаря Мира -->
+    <div v-if="masterCalendar" class="mt-4">
+      <CalendarAnchorEvents v-model="masterCalendar" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import CalendarAnchorEvents from '../CalendarAnchorEvents/CalendarAnchorEvents.vue';
 import { usePlanetEditor } from './usePlanetEditor';
 import type { PlanetEditorProps, PlanetEditorEmits } from './PlanetEditor.model';
 

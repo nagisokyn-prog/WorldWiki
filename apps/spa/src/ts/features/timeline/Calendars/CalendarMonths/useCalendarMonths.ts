@@ -5,7 +5,7 @@ export interface CalendarMonthsProps {
   modelValue: Partial<CalendarData> & { месяцы?: CalendarMonth[]; [key: string]: unknown };
 }
 
-export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: string, ...args: unknown[]) => void) {
+export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: any, ...args: any[]) => void) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
@@ -65,6 +65,11 @@ export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: st
     return sum === target ? 'balance-ok' : 'balance-warn';
   });
 
+  const updateFirstMonth = (val: number) => {
+    props.modelValue.первый_месяц_года = val;
+    _emit?.('update:modelValue', props.modelValue as CalendarData);
+  };
+
   return {
     isCollapsed,
     moveItem,
@@ -73,6 +78,7 @@ export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: st
     totalMonthsDays,
     targetYearDays,
     daysBalanceText,
-    daysBalanceClass
+    daysBalanceClass,
+    updateFirstMonth
   };
 }

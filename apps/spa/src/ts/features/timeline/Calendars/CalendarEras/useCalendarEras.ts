@@ -20,11 +20,13 @@ export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string
   const addEra = () => {
     if (!props.modelValue.эпохи) props.modelValue.эпохи = [];
     const last = props.modelValue.эпохи[props.modelValue.эпохи.length - 1]?.год_конца || 0;
+    const start = last > 0 ? last + 1 : 1;
     props.modelValue.эпохи.push({
       название: `Эпоха ${props.modelValue.эпохи.length + 1}`,
-      год_начала: last + 1,
-      год_конца: last + 1000,
+      год_начала: start,
+      год_конца: start + 100,
       обратный_отсчет: false,
+      counting_mode: 'by_calendar_year'
     });
   };
 

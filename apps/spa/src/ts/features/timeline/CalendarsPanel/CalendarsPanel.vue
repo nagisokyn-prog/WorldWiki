@@ -24,6 +24,7 @@
           :key="`planet-${selectedPlanet.id}`"
           :planet="selectedPlanet"
           :calendars="calendars"
+          :master-calendar="masterCalendar"
           @save="savePlanet"
           @delete="deletePlanet"
         />
@@ -78,7 +79,6 @@
             <DialHierarchyConstructor v-model="calendars[selectedCalendarIdx].data" />
             <CalendarWeekdays v-model="calendars[selectedCalendarIdx].data" />
             <CalendarMonths v-model="calendars[selectedCalendarIdx].data" />
-            <CalendarOrigin v-model="calendars[selectedCalendarIdx].data" />
             <CalendarCorrection v-model="calendars[selectedCalendarIdx].data" />
             <CalendarEras v-model="calendars[selectedCalendarIdx].data" />
             <CharacterAgeSettings v-model="calendars[selectedCalendarIdx].data" />
@@ -89,7 +89,22 @@
           </div>
 
           <div v-if="!calendars[selectedCalendarIdx].is_master" class="calendar-full-row-grid">
-            <CalendarSyncAnchor v-model="calendars[selectedCalendarIdx].data" :master-calendar="masterCalendar" />
+            <CalendarSyncAnchor
+              v-model="calendars[selectedCalendarIdx].data"
+              :master-calendar="masterCalendar"
+              :available-calendars="calendars.map(c => c.data)"
+            />
+          </div>
+
+          <div class="calendar-full-row-grid">
+            <CalendarAnchorEvents v-model="calendars[selectedCalendarIdx].data" />
+          </div>
+
+          <div class="calendar-full-row-grid">
+            <CalendarGeography
+              v-model="calendars[selectedCalendarIdx].data"
+              :planet="selectedCalendarPlanet"
+            />
           </div>
 
           <div class="calendar-full-row-grid">
@@ -122,12 +137,13 @@ import PlanetEditor from "../Calendars/PlanetEditor/PlanetEditor.vue";
 import DialHierarchyConstructor from "../Calendars/DialHierarchyConstructor/DialHierarchyConstructor.vue";
 import CalendarWeekdays from "../Calendars/CalendarWeekdays/CalendarWeekdays.vue";
 import CalendarMonths from "../Calendars/CalendarMonths/CalendarMonths.vue";
-import CalendarOrigin from "../Calendars/CalendarOrigin/CalendarOrigin.vue";
 import CalendarCorrection from "../Calendars/CalendarCorrection/CalendarCorrection.vue";
 import CalendarEras from "../Calendars/CalendarEras/CalendarEras.vue";
 import CharacterAgeSettings from "../Calendars/CharacterAgeSettings/CharacterAgeSettings.vue";
 import CalendarSeasons from "../Calendars/CalendarSeasons/CalendarSeasons.vue";
 import CalendarHolidays from "../Calendars/CalendarHolidays/CalendarHolidays.vue";
+import CalendarGeography from "../Calendars/CalendarGeography/CalendarGeography.vue";
+import CalendarAnchorEvents from "../Calendars/CalendarAnchorEvents/CalendarAnchorEvents.vue";
 import CalendarPlayground from "../Calendars/CalendarPlayground/CalendarPlayground.vue";
 import CalendarSyncAnchor from "../Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue";
 import CalendarAuditModal from "../Calendars/CalendarAuditModal/CalendarAuditModal.vue";
@@ -141,6 +157,7 @@ const {
   planets,
   selectedPlanet,
   selectedCalendarIdx,
+  selectedCalendarPlanet,
   selectedId,
   selectPlanet,
   selectCalendar,

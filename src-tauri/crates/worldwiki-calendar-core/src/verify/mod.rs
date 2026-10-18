@@ -11,10 +11,14 @@
 
 pub mod verify_age;
 pub mod verify_astronomy;
+pub mod verify_convergents;
 pub mod verify_dial;
+pub mod verify_dst;
 pub mod verify_eras;
 pub mod verify_intervals;
 pub mod verify_leap;
 pub mod verify_scalar;
+pub mod verify_succession;
 pub mod verify_weekdays;
 pub mod verify_year;
+

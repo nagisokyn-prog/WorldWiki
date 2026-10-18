@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { reactive } from 'vue';
 import { useCalendarMonths } from '../useCalendarMonths';
 import type { CalendarMonthsProps } from '../useCalendarMonths';
@@ -78,5 +78,13 @@ describe('useCalendarMonths', () => {
     props.modelValue.дней_в_году = 50;
     expect(hook.daysBalanceText.value).toContain('⚠️ 59 / 50 дн (+9)');
     expect(hook.daysBalanceClass.value).toBe('balance-warn');
+  });
+
+  it('updates first month of year', () => {
+    const emit = vi.fn();
+    const hook = useCalendarMonths(props, emit);
+    hook.updateFirstMonth(2);
+    expect(props.modelValue.первый_месяц_года).toBe(2);
+    expect(emit).toHaveBeenCalledWith('update:modelValue', props.modelValue);
   });
 });

@@ -135,6 +135,10 @@ export const CalendarWasmBridge = {
     return getWasmEngine().calculate_leap_convergents(BigInt(targetRatioNum), BigInt(targetRatioDen), maxDenominator);
   },
 
+  decomposeFractionToUnitHarmonics(p: number, q: number, maxHarmonics: number = 3): LeapHarmonic[] {
+    return getWasmEngine().decompose_fraction_to_unit_harmonics(BigInt(p), BigInt(q), maxHarmonics);
+  },
+
   isSeasonConflictingWithSolstice(seasonMonths: number[], isSummerSeason: boolean, winterSolsticeMonth: number, monthsCount: number): boolean {
     return getWasmEngine().is_season_conflicting_with_solstice(Uint32Array.from(seasonMonths), isSummerSeason, winterSolsticeMonth, monthsCount);
   },
@@ -199,6 +203,7 @@ export const CalendarWasmBridge = {
     return getWasmEngine().check_death_violation(BigInt(s), BigInt(e), BigInt(deathTAbs));
   },
 };
+
 
 export type {
   CalendarAuditReport,

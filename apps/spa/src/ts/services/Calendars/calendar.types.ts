@@ -53,6 +53,7 @@ export interface CalendarSeason {
   месяцы: number[];
   цвет?: string;
   color?: string;
+  hemisphere?: 'northern' | 'southern';
 }
 
 export interface CalendarHoliday {
@@ -121,9 +122,24 @@ export interface SyncAnchorDate {
   minute?: number;
 }
 
+export interface CalendarAnchorEvent {
+  id: string;
+  name: string;
+  year: number;
+  month?: number;
+  day?: number;
+  description?: string;
+}
+
 export interface SyncAnchor {
   master_calendar_id?: string;
   linked_to_master: boolean;
+  sync_type?: 'event' | 'calendar';
+  target_event_id?: string;
+  target_calendar_id?: string;
+  target_calendar_year?: number;
+  offset_direction?: 'after' | 'before';
+  offset_years?: number;
   local_anchor_date?: SyncAnchorDate;
   master_anchor_date?: SyncAnchorDate;
   local_absolute_minute?: number;
@@ -209,11 +225,14 @@ export interface CalendarData {
   // Возраст персонажей культуры
   age_rule?: AgeRule;
 
-  // Сопряжение
+  // Сопряжение и опорные события
   sync_anchor?: SyncAnchor;
+  anchor_events?: CalendarAnchorEvent[];
 
   default_region_id?: string;
   default_timezone_id?: string;
+  region_ids?: string[];
+  timezone_ids?: string[];
 
   // Поля обратной совместимости
   настройки_времени?: CalendarSettings;

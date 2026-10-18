@@ -125,42 +125,6 @@ fn proof_jalali_leap_step_bounded() {
     assert!(diff == 0 || diff == 1);
 }
 
-#[kani::proof]
-#[kani::unwind(3)]
-fn proof_leap_convergents_soundness() {
-    let num: i64 = kani::any();
-    let den: i64 = kani::any();
-    kani::assume(den > 0 && den <= 30);
-    kani::assume(num >= 0 && num <= 60);
-
-    let res = crate::convergents::calculate_leap_convergents(num, den, 1);
-    for app in &res {
-        assert!(app.leap_years > 0);
-        assert!(app.cycle_years > 0);
-    }
-}
-
-#[kani::proof]
-fn proof_leap_convergents_recurrence_monotone() {
-    let a: i64 = kani::any();
-    let p_curr: i64 = kani::any();
-    let p_prev: i64 = kani::any();
-    let q_curr: i64 = kani::any();
-    let q_prev: i64 = kani::any();
-
-    kani::assume(a >= 1 && a <= 100);
-    kani::assume(p_curr >= 1 && p_curr <= 10_000);
-    kani::assume(p_prev >= 0 && p_prev <= 10_000);
-    kani::assume(q_curr >= 1 && q_curr <= 10_000);
-    kani::assume(q_prev >= 0 && q_prev <= 10_000);
-
-    let p_next = a * p_curr + p_prev;
-    let q_next = a * q_curr + q_prev;
-
-    assert!(p_next >= p_curr);
-    assert!(q_next >= q_curr);
-    assert!(p_next > 0 && q_next > 0);
-}
 
 #[kani::proof]
 fn proof_leap_divisor_positive() {
@@ -297,12 +261,3 @@ fn proof_days_up_to_year_negative_eras() {
     let len = d_next - d_curr;
     assert!(len == 365 || len == 366);
 }
-
-
-
-
-
-
-
-
-

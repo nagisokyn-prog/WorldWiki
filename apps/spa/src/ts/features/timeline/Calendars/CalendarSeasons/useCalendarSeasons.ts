@@ -70,19 +70,22 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     if (!isSummer) return false;
     const totalMonths = props.modelValue.месяцы?.length || 12;
     const winterSolsticeMonth = totalMonths - 1;
-    return useCalendarEngine().isSeasonConflictingWithSolstice(
+    const hemisphere = season.hemisphere === 'southern' ? ('Southern' as any) : ('Northern' as any);
+    return useCalendarEngine().isSeasonConflictingWithSolsticeHemisphere(
       season.месяцы,
       true,
       winterSolsticeMonth,
-      totalMonths
+      totalMonths,
+      hemisphere
     );
   };
 
+  const toggleHemisphere = (season: CalendarSeason) => {
+    season.hemisphere = season.hemisphere === 'southern' ? 'northern' : 'southern';
+  };
+
   const formatColor = (color?: string): string => {
-    if (color && /^#[0-9a-fA-F]{6}$/i.test(color)) {
-      return color;
-    }
-    return '#3b82f6';
+    return color || 'var(--text-info)';
   };
 
   return {
@@ -94,5 +97,6 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     toggleMonthInSeason,
     formatColor,
     checkSeasonConflict,
+    toggleHemisphere
   };
 }

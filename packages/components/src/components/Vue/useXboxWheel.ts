@@ -195,16 +195,19 @@ export function useXboxWheel(
     }
   };
 
+  const handleScroll = () => updatePosition();
+  const handleResize = () => updatePosition();
+
   onMounted(() => {
     document.addEventListener('click', closeOnOutsideClick);
-    window.addEventListener('scroll', () => updatePosition(), { passive: true, capture: true });
-    window.addEventListener('resize', () => updatePosition());
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    window.addEventListener('resize', handleResize, { passive: true });
   });
 
   onUnmounted(() => {
     document.removeEventListener('click', closeOnOutsideClick);
-    window.removeEventListener('scroll', () => updatePosition(), true);
-    window.removeEventListener('resize', () => updatePosition());
+    window.removeEventListener('scroll', handleScroll, true);
+    window.removeEventListener('resize', handleResize);
   });
 
   watch(isOpen, (val) => {

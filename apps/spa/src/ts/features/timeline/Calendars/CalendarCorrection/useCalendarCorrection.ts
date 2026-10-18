@@ -3,7 +3,7 @@
  * @description Логика управления календарной коррекцией (високосы, эпагомены/праздничные дни вне месяцев, гармоники делимости и дрейф).
  */
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import type {
   CalendarCorrectionProps,
   CalendarCorrectionEmits,
@@ -14,7 +14,74 @@ import type {
 } from './CalendarCorrection.model';
 import { useCalendarEngine } from '../../../../services/Calendars/useCalendarEngine';
 import { useCalendarStore } from '../../../../stores/calendar.store';
+import { CalendarWasmBridge } from '../../../../services/Calendars/calendar.wasm-bridge';
 import type { CalendarData, ExtraDaysConfig, LeapHarmonic, PlanetEntity } from '../../../../services/Calendars/calendar.types';
+
+/**
+ * Разложение рациональной дроби p/q в знаковые единичные гармоники sum_i (w_i / c_i).
+ * Выполняется строго в ядре Rust через CalendarWasmBridge.
+ */
+export function decomposeFractionToUnitHarmonics(
+  p: number,
+  q: number,
+  maxHarmonics: number = 3
+): LeapHarmonic[] {
+  return CalendarWasmBridge.decomposeFractionToUnitHarmonics(p, q, maxHarmonics);
+}
+
+function formatHarmonicsDescription(harmonics: LeapHarmonic[]): string {
+  if (harmonics.length === 0) return 'Без високосов';
+  if (harmonics.length === 1) {
+    const h = harmonics[0];
+    return `Каждые ${h.divisor_c} ${h.divisor_c === 4 ? 'года' : 'лет'}: +1 день`;
+  }
+  if (harmonics.length === 2) {
+    const [h1, h2] = harmonics;
+    const signWord = h2.weight > 0 ? 'плюс' : 'кроме';
+    const signVal = h2.weight > 0 ? '+1' : '-1';
+    return `Каждые ${h1.divisor_c} ${h1.divisor_c === 4 ? 'года' : 'лет'} (+1), ${signWord} кратных ${h2.divisor_c} (${signVal})`;
+  }
+  return harmonics.map((h, i) => {
+    if (i === 0) return `Каждые ${h.divisor_c} лет (+1)`;
+    const signWord = h.weight > 0 ? 'плюс' : 'кроме';
+    return `${signWord} кратных ${h.divisor_c}`;
+  }).join(', ');
+}
+
+function getSuggestionMeta(
+  harmonics: LeapHarmonic[],
+  ly: number,
+  cy: number
+): { description: string; rulePreset: 'gregorian' | 'simple_4' | 'custom' } {
+  if (cy === 4 && ly === 1) {
+    return {
+      description: 'Простое правило: каждые 4 года +1 день (Юлианский)',
+      rulePreset: 'simple_4',
+    };
+  }
+  if (cy === 400 && ly === 97) {
+    return {
+      description: 'Григорианский стандарт: каждые 4 года (+1), кроме 100 (-1), плюс 400 (+1)',
+      rulePreset: 'gregorian',
+    };
+  }
+  if (cy === 128 && ly === 31) {
+    return {
+      description: 'Цикл Медлера: каждые 4 года (+1), кроме 128 (-1). Точность: 1 день ошибки за 100 000 лет!',
+      rulePreset: 'custom',
+    };
+  }
+  if (cy === 33 && ly === 8) {
+    return {
+      description: 'Персидский цикл (Омар Хайям): каждые 4 года (+1), кроме 132 (-1)',
+      rulePreset: 'custom',
+    };
+  }
+  return {
+    description: formatHarmonicsDescription(harmonics),
+    rulePreset: 'custom',
+  };
+}
 
 export function useCalendarCorrection(
   props: CalendarCorrectionProps,
@@ -72,9 +139,8 @@ export function useCalendarCorrection(
     }
   };
 
-  onMounted(() => {
-    ensureConfig();
-  });
+  // Инициализируем конфигурацию сразу при создании хука
+  ensureConfig();
 
   const config = computed<ExtraDaysConfig>(() => {
     ensureConfig();
@@ -303,17 +369,33 @@ export function useCalendarCorrection(
 
   // Предупреждение о вековом дрейфе
   const driftWarning = computed(() => {
+    const monthsDays = props.modelValue.месяцы?.reduce((acc, m) => acc + (m.дней || 0), 0) || 0;
+    const extra = baseExtraDays.value;
+    const baseTotal = monthsDays + extra;
+    const orbit = targetOrbitalDays.value;
+    const expectedBase = Math.floor(orbit);
+
+    if (baseTotal !== expectedBase) {
+      const diff = baseTotal - expectedBase;
+      if (diff > 0) {
+        return `Базовый год (${baseTotal} дн.: ${monthsDays} в месяцах + ${extra} праздничных) на ${diff} дн. длиннее орбитального года планеты (${orbit.toFixed(1)} сут.). Високосы не смогут это исправить — уменьшите дни в месяцах (например, сделайте ${expectedBase - extra} дн.) или сократите праздники.`;
+      } else {
+        const missing = Math.abs(diff);
+        return `Базовый год (${baseTotal} дн.: ${monthsDays} в месяцах + ${extra} праздничных) на ${missing} дн. короче орбитального года планеты (${orbit.toFixed(1)} сут.). Добавьте недостающие дни в месяцы или праздники.`;
+      }
+    }
+
     const drift = driftPerCentury.value;
     if (Math.abs(drift) > 1.0) {
       const sign = drift > 0 ? '+' : '';
-      return `Вековое расхождение: ${sign}${drift.toFixed(2)} сут. за 100 лет относительно орбиты планеты (${targetOrbitalDays.value.toFixed(4)} сут.).`;
+      return `Вековое расхождение: ${sign}${drift.toFixed(2)} сут. за 100 лет относительно орбиты планеты (${orbit.toFixed(4)} сут.).`;
     }
     return null;
   });
 
   const isSuggestOpen = ref(false);
 
-  // Автоматический подбор оптимальных правил через цепные дроби (convergents)
+  // Автоматический подбор оптимальных правил для любой планеты через цепные дроби
   const leapSuggestions = computed<LeapSuggestion[]>(() => {
     const orbit = targetOrbitalDays.value;
     const frac = orbit - Math.floor(orbit);
@@ -324,53 +406,39 @@ export function useCalendarCorrection(
     const num = Math.round(frac * 100000);
     const den = 100000;
 
+    // Честное математическое разложение дробной части орбиты в цепные дроби (Rust WASM ядро)
     const approximations = engine.calculateLeapConvergents(num, den, 6);
 
     const list: LeapSuggestion[] = approximations.map((app) => {
       const ly = Number(app.leap_years);
       const cy = Number(app.cycle_years);
       const approxFraction = ly / cy;
-      // Дрейф високосного правила относительно физической орбиты планеты (сут/век)
       const actualDrift = (approxFraction - frac) * 100;
 
-      let description = `${ly} високос(а) за ${cy} лет`;
-      let rulePreset: 'gregorian' | 'simple_4' | 'custom' = 'custom';
-      let harmonics: LeapHarmonic[] = [
-        { weight: 1, multiplier_a: ly, shift_b: 0, divisor_c: cy }
-      ];
-
-      if (ly === 1) {
-        description = `Каждые ${cy} лет: +1 день`;
-        if (cy === 4) {
-          rulePreset = 'simple_4';
-        }
-      } else if (ly === 7 && cy === 29) {
-        description = 'Арабский цикл: 7 високосов за 29 лет';
-      } else if (ly === 8 && cy === 33) {
-        description = 'Персидский цикл (Омар Хайям): 8 високосов за 33 года';
-      } else if (ly === 31 && cy === 128) {
-        description = 'Цикл Медлера: 31 високос за 128 лет (погрешность 1 день за 100 000 лет)';
-      }
+      // Универсальный транслятор любой дроби в знаковые единичные гармоники
+      const harmonics = decomposeFractionToUnitHarmonics(ly, cy);
+      const meta = getSuggestionMeta(harmonics, ly, cy);
 
       return {
         leapYears: ly,
         cycleYears: cy,
-        label: `${ly} дн. / ${cy} лет`,
+        label: `${ly} дн. / ${cy} ${cy === 4 ? 'года' : 'лет'}`,
         driftPerCentury: actualDrift,
-        description,
-        rulePreset,
+        description: meta.description,
+        rulePreset: meta.rulePreset,
         harmonics,
       };
     });
 
-    // Если орбита близка к земной (0.242..0.243), добавляем эталонный Григорианский цикл (97 дн. / 400 лет)
-    if (Math.abs(frac - 0.2422) < 0.005 && !list.some((s) => s.cycleYears === 400)) {
+    // Если среди подходящих дробей нет векового 400-летнего цикла, но орбита допускает его (~0.242..0.243),
+    // предлагаем классический Григорианский стандарт как один из вариантов
+    if (Math.abs(frac - 0.2425) < 0.003 && !list.some((s) => s.cycleYears === 400)) {
       list.push({
         leapYears: 97,
         cycleYears: 400,
         label: '97 дн. / 400 лет',
         driftPerCentury: (97 / 400 - frac) * 100,
-        description: 'Григорианский стандарт: каждые 4 года, кроме 100, плюс 400',
+        description: 'Григорианский стандарт: каждые 4 года (+1), кроме 100 (-1), плюс 400 (+1)',
         rulePreset: 'gregorian',
         harmonics: [
           { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
@@ -397,7 +465,7 @@ export function useCalendarCorrection(
     } else {
       ruleType.value = 'пользовательское';
       props.modelValue.високосные_правила = s.harmonics ? s.harmonics.map((h) => ({ ...h })) : [
-        { weight: 1, multiplier_a: s.leapYears, shift_b: 0, divisor_c: s.cycleYears }
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: s.cycleYears }
       ];
     }
     isSuggestOpen.value = false;
@@ -447,6 +515,12 @@ export function useCalendarCorrection(
       baseExtraDays.value = 0;
       placement.value = 'end_of_year';
       pauseWeekdays.value = false;
+      const gregorianDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      if (props.modelValue.месяцы && props.modelValue.месяцы.length === 12) {
+        props.modelValue.месяцы.forEach((m, idx) => {
+          m.дней = gregorianDays[idx];
+        });
+      }
     } else if (preset === 'tolkien') {
       ruleType.value = 'каждый 4 год';
       targetMode.value = 'in_extra_days';
@@ -455,6 +529,11 @@ export function useCalendarCorrection(
       extraDaysName.value = 'Праздники Лите (Шир)';
       placement.value = 'mid_year';
       pauseWeekdays.value = true;
+      if (props.modelValue.месяцы && props.modelValue.месяцы.length === 12) {
+        props.modelValue.месяцы.forEach((m) => {
+          m.дней = 30;
+        });
+      }
     } else if (preset === 'egyptian') {
       ruleType.value = 'каждый 4 год';
       targetMode.value = 'in_extra_days';
@@ -463,6 +542,11 @@ export function useCalendarCorrection(
       extraDaysName.value = 'Дни рождения богов';
       placement.value = 'end_of_year';
       pauseWeekdays.value = false;
+      if (props.modelValue.месяцы && props.modelValue.месяцы.length === 12) {
+        props.modelValue.месяцы.forEach((m) => {
+          m.дней = 30;
+        });
+      }
     } else if (preset === 'custom_example') {
       ruleType.value = 'пользовательское';
       targetMode.value = 'in_extra_days';
@@ -477,6 +561,29 @@ export function useCalendarCorrection(
       ];
     }
     emit?.('update:modelValue', props.modelValue);
+  };
+
+  // Выравнивание месяцев под праздничные дни (например, 12 месяцев по 30 дней = 360 + праздники = 365)
+  const balanceMonthsForExtraDays = () => {
+    const orbit = Math.floor(targetOrbitalDays.value);
+    const extra = baseExtraDays.value;
+    const targetMonthsTotal = orbit - extra;
+    const months = props.modelValue.месяцы;
+    if (!months || months.length === 0) return;
+
+    const count = months.length;
+    if (count === 0 || targetMonthsTotal <= 0) return;
+    const basePerMonth = Math.floor(targetMonthsTotal / count);
+    let remainder = targetMonthsTotal % count;
+    months.forEach((m) => {
+      m.дней = basePerMonth + (remainder > 0 ? 1 : 0);
+      if (remainder > 0) remainder--;
+    });
+    emit?.('update:modelValue', props.modelValue);
+  };
+
+  const resetExtraDays = () => {
+    baseExtraDays.value = 0;
   };
 
   return {
@@ -506,5 +613,7 @@ export function useCalendarCorrection(
     removeHarmonic,
     updateHarmonicDivisor,
     applyPreset,
+    balanceMonthsForExtraDays,
+    resetExtraDays,
   };
 }

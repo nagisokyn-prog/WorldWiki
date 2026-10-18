@@ -36,21 +36,28 @@
 
 .drift-badge {
   font-size: 11px;
-  padding: 2px 6px;
+  font-weight: 500;
+  padding: 2px 8px;
   border-radius: var(--radius-xs, 4px);
-  background: var(--bg-secondary);
+  background: var(--bg-sunken, rgba(0, 0, 0, 0.08));
   color: var(--text-muted);
   border: 1px solid var(--border-color);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .drift-badge.drift-ok {
-  color: var(--text-success, var(--text-main));
-  border-color: var(--border-success, var(--border-color));
+  background: var(--success-bg);
+  color: var(--text-success, var(--success));
+  border-color: var(--success-border);
 }
 
 .drift-badge.drift-warning {
-  color: var(--text-warning, var(--text-main));
-  border-color: var(--border-warning, var(--border-color));
+  background: var(--warning-bg);
+  color: var(--text-warning, var(--warning));
+  border-color: var(--warning-border);
 }
 
 .correction-collapse-icon {
@@ -74,6 +81,29 @@
   border: 1px solid var(--border-color);
   font-size: 12px;
   line-height: 1.4;
+}
+
+.drift-warning-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.drift-action-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs, 4px);
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drift-action-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
 }
 
 .correction-presets {

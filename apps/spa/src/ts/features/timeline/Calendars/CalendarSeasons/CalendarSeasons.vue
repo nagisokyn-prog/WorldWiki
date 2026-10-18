@@ -26,6 +26,14 @@
               class="item-name season-name-input interactive-el"
               placeholder="Название сезона"
             />
+            <button
+              type="button"
+              class="btn-icon interactive-el season-hemisphere-btn"
+              :title="season.hemisphere === 'southern' ? 'Южное полушарие (лето в декабре/январе)' : 'Северное полушарие (лето в июне/июле)'"
+              @click.prevent="toggleHemisphere(season)"
+            >
+              {{ season.hemisphere === 'southern' ? '🌏 Юг' : '🌍 Север' }}
+            </button>
             <div class="item-actions">
               <button
                 class="btn-icon interactive-el"
@@ -92,7 +100,7 @@ import type { CalendarSeasonsProps } from './useCalendarSeasons';
 
 const props = defineProps<CalendarSeasonsProps>();
 
-const { isCollapsed, moveItem, addSeason, removeSeason, formatColor, checkSeasonConflict } = useCalendarSeasons(props);
+const { isCollapsed, moveItem, addSeason, removeSeason, formatColor, checkSeasonConflict, toggleHemisphere } = useCalendarSeasons(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarSeasons.css"></style>

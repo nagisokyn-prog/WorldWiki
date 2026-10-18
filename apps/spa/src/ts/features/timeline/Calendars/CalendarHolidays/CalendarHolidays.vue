@@ -34,7 +34,7 @@
               :max="
                 getDaysInMonth(
                   modelValue,
-                  modelValue.точка_отсчета?.год || 0,
+                  modelValue.эпохи?.[0]?.год_начала || 1,
                   holiday.дата_начала.месяц,
                 )
               "
@@ -62,12 +62,23 @@
               :max="
                 getDaysInMonth(
                   modelValue,
-                  modelValue.точка_отсчета?.год || 0,
+                  modelValue.эпохи?.[0]?.год_начала || 1,
                   holiday.дата_конца.месяц,
                 )
               "
               class="holiday-day-input interactive-el"
             />
+            <button
+              type="button"
+              class="btn-icon interactive-el holiday-toggle-btn"
+              :title="holiday.дата_конца ? 'Сделать однодневным' : 'Сделать периодом (несколько дней)'"
+              @click.prevent="toggleHolidayRange(holiday)"
+            >
+              {{ holiday.дата_конца ? '📅 1 день' : '📆 Период' }}
+            </button>
+            <span v-if="isNewYearCrossing(holiday)" class="badge-new-year-crossing text-xs">
+              🌙 Переход года
+            </span>
           </div>
           <div class="item-actions">
             <button
@@ -107,7 +118,7 @@ const props = defineProps<{
   modelValue: CalendarData;
 }>();
 
-const { isCollapsed, wheelHorizontal, getDaysInMonth, moveItem, addHoliday, removeHoliday } = useCalendarHolidays(props);
+const { isCollapsed, wheelHorizontal, getDaysInMonth, moveItem, addHoliday, removeHoliday, toggleHolidayRange, isNewYearCrossing } = useCalendarHolidays(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarHolidays.css"></style>

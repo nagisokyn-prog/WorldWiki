@@ -1,0 +1,99 @@
+@import "./CalendarCommon.css";
+
+.geography-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.geography-collapse-icon {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.geography-content {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.geography-block-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.geography-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.geography-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface-raised, var(--bg-input));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-main);
+  transition: border-color 0.15s ease;
+}
+
+.geography-chip:hover {
+  border-color: var(--color-primary, var(--accent-primary));
+}
+
+.geography-chip-icon {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.geography-chip-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geography-chip-remove:hover {
+  color: var(--color-error, var(--danger));
+}
+
+.geography-empty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.geography-select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 13px;
+}
+
+.geography-select:focus {
+  outline: none;
+  border-color: var(--color-primary, var(--accent-primary));
+}

@@ -278,12 +278,20 @@ export function useCalendarsPanel(props: { project?: string }) {
         await loadCalendars();
     };
 
+    const selectedCalendarPlanet = computed<PlanetEntity | null>(() => {
+        if (selectedCalendarIdx.value === null || !calendars.value[selectedCalendarIdx.value]) return null;
+        const cal = calendars.value[selectedCalendarIdx.value];
+        const pId = cal.data?.planet_id || 'earth';
+        return planets.value.find(p => p.id === pId) || planets.value[0] || null;
+    });
+
     return {
         project,
         calendars,
         planets,
         selectedPlanet,
         selectedCalendarIdx,
+        selectedCalendarPlanet,
         selectedId,
         selectPlanet,
         selectCalendar,

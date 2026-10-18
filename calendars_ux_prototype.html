@@ -1,0 +1,3865 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorldWiki — Конструктор Календарей и Астрономии (UX Прототип)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #090d16;
+      --bg-sidebar: #0d1322;
+      --bg-surface: #131b2e;
+      --bg-surface-elevated: #1a243d;
+      --bg-card: rgba(26, 36, 61, 0.7);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.3);
+      --border-focus: #38bdf8;
+      
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent-primary: #38bdf8;
+      --accent-primary-hover: #0ea5e9;
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      --accent-purple: #a855f7;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Верхний глобальный бар */
+    .top-header {
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .top-header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-primary);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-quick-info {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-quick-pill {
+      background: var(--bg-surface);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Основной двухколоночный layout */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    /* Сайдбар: Дерево Планет и Календарей */
+    .sidebar-tree {
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+    }
+
+    .btn-ghost-sm {
+      background: transparent;
+      border: 1px dashed var(--border-subtle);
+      color: var(--text-muted);
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost-sm:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .tree-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+
+    .tree-planet-group {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .tree-planet-group.active-group {
+      border-color: var(--border-accent);
+    }
+
+    .tree-planet-item {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
+    .tree-planet-item:hover {
+      background: var(--bg-surface-elevated);
+    }
+
+    .tree-planet-item.is-selected {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-primary);
+    }
+
+    .tree-calendars-sublist {
+      padding: 4px 8px 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .tree-cal-item {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+
+    .tree-cal-item:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+    }
+
+    .tree-cal-item.is-selected {
+      background: rgba(56, 189, 248, 0.2);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .tree-cal-badge-master {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-warning);
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+    }
+
+    /* Главная панель контента */
+    .main-workspace {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: calc(100vh - 57px);
+      padding: 24px;
+      gap: 20px;
+    }
+
+    /* Верхний Dashboard-информер */
+    .dashboard-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-primary), var(--accent-purple));
+    }
+
+    .dashboard-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dashboard-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dashboard-icon {
+      font-size: 26px;
+    }
+
+    .dashboard-title-input {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      font-size: 20px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      padding: 2px 6px;
+      transition: all 0.2s;
+    }
+
+    .dashboard-title-input:hover,
+    .dashboard-title-input:focus {
+      background: var(--bg-surface);
+      border-color: var(--border-accent);
+      outline: none;
+    }
+
+    .dashboard-tags {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .status-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-chip.success {
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--accent-success);
+    }
+
+    .status-chip.warning {
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-warning);
+    }
+
+    .dashboard-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-accent);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #04101d;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-primary-hover);
+    }
+
+    /* Навигация по табам */
+    .tab-nav-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 4px;
+      padding-bottom: 2px;
+    }
+
+    .tab-button {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .tab-button:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-button.active {
+      color: var(--accent-primary);
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-primary);
+      border-radius: 3px 3px 0 0;
+      box-shadow: 0 0 10px var(--accent-primary);
+    }
+
+    .tab-badge {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+    }
+
+    /* Панель содержимого таба */
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Карточки секций */
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(8px);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Grid структуры полей */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-select {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Чипы и списки */
+    .chip-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preset-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .preset-chip:hover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .preset-chip.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* Таблицы месяцев и элементов */
+    .items-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+    }
+
+    .items-table th {
+      text-align: left;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      padding: 0 10px 4px;
+      font-weight: 600;
+    }
+
+    .items-table td {
+      background: var(--bg-surface);
+      padding: 8px 10px;
+      font-size: 13px;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .items-table tr td:first-child {
+      border-left: 1px solid var(--border-subtle);
+      border-top-left-radius: var(--radius-sm);
+      border-bottom-left-radius: var(--radius-sm);
+    }
+
+    .items-table tr td:last-child {
+      border-right: 1px solid var(--border-subtle);
+      border-top-right-radius: var(--radius-sm);
+      border-bottom-right-radius: var(--radius-sm);
+    }
+
+    .table-input {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      padding: 4px 6px;
+      border-radius: var(--radius-sm);
+      width: 100%;
+    }
+
+    .table-input:hover, .table-input:focus {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-subtle);
+      outline: none;
+    }
+
+    .btn-icon-table {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s;
+    }
+
+    .btn-icon-table:hover {
+      color: var(--accent-danger);
+    }
+
+    /* Календарная сетка месяца (Песочница) */
+    .calendar-matrix {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .matrix-day-header {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      padding: 6px;
+    }
+
+    .matrix-day-cell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      min-height: 56px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+
+    .matrix-day-cell:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .matrix-day-cell.is-origin {
+      border-color: var(--accent-warning);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .matrix-day-cell.is-holiday {
+      border-color: var(--accent-purple);
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .cell-badge {
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface-elevated);
+      color: var(--accent-primary);
+    }
+
+    .cell-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* Карточки астрономических точек */
+    .astro-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .astro-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .astro-label {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .astro-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Радио-кнопки привязки синхронизации */
+    .sync-type-selector {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sync-type-card {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+
+    .sync-type-card:hover {
+      border-color: var(--border-accent);
+    }
+
+    .sync-type-card.active {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .sync-type-card input {
+      accent-color: var(--accent-primary);
+    }
+
+    .drift-banner {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #6ee7b7;
+    }
+
+    .drift-banner.warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: #fcd34d;
+    }
+
+    /* Стили для Календарной коррекции и Дней недели (из CalendarCorrection.css & CalendarWeekdays.css) */
+    .drift-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .drift-badge.drift-ok {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-success);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .drift-badge.drift-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-warning);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .drift-warning-banner {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #fde68a;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .drift-warning-actions {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .drift-action-btn {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .drift-action-btn:hover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-primary);
+    }
+
+    /* Лента структуры года (Year Tape) */
+    .year-tape-container {
+      margin-top: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+    }
+
+    .year-tape-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .year-tape-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .tape-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface-elevated);
+      min-width: 68px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .tape-item.tape-extra-days {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.4);
+      border-style: dashed;
+    }
+
+    .tape-item.tape-leap-target {
+      border-color: var(--accent-warning);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+    }
+
+    .tape-item-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .tape-item-days {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 2px;
+    }
+
+    .tape-leap-badge {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent-warning);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* Выпадающий блок рекомендаций подбора */
+    .suggestions-panel {
+      margin-top: 10px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .suggestions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .suggestions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .suggestion-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .suggestion-card:hover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .suggestion-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .suggestion-ratio {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-primary);
+    }
+
+    .suggestion-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .suggestion-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .suggestion-drift {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .suggestion-apply-btn {
+      background: var(--accent-primary);
+      color: #04101d;
+      border: none;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Конструктор условий */
+    .harmonics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .harmonic-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-surface);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .harmonic-sign {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    .harmonic-sign.positive {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-success);
+    }
+
+    .harmonic-sign.negative {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-danger);
+    }
+
+    .harmonic-period-input {
+      width: 70px;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 12px;
+    }
+
+    .harmonic-delete-btn {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .harmonic-delete-btn:hover {
+      color: var(--accent-danger);
+    }
+
+    .add-harmonic-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .add-harmonic-btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-subtle);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-harmonic-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    /* Инспектор ближайших лет */
+    .upcoming-years-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .upcoming-year-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-muted);
+    }
+
+    .upcoming-year-pill.is-leap {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-warning);
+      border-color: rgba(245, 158, 11, 0.35);
+      font-weight: 600;
+    }
+
+    /* Дни недели */
+    .weekday-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-surface);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      transition: border-color 0.15s;
+    }
+
+    .weekday-row:hover {
+      border-color: var(--border-accent);
+    }
+
+    .weekday-num {
+      color: var(--text-dim);
+      width: 22px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .weekday-input {
+      flex: 1;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .weekday-input:focus {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-focus);
+      outline: none;
+    }
+
+    .weekday-weekend-btn {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .weekday-weekend-btn.is-weekend {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-warning);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Верхний бар -->
+  <header class="top-header">
+    <div class="top-header-brand">
+      <span class="brand-logo">🌌 WorldWiki</span>
+      <span class="brand-badge">UX Prototype</span>
+      <span style="color: var(--text-dim); font-size: 13px;">• Конструктор Времени и Астрономии</span>
+    </div>
+
+    <div class="header-quick-info">
+      <div class="header-quick-pill">
+        <span>🪐 Выбрана планета:</span>
+        <strong id="top-selected-planet" style="color: var(--accent-primary)">Земля</strong>
+      </div>
+      <div class="header-quick-pill">
+        <span>📜 Календарь:</span>
+        <strong id="top-selected-cal" style="color: #fff">Григорианский</strong>
+      </div>
+      <button class="btn-action btn-primary" onclick="alert('Это интерактивный прототип! Все вкладки и переключатели работают вживую.')">
+        ✨ Проверить интерактивность
+      </button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    
+    <!-- 2. Сайдбар дерева -->
+    <aside class="sidebar-tree">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Планеты и Календари</span>
+        <button class="btn-ghost-sm" onclick="alert('Добавление планеты')">+ Планета</button>
+      </div>
+
+      <div class="tree-list">
+        
+        <!-- Группа 1: Земля -->
+        <div class="tree-planet-group active-group" id="planet-earth-group">
+          <div class="tree-planet-item" onclick="switchView('planet', 'earth')">
+            <span style="display:flex; align-items:center; gap:6px;">
+              <span>🪐</span> Земля
+            </span>
+            <span style="font-size: 10px; color: var(--text-dim);">1.00 AU</span>
+          </div>
+
+          <div class="tree-calendars-sublist">
+            <div class="tree-cal-item is-selected" id="cal-gregorian-node" onclick="switchView('cal', 'gregorian')">
+              <span>📜 Григорианский</span>
+              <span class="tree-cal-badge-master">МАСТЕР</span>
+            </div>
+            <div class="tree-cal-item" id="cal-julian-node" onclick="switchView('cal', 'julian')">
+              <span>📜 Юлианский (Церковный)</span>
+            </div>
+            <button class="btn-ghost-sm" style="width: 100%; text-align: left; margin-top: 4px;" onclick="alert('Добавление нового календаря к Земле')">
+              + Добавить календарь...
+            </button>
+          </div>
+        </div>
+
+        <!-- Группа 2: Арракис -->
+        <div class="tree-planet-group" id="planet-arrakis-group">
+          <div class="tree-planet-item" onclick="switchView('planet', 'arrakis')">
+            <span style="display:flex; align-items:center; gap:6px;">
+              <span>🏜️</span> Арракис
+            </span>
+            <span style="font-size: 10px; color: var(--text-dim);">Канопус</span>
+          </div>
+
+          <div class="tree-calendars-sublist">
+            <div class="tree-cal-item" id="cal-padishah-node" onclick="switchView('cal', 'padishah')">
+              <span>📜 Имперский Стандарт</span>
+            </div>
+            <div class="tree-cal-item" id="cal-fremen-node" onclick="switchView('cal', 'fremen')">
+              <span>📜 Цикл Сиетча (Шаи-Хулуд)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- 3. Основная рабочая область -->
+    <main class="main-workspace">
+
+      <!-- =================================================================== -->
+      <!-- РЕЖИМ 1: РЕДАКТОР КАЛЕНДАРЯ КУЛЬТУРЫ                                -->
+      <!-- =================================================================== -->
+      <div id="view-calendar-container" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Dashboard карточка календаря -->
+        <div class="dashboard-banner">
+          <div class="dashboard-left">
+            <div class="dashboard-title-row">
+              <span class="dashboard-icon">📜</span>
+              <input type="text" class="dashboard-title-input" id="cal-title-input" value="Григорианский календарь">
+            </div>
+            <div class="dashboard-tags">
+              <span class="status-chip">🪐 Планета: <strong>Земля</strong></span>
+              <span class="status-chip success">📅 Год: <strong>365 дн.</strong> (12 мес.)</span>
+              <span class="status-chip success" title="Погрешность относительно орбиты">⚖️ Дрейф: <strong>-0.12 сут/тысячелетие</strong></span>
+              <span class="status-chip warning">🌟 Мастер-календарь мира</span>
+            </div>
+          </div>
+
+          <div class="dashboard-actions">
+            <button class="btn-action" title="Быстрое сохранение" onclick="alert('Календарь сохранен в SurrealDB!')">
+              💾 Сохранить
+            </button>
+            <button class="btn-action" style="color: var(--accent-danger);" title="Удалить календарь" onclick="alert('Удаление календаря')">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Горизонтальная таб-навигация календаря -->
+        <nav class="tab-nav-bar">
+          <button class="tab-button active" onclick="switchCalTab('time-grid', this)">
+            <span>⏰ 1. Время и Сетка</span>
+            <span class="tab-badge">365 дн</span>
+          </button>
+          <button class="tab-button" onclick="switchCalTab('eras-sync', this)">
+            <span>🏛️ 2. Летоисчисление & Якорь</span>
+            <span class="tab-badge">2 эры</span>
+          </button>
+          <button class="tab-button" onclick="switchCalTab('culture-lore', this)">
+            <span>🎉 3. Культура и Лор</span>
+            <span class="tab-badge">4 праздника</span>
+          </button>
+          <button class="tab-button" onclick="switchCalTab('playground', this)">
+            <span>🧪 4. Песочница (Дата 1-й главы)</span>
+            <span class="tab-badge">Сюжет</span>
+          </button>
+        </nav>
+
+        <!-- ТАБ 1: ВРЕМЯ И СЕТКА ГОДА -->
+        <div class="tab-pane active" id="cal-tab-time-grid">
+          
+          <!-- Деление суток (Циферблат: DialHierarchy - Спецификация 4.2) -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">⏰ Деление суток (Циферблат: DialHierarchy)</div>
+                <div class="section-desc">Произвольная цепочка делений дня от старшей к младшей (часы, стражи, минуты, секунды, удары гонга).</div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span class="status-chip success" id="dial-bijective-badge">✓ Точное деление без остатка</span>
+                <span class="status-chip" id="dial-capacity-badge">Емкость: <strong>86 400 делений</strong></span>
+              </div>
+            </div>
+
+            <!-- Быстрые пресеты циферблатов -->
+            <div class="form-group">
+              <label class="form-label">Готовые пресеты циферблатов культур</label>
+              <div class="chip-list">
+                <button type="button" class="preset-chip active" onclick="applyDialPreset('earth')">🌍 Земной стандарт (24ч × 60м × 60с)</button>
+                <button type="button" class="preset-chip" onclick="applyDialPreset('fantasy')">🏰 Фэнтези: Стражи и Колокола (4 стражи × 6 колоколов × 100 ударов)</button>
+                <button type="button" class="preset-chip" onclick="applyDialPreset('metric')">📐 Десятичный (10 часов × 100 минут × 100 секунд)</button>
+                <button type="button" class="preset-chip" onclick="applyDialPreset('agrarian')">🌾 Аграрный (без часов, только сутки)</button>
+              </div>
+            </div>
+
+            <!-- Таблица иерархии единиц -->
+            <div class="form-group">
+              <label class="form-label">Цепочка единиц времени (от старшей к младшей)</label>
+              <table class="items-table" id="dial-units-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Название единицы времени</th>
+                    <th style="width: 200px;">Делений в родительской единице</th>
+                    <th style="width: 220px;">Шаг относительно суток</th>
+                    <th style="width: 50px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="dial-units-tbody">
+                  <tr>
+                    <td style="color:var(--text-dim)">1</td>
+                    <td><input type="text" class="table-input" value="Час" placeholder="Название (час, стража...)"></td>
+                    <td><input type="number" class="table-input" value="24" min="1" oninput="recalcDial()"></td>
+                    <td style="color:var(--text-muted); font-size:12px;">1/24 суток (1 час = 3600 с)</td>
+                    <td><button class="btn-icon-table" onclick="removeDialUnit(this)">🗑️</button></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-dim)">2</td>
+                    <td><input type="text" class="table-input" value="Минута" placeholder="Название (минута, колокол...)"></td>
+                    <td><input type="number" class="table-input" value="60" min="1" oninput="recalcDial()"></td>
+                    <td style="color:var(--text-muted); font-size:12px;">1/1440 суток (1 мин = 60 с)</td>
+                    <td><button class="btn-icon-table" onclick="removeDialUnit(this)">🗑️</button></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-dim)">3</td>
+                    <td><input type="text" class="table-input" value="Секунда" placeholder="Название (секунда, удар...)"></td>
+                    <td><input type="number" class="table-input" value="60" min="1" oninput="recalcDial()"></td>
+                    <td style="color:var(--text-muted); font-size:12px;">1/86400 суток (квант 1 с)</td>
+                    <td><button class="btn-icon-table" onclick="removeDialUnit(this)">🗑️</button></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style="margin-top: 8px;">
+                <button type="button" class="btn-ghost-sm" onclick="addDialUnit()">+ Добавить единицу времени (дробь / удар / колокол)</button>
+              </div>
+            </div>
+
+            <!-- Смещение момента смены суток -->
+            <div class="grid-3" style="margin-top: 8px;">
+              <div class="form-group">
+                <label class="form-label">Момент смены суток (day_start_offset)</label>
+                <select class="form-select" id="day-start-select" onchange="toggleCustomDayStart(this.value)">
+                  <option value="midnight" selected>Полночь (00:00, 0 тиков — стандарт)</option>
+                  <option value="sunrise">Рассвет (+0.25 от суток — Египет, Эфиопия)</option>
+                  <option value="noon">Полдень (+0.50 от суток — счет JDN)</option>
+                  <option value="sunset">Закат (-0.25 от суток — древнесемитский, ислам)</option>
+                  <option value="custom">⚙️ Своё точное время / смещение...</option>
+                </select>
+              </div>
+              <div class="form-group" id="custom-day-start-box" style="display:none;">
+                <label class="form-label">Кастомное время смены суток</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <input type="time" class="form-input" value="06:00" style="width:110px;">
+                  <span style="font-size:11px; color:var(--text-muted);">или</span>
+                  <input type="number" step="0.1" class="form-input" value="6.0" style="width:70px;" placeholder="+ч"> ч от полуночи
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Формат вывода времени в тексте рукописи</label>
+                <input type="text" class="form-input" value="14:32:05" placeholder="Паттерн вывода" readonly style="color:var(--accent-primary); font-family:var(--font-mono)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Дни недели (CalendarWeekdays.vue) -->
+          <div class="section-card">
+            <div class="section-header" style="cursor:pointer;" onclick="toggleWeekdaysCollapse()">
+              <div>
+                <div class="section-title">📅 Дни недели</div>
+                <div class="section-desc">Названия, порядок и количество дней в неделе. Задайте любой цикл (от 3 до 14+ дней).</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-chip" id="weekdays-count-badge">7 дней в цикле</span>
+                <span class="correction-collapse-icon" id="weekdays-collapse-icon">▼</span>
+              </div>
+            </div>
+
+            <div id="weekdays-content" style="margin-top: 10px;">
+              <!-- Быстрые пресеты длины недели -->
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label class="form-label">Готовые пресеты циклов недели</label>
+                <div class="chip-list">
+                  <button type="button" class="preset-chip active" id="chip-week-7" onclick="applyWeekPreset(7)">🌍 7 дней (Земной: Пн-Вс)</button>
+                  <button type="button" class="preset-chip" id="chip-week-6" onclick="applyWeekPreset(6)">🏰 6 дней (Гексада фэнтези)</button>
+                  <button type="button" class="preset-chip" id="chip-week-10" onclick="applyWeekPreset(10)">🏛️ 10 дней (Декада Египта)</button>
+                  <button type="button" class="preset-chip" id="chip-week-5" onclick="applyWeekPreset(5)">⏳ 5 дней (Пятидневка)</button>
+                </div>
+              </div>
+
+              <!-- Список дней недели с перемещением, удалением и редактированием -->
+              <div class="form-group">
+                <label class="form-label">Порядок и названия дней в цикле</label>
+                <div id="weekdays-list" style="display:flex; flex-direction:column; gap:6px;">
+                  <!-- Генерируется и управляется через JS -->
+                </div>
+
+                <!-- Строка добавления своего произвольного дня -->
+                <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                  <input type="text" id="new-weekday-name" class="form-input" style="flex:1;" placeholder="Название нового дня (например: Солнцевень, Ветродень, Лунь)..." onkeydown="if(event.key==='Enter') addNewWeekday()">
+                  <button type="button" class="btn-action btn-primary" style="white-space:nowrap; padding:8px 14px;" onclick="addNewWeekday()">
+                    ➕ Добавить свой день
+                  </button>
+                </div>
+
+                <div style="margin-top: 12px; padding-top:8px; border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:12px; color:var(--text-muted)">Кликните на название дня для переименования, стрелками ↑ ↓ меняйте порядок.</span>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                    <input type="checkbox" id="weekdays-pause-check" checked style="accent-color: var(--accent-primary);" onchange="togglePauseWeekdays(this.checked)">
+                    <span>⏸️ Замораживать счет дней недели на время праздников</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Месяцы года -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🗓️ Месяцы года (Сетка базового года)</div>
+                <div class="section-desc">Сумма дней во всех месяцах: <strong style="color: var(--accent-primary)" id="months-total-days-badge">365 дней</strong>. Базовый орбитальный год: 365.2422 дн.</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-ghost-sm" onclick="balanceMonthsEvenly()">🪄 Выровнять поровну (по 30 дн.)</button>
+                <button class="btn-ghost-sm" onclick="alert('Добавление месяца')">+ Добавить месяц</button>
+              </div>
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;">#</th>
+                  <th>Название месяца</th>
+                  <th style="width: 140px;">Дней в месяце</th>
+                  <th style="width: 140px;">В високосный год</th>
+                  <th style="width: 140px;">Сезон</th>
+                  <th style="width: 50px;"></th>
+                </tr>
+              </thead>
+              <tbody id="months-table-body">
+                <tr>
+                  <td style="color: var(--text-dim);">1</td>
+                  <td><input type="text" class="table-input" value="Январь"></td>
+                  <td><input type="number" class="table-input" id="m-days-0" value="31" oninput="recalcMonthsTotal()"></td>
+                  <td><input type="number" class="table-input" value="31"></td>
+                  <td><span class="status-chip" style="font-size:11px;">❄️ Зима</span></td>
+                  <td><button class="btn-icon-table">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td style="color: var(--text-dim);">2</td>
+                  <td><input type="text" class="table-input" value="Февраль"></td>
+                  <td><input type="number" class="table-input" id="m-days-1" value="28" oninput="recalcMonthsTotal()"></td>
+                  <td><input type="number" class="table-input" value="29" style="color: var(--accent-warning); font-weight: 700;"></td>
+                  <td><span class="status-chip" style="font-size:11px;">❄️ Зима</span></td>
+                  <td><button class="btn-icon-table">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td style="color: var(--text-dim);">3</td>
+                  <td><input type="text" class="table-input" value="Март"></td>
+                  <td><input type="number" class="table-input" id="m-days-2" value="31" oninput="recalcMonthsTotal()"></td>
+                  <td><input type="number" class="table-input" value="31"></td>
+                  <td><span class="status-chip" style="font-size:11px;">🌸 Весна</span></td>
+                  <td><button class="btn-icon-table">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td style="color: var(--text-dim);">...</td>
+                  <td colspan="4" style="color: var(--text-muted); font-size: 12px;">+ Еще 9 месяцев (Апрель - Декабрь, всего 12 месяцев)</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Календарная коррекция и праздники (Точно как в CalendarCorrection.vue) -->
+          <div class="section-card calendar-correction-card">
+            <!-- Заголовок карточки -->
+            <div class="correction-header" onclick="toggleCorrectionCollapse()">
+              <div class="correction-header-title">
+                <h4 style="margin:0; font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                  <span>📅</span> Календарная коррекция и праздники
+                </h4>
+                <span id="cor-header-extra-badge" class="badge-count" style="background:rgba(56,189,248,0.15); color:var(--accent-primary); font-size:11px; padding:2px 8px; border-radius:4px; font-weight:600;">+3 дн. праздников</span>
+              </div>
+              <div class="correction-header-meta">
+                <span class="drift-badge drift-ok" id="cor-header-drift-badge" title="Вековой дрейф календаря относительно орбиты планеты">
+                  -0.03 сут/век
+                </span>
+                <span class="correction-collapse-icon" id="cor-collapse-icon">▼</span>
+              </div>
+            </div>
+
+            <div id="correction-content-body" class="correction-content">
+              <!-- Баннер расхождения базового года и орбиты планеты с кнопками балансировки -->
+              <div id="cor-drift-warning-banner" class="drift-warning-banner" style="display: flex; flex-direction:column; gap:6px;">
+                <div id="cor-warning-text">
+                  ⚠️ Базовый год (368 дн.: 365 в месяцах + 3 праздничных) на 3 дн. длиннее орбитального года планеты (365.24 сут.). Високосы не смогут это исправить — уменьшите дни в месяцах или праздники.
+                </div>
+                <div class="drift-warning-actions">
+                  <button type="button" class="drift-action-btn" onclick="balanceMonthsForExtraDays()">
+                    🪄 Сбалансировать месяцы (362 дн. в месяцах + 3 праздничных = 365 дн.)
+                  </button>
+                  <button type="button" class="drift-action-btn" onclick="resetExtraDays()">
+                    Сбросить праздничные дни в 0
+                  </button>
+                </div>
+              </div>
+
+              <!-- Быстрые пресеты известных систем -->
+              <div class="form-group">
+                <label class="form-label">Быстрые пресеты известных систем</label>
+                <div class="chip-list">
+                  <button type="button" class="preset-chip active" id="chip-preset-gregorian" onclick="applyPresetCor('gregorian')">
+                    🌍 Григорианский (Земля)
+                  </button>
+                  <button type="button" class="preset-chip" id="chip-preset-tolkien" onclick="applyPresetCor('tolkien')">
+                    🧙 Шир Толкина (12×30 + 5 Лите)
+                  </button>
+                  <button type="button" class="preset-chip" id="chip-preset-egyptian" onclick="applyPresetCor('egyptian')">
+                    🏛️ Древнеегипетский (12×30 + 5 эпагоменов)
+                  </button>
+                  <button type="button" class="preset-chip" id="chip-preset-custom" onclick="applyPresetCor('custom')">
+                    ⚙️ Кастом (+3 каждые 10/20/200 лет)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Выбор режима високосного правила -->
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="form-label" style="margin:0;">Режим високосного правила</label>
+                  <button type="button" class="suggest-trigger-btn" onclick="toggleSuggestions()">
+                    🎯 Подобрать правило под планету (365.2422 сут.)
+                  </button>
+                </div>
+
+                <div class="chip-list">
+                  <button type="button" class="preset-chip active" id="rule-btn-gregorian" onclick="selectRuleType('григорианское')">
+                    Григорианское (каждые 4 года, кроме 100, плюс 400)
+                  </button>
+                  <button type="button" class="preset-chip" id="rule-btn-simple" onclick="selectRuleType('каждый 4 год')">
+                    Простое (каждый 4-й год)
+                  </button>
+                  <button type="button" class="preset-chip" id="rule-btn-custom" onclick="selectRuleType('пользовательское')">
+                    Пользовательский конструктор (кастомные условия)
+                  </button>
+                  <button type="button" class="preset-chip" id="rule-btn-none" onclick="selectRuleType('отсутствует')">
+                    Отсутствует (строго постоянный год)
+                  </button>
+                </div>
+
+                <!-- Выпадающий блок автоматического подбора под орбиту (Цепные дроби Rust WASM) -->
+                <div id="suggestions-panel" class="suggestions-panel" style="display:none;">
+                  <div class="suggestions-header">
+                    <span>🎯 Оптимальные варианты для орбиты планеты 365.2422 сут.:</span>
+                    <button type="button" class="btn-ghost-sm" onclick="toggleSuggestions()">✕</button>
+                  </div>
+                  <div class="suggestions-list">
+                    <div class="suggestion-card" onclick="applySuggestion('simple')">
+                      <div class="suggestion-main">
+                        <span class="suggestion-ratio">1 дн. / 4 года</span>
+                        <span class="suggestion-desc">Простое правило: каждые 4 года +1 день (Юлианский стиль)</span>
+                      </div>
+                      <div class="suggestion-meta">
+                        <span class="suggestion-drift drift-badge drift-warning">Дрейф: +0.780 сут/век</span>
+                        <button type="button" class="suggestion-apply-btn">Применить</button>
+                      </div>
+                    </div>
+
+                    <div class="suggestion-card" onclick="applySuggestion('persian')">
+                      <div class="suggestion-main">
+                        <span class="suggestion-ratio">8 дн. / 33 года</span>
+                        <span class="suggestion-desc">Персидский цикл (Омар Хайям): 8 високосов за 33 года</span>
+                      </div>
+                      <div class="suggestion-meta">
+                        <span class="suggestion-drift drift-badge drift-ok">Дрейф: +0.020 сут/век</span>
+                        <button type="button" class="suggestion-apply-btn">Применить</button>
+                      </div>
+                    </div>
+
+                    <div class="suggestion-card" onclick="applySuggestion('gregorian')">
+                      <div class="suggestion-main">
+                        <span class="suggestion-ratio">97 дн. / 400 лет</span>
+                        <span class="suggestion-desc">Григорианский стандарт: каждые 4 года (+1), кроме 100 (-1), плюс 400 (+1)</span>
+                      </div>
+                      <div class="suggestion-meta">
+                        <span class="suggestion-drift drift-badge drift-ok">Дрейф: -0.030 сут/век</span>
+                        <button type="button" class="suggestion-apply-btn">Применить</button>
+                      </div>
+                    </div>
+
+                    <div class="suggestion-card" onclick="applySuggestion('medler')">
+                      <div class="suggestion-main">
+                        <span class="suggestion-ratio">31 дн. / 128 лет</span>
+                        <span class="suggestion-desc">Цикл Медлера: каждые 4 года (+1), кроме 128 (-1). Точность: 1 день за 100 000 лет!</span>
+                      </div>
+                      <div class="suggestion-meta">
+                        <span class="suggestion-drift drift-badge drift-ok">Дрейф: +0.001 сут/век</span>
+                        <button type="button" class="suggestion-apply-btn">Применить</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- БЛОК 1: Дни вне месяцев (Ежегодные праздники / Эпагомены) -->
+              <div class="correction-subcard">
+                <div class="correction-subcard-title">
+                  <span style="display:flex; align-items:center; gap:6px;">
+                    <span>✨</span> Дни вне месяцев (Ежегодные праздники)
+                  </span>
+                  <span id="extra-days-summary-text" class="text-xs text-muted" style="font-size:11px;">3 сут. в обычный год</span>
+                </div>
+
+                <div class="grid-2 gap-3">
+                  <div class="form-group">
+                    <label class="form-label">Дней вне месяцев</label>
+                    <input type="number" id="cor-base-extra-days" class="form-input" value="3" min="0" oninput="updateExtraDaysCount(this.value)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Название блока праздников</label>
+                    <input type="text" id="cor-extra-days-name" class="form-input" value="Праздники середины года (Лите)" placeholder="Праздники середины года / Йул / Лите" oninput="updateYearTape()">
+                  </div>
+                </div>
+
+                <div class="grid-2 gap-3" style="margin-top:4px;">
+                  <div class="form-group">
+                    <label class="form-label">Позиция в структуре года</label>
+                    <select id="cor-placement-select" class="form-select" onchange="changePlacement(this.value)">
+                      <option value="end_of_year">В конце года (после всех месяцев)</option>
+                      <option value="mid_year" selected>В середине года (как у Толкина)</option>
+                      <option value="start_of_year">В начале года (перед 1-м месяцем)</option>
+                      <option value="after_month">После конкретного месяца...</option>
+                    </select>
+                  </div>
+                  <div class="form-group" id="cor-after-month-group" style="display:none;">
+                    <label class="form-label">После какого месяца вставлять</label>
+                    <select id="cor-after-month-select" class="form-select" onchange="updateYearTape()">
+                      <option value="0">Январь</option>
+                      <option value="1">Февраль</option>
+                      <option value="2">Март</option>
+                      <option value="5" selected>Июнь</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label class="glass-checkbox-label" style="display:flex; align-items:center; gap:8px; font-size:12px; margin-top:6px; cursor:pointer;">
+                  <input type="checkbox" id="cor-pause-weekdays-check" checked style="accent-color: var(--accent-primary);" onchange="togglePauseWeekdays(this.checked)">
+                  <span>⏸️ Замораживать счет дней недели на время праздников</span>
+                </label>
+
+                <!-- Наглядная интерактивная лента структуры года (Year Tape) -->
+                <div class="year-tape-container">
+                  <div class="year-tape-title">🗓️ Лента структуры года (последовательность месяцев и праздников):</div>
+                  <div class="year-tape-scroll" id="year-tape-scroll-list">
+                    <!-- Заполняется динамически через updateYearTape() -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- БЛОК 2: Високосная надбавка и куда начислять -->
+              <div id="cor-leap-target-card" class="correction-subcard">
+                <div class="correction-subcard-title">
+                  <span>⚡ Високосная надбавка и куда начислять</span>
+                </div>
+                
+                <div class="grid-2 gap-3">
+                  <div class="form-group">
+                    <label class="form-label">Сколько дней добавлять в високос (+N)</label>
+                    <input type="number" id="cor-leap-days-input" class="form-input" value="1" min="1" oninput="updateLeapDaysOffset(this.value)">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="form-label">Куда начислять високосные дни</label>
+                    <div style="display:flex; gap:12px; padding-top:6px;">
+                      <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                        <input type="radio" name="cor-target-mode" value="in_month" checked onchange="setTargetMode('in_month')">
+                        <span>В конкретный месяц</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                        <input type="radio" name="cor-target-mode" value="in_extra_days" onchange="setTargetMode('in_extra_days')">
+                        <span>В праздники вне месяцев</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="cor-target-month-container" class="form-group" style="margin-top:6px;">
+                  <label class="form-label">Целевой високосный месяц</label>
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <select id="cor-target-month-select" class="form-select" style="max-width:200px;" onchange="changeTargetMonth(this.value)">
+                      <option value="0">1. Январь</option>
+                      <option value="1" selected>2. Февраль</option>
+                      <option value="2">3. Март</option>
+                      <option value="3">4. Апрель</option>
+                      <option value="4">5. Май</option>
+                      <option value="5">6. Июнь</option>
+                      <option value="6">7. Июль</option>
+                      <option value="8">8. Август</option>
+                      <option value="9">9. Сентябрь</option>
+                      <option value="10">10. Октябрь</option>
+                      <option value="11">11. Ноябрь</option>
+                      <option value="12">12. Декабрь</option>
+                    </select>
+                    <span id="cor-target-month-preview" class="status-chip warning" style="font-size:11px;">
+                      Февраль: 29 дн. вместо 28 дн. (+1 дн.)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- БЛОК 3: Пользовательский конструктор условий (гармоник) -->
+              <div id="cor-custom-harmonics-subcard" class="correction-subcard" style="display:none;">
+                <div class="correction-subcard-title">
+                  <span>⚙️ Условия високосных правил (Кастомные гармоники)</span>
+                  <span id="cor-custom-drift-badge" class="drift-badge drift-ok">Дрейф: -0.12 сут/век</span>
+                </div>
+
+                <div class="harmonics-list" id="cor-harmonics-list">
+                  <!-- Заполняется динамически -->
+                </div>
+
+                <div class="add-harmonic-row">
+                  <button type="button" class="add-harmonic-btn" onclick="addHarmonicRule(1, 4)">
+                    ➕ Добавить: Добавлять каждые N лет
+                  </button>
+                  <button type="button" class="add-harmonic-btn" onclick="addHarmonicRule(-1, 100)">
+                    ➖ Добавить: Исключать каждые N лет
+                  </button>
+                </div>
+              </div>
+
+              <!-- БЛОК 4: Инспектор ближайших лет -->
+              <div class="correction-subcard">
+                <div class="correction-subcard-title">
+                  <span>🔍 Проверка високосных годов в хронологии:</span>
+                  <span id="cor-inspector-base-year" style="font-size:11px; color:var(--text-muted);">Базовый год: 365 сут.</span>
+                </div>
+                <div class="upcoming-years-row" id="cor-upcoming-years-row">
+                  <!-- Заполняется динамически -->
+                </div>
+              </div>
+
+            </div> <!-- /correction-content-body -->
+          </div> <!-- /section-card -->
+
+        </div> <!-- /tab-pane (cal-tab-time-grid) -->
+
+        <!-- ТАБ 2: ЛЕТОИСЧИСЛЕНИЕ И ЯКОРЬ -->
+        <div class="tab-pane" id="cal-tab-eras-sync">
+          
+          <!-- Синхронизация летоисчисления (CalendarSyncAnchor.vue) -->
+          <div class="section-card sync-anchor-section">
+            <div class="section-header sync-header" style="cursor:pointer;" onclick="toggleSyncAnchorCollapse()">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="section-title">🔗 Привязка летоисчисления (Синхронизация с миром)</div>
+                <span class="help-icon" style="font-size:11px; color:var(--text-muted); cursor:help;" title="Связывает точку отсчета этого календаря с общемировой осью времени или с опорным историческим событием.">[?]</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-chip success" id="sync-status-badge">🌟 Синхронизировано</span>
+                <span class="correction-collapse-icon" id="sync-collapse-icon">▼</span>
+              </div>
+            </div>
+
+            <div id="sync-anchor-content" style="margin-top: 10px;">
+              <!-- 1. Переключатель типа привязки (3 радиокнопки) -->
+              <div class="sync-target-type-row" style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; font-weight:500;">
+                  <input type="radio" name="sync-target-type" value="event" checked onchange="setSyncTargetType('event')">
+                  <span>🌟 К опорному историческому событию</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; font-weight:500;">
+                  <input type="radio" name="sync-target-type" value="calendar" onchange="setSyncTargetType('calendar')">
+                  <span>📜 К календарю другого поселения / культуры</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; font-weight:500;">
+                  <input type="radio" name="sync-target-type" value="master_era" onchange="setSyncTargetType('master_era')">
+                  <span>🌍 К Календарю Мира / Эпохе</span>
+                </label>
+              </div>
+
+              <!-- НАСТРОЙКИ: Вариант 1 — К опорному событию -->
+              <div id="sync-panel-event" style="display:block; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
+                <div class="grid-3" style="align-items:end;">
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <label class="form-label" style="margin:0;">Опорное событие</label>
+                      <button type="button" class="btn-ghost-sm" style="padding:1px 6px; font-size:10px;" onclick="promptNewMasterEvent()">➕ Новое событие</button>
+                    </div>
+                    <select id="sync-event-select" class="form-select" onchange="updateSyncEventData()">
+                      <option value="1">👑 Коронация Первого Императора (Год 1 н.э.)</option>
+                      <option value="2">☄️ Падение Метеорита (Год 312 до н.э.)</option>
+                      <option value="3">🗡️ Битва Пяти Воинств (Год 2941 Т.Э.)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Направление</label>
+                    <div style="display:flex; gap:12px; padding-top:6px;">
+                      <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                        <input type="radio" name="sync-dir-event" value="after" checked onchange="updateSyncStatusText()">
+                        <span>После события</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                        <input type="radio" name="sync-dir-event" value="before" onchange="updateSyncStatusText()">
+                        <span>До события</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Смещение (лет)</label>
+                    <input type="number" id="sync-event-offset-years" class="form-input" value="0" min="0" oninput="updateSyncStatusText()">
+                  </div>
+                </div>
+
+                <!-- Быстрое редактирование выбранной вехи прямо здесь -->
+                <div style="display:flex; gap:8px; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);">
+                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Веха:</span>
+                  <input type="text" id="sync-event-edit-name" class="form-input" style="flex:1; padding:4px 8px; font-size:12px;" value="Коронация Первого Императора">
+                  <span style="font-size:11px; color:var(--text-muted);">Год в Календаре Мира:</span>
+                  <input type="number" id="sync-event-edit-year" class="form-input" style="width:80px; padding:4px 8px; font-size:12px;" value="1">
+                </div>
+              </div>
+
+              <!-- НАСТРОЙКИ: Вариант 2 — К календарю другого поселения -->
+              <div id="sync-panel-calendar" style="display:none; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Календарь другого поселения / культуры</label>
+                    <select id="sync-other-cal-select" class="form-select" onchange="updateSyncStatusText()">
+                      <option value="julian">Юлианский календарь (Церковный)</option>
+                      <option value="padishah">Имперский Стандарт Падишаха</option>
+                      <option value="fremen">Цикл Сиетча Табр (Фременский)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Когда там шёл год</label>
+                    <input type="number" id="sync-other-cal-year" class="form-input" value="1" min="1" placeholder="1" oninput="updateSyncStatusText()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- НАСТРОЙКИ: Вариант 3 — К Календарю Мира / Эпохе -->
+              <div id="sync-panel-era" style="display:none; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
+                <div class="grid-3">
+                  <div class="form-group">
+                    <label class="form-label">Опорная эпоха в Календаре Мира</label>
+                    <select id="sync-master-era-select" class="form-select" onchange="updateSyncStatusText()">
+                      <option value="-1">🌍 От начала Календаря Мира (Год 1)</option>
+                      <option value="1">🏛️ Наша эра (с 1 г.)</option>
+                      <option value="2">🏛️ Эра Дракона (с 800 г.)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Направление отсчёта</label>
+                    <div style="display:flex; gap:12px; padding-top:6px;">
+                      <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                        <input type="radio" name="sync-dir-era" value="after" checked onchange="updateSyncStatusText()">
+                        <span>После начала</span>
+                      </label>
+                      <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                        <input type="radio" name="sync-dir-era" value="before" onchange="updateSyncStatusText()">
+                        <span>До начала</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Смещение (лет)</label>
+                    <input type="number" id="sync-era-offset-years" class="form-input" value="0" min="0" oninput="updateSyncStatusText()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Конкретный день и месяц привязки в Календаре Мира -->
+              <div class="grid-2" style="margin-bottom:12px;">
+                <div class="form-group">
+                  <label class="form-label">Месяц в Календаре Мира</label>
+                  <select id="sync-anchor-month" class="form-select" onchange="updateSyncStatusText()">
+                    <option value="0">Январь</option>
+                    <option value="1">Февраль</option>
+                    <option value="2" selected>Март</option>
+                    <option value="3">Апрель</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">День в Календаре Мира</label>
+                  <input type="number" id="sync-anchor-day" class="form-input" value="15" min="1" max="31" oninput="updateSyncStatusText()">
+                </div>
+              </div>
+
+              <!-- Карточка статуса сопряжения -->
+              <div class="drift-banner" style="background:rgba(56,189,248,0.08); border-color:var(--border-accent); color:var(--text-main);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:20px;">✓</span>
+                  <div>
+                    <div style="font-weight:600; font-size:13px; color:var(--accent-primary);">Статус синхронизации: Активна</div>
+                    <div id="sync-offset-description" style="font-size:12px; color:var(--text-muted);">
+                      Год 1 этого календаря соответствует 15 Марта 1 года Мира (Опорное событие: Коронация Первого Императора).
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Эпохи и Эры календаря (CalendarEras.vue) -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🏛️ Эпохи и Эры календаря</div>
+                <div class="section-desc">Исторические эпохи культуры, обратный отсчет «до н.э.» и даты смены царствований.</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="addNewEraRow()">+ Добавить эпоху</button>
+            </div>
+
+            <!-- Список эпох с расширенными параметрами -->
+            <div id="eras-container" style="display:flex; flex-direction:column; gap:10px;">
+              <!-- Эра 1: До н.э. -->
+              <div class="era-card" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:12px;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input type="text" class="table-input" value="До нашей эры (до Р.Х.)" style="font-weight:600; flex:2;">
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:11px; color:var(--text-muted)">Старт:</span>
+                    <input type="number" class="table-input" value="1" style="width:70px;">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:11px; color:var(--text-muted)">Конец:</span>
+                    <input type="number" class="table-input" value="9999" style="width:70px;">
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <button class="btn-icon-table" disabled style="opacity:0.3;">↑</button>
+                    <button class="btn-icon-table">↓</button>
+                    <button class="btn-icon-table" onclick="this.closest('.era-card').remove()">🗑️</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:16px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; font-size:12px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--accent-warning);">
+                    <input type="checkbox" checked style="accent-color:var(--accent-warning);" onchange="toggleEraDirection(this)">
+                    <strong>⬅️ Обратный отсчет (годы убывают: 500 до н.э. → 1 до н.э.)</strong>
+                  </label>
+
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" onchange="toggleEraAnniversary(this)">
+                    <span>📅 Смена эры в конкретный исторический день (по годовщине события)</span>
+                  </label>
+                  <div class="era-specific-date" style="display:none; gap:6px; align-items:center;">
+                    <span style="color:var(--text-muted)">Дата:</span>
+                    <select class="form-select" style="padding:2px 6px; font-size:11px;"><option>Январь</option><option selected>Март</option></select>
+                    <input type="number" class="form-input" value="15" style="width:50px; padding:2px 6px; font-size:11px;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Эра 2: Наша эра -->
+              <div class="era-card" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:12px;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input type="text" class="table-input" value="Наша эра (Anno Domini)" style="font-weight:600; flex:2;">
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:11px; color:var(--text-muted)">Старт:</span>
+                    <input type="number" class="table-input" value="1" style="width:70px;">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:11px; color:var(--text-muted)">Конец:</span>
+                    <input type="number" class="table-input" value="9999" style="width:70px;">
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <button class="btn-icon-table">↑</button>
+                    <button class="btn-icon-table" disabled style="opacity:0.3;">↓</button>
+                    <button class="btn-icon-table" onclick="this.closest('.era-card').remove()">🗑️</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:16px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; font-size:12px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--accent-success);">
+                    <input type="checkbox" onchange="toggleEraDirection(this)">
+                    <span>➡️ Прямой отсчет (1 н.э. → 2 н.э. → 2026 н.э.)</span>
+                  </label>
+
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" checked onchange="toggleEraAnniversary(this)">
+                    <span>📅 Смена эры в конкретный исторический день (по годовщине события)</span>
+                  </label>
+                  <div class="era-specific-date" style="display:inline-flex; gap:6px; align-items:center;">
+                    <span style="color:var(--text-muted)">Дата смены:</span>
+                    <select class="form-select" style="padding:2px 6px; font-size:11px;"><option>Январь</option><option selected>Март</option><option>Декабрь</option></select>
+                    <input type="number" class="form-input" value="25" style="width:50px; padding:2px 6px; font-size:11px;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Опорные исторические события -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">⚔️ Опорные исторические события мира (Вехи)</div>
+                <div class="section-desc">Ключевые даты, сквозь которые синхронизируются все хроники разных народов.</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="promptNewMasterEvent()">+ Опорное событие</button>
+            </div>
+
+            <div class="chip-list" id="master-events-chips-list">
+              <span class="preset-chip active">👑 Коронация Первого Императора (Год 1 н.э.)</span>
+              <span class="preset-chip active">☄️ Падение Метеорита (Год 312 до н.э.)</span>
+              <span class="preset-chip active">🗡️ Битва Пяти Воинств (Год 2941 Т.Э.)</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ТАБ 3: КУЛЬТУРА И ЛОР -->
+        <div class="tab-pane" id="cal-tab-culture-lore">
+          
+          <!-- 1. Времена года (Сезоны) с выбором конкретных месяцев -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🍂 Времена года (Сезоны)</div>
+                <div class="section-desc">Границы климатических сезонов культуры. Выберите месяцы, принадлежащие каждому сезону.</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="addNewSeasonRow()">+ Добавить сезон</button>
+            </div>
+
+            <div id="seasons-list-container" style="display:flex; flex-direction:column; gap:10px;">
+              <!-- Сезон: Зима -->
+              <div class="season-row-wrap" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px;">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                  <input type="color" value="#38bdf8" style="width:26px; height:26px; border:none; background:transparent; cursor:pointer;" title="Цвет сезона">
+                  <input type="text" class="table-input" value="❄️ Зима" style="font-weight:600; width:160px;">
+                  <button type="button" class="btn-ghost-sm" onclick="toggleSeasonHemisphere(this)">🌍 Северное полушарие</button>
+                  <span class="status-chip" style="margin-left:auto; font-size:11px;">Выбрано: 3 мес.</span>
+                  <button class="btn-icon-table" onclick="this.closest('.season-row-wrap').remove()">🗑️</button>
+                </div>
+                <!-- Интерактивная сетка выбора месяцев -->
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">1. Январь</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">2. Февраль</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">3. Март</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">4. Апрель</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">5. Май</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">6. Июнь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">7. Июль</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">8. Август</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">9. Сентябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">10. Октябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">11. Ноябрь</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">12. Декабрь</span>
+                </div>
+              </div>
+
+              <!-- Сезон: Весна -->
+              <div class="season-row-wrap" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px;">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                  <input type="color" value="#10b981" style="width:26px; height:26px; border:none; background:transparent; cursor:pointer;" title="Цвет сезона">
+                  <input type="text" class="table-input" value="🌸 Весна" style="font-weight:600; width:160px;">
+                  <button type="button" class="btn-ghost-sm" onclick="toggleSeasonHemisphere(this)">🌍 Северное полушарие</button>
+                  <span class="status-chip" style="margin-left:auto; font-size:11px;">Выбрано: 3 мес.</span>
+                  <button class="btn-icon-table" onclick="this.closest('.season-row-wrap').remove()">🗑️</button>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">1. Январь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">2. Февраль</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">3. Март</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">4. Апрель</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">5. Май</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">6. Июнь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">7. Июль</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">8. Август</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">9. Сентябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">10. Октябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">11. Ноябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">12. Декабрь</span>
+                </div>
+              </div>
+
+              <!-- Сезон: Лето -->
+              <div class="season-row-wrap" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px;">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                  <input type="color" value="#f59e0b" style="width:26px; height:26px; border:none; background:transparent; cursor:pointer;" title="Цвет сезона">
+                  <input type="text" class="table-input" value="☀️ Лето" style="font-weight:600; width:160px;">
+                  <button type="button" class="btn-ghost-sm" onclick="toggleSeasonHemisphere(this)">🌍 Северное полушарие</button>
+                  <span class="status-chip" style="margin-left:auto; font-size:11px;">Выбрано: 3 мес.</span>
+                  <button class="btn-icon-table" onclick="this.closest('.season-row-wrap').remove()">🗑️</button>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">1. Январь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">2. Февраль</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">3. Март</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">4. Апрель</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">5. Май</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">6. Июнь</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">7. Июль</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">8. Август</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">9. Сентябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">10. Октябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">11. Ноябрь</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">12. Декабрь</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Праздники и Памятные даты культуры (С поддержкой периодов / нескольких дней!) -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🎉 Праздники и Памятные даты культуры</div>
+                <div class="section-desc">Ежегодные праздники (однодневные или многодневные периоды). Отображаются на календарной сетке и в тексте книги.</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="addNewHolidayRow()">+ Добавить праздник</button>
+            </div>
+
+            <div id="holidays-list-container" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Праздник 1: Однодневный -->
+              <div class="holiday-row-wrap" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <input type="text" class="table-input" value="Новый Год" style="font-weight:600; width:180px;" placeholder="Название праздника">
+                <button type="button" class="btn-ghost-sm" onclick="toggleHolidayRange(this)">📅 1 день</button>
+                <div class="holiday-dates-wrap" style="display:flex; gap:6px; align-items:center;">
+                  <select class="form-select" style="padding:4px 8px; font-size:12px;"><option selected>Январь</option><option>Февраль</option></select>
+                  <input type="number" class="form-input" value="1" min="1" max="31" style="width:55px; padding:4px 6px;">
+                  <span class="holiday-end-date" style="display:none; gap:6px; align-items:center;">
+                    — <select class="form-select" style="padding:4px 8px; font-size:12px;"><option selected>Январь</option></select>
+                    <input type="number" class="form-input" value="7" min="1" max="31" style="width:55px; padding:4px 6px;">
+                  </span>
+                </div>
+                <span class="status-chip success" style="margin-left:auto; font-size:11px;">1 день</span>
+                <button class="btn-icon-table" onclick="this.closest('.holiday-row-wrap').remove()">🗑️</button>
+              </div>
+
+              <!-- Праздник 2: Многодневный период (Сатурналии / Йоль) -->
+              <div class="holiday-row-wrap" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <input type="text" class="table-input" value="Сатурналии / Зимние Празднества" style="font-weight:600; width:180px;" placeholder="Название праздника">
+                <button type="button" class="btn-ghost-sm" style="color:var(--accent-purple); border-color:var(--accent-purple);" onclick="toggleHolidayRange(this)">📆 Период (7 дней)</button>
+                <div class="holiday-dates-wrap" style="display:flex; gap:6px; align-items:center;">
+                  <span style="font-size:11px; color:var(--text-muted)">С:</span>
+                  <select class="form-select" style="padding:4px 8px; font-size:12px;"><option>Январь</option><option selected>Декабрь</option></select>
+                  <input type="number" class="form-input" value="17" min="1" max="31" style="width:55px; padding:4px 6px;">
+                  <span class="holiday-end-date" style="display:flex; gap:6px; align-items:center;">
+                    <span style="font-size:11px; color:var(--text-muted)">по:</span>
+                    <select class="form-select" style="padding:4px 8px; font-size:12px;"><option>Январь</option><option selected>Декабрь</option></select>
+                    <input type="number" class="form-input" value="23" min="1" max="31" style="width:55px; padding:4px 6px;">
+                  </span>
+                </div>
+                <span class="status-chip" style="background:rgba(168,85,247,0.15); color:var(--accent-purple); margin-left:auto; font-size:11px;">7 дней (период)</span>
+                <button class="btn-icon-table" onclick="this.closest('.holiday-row-wrap').remove()">🗑️</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Лунные фазы культуры (Зачем даются имена фазам) -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🌕 Лунные фазы в культуре (Спутник: Луна)</div>
+                <div class="section-desc">
+                  Культурные имена фаз спутника используются автором в тексте рукописи: при вводе <code>((Кровавая Луна))</code> движок понимает астрономическую дату, а на таймлайне фаза подсвечивается именем.
+                </div>
+              </div>
+              <button class="btn-ghost-sm" onclick="alert('🔮 Ближайшее Двойное Полнолуние: через 412 суток от точки отсчета!')">🔮 Найти Двойное Полнолуние</button>
+            </div>
+
+            <div class="grid-4" style="margin-top:6px;">
+              <div class="form-group">
+                <label class="form-label">🌑 Новолуние (фаза 0.0)</label>
+                <input type="text" class="form-input" value="Темная Ночь / Ночь Воров" placeholder="Название фазы">
+              </div>
+              <div class="form-group">
+                <label class="form-label">🌓 Растущая (фаза 0.25)</label>
+                <input type="text" class="form-input" value="Серп Охотника" placeholder="Название фазы">
+              </div>
+              <div class="form-group">
+                <label class="form-label">🌕 Полнолуние (фаза 0.50)</label>
+                <input type="text" class="form-input" value="Око Саурона / Кровавая Луна" placeholder="Название фазы">
+              </div>
+              <div class="form-group">
+                <label class="form-label">🌗 Убывающая (фаза 0.75)</label>
+                <input type="text" class="form-input" value="Ущерб / Тающий Лик" placeholder="Название фазы">
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Правило возраста персонажей (Спецификация 4.13) — ЧИСТО И ПОНЯТНО -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🧓 Правило возраста персонажей (Спецификация 4.13)</div>
+                <div class="section-desc">Как жители этой культуры считают возраст своих героев в диалогах и биографиях книги.</div>
+              </div>
+            </div>
+
+            <div class="grid-3" style="margin-top:6px;">
+              <div class="form-group">
+                <label class="form-label">Возраст при рождении</label>
+                <select class="form-select">
+                  <option selected>0 лет — Европейский стандарт (новорожденному 0 лет)</option>
+                  <option>1 год — Восточноазиатский стандарт (сяй: ребенок рождается в возрасте 1 года)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Когда персонаж взрослеет (+1 год к возрасту)</label>
+                <select class="form-select">
+                  <option selected>🎂 В личный день рождения (индивидуальная годовщина)</option>
+                  <option>🎍 1-го января Нового Года (коллективно взрослеют в Сольналь)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Точность проверки дня рождения</label>
+                <select class="form-select">
+                  <option selected>По точной дате (Месяц, День)</option>
+                  <option>Грубо: только по разнице номеров годов</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+              💡 <strong>Как это работает в книге:</strong> Персонаж всегда стареет по законам <em>своей родной культуры</em> (<code>character.culture_calendar_id</code>), даже находясь в чужих землях или на космическом корабле.
+            </div>
+          </div>
+
+          <!-- 5. География и распространение календаря (Спецификация 4.11) — ОТДЕЛЬНО И С МНОЖЕСТВЕННЫМ ВЫБОРОМ! -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🗺️ Географические регионы и часовой пояс календаря (Спецификация 4.11)</div>
+                <div class="section-desc">Где используется этот календарь. Одна культура может охватывать несколько регионов и городов планеты.</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="promptAddRegionTag()">+ Добавить регион</button>
+            </div>
+
+            <div class="grid-2" style="margin-top:6px;">
+              <div class="form-group">
+                <label class="form-label">Регионы и провинции распространения (Множественный выбор)</label>
+                <div class="chip-list" id="culture-regions-multiselect">
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">✓ 🏛️ Столица Империи</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">✓ ⚓ Южная Гавань</span>
+                  <span class="preset-chip active" onclick="this.classList.toggle('active')">✓ 🌲 Северные Земли</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">🏝️ Дальний Архипелаг</span>
+                  <span class="preset-chip" onclick="this.classList.toggle('active')">🏜️ Пустыня Забвения</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Основной часовой пояс культуры по умолчанию</label>
+                <select class="form-select">
+                  <option selected>Столичный меридиан (UTC+0, 0ч)</option>
+                  <option>Восточный рубеж (UTC+3, +3ч)</option>
+                  <option>Дальний Архипелаг (UTC+8, +8ч)</option>
+                  <option>Западные Земли (UTC-5, -5ч)</option>
+                </select>
+                <span style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                  События книги в тексте будут выводиться с учетом часового пояса выбранного региона.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ТАБ 4: ТОЧКА ОТСЧЁТА ПРОИЗВЕДЕНИЯ И СЕТКА -->
+        <div class="tab-pane" id="cal-tab-playground">
+          
+          <!-- Точка отсчета произведения (Story Origin) -->
+          <div class="section-card" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.04);">
+            <div class="section-header">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="checkbox" checked style="accent-color: var(--accent-warning); width:18px; height:18px;">
+                <div>
+                  <div class="section-title" style="color: var(--accent-warning);">🎯 Точка отсчёта произведения (Дата начала сюжета / 1-й главы)</div>
+                  <div class="section-desc">Дата в этом календаре, с которой стартует повествование произведения.</div>
+                </div>
+              </div>
+              <span class="status-chip warning">🌟 Активная точка отсчёта сюжета</span>
+            </div>
+
+            <div class="grid-4" style="margin-top: 12px;">
+              <div class="form-group">
+                <label class="form-label">Эпоха / Эра</label>
+                <select class="form-select">
+                  <option selected>Наша эра (Anno Domini)</option>
+                  <option>До нашей эры</option>
+                  <option>Эра Дракона</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Год начала истории</label>
+                <input type="number" class="form-input" value="1024">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Месяц</label>
+                <select class="form-select" id="playground-month-select" onchange="updatePlaygroundMonth(this.value)">
+                  <option value="1">Январь</option>
+                  <option value="2">Февраль</option>
+                  <option value="3" selected>Март</option>
+                  <option value="4">Апрель</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">День</label>
+                <input type="number" class="form-input" value="14">
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 8px;">
+              <div class="form-group">
+                <label class="form-label">День недели для даты старта истории</label>
+                <select class="form-select">
+                  <option selected>Пятница</option>
+                  <option>Понедельник</option>
+                  <option>Вторник</option>
+                  <option>Среда</option>
+                  <option>Четверг</option>
+                  <option>Суббота</option>
+                  <option>Воскресенье</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Статус привязки к произведению</label>
+                <div style="font-size:12px; color:var(--text-muted); padding-top:6px;">
+                  Этот календарь выбран как <strong>основной хронологический ориентир начала романа</strong>.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Интерактивный просмотр месяца со стартом сюжета -->
+          <div class="section-card">
+            <div class="section-header">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-ghost-sm" onclick="alert('Предыдущий месяц')">◀</button>
+                <div class="section-title" id="matrix-month-title">Март 1024 года н.э. (Сетка стартового месяца)</div>
+                <button class="btn-ghost-sm" onclick="alert('Следующий месяц')">▶</button>
+              </div>
+              <div style="display:flex; gap:12px; font-size:12px;">
+                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:var(--accent-warning)"></span> Точка старта сюжета (14 марта)</span>
+                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:var(--accent-purple)"></span> Праздник (21 марта)</span>
+              </div>
+            </div>
+
+            <!-- Сетка дней недели -->
+            <div class="calendar-matrix">
+              <div class="matrix-day-header">Пн</div>
+              <div class="matrix-day-header">Вт</div>
+              <div class="matrix-day-header">Ср</div>
+              <div class="matrix-day-header">Чт</div>
+              <div class="matrix-day-header">Пт</div>
+              <div class="matrix-day-header" style="color:var(--accent-warning)">Сб</div>
+              <div class="matrix-day-header" style="color:var(--accent-danger)">Вс</div>
+
+              <!-- Дни (пример Марта 1024) -->
+              <div class="matrix-day-cell"><div class="cell-top"><span>1</span></div><div class="cell-sub">Пт</div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span style="color:var(--accent-warning)">2</span></div><div class="cell-sub">Сб</div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span style="color:var(--accent-danger)">3</span></div><div class="cell-sub">Вс</div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>4</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>5</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>6</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>7</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>8</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>9</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>10</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>11</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>12</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>13</span></div></div>
+              <!-- 14 марта - Дата начала сюжета произведения -->
+              <div class="matrix-day-cell is-origin" title="День начала сюжета произведения (Глава 1)!">
+                <div class="cell-top">
+                  <span style="color:var(--accent-warning); font-weight:700;">14</span>
+                  <span class="cell-badge" style="background:var(--accent-warning); color:#000;">Старт книги</span>
+                </div>
+                <div class="cell-sub" style="color:var(--accent-warning)">Глава 1</div>
+              </div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>15</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>16</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>17</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>18</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>19</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>20</span></div></div>
+              
+              <!-- 21 марта - Весеннее равноденствие -->
+              <div class="matrix-day-cell is-holiday" title="Весеннее Равноденствие">
+                <div class="cell-top">
+                  <span style="color:var(--accent-purple); font-weight:700;">21</span>
+                  <span class="cell-badge" style="background:rgba(168,85,247,0.2); color:var(--accent-purple)">🌸 Праздник</span>
+                </div>
+                <div class="cell-sub">Равноденствие</div>
+              </div>
+
+              <div class="matrix-day-cell"><div class="cell-top"><span>22</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>23</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>24</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>25</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>26</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>27</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>28</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>29</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>30</span></div></div>
+              <div class="matrix-day-cell"><div class="cell-top"><span>31</span></div></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================================== -->
+      <!-- РЕЖИМ 2: РЕДАКТОР АСТРОФИЗИКИ ПЛАНЕТЫ (МИР)                         -->
+      <!-- =================================================================== -->
+      <div id="view-planet-container" style="display: none; flex-direction: column; gap: 20px;">
+        
+        <!-- Dashboard карточка планеты -->
+        <div class="dashboard-banner">
+          <div class="dashboard-left">
+            <div class="dashboard-title-row">
+              <span class="dashboard-icon" id="planet-icon">🪐</span>
+              <input type="text" class="dashboard-title-input" id="planet-name-input" value="Земля (Earth)">
+            </div>
+            <div class="dashboard-tags">
+              <span class="status-chip success">⏱️ Сутки: <strong>24ч 00м 00с</strong></span>
+              <span class="status-chip">☀️ Орбита: <strong>365.2422 дн.</strong></span>
+              <span class="status-chip">📐 Наклон оси: <strong>23.44°</strong></span>
+              <span class="status-chip">🌕 Спутников: <strong>1</strong></span>
+              <span class="status-chip">🌍 Поясов: <strong>24</strong></span>
+            </div>
+          </div>
+
+          <div class="dashboard-actions">
+            <button class="btn-action" onclick="alert('Планета сохранена!')">
+              💾 Сохранить планету
+            </button>
+            <button class="btn-action" style="color: var(--accent-danger);" onclick="alert('Удаление планеты')">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Табы Планеты -->
+        <nav class="tab-nav-bar">
+          <button class="tab-button active" onclick="switchPlanetTab('astrophysics', this)">
+            <span>🪐 1. Астрофизика & Сутки</span>
+          </button>
+          <button class="tab-button" onclick="switchPlanetTab('timezones-regions', this)">
+            <span>🌍 2. Часовые пояса & Города</span>
+            <span class="tab-badge">24 пояса</span>
+          </button>
+          <button class="tab-button" onclick="switchPlanetTab('moons', this)">
+            <span>🌕 3. Спутники и Луны</span>
+            <span class="tab-badge">1 луна</span>
+          </button>
+        </nav>
+
+        <!-- ТАБ 1 ПЛАНЕТЫ: АСТРОФИЗИКА -->
+        <div class="tab-pane active" id="planet-tab-astrophysics">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title">🪐 Фундаментальные физические параметры планеты</div>
+              <span class="status-chip success">Прямое вращение</span>
+            </div>
+
+            <div class="grid-4">
+              <div class="form-group">
+                <label class="form-label">Длительность суток (часы / мин / сек)</label>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  <input type="number" class="form-input" value="24" style="width:60px;"> ч
+                  <input type="number" class="form-input" value="0" style="width:50px;"> м
+                  <input type="number" class="form-input" value="0" style="width:50px;"> с
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Тропический год (орбита в сутках)</label>
+                <input type="number" step="0.0001" class="form-input" value="365.2422">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Наклон оси вращения (°)</label>
+                <input type="number" step="0.1" class="form-input" value="23.44">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Направление вращения</label>
+                <select class="form-select">
+                  <option selected>Прямое (Восход на востоке)</option>
+                  <option>Ретроградное (Восход на западе)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Астрономические точки года -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">❄️☀️ Астрономические точки года и солнцестояния</div>
+                <div class="section-desc">Рассчитываются автоматически по орбите планеты. Наклон оси: 23.44°</div>
+              </div>
+              <button class="btn-ghost-sm" onclick="alert('Рассчитано из культурного календаря!')">🧮 Рассчитать из календаря</button>
+            </div>
+
+            <div class="astro-cards-grid">
+              <div class="astro-card">
+                <span class="astro-label">❄️ Зимнее солнцестояние</span>
+                <span class="astro-val">355.0 сут.</span>
+              </div>
+              <div class="astro-card">
+                <span class="astro-label">🌸 Весеннее равноденствие</span>
+                <span class="astro-val">80.0 сут.</span>
+              </div>
+              <div class="astro-card">
+                <span class="astro-label">☀️ Летнее солнцестояние</span>
+                <span class="astro-val">172.0 сут.</span>
+              </div>
+              <div class="astro-card">
+                <span class="astro-label">🍂 Осеннее равноденствие</span>
+                <span class="astro-val">266.0 сут.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ТАБ 2 ПЛАНЕТЫ: ПОЯСА И ГОРОДА -->
+        <div class="tab-pane" id="planet-tab-timezones-regions">
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">🌍 Часовые пояса планеты</div>
+                <div class="section-desc">Сетка часовых поясов мира относительно нулевого меридиана. Автор может задавать любые пояса.</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-ghost-sm" onclick="applyPlanetTimezonePreset('earth24')">🌐 Стандарт (24 пояса)</button>
+                <button class="btn-ghost-sm" onclick="applyPlanetTimezonePreset('single')">0️⃣ Только меридиан</button>
+              </div>
+            </div>
+
+            <!-- Таблица часовых поясов -->
+            <table class="items-table" style="margin-bottom:12px;">
+              <thead>
+                <tr>
+                  <th>Название часового пояса</th>
+                  <th style="width: 140px;">Код / Аббревиатура</th>
+                  <th style="width: 180px;">Смещение от меридиана</th>
+                  <th style="width: 60px;"></th>
+                </tr>
+              </thead>
+              <tbody id="planet-timezones-tbody">
+                <tr>
+                  <td><input type="text" class="table-input" value="Столичный меридиан"></td>
+                  <td><input type="text" class="table-input" value="UTC+0" style="font-weight:600;"></td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <input type="number" step="0.5" class="table-input" value="0.0" style="width:70px;">
+                      <span style="font-size:11px; color:var(--text-muted);">ч. (0 мин)</span>
+                    </div>
+                  </td>
+                  <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td><input type="text" class="table-input" value="Восточный рубеж"></td>
+                  <td><input type="text" class="table-input" value="UTC+3" style="font-weight:600;"></td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <input type="number" step="0.5" class="table-input" value="3.0" style="width:70px;">
+                      <span style="font-size:11px; color:var(--text-muted);">ч. (+180 мин)</span>
+                    </div>
+                  </td>
+                  <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td><input type="text" class="table-input" value="Дальний Архипелаг"></td>
+                  <td><input type="text" class="table-input" value="UTC+8" style="font-weight:600;"></td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <input type="number" step="0.5" class="table-input" value="8.0" style="width:70px;">
+                      <span style="font-size:11px; color:var(--text-muted);">ч. (+480 мин)</span>
+                    </div>
+                  </td>
+                  <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+                </tr>
+                <tr>
+                  <td><input type="text" class="table-input" value="Западные Земли"></td>
+                  <td><input type="text" class="table-input" value="UTC-5" style="font-weight:600;"></td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <input type="number" step="0.5" class="table-input" value="-5.0" style="width:70px;">
+                      <span style="font-size:11px; color:var(--text-muted);">ч. (-300 мин)</span>
+                    </div>
+                  </td>
+                  <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Форма добавления нового часового пояса -->
+            <div style="display:flex; gap:10px; align-items:center; background:var(--bg-surface); padding:10px 14px; border-radius:var(--radius-md); border:1px dashed var(--border-subtle); flex-wrap:wrap;">
+              <span style="font-size:12px; font-weight:600; color:var(--accent-primary);">➕ Добавить свой пояс:</span>
+              <input type="text" id="new-tz-name" class="form-input" style="flex:2; min-width:140px; padding:6px 10px; font-size:12px;" placeholder="Название пояса (напр. Горный Предел)">
+              <input type="text" id="new-tz-code" class="form-input" style="width:90px; padding:6px 10px; font-size:12px;" placeholder="Код (UTC+4)">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <input type="number" step="0.5" id="new-tz-offset" class="form-input" style="width:75px; padding:6px 8px; font-size:12px;" value="4.0" placeholder="+4.0">
+                <span style="font-size:11px; color:var(--text-muted);">ч</span>
+              </div>
+              <button class="btn-action btn-primary" onclick="addPlanetTimezone()" style="padding:6px 12px; font-size:12px;">
+                Добавить пояс
+              </button>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title">🗺️ Географические регионы, города и световой день</div>
+              <button class="btn-ghost-sm">+ Добавить регион</button>
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Город / Регион</th>
+                  <th style="width: 140px;">Часовой пояс</th>
+                  <th style="width: 90px;">Широта (°)</th>
+                  <th style="width: 90px;">Долгота (°)</th>
+                  <th style="width: 150px;">☀️ Макс. день (лето)</th>
+                  <th style="width: 150px;">❄️ Мин. день (зима)</th>
+                  <th style="width: 60px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" class="table-input" value="Столица Империи"></td>
+                  <td><span class="status-chip">UTC+0</span></td>
+                  <td><input type="number" class="table-input" value="55.75"></td>
+                  <td><input type="number" class="table-input" value="37.61"></td>
+                  <td><strong>17ч 34м</strong></td>
+                  <td><strong>7ч 12м</strong></td>
+                  <td><button class="btn-icon-table">⚡</button></td>
+                </tr>
+                <tr>
+                  <td><input type="text" class="table-input" value="Южная Гавань"></td>
+                  <td><span class="status-chip">UTC+3</span></td>
+                  <td><input type="number" class="table-input" value="30.20"></td>
+                  <td><input type="number" class="table-input" value="60.00"></td>
+                  <td><strong>14ч 10м</strong></td>
+                  <td><strong>10ч 20м</strong></td>
+                  <td><button class="btn-icon-table">⚡</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ТАБ 3 ПЛАНЕТЫ: СПУТНИКИ И ЛУНЫ -->
+        <div class="tab-pane" id="planet-tab-moons">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title">🌕 Естественные спутники планеты (Физические орбиты)</div>
+              <button class="btn-ghost-sm">+ Добавить луну</button>
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Имя спутника</th>
+                  <th style="width: 180px;">Орбитальный период (суток)</th>
+                  <th style="width: 180px;">Стартовая фаза (0-1)</th>
+                  <th style="width: 50px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" class="table-input" value="Луна (Селена)"></td>
+                  <td><input type="number" step="0.01" class="table-input" value="29.53"></td>
+                  <td><input type="number" step="0.05" class="table-input" value="0.5"></td>
+                  <td><button class="btn-icon-table">🗑️</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. НАВИГАЦИЯ МЕЖДУ ПЛАНЕТАМИ И КАЛЕНДАРЯМИ
+    // =========================================================================
+    function switchView(type, id) {
+      const calContainer = document.getElementById('view-calendar-container');
+      const planetContainer = document.getElementById('view-planet-container');
+      
+      const topPlanet = document.getElementById('top-selected-planet');
+      const topCal = document.getElementById('top-selected-cal');
+
+      document.querySelectorAll('.tree-cal-item').forEach(el => el.classList.remove('is-selected'));
+      document.querySelectorAll('.tree-planet-item').forEach(el => el.classList.remove('is-selected'));
+
+      if (type === 'planet') {
+        calContainer.style.display = 'none';
+        planetContainer.style.display = 'flex';
+        
+        if (id === 'earth') {
+          topPlanet.innerText = 'Земля';
+          topCal.innerText = '— (Редактор планеты)';
+          document.querySelector('#planet-earth-group .tree-planet-item').classList.add('is-selected');
+          document.getElementById('planet-name-input').value = 'Земля (Earth)';
+          document.getElementById('planet-icon').innerText = '🪐';
+        } else if (id === 'arrakis') {
+          topPlanet.innerText = 'Арракис';
+          topCal.innerText = '— (Редактор планеты)';
+          document.querySelector('#planet-arrakis-group .tree-planet-item').classList.add('is-selected');
+          document.getElementById('planet-name-input').value = 'Арракис (Дюна)';
+          document.getElementById('planet-icon').innerText = '🏜️';
+        }
+      } else {
+        planetContainer.style.display = 'none';
+        calContainer.style.display = 'flex';
+
+        if (id === 'gregorian') {
+          topPlanet.innerText = 'Земля';
+          topCal.innerText = 'Григорианский';
+          document.getElementById('cal-gregorian-node').classList.add('is-selected');
+          document.getElementById('cal-title-input').value = 'Григорианский календарь';
+          applyPresetCor('gregorian');
+        } else if (id === 'julian') {
+          topPlanet.innerText = 'Земля';
+          topCal.innerText = 'Юлианский';
+          document.getElementById('cal-julian-node').classList.add('is-selected');
+          document.getElementById('cal-title-input').value = 'Юлианский календарь (Старый стиль)';
+          selectRuleType('каждый 4 год');
+        } else if (id === 'padishah') {
+          topPlanet.innerText = 'Арракис';
+          topCal.innerText = 'Имперский Стандарт';
+          document.getElementById('cal-padishah-node').classList.add('is-selected');
+          document.getElementById('cal-title-input').value = 'Календарь Падишах-Империи';
+          applyPresetCor('custom');
+        } else if (id === 'fremen') {
+          topPlanet.innerText = 'Арракис';
+          topCal.innerText = 'Цикл Сиетча';
+          document.getElementById('cal-fremen-node').classList.add('is-selected');
+          document.getElementById('cal-title-input').value = 'Календарь Сиетча Табр';
+          applyPresetCor('tolkien');
+        }
+      }
+    }
+
+    function switchCalTab(tabId, btn) {
+      document.querySelectorAll('#view-calendar-container .tab-button').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('#view-calendar-container .tab-pane').forEach(el => el.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const targetPane = document.getElementById('cal-tab-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+    }
+
+    function switchPlanetTab(tabId, btn) {
+      document.querySelectorAll('#view-planet-container .tab-button').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('#view-planet-container .tab-pane').forEach(el => el.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetPane = document.getElementById('planet-tab-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+    }
+
+    function updatePlaygroundMonth(monthVal) {
+      const names = { '1': 'Январь', '2': 'Февраль', '3': 'Март', '4': 'Апрель' };
+      document.getElementById('matrix-month-title').innerText = `${names[monthVal]} 1024 года н.э.`;
+    }
+
+    // =========================================================================
+    // 2. ЦИФЕРБЛАТ И СУТКИ (DialHierarchy)
+    // =========================================================================
+    function applyDialPreset(preset) {
+      const tbody = document.getElementById('dial-units-tbody');
+      tbody.innerHTML = '';
+
+      let units = [];
+      if (preset === 'earth') {
+        units = [
+          { name: 'Час', sub: 24, hint: '1/24 суток (1 час = 3600 с)' },
+          { name: 'Минута', sub: 60, hint: '1/1440 суток (1 мин = 60 с)' },
+          { name: 'Секунда', sub: 60, hint: '1/86400 суток (квант 1 с)' }
+        ];
+      } else if (preset === 'fantasy') {
+        units = [
+          { name: 'Стража', sub: 4, hint: '1/4 суток (6 часов)' },
+          { name: 'Колокол', sub: 6, hint: '1/24 суток (1 час)' },
+          { name: 'Удар гонга', sub: 100, hint: '1/2400 суток (36 секунд)' }
+        ];
+      } else if (preset === 'metric') {
+        units = [
+          { name: 'Десятичный час', sub: 10, hint: '1/10 суток (2.4 часа)' },
+          { name: 'Десятичная минута', sub: 100, hint: '1/1000 суток (86.4 с)' },
+          { name: 'Десятичная секунда', sub: 100, hint: '1/100000 суток (0.864 с)' }
+        ];
+      } else if (preset === 'agrarian') {
+        units = [];
+      }
+
+      units.forEach((u, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color:var(--text-dim)">${idx + 1}</td>
+          <td><input type="text" class="table-input" value="${u.name}" placeholder="Название"></td>
+          <td><input type="number" class="table-input" value="${u.sub}" min="1" oninput="recalcDial()"></td>
+          <td style="color:var(--text-muted); font-size:12px;">${u.hint}</td>
+          <td><button class="btn-icon-table" onclick="removeDialUnit(this)">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      recalcDial();
+    }
+
+    function addDialUnit() {
+      const tbody = document.getElementById('dial-units-tbody');
+      const count = tbody.querySelectorAll('tr').length + 1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--text-dim)">${count}</td>
+        <td><input type="text" class="table-input" value="Дробь" placeholder="Название единицы"></td>
+        <td><input type="number" class="table-input" value="10" min="1" oninput="recalcDial()"></td>
+        <td style="color:var(--text-muted); font-size:12px;">Кастомное деление</td>
+        <td><button class="btn-icon-table" onclick="removeDialUnit(this)">🗑️</button></td>
+      `;
+      tbody.appendChild(tr);
+      recalcDial();
+    }
+
+    function removeDialUnit(btn) {
+      btn.closest('tr').remove();
+      const rows = document.querySelectorAll('#dial-units-tbody tr');
+      rows.forEach((r, idx) => {
+        r.querySelector('td:first-child').innerText = idx + 1;
+      });
+      recalcDial();
+    }
+
+    function recalcDial() {
+      const inputs = document.querySelectorAll('#dial-units-tbody input[type="number"]');
+      let capacity = 1;
+      inputs.forEach(inp => {
+        const val = Math.max(1, parseInt(inp.value) || 1);
+        capacity *= val;
+      });
+
+      const badge = document.getElementById('dial-capacity-badge');
+      if (inputs.length === 0) {
+        badge.innerHTML = 'Емкость: <strong>Только сутки (1)</strong>';
+      } else {
+        badge.innerHTML = `Емкость: <strong>${capacity.toLocaleString('ru-RU')} делений</strong>`;
+      }
+    }
+
+    function toggleCustomDayStart(val) {
+      const box = document.getElementById('custom-day-start-box');
+      box.style.display = (val === 'custom') ? 'flex' : 'none';
+    }
+
+    // =========================================================================
+    // 3. ДНИ НЕДЕЛИ (CalendarWeekdays.vue)
+    // =========================================================================
+    let weekdaysState = [
+      { name: 'Понедельник', isWeekend: false },
+      { name: 'Вторник', isWeekend: false },
+      { name: 'Среда', isWeekend: false },
+      { name: 'Четверг', isWeekend: false },
+      { name: 'Пятница', isWeekend: false },
+      { name: 'Суббота', isWeekend: true },
+      { name: 'Воскресенье', isWeekend: true }
+    ];
+    let isWeekdaysCollapsed = false;
+
+    function renderWeekdays() {
+      const container = document.getElementById('weekdays-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      weekdaysState.forEach((d, idx) => {
+        const row = document.createElement('div');
+        row.className = 'weekday-row';
+        row.innerHTML = `
+          <span class="weekday-num">${idx + 1}</span>
+          <input type="text" class="weekday-input" value="${d.name}" oninput="weekdaysState[${idx}].name = this.value">
+          <button type="button" class="weekday-weekend-btn ${d.isWeekend ? 'is-weekend' : ''}" onclick="toggleWeekendStatus(${idx})">
+            ${d.isWeekend ? '🎉 Выходной' : 'Будний'}
+          </button>
+          <button type="button" class="btn-ghost-sm" ${idx === 0 ? 'disabled style="opacity:0.3; cursor:default;"' : ''} onclick="moveWeekday(${idx}, -1)" title="Вверх">↑</button>
+          <button type="button" class="btn-ghost-sm" ${idx === weekdaysState.length - 1 ? 'disabled style="opacity:0.3; cursor:default;"' : ''} onclick="moveWeekday(${idx}, 1)" title="Вниз">↓</button>
+          <button type="button" class="btn-ghost-sm" style="color:var(--accent-danger);" onclick="removeWeekday(${idx})" title="Удалить">🗑️</button>
+        `;
+        container.appendChild(row);
+      });
+
+      const countBadge = document.getElementById('weekdays-count-badge');
+      if (countBadge) {
+        countBadge.innerText = `${weekdaysState.length} дней в цикле`;
+      }
+    }
+
+    function addNewWeekday() {
+      const input = document.getElementById('new-weekday-name');
+      const val = (input && input.value.trim()) || `День ${weekdaysState.length + 1}`;
+      weekdaysState.push({ name: val, isWeekend: false });
+      if (input) input.value = '';
+      renderWeekdays();
+    }
+
+    function toggleWeekendStatus(idx) {
+      if (weekdaysState[idx]) {
+        weekdaysState[idx].isWeekend = !weekdaysState[idx].isWeekend;
+        renderWeekdays();
+      }
+    }
+
+    function moveWeekday(idx, delta) {
+      const targetIdx = idx + delta;
+      if (targetIdx < 0 || targetIdx >= weekdaysState.length) return;
+      const item = weekdaysState.splice(idx, 1)[0];
+      weekdaysState.splice(targetIdx, 0, item);
+      renderWeekdays();
+    }
+
+    function removeWeekday(idx) {
+      if (weekdaysState.length <= 1) {
+        alert('В неделе должен оставаться хотя бы один день!');
+        return;
+      }
+      weekdaysState.splice(idx, 1);
+      renderWeekdays();
+    }
+
+    function applyWeekPreset(count) {
+      document.querySelectorAll('[id^="chip-week-"]').forEach(b => b.classList.remove('active'));
+      const activeChip = document.getElementById('chip-week-' + count);
+      if (activeChip) activeChip.classList.add('active');
+
+      if (count === 7) {
+        weekdaysState = [
+          { name: 'Понедельник', isWeekend: false },
+          { name: 'Вторник', isWeekend: false },
+          { name: 'Среда', isWeekend: false },
+          { name: 'Четверг', isWeekend: false },
+          { name: 'Пятница', isWeekend: false },
+          { name: 'Суббота', isWeekend: true },
+          { name: 'Воскресенье', isWeekend: true }
+        ];
+      } else if (count === 6) {
+        weekdaysState = [
+          { name: 'Примдей (1-й)', isWeekend: false },
+          { name: 'Секундей (2-й)', isWeekend: false },
+          { name: 'Терций (3-й)', isWeekend: false },
+          { name: 'Кварт (4-й)', isWeekend: false },
+          { name: 'Квинт (5-й)', isWeekend: false },
+          { name: 'Секста (День Отдыха)', isWeekend: true }
+        ];
+      } else if (count === 10) {
+        weekdaysState = [];
+        for (let i = 1; i <= 9; i++) {
+          weekdaysState.push({ name: `День ${i}`, isWeekend: false });
+        }
+        weekdaysState.push({ name: 'Декади (10-й, Праздник)', isWeekend: true });
+      } else if (count === 5) {
+        weekdaysState = [
+          { name: 'Солнцевень', isWeekend: false },
+          { name: 'Ветродень', isWeekend: false },
+          { name: 'Вододень', isWeekend: false },
+          { name: 'Огнедень', isWeekend: false },
+          { name: 'Тиходень', isWeekend: true }
+        ];
+      }
+      renderWeekdays();
+    }
+
+    function toggleWeekdaysCollapse() {
+      isWeekdaysCollapsed = !isWeekdaysCollapsed;
+      const content = document.getElementById('weekdays-content');
+      const icon = document.getElementById('weekdays-collapse-icon');
+      if (content) content.style.display = isWeekdaysCollapsed ? 'none' : 'block';
+      if (icon) icon.innerText = isWeekdaysCollapsed ? '▶' : '▼';
+    }
+
+    function togglePauseWeekdays(checked) {
+      const el1 = document.getElementById('weekdays-pause-check');
+      const el2 = document.getElementById('cor-pause-weekdays-check');
+      if (el1) el1.checked = checked;
+      if (el2) el2.checked = checked;
+    }
+
+    // =========================================================================
+    // 4. МЕСЯЦЫ ГОДА И БАЛАНСИРОВКА
+    // =========================================================================
+    let monthsData = [
+      { name: 'Январь', days: 31 },
+      { name: 'Февраль', days: 28 },
+      { name: 'Март', days: 31 },
+      { name: 'Апрель', days: 30 },
+      { name: 'Май', days: 31 },
+      { name: 'Июнь', days: 30 },
+      { name: 'Июль', days: 31 },
+      { name: 'Август', days: 31 },
+      { name: 'Сентябрь', days: 30 },
+      { name: 'Октябрь', days: 31 },
+      { name: 'Ноябрь', days: 30 },
+      { name: 'Декабрь', days: 31 }
+    ];
+
+    function recalcMonthsTotal() {
+      const d0 = parseInt(document.getElementById('m-days-0')?.value) || 31;
+      const d1 = parseInt(document.getElementById('m-days-1')?.value) || 28;
+      const d2 = parseInt(document.getElementById('m-days-2')?.value) || 31;
+      const other9 = 365 - (31 + 28 + 31); // 275
+      const total = d0 + d1 + d2 + other9;
+      
+      const badge = document.getElementById('months-total-days-badge');
+      if (badge) badge.innerText = `${total} дней`;
+      
+      monthsData[0].days = d0;
+      monthsData[1].days = d1;
+      monthsData[2].days = d2;
+      
+      updateDriftAndBanner();
+      updateYearTape();
+    }
+
+    function balanceMonthsEvenly() {
+      monthsData.forEach(m => m.days = 30);
+      monthsData[0].days = 31;
+      monthsData[2].days = 31;
+      monthsData[4].days = 31;
+      monthsData[6].days = 31;
+      monthsData[7].days = 31;
+      const d0 = document.getElementById('m-days-0');
+      const d1 = document.getElementById('m-days-1');
+      const d2 = document.getElementById('m-days-2');
+      if (d0) d0.value = 30;
+      if (d1) d1.value = 30;
+      if (d2) d2.value = 30;
+      recalcMonthsTotal();
+    }
+
+    // =========================================================================
+    // 5. КАЛЕНДАРНАЯ КОРРЕКЦИЯ И ПРАЗДНИКИ (CalendarCorrection.vue)
+    // =========================================================================
+    let corState = {
+      ruleType: 'григорианское',
+      baseExtraDays: 3,
+      extraDaysName: 'Праздники середины года (Лите)',
+      placement: 'mid_year',
+      afterMonthIndex: 5,
+      targetMode: 'in_month',
+      targetMonthIndex: 1, // Февраль
+      leapDaysOffset: 1,
+      harmonics: [
+        { weight: 1, period: 4 },
+        { weight: -1, period: 100 },
+        { weight: 1, period: 400 }
+      ],
+      targetOrbitalDays: 365.2422,
+      isCollapsed: false,
+      isSuggestOpen: false
+    };
+
+    function toggleCorrectionCollapse() {
+      corState.isCollapsed = !corState.isCollapsed;
+      const content = document.getElementById('correction-content-body');
+      const icon = document.getElementById('cor-collapse-icon');
+      if (content) content.style.display = corState.isCollapsed ? 'none' : 'flex';
+      if (icon) icon.innerText = corState.isCollapsed ? '▶' : '▼';
+    }
+
+    function applyPresetCor(preset) {
+      document.querySelectorAll('[id^="chip-preset-"]').forEach(b => b.classList.remove('active'));
+      const chip = document.getElementById('chip-preset-' + preset);
+      if (chip) chip.classList.add('active');
+
+      if (preset === 'gregorian') {
+        corState.ruleType = 'григорианское';
+        corState.targetMode = 'in_month';
+        corState.targetMonthIndex = 1;
+        corState.leapDaysOffset = 1;
+        corState.baseExtraDays = 0;
+        corState.placement = 'end_of_year';
+        corState.harmonics = [
+          { weight: 1, period: 4 },
+          { weight: -1, period: 100 },
+          { weight: 1, period: 400 }
+        ];
+        togglePauseWeekdays(false);
+      } else if (preset === 'tolkien') {
+        corState.ruleType = 'каждый 4 год';
+        corState.targetMode = 'in_extra_days';
+        corState.leapDaysOffset = 1;
+        corState.baseExtraDays = 5;
+        corState.extraDaysName = 'Праздники Лите (Шир)';
+        corState.placement = 'mid_year';
+        corState.harmonics = [{ weight: 1, period: 4 }];
+        togglePauseWeekdays(true);
+        // Выравнивание 12 месяцев по 30 дней
+        monthsData.forEach(m => m.days = 30);
+      } else if (preset === 'egyptian') {
+        corState.ruleType = 'каждый 4 год';
+        corState.targetMode = 'in_extra_days';
+        corState.leapDaysOffset = 1;
+        corState.baseExtraDays = 5;
+        corState.extraDaysName = 'Дни рождения богов';
+        corState.placement = 'end_of_year';
+        corState.harmonics = [{ weight: 1, period: 4 }];
+        togglePauseWeekdays(false);
+        monthsData.forEach(m => m.days = 30);
+      } else if (preset === 'custom') {
+        corState.ruleType = 'пользовательское';
+        corState.targetMode = 'in_extra_days';
+        corState.leapDaysOffset = 3;
+        corState.baseExtraDays = 5;
+        corState.extraDaysName = 'Праздники обновления';
+        corState.placement = 'end_of_year';
+        corState.harmonics = [
+          { weight: 1, period: 10 },
+          { weight: -1, period: 20 },
+          { weight: 1, period: 200 }
+        ];
+      }
+
+      syncCorInputsFromState();
+      updateDriftAndBanner();
+      updateYearTape();
+      renderHarmonicsList();
+      renderUpcomingYears();
+    }
+
+    function selectRuleType(type) {
+      corState.ruleType = type;
+
+      document.querySelectorAll('[id^="rule-btn-"]').forEach(b => b.classList.remove('active'));
+      if (type === 'григорианское') {
+        document.getElementById('rule-btn-gregorian')?.classList.add('active');
+        corState.harmonics = [
+          { weight: 1, period: 4 },
+          { weight: -1, period: 100 },
+          { weight: 1, period: 400 }
+        ];
+      } else if (type === 'каждый 4 год') {
+        document.getElementById('rule-btn-simple')?.classList.add('active');
+        corState.harmonics = [{ weight: 1, period: 4 }];
+      } else if (type === 'пользовательское') {
+        document.getElementById('rule-btn-custom')?.classList.add('active');
+      } else if (type === 'отсутствует') {
+        document.getElementById('rule-btn-none')?.classList.add('active');
+        corState.harmonics = [];
+      }
+
+      const targetCard = document.getElementById('cor-leap-target-card');
+      if (targetCard) targetCard.style.display = (type === 'отсутствует') ? 'none' : 'flex';
+
+      const customCard = document.getElementById('cor-custom-harmonics-subcard');
+      if (customCard) customCard.style.display = (type === 'пользовательское') ? 'flex' : 'none';
+
+      updateDriftAndBanner();
+      renderHarmonicsList();
+      renderUpcomingYears();
+    }
+
+    function toggleSuggestions() {
+      corState.isSuggestOpen = !corState.isSuggestOpen;
+      const panel = document.getElementById('suggestions-panel');
+      if (panel) panel.style.display = corState.isSuggestOpen ? 'block' : 'none';
+    }
+
+    function applySuggestion(suggestionPreset) {
+      if (suggestionPreset === 'simple') {
+        selectRuleType('каждый 4 год');
+      } else if (suggestionPreset === 'gregorian') {
+        selectRuleType('григорианское');
+      } else if (suggestionPreset === 'persian') {
+        selectRuleType('пользовательское');
+        corState.harmonics = [
+          { weight: 1, period: 4 },
+          { weight: -1, period: 132 }
+        ];
+      } else if (suggestionPreset === 'medler') {
+        selectRuleType('пользовательское');
+        corState.harmonics = [
+          { weight: 1, period: 4 },
+          { weight: -1, period: 128 }
+        ];
+      }
+      corState.isSuggestOpen = false;
+      const panel = document.getElementById('suggestions-panel');
+      if (panel) panel.style.display = 'none';
+      renderHarmonicsList();
+      updateDriftAndBanner();
+      renderUpcomingYears();
+    }
+
+    function balanceMonthsForExtraDays() {
+      const orbitBase = Math.floor(corState.targetOrbitalDays); // 365
+      const extra = corState.baseExtraDays;
+      const targetMonthsTotal = orbitBase - extra; // 365 - 3 = 362
+      
+      const count = monthsData.length;
+      const basePerMonth = Math.floor(targetMonthsTotal / count); // 362 / 12 = 30
+      let rem = targetMonthsTotal % count; // 2
+      
+      monthsData.forEach((m, idx) => {
+        m.days = basePerMonth + (rem > 0 ? 1 : 0);
+        if (rem > 0) rem--;
+      });
+
+      const d0 = document.getElementById('m-days-0');
+      const d1 = document.getElementById('m-days-1');
+      const d2 = document.getElementById('m-days-2');
+      if (d0) d0.value = monthsData[0].days;
+      if (d1) d1.value = monthsData[1].days;
+      if (d2) d2.value = monthsData[2].days;
+
+      recalcMonthsTotal();
+    }
+
+    function resetExtraDays() {
+      corState.baseExtraDays = 0;
+      const inp = document.getElementById('cor-base-extra-days');
+      if (inp) inp.value = 0;
+      updateExtraDaysCount(0);
+    }
+
+    function updateExtraDaysCount(val) {
+      corState.baseExtraDays = Math.max(0, parseInt(val) || 0);
+      const summary = document.getElementById('extra-days-summary-text');
+      if (summary) summary.innerText = `${corState.baseExtraDays} сут. в обычный год`;
+      const badge = document.getElementById('cor-header-extra-badge');
+      if (badge) badge.innerText = `+${corState.baseExtraDays} дн. праздников`;
+
+      updateDriftAndBanner();
+      updateYearTape();
+    }
+
+    function changePlacement(val) {
+      corState.placement = val;
+      const group = document.getElementById('cor-after-month-group');
+      if (group) group.style.display = (val === 'after_month') ? 'block' : 'none';
+      updateYearTape();
+    }
+
+    function setTargetMode(mode) {
+      corState.targetMode = mode;
+      const box = document.getElementById('cor-target-month-container');
+      if (box) box.style.display = (mode === 'in_month') ? 'block' : 'none';
+      updateYearTape();
+      renderUpcomingYears();
+    }
+
+    function changeTargetMonth(val) {
+      corState.targetMonthIndex = parseInt(val) || 0;
+      const preview = document.getElementById('cor-target-month-preview');
+      const m = monthsData[corState.targetMonthIndex];
+      if (preview && m) {
+        preview.innerText = `${m.name}: ${m.days + corState.leapDaysOffset} дн. вместо ${m.days} дн. (+${corState.leapDaysOffset} дн.)`;
+      }
+      updateYearTape();
+    }
+
+    function updateLeapDaysOffset(val) {
+      corState.leapDaysOffset = Math.max(1, parseInt(val) || 1);
+      changeTargetMonth(corState.targetMonthIndex);
+      updateYearTape();
+      renderUpcomingYears();
+    }
+
+    function addHarmonicRule(weight, period) {
+      corState.harmonics.push({ weight, period });
+      renderHarmonicsList();
+      updateDriftAndBanner();
+      renderUpcomingYears();
+    }
+
+    function removeHarmonicRule(idx) {
+      corState.harmonics.splice(idx, 1);
+      renderHarmonicsList();
+      updateDriftAndBanner();
+      renderUpcomingYears();
+    }
+
+    function updateHarmonicPeriod(idx, val) {
+      if (corState.harmonics[idx]) {
+        corState.harmonics[idx].period = Math.max(1, parseInt(val) || 1);
+        updateDriftAndBanner();
+        renderUpcomingYears();
+      }
+    }
+
+    function renderHarmonicsList() {
+      const container = document.getElementById('cor-harmonics-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      corState.harmonics.forEach((h, idx) => {
+        const item = document.createElement('div');
+        item.className = 'harmonic-item';
+        item.innerHTML = `
+          <span class="harmonic-sign ${h.weight > 0 ? 'positive' : 'negative'}">
+            ${h.weight > 0 ? '+' : '-'}
+          </span>
+          <span style="font-size:13px; font-weight:500;">
+            ${h.weight > 0 ? 'Добавлять каждые' : 'КРОМЕ кратных'}
+          </span>
+          <input type="number" class="harmonic-period-input" value="${h.period}" min="1" oninput="updateHarmonicPeriod(${idx}, this.value)">
+          <span style="font-size:12px; color:var(--text-muted);">${h.period === 4 ? 'года' : 'лет'}</span>
+          <button type="button" class="harmonic-delete-btn" onclick="removeHarmonicRule(${idx})" title="Удалить условие">✕</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function updateDriftAndBanner() {
+      const monthsTotal = monthsData.reduce((acc, m) => acc + m.days, 0);
+      const totalBase = monthsTotal + corState.baseExtraDays;
+      const orbit = corState.targetOrbitalDays; // 365.2422
+      const expectedBase = Math.floor(orbit); // 365
+
+      // Расчет дрейфа
+      let leapRate = 0;
+      if (corState.ruleType !== 'отсутствует') {
+        corState.harmonics.forEach(h => {
+          leapRate += (h.weight / h.period);
+        });
+      }
+      const meanYear = totalBase + (leapRate * corState.leapDaysOffset);
+      const drift = (meanYear - orbit) * 100; // сут/век
+
+      // Бейджи дрейфа
+      const driftBadge = document.getElementById('cor-header-drift-badge');
+      const customDriftBadge = document.getElementById('cor-custom-drift-badge');
+      const sign = drift >= 0 ? '+' : '';
+      const driftText = `${sign}${drift.toFixed(2)} сут/век`;
+      
+      if (driftBadge) {
+        driftBadge.innerText = driftText;
+        driftBadge.className = `drift-badge ${Math.abs(drift) <= 1.0 ? 'drift-ok' : 'drift-warning'}`;
+      }
+      if (customDriftBadge) {
+        customDriftBadge.innerText = `Дрейф: ${driftText}`;
+        customDriftBadge.className = `drift-badge ${Math.abs(drift) <= 1.0 ? 'drift-ok' : 'drift-warning'}`;
+      }
+
+      // Баннер предупреждения
+      const banner = document.getElementById('cor-drift-warning-banner');
+      const warningText = document.getElementById('cor-warning-text');
+      
+      if (totalBase !== expectedBase) {
+        banner.style.display = 'flex';
+        const diff = totalBase - expectedBase;
+        if (diff > 0) {
+          warningText.innerText = `⚠️ Базовый год (${totalBase} дн.: ${monthsTotal} в месяцах + ${corState.baseExtraDays} праздничных) на ${diff} дн. длиннее орбиты планеты (${orbit.toFixed(1)} сут.). Високосы не смогут это исправить — сбалансируйте месяцы (сделайте ${expectedBase - corState.baseExtraDays} дн.) или сократите праздники.`;
+        } else {
+          const missing = Math.abs(diff);
+          warningText.innerText = `⚠️ Базовый год (${totalBase} дн.: ${monthsTotal} в месяцах + ${corState.baseExtraDays} праздничных) на ${missing} дн. короче орбиты планеты (${orbit.toFixed(1)} сут.). Добавьте недостающие дни.`;
+        }
+      } else if (Math.abs(drift) > 1.0) {
+        banner.style.display = 'flex';
+        warningText.innerText = `⚠️ Вековое расхождение: ${sign}${drift.toFixed(2)} сут. за 100 лет относительно орбиты планеты (${orbit.toFixed(4)} сут.). Времена года уплывут со временем.`;
+      } else {
+        banner.style.display = 'none';
+      }
+
+      const inspectorBase = document.getElementById('cor-inspector-base-year');
+      if (inspectorBase) inspectorBase.innerText = `Базовый год: ${totalBase} сут.`;
+    }
+
+    function updateYearTape() {
+      const tape = document.getElementById('year-tape-scroll-list');
+      if (!tape) return;
+      tape.innerHTML = '';
+
+      const extraItem = {
+        name: corState.extraDaysName || 'Праздники',
+        days: corState.baseExtraDays,
+        isExtra: true,
+        isLeapTarget: corState.targetMode === 'in_extra_days' && corState.ruleType !== 'отсутствует'
+      };
+
+      const monthItems = monthsData.map((m, idx) => ({
+        name: m.name,
+        days: m.days,
+        isExtra: false,
+        isLeapTarget: corState.targetMode === 'in_month' && corState.targetMonthIndex === idx && corState.ruleType !== 'отсутствует'
+      }));
+
+      let list = [];
+      if (corState.baseExtraDays <= 0) {
+        list = monthItems;
+      } else {
+        if (corState.placement === 'start_of_year') {
+          list = [extraItem, ...monthItems];
+        } else if (corState.placement === 'mid_year') {
+          const mid = Math.floor(monthItems.length / 2);
+          list = [...monthItems.slice(0, mid), extraItem, ...monthItems.slice(mid)];
+        } else if (corState.placement === 'after_month') {
+          const split = Math.min(Math.max(0, corState.afterMonthIndex + 1), monthItems.length);
+          list = [...monthItems.slice(0, split), extraItem, ...monthItems.slice(split)];
+        } else {
+          list = [...monthItems, extraItem];
+        }
+      }
+
+      list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `tape-item ${item.isExtra ? 'tape-extra-days' : ''} ${item.isLeapTarget ? 'tape-leap-target' : ''}`;
+        div.innerHTML = `
+          <span class="tape-item-name">${item.name}</span>
+          <span class="tape-item-days">
+            ${item.days} дн.
+            ${item.isLeapTarget ? `<span class="tape-leap-badge">+${corState.leapDaysOffset}</span>` : ''}
+          </span>
+        `;
+        tape.appendChild(div);
+      });
+    }
+
+    function isYearLeap(year) {
+      if (corState.ruleType === 'отсутствует') return false;
+      let sum = 0;
+      corState.harmonics.forEach(h => {
+        sum += h.weight * Math.floor(year / h.period);
+      });
+      let prevSum = 0;
+      corState.harmonics.forEach(h => {
+        prevSum += h.weight * Math.floor((year - 1) / h.period);
+      });
+      return (sum - prevSum) > 0;
+    }
+
+    function renderUpcomingYears() {
+      const row = document.getElementById('cor-upcoming-years-row');
+      if (!row) return;
+      row.innerHTML = '';
+
+      const testYears = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2100, 2400];
+      testYears.forEach(y => {
+        const leap = isYearLeap(y);
+        const pill = document.createElement('span');
+        pill.className = `upcoming-year-pill ${leap ? 'is-leap' : ''}`;
+        pill.innerText = `${y} г.: ${leap ? `⚡ Високосный (+${corState.leapDaysOffset} дн.)` : 'Обычный'}`;
+        row.appendChild(pill);
+      });
+    }
+
+    function syncCorInputsFromState() {
+      const extraInp = document.getElementById('cor-base-extra-days');
+      if (extraInp) extraInp.value = corState.baseExtraDays;
+      
+      const extraNameInp = document.getElementById('cor-extra-days-name');
+      if (extraNameInp) extraNameInp.value = corState.extraDaysName;
+
+      const placeSel = document.getElementById('cor-placement-select');
+      if (placeSel) placeSel.value = corState.placement;
+
+      const leapDaysInp = document.getElementById('cor-leap-days-input');
+      if (leapDaysInp) leapDaysInp.value = corState.leapDaysOffset;
+
+      const targetRadio = document.querySelector(`input[name="cor-target-mode"][value="${corState.targetMode}"]`);
+      if (targetRadio) targetRadio.checked = true;
+
+      const targetMonthSel = document.getElementById('cor-target-month-select');
+      if (targetMonthSel) targetMonthSel.value = corState.targetMonthIndex;
+
+      selectRuleType(corState.ruleType);
+      setTargetMode(corState.targetMode);
+    }
+
+    // =========================================================================
+    // 6. СИНХРОНИЗАЦИЯ И ПРИВЯЗКА ЛЕТОИСЧИСЛЕНИЯ (CalendarSyncAnchor.vue)
+    // =========================================================================
+    let currentSyncType = 'event';
+
+    function setSyncTargetType(type) {
+      currentSyncType = type;
+      
+      // Карточки селектора
+      document.querySelectorAll('.sync-type-card').forEach(c => c.classList.remove('active'));
+      const card = document.getElementById(`sync-type-${type}`);
+      if (card) {
+        card.classList.add('active');
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      }
+
+      // Панели настроек
+      const pEvent = document.getElementById('sync-panel-event');
+      const pCal = document.getElementById('sync-panel-calendar');
+      const pEra = document.getElementById('sync-panel-era');
+
+      if (pEvent) pEvent.style.display = (type === 'event') ? 'block' : 'none';
+      if (pCal) pCal.style.display = (type === 'calendar') ? 'block' : 'none';
+      if (pEra) pEra.style.display = (type === 'master_era') ? 'block' : 'none';
+
+      updateSyncStatusText();
+    }
+
+    function updateSyncStatusText() {
+      const desc = document.getElementById('sync-offset-description');
+      if (!desc) return;
+
+      const mSelect = document.getElementById('sync-anchor-month');
+      const monthName = mSelect ? mSelect.options[mSelect.selectedIndex].text : 'Март';
+      const dayVal = document.getElementById('sync-anchor-day')?.value || 15;
+
+      if (currentSyncType === 'event') {
+        const evSelect = document.getElementById('sync-event-select');
+        const evName = evSelect ? evSelect.options[evSelect.selectedIndex].text : 'Коронация Первого Императора';
+        desc.innerText = `Год 1 этого календаря соответствует ${dayVal} ${monthName} (Опорное событие: ${evName}).`;
+      } else if (currentSyncType === 'calendar') {
+        const calSelect = document.getElementById('sync-other-cal-select');
+        const calName = calSelect ? calSelect.options[calSelect.selectedIndex].text : 'Юлианский';
+        const otherYear = document.getElementById('sync-other-cal-year')?.value || 1;
+        desc.innerText = `Год 1 этого календаря жестко привязан к ${dayVal} ${monthName} ${otherYear} года по календарю «${calName}».`;
+      } else if (currentSyncType === 'master_era') {
+        const eraSelect = document.getElementById('sync-master-era-select');
+        const eraName = eraSelect ? eraSelect.options[eraSelect.selectedIndex].text : 'Начало Календаря Мира';
+        const offset = document.getElementById('sync-era-offset-years')?.value || 0;
+        const dir = document.querySelector('input[name="sync-dir-era"]:checked')?.value || 'after';
+        const dirText = dir === 'before' ? 'до начала' : 'после начала';
+        desc.innerText = `Год 1 этого календаря отсчитывается как ${offset} лет ${dirText} опорной точки «${eraName}» (${dayVal} ${monthName}).`;
+      }
+    }
+
+    function promptNewMasterEvent() {
+      const name = prompt('Введите название новой исторической вехи (опорного события):', 'Великое Затмение');
+      if (!name) return;
+      const yr = prompt('Год события в Календаре Мира:', '450');
+      
+      const list = document.getElementById('master-events-chips-list');
+      if (list) {
+        const chip = document.createElement('span');
+        chip.className = 'preset-chip active';
+        chip.innerText = `🚩 ${name} (Год ${yr} г.)`;
+        list.appendChild(chip);
+      }
+
+      const sel = document.getElementById('sync-event-select');
+      if (sel) {
+        const opt = document.createElement('option');
+        opt.value = `custom_${Date.now()}`;
+        opt.innerText = `🚩 ${name} (Год ${yr} г.)`;
+        opt.selected = true;
+        sel.appendChild(opt);
+        updateSyncStatusText();
+      }
+    }
+
+    // =========================================================================
+    // 7. ЭПОХИ И ЭРЫ (CalendarEras.vue)
+    // =========================================================================
+    function toggleEraDirection(checkbox) {
+      const card = checkbox.closest('.era-card');
+      const label = checkbox.nextElementSibling;
+      if (checkbox.checked) {
+        label.innerHTML = '<strong>⬅️ Обратный отсчет (годы убывают: 500 до н.э. → 1 до н.э.)</strong>';
+        checkbox.parentElement.style.color = 'var(--accent-warning)';
+      } else {
+        label.innerHTML = '<span>➡️ Прямой отсчет (годы возрастают: 1 н.э. → 2026 н.э.)</span>';
+        checkbox.parentElement.style.color = 'var(--accent-success)';
+      }
+    }
+
+    function toggleEraAnniversary(checkbox) {
+      const card = checkbox.closest('.era-card');
+      const dateBlock = card.querySelector('.era-specific-date');
+      if (dateBlock) {
+        dateBlock.style.display = checkbox.checked ? 'inline-flex' : 'none';
+      }
+    }
+
+    function addNewEraRow() {
+      const container = document.getElementById('eras-container');
+      if (!container) return;
+      const count = container.querySelectorAll('.era-card').length + 1;
+      
+      const card = document.createElement('div');
+      card.className = 'era-card';
+      card.style.cssText = 'background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:12px;';
+      card.innerHTML = `
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" class="table-input" value="Эпоха ${count}" style="font-weight:600; flex:2;">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span style="font-size:11px; color:var(--text-muted)">Старт:</span>
+            <input type="number" class="table-input" value="1" style="width:70px;">
+          </div>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span style="font-size:11px; color:var(--text-muted)">Конец:</span>
+            <input type="number" class="table-input" value="9999" style="width:70px;">
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="btn-icon-table" onclick="moveEraCard(this, -1)">↑</button>
+            <button class="btn-icon-table" onclick="moveEraCard(this, 1)">↓</button>
+            <button class="btn-icon-table" onclick="this.closest('.era-card').remove()">🗑️</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:16px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; font-size:12px;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--accent-success);">
+            <input type="checkbox" onchange="toggleEraDirection(this)">
+            <span>➡️ Прямой отсчет (годы возрастают: 1 н.э. → 2026 н.э.)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" onchange="toggleEraAnniversary(this)">
+            <span>📅 Смена эры в конкретный исторический день (по годовщине события)</span>
+          </label>
+          <div class="era-specific-date" style="display:none; gap:6px; align-items:center;">
+            <span style="color:var(--text-muted)">Дата:</span>
+            <select class="form-select" style="padding:2px 6px; font-size:11px;"><option>Январь</option><option selected>Март</option></select>
+            <input type="number" class="form-input" value="1" style="width:50px; padding:2px 6px; font-size:11px;">
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    function moveEraCard(btn, delta) {
+      const card = btn.closest('.era-card');
+      if (delta === -1 && card.previousElementSibling) {
+        card.parentNode.insertBefore(card, card.previousElementSibling);
+      } else if (delta === 1 && card.nextElementSibling) {
+        card.parentNode.insertBefore(card.nextElementSibling, card);
+      }
+    }
+
+    // =========================================================================
+    // 8. СЕЗОНЫ И ВРЕМЕНА ГОДА (CalendarSeasons.vue)
+    // =========================================================================
+    function toggleSeasonHemisphere(btn) {
+      if (btn.innerText.includes('Северное')) {
+        btn.innerText = '🌍 Южное полушарие';
+      } else {
+        btn.innerText = '🌍 Северное полушарие';
+      }
+    }
+
+    function addNewSeasonRow() {
+      const container = document.getElementById('seasons-list-container');
+      if (!container) return;
+      const count = container.querySelectorAll('.season-row-wrap').length + 1;
+      
+      const div = document.createElement('div');
+      div.className = 'season-row-wrap';
+      div.style.cssText = 'background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px;';
+      div.innerHTML = `
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+          <input type="color" value="#ec4899" style="width:26px; height:26px; border:none; background:transparent; cursor:pointer;" title="Цвет сезона">
+          <input type="text" class="table-input" value="🍂 Сезон ${count}" style="font-weight:600; width:160px;">
+          <button type="button" class="btn-ghost-sm" onclick="toggleSeasonHemisphere(this)">🌍 Северное полушарие</button>
+          <span class="status-chip" style="margin-left:auto; font-size:11px;">Выбрано: 0 мес.</span>
+          <button class="btn-icon-table" onclick="this.closest('.season-row-wrap').remove()">🗑️</button>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          ${monthsData.map((m, idx) => `<span class="preset-chip" onclick="this.classList.toggle('active')">${idx + 1}. ${m.name}</span>`).join('')}
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    // =========================================================================
+    // 9. ПРАЗДНИКИ КУЛЬТУРЫ (CalendarHolidays.vue)
+    // =========================================================================
+    function toggleHolidayRange(btn) {
+      const wrap = btn.closest('.holiday-row-wrap');
+      const endWrap = wrap.querySelector('.holiday-end-date');
+      const chip = wrap.querySelector('.status-chip');
+      
+      const isPeriod = endWrap.style.display !== 'none';
+      if (isPeriod) {
+        // Переключаем на 1 день
+        endWrap.style.display = 'none';
+        btn.innerText = '📅 1 день';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderColor = 'var(--border-subtle)';
+        chip.innerText = '1 день';
+        chip.className = 'status-chip success';
+        chip.style.background = '';
+        chip.style.color = '';
+      } else {
+        // Переключаем на период
+        endWrap.style.display = 'inline-flex';
+        btn.innerText = '📆 Период (несколько дней)';
+        btn.style.color = 'var(--accent-purple)';
+        btn.style.borderColor = 'var(--accent-purple)';
+        chip.innerText = 'Многодневный период';
+        chip.className = 'status-chip';
+        chip.style.background = 'rgba(168,85,247,0.15)';
+        chip.style.color = 'var(--accent-purple)';
+      }
+    }
+
+    function addNewHolidayRow() {
+      const container = document.getElementById('holidays-list-container');
+      if (!container) return;
+      const count = container.querySelectorAll('.holiday-row-wrap').length + 1;
+      
+      const div = document.createElement('div');
+      div.className = 'holiday-row-wrap';
+      div.style.cssText = 'background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;';
+      div.innerHTML = `
+        <input type="text" class="table-input" value="Праздник ${count}" style="font-weight:600; width:180px;" placeholder="Название праздника">
+        <button type="button" class="btn-ghost-sm" onclick="toggleHolidayRange(this)">📅 1 день</button>
+        <div class="holiday-dates-wrap" style="display:flex; gap:6px; align-items:center;">
+          <select class="form-select" style="padding:4px 8px; font-size:12px;">
+            ${monthsData.map(m => `<option>${m.name}</option>`).join('')}
+          </select>
+          <input type="number" class="form-input" value="1" min="1" max="31" style="width:55px; padding:4px 6px;">
+          <span class="holiday-end-date" style="display:none; gap:6px; align-items:center;">
+            — <select class="form-select" style="padding:4px 8px; font-size:12px;">
+              ${monthsData.map(m => `<option>${m.name}</option>`).join('')}
+            </select>
+            <input type="number" class="form-input" value="5" min="1" max="31" style="width:55px; padding:4px 6px;">
+          </span>
+        </div>
+        <span class="status-chip success" style="margin-left:auto; font-size:11px;">1 день</span>
+        <button class="btn-icon-table" onclick="this.closest('.holiday-row-wrap').remove()">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+
+    // =========================================================================
+    // 10. ГЕОГРАФИЯ, РЕГИОНЫ И ЧАСОВЫЕ ПОЯСА ПЛАНЕТЫ
+    // =========================================================================
+    function promptAddRegionTag() {
+      const name = prompt('Введите название региона или провинции мира:', 'Восточные Степи');
+      if (!name) return;
+      const list = document.getElementById('culture-regions-multiselect');
+      if (list) {
+        const tag = document.createElement('span');
+        tag.className = 'preset-chip active';
+        tag.innerText = `✓ 🚩 ${name}`;
+        tag.onclick = function() { this.classList.toggle('active'); };
+        list.appendChild(tag);
+      }
+    }
+
+    function addPlanetTimezone() {
+      const nameInp = document.getElementById('new-tz-name');
+      const codeInp = document.getElementById('new-tz-code');
+      const offsetInp = document.getElementById('new-tz-offset');
+
+      const name = (nameInp && nameInp.value.trim()) || 'Новый пояс';
+      const code = (codeInp && codeInp.value.trim()) || 'UTC+0';
+      const offset = parseFloat(offsetInp?.value) || 0.0;
+      const mins = Math.round(offset * 60);
+
+      const tbody = document.getElementById('planet-timezones-tbody');
+      if (!tbody) return;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="table-input" value="${name}"></td>
+        <td><input type="text" class="table-input" value="${code}" style="font-weight:600;"></td>
+        <td>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <input type="number" step="0.5" class="table-input" value="${offset}" style="width:70px;">
+            <span style="font-size:11px; color:var(--text-muted);">ч. (${mins >= 0 ? '+' : ''}${mins} мин)</span>
+          </div>
+        </td>
+        <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+      `;
+      tbody.appendChild(tr);
+
+      if (nameInp) nameInp.value = '';
+      if (codeInp) codeInp.value = '';
+      updatePlanetTimezonesCount();
+    }
+
+    function applyPlanetTimezonePreset(preset) {
+      const tbody = document.getElementById('planet-timezones-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (preset === 'single') {
+        tbody.innerHTML = `
+          <tr>
+            <td><input type="text" class="table-input" value="Столичный меридиан"></td>
+            <td><input type="text" class="table-input" value="UTC+0" style="font-weight:600;"></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" step="0.5" class="table-input" value="0.0" style="width:70px;">
+                <span style="font-size:11px; color:var(--text-muted);">ч. (0 мин)</span>
+              </div>
+            </td>
+            <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+          </tr>
+        `;
+      } else {
+        const defaultTzs = [
+          { name: 'Столичный меридиан (Гринвич)', code: 'UTC+0', offset: 0 },
+          { name: 'Восточный рубеж', code: 'UTC+3', offset: 3 },
+          { name: 'Дальний Архипелаг', code: 'UTC+8', offset: 8 },
+          { name: 'Западные Земли', code: 'UTC-5', offset: -5 },
+          { name: 'Тихоокеанский предел', code: 'UTC+12', offset: 12 }
+        ];
+        defaultTzs.forEach(tz => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><input type="text" class="table-input" value="${tz.name}"></td>
+            <td><input type="text" class="table-input" value="${tz.code}" style="font-weight:600;"></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" step="0.5" class="table-input" value="${tz.offset}" style="width:70px;">
+                <span style="font-size:11px; color:var(--text-muted);">ч. (${tz.offset >= 0 ? '+' : ''}${tz.offset * 60} мин)</span>
+              </div>
+            </td>
+            <td><button class="btn-icon-table" onclick="this.closest('tr').remove(); updatePlanetTimezonesCount();">🗑️</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      updatePlanetTimezonesCount();
+    }
+
+    function updatePlanetTimezonesCount() {
+      const count = document.querySelectorAll('#planet-timezones-tbody tr').length;
+      const badge = document.querySelector('#planet-tab-timezones-regions span.tab-badge');
+      if (badge) badge.innerText = `${count} поясов`;
+    }
+
+    // =========================================================================
+    // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      renderWeekdays();
+      syncCorInputsFromState();
+      updateDriftAndBanner();
+      updateYearTape();
+      renderHarmonicsList();
+      renderUpcomingYears();
+      updateSyncStatusText();
+    });
+  </script>
+</body>
+</html>

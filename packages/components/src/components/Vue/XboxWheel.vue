@@ -24,7 +24,7 @@
           :class="{ 'is-horizontal': horizontal }" 
           tabindex="0"
           :style="dropdownStyle"
-          @wheel.prevent="onWheel"
+          @wheel.passive="onWheel"
           @keydown="onKeydown"
         >
           <div v-if="normalizedOptions.length > 0" class="wheel-container">

@@ -3,15 +3,33 @@
  * @description Unit-тесты для хука useCalendarCorrection (унификация високосов и праздничных дней).
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useCalendarCorrection } from '../useCalendarCorrection';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { reactive } from 'vue';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { initSync } from '@worldwiki/calendar-wasm';
+import { useCalendarCorrection, decomposeFractionToUnitHarmonics } from '../useCalendarCorrection';
 import type { CalendarData } from '../../../../../services/Calendars/calendar.types';
 
 describe('useCalendarCorrection', () => {
   let mockCalendar: CalendarData;
 
+  beforeAll(() => {
+    const possiblePaths = [
+      resolve(__dirname, '../../../../../../../../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
+      resolve(__dirname, '../../../../../../../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
+      resolve(process.cwd(), 'packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
+      resolve(process.cwd(), '../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
+    ];
+    const wasmPath = possiblePaths.find(existsSync);
+    if (wasmPath) {
+      const bytes = readFileSync(wasmPath);
+      initSync(bytes);
+    }
+  });
+
   beforeEach(() => {
-    mockCalendar = {
+    mockCalendar = reactive<CalendarData>({
       название: 'Тестовый Календарь',
       дней_в_неделе: 7,
       названия_дней_недели: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
@@ -22,7 +40,7 @@ describe('useCalendarCorrection', () => {
         { название: 'Март', дней: 31 },
       ],
       эпохи: [],
-    };
+    });
   });
 
   it('инициализирует дефолтные структуры, если они отсутствуют', () => {
@@ -216,10 +234,53 @@ describe('useCalendarCorrection', () => {
     expect(suggestions[0].cycleYears).toBe(4);
     expect(suggestions[0].leapYears).toBe(1);
 
-    // Применяем рекомендацию
+    // Применяем рекомендацию простого правила
     hook.applySuggestion(suggestions[0]);
     expect(hook.ruleType.value).toBe('каждый 4 год');
     expect(hook.isSuggestOpen.value).toBe(false);
     expect(emit).toHaveBeenCalled();
+
+    // Проверяем приближение цикла Медлера (128 лет, дрейф ~0.000 сут/век)
+    const madler = suggestions.find((s) => s.cycleYears === 128);
+    expect(madler).toBeDefined();
+    expect(madler!.harmonics).toHaveLength(2);
+    expect(madler!.harmonics?.[0].divisor_c).toBe(4);
+    expect(madler!.harmonics?.[0].weight).toBe(1);
+    expect(madler!.harmonics?.[1].divisor_c).toBe(128);
+    expect(madler!.harmonics?.[1].weight).toBe(-1);
+
+    // Применяем Медлера — должны установиться ровно 2 понятных условия
+    hook.applySuggestion(madler!);
+    expect(hook.ruleType.value).toBe('пользовательское');
+    expect(mockCalendar.високосные_правила).toHaveLength(2);
+    expect(mockCalendar.високосные_правила?.[0].divisor_c).toBe(4);
+    expect(mockCalendar.високосные_правила?.[1].divisor_c).toBe(128);
+  });
+
+  it('универсально раскладывает дробь любой планеты в единичные гармоники без хардкода', () => {
+    // Марс (3/5 -> +2, +10)
+    const marsHarmonics = decomposeFractionToUnitHarmonics(3, 5);
+    expect(marsHarmonics).toHaveLength(2);
+    expect(marsHarmonics[0]).toEqual({ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 2 });
+    expect(marsHarmonics[1]).toEqual({ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 10 });
+
+    // Иная планета (2/7 -> +4, +28)
+    const alienHarmonics = decomposeFractionToUnitHarmonics(2, 7);
+    expect(alienHarmonics.length).toBeGreaterThanOrEqual(1);
+    expect(alienHarmonics.every((h) => Math.abs(h.weight) === 1 && h.multiplier_a === 1)).toBe(true);
+  });
+
+  it('универсально балансирует дни месяцев под праздники для любой орбиты', () => {
+    const emit = vi.fn();
+    mockCalendar.target_year_length_days = 687.2; // Марсианская орбита
+    mockCalendar.месяцы = Array.from({ length: 10 }, (_, i) => ({ название: `M${i + 1}`, дней: 70 }));
+    const hook = useCalendarCorrection({ modelValue: mockCalendar }, emit);
+
+    hook.baseExtraDays.value = 7;
+    hook.balanceMonthsForExtraDays();
+
+    // 687 - 7 = 680 дней в месяцах: 680 / 10 = 68 дней в каждом месяце
+    expect(mockCalendar.месяцы.every((m) => m.дней === 68)).toBe(true);
+    expect(hook.totalBaseYearDays.value).toBe(687);
   });
 });

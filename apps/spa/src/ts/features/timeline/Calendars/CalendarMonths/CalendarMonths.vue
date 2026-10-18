@@ -50,6 +50,19 @@
         </div>
       </div>
       <button type="button" class="btn-add interactive-el" @click.prevent="addMonth">➕ Добавить месяц</button>
+
+      <div v-if="modelValue.месяцы && modelValue.месяцы.length > 0" class="calendar-field mt-3">
+        <label class="text-xs text-muted block mb-1">Месяц начала года (Новогодний стиль)</label>
+        <select
+          :value="modelValue.первый_месяц_года || 0"
+          class="interactive-el glass-select w-full"
+          @change="updateFirstMonth(Number(($event.target as HTMLSelectElement).value))"
+        >
+          <option v-for="(m, idx) in modelValue.месяцы" :key="idx" :value="idx">
+            {{ m.название }} (стиль {{ idx + 1 }}-го месяца)
+          </option>
+        </select>
+      </div>
     </div>
   </div>
 </template>
@@ -59,8 +72,11 @@ import { useCalendarMonths } from './useCalendarMonths';
 import type { CalendarMonthsProps } from './useCalendarMonths';
 
 const props = defineProps<CalendarMonthsProps>();
+const emit = defineEmits<{
+  (e: 'update:modelValue', val: unknown): void;
+}>();
 
-const { isCollapsed, moveItem, addMonth, removeMonth, daysBalanceText, daysBalanceClass } = useCalendarMonths(props);
+const { isCollapsed, moveItem, addMonth, removeMonth, daysBalanceText, daysBalanceClass, updateFirstMonth } = useCalendarMonths(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarMonths.css"></style>

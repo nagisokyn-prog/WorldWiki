@@ -72,3 +72,120 @@ pub fn calculate_leap_convergents(
 
     results
 }
+
+use crate::types::LeapHarmonic;
+
+/// Наибольший общий делитель для сокращения дробей
+fn gcd(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a.abs().max(1)
+}
+
+/// Универсальный алгоритм разложения рациональной дроби p/q в знаковые единичные гармоники:
+/// p/q = sum_i (w_i / c_i), где w_i in {+1, -1}, multiplier_a = 1.
+/// Гарантирует читаемость правила для любого мира/планеты без хардкода.
+pub fn decompose_fraction_to_unit_harmonics(
+    p: i64,
+    q: i64,
+    max_harmonics: usize,
+) -> alloc::vec::Vec<LeapHarmonic> {
+    let mut harmonics = alloc::vec::Vec::new();
+    if p <= 0 || q <= 0 || max_harmonics == 0 {
+        return harmonics;
+    }
+
+    let mut rem_num = p;
+    let mut rem_den = q;
+
+    for _ in 0..max_harmonics {
+        if rem_num == 0 {
+            break;
+        }
+
+        let sign: i32 = if rem_num > 0 { 1 } else { -1 };
+        let abs_num = rem_num.abs();
+
+        // c = round(rem_den / abs_num)
+        let mut c = (rem_den + abs_num / 2) / abs_num;
+        if c < 1 {
+            c = 1;
+        }
+
+        while harmonics.iter().any(|h: &LeapHarmonic| h.divisor_c == c) {
+            c += 1;
+        }
+
+        harmonics.push(LeapHarmonic {
+            weight: sign,
+            multiplier_a: 1,
+            shift_b: 0,
+            divisor_c: c,
+        });
+
+        // rem_num/rem_den - sign/c = (rem_num * c - sign * rem_den) / (rem_den * c)
+        let next_num = rem_num * c - (sign as i64) * rem_den;
+        let next_den = rem_den * c;
+
+        if next_num == 0 {
+            break;
+        }
+
+        let g = gcd(next_num.abs(), next_den);
+        rem_num = next_num / g;
+        rem_den = next_den / g;
+
+        // rem_num / rem_den < 0.00005 <=> rem_num * 20_000 < rem_den (чистая целочисленная арифметика для no_std и Kani)
+        if rem_num.abs().saturating_mul(20_000) < rem_den {
+            break;
+        }
+    }
+
+    harmonics
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decompose_julian() {
+        let h = decompose_fraction_to_unit_harmonics(1, 4, 3);
+        assert_eq!(h.len(), 1);
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
+    }
+
+    #[test]
+    fn test_decompose_madler_31_128() {
+        let h = decompose_fraction_to_unit_harmonics(31, 128, 3);
+        assert_eq!(h.len(), 2);
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
+        assert_eq!(h[1].weight, -1);
+        assert_eq!(h[1].divisor_c, 128);
+    }
+
+    #[test]
+    fn test_decompose_khayyam_8_33() {
+        let h = decompose_fraction_to_unit_harmonics(8, 33, 3);
+        assert_eq!(h.len(), 2);
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
+        assert_eq!(h[1].weight, -1);
+        assert_eq!(h[1].divisor_c, 132);
+    }
+
+    #[test]
+    fn test_decompose_mars_3_5() {
+        let h = decompose_fraction_to_unit_harmonics(3, 5, 3);
+        assert_eq!(h.len(), 2);
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 2);
+        assert_eq!(h[1].weight, 1);
+        assert_eq!(h[1].divisor_c, 10);
+    }
+}

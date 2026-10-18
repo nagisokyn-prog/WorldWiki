@@ -42,12 +42,29 @@ export function useCalendarHolidays(props: { modelValue: CalendarData }, _emit?:
     }
   };
 
+  const toggleHolidayRange = (holiday: { дата_начала: { месяц: number; день: number }; дата_конца?: { месяц: number; день: number } }) => {
+    if (holiday.дата_конца) {
+      delete holiday.дата_конца;
+    } else {
+      holiday.дата_конца = { ...holiday.дата_начала };
+    }
+  };
+
+  const isNewYearCrossing = (holiday: { дата_начала: { месяц: number; день: number }; дата_конца?: { месяц: number; день: number } }): boolean => {
+    if (!holiday.дата_конца) return false;
+    if (holiday.дата_конца.месяц < holiday.дата_начала.месяц) return true;
+    if (holiday.дата_конца.месяц === holiday.дата_начала.месяц && holiday.дата_конца.день < holiday.дата_начала.день) return true;
+    return false;
+  };
+
   return {
     isCollapsed,
     wheelHorizontal,
     getDaysInMonth,
     moveItem,
     addHoliday,
-    removeHoliday
+    removeHoliday,
+    toggleHolidayRange,
+    isNewYearCrossing
   };
 }

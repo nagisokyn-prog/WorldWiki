@@ -232,3 +232,88 @@ pub fn validate_unique_weekdays(weekdays: &[String]) -> Result<(), &'static str>
 pub fn sanitize_moon_ids(active_moon_ids: &[&str], configured_moons: &mut Vec<String>) {
     configured_moons.retain(|moon_id| active_moon_ids.contains(&moon_id.as_str()));
 }
+
+/// Характер перехода при смене календаря (календарной реформе)
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+pub enum ReformMode {
+    /// Мгновенный скачок со швом (выбрасывает или дублирует N дней, напр. Россия 1918: 31 янв -> 14 фев)
+    DiscontinuousGap { dropped_days: i32 },
+    /// Переходный год нестандартной длины (напр. 445 дней в 46 г. до н.э.)
+    TransitionalYear { intercalary_days_added: i32 },
+    /// Смена эпохи с сохранением непрерывности счета дней
+    EpochReset { new_era_name: String },
+}
+
+/// Эпоха действия конкретного календаря в культуре или государстве
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CalendarStyleEra {
+    pub calendar_id: String,
+    pub effective_from_m_abs: i64,
+    pub effective_to_m_abs: Option<i64>,
+    pub reform_mode: ReformMode,
+}
+
+/// Хронологическая цепочка использования стилей (календарей) культурой
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CalendarSuccession {
+    pub eras: Vec<CalendarStyleEra>,
+}
+
+/// Порядковый номер вхождения дня недели в месяце
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+pub enum WeekdayOccurrence {
+    First,
+    Second,
+    Third,
+    Fourth,
+    Last,
+}
+
+/// Относительное правило дня недели для сезонного перевода часов
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct WeekdayRule {
+    pub occurrence: WeekdayOccurrence,
+    pub weekday: usize,
+    pub month: usize,
+    pub minute_of_day: i32,
+}
+
+/// Политика сезонного перевода времени (DST) для часового пояса
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+pub enum DstPolicy {
+    #[default]
+    None,
+    FixedCalendarDate {
+        spring_month: usize,
+        spring_day: i64,
+        fall_month: usize,
+        fall_day: i64,
+        shift_minutes: i32,
+    },
+    RelativeWeekday {
+        spring_rule: WeekdayRule,
+        fall_rule: WeekdayRule,
+        shift_minutes: i32,
+    },
+}
+
+/// Описание часового пояса планеты с поддержкой сезонного перевода стрелок
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct PlanetTimezone {
+    pub id: String,
+    pub name: String,
+    pub code: String,
+    pub standard_offset_minutes: i32,
+    pub dst_policy: DstPolicy,
+}
+

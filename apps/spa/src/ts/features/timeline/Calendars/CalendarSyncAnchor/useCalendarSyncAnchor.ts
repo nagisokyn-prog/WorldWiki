@@ -91,9 +91,45 @@ export function useCalendarSyncAnchor(props: CalendarSyncAnchorProps) {
   const localAnchorDate = computed<SyncAnchorDate>(() => anchor.value.local_anchor_date!);
   const masterAnchorDate = computed<SyncAnchorDate>(() => anchor.value.master_anchor_date!);
 
+  const syncTargetType = ref<'event' | 'calendar' | 'master_era'>(
+    props.modelValue.sync_anchor?.sync_type || (props.masterCalendar?.anchor_events?.length ? 'event' : 'master_era')
+  );
+  const selectedEventId = ref<string>(props.modelValue.sync_anchor?.target_event_id || '');
+  const selectedCalendarId = ref<string>(props.modelValue.sync_anchor?.target_calendar_id || '');
+  const targetCalendarYear = ref<number>(props.modelValue.sync_anchor?.target_calendar_year || 1);
+
   const selectedMasterEraIndex = ref<number>(-1);
   const syncDirection = ref<SyncDirection>('after');
   const offsetYears = ref<number>(0);
+
+  const masterEvents = computed(() => props.masterCalendar?.anchor_events || []);
+  const selectedMasterEvent = computed(() => {
+    return masterEvents.value.find(e => e.id === selectedEventId.value) || null;
+  });
+
+  const quickAddMasterEvent = () => {
+    if (!props.masterCalendar) return;
+    if (!props.masterCalendar.anchor_events) {
+      props.masterCalendar.anchor_events = [];
+    }
+    const newId = `evt_${Date.now()}`;
+    const newEvt = {
+      id: newId,
+      name: `Опорное историческое событие ${props.masterCalendar.anchor_events.length + 1}`,
+      year: 0,
+      month: 0,
+      day: 1,
+    };
+    props.masterCalendar.anchor_events.push(newEvt);
+    selectedEventId.value = newId;
+    updateMasterYearFromState();
+  };
+
+  const otherCalendars = computed(() => {
+    return (props.availableCalendars || []).filter(
+      c => c._id !== props.modelValue._id && c.название !== props.modelValue.название
+    );
+  });
 
   const syncStateFromMasterYear = () => {
     const curYear = masterAnchorDate.value.year ?? 1;
@@ -136,6 +172,39 @@ export function useCalendarSyncAnchor(props: CalendarSyncAnchorProps) {
   };
 
   const updateMasterYearFromState = () => {
+    if (props.modelValue.sync_anchor) {
+      props.modelValue.sync_anchor.sync_type = syncTargetType.value;
+      props.modelValue.sync_anchor.target_event_id = selectedEventId.value;
+      props.modelValue.sync_anchor.target_calendar_id = selectedCalendarId.value;
+      props.modelValue.sync_anchor.target_calendar_year = targetCalendarYear.value;
+      props.modelValue.sync_anchor.offset_direction = syncDirection.value;
+      props.modelValue.sync_anchor.offset_years = offsetYears.value;
+    }
+
+    if (syncTargetType.value === 'event') {
+      const evt = masterEvents.value.find(e => e.id === selectedEventId.value) || masterEvents.value[0];
+      if (evt) {
+        selectedEventId.value = evt.id;
+        const baseYear = evt.year ?? 0;
+        const offset = Math.max(0, Number(offsetYears.value) || 0);
+        masterAnchorDate.value.year = syncDirection.value === 'after' ? baseYear + offset : baseYear - offset;
+        if (evt.month !== undefined) masterAnchorDate.value.month = evt.month;
+        if (evt.day !== undefined) masterAnchorDate.value.day = evt.day;
+      }
+      return;
+    }
+
+    if (syncTargetType.value === 'calendar') {
+      const targetCal = otherCalendars.value.find(c => (c._id === selectedCalendarId.value) || (c.название === selectedCalendarId.value)) || otherCalendars.value[0];
+      if (targetCal) {
+        selectedCalendarId.value = (targetCal._id as string) || targetCal.название;
+        const targetAnchorInMaster = targetCal.sync_anchor?.master_anchor_date?.year ?? 1;
+        const yr = Math.max(1, Number(targetCalendarYear.value) || 1);
+        masterAnchorDate.value.year = targetAnchorInMaster + (yr - 1);
+      }
+      return;
+    }
+
     const eras = masterEras.value;
     const baseYear = (selectedMasterEraIndex.value >= 0 && eras[selectedMasterEraIndex.value])
       ? (eras[selectedMasterEraIndex.value].год_начала ?? 1)
@@ -199,6 +268,26 @@ export function useCalendarSyncAnchor(props: CalendarSyncAnchorProps) {
     const mDay = masterAnchorDate.value.day || 1;
     const mMonthIdx = masterAnchorDate.value.month || 0;
     const monthName = masterMonths.value[mMonthIdx]?.название || `Месяц ${mMonthIdx + 1}`;
+
+    if (syncTargetType.value === 'event') {
+      const evt = masterEvents.value.find(e => e.id === selectedEventId.value);
+      const evtName = evt?.name || 'Опорное событие';
+      const offset = offsetYears.value;
+      if (offset === 0) {
+        return `1-й год этого календаря наступил точно в год события «${evtName}» (${mDay} ${monthName}, ${startYear} г. Мира).`;
+      }
+      if (syncDirection.value === 'after') {
+        return `1-й год этого календаря наступил через ${offset} лет после события «${evtName}» (${mDay} ${monthName}, ${startYear} г. Мира).`;
+      }
+      return `1-й год этого календаря наступил за ${offset} лет до события «${evtName}» (${mDay} ${monthName}, ${startYear} г. Мира).`;
+    }
+
+    if (syncTargetType.value === 'calendar') {
+      const targetCal = otherCalendars.value.find(c => (c._id === selectedCalendarId.value) || (c.название === selectedCalendarId.value));
+      const targetName = targetCal?.название || 'Выбранное поселение';
+      const yr = targetCalendarYear.value;
+      return `1-й год этого календаря наступил, когда у поселения «${targetName}» шёл ${yr}-й год (${mDay} ${monthName}, ${startYear} г. Мира).`;
+    }
 
     const eras = masterEras.value;
     const chosenEra = selectedMasterEraIndex.value >= 0 ? eras[selectedMasterEraIndex.value] : null;
@@ -285,6 +374,14 @@ export function useCalendarSyncAnchor(props: CalendarSyncAnchorProps) {
     isCollapsed,
     isLinked,
     anchor,
+    syncTargetType,
+    selectedEventId,
+    selectedCalendarId,
+    targetCalendarYear,
+    masterEvents,
+    selectedMasterEvent,
+    quickAddMasterEvent,
+    otherCalendars,
     localEras,
     localMonths,
     masterEras,

@@ -87,13 +87,18 @@ describe('useCalendarSeasons', () => {
     expect(props.modelValue.сезоны[2].месяцы).toEqual([3]);
   });
 
-  it('formats color correctly for valid hex and fallback values', () => {
+  it('formats color correctly with fallback value and toggles hemisphere', () => {
     const hook = useCalendarSeasons(props);
-    expect(hook.formatColor('#123456')).toBe('#123456');
-    expect(hook.formatColor('#AABBCC')).toBe('#AABBCC');
-    // Fallback when invalid or missing
-    const fallback = hook.formatColor('invalid-color');
-    expect(fallback).toMatch(/^#[0-9a-fA-F]{6}$/);
-    expect(hook.formatColor(undefined)).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(hook.formatColor('var(--color-info)')).toBe('var(--color-info)');
+    expect(hook.formatColor(undefined)).toBe('var(--text-info)');
+
+    const season: any = { название: 'Лето', месяцы: [2] };
+    expect(season.hemisphere).toBeUndefined();
+
+    hook.toggleHemisphere(season);
+    expect(season.hemisphere).toBe('southern');
+
+    hook.toggleHemisphere(season);
+    expect(season.hemisphere).toBe('northern');
   });
 });

@@ -14,6 +14,7 @@ export interface PlanetCalendarOption {
 export interface PlanetEditorProps {
   planet: PlanetEntity;
   calendars?: PlanetCalendarOption[];
+  masterCalendar?: CalendarData | null;
 }
 
 export interface PlanetEditorEmits {

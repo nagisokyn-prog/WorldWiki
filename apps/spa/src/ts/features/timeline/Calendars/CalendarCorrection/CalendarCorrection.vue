@@ -19,7 +19,23 @@
 
     <div v-if="!isCollapsed" class="correction-content">
       <div v-if="driftWarning" class="drift-warning-banner">
-        ⚠️ {{ driftWarning }}
+        <div>⚠️ {{ driftWarning }}</div>
+        <div v-if="baseExtraDays > 0 && totalBaseYearDays !== Math.floor(targetOrbitalDays)" class="drift-warning-actions">
+          <button
+            type="button"
+            class="drift-action-btn interactive-el"
+            @click="balanceMonthsForExtraDays"
+          >
+            🪄 Сбалансировать месяцы ({{ Math.floor(targetOrbitalDays) - baseExtraDays }} дн. в месяцах + {{ baseExtraDays }} праздничных = {{ Math.floor(targetOrbitalDays) }} дн.)
+          </button>
+          <button
+            type="button"
+            class="drift-action-btn interactive-el"
+            @click="resetExtraDays"
+          >
+            Сбросить праздничные дни в 0
+          </button>
+        </div>
       </div>
 
       <!-- Быстрые пресеты -->
@@ -237,6 +253,12 @@
       <div v-if="ruleType === 'пользовательское'" class="correction-subcard">
         <div class="correction-subcard-title">
           <span>🎛️ Правила цикла (Гармоники делимости)</span>
+          <span
+            class="drift-badge"
+            :class="{ 'drift-ok': Math.abs(driftPerCentury) <= 0.1, 'drift-warning': Math.abs(driftPerCentury) > 0.1 }"
+          >
+            Дрейф: {{ driftPerCentury >= 0 ? '+' : '' }}{{ driftPerCentury.toFixed(3) }} сут/век
+          </span>
         </div>
         <p class="text-xs text-muted m-0">
           Задайте условия наступления високоса: добавления (+) и исключения (-).
@@ -338,6 +360,8 @@ const {
   removeHarmonic,
   updateHarmonicDivisor,
   applyPreset,
+  balanceMonthsForExtraDays,
+  resetExtraDays,
 } = useCalendarCorrection(props, emit);
 </script>
 

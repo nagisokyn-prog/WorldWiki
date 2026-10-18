@@ -35,15 +35,26 @@
     --accent-glow: rgba(124, 58, 237, 0.2);
     --accent-light: #ddd6fe;
 
+    /* Статусные цвета */
+    --success: #059669;
+    --warning: #d97706;
+    --error: #dc2626;
+    --info: #2563eb;
+
+    --text-success: #047857;
+    --text-warning: #b45309;
+    --text-error: #b91c1c;
+    --text-info: #1d4ed8;
+
     /* Статусные фоны и границы */
-    --success-bg: rgba(16, 185, 129, 0.1);
-    --success-border: rgba(16, 185, 129, 0.3);
-    --warning-bg: rgba(245, 158, 11, 0.1);
-    --warning-border: rgba(245, 158, 11, 0.3);
-    --error-bg: rgba(239, 68, 68, 0.1);
-    --error-border: rgba(239, 68, 68, 0.3);
-    --info-bg: rgba(59, 130, 246, 0.1);
-    --info-border: rgba(59, 130, 246, 0.3);
+    --success-bg: rgba(5, 150, 105, 0.1);
+    --success-border: rgba(5, 150, 105, 0.25);
+    --warning-bg: rgba(217, 119, 6, 0.1);
+    --warning-border: rgba(217, 119, 6, 0.25);
+    --error-bg: rgba(220, 38, 38, 0.1);
+    --error-border: rgba(220, 38, 38, 0.25);
+    --info-bg: rgba(37, 99, 235, 0.1);
+    --info-border: rgba(37, 99, 235, 0.25);
 
     /* Границы и тени */
     --border-color: rgba(0, 0, 0, 0.1);

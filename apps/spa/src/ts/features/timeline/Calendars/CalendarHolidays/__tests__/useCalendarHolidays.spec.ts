@@ -89,5 +89,31 @@ describe('useCalendarHolidays', () => {
 
     wrapper.unmount();
   });
+
+  it('toggles holiday range and detects new year crossing', () => {
+    const hook = useCalendarHolidays(props);
+    const holiday: any = {
+      дата_начала: { месяц: 11, день: 28 },
+      дата_конца: { месяц: 0, день: 3 }
+    };
+
+    expect(hook.isNewYearCrossing(holiday)).toBe(true);
+
+    const normalHoliday: any = {
+      дата_начала: { месяц: 4, день: 1 },
+      дата_конца: { месяц: 4, день: 9 }
+    };
+    expect(hook.isNewYearCrossing(normalHoliday)).toBe(false);
+
+    // Toggle range off
+    hook.toggleHolidayRange(holiday);
+    expect(holiday.дата_конца).toBeUndefined();
+    expect(hook.isNewYearCrossing(holiday)).toBe(false);
+
+    // Toggle range back on
+    hook.toggleHolidayRange(holiday);
+    expect(holiday.дата_конца).toBeDefined();
+    expect(holiday.дата_конца.месяц).toBe(11);
+  });
 });
 

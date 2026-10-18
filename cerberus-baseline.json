@@ -4,32 +4,40 @@
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (310) exceeds strict limit (265)",
-    "fingerprint": "6fdd4a58a8d833b9ba470f4edd8d85157fdca05fcb84affc5e6d560bd44a5eb3"
+    "message": "Frontend file SLOC (334) exceeds strict limit (265)",
+    "fingerprint": "d173204a8017065551aaea5d13ad08737ab71336d51d3448b20127647738a5b2"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (432) exceeds recommended limit (265)",
-    "fingerprint": "35aab779d309742e5cc937833d79ce39a57570960e0ef4ca6a672f3628fc2368"
+    "message": "Frontend file SLOC (526) exceeds strict limit (465)",
+    "fingerprint": "b861201434aa44dabbfe3cc76a9587fd081a1cef1538ca60efb8e7694d3711f9"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (263) exceeds recommended limit (165)",
+    "fingerprint": "4fc7b1a2b949655d8fb778d8f2ba734df2f4b2ccaa967f0201c62dbdc06d5228"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/useCalendarSyncAnchor.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (267) exceeds recommended limit (265)",
-    "fingerprint": "3da5ebf970a813ad1edb09bc65cca804f8721bb5f366c822208e11a6b09bb92a"
+    "message": "Frontend file SLOC (355) exceeds recommended limit (265)",
+    "fingerprint": "23130b77894bf5cec1ae33364fd72631225e0b8efd40eeda4017830e4c5051fd"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/PlanetEditor/PlanetEditor.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (451) exceeds strict limit (265)",
-    "fingerprint": "5f21cc28b6963d18eab8292a26d1e153e342086724f7e88813d6cda4494fe4f4"
+    "message": "Frontend file SLOC (454) exceeds strict limit (265)",
+    "fingerprint": "2dcef5b124157bd328c65bf3e1cbbc493850b90b29e80d75dea93e6ba7980886"
   },
   {
     "rule": "ARCH-031",
@@ -44,8 +52,16 @@
     "file": "./apps/spa/src/ts/features/timeline/CalendarsPanel/useCalendarsPanel.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (272) exceeds recommended limit (265)",
-    "fingerprint": "8a1b45d0f9e9754fb896a8ba8a4f485d4fc35ffdd3203eb971b91fcbfac7e60d"
+    "message": "Frontend file SLOC (279) exceeds recommended limit (265)",
+    "fingerprint": "02482533fbbec58eeaa84bf3d18a64e2d9de9ab728913050a21ebe6122b36976"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 42,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "6249c5be4764511bd07fd00be868ef5081af70218add2b48dfcb77cdf15bf78a"
   },
   {
     "rule": "CSS-005",
@@ -56,17 +72,9 @@
     "fingerprint": "ac161c89ca4dba6939890dde02daa308577077ff5ea21d4a819fa535c452f65e"
   },
   {
-    "rule": "CSS-005",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
-    "line": 85,
-    "symbol": "ts_color_hex",
-    "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-    "fingerprint": "ac3bc983a0e2e07d7404f3b0b79653e6a76eb8993d1579e7971e15508d90cd17"
-  },
-  {
     "rule": "CSS-PERF-004",
     "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
-    "line": 93,
+    "line": 101,
     "symbol": "no_transition_all",
     "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
     "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
@@ -74,7 +82,7 @@
   {
     "rule": "CSS-PERF-004",
     "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
-    "line": 276,
+    "line": 123,
     "symbol": "no_transition_all",
     "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
     "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
@@ -82,7 +90,7 @@
   {
     "rule": "CSS-PERF-004",
     "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
-    "line": 318,
+    "line": 306,
     "symbol": "no_transition_all",
     "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
     "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
@@ -90,7 +98,15 @@
   {
     "rule": "CSS-PERF-004",
     "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
-    "line": 372,
+    "line": 348,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCorrection.css",
+    "line": 402,
     "symbol": "no_transition_all",
     "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
     "fingerprint": "549f11ec408cebca2acf61f50ad0712e6defebf98666fb80fd0fa81efa89c310"
@@ -114,7 +130,7 @@
   {
     "rule": "FE-ERR-001",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
-    "line": 293,
+    "line": 359,
     "symbol": "empty_catch_block",
     "message": "Empty catch block silently swallows runtime exceptions without analysis, recovery or telemetry.",
     "fingerprint": "5602981a67a6ab43584e06f42d9fae58775dfbbe0a59b29dfa5607907db3356a"
@@ -122,7 +138,7 @@
   {
     "rule": "VUE-009",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
-    "line": 300,
+    "line": 322,
     "symbol": "template_method",
     "message": "Uncached function call inside v-for template re-executes on every render frame",
     "fingerprint": "98c0f745d10f864f90928e482b49cf10adc225d1cc73e470eae19950a5dedc78"

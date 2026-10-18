@@ -41,6 +41,17 @@ impl WasmCalendarEngine {
         serde_wasm_bindgen::to_value(&convergents).map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
+    /// Разложение рациональной дроби p/q на знаковые единичные гармоники (+1/-1)
+    pub fn decompose_fraction_to_unit_harmonics(
+        &self,
+        p: i64,
+        q: i64,
+        max_harmonics: usize,
+    ) -> Result<JsValue, JsValue> {
+        let harmonics = convergents::decompose_fraction_to_unit_harmonics(p, q, max_harmonics);
+        serde_wasm_bindgen::to_value(&harmonics).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
     /// Климатический детектор конфликта сезона солнцестояния
     pub fn is_season_conflicting_with_solstice(
         &self,

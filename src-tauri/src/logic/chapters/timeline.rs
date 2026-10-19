@@ -89,3 +89,141 @@ impl Chapter {
         Ok(json!({ "success": true, "updated": arr.len() }))
     }
 }
+
+/// Получить бандл планет и календарей для проекта через хранимую функцию SurrealDB
+pub async fn get_planet_calendar_bundle_inner(
+    db: &Surreal<Db>,
+    project: &str,
+) -> Result<Value, ChapterError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let mut res = db
+        .query("RETURN fn::get_planet_calendar_bundle(type::record('projects', $p));")
+        .bind(("p", clean_pid))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "planets": [], "calendars": [] })))
+}
+
+/// Сохранить планету через хранимую функцию SurrealDB
+pub async fn save_planet_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    planet_id: Option<String>,
+    name: &str,
+    ticks_per_day: i64,
+    axial_tilt_mdeg: Option<i64>,
+    orbit_days_num: Option<i64>,
+    orbit_days_den: Option<i64>,
+    moons: Option<Value>,
+) -> Result<Value, ChapterError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let id_clause = if let Some(ref pid) = planet_id {
+        format!("type::record('planets', '{}')", pid.trim().replace("planets:", ""))
+    } else {
+        "NONE".to_string()
+    };
+    let query_str = format!(
+        "RETURN fn::save_planet({}, type::record('projects', $p), $name, $ticks, $tilt, $num, $den, $moons);",
+        id_clause
+    );
+    let mut res = db
+        .query(&query_str)
+        .bind(("p", clean_pid))
+        .bind(("name", name.to_string()))
+        .bind(("ticks", ticks_per_day))
+        .bind(("tilt", axial_tilt_mdeg))
+        .bind(("num", orbit_days_num))
+        .bind(("den", orbit_days_den))
+        .bind(("moons", moons))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "success": true })))
+}
+
+/// Сохранить календарь через хранимую функцию SurrealDB
+pub async fn save_calendar_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    calendar_id: Option<String>,
+    planet_id: &str,
+    name: &str,
+    is_master: bool,
+    data: Value,
+) -> Result<Value, ChapterError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_plid = planet_id.trim().replace("planets:", "");
+    let id_clause = if let Some(ref cid) = calendar_id {
+        format!("type::record('calendars', '{}')", cid.trim().replace("calendars:", ""))
+    } else {
+        "NONE".to_string()
+    };
+    let query_str = format!(
+        "RETURN fn::save_calendar({}, type::record('projects', $p), type::record('planets', $plid), $name, $is_master, $data);",
+        id_clause
+    );
+    let mut res = db
+        .query(&query_str)
+        .bind(("p", clean_pid))
+        .bind(("plid", clean_plid))
+        .bind(("name", name.to_string()))
+        .bind(("is_master", is_master))
+        .bind(("data", data))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "success": true })))
+}
+
+/// Назначить мастер-календарь проекта через хранимую функцию SurrealDB
+pub async fn set_master_calendar_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    planet_id: &str,
+    calendar_id: &str,
+) -> Result<Value, ChapterError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_plid = planet_id.trim().replace("planets:", "");
+    let clean_cid = calendar_id.trim().replace("calendars:", "");
+    let mut res = db
+        .query("RETURN fn::set_master_calendar(type::record('projects', $p), type::record('planets', $plid), type::record('calendars', $cid));")
+        .bind(("p", clean_pid))
+        .bind(("plid", clean_plid))
+        .bind(("cid", clean_cid))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "success": true })))
+}
+
+/// Удалить планету через хранимую функцию SurrealDB
+pub async fn delete_planet_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    planet_id: &str,
+    cascade: bool,
+) -> Result<Value, ChapterError> {
+    let clean_pid = project.trim().replace("projects:", "");
+    let clean_plid = planet_id.trim().replace("planets:", "");
+    let mut res = db
+        .query("RETURN fn::delete_planet(type::record('projects', $p), type::record('planets', $plid), $cascade);")
+        .bind(("p", clean_pid))
+        .bind(("plid", clean_plid))
+        .bind(("cascade", cascade))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "success": true })))
+}
+
+/// Удалить календарь через хранимую функцию SurrealDB
+pub async fn delete_calendar_inner(
+    db: &Surreal<Db>,
+    calendar_id: &str,
+) -> Result<Value, ChapterError> {
+    let clean_cid = calendar_id.trim().replace("calendars:", "");
+    let mut res = db
+        .query("RETURN fn::delete_calendar(type::record('calendars', $cid));")
+        .bind(("cid", clean_cid))
+        .await?;
+    let val: Option<Value> = res.take(0)?;
+    Ok(val.unwrap_or(json!({ "success": true })))
+}
+
+

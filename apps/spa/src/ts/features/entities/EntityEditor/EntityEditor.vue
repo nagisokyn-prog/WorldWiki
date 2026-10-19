@@ -5,24 +5,19 @@
       <div class="mt-2 text-xs text-muted">Загрузка сущности...</div>
     </div>
 
-    <!-- PREVIEW HEADER NOTIFICATION -->
-    <div v-if="isPreviewingHistory" class="history-preview-banner">
-      <span>👁️ Вы просматриваете сохраненную версию от <strong>{{ revisions.find((r: any) => r.id === previewingRevId)?.formattedDate }}</strong></span>
-      <div class="flex gap-2">
-        <button class="btn btn-small btn-primary" @click="restoreHistory">Восстановить эту версию</button>
-        <button class="btn btn-small btn-outline" @click="exitHistoryPreview">Выйти</button>
-      </div>
-    </div>
-
-    <div v-else-if="props.entityId === 'preview'" class="history-preview-banner banner-sandbox-preview">
-      <span>🧪 <strong>Песочница:</strong> Предпросмотр кастомной схемы</span>
-    </div>
+    <EntityHistoryBanner
+      :is-previewing="isPreviewingHistory"
+      :is-sandbox="props.entityId === 'preview'"
+      :formatted-date="revisions.find((r: any) => r.id === previewingRevId)?.formattedDate"
+      @restore="restoreHistory"
+      @exit="exitHistoryPreview"
+    />
 
     <div class="entity-editor-layout" :class="{ 'with-history': showHistory }">
       <!-- MAIN COLUMN -->
       <div class="entity-main-pane flex-1 flex-col overflow-hidden min-h-0">
         <!-- SECTIONS NAV (TABS - FIXED ON TOP) -->
-        <div v-if="config && config.sections && config.sections.length > 1 && props.entityType !== 'calendar'" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
+        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
           <button
             v-for="sec in config.sections" 
             :key="sec.id"
@@ -37,18 +32,8 @@
 
         <!-- MAIN FORM CONTAINER -->
         <div ref="scrollContainer" class="form-container">
-          <CalendarEntityAdapter
-            v-if="props.entityType === 'calendar'"
-            :calendar-id="props.entityId"
-            :project-id="props.project"
-            :initial-data="props.initialData"
-            :is-preview="isPreviewingHistory"
-            @update:model-value="onCalendarDataUpdate"
-            @modified="markModified"
-          />
-
           <!-- RENDER ACTIVE SECTION -->
-          <transition v-else name="fade-fast" mode="out-in">
+          <transition name="fade-fast" mode="out-in">
             <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
             <template v-for="section in config.sections" :key="section.id">
               <div v-if="section.id === activeSection">
@@ -341,16 +326,9 @@
 <script setup lang="ts">
 import { XboxWheel, TagsField, SafeHtml } from '@worldwiki/components';
 import { UniversalDatePicker, RelationshipBlock, ManuscriptPointPicker, type ManuscriptPoint } from '@/shared/ui';
-import CalendarEntityAdapter from './adapters/CalendarEntityAdapter/CalendarEntityAdapter.vue';
+import EntityHistoryBanner from './components/EntityHistoryBanner.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
-
-const isChapterField = (field: { class?: string; id?: string; type?: string; entityType?: string }): boolean => {
-  if (field.entityType === 'chapter') return true;
-  if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
-  const cls = (field.class || field.id || '').toLowerCase();
-  return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
-};
 
 const props = defineProps<EntityEditorProps>();
 const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change', 'update:modelValue']);
@@ -391,13 +369,9 @@ const {
     triggerPhotoUpload,
     handlePhotoFile,
     handlePhotoDrop,
-    removePhoto
+    removePhoto,
+    isChapterField,
   } = useEntityEditor(props, emit as (event: string, ...args: unknown[]) => void);
-
-  const onCalendarDataUpdate = (val: Record<string, unknown>) => {
-    formData.value = val;
-    markModified();
-  };
 
 defineExpose({
   toggleHistory,

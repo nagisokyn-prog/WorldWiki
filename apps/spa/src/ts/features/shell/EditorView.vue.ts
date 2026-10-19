@@ -23,6 +23,7 @@ import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
 import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
 import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
+import CalendarEntityAdapterVue from '@/features/timeline/CalendarEntityAdapter/CalendarEntityAdapter.vue';
 
 export default defineComponent({
   name: 'EditorView',
@@ -31,6 +32,7 @@ export default defineComponent({
     EditorGroupPaneVue,
     ChaptersMainVue,
     EntityEditorVue,
+    CalendarEntityAdapterVue,
     SchemaEditorMainVue,
     CrossReferenceMatrixVue,
     ConsistencyCheckerVue,

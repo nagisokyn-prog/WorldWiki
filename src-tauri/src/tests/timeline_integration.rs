@@ -318,3 +318,61 @@ async fn multiple_revisions_ordered_desc_with_before_content() {
     assert_eq!(revisions[1]["content"]["content"], "текст-2");
     assert_eq!(revisions[2]["content"]["content"], "текст-1", "последняя — исходное состояние ($before)");
 }
+
+#[tokio::test]
+async fn test_stored_functions_planet_and_calendar_lifecycle() {
+    let db = create_test_db().await;
+    seed_project(&db, "proj_cal").await;
+
+    // 1. fn::save_planet
+    let mut res = db
+        .query("RETURN fn::save_planet(type::record('planets', 'terra'), type::record('projects', 'proj_cal'), 'Земля', 86400, 23400, 365, 1, []);")
+        .await
+        .expect("save_planet query");
+    let planet: Option<serde_json::Value> = res.take(0).expect("take planet");
+    assert!(planet.is_some(), "planet created");
+
+    // 2. fn::save_calendar
+    let mut res = db
+        .query("RETURN fn::save_calendar(type::record('calendars', 'gregorian'), type::record('projects', 'proj_cal'), type::record('planets', 'terra'), 'Григорианский', true, { days_in_year: 365 });")
+        .await
+        .expect("save_calendar query");
+    let cal: Option<serde_json::Value> = res.take(0).expect("take calendar");
+    assert!(cal.is_some(), "calendar created");
+
+    // 3. fn::set_master_calendar
+    let mut res = db
+        .query("RETURN fn::set_master_calendar(type::record('projects', 'proj_cal'), type::record('planets', 'terra'), type::record('calendars', 'gregorian'));")
+        .await
+        .expect("set_master_calendar query");
+    let master_res: Option<serde_json::Value> = res.take(0).expect("take master_res");
+    assert!(master_res.is_some());
+
+    // 4. fn::get_planet_calendar_bundle
+    let mut res = db
+        .query("RETURN fn::get_planet_calendar_bundle(type::record('projects', 'proj_cal'));")
+        .await
+        .expect("get_planet_calendar_bundle query");
+    let bundle: Option<serde_json::Value> = res.take(0).expect("take bundle");
+    assert!(bundle.is_some(), "bundle retrieved");
+    let bundle_val = bundle.unwrap();
+    assert!(bundle_val.get("planets").is_some());
+    assert!(bundle_val.get("calendars").is_some());
+
+    // 5. fn::delete_calendar
+    let mut res = db
+        .query("RETURN fn::delete_calendar(type::record('calendars', 'gregorian'));")
+        .await
+        .expect("delete_calendar query");
+    let del_cal: Option<serde_json::Value> = res.take(0).expect("take del_cal");
+    assert!(del_cal.is_some());
+
+    // 6. fn::delete_planet
+    let mut res = db
+        .query("RETURN fn::delete_planet(type::record('projects', 'proj_cal'), type::record('planets', 'terra'), true);")
+        .await
+        .expect("delete_planet query");
+    let del_planet: Option<serde_json::Value> = res.take(0).expect("take del_planet");
+    assert!(del_planet.is_some());
+}
+

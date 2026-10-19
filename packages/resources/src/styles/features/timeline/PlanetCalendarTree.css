@@ -73,7 +73,7 @@
   padding: 4px 10px;
   font-size: 11px;
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: background var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease);
 }
 
 .btn-add-planet:hover {

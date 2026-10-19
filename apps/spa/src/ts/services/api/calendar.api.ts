@@ -42,4 +42,40 @@ export const calendarApi = {
 
   saveGlobalTimeline: (project: string, data: unknown): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('save_global_timeline', { project, data }),
+
+  getPlanetCalendarBundle: (project: string): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::get_planet_calendar_bundle(type::record("projects", $project));',
+      params: { project },
+    }),
+
+  savePlanetDirect: (project: string, planetId: string | null, name: string, data: Record<string, unknown>): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::save_planet(type::record("projects", $project), $planetId, $name, $data);',
+      params: { project, planetId, name, data },
+    }),
+
+  saveCalendarDirect: (project: string, calendarId: string | null, planetId: string | null, name: string, isMaster: boolean, data: Record<string, unknown>): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::save_calendar(type::record("projects", $project), $calendarId, $planetId, $name, $isMaster, $data);',
+      params: { project, calendarId, planetId, name, isMaster, data },
+    }),
+
+  setMasterCalendar: (project: string, calendarId: string): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::set_master_calendar(type::record("projects", $project), type::record("calendars", $calendarId));',
+      params: { project, calendarId },
+    }),
+
+  deletePlanetDirect: (planetId: string): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::delete_planet(type::record("planets", $planetId));',
+      params: { planetId },
+    }),
+
+  deleteCalendarDirect: (calendarId: string): Promise<unknown> =>
+    invoke<unknown>('run_surql_query', {
+      query: 'RETURN fn::delete_calendar(type::record("calendars", $calendarId));',
+      params: { calendarId },
+    }),
 };

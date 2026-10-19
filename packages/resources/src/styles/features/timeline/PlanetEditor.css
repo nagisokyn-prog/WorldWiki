@@ -206,7 +206,7 @@
   font-size: 12px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: background var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease);
   white-space: nowrap;
 }
 

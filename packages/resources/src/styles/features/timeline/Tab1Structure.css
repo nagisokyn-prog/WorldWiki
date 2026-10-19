@@ -51,14 +51,14 @@
 
 .status-chip.success {
   color: var(--accent-success);
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--success-border);
+  background: var(--success-bg);
 }
 
 .status-chip.warning {
   color: var(--accent-warning);
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--warning-border);
+  background: var(--warning-bg);
 }
 
 .chip-list {
@@ -79,16 +79,16 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .preset-chip:hover {
   border-color: var(--accent-primary);
-  background: rgba(56, 189, 248, 0.08);
+  background: var(--info-bg);
 }
 
 .preset-chip.active {
-  background: rgba(56, 189, 248, 0.18);
+  background: var(--info-bg);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   font-weight: 600;
@@ -157,7 +157,7 @@
 }
 
 .btn-icon-table:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--accent-danger);
 }
 
@@ -169,11 +169,11 @@
   border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .btn-ghost-sm:hover {
   border-color: var(--border-focus);
   color: var(--accent-primary);
-  background: rgba(56, 189, 248, 0.08);
+  background: var(--info-bg);
 }

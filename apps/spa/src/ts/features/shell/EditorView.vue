@@ -120,7 +120,18 @@
                         </div>
                       </div>
 
+                      <calendar-entity-adapter-vue
+                        v-if="tab.entityType === 'calendar'"
+                        :key="'cal-' + tab.id + '-' + groupId"
+                        :calendar-id="tab.rawId"
+                        :project-id="projectName || 'default'"
+                        :initial-data="tab.data"
+                        @update:model-value="handleUpdateData(tab.id, $event)"
+                        @modified="markUnsaved(tab.id)"
+                      ></calendar-entity-adapter-vue>
+
                       <entity-editor-vue
+                        v-else
                         :key="tab.id + '-' + groupId"
                         :entity-id="tab.rawId"
                         :entity-type="tab.entityType"

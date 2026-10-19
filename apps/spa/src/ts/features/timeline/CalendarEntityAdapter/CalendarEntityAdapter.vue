@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import CalendarEditor from '@/features/timeline/CalendarEditor/CalendarEditor.vue';
+import CalendarEditor from '../CalendarEditor/CalendarEditor.vue';
 import type {
   CalendarEntityAdapterProps,
   CalendarEntityAdapterEmits,
@@ -24,4 +24,4 @@ const emit = defineEmits<CalendarEntityAdapterEmits>();
 const { onCalendarUpdate, onCalendarSave } = useCalendarEntityAdapter(props, emit);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/entities/CalendarEntityAdapter.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarEntityAdapter.css"></style>

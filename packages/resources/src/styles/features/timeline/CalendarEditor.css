@@ -100,7 +100,7 @@
 .btn-action.btn-primary {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--accent-text);
   font-weight: 600;
 }
 

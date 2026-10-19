@@ -146,6 +146,13 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     return field.options || [];
   };
 
+  const isChapterField = (field: { class?: string; id?: string; type?: string; entityType?: string }): boolean => {
+    if (field.entityType === 'chapter') return true;
+    if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
+    const cls = (field.class || field.id || '').toLowerCase();
+    return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
+  };
+
   return {
     loading,
     isInitializing,
@@ -171,6 +178,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     handleForeignUpdate,
     addDynamicItem,
     removeDynamicItem,
+    isChapterField,
     ...historyHook,
     ...helpers
   };

@@ -64,3 +64,14 @@ export interface EntityEditorProps {
   initialSection?: string;
   initialScrollPos?: number;
 }
+
+export interface EntityHistoryBannerProps {
+  isPreviewing: boolean;
+  isSandbox: boolean;
+  formattedDate?: string;
+}
+
+export type EntityHistoryBannerEmits = {
+  (e: 'restore'): void;
+  (e: 'exit'): void;
+};

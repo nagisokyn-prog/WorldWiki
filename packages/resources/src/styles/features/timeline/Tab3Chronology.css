@@ -128,7 +128,7 @@
 }
 
 .btn-icon-table:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--accent-danger);
 }
 
@@ -140,11 +140,11 @@
   border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .btn-ghost-sm:hover {
   border-color: var(--border-focus);
   color: var(--accent-primary);
-  background: rgba(56, 189, 248, 0.08);
+  background: var(--info-bg);
 }

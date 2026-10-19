@@ -39,7 +39,7 @@
   font-weight: 500;
   padding: 2px 8px;
   border-radius: var(--radius-xs, 4px);
-  background: var(--bg-sunken, rgba(0, 0, 0, 0.08));
+  background: var(--bg-sunken);
   color: var(--text-muted);
   border: 1px solid var(--border-color);
   font-variant-numeric: tabular-nums;
@@ -98,7 +98,7 @@
   color: var(--text-main);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .drift-action-btn:hover {
@@ -120,7 +120,7 @@
   color: var(--text-muted);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .preset-chip:hover {
@@ -303,7 +303,7 @@
   background: var(--bg-secondary);
   min-width: 65px;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .tape-item.tape-extra-days {
@@ -345,7 +345,7 @@
   color: var(--accent, var(--text-main));
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: filter 0.2s ease, background 0.2s ease;
 }
 
 .suggest-trigger-btn:hover {
@@ -399,7 +399,7 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .suggestion-card:hover {

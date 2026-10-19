@@ -22,7 +22,7 @@
       <!-- MAIN COLUMN -->
       <div class="entity-main-pane flex-1 flex-col overflow-hidden min-h-0">
         <!-- SECTIONS NAV (TABS - FIXED ON TOP) -->
-        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
+        <div v-if="config && config.sections && config.sections.length > 1 && props.entityType !== 'calendar'" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
           <button
             v-for="sec in config.sections" 
             :key="sec.id"
@@ -37,8 +37,18 @@
 
         <!-- MAIN FORM CONTAINER -->
         <div ref="scrollContainer" class="form-container">
+          <CalendarEntityAdapter
+            v-if="props.entityType === 'calendar'"
+            :calendar-id="props.entityId"
+            :project-id="props.project"
+            :initial-data="props.initialData"
+            :is-preview="isPreviewingHistory"
+            @update:model-value="onCalendarDataUpdate"
+            @modified="markModified"
+          />
+
           <!-- RENDER ACTIVE SECTION -->
-          <transition name="fade-fast" mode="out-in">
+          <transition v-else name="fade-fast" mode="out-in">
             <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
             <template v-for="section in config.sections" :key="section.id">
               <div v-if="section.id === activeSection">
@@ -331,6 +341,7 @@
 <script setup lang="ts">
 import { XboxWheel, TagsField, SafeHtml } from '@worldwiki/components';
 import { UniversalDatePicker, RelationshipBlock, ManuscriptPointPicker, type ManuscriptPoint } from '@/shared/ui';
+import CalendarEntityAdapter from './adapters/CalendarEntityAdapter/CalendarEntityAdapter.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 
@@ -382,6 +393,11 @@ const {
     handlePhotoDrop,
     removePhoto
   } = useEntityEditor(props, emit as (event: string, ...args: unknown[]) => void);
+
+  const onCalendarDataUpdate = (val: Record<string, unknown>) => {
+    formData.value = val;
+    markModified();
+  };
 
 defineExpose({
   toggleHistory,

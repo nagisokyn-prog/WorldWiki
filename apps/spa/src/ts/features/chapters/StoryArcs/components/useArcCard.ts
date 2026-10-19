@@ -1,13 +1,13 @@
 import { computed } from 'vue';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise, SceneArcItem } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
 import type { ArcCardProps, PhaseCounts } from './ArcCard.model';
 
 export function useArcCard(props: ArcCardProps) {
-  const getPhaseForBlock = (block: PlotPromise, arcId?: string | null): string => {
+  const getPhaseForBlock = (block: RichPlotPromise, arcId?: string | null): string => {
     let phase = block.arc_phase;
     if (Array.isArray(block.arcs) && block.arcs.length > 0 && arcId) {
       const cleanArcId = arcId.replace(/^story_arcs:/, '');
-      const entry = block.arcs.find(a => {
+      const entry = block.arcs.find((a: SceneArcItem) => {
         const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
         return aid === cleanArcId || aid === arcId;
       });
@@ -35,7 +35,7 @@ export function useArcCard(props: ArcCardProps) {
     return counts;
   });
 
-  const getPhaseInfo = (block: PlotPromise, arcId?: string | null) => {
+  const getPhaseInfo = (block: RichPlotPromise, arcId?: string | null) => {
     const phase = getPhaseForBlock(block, arcId);
     switch (phase) {
       case 'setup':
@@ -101,9 +101,6 @@ export function useArcCard(props: ArcCardProps) {
   return {
     phaseCounts,
     displayBlocks,
-    getPhaseInfo,
-    getPromiseStatusLabel,
-    formatChapterName,
     getArcTypeLabel,
   };
 }

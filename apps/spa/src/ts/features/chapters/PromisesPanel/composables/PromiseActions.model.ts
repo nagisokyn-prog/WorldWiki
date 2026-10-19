@@ -1,12 +1,16 @@
 import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { PromiseMilestone as GenPromiseMilestone } from '@/types/generated/PromiseMilestone';
 import type { Ref } from 'vue';
 
-export interface PromiseMilestone extends GenPromiseMilestone {
+export interface PromiseMilestone {
+  milestone_id: string | null;
   id?: string;
-  chapter_id?: string | null;
+  stage: string;
+  quote: string | null;
+  note: string | null;
+  block_id: string;
+  chapter_id: string | null;
   paragraph_index?: number;
-  order_index?: number | null;
+  order_index: number | null;
   created_at?: string | null;
 }
 
@@ -37,14 +41,20 @@ export type RichPlotPromise = PlotPromise & {
   is_orphaned?: boolean;
 };
 
+export type PromiseActionsEmit = {
+  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
+  (e: 'change'): void;
+};
+
 export interface UsePromiseActionsParams {
+  props?: {
+    project?: string;
+    chapterId?: string | null;
+  };
   project?: string;
   chapterId?: string | null;
   currentVolumeId?: string | null;
-  props?: { project?: string; chapterId?: string | null; currentVolumeId?: string | null };
   promises: Ref<RichPlotPromise[]>;
-  emit: {
-    (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
-    (e: 'change'): void;
-  };
+  emit: PromiseActionsEmit;
+  syncLocalBackup?: () => void;
 }

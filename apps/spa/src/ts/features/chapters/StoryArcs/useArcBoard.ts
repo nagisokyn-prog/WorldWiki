@@ -1,23 +1,17 @@
 import { ref, computed, onMounted } from 'vue';
-import { useStoryArcsStore, type StoryArc } from '@/stores/story_arcs.store';
+import type { StoryArc } from '@/stores/story_arcs.store';
+import type { RichPlotPromise, SceneArcItem } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
+import { useStoryArcsStore } from '@/stores/story_arcs.store';
 import * as api from '@/services/api.client';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { ArcStatus, ArcType, ArcColumnConfig, ArcBoardFilterState } from './StoryArcs.model';
+import type {
+  ArcStatus,
+  ArcType,
+  ArcBoardFilterState,
+} from './StoryArcs.model';
 
-export const ARC_COLUMNS: ArcColumnConfig[] = [
-  { status: 'planned', title: '📋 Запланировано', badgeType: 'muted' },
-  { status: 'in_progress', title: '⚡ В Процессе', badgeType: 'accent' },
-  { status: 'completed', title: '✅ Завершено', badgeType: 'success' },
-  { status: 'abandoned', title: '🛑 Отменено', badgeType: 'danger' },
-];
-
-/**
- * Автоматически вычисляет Канбан-статус арки из привязанных блоков/сцен.
- * Если у арки есть привязанные блоки, статус вычисляется по их фазе/состоянию.
- */
 export function computeArcKanbanStatus(
   arc: StoryArc,
-  allPromises: PlotPromise[]
+  allPromises: RichPlotPromise[]
 ): ArcStatus {
   if (arc.status === 'abandoned') return 'abandoned';
 
@@ -26,7 +20,7 @@ export function computeArcKanbanStatus(
 
   const linked = allPromises.filter(p => {
     if (Array.isArray(p.arcs) && p.arcs.length > 0) {
-      return p.arcs.some(a => {
+      return p.arcs.some((a: SceneArcItem) => {
         const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
         return aid === cleanArcId || aid === arcId;
       });
@@ -43,7 +37,7 @@ export function computeArcKanbanStatus(
   const hasResolved = linked.some(p => {
     let phase = p.arc_phase;
     if (Array.isArray(p.arcs) && p.arcs.length > 0) {
-      const entry = p.arcs.find(a => {
+      const entry = p.arcs.find((a: SceneArcItem) => {
         const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
         return aid === cleanArcId || aid === arcId;
       });
@@ -59,7 +53,7 @@ export function computeArcKanbanStatus(
 
 export function useArcBoard(projectId: string) {
   const store = useStoryArcsStore();
-  const promises = ref<PlotPromise[]>([]);
+  const promises = ref<RichPlotPromise[]>([]);
 
   const filters = ref<ArcBoardFilterState>({
     searchQuery: '',
@@ -77,7 +71,7 @@ export function useArcBoard(projectId: string) {
     if (!projectId) return;
     try {
       const data = await api.getPlotPromises(projectId);
-      promises.value = Array.isArray(data) ? (data as unknown as PlotPromise[]) : [];
+      promises.value = Array.isArray(data) ? (data as unknown as RichPlotPromise[]) : [];
     } catch {
       promises.value = [];
     }
@@ -87,12 +81,12 @@ export function useArcBoard(projectId: string) {
     return computeArcKanbanStatus(arc, promises.value);
   };
 
-  const getLinkedBlocks = (arcId?: string | null): PlotPromise[] => {
+  const getLinkedBlocks = (arcId?: string | null): RichPlotPromise[] => {
     if (!arcId) return [];
     const cleanArcId = arcId.replace(/^story_arcs:/, '');
     return promises.value.filter(p => {
       if (Array.isArray(p.arcs) && p.arcs.length > 0) {
-        return p.arcs.some(a => {
+        return p.arcs.some((a: SceneArcItem) => {
           const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
           return aid === cleanArcId || aid === arcId;
         });
@@ -113,36 +107,55 @@ export function useArcBoard(projectId: string) {
       if (filters.value.selectedType !== 'all' && arc.arc_type !== filters.value.selectedType) {
         return false;
       }
-      if (q && !arc.title.toLowerCase().includes(q) && !(arc.description || '').toLowerCase().includes(q)) {
+      if (q && !arc.title.toLowerCase().includes(q)) {
         return false;
       }
       return true;
     });
   });
 
-  const columns = computed(() => {
-    return ARC_COLUMNS.map((col) => ({
-      ...col,
-      arcs: filteredArcs.value.filter((arc) => getArcEffectiveStatus(arc) === col.status),
-    }));
-  });
+  const plannedArcs = computed(() =>
+    filteredArcs.value.filter((arc: StoryArc) => getArcEffectiveStatus(arc) === 'planned')
+  );
 
-  const createNewArc = async (title: string, arcType: StoryArc['arc_type'] = 'character') => {
-    if (!title.trim() || !projectId) return;
-    await store.saveArc({
-      project_id: projectId,
-      title: title.trim(),
-      arc_type: arcType,
-      status: 'planned',
-    });
-  };
+  const inProgressArcs = computed(() =>
+    filteredArcs.value.filter((arc: StoryArc) => getArcEffectiveStatus(arc) === 'in_progress')
+  );
 
-  const handleCreate = async () => {
-    if (!newArcTitle.value.trim()) return;
-    await createNewArc(newArcTitle.value, newArcType.value);
-    newArcTitle.value = '';
-    showCreateModal.value = false;
-  };
+  const completedArcs = computed(() =>
+    filteredArcs.value.filter((arc: StoryArc) => getArcEffectiveStatus(arc) === 'completed')
+  );
+
+  const abandonedArcs = computed(() =>
+    filteredArcs.value.filter((arc: StoryArc) => getArcEffectiveStatus(arc) === 'abandoned')
+  );
+
+  const columns = computed(() => [
+    {
+      status: 'planned' as ArcStatus,
+      title: 'Запланировано',
+      badgeType: 'planned',
+      arcs: plannedArcs.value,
+    },
+    {
+      status: 'in_progress' as ArcStatus,
+      title: 'В процессе',
+      badgeType: 'in-progress',
+      arcs: inProgressArcs.value,
+    },
+    {
+      status: 'completed' as ArcStatus,
+      title: 'Завершено',
+      badgeType: 'completed',
+      arcs: completedArcs.value,
+    },
+    {
+      status: 'abandoned' as ArcStatus,
+      title: 'Отменено',
+      badgeType: 'abandoned',
+      arcs: abandonedArcs.value,
+    },
+  ]);
 
   const updateArcStatus = async (arc: StoryArc, newStatus: ArcStatus) => {
     await store.saveArc({
@@ -151,31 +164,41 @@ export function useArcBoard(projectId: string) {
     });
   };
 
-  const deleteArc = async (id?: string | null) => {
-    if (!id) return;
-    await store.removeArc(id);
+  const deleteArc = async (arcId?: string | null) => {
+    if (!arcId) return;
+    await store.removeArc(arcId);
+  };
+
+  const handleCreate = async () => {
+    if (!newArcTitle.value.trim()) return;
+
+    await store.saveArc({
+      project_id: projectId,
+      title: newArcTitle.value.trim(),
+      arc_type: newArcType.value,
+      status: 'planned',
+      color: 'var(--accent-primary)',
+    });
+
+    newArcTitle.value = '';
+    newArcType.value = 'character';
+    showCreateModal.value = false;
   };
 
   const refresh = async () => {
-    if (projectId) {
-      await Promise.all([
-        store.loadArcs(projectId, true),
-        loadPromises(),
-      ]);
-    }
+    await Promise.all([
+      store.loadArcs(projectId, true),
+      loadPromises(),
+    ]);
   };
 
   onMounted(() => {
-    if (projectId) {
-      void store.loadArcs(projectId);
-      void loadPromises();
-    }
+    refresh();
   });
 
   return {
     filters,
     columns,
-    promises,
     isLoading,
     error,
     showCreateModal,
@@ -183,7 +206,6 @@ export function useArcBoard(projectId: string) {
     newArcType,
     getArcEffectiveStatus,
     getLinkedBlocks,
-    createNewArc,
     handleCreate,
     updateArcStatus,
     deleteArc,

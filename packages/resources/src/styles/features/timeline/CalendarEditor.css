@@ -1,0 +1,197 @@
+/* CalendarEditor.css - Стили главного контейнера редактора календаря */
+
+.calendar-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Dashboard баннер шапки */
+.calendar-dashboard-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.dashboard-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.dashboard-title-input {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  width: 100%;
+  max-width: 420px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-title-input:hover,
+.dashboard-title-input:focus {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface-elevated);
+}
+
+.dashboard-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Кнопки действий */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.btn-action:hover {
+  border-color: var(--border-focus);
+  background: var(--info-bg);
+  color: var(--accent-primary);
+}
+
+.btn-action.btn-primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--bg-base);
+  font-weight: 600;
+}
+
+.btn-action.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.btn-action.btn-danger {
+  color: var(--accent-danger);
+}
+
+.btn-action.btn-danger:hover {
+  background: var(--error-bg);
+  border-color: var(--accent-danger);
+}
+
+/* Горизонтальная таб-навигация */
+.calendar-tab-nav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+  overflow-x: auto;
+  user-select: none;
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.tab-button:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+  border-color: var(--border-focus);
+}
+
+.tab-button.active {
+  background: var(--info-bg);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.tab-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.tab-button.active .tab-badge {
+  background: var(--info-bg);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.tab-badge.warning {
+  background: var(--warning-bg);
+  color: var(--accent-warning);
+  border-color: var(--warning-border);
+}
+
+/* Контейнер активной вкладки */
+.calendar-tab-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  min-height: 480px;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-editor-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+  color: var(--text-muted);
+  font-size: 14px;
+}

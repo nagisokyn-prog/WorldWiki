@@ -97,7 +97,8 @@ const props = withDefaults(defineProps<ChapterTreeProps>(), {
 
 const emit = defineEmits([
   'select-node', 'select-chapter', 'create-chapter-in', 'rename-chapter', 'delete-chapter',
-  'open-entity', 'add-entity', 'rename-entity', 'delete-entity', 'delete-volume', 'open-sandbox', 'edit-schema'
+  'open-entity', 'add-entity', 'rename-entity', 'delete-entity', 'delete-volume', 'open-sandbox', 'edit-schema',
+  'open-planet-viewer'
 ]);
 
 const {

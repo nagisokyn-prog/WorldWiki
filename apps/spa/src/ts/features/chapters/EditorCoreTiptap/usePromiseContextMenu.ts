@@ -74,8 +74,11 @@ export function usePromiseContextMenu(
       .filter((p) => p.status !== 'resolved')
       .map((p) => {
         const type = promiseTypes.find((t) => t.kind === p.kind);
+        const rich = p as RichPlotPromise;
+        const quote = rich.quote || (p.milestones && p.milestones[0]?.quote) || p.title || '';
         return {
           ...p,
+          quote,
           kindIcon: type?.icon || '📌',
           kindLabel: type?.label || 'Обещание',
         };

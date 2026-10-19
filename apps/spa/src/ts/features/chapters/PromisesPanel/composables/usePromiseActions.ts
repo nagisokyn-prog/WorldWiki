@@ -52,11 +52,12 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       status: 'planted',
       milestones: [
         {
+          milestone_id: `ms_${Date.now()}`,
           stage: 'plant',
           quote: payload.quote,
           note: null,
           block_id: payload.block_id || '',
-          chapter_id: chapterId,
+          chapter_id: chapterId || null,
           order_index: payload.paragraph_index
         }
       ],
@@ -96,12 +97,14 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     
     const chapId = payload.chapterId || params.chapterId || target.chapter_id;
     const ms: PromiseMilestone = {
+      milestone_id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       stage: payload.stage,
-      chapter_id: chapId,
+      chapter_id: chapId || null,
       paragraph_index: payload.paragraph_index || 1,
       order_index: payload.paragraph_index || 1,
       quote: payload.quote,
+      note: null,
       block_id: payload.block_id || '',
       created_at: new Date().toISOString()
     };

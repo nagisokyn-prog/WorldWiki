@@ -3,6 +3,8 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useEntityTree } from '@/services/Entity/entity.tree';
 import { useChapterStore } from '@/stores/chapter.store';
+import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
+import type { PlanetEntity } from '@/services/Calendars/calendar.types';
 import type { ChapterTreeProps } from './ChapterTree.model';
 import { useCalendarResize } from './composables/useCalendarResize';
 import {
@@ -22,7 +24,11 @@ export function useChapterTree(
 ) {
     const router = useRouter();
     const store = useChapterStore();
+    const calendarStore = useCalendarStore();
     const { hierarchy } = storeToRefs(store);
+
+    const planets = ref<PlanetEntity[]>([]);
+    const calendars = ref<CalendarRecord[]>([]);
 
     const {
         entities, entitySections, loadEntities, getEntityName, entityKey
@@ -35,7 +41,9 @@ export function useChapterTree(
         entitySections,
         entities,
         getEntityName,
-        entityKey
+        entityKey,
+        planets,
+        calendars
     });
 
     const activeId = computed(() => {
@@ -50,6 +58,8 @@ export function useChapterTree(
         try {
             await store.loadChapters(props.project);
             await loadEntities();
+            planets.value = calendarStore.getPlanets(props.project);
+            calendars.value = await calendarStore.getCalendars(props.project);
         } catch (e) {
             console.error('ChapterTree load error:', e);
         }
@@ -102,6 +112,17 @@ export function useChapterTree(
         const node = nodes[0];
         const data = node.data as ExplorerNodeData | undefined;
 
+        if (data?.type === 'planet') {
+            emit('open-planet-viewer', data.original);
+            return;
+        }
+
+        if (data?.type === 'calendar') {
+            const calObj = (data.original as Record<string, unknown>) || {};
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id });
+            return;
+        }
+
         if (data?.isEntity) {
             emit('open-entity', { ...data.original, entityType: data.type });
             return;
@@ -119,7 +140,12 @@ export function useChapterTree(
 
     const handleOpen = (node: { id: string; data?: unknown }) => {
         const data = node.data as ExplorerNodeData | undefined;
-        if (data?.isEntity) {
+        if (data?.type === 'planet') {
+            emit('open-planet-viewer', data.original);
+        } else if (data?.type === 'calendar') {
+            const calObj = (data.original as Record<string, unknown>) || {};
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id });
+        } else if (data?.isEntity) {
             emit('open-entity', { ...data.original, entityType: data.type });
         } else if (data?.type === 'chapter') {
             emit('select-chapter', data.original);
@@ -162,6 +188,8 @@ export function useChapterTree(
         handleCancelRename: ops.handleCancelRename,
         handleDelete: ops.handleDelete,
         handleDeleteSection: ops.handleDeleteSection,
-        load
+        load,
+        planets,
+        calendars
     };
 }

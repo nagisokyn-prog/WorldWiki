@@ -1,11 +1,11 @@
 import type { StoryArc } from '@/stores/story_arcs.store';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
 import type { ArcStatus } from '../StoryArcs.model';
 
 export interface ArcCardProps {
   arc: StoryArc;
   effectiveStatus: ArcStatus;
-  linkedBlocks: PlotPromise[];
+  linkedBlocks: RichPlotPromise[];
 }
 
 export type ArcCardEmits = {

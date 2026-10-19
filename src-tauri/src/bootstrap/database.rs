@@ -55,6 +55,8 @@ pub async fn apply_schema_pipeline(
         include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/06_schemas.surql");
     const DDL_NOAI_04_07_NARRATIVE: &str =
         include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql");
+    const DDL_NOAI_04_08_CALENDARS: &str =
+        include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql");
 
     apply_ddl_module(db, "no_ai/00_analyzers", DDL_NOAI_00_ANALYZERS).await?;
     apply_ddl_module(db, "no_ai/01_tables", DDL_NOAI_01_TABLES).await?;
@@ -67,6 +69,7 @@ pub async fn apply_schema_pipeline(
     apply_ddl_module(db, "no_ai/functions/05_revisions_and_blocks", DDL_NOAI_04_05_REVISIONS).await?;
     apply_ddl_module(db, "no_ai/functions/06_schemas", DDL_NOAI_04_06_SCHEMAS).await?;
     apply_ddl_module(db, "no_ai/functions/07_narrative_and_journey", DDL_NOAI_04_07_NARRATIVE).await?;
+    apply_ddl_module(db, "no_ai/functions/08_calendars_and_planets", DDL_NOAI_04_08_CALENDARS).await?;
 
     // 2. ИИ-ПРОСТРАНСТВО (AI / ULTRA EDITION)
     const DDL_AI_01_WORKSPACE: &str =

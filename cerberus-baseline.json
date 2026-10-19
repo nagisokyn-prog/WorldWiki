@@ -1,59 +1,11 @@
 [
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (334) exceeds strict limit (265)",
-    "fingerprint": "d173204a8017065551aaea5d13ad08737ab71336d51d3448b20127647738a5b2"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (526) exceeds strict limit (465)",
-    "fingerprint": "b861201434aa44dabbfe3cc76a9587fd081a1cef1538ca60efb8e7694d3711f9"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (263) exceeds recommended limit (165)",
-    "fingerprint": "4fc7b1a2b949655d8fb778d8f2ba734df2f4b2ccaa967f0201c62dbdc06d5228"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/useCalendarSyncAnchor.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (355) exceeds recommended limit (265)",
-    "fingerprint": "23130b77894bf5cec1ae33364fd72631225e0b8efd40eeda4017830e4c5051fd"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/PlanetEditor/PlanetEditor.vue",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (454) exceeds strict limit (265)",
-    "fingerprint": "2dcef5b124157bd328c65bf3e1cbbc493850b90b29e80d75dea93e6ba7980886"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/PlanetEditor/usePlanetEditor.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (279) exceeds recommended limit (265)",
-    "fingerprint": "e72142591a6baa042a7c67af8dd220f9ea0b3fe51960a936211b51f2163ff55f"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/CalendarsPanel/useCalendarsPanel.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (279) exceeds recommended limit (265)",
-    "fingerprint": "02482533fbbec58eeaa84bf3d18a64e2d9de9ab728913050a21ebe6122b36976"
+    "message": "Frontend file SLOC (176) exceeds recommended limit (165)",
+    "fingerprint": "08b62b6e63f7889f6faff1b7a556d44e8b73ca7d4f5cd889e30666ddb28c2714"
   },
   {
     "rule": "CSS-004",
@@ -64,12 +16,204 @@
     "fingerprint": "6249c5be4764511bd07fd00be868ef5081af70218add2b48dfcb77cdf15bf78a"
   },
   {
-    "rule": "CSS-005",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
-    "line": 32,
-    "symbol": "ts_color_hex",
-    "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-    "fingerprint": "ac161c89ca4dba6939890dde02daa308577077ff5ea21d4a819fa535c452f65e"
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 96,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "5bb37c0c3e561f1a0124ed55a2b8503d7f5fb14528cec44c93d2b620b80edf72"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 103,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "32013db27207bf6e41a3a63ee8c1d10c5fe2521cee4c76312a636c255303ff55"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 116,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "ff03d29c089a3e380f8da2250ac511091e89617cc6474561dabfc85ed9263e52"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 153,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "bd5517bdeb6187ba55bf7ba570fd6198e8c58fdad12ea2e3b173210a78a6d6ea"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 169,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "796587d635422e530d779c0dc69f2f7e70d55d969a9e7a21f34b8abd7fdc1a4b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 175,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "1b48abe719480750a66ccd68f82a74c5752b28942f6515b92b6b19d11907c043"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 177,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "96f0909be230a147a20e449c2b0a28923e02643c8becac71d20106f90ebe8efd"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 54,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "ed7b63ef733367bb3b15b9516b7741e7b91db001d9a62b03f3fbac63339679a7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 55,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "55327465b102f020c610f9eb5e375118150fafc9c08824c1f31064730d22c3aa"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 60,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "9df93e7b4c4aa9aec6ad39a5ef740ad617095e57732ef03bae396af77e97d964"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 61,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "87231636b95b911676d97c3b0c7cfbaf4effe5e4bf81393ff64e4a06321744b6"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 87,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "de12831a8226c1b3cc63a18dc8ccf5905c426395ebd6f979bdfde0e4e24fa520"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 91,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "89e4a12fe86e5e534257d8b4209ee1c021e2ec83a46709d112eff346f82d4606"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 160,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "9ba1e2c3e7e69bbcd6b70a3fe96e68a8502a8c46d2a96522402d7668a13a8665"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 178,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "de12831a8226c1b3cc63a18dc8ccf5905c426395ebd6f979bdfde0e4e24fa520"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab3Chronology.css",
+    "line": 131,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "0b9757e64d063ad0cbeaa17278c81bf0d395785e7a540d16fc5f0ee7785f0d65"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab3Chronology.css",
+    "line": 149,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "9c2cdb9ed5c7130f056fdf5cdbe2890c8eb8626a96450aaba10ea8aab82ddf20"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab4SyncLeap.css",
+    "line": 63,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "769e11ca2bf0f44fac2e9abb88ab7d927c0131f675fc0c5a75f4ff78672edd89"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab4SyncLeap.css",
+    "line": 67,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "dddcc481b6a433848b63e5048edd0f443e997440869f52d0a00f862d442d5128"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab4SyncLeap.css",
+    "line": 115,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "862fd297d9cb49d502f43ad7214ee814d1139be6bf634ad5286e9cf294d93b5e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab4SyncLeap.css",
+    "line": 117,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "a367a64f6b6c3387cc8c80d836b07296682c7e70338fa038a3d01b4457114fdf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 63,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "8effcc848e8d95d319b1e9ae30529cf1384f879fcb6cd7fa90dd73dfda505bb4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 67,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "015eb85a6789f31738c99407640ce4f67aeb2f826a80f7dc14f88c400408a3ac"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 127,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "54f82f7f8c777df493c9077c5ca0bc16456bf065642b1968be7586e1e3486105"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 144,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "8effcc848e8d95d319b1e9ae30529cf1384f879fcb6cd7fa90dd73dfda505bb4"
   },
   {
     "rule": "CSS-PERF-004",
@@ -113,6 +257,30 @@
   },
   {
     "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 56,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3c4e64ce8c27cfa0e5d9d3576f4482863fe28b177e929198088c43734feb8d94"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 91,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3c4e64ce8c27cfa0e5d9d3576f4482863fe28b177e929198088c43734feb8d94"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 143,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3c4e64ce8c27cfa0e5d9d3576f4482863fe28b177e929198088c43734feb8d94"
+  },
+  {
+    "rule": "CSS-PERF-004",
     "file": "./packages/resources/src/styles/features/timeline/PlanetCalendarTree.css",
     "line": 76,
     "symbol": "no_transition_all",
@@ -128,19 +296,107 @@
     "fingerprint": "fed27e9a6df7b97c24e356af0c7e9eaf6f7b9602a1368436bd4fc42ffebff327"
   },
   {
-    "rule": "FE-ERR-001",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/useCalendarCorrection.ts",
-    "line": 359,
-    "symbol": "empty_catch_block",
-    "message": "Empty catch block silently swallows runtime exceptions without analysis, recovery or telemetry.",
-    "fingerprint": "5602981a67a6ab43584e06f42d9fae58775dfbbe0a59b29dfa5607907db3356a"
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 82,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "be39f3c19b6109c94258fe932ec575383c08d0e702596e63fe1f5feb375bd5e7"
   },
   {
-    "rule": "VUE-009",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarCorrection/CalendarCorrection.vue",
-    "line": 322,
-    "symbol": "template_method",
-    "message": "Uncached function call inside v-for template re-executes on every render frame",
-    "fingerprint": "98c0f745d10f864f90928e482b49cf10adc225d1cc73e470eae19950a5dedc78"
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab1Structure.css",
+    "line": 172,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "be39f3c19b6109c94258fe932ec575383c08d0e702596e63fe1f5feb375bd5e7"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab3Chronology.css",
+    "line": 143,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6a1b02ed9ccc6d53c0ff4b71d535a321b5c5d57d568992fd657973068d4bfe56"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab4SyncLeap.css",
+    "line": 58,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "93d41a86e290ab1c90308abdeab4d5e7489ac55202e830315b1f0e5c14682470"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 58,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "12e7921b45c4516f44ceb8e244260575ad2e15d5257882892fb3ff6f3ba0eda2"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/Tab5ReformsDst.css",
+    "line": 138,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "12e7921b45c4516f44ceb8e244260575ad2e15d5257882892fb3ff6f3ba0eda2"
+  },
+  {
+    "rule": "FSD-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditor/adapters/CalendarEntityAdapter/CalendarEntityAdapter.vue",
+    "line": 14,
+    "symbol": "@/features/timeline/CalendarEditor/CalendarEditor.vue",
+    "message": "FSD Cross-Slice Violation: slice 'entities' cannot directly depend on sibling slice 'timeline'",
+    "fingerprint": "9a37c69caf26710972d6c63f42d8bbf3b998bb3b8c13c82585c41b0173c364f2"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 1,
+    "symbol": "fn::get_planet_calendar_bundle",
+    "message": "Stored function 'fn::get_planet_calendar_bundle' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "6df4e2ebf7f58a50f185a67face23ee0ac804fdc1b13222af8ff9cc89fa93fdd"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 26,
+    "symbol": "fn::save_planet",
+    "message": "Stored function 'fn::save_planet' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "58df22a2c46b16c104d79b60075968b1d95c6f75e5e450c3e23587486c4ff62f"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 72,
+    "symbol": "fn::save_calendar",
+    "message": "Stored function 'fn::save_calendar' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "d3f76b803e33d532c47b3a13d4278bb5cc64f18328abde2109cd8f9632ac2281"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 114,
+    "symbol": "fn::set_master_calendar",
+    "message": "Stored function 'fn::set_master_calendar' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "9b98c6bda87164b02c29318bfd2ddb02d3967cec4a5382f3bff032ae039259ed"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 127,
+    "symbol": "fn::delete_planet",
+    "message": "Stored function 'fn::delete_planet' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "eeca0c70c3bf65014dcad7c0c74c1dad190f0114b5d3eb0b2c50e41839c2295d"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 148,
+    "symbol": "fn::delete_calendar",
+    "message": "Stored function 'fn::delete_calendar' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "b3d288d5f43df225fda2593bd24c50d0992cb7bdc91332fea597873ba399636f"
   }
 ]

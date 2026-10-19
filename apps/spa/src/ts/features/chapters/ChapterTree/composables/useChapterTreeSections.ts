@@ -39,6 +39,8 @@ export interface UseChapterTreeSectionsOptions {
     entities: Ref<Record<string, Array<Record<string, unknown>>>>;
     getEntityName: (ent: Record<string, unknown>, type: string) => string;
     entityKey: (type: string, id: string) => string;
+    planets?: Ref<Array<{ id: string | number; name: string; [key: string]: unknown }>>;
+    calendars?: Ref<Array<{ id?: string; name?: string; planet_id?: unknown; is_master?: boolean; data?: Record<string, unknown>; [key: string]: unknown }>>;
 }
 
 export function compareIds(id1: unknown, id2: unknown): boolean {
@@ -128,6 +130,43 @@ export function useChapterTreeSections(options: UseChapterTreeSectionsOptions) {
                 canEdit: true,
                 itemLabel: sect.title,
                 nodes: entNodes
+            });
+        }
+
+        // --- 3. CALENDARS & PLANETS SECTION ---
+        if (options.planets && options.calendars) {
+            const planetNodes: ExplorerNode[] = options.planets.value.map(planet => {
+                const planetIdStr = String(planet.id);
+                const childCals = (options.calendars?.value || []).filter(c => {
+                    const cPlanet = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
+                    return compareIds(cPlanet, planet.id) || compareIds(cPlanet, planet.name);
+                });
+
+                return {
+                    id: `planet:${planetIdStr}`,
+                    label: planet.name || 'Планета',
+                    emoji: '🪐',
+                    isGroup: true,
+                    canAdd: true,
+                    addLabel: 'Календарь',
+                    data: { type: 'planet', original: planet },
+                    children: childCals.map(cal => ({
+                        id: `calendar:${cal.id}`,
+                        label: (cal.name || (cal.data as Record<string, unknown> | undefined)?.название || 'Календарь') + (cal.is_master ? ' (Master)' : ''),
+                        emoji: '📜',
+                        data: { type: 'calendar', original: cal, planet_id: planet.id }
+                    }))
+                };
+            });
+
+            sections.push({
+                id: 'calendars',
+                title: 'КАЛЕНДАРИ МИРА',
+                icon: 'fas fa-calendar-alt',
+                canAdd: true,
+                canAddInline: true,
+                itemLabel: 'Планета',
+                nodes: planetNodes
             });
         }
 

@@ -31,6 +31,28 @@ export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
       triggerRef(deps.openEditors);
       continue;
     }
+    if (editor.entityType === 'calendar') {
+      try {
+        const { useCalendarStore } = await import('../calendar.store');
+        const calendarStore = useCalendarStore();
+        const calData = (editor.data as Record<string, unknown>) || {};
+        await calendarStore.saveCalendar(
+          deps.projectName.value,
+          {
+            название: editor.title || 'Календарь',
+            ...calData,
+            id: editor.rawId,
+          } as unknown as Parameters<typeof calendarStore.saveCalendar>[1]
+        );
+        editor.unsaved = false;
+        deps.markSaved(editor.id);
+        triggerRef(deps.openEditors);
+        savedCount++;
+      } catch (err) {
+        console.error('[saveAll] Error saving calendar tab:', err);
+      }
+      continue;
+    }
     try {
       const prepareEntityForSave = async (_t: string, d: Record<string, unknown>) => d;
       const dataToSave = editor.data as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };

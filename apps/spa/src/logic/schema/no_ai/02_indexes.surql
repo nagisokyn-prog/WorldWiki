@@ -39,12 +39,14 @@ DEFINE INDEX OVERWRITE idx_occurs_at_in        ON occurs_at FIELDS in;
 DEFINE INDEX OVERWRITE idx_occurs_at_out       ON occurs_at FIELDS out;
 DEFINE INDEX OVERWRITE idx_occurs_at_proj      ON occurs_at FIELDS project_id;
 
--- 3. ТЕГИ И КАЛЕНДАРИ
+-- 3. ТЕГИ, ПЛАНЕТЫ И КАЛЕНДАРИ
 DEFINE INDEX OVERWRITE idx_tag_project         ON tags FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_tagged_with_in      ON tagged_with FIELDS in;
 DEFINE INDEX OVERWRITE idx_tagged_with_out     ON tagged_with FIELDS out;
 DEFINE INDEX OVERWRITE idx_tagged_with_proj    ON tagged_with FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_calendar_project    ON calendars FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_calendar_planet     ON calendars FIELDS planet_id;
+DEFINE INDEX OVERWRITE idx_planet_project      ON planets FIELDS project_id;
 
 -- 4. МЕТА-СХЕМЫ СУЩНОСТЕЙ И ИСТОРИЯ
 DEFINE INDEX OVERWRITE idx_schema_type            ON entity_schemas FIELDS project_id, type_key;

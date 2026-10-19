@@ -53,7 +53,7 @@ export function usePromisesPanel(
   const actions = usePromiseActions({
     props,
     project: props.project,
-    chapterId: props.chapterId,
+    chapterId: props.chapterId ?? null,
     currentVolumeId: props.currentVolumeId,
     promises,
     emit

@@ -25,12 +25,26 @@ DEFINE INDEX OVERWRITE idx_arc_chapters_out    ON arc_chapters FIELDS out;
 DEFINE INDEX OVERWRITE idx_arc_chapters_proj   ON arc_chapters FIELDS project_id;
 
 -- 2. БЛОКИ ТЕКСТА
-DEFINE INDEX OVERWRITE idx_textblock_project ON text_blocks FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_textblock_chapter ON text_blocks FIELDS chapter_id;
+DEFINE INDEX OVERWRITE idx_textblock_project   ON text_blocks FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_textblock_chapter   ON text_blocks FIELDS chapter_id;
+DEFINE INDEX OVERWRITE idx_textblock_arc       ON text_blocks FIELDS arc_id;
+DEFINE INDEX OVERWRITE idx_textblock_event     ON text_blocks FIELDS timeline_event_id;
+
+-- 2.1. РЕБРА АРКИ И ВРЕМЕНИ ДЛЯ СЦЕН
+DEFINE INDEX OVERWRITE idx_advances_arc_in     ON advances_arc FIELDS in;
+DEFINE INDEX OVERWRITE idx_advances_arc_out    ON advances_arc FIELDS out;
+DEFINE INDEX OVERWRITE idx_advances_arc_proj   ON advances_arc FIELDS project_id;
+
+DEFINE INDEX OVERWRITE idx_occurs_at_in        ON occurs_at FIELDS in;
+DEFINE INDEX OVERWRITE idx_occurs_at_out       ON occurs_at FIELDS out;
+DEFINE INDEX OVERWRITE idx_occurs_at_proj      ON occurs_at FIELDS project_id;
 
 -- 3. ТЕГИ И КАЛЕНДАРИ
-DEFINE INDEX OVERWRITE idx_tag_project       ON tags FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_calendar_project  ON calendars FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_tag_project         ON tags FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_tagged_with_in      ON tagged_with FIELDS in;
+DEFINE INDEX OVERWRITE idx_tagged_with_out     ON tagged_with FIELDS out;
+DEFINE INDEX OVERWRITE idx_tagged_with_proj    ON tagged_with FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_calendar_project    ON calendars FIELDS project_id;
 
 -- 4. МЕТА-СХЕМЫ СУЩНОСТЕЙ И ИСТОРИЯ
 DEFINE INDEX OVERWRITE idx_schema_type            ON entity_schemas FIELDS project_id, type_key;
@@ -38,9 +52,11 @@ DEFINE INDEX OVERWRITE idx_schema_history_project ON schema_history FIELDS proje
 DEFINE INDEX OVERWRITE idx_schema_history_schema  ON schema_history FIELDS schema_id;
 
 -- 5. СУЩНОСТИ ЛОРА
-DEFINE INDEX OVERWRITE idx_entity_project   ON entities FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_entity_type      ON entities FIELDS project_id, entity_type;
-DEFINE INDEX OVERWRITE idx_entity_name_ft   ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_entity_project      ON entities FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_entity_schema_id    ON entities FIELDS schema_id;
+DEFINE INDEX OVERWRITE idx_entity_proj_schema  ON entities FIELDS project_id, schema_id;
+DEFINE INDEX OVERWRITE idx_entity_proj_type    ON entities FIELDS project_id, entity_type;
+DEFINE INDEX OVERWRITE idx_entity_name_ft      ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_entity_desc_ft   ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 
 -- 6. СВЯЗИ И ОТНОШЕНИЯ
@@ -58,8 +74,11 @@ DEFINE INDEX OVERWRITE idx_appears_in_in      ON appears_in FIELDS in;
 DEFINE INDEX OVERWRITE idx_appears_in_out     ON appears_in FIELDS out;
 
 -- 8. ПЛАНЫ
-DEFINE INDEX OVERWRITE idx_plan_project ON plans FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_plan_parent  ON plans FIELDS parent_ref;
+DEFINE INDEX OVERWRITE idx_plan_project      ON plans FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_plan_parent       ON plans FIELDS parent_ref;
+DEFINE INDEX OVERWRITE idx_plans_for_in      ON plans_for FIELDS in;
+DEFINE INDEX OVERWRITE idx_plans_for_out     ON plans_for FIELDS out;
+DEFINE INDEX OVERWRITE idx_plans_for_proj    ON plans_for FIELDS project_id;
 
 -- 9. ТАЙМЛАЙН, РАСКРЫТИЕ И УЧАСТИЕ
 DEFINE INDEX OVERWRITE idx_event_project           ON timeline_events FIELDS project_id;
@@ -89,14 +108,15 @@ DEFINE INDEX OVERWRITE idx_rel_rev_out         ON entity_rel_revisions FIELDS ou
 DEFINE INDEX OVERWRITE idx_chapter_rev_target  ON chapter_revisions FIELDS target_id;
 DEFINE INDEX OVERWRITE idx_chapter_rev_project ON chapter_revisions FIELDS project_id;
 
--- 11. СЮЖЕТНЫЕ ОБЕЩАНИЯ / НАРРАТИВНЫЕ БЛОКИ
+-- 11. СЮЖЕТНЫЕ ОБЕЩАНИЯ И МИЛЬСТОУНЫ В ТЕКСТЕ
 DEFINE INDEX OVERWRITE idx_promise_project          ON plot_promises FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_promise_chapter          ON plot_promises FIELDS chapter_id;
 DEFINE INDEX OVERWRITE idx_promise_status           ON plot_promises FIELDS project_id, status;
-DEFINE INDEX OVERWRITE idx_promise_resolved_chapter ON plot_promises FIELDS resolved_in_chapter;
-DEFINE INDEX OVERWRITE idx_promise_resolved_volume  ON plot_promises FIELDS resolved_in_volume;
-DEFINE INDEX OVERWRITE idx_promise_location         ON plot_promises FIELDS location_id;
-DEFINE INDEX OVERWRITE idx_promise_timeline_event   ON plot_promises FIELDS timeline_event_id;
-DEFINE INDEX OVERWRITE idx_promise_arc              ON plot_promises FIELDS arc_id;
-DEFINE INDEX OVERWRITE idx_promise_quote_ft         ON plot_promises COLUMNS quote FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+DEFINE INDEX OVERWRITE idx_promise_kind             ON plot_promises FIELDS project_id, kind;
+DEFINE INDEX OVERWRITE idx_promise_title_ft         ON plot_promises COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_promise_note_ft          ON plot_promises COLUMNS note FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
+
+-- 11.1. МИЛЬСТОУНЫ РУЖЕЙ (ПРИВЯЗКА К БЛОКАМ ТЕКСТА)
+DEFINE INDEX OVERWRITE idx_promise_milestones_in    ON promise_milestones FIELDS in;
+DEFINE INDEX OVERWRITE idx_promise_milestones_out   ON promise_milestones FIELDS out;
+DEFINE INDEX OVERWRITE idx_promise_milestones_proj  ON promise_milestones FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_promise_milestones_stage ON promise_milestones FIELDS in, stage;

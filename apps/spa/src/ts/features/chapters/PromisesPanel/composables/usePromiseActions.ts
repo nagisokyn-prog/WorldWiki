@@ -46,26 +46,28 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     const newPromise: RichPlotPromise = {
       id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       project_id: project,
-      chapter_id: chapterId,
       kind: payload.kind,
+      title: payload.quote,
+      note: null,
+      status: 'planted',
+      milestones: [
+        {
+          stage: 'plant',
+          quote: payload.quote,
+          note: null,
+          block_id: payload.block_id || '',
+          chapter_id: chapterId,
+          order_index: payload.paragraph_index
+        }
+      ],
+      chapter_id: chapterId,
       quote: payload.quote,
       paragraph_index: payload.paragraph_index,
       block_id: payload.block_id || null,
-      note: null,
-      status: 'planted',
       progressions: [],
       resolution: null,
       resolved_in_volume: null,
-      resolved_in_chapter: null,
-      participant_ids: null,
-      location_id: null,
-      timeline_event_id: null,
-      arc_id: null,
-      arc_phase: null,
-      arcs: null,
-      m_abs: null,
-      calendar_id: null,
-      date_fields: null
+      resolved_in_chapter: null
     };
 
     try {
@@ -95,11 +97,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     const chapId = payload.chapterId || params.chapterId || target.chapter_id;
     const ms: PromiseMilestone = {
       id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      stage: payload.stage,
       chapter_id: chapId,
       paragraph_index: payload.paragraph_index || 1,
+      order_index: payload.paragraph_index || 1,
       quote: payload.quote,
+      block_id: payload.block_id || '',
       created_at: new Date().toISOString()
     };
+
+    target.milestones = Array.isArray(target.milestones) ? target.milestones : [];
+    target.milestones.push(ms);
 
     if (payload.stage === 'progression') {
       target.progressions = [...(target.progressions || []), ms];
@@ -120,6 +128,9 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     milestoneId: string,
     stage: 'progression' | 'resolution'
   ) => {
+    promise.milestones = (promise.milestones || []).filter(
+      (m) => m.milestone_id !== milestoneId && (m as { id?: string }).id !== milestoneId
+    );
     if (stage === 'progression' && Array.isArray(promise.progressions)) {
       promise.progressions = promise.progressions.filter((m) => m.id !== milestoneId);
       if (promise.progressions.length === 0 && promise.status === 'developed') {

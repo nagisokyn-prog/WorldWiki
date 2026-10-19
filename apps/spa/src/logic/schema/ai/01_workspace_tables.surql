@@ -21,10 +21,6 @@
 -- 9. user_dictionary (Словарь лора автора)
 -- ==============================================================================
 
--- 0. РАСШИРЕНИЕ ИЕРАРХИИ ДЛЯ ULTRA (ГРАФОВЫЕ СВЯЗИ ДИАЛОГОВ)
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | chats OUT volumes | chapters | chats SCHEMAFULL;
-DEFINE FIELD OVERWRITE sort_order ON contains TYPE number DEFAULT 0;
-
 -- 1. НАСТРОЙКИ АВТО-ОДОБРЕНИЙ (AUTO-APPROVAL)
 DEFINE TABLE OVERWRITE auto_approval_settings SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON auto_approval_settings TYPE record<projects> | string VALUE fn::normalize_project_id($value);
@@ -49,7 +45,7 @@ DEFINE TABLE OVERWRITE chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id      ON chats TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE title           ON chats TYPE string;
 DEFINE FIELD OVERWRITE tag             ON chats TYPE option<string | null>;
-DEFINE FIELD OVERWRITE parent_chat_id  ON chats TYPE option<record<chats> | string | null>; -- КЕШ входящего ребра contains, не источник правды
+DEFINE FIELD OVERWRITE parent_chat_id  ON chats TYPE option<record<chats> | null>;
 DEFINE FIELD OVERWRITE session_context ON chats TYPE array<record | string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE created_at      ON chats TYPE datetime DEFAULT time::now();
 
@@ -60,6 +56,7 @@ DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats> | st
 DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string
   ASSERT $value IN ['user', 'assistant', 'system'];
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
+DEFINE FIELD OVERWRITE mode_id          ON chat_messages TYPE option<record<ai_modes> | null>;
 DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
@@ -74,9 +71,10 @@ DEFINE FIELD OVERWRITE is_active        ON chat_messages TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at       ON chat_messages TYPE datetime DEFAULT time::now();
 
--- 5. ОПЕРАТИВНАЯ ПАМЯТЬ АГЕНТА
+-- 5. ПАМЯТЬ АГЕНТА (ЛОКАЛЬНЫЕ ФАКТЫ МИРА И ГЛОБАЛЬНЫЕ ПРЕДПОЧТЕНИЯ АВТОРА)
 DEFINE TABLE OVERWRITE agent_memory SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON agent_memory TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE project_id  ON agent_memory TYPE option<record<projects> | string | null> VALUE IF $value != NONE AND $value != NULL THEN fn::normalize_project_id($value) ELSE NONE END;
+DEFINE FIELD OVERWRITE is_global   ON agent_memory TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE memory_type ON agent_memory TYPE string
   ASSERT $value IN ['fact', 'preference', 'user_preference', 'summary', 'instruction'];
 DEFINE FIELD OVERWRITE content     ON agent_memory TYPE string;

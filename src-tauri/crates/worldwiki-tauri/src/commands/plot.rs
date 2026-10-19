@@ -10,7 +10,28 @@ pub async fn get_plot_promises(
     state: State<'_, AppState>,
 ) -> Result<Vec<serde_json::Value>, IpcError> {
     let clean = project.trim_start_matches("projects:").to_string();
-    let sql = "SELECT * FROM plot_promises WHERE project_id = fn::normalize_project_id($p);";
+    let sql = r#"
+        SELECT 
+            id,
+            project_id,
+            kind,
+            title,
+            note,
+            status,
+            created_at,
+            updated_at,
+            ->promise_milestones.{
+                id AS milestone_id,
+                stage,
+                quote,
+                note,
+                out.id AS block_id,
+                out.chapter_id AS chapter_id,
+                out.order_index AS order_index
+            } AS milestones
+        FROM plot_promises 
+        WHERE project_id = fn::normalize_project_id($p);
+    "#;
     let mut res = state
         .services
         .db

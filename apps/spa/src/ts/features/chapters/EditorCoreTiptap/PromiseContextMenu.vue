@@ -51,8 +51,8 @@
     <!-- TAB 2: LINK TO EXISTING PROMISE (Progress or Resolve) -->
     <div v-else-if="currentTab === 'link'" class="existing-promises-list">
       <div 
-        v-for="p in activeExistingPromises" 
-        :key="p.id || p.quote"
+        v-for="(p, idx) in activeExistingPromises" 
+        :key="p.id || p.quote || idx"
         class="existing-promise-card"
       >
         <div class="existing-promise-info">

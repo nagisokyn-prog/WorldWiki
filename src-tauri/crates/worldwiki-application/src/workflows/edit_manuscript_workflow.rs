@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
-use worldwiki_domain::plot::{PlotPromise, PromiseKind};
+use worldwiki_domain::plot::{MilestoneStage, PlotPromise, PromiseKind, PromiseMilestone};
 use crate::errors::ApplicationError;
 use crate::manuscript::ManuscriptServices;
 use crate::plot::PlotServices;
@@ -67,11 +67,19 @@ impl EditManuscriptAtomicWorkflow {
             };
             let mut promise = PlotPromise::new(
                 chapter.project_id.clone(),
-                chapter.id.clone(),
                 kind,
-                p.quote,
+                p.quote.clone(),
             );
-            promise.note = p.note;
+            promise.note = p.note.clone();
+            promise.milestones.push(PromiseMilestone {
+                milestone_id: None,
+                stage: MilestoneStage::Plant,
+                quote: Some(p.quote),
+                note: p.note,
+                block_id: String::new(),
+                chapter_id: Some(chapter.id.clone()),
+                order_index: Some(1),
+            });
             self.plot_services.plant_promise(&promise).await?;
             promises_planted += 1;
         }
@@ -80,7 +88,7 @@ impl EditManuscriptAtomicWorkflow {
         let mut promises_resolved = 0;
         for pid in req.resolved_promise_ids {
             if let Some(mut promise) = self.plot_services.promise_repo.get_by_id(&pid).await? {
-                promise.resolve(chapter.id.clone(), chapter.volume_id.clone(), None);
+                promise.resolve();
                 self.plot_services.promise_repo.save(&promise).await?;
                 promises_resolved += 1;
             }

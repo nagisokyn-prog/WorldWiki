@@ -1,12 +1,12 @@
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { PromiseMilestone as GenPromiseMilestone } from '@/types/generated/PromiseMilestone';
 import type { Ref } from 'vue';
 
-export interface PromiseMilestone {
-  id: string;
-  chapter_id: string;
-  paragraph_index: number;
-  quote: string;
-  note?: string | null;
+export interface PromiseMilestone extends GenPromiseMilestone {
+  id?: string;
+  chapter_id?: string | null;
+  paragraph_index?: number;
+  order_index?: number | null;
   created_at?: string | null;
 }
 
@@ -15,20 +15,24 @@ export interface SceneArcItem {
   arc_phase?: string | null;
 }
 
-export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution' | 'arcs' | 'm_abs' | 'calendar_id' | 'date_fields'> & {
+export type RichPlotPromise = PlotPromise & {
+  chapter_id?: string;
+  quote?: string;
+  paragraph_index?: number;
+  block_id?: string | null;
   progressions?: PromiseMilestone[] | null;
   resolution?: PromiseMilestone | null;
+  resolved_in_volume?: string | null;
+  resolved_in_chapter?: string | null;
   arcs?: SceneArcItem[] | null;
+  location_id?: string | null;
+  timeline_event_id?: string | null;
+  arc_id?: string | null;
+  arc_phase?: string | null;
+  participant_ids?: string[] | null;
   m_abs?: number | null;
   calendar_id?: string | null;
-  date_fields?: {
-    era_index?: number;
-    year?: number;
-    month?: number;
-    day?: number;
-    hour?: number;
-    minute?: number;
-  } | null;
+  date_fields?: Record<string, unknown> | null;
   /** UI-флаг: текст был удалён из рукописи (не сохраняется в БД) */
   is_orphaned?: boolean;
 };

@@ -23,6 +23,7 @@ async fn test_get_entities_batch_by_types() {
     save_entity_inner(&db, "p_batch", Entity {
         id: None,
         project_id: Some("projects:p_batch".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Герой 1".into(),
         description: None,
@@ -36,6 +37,7 @@ async fn test_get_entities_batch_by_types() {
     save_entity_inner(&db, "p_batch", Entity {
         id: None,
         project_id: Some("projects:p_batch".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Герой 2".into(),
         description: None,
@@ -49,6 +51,7 @@ async fn test_get_entities_batch_by_types() {
     save_entity_inner(&db, "p_batch", Entity {
         id: None,
         project_id: Some("projects:p_batch".into()),
+        schema_id: None,
         entity_type: "location".into(),
         name: "Замок Ветров".into(),
         description: None,
@@ -81,6 +84,7 @@ async fn test_save_entity_with_relations_transactional() {
     let foreign = save_entity_inner(&db, "p_batch2", Entity {
         id: None,
         project_id: Some("projects:p_batch2".into()),
+        schema_id: None,
         entity_type: "item".into(),
         name: "Старый Меч".into(),
         description: None,
@@ -98,6 +102,7 @@ async fn test_save_entity_with_relations_transactional() {
     let main_entity = Entity {
         id: None,
         project_id: Some("projects:p_batch2".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Кузнец Артур".into(),
         description: Some("Мастер зачарований".into()),
@@ -135,6 +140,7 @@ async fn test_upsert_connections_batch_and_get_connections() {
     let e1 = save_entity_inner(&db, "p_conn", Entity {
         id: None,
         project_id: Some("projects:p_conn".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Алиса".into(),
         description: None,
@@ -149,6 +155,7 @@ async fn test_upsert_connections_batch_and_get_connections() {
     let e2 = save_entity_inner(&db, "p_conn", Entity {
         id: None,
         project_id: Some("projects:p_conn".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Боб".into(),
         description: None,
@@ -212,6 +219,7 @@ async fn test_save_connections_creates_and_replaces_edges() {
     let e1 = save_entity_inner(&db, "p_saveconn", Entity {
         id: None,
         project_id: Some("projects:p_saveconn".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Алиса".into(),
         description: None,
@@ -226,6 +234,7 @@ async fn test_save_connections_creates_and_replaces_edges() {
     let e2 = save_entity_inner(&db, "p_saveconn", Entity {
         id: None,
         project_id: Some("projects:p_saveconn".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Боб".into(),
         description: None,

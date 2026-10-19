@@ -30,14 +30,14 @@ export function cleanId(id: unknown): string {
   return (parts[parts.length - 1] || String(s)).replace(/["'`]/g, '').trim();
 }
 
-export interface UsePromiseFilteringOptions<T extends { chapter_id: string; status: string; quote: string; id?: string | null } = PlotPromise> {
+export interface UsePromiseFilteringOptions<T extends { chapter_id?: string | null; status: string; quote?: string | null; id?: string | null } = PlotPromise> {
   promises: Ref<T[]>;
   chapterId?: string | null;
   chapterTitle?: string | null;
   allChapters?: ChapterMetaItem[];
 }
 
-export function usePromiseFiltering<T extends { chapter_id: string; status: string; quote: string; kind?: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
+export function usePromiseFiltering<T extends { chapter_id?: string | null; status: string; quote?: string | null; kind?: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
   const scopeFilter = ref<'all' | 'current'>('all');
   const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
   const categoryFilter = ref<'all' | 'scenes' | 'promises'>('all');
@@ -49,7 +49,7 @@ export function usePromiseFiltering<T extends { chapter_id: string; status: stri
 
   const chapterPromises = computed(() => {
     if (!options.chapterId) return [];
-    return options.promises.value.filter((p) => isCurrentChapterPromise(p.chapter_id));
+    return options.promises.value.filter((p) => isCurrentChapterPromise(p.chapter_id || ''));
   });
 
   const filteredPromises = computed(() => {

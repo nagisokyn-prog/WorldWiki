@@ -19,6 +19,7 @@ async fn save_entity_create_and_get() {
     let new_entity = Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Алиса".into(),
         description: Some("Главная героиня".into()),
@@ -57,6 +58,7 @@ async fn save_entity_upsert_existing() {
     let e = Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Боб".into(),
         description: Some("Первое описание".into()),
@@ -74,6 +76,7 @@ async fn save_entity_upsert_existing() {
     let updated_entity = Entity {
         id: Some(id.clone()),
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Боб Мудрый".into(),
         description: Some("Обновленное описание".into()),
@@ -107,6 +110,7 @@ async fn get_entities_scoped_and_filtered() {
     let c1 = Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Герой 1".into(),
         description: None,
@@ -119,6 +123,7 @@ async fn get_entities_scoped_and_filtered() {
     let c2 = Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Герой 2".into(),
         description: None,
@@ -131,6 +136,7 @@ async fn get_entities_scoped_and_filtered() {
     let l1 = Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "location".into(),
         name: "Замок".into(),
         description: None,
@@ -143,6 +149,7 @@ async fn get_entities_scoped_and_filtered() {
     let c_p2 = Entity {
         id: None,
         project_id: Some("projects:p2".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Чужой Герой".into(),
         description: None,
@@ -184,6 +191,7 @@ async fn create_and_query_entity_relations() {
     let e1 = save_entity_inner(&db, "p1", Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Рыцарь".into(),
         description: None,
@@ -197,6 +205,7 @@ async fn create_and_query_entity_relations() {
     let e2 = save_entity_inner(&db, "p1", Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Король".into(),
         description: None,
@@ -256,6 +265,7 @@ async fn delete_entity_cascades_relations_and_revisions() {
     let e1 = save_entity_inner(&db, "p1", Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Персонаж А".into(),
         description: None,
@@ -269,6 +279,7 @@ async fn delete_entity_cascades_relations_and_revisions() {
     let e2 = save_entity_inner(&db, "p1", Entity {
         id: None,
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Персонаж Б".into(),
         description: None,
@@ -399,6 +410,7 @@ async fn seed_entity(
     save_entity_inner(db, project, Entity {
         id: None,
         project_id: Some(format!("projects:{project}")),
+        schema_id: None,
         entity_type: entity_type.into(),
         name: name.into(),
         description: description.map(|d| d.into()),
@@ -648,6 +660,7 @@ async fn update_entity_omitted_fields_are_preserved() {
     let renamed = save_entity_inner(&db, "p1", Entity {
         id: Some(id.clone()),
         project_id: Some("projects:p1".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Переименованный".into(),
         description: None,      // опущено → не должно затереть старое

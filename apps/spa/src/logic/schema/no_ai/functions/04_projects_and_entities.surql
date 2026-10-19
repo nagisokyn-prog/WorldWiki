@@ -40,14 +40,14 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
     LET $p_rec = fn::normalize_project_id($proj);
     IF $et != NONE {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
+            SELECT id, project_id, entity_type, schema_id, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
             WHERE project_id = $p_rec
               AND entity_type = $et
             LIMIT 10000
         );
     } ELSE {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
+            SELECT id, project_id, entity_type, schema_id, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
             WHERE project_id = $p_rec
             LIMIT 10000
         );
@@ -66,12 +66,14 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
     $embeds: option<object | array | null>
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
+    LET $schema = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1)[0];
     IF $id != NONE AND $id != NULL {
-        LET $existing = (SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM ONLY $id);
+        LET $existing = (SELECT id, project_id, entity_type, schema_id, name, description, attributes, tags, embeddings, created_at, updated_at FROM ONLY $id);
         LET $res = (
             UPSERT $id SET
                 project_id = $p_rec,
                 entity_type = $entity_type,
+                schema_id = IF $schema != NONE { $schema } ELSE IF $existing != NONE { $existing.schema_id } ELSE { NONE },
                 name = $name,
                 description = IF $desc != NONE AND $desc != NULL { $desc } ELSE IF $existing != NONE { $existing.description } ELSE { NONE },
                 attributes = IF $attrs != NONE AND array::len(object::keys($attrs)) > 0 { $attrs } ELSE IF $existing != NONE { $existing.attributes } ELSE { {} },
@@ -84,6 +86,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
             CREATE entities SET
                 project_id = $p_rec,
                 entity_type = $entity_type,
+                schema_id = $schema,
                 name = $name,
                 description = $desc,
                 attributes = IF $attrs != NONE { $attrs } ELSE { {} },
@@ -121,7 +124,7 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
 DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
-        SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
+        SELECT id, project_id, entity_type, schema_id, name, description, attributes, tags, embeddings, created_at, updated_at FROM entities 
         WHERE project_id = $p_rec
           AND entity_type IN $types
         LIMIT 5000
@@ -136,10 +139,12 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
     $foreign_updates: array<object>
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
+    LET $main_schema = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $main_entity.entity_type LIMIT 1)[0];
     LET $saved = (
         UPSERT $main_id SET
             project_id = $p_rec,
             entity_type = $main_entity.entity_type,
+            schema_id = $main_schema,
             name = $main_entity.name,
             description = $main_entity.description,
             attributes = IF $main_entity.attributes != NONE { $main_entity.attributes } ELSE { {} },
@@ -150,9 +155,11 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
     FOR $f IN $foreign_updates {
         IF $f.id != NONE {
             LET $fid = type::record('entities', $f.id);
+            LET $f_schema = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $f.entity_type LIMIT 1)[0];
             UPSERT $fid SET
                 project_id = $p_rec,
                 entity_type = $f.entity_type,
+                schema_id = $f_schema,
                 name = $f.name,
                 description = $f.description,
                 attributes = IF $f.attributes != NONE { $f.attributes } ELSE { {} },

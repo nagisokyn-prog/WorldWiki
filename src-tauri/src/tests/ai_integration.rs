@@ -59,6 +59,7 @@ async fn test_ai_tools_search_and_get_entity() {
     let saved = save_entity_inner(&db, "p_ai", Entity {
         id: None,
         project_id: Some("projects:p_ai".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Мерлин".into(),
         description: Some("Великий волшебник".into()),

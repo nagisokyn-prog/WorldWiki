@@ -34,7 +34,7 @@
       <PromiseCardMeta
         :project="project"
         :item="item"
-        :chapter-id="item.chapter_id"
+        :chapter-id="item.chapter_id || ''"
         @update:item="$emit('update:item', $event)"
         @change="$emit('change')"
       />
@@ -46,8 +46,8 @@
           <div class="step-badge">
             <span class="step-icon">{{ item.kind === 'scene' ? '🎬' : '🌱' }}</span>
             <span class="step-name">{{ item.kind === 'scene' ? 'Сцена:' : 'Посажено:' }}</span>
-            <span class="step-location">{{ getChapterTitle(item.chapter_id) }} · абз. {{ item.paragraph_index }}</span>
-            <span v-if="isCurrentChapterPromise(item.chapter_id)" class="badge-current-chapter">текущая</span>
+            <span class="step-location">{{ getChapterTitle(item.chapter_id || '') }} · абз. {{ item.paragraph_index ?? 1 }}</span>
+            <span v-if="isCurrentChapterPromise(item.chapter_id || '')" class="badge-current-chapter">текущая</span>
           </div>
 
           <!-- ⚠️ Orphan-баннер: исходный текст удалён из рукописи -->
@@ -58,7 +58,7 @@
           </div>
 
           <blockquote class="card-quote" :class="{ 'quote-orphaned': item.is_orphaned }">
-            «{{ item.quote }}»
+            «{{ item.quote || item.title }}»
           </blockquote>
 
           <div class="step-actions">
@@ -76,29 +76,29 @@
           </div>
 
           <div 
-            v-for="prog in item.progressions" 
-            :key="prog.id"
+            v-for="(prog, pIdx) in item.progressions" 
+            :key="prog.id || prog.milestone_id || prog.quote || pIdx"
             class="timeline-step step-progression"
           >
             <div class="step-badge">
               <span class="step-connector">├─</span>
-              <span class="step-location font-medium">{{ getChapterTitle(prog.chapter_id) }} · абз. {{ prog.paragraph_index }}</span>
-              <span v-if="isCurrentChapterPromise(prog.chapter_id)" class="badge-current-chapter">текущая</span>
+              <span class="step-location font-medium">{{ getChapterTitle(prog.chapter_id || '') }} · абз. {{ prog.paragraph_index ?? 1 }}</span>
+              <span v-if="isCurrentChapterPromise(prog.chapter_id || '')" class="badge-current-chapter">текущая</span>
               <button 
                 class="btn-delete-step" 
                 title="Удалить это упоминание"
-                @click="$emit('removeMilestone', { item, milestoneId: prog.id, stage: 'progression' })"
+                @click="$emit('removeMilestone', { item, milestoneId: prog.id || prog.milestone_id || '', stage: 'progression' })"
               >
                 ✕
               </button>
             </div>
 
             <blockquote class="card-quote quote-small">
-              «{{ prog.quote }}»
+              «{{ prog.quote || '' }}»
             </blockquote>
 
             <div class="step-actions">
-              <button class="btn-locate-step" @click="$emit('locate', { chapter_id: prog.chapter_id, paragraph_index: prog.paragraph_index, quote: prog.quote })">
+              <button class="btn-locate-step" @click="$emit('locate', { chapter_id: prog.chapter_id || '', paragraph_index: prog.paragraph_index ?? 1, quote: prog.quote || '' })">
                 📍 Перейти
               </button>
             </div>
@@ -110,23 +110,23 @@
           <div class="step-badge">
             <span class="step-icon">{{ item.kind === 'scene' ? '🏁' : '🎯' }}</span>
             <span class="step-name font-bold text-success">{{ item.kind === 'scene' ? 'Завершение сцены:' : 'Отстреляно:' }}</span>
-            <span class="step-location font-semibold">{{ getChapterTitle(item.resolution.chapter_id) }} · абз. {{ item.resolution.paragraph_index }}</span>
-            <span v-if="isCurrentChapterPromise(item.resolution.chapter_id)" class="badge-current-chapter">текущая</span>
+            <span class="step-location font-semibold">{{ getChapterTitle(item.resolution.chapter_id || '') }} · абз. {{ item.resolution.paragraph_index ?? 1 }}</span>
+            <span v-if="isCurrentChapterPromise(item.resolution.chapter_id || '')" class="badge-current-chapter">текущая</span>
             <button 
               class="btn-delete-step" 
               title="Сбросить завершение"
-              @click="item.resolution && $emit('removeMilestone', { item, milestoneId: item.resolution.id, stage: 'resolution' })"
+              @click="$emit('removeMilestone', { item, milestoneId: item.resolution?.id || item.resolution?.milestone_id || '', stage: 'resolution' })"
             >
               ✕
             </button>
           </div>
 
           <blockquote class="card-quote quote-resolution">
-            «{{ item.resolution.quote }}»
+            «{{ item.resolution.quote || '' }}»
           </blockquote>
 
           <div class="step-actions">
-            <button class="btn-locate-step" @click="item.resolution && $emit('locate', { chapter_id: item.resolution.chapter_id, paragraph_index: item.resolution.paragraph_index, quote: item.resolution.quote })">
+            <button class="btn-locate-step" @click="$emit('locate', { chapter_id: item.resolution?.chapter_id || '', paragraph_index: item.resolution?.paragraph_index ?? 1, quote: item.resolution?.quote || '' })">
               {{ item.kind === 'scene' ? '📍 Перейти к финалу сцены' : '📍 Перейти к финалу' }}
             </button>
           </div>

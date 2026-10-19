@@ -92,7 +92,7 @@ export function useArcCard(props: ArcCardProps) {
         ...block,
         phaseClass: phaseInfo.class,
         phaseLabel: phaseInfo.label,
-        formattedChapter: formatChapterName(block.chapter_id),
+        formattedChapter: formatChapterName(block.chapter_id || ''),
         statusLabel: getPromiseStatusLabel(block.status),
       };
     });

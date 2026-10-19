@@ -149,6 +149,7 @@ surreal_entity! {
         #[fulltext] pub content: String,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
         pub importance: i64,
+        #[serde(default)] pub is_global: bool,
     }
 }
 
@@ -162,6 +163,11 @@ surreal_entity! {
         pub order_index: i64,
         #[fulltext] pub content: String,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
+        pub arc_id: Option<String>,
+        pub arc_phase: Option<String>,
+        pub arc_transition: Option<String>,
+        pub timeline_event_id: Option<String>,
+        pub time_nature: Option<String>,
     }
 }
 
@@ -230,31 +236,34 @@ surreal_entity! {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
+pub struct PromiseMilestone {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub milestone_id: Option<String>,
+    pub stage: String, // plant, progression, resolution
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quote: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    pub block_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chapter_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
+    pub order_index: Option<i64>,
+}
+
 surreal_entity! {
     #[table = "plot_promises"]
     #[project_scoped]
     #[tauri_commands]
     pub struct PlotPromise {
-        pub chapter_id: String,
         pub kind: String,
-        pub quote: String,
-        #[ts(type = "number")] pub paragraph_index: i64,
-        pub block_id: Option<String>,
-        pub note: Option<String>,
+        pub title: String,
+        #[serde(skip_serializing_if = "Option::is_none")] pub note: Option<String>,
         pub status: String,
-        #[flexible] #[serde(default)] pub progressions: serde_json::Value,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub resolution: Option<serde_json::Value>,
-        pub resolved_in_volume: Option<String>,
-        pub resolved_in_chapter: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")] pub participant_ids: Option<Vec<String>>,
-        pub location_id: Option<String>,
-        pub timeline_event_id: Option<String>,
-        pub arc_id: Option<String>,
-        pub arc_phase: Option<String>,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub arcs: Option<serde_json::Value>,
-        pub m_abs: Option<i64>,
-        pub calendar_id: Option<String>,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub date_fields: Option<serde_json::Value>,
+        #[serde(default)] pub milestones: Vec<PromiseMilestone>,
     }
 }
 
@@ -282,6 +291,9 @@ pub struct Entity {
     pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_id: Option<String>,
+    #[serde(default)]
     pub entity_type: String,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -515,6 +527,7 @@ mod ts_export_tests {
         AiSkill::export(&cfg).expect(export_err_msg);
         Plan::export(&cfg).expect(export_err_msg);
         PlotPromise::export(&cfg).expect(export_err_msg);
+        PromiseMilestone::export(&cfg).expect(export_err_msg);
         StoryArc::export(&cfg).expect(export_err_msg);
         ArcChapter::export(&cfg).expect(export_err_msg);
         ArcEntity::export(&cfg).expect(export_err_msg);
@@ -537,6 +550,7 @@ mod ts_export_tests {
         let e = Entity {
             id: Some("entities:e1".into()),
             project_id: Some("projects:p1".into()),
+            schema_id: None,
             entity_type: "character".into(),
             name: "Алиса".into(),
             description: Some("Главная героиня".into()),

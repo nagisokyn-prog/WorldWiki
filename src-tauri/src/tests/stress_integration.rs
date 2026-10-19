@@ -104,6 +104,7 @@ async fn stress_high_concurrency_50_workers() {
         let e = save_entity_inner(&db, "stress_concur", Entity {
             id: None,
             project_id: Some("projects:stress_concur".into()),
+            schema_id: None,
             entity_type: "character".into(),
             name: format!("Базовый Персонаж {i}"),
             description: None,
@@ -134,6 +135,7 @@ async fn stress_high_concurrency_50_workers() {
                 let new_e = save_entity_inner(&db_clone, "stress_concur", Entity {
                     id: None,
                     project_id: Some("projects:stress_concur".into()),
+                    schema_id: None,
                     entity_type: "npc".into(),
                     name: format!("Конкурентный NPC {task_idx}"),
                     description: None,

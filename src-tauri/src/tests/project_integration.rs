@@ -76,6 +76,7 @@ async fn delete_project_cascades_ddl_events() {
     save_entity_inner(&db, "cascade_proj", Entity {
         id: None,
         project_id: Some("projects:cascade_proj".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Герой Каскада".into(),
         description: None,

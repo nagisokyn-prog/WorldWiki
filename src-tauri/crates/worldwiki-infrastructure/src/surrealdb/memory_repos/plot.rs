@@ -27,23 +27,25 @@ impl PlotPromiseRepository for InMemoryPlotPromiseRepository {
     }
 
     async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
+        let clean = chapter_id.trim_start_matches("chapters:");
         let list = self
             .storage
             .iter()
-            .filter(|r| r.value().chapter_id == chapter_id)
+            .filter(|r| {
+                r.value().milestones.iter().any(|m| {
+                    m.chapter_id.as_deref().map(|c| c.trim_start_matches("chapters:")) == Some(clean)
+                })
+            })
             .map(|r| r.value().clone())
             .collect();
         Ok(list)
     }
 
-    async fn list_unresolved_by_volume(&self, volume_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
+    async fn list_unresolved_by_volume(&self, _volume_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
         let list = self
             .storage
             .iter()
-            .filter(|r| {
-                r.value().resolved_in_volume.as_deref() == Some(volume_id)
-                    && r.value().status != PromiseStatus::Resolved
-            })
+            .filter(|r| r.value().status != PromiseStatus::Resolved)
             .map(|r| r.value().clone())
             .collect();
         Ok(list)

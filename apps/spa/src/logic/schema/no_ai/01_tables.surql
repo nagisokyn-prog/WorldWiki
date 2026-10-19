@@ -1,40 +1,39 @@
 -- ==============================================================================
 -- 01_TABLES.SURQL — ТАБЛИЦЫ И ПОЛЯ БАЗОВОГО ЯДРА (BASE & ULTRA)
 -- ==============================================================================
--- СОГЛАШЕНИЯ СХЕМЫ (читать перед построением диаграммы):
+-- СОГЛАШЕНИЯ СХЕМЫ (LPG / ISO GQL модель):
 -- 1. project_id есть у всех таблиц и означает владение проектом, а не связь.
---    На диаграмме это рамка «Проект», стрелками не рисуется.
--- 2. Связи двух видов, рисуются оба: RELATION-таблицы (contains, entity_rel,
---    appears_in, revealed_in, participates_in, arc_entities, arc_chapters)
---    и поля-ссылки record<...>.
--- 3. Мягкие ссылки по ключу (строка, не record), рисуются пунктиром:
---    entities.entity_type -> entity_schemas.type_key
---    entity_rel.rel_type  -> relation_schemas.rel_key
---    entities.tags[]      -> tags.name
--- 4. block_id — идентификатор узла/абзаца в Semantic AST chapters.content,
---    а не ссылка на text_blocks.
--- 5. Не рисуются: text_blocks (производный индекс главы), embeddings.*,
---    кеш-поля, помеченные «КЕШ».
+-- 2. Связи двух видов: RELATION-таблицы (contains, advances_arc, occurs_at,
+--    promise_milestones, tagged_with, plans_for, entity_rel, appears_in, 
+--    revealed_in, participates_in, arc_entities, arc_chapters)
+--    и структурные поля-ссылки record<...>.
+-- 3. entities.schema_id -> entity_schemas (строгая типизация классов лора).
+-- 4. Текст рукописи декомпозирован в text_blocks (семантические блоки/сцены).
+-- 5. Время вселенной привязано к text_blocks (occurs_at) и timeline_events.
 -- ==============================================================================
 -- Включает:
 -- 1. projects (Проекты)
--- 2. contains (Иерархия сюжета)
+-- 2. contains (Иерархия книги: Проект -> Тома -> Главы)
 -- 3. volumes (Тома)
 -- 4. chapters (Главы рукописи)
 -- 5. story_arcs (Сюжетные арки / сторилайны)
 -- 5.1. arc_entities (Связь арки с сущностями фокуса)
 -- 5.2. arc_chapters (Охват глав сюжетной аркой)
--- 6. text_blocks (Семантические блоки текста)
--- 7. tags (Теги)
+-- 6. text_blocks (Семантические блоки текста / сцены)
+-- 6.1. advances_arc (Продвижение фазы арки в блоке текста)
+-- 6.2. occurs_at (Фиксация времени и диегетической природы сцены)
+-- 7. tags (Теги лора)
+-- 7.1. tagged_with (Тегирование сущностей)
 -- 8. planets (Планеты)
 -- 8.1. calendars (Календари и эпохи)
--- 9. entity_schemas (Мета-схемы сущностей лора)
+-- 9. entity_schemas (Мета-схемы классов сущностей лора)
 -- 10. schema_history (История версий мета-схем)
 -- 11. entities (Сущности лора / энциклопедии)
 -- 12. relation_schemas (Схемы типов связей)
 -- 13. entity_rel (Графовые связи между сущностями)
 -- 14. appears_in (Связь участия сущностей в главах)
 -- 15. plans (Планы и иерархические чек-листы)
+-- 15.1. plans_for (Графовая привязка планов к томам, главам, аркам)
 -- 16. timeline_events (События таймлайна с абсолютной минутой m_abs)
 -- 17. revealed_in (Раскрытие событий таймлайна в главах рукописи)
 -- 18. participates_in (Связь участия сущностей в событиях таймлайна)
@@ -42,6 +41,7 @@
 -- 20. entity_rel_revisions (История ревизий связей сущностей)
 -- 21. chapter_revisions (История ревизий текста глав)
 -- 22. plot_promises (Сюжетные обещания: чеховские ружья, тайны)
+-- 22.1. promise_milestones (Жизненный цикл ружья в блоках текста)
 -- ==============================================================================
 
 -- 1. ПРОЕКТЫ
@@ -54,7 +54,7 @@ DEFINE FIELD OVERWRITE genres      ON projects TYPE array<string> DEFAULT [] VAL
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string | null>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes OUT volumes | chapters SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | chats OUT volumes | chapters | chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE number DEFAULT 0;
 
 -- 3. ТОМА
@@ -74,10 +74,8 @@ DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes       ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END; -- КЕШ ребра revealed_in, не источник правды
-DEFINE FIELD OVERWRITE timeline_events.* ON chapters TYPE any;
-DEFINE FIELD OVERWRITE participants    ON chapters TYPE array DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END; -- КЕШ ребра appears_in, не источник правды
-DEFINE FIELD OVERWRITE participants.*  ON chapters TYPE any;
+DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
+DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 
 -- 5. СЮЖЕТНЫЕ АРКИ (СТОРИЛАЙНЫ)
 DEFINE TABLE OVERWRITE story_arcs SCHEMAFULL;
@@ -95,6 +93,9 @@ DEFINE FIELD OVERWRITE updated_at    ON story_arcs TYPE datetime DEFAULT time::n
 -- 5.1. СВЯЗЬ АРКА -> СУЩНОСТИ (ФОКУС АРКИ: персонажи, пары персонажей, фракции)
 DEFINE TABLE OVERWRITE arc_entities TYPE RELATION IN story_arcs OUT entities SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON arc_entities TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE role       ON arc_entities TYPE string DEFAULT 'focus'
+  ASSERT $value IN ['protagonist', 'antagonist', 'love_interest', 'catalyst', 'victim', 'focus'];
+DEFINE FIELD OVERWRITE notes      ON arc_entities TYPE option<string | null>;
 
 
 -- 5.2. СВЯЗЬ АРКА -> ГЛАВЫ (ОХВАТ ГЛАВ СТОРИЛАЙНОМ)
@@ -106,22 +107,48 @@ DEFINE FIELD OVERWRITE phase      ON arc_chapters TYPE option<string | null>
 
 -- 6. БЛОКИ ТЕКСТА
 DEFINE TABLE OVERWRITE text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON text_blocks TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE chapter_id  ON text_blocks TYPE record<chapters>;
+DEFINE FIELD OVERWRITE project_id        ON text_blocks TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE chapter_id        ON text_blocks TYPE record<chapters>;
 -- ВНИМАНИЕ: block_type намеренно БЕЗ ASSERT! Это открытый тег семантической разметки (open set),
 -- принимающий как базовые теги ('description', 'dialogue', 'thought'), так и любые кастомные теги автора
 -- из Tiptap WYSIWYG (data-semantic-tag: 'custom_action', 'whisper' и др.). Закрытый enum сломает расширяемость.
-DEFINE FIELD OVERWRITE block_type  ON text_blocks TYPE string DEFAULT 'description';
-DEFINE FIELD OVERWRITE order_index ON text_blocks TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE content     ON text_blocks TYPE string;
-DEFINE FIELD OVERWRITE embeddings  ON text_blocks TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at  ON text_blocks TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE block_type        ON text_blocks TYPE string DEFAULT 'description';
+DEFINE FIELD OVERWRITE order_index       ON text_blocks TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE content           ON text_blocks TYPE string;
+DEFINE FIELD OVERWRITE arc_id            ON text_blocks TYPE option<record<story_arcs> | null>;
+DEFINE FIELD OVERWRITE arc_phase         ON text_blocks TYPE option<string | null>
+  ASSERT $value == NONE OR $value == NULL OR $value IN ['setup', 'escalation', 'climax', 'resolution'];
+DEFINE FIELD OVERWRITE arc_transition    ON text_blocks TYPE option<string | null>;
+DEFINE FIELD OVERWRITE timeline_event_id ON text_blocks TYPE option<record<timeline_events> | null>;
+DEFINE FIELD OVERWRITE time_nature       ON text_blocks TYPE string DEFAULT 'present'
+  ASSERT $value IN ['present', 'flashback', 'flashforward', 'memory', 'dream'];
+DEFINE FIELD OVERWRITE embeddings        ON text_blocks TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at        ON text_blocks TYPE datetime DEFAULT time::now();
+
+-- 6.1. ДИНАМИКА АРКИ В СЦЕНЕ (БЛОКЕ ТЕКСТА)
+DEFINE TABLE OVERWRITE advances_arc TYPE RELATION IN text_blocks OUT story_arcs SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON advances_arc TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE phase      ON advances_arc TYPE string ASSERT $value IN ['setup', 'escalation', 'climax', 'resolution'];
+DEFINE FIELD OVERWRITE transition ON advances_arc TYPE option<string | null>;
+DEFINE FIELD OVERWRITE created_at ON advances_arc TYPE datetime DEFAULT time::now();
+
+-- 6.2. ВРЕМЯ ДЕЙСТВИЯ СЦЕНЫ (БЛОКА ТЕКСТА)
+DEFINE TABLE OVERWRITE occurs_at TYPE RELATION IN text_blocks OUT timeline_events SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id  ON occurs_at TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE time_nature ON occurs_at TYPE string DEFAULT 'present'
+  ASSERT $value IN ['present', 'flashback', 'flashforward', 'memory', 'dream'];
+DEFINE FIELD OVERWRITE created_at  ON occurs_at TYPE datetime DEFAULT time::now();
 
 -- 7. ТЕГИ
 DEFINE TABLE OVERWRITE tags SCHEMAFULL;
 DEFINE FIELD OVERWRITE name       ON tags TYPE string;
 DEFINE FIELD OVERWRITE color      ON tags TYPE string;
 DEFINE FIELD OVERWRITE project_id ON tags TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+
+-- 7.1. ТЕГИРОВАНИЕ СУЩНОСТЕЙ ЛОРА
+DEFINE TABLE OVERWRITE tagged_with TYPE RELATION IN entities OUT tags SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON tagged_with TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE created_at ON tagged_with TYPE datetime DEFAULT time::now();
 
 -- 8. ПЛАНЕТЫ
 DEFINE TABLE OVERWRITE planets SCHEMAFULL;
@@ -171,7 +198,8 @@ DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string | null>;
 -- 11. СУЩНОСТИ ЛОРА
 DEFINE TABLE OVERWRITE entities SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string;
+DEFINE FIELD OVERWRITE schema_id    ON entities TYPE option<record<entity_schemas> | null>;
+DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string DEFAULT 'character';
 DEFINE FIELD OVERWRITE name         ON entities TYPE string;
 DEFINE FIELD OVERWRITE description  ON entities TYPE option<string | null>;
 DEFINE FIELD OVERWRITE attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
@@ -218,13 +246,18 @@ DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now(
 DEFINE TABLE OVERWRITE plans SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE title       ON plans TYPE string;
-DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<chapters> | record<volumes> | record<plans> | null>;
+DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<projects> | record<volumes> | record<story_arcs> | record<chapters> | record<plans> | null>;
 DEFINE FIELD OVERWRITE parent_type ON plans TYPE string
-  ASSERT $value IN ['volume', 'chapter', 'plan'];
+  ASSERT $value IN ['project', 'volume', 'story_arc', 'chapter', 'plan'];
 DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at  ON plans TYPE datetime DEFAULT time::now();
+
+-- 15.1. ДЕКОМПОЗИЦИЯ ПЛАНОВ (ГРАФОВАЯ ПРИВЯЗКА К ТОМАМ, ГЛАВАМ И АРКАМ)
+DEFINE TABLE OVERWRITE plans_for TYPE RELATION IN plans OUT volumes | chapters | story_arcs SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON plans_for TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE created_at ON plans_for TYPE datetime DEFAULT time::now();
 
 -- 16. ТАЙМЛАЙН СОБЫТИЙ
 DEFINE TABLE OVERWRITE timeline_events SCHEMAFULL;
@@ -282,32 +315,24 @@ DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string | nul
 DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 
--- 22. СЮЖЕТНЫЕ ОБЕЩАНИЯ / НАРРАТИВНЫЕ БЛОКИ
+-- 22. СЮЖЕТНЫЕ ОБЕЩАНИЯ (ЧЕХОВСКИЕ РУЖЬЯ, ТАЙНЫ)
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id          ON plot_promises TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE chapter_id          ON plot_promises TYPE record<chapters>;
-DEFINE FIELD OVERWRITE kind                ON plot_promises TYPE string
+DEFINE FIELD OVERWRITE project_id  ON plot_promises TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE kind        ON plot_promises TYPE string
   ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'scene', 'conflict'];
-DEFINE FIELD OVERWRITE quote               ON plot_promises TYPE string;
-DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE int DEFAULT 1;
-DEFINE FIELD OVERWRITE block_id            ON plot_promises TYPE option<string | null>;
-DEFINE FIELD OVERWRITE note                ON plot_promises TYPE option<string | null>;
-DEFINE FIELD OVERWRITE status              ON plot_promises TYPE string DEFAULT 'planted'
+DEFINE FIELD OVERWRITE title       ON plot_promises TYPE string;
+DEFINE FIELD OVERWRITE note        ON plot_promises TYPE option<string | null>;
+DEFINE FIELD OVERWRITE status      ON plot_promises TYPE string DEFAULT 'planted'
   ASSERT $value IN ['planted', 'developed', 'resolved'];
-DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
-DEFINE FIELD OVERWRITE resolution          ON plot_promises TYPE option<object | null> FLEXIBLE;
-DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<record<volumes> | string | null>;
-DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<record<chapters> | string | null>;
-DEFINE FIELD OVERWRITE participant_ids     ON plot_promises TYPE array<record<entities> | string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
-DEFINE FIELD OVERWRITE location_id         ON plot_promises TYPE option<record<entities> | string | null>;
-DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<timeline_events> | string | null>;
-DEFINE FIELD OVERWRITE arc_id              ON plot_promises TYPE option<record<story_arcs> | string | null>;
-DEFINE FIELD OVERWRITE arc_phase           ON plot_promises TYPE option<string | null>
-  ASSERT $value IN [NONE, NULL, 'setup', 'escalation', 'climax', 'resolution'];
-DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END; -- КЕШ связей с story_arcs (мульти-арки)
-DEFINE FIELD OVERWRITE m_abs               ON plot_promises TYPE option<int | null>; -- КЕШ даты timeline_event_id или inline-дата
-DEFINE FIELD OVERWRITE calendar_id         ON plot_promises TYPE option<record<calendars> | string | null>; -- КЕШ календаря timeline_event_id или inline-календарь
-DEFINE FIELD OVERWRITE date_fields         ON plot_promises TYPE option<object | null> FLEXIBLE; -- КЕШ полей даты timeline_event_id или inline-дата
-DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE created_at  ON plot_promises TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at  ON plot_promises TYPE datetime DEFAULT time::now();
+
+-- 22.1. ЖИЗНЕННЫЙ ЦИКЛ РУЖЬЯ (PLANT / PROGRESSION / RESOLUTION) В ТЕКСТЕ
+DEFINE TABLE OVERWRITE promise_milestones TYPE RELATION IN plot_promises OUT text_blocks SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON promise_milestones TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE stage      ON promise_milestones TYPE string
+  ASSERT $value IN ['plant', 'progression', 'resolution'];
+DEFINE FIELD OVERWRITE quote      ON promise_milestones TYPE string;
+DEFINE FIELD OVERWRITE note       ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE created_at ON promise_milestones TYPE datetime DEFAULT time::now();
 

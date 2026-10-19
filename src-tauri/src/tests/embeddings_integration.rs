@@ -36,6 +36,7 @@ async fn save_entity_with_1536_dim_openai_embedding() {
     let entity = Entity {
         id: None,
         project_id: Some("projects:p_vec".into()),
+        schema_id: None,
         entity_type: "character".into(),
         name: "Векторный Герой".into(),
         description: Some("Персонаж с векторным представлением".into()),
@@ -84,6 +85,7 @@ async fn vector_search_cosine_knn_retrieval() {
     save_entity_inner(&db, "p_vec2", Entity {
         id: None,
         project_id: Some("projects:p_vec2".into()),
+        schema_id: None,
         entity_type: "concept".into(),
         name: "Магия Огня (e1)".into(),
         description: None,
@@ -97,6 +99,7 @@ async fn vector_search_cosine_knn_retrieval() {
     save_entity_inner(&db, "p_vec2", Entity {
         id: None,
         project_id: Some("projects:p_vec2".into()),
+        schema_id: None,
         entity_type: "concept".into(),
         name: "Магия Воды (e2)".into(),
         description: None,
@@ -110,6 +113,7 @@ async fn vector_search_cosine_knn_retrieval() {
     save_entity_inner(&db, "p_vec2", Entity {
         id: None,
         project_id: Some("projects:p_vec2".into()),
+        schema_id: None,
         entity_type: "concept".into(),
         name: "Космический Корабль (e3)".into(),
         description: None,

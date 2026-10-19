@@ -195,8 +195,25 @@ export function usePromisesPanel(
     loading.value = true;
     const localKey = `ww_plot_promises_${props.project}`;
     try {
-      const list = await api.getPlotPromises(props.project);
-      promises.value = Array.isArray(list) ? (list as unknown as RichPlotPromise[]) : [];
+      const rawList = await api.getPlotPromises(props.project);
+      const list = Array.isArray(rawList) ? (rawList as unknown as RichPlotPromise[]) : [];
+      promises.value = list.map((p) => {
+        const milestones = Array.isArray(p.milestones) ? p.milestones : [];
+        const plant = milestones.find((m) => m.stage === 'plant') || milestones[0];
+        const progressions = milestones.filter((m) => m.stage === 'progression');
+        const resolution = milestones.find((m) => m.stage === 'resolution') || null;
+
+        return {
+          ...p,
+          chapter_id: p.chapter_id || plant?.chapter_id || '',
+          quote: p.quote || plant?.quote || p.title || '',
+          paragraph_index: p.paragraph_index || plant?.order_index || 1,
+          block_id: p.block_id || plant?.block_id || null,
+          progressions: p.progressions || progressions,
+          resolution: p.resolution || resolution,
+          milestones
+        };
+      });
       try {
         if (promises.value.length === 0) {
           localStorage.removeItem(localKey);

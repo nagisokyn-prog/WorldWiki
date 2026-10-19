@@ -1,9 +1,9 @@
 import { ref } from 'vue';
-import type { PromiseCardProps, PromiseCardEmits } from './PromiseCard.model';
+import type { PromiseCardProps, PromiseCardEmitFn } from './PromiseCard.model';
 
 export function usePromiseCard(
   props: PromiseCardProps,
-  emit: PromiseCardEmits
+  emit: PromiseCardEmitFn
 ) {
   const isCardCollapsed = ref(false);
 
@@ -13,9 +13,9 @@ export function usePromiseCard(
 
   const handleLocate = () => {
     emit('locate', {
-      chapter_id: props.item.chapter_id,
-      paragraph_index: props.item.paragraph_index,
-      quote: props.item.quote,
+      chapter_id: props.item.chapter_id || '',
+      paragraph_index: props.item.paragraph_index || 1,
+      quote: props.item.quote || props.item.title || '',
       block_id: props.item.block_id || null
     });
   };

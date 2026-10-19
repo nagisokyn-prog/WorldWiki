@@ -49,7 +49,7 @@ export function computeArcKanbanStatus(
       });
       if (entry?.arc_phase) phase = entry.arc_phase;
     }
-    return phase === 'resolution' && (p.status === 'resolved' || p.resolution != null);
+    return phase === 'resolution' && (p.status === 'resolved' || p.milestones?.some(m => m.stage === 'resolution'));
   });
 
   if (hasResolved) return 'completed';

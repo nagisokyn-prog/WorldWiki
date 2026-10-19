@@ -91,6 +91,7 @@ async fn negative_transaction_rollback_on_failure() {
     save_entity_inner(&db, "p_trans", Entity {
         id: None,
         project_id: Some("projects:p_trans".into()),
+        schema_id: None,
         entity_type: "item".into(),
         name: "Сохранённый Предмет".into(),
         description: None,

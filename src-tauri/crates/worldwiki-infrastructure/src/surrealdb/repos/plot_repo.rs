@@ -22,7 +22,28 @@ impl SurrealPlotPromiseRepository {
 #[async_trait]
 impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<PlotPromise>, DomainError> {
-        let sql = "SELECT * FROM type::record('plot_promises', $id);";
+        let sql = r#"
+            SELECT 
+                id,
+                project_id,
+                kind,
+                title,
+                note,
+                status,
+                created_at,
+                updated_at,
+                ->promise_milestones.{
+                    id AS milestone_id,
+                    stage,
+                    quote,
+                    note,
+                    out.id AS block_id,
+                    out.chapter_id AS chapter_id,
+                    out.order_index AS order_index
+                } AS milestones
+            FROM type::record('plot_promises', $id)
+            LIMIT 1;
+        "#;
         let clean = id.trim_start_matches("plot_promises:");
         let mut res = self
             .db
@@ -36,7 +57,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
         let clean = promise.id.trim_start_matches("plot_promises:").to_string();
         let proj_clean = promise.project_id.trim_start_matches("projects:").to_string();
-        let ch_clean = promise.chapter_id.trim_start_matches("chapters:").to_string();
+        let ch_clean = promise
+            .milestones
+            .first()
+            .and_then(|m| m.chapter_id.as_deref())
+            .unwrap_or("")
+            .trim_start_matches("chapters:")
+            .to_string();
         let data = prepare_data_for_upsert(
             serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
         );
@@ -67,7 +94,28 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
         let clean = clean_id("chapters", chapter_id);
-        let sql = "SELECT * FROM plot_promises WHERE chapter_id = $chapter_id;";
+        let sql = r#"
+            SELECT 
+                id,
+                project_id,
+                kind,
+                title,
+                note,
+                status,
+                created_at,
+                updated_at,
+                ->promise_milestones.{
+                    id AS milestone_id,
+                    stage,
+                    quote,
+                    note,
+                    out.id AS block_id,
+                    out.chapter_id AS chapter_id,
+                    out.order_index AS order_index
+                } AS milestones
+            FROM plot_promises 
+            WHERE ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
+        "#;
         let mut res = self
             .db
             .query(sql)
@@ -83,8 +131,28 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     ) -> Result<Vec<PlotPromise>, DomainError> {
         let clean_vol = clean_id("volumes", volume_id);
         let sql = r#"
-            LET $chapters = SELECT VALUE out FROM $volume->contains->contains;
-            SELECT * FROM plot_promises WHERE status != 'resolved' AND chapter_id IN $chapters;
+            LET $vol_rec = type::record('volumes', $volume);
+            LET $chapters = (SELECT VALUE out FROM contains WHERE in = $vol_rec);
+            SELECT 
+                id,
+                project_id,
+                kind,
+                title,
+                note,
+                status,
+                created_at,
+                updated_at,
+                ->promise_milestones.{
+                    id AS milestone_id,
+                    stage,
+                    quote,
+                    note,
+                    out.id AS block_id,
+                    out.chapter_id AS chapter_id,
+                    out.order_index AS order_index
+                } AS milestones
+            FROM plot_promises 
+            WHERE status != 'resolved' AND ->promise_milestones.out.chapter_id CONTAINSANY $chapters;
         "#;
         let mut res = self
             .db
@@ -92,7 +160,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             .bind(("volume", clean_vol))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 1)
+        take_list(&mut res, 2)
     }
 }
 

@@ -8,11 +8,11 @@ export interface ArcCardProps {
   linkedBlocks: PlotPromise[];
 }
 
-export interface ArcCardEmits {
-  (e: 'update-status', arc: StoryArc, status: ArcStatus): void;
-  (e: 'delete', id?: string | null): void;
-  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
-}
+export type ArcCardEmits = {
+  'update-status': [arc: StoryArc, status: ArcStatus];
+  delete: [id?: string | null];
+  locate: [payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }];
+};
 
 export interface PhaseCounts {
   setup: number;

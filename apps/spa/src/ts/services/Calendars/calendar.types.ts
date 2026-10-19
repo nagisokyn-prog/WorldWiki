@@ -134,7 +134,7 @@ export interface CalendarAnchorEvent {
 export interface SyncAnchor {
   master_calendar_id?: string;
   linked_to_master: boolean;
-  sync_type?: 'event' | 'calendar';
+  sync_type?: 'event' | 'calendar' | 'master_era';
   target_event_id?: string;
   target_calendar_id?: string;
   target_calendar_year?: number;

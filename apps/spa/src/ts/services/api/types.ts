@@ -40,6 +40,7 @@ export type { Chat } from '../../types/generated/Chat';
 export type { ChatMessage } from '../../types/generated/ChatMessage';
 export type { AiProfile } from '../../types/generated/AiProfile';
 export type { PlotPromise } from '../../types/generated/PlotPromise';
+export type { PromiseMilestone } from '../../types/generated/PromiseMilestone';
 export type { Plan } from '../../types/generated/Plan';
 export type { Tag } from '../../types/generated/Tag';
 export type { Calendar } from '../../types/generated/Calendar';

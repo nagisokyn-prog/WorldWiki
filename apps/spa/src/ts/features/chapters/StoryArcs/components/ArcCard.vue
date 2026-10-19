@@ -74,11 +74,11 @@
       </div>
 
       <div
-        v-for="block in displayBlocks"
-        :key="block.id || block.quote"
+        v-for="(block, bIdx) in displayBlocks"
+        :key="block.id || block.quote || bIdx"
         class="arc-block-item"
         :title="block.quote ? `«${block.quote}»` : 'Перейти к фрагменту текста'"
-        @click.stop="$emit('locate', { chapterId: block.chapter_id, paragraphIndex: block.paragraph_index, quote: block.quote, blockId: block.block_id || undefined })"
+        @click.stop="$emit('locate', { chapterId: block.chapter_id || '', paragraphIndex: block.paragraph_index || 1, quote: block.quote || block.title || '', blockId: block.block_id || undefined })"
       >
         <div class="arc-block-meta">
           <span class="phase-badge" :class="block.phaseClass">

@@ -91,6 +91,7 @@ DEFINE EVENT OVERWRITE cascade_text_block_delete ON TABLE text_blocks WHEN $even
     DELETE advances_arc WHERE in = $before.id;
     DELETE occurs_at WHERE in = $before.id;
     DELETE promise_milestones WHERE out = $before.id;
+    DELETE appears_in WHERE out = $before.id;
 };
 
 -- 2.3. КАСКАД СЮЖЕТНЫХ ОБЕЩАНИЙ
@@ -130,9 +131,8 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
 DEFINE EVENT OVERWRITE cascade_timeline_event_delete ON TABLE timeline_events WHEN $event = "DELETE" THEN {
     DELETE participates_in WHERE out = $before.id;
     DELETE revealed_in WHERE in = $before.id;
-
-    -- Разрыв ссылок на удаленное событие в сюжетных обещаниях
-    UPDATE plot_promises SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
+    DELETE occurs_at WHERE out = $before.id;
+    UPDATE text_blocks SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
 };
 
 -- 6. ЛОГИРОВАНИЕ РЕВИЗИЙ СУЩНОСТЕЙ
@@ -142,8 +142,7 @@ DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities
         $before.name != $after.name 
         OR $before.description != $after.description 
         OR $before.attributes != $after.attributes 
-        OR $before.tags != $after.tags 
-        OR $before.entity_type != $after.entity_type
+        OR $before.schema_id != $after.schema_id
     ) 
     THEN {
         CREATE entity_revisions SET 
@@ -153,12 +152,17 @@ DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities
                 name: $before.name,
                 description: $before.description,
                 attributes: $before.attributes,
-                tags: $before.tags,
-                entity_type: $before.entity_type
+                tags: (SELECT VALUE out.name FROM tagged_with WHERE in = $before.id),
+                entity_type: $before.schema_id.type_key
             }, 
             created_at = time::now(), 
             commit_msg = NONE;
     };
+
+-- 6.1. КАСКАД УДАЛЕНИЯ СХЕМЫ СУЩНОСТЕЙ
+DEFINE EVENT OVERWRITE cascade_entity_schema_delete ON TABLE entity_schemas WHEN $event = "DELETE" THEN {
+    DELETE entities WHERE schema_id = $before.id;
+};
 
 -- 7. ЛОГИРОВАНИЕ СОЗДАНИЯ СВЯЗИ СУЩНОСТЕЙ
 DEFINE EVENT OVERWRITE log_entity_rel_create ON TABLE entity_rel 

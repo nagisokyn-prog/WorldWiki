@@ -75,14 +75,20 @@ pub fn parse_chat_record(val: &Value, project_id: &str, edges: &[Value]) -> Chat
         .get("token_usage")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
 
-    let mut parent_chat_id = None;
-    if let Some(edge) = edges
-        .iter()
-        .find(|e| e.get("out").and_then(clean_record_id) == Some(id.clone()))
+    let mut parent_chat_id = val
+        .get("parent_chat_id")
+        .and_then(clean_record_id)
+        .filter(|p| p.starts_with("chats:"));
+
+    if parent_chat_id.is_none()
+        && let Some(edge) = edges
+            .iter()
+            .find(|e| e.get("out").and_then(clean_record_id) == Some(id.clone()))
         && let Some(p) = edge.get("in").and_then(clean_record_id)
-            && p.starts_with("chats:") {
-                parent_chat_id = Some(p);
-            }
+        && p.starts_with("chats:")
+    {
+        parent_chat_id = Some(p);
+    }
 
     Chat {
         id,

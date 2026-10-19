@@ -88,12 +88,7 @@ async fn test_get_chat_tree_hierarchical_relationships() {
 
     // Создаём родительский и дочерний чат
     db.query("CREATE chats:root_chat SET project_id = type::record('projects:p_tree'), title = 'Корень', created_at = time::now()").await.unwrap();
-    db.query("CREATE chats:sub_chat SET project_id = type::record('projects:p_tree'), title = 'Подчат', created_at = time::now()").await.unwrap();
-
-    // Связываем через ребро contains
-    db.query("RELATE chats:root_chat -> contains -> chats:sub_chat SET sort_order = 1")
-        .await
-        .unwrap();
+    db.query("CREATE chats:sub_chat SET project_id = type::record('projects:p_tree'), title = 'Подчат', parent_chat_id = type::record('chats:root_chat'), created_at = time::now()").await.unwrap();
 
     let tree = services
         .chat

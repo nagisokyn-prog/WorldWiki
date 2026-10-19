@@ -33,9 +33,9 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = self
             .db
-            .query("SELECT id, title, project_id, tag, session_context, created_at FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
+            .query("SELECT id, title, project_id, tag, parent_chat_id, session_context, created_at FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
             .bind(("p_clean", proj_clean.to_string()))
-            .bind(("proj_id", proj_id.clone()))
+            .bind(("proj_id", proj_id))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -43,25 +43,9 @@ impl ChatRepository for SurrealChatRepository {
             .take(0)
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let mut edges_res = self
-            .db
-            .query(
-                r#"
-                SELECT in, out, sort_order FROM contains 
-                WHERE out IN (SELECT VALUE id FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id)
-            "#,
-            )
-            .bind(("p_clean", proj_clean.to_string()))
-            .bind(("proj_id", proj_id))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-        let edges: Vec<Value> = edges_res
-            .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let chats = raw_chats
             .into_iter()
-            .map(|val| parse_chat_record(&val, project_id, &edges))
+            .map(|val| parse_chat_record(&val, project_id, &[]))
             .collect();
 
         Ok(chats)
@@ -219,24 +203,17 @@ impl ChatRepository for SurrealChatRepository {
     ) -> Result<(), DomainError> {
         let chat_clean = clean_id_str(chat_id, "chats:");
         let c_rec = RecordId::new("chats", chat_clean);
+        let parent_rec = new_parent_id.map(|p| {
+            let p_clean = clean_id_str(p, "chats:");
+            RecordId::new("chats", p_clean)
+        });
 
         self.db
-            .query("DELETE contains WHERE out = $chat")
-            .bind(("chat", c_rec.clone()))
+            .query("UPDATE $chat SET parent_chat_id = $parent")
+            .bind(("chat", c_rec))
+            .bind(("parent", parent_rec))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-        if let Some(parent) = new_parent_id {
-            let p_clean = clean_id_str(parent, "chats:");
-            let p_rec = RecordId::new("chats", p_clean);
-
-            self.db
-                .query("RELATE $parent -> contains -> $chat SET sort_order = 0")
-                .bind(("parent", p_rec))
-                .bind(("chat", c_rec))
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        }
 
         Ok(())
     }

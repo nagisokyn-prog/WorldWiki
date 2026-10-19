@@ -104,12 +104,14 @@ async fn negative_transaction_rollback_on_failure() {
 
     // Запускаем транзакцию:
     // Операция 1: Валидный CREATE
-    // Операция 2: НЕВАЛИДНЫЙ CREATE (нарушение SCHEMAFULL схемы)
+    // Операция 2: НЕВАЛИДНЫЙ CREATE (нарушение SCHEMAFULL схемы через illegal_root_field)
     // Весь батч должен откатиться!
+    db.query("UPSERT type::record('entity_schemas', 'item_trans') SET project_id = type::record('projects', 'p_trans'), type_key = 'item', type_name = 'Предмет', icon = 'box', color = '#fff';").await.unwrap();
+
     let sql = r#"
         BEGIN TRANSACTION;
-        CREATE entities SET project_id = type::record('projects:p_trans'), entity_type = 'item', name = 'Предмет Транзакции';
-        CREATE entities SET project_id = type::record('projects:p_trans'), entity_type = 'item', illegal_root_field = 123;
+        CREATE entities SET project_id = type::record('projects:p_trans'), schema_id = type::record('entity_schemas', 'item_trans'), name = 'Предмет Транзакции';
+        CREATE entities SET project_id = type::record('projects:p_trans'), schema_id = type::record('entity_schemas', 'item_trans'), illegal_root_field = 123;
         COMMIT TRANSACTION;
     "#;
 

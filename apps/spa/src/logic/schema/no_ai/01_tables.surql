@@ -54,7 +54,7 @@ DEFINE FIELD OVERWRITE genres      ON projects TYPE array<string> DEFAULT [] VAL
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string | null>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | chats OUT volumes | chapters | chats SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes OUT volumes | chapters SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE number DEFAULT 0;
 
 -- 3. ТОМА
@@ -198,12 +198,10 @@ DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string | null>;
 -- 11. СУЩНОСТИ ЛОРА
 DEFINE TABLE OVERWRITE entities SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE schema_id    ON entities TYPE option<record<entity_schemas> | null>;
-DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string DEFAULT 'character';
+DEFINE FIELD OVERWRITE schema_id    ON entities TYPE record<entity_schemas>;
 DEFINE FIELD OVERWRITE name         ON entities TYPE string;
 DEFINE FIELD OVERWRITE description  ON entities TYPE option<string | null>;
 DEFINE FIELD OVERWRITE attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE tags         ON entities TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE embeddings   ON entities TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE created_at   ON entities TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at   ON entities TYPE option<datetime | null> DEFAULT time::now();
@@ -234,7 +232,7 @@ DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
 -- 14. УЧАСТИЕ В ГЛАВАХ
-DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
+DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters | text_blocks SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'
   ASSERT $value IN ['mention', 'manual', 'scene'];
@@ -319,7 +317,7 @@ DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON plot_promises TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE kind        ON plot_promises TYPE string
-  ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'scene', 'conflict'];
+  ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'conflict', 'scene'];
 DEFINE FIELD OVERWRITE title       ON plot_promises TYPE string;
 DEFINE FIELD OVERWRITE note        ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE status      ON plot_promises TYPE string DEFAULT 'planted'

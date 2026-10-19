@@ -165,8 +165,9 @@ async fn test_high_performance_lore_reindexing() {
         .unwrap();
 
     // 2. Создаем несколько сущностей энциклопедии
+    db.query("UPSERT type::record('entity_schemas', 'char_lore') SET project_id = type::record('projects', 'p_lore'), type_key = 'character', type_name = 'Персонаж', icon = 'user', color = '#fff';").await.unwrap();
     for i in 0..10 {
-        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), name = $name, entity_type = 'character', attributes = $fields;")
+        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), schema_id = type::record('entity_schemas', 'char_lore'), name = $name, attributes = $fields;")
             .bind(("name", format!("Герой {i}")))
             .bind(("fields", json!({ "role": "рыцарь", "ability": "магия ветра" })))
             .await

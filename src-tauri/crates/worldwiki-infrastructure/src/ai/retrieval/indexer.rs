@@ -102,7 +102,7 @@ pub async fn reindex_project_lore_inner(
         }
 
     // 3. Collect and chunk all entities
-    let ent_query = "SELECT id, name, entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
+    let ent_query = "SELECT id, name, schema_id.type_key AS entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Ok(mut resp) = db
         .query(ent_query)
         .bind(("p_raw", p_raw.clone()))

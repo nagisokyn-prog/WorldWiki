@@ -116,9 +116,26 @@ async fn seed_entity(
 ) -> String {
     let proj_raw = project_key.strip_prefix("projects:").unwrap_or(project_key).trim_matches('`');
     let ent_raw = key.strip_prefix("entities:").unwrap_or(key).trim_matches('`');
-    let sql = "CREATE type::record('entities', $eid) SET \
-               project_id = type::record('projects', $pid), entity_type = 'character', \
-               name = $name, description = $desc";
+    let sql = r#"
+        LET $p_rec = type::record('projects', $pid);
+        LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = 'character' LIMIT 1);
+        LET $schema_id = IF array::len($schema_res) > 0 {
+            $schema_res[0]
+        } ELSE {
+            (CREATE entity_schemas SET
+                project_id = $p_rec,
+                type_key = 'character',
+                type_name = 'character',
+                icon = 'box',
+                color = 'var(--text-accent)'
+            )[0].id
+        };
+        CREATE type::record('entities', $eid) SET 
+            project_id = $p_rec, 
+            schema_id = $schema_id, 
+            name = $name, 
+            description = $desc;
+    "#;
     let mut resp = db
         .query(sql)
         .bind(("eid", ent_raw))

@@ -30,17 +30,32 @@ pub async fn get_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<Option<Entity>, EntityError> {
-    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id);
-    let res: Option<Value> = db.select(("entities", actual_id)).await?;
+    let clean = id
+        .split_once(':')
+        .map(|(_, rest)| rest)
+        .unwrap_or(id)
+        .trim_matches('⟨')
+        .trim_matches('⟩')
+        .trim_matches('`');
 
-    if let Some(mut val) = res {
+    let query = "RETURN fn::get_entity(type::record('entities', $id));";
+    let mut res = db
+        .query(query)
+        .bind(("id", clean.to_string()))
+        .await?;
+
+    let val: Option<Value> = res.take(0)?;
+    if let Some(mut val) = val {
+        if val.is_null() {
+            return Ok(None);
+        }
         flatten_thing(&mut val);
         match serde_json::from_value(val.clone()) {
             Ok(e) => return Ok(Some(e)),
             Err(e) => {
                 eprintln!(
                     "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}\nRaw JSON: {:?}",
-                    actual_id, e, val
+                    clean, e, val
                 );
                 return Err(EntityError::Serialization(e));
             }

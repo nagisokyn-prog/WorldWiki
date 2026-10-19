@@ -45,9 +45,9 @@ pub(crate) async fn run_fallback_search(
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         let en_sql = if !q_trimmed.is_empty() {
-            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) LIMIT $limit"
+            "SELECT id, name, schema_id.type_key AS type_key, description, (->tagged_with.out.name) AS tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (string::lowercase(name) CONTAINS string::lowercase($q) OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS string::lowercase($q))) LIMIT $limit"
         } else {
-            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) LIMIT $limit"
+            "SELECT id, name, schema_id.type_key AS type_key, description, (->tagged_with.out.name) AS tags, attributes, 'entity' AS source_type FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) LIMIT $limit"
         };
         let mut res_en = db
             .query(en_sql)

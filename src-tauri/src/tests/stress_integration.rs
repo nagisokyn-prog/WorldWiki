@@ -23,6 +23,7 @@ use super::common::{create_test_db, seed_chapter, seed_project};
 async fn stress_bulk_insert_10k_entities() {
     let db = create_test_db().await;
     seed_project(&db, "stress_p1", "Stress 10k Entities").await;
+    db.query("UPSERT type::record('entity_schemas', 'char_stress_p1') SET project_id = type::record('projects', 'stress_p1'), type_key = 'character', type_name = 'Персонаж', icon = 'user', color = '#fff';").await.unwrap();
 
     let total = 10_000;
     let batch_size = 500;
@@ -35,7 +36,7 @@ async fn stress_bulk_insert_10k_entities() {
         for i in 0..batch_size {
             let idx = batch_idx * batch_size + i;
             sql.push_str(&format!(
-                "CREATE entities SET project_id = type::record('projects:stress_p1'), entity_type = 'character', name = 'Персонаж_{idx}', attributes = {{ level: {idx}, exp: {i} }};\n"
+                "CREATE entities SET project_id = type::record('projects:stress_p1'), schema_id = type::record('entity_schemas', 'char_stress_p1'), name = 'Персонаж_{idx}', attributes = {{ level: {idx}, exp: {i} }};\n"
             ));
         }
         sql.push_str("COMMIT TRANSACTION;\n");
@@ -217,12 +218,13 @@ async fn stress_deep_hierarchy_1000_nodes() {
 async fn stress_massive_cascade_delete() {
     let db = create_test_db().await;
     seed_project(&db, "stress_cascade", "Cascade Delete Test").await;
+    db.query("UPSERT type::record('entity_schemas', 'char_stress_cascade') SET project_id = type::record('projects', 'stress_cascade'), type_key = 'character', type_name = 'Персонаж', icon = 'user', color = '#fff';").await.unwrap();
 
     // Засеиваем 1000 сущностей
     let mut sql = String::from("BEGIN TRANSACTION;\n");
     for i in 0..1000 {
         sql.push_str(&format!(
-            "CREATE entities SET project_id = type::record('projects:stress_cascade'), entity_type = 'character', name = 'Персонаж {i}';\n"
+            "CREATE entities SET project_id = type::record('projects:stress_cascade'), schema_id = type::record('entity_schemas', 'char_stress_cascade'), name = 'Персонаж {i}';\n"
         ));
     }
     sql.push_str("COMMIT TRANSACTION;\n");

@@ -42,7 +42,7 @@ pub(crate) async fn fetch_fuzzy_entities(
     candidates: &mut Vec<RetrievalCandidate>,
     entity_ids: &mut HashSet<String>,
 ) {
-    let all_ent_query = "SELECT id, name, description, tags, custom_fields FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
+    let all_ent_query = "SELECT id, name, description, (->tagged_with.out.name) AS tags, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
     if let Ok(mut resp) = db
         .query(all_ent_query)
         .bind(("p_raw", p_raw.to_string()))

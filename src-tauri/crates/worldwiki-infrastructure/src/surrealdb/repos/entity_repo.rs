@@ -22,7 +22,7 @@ impl SurrealEntityRepository {
 #[async_trait]
 impl EntityRepository for SurrealEntityRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Entity>, DomainError> {
-        let sql = "SELECT * FROM type::record('entities', $id);";
+        let sql = "SELECT id, project_id, schema_id.type_key AS type_key, name, description, attributes, (->tagged_with.out.name) AS tags, created_at, updated_at FROM type::record('entities', $id);";
         let clean = id.trim_start_matches("entities:");
         let mut res = self
             .db
@@ -41,14 +41,36 @@ impl EntityRepository for SurrealEntityRepository {
             .to_string();
 
         let sql = r#"
-            UPSERT type::record('entities', $e_id) MERGE {
-                project_id: type::record('projects', $p_id),
-                entity_type: $entity_type,
-                name: $name,
-                description: $description,
-                attributes: $attributes,
-                tags: $tags,
-                updated_at: time::now()
+            LET $p_rec = type::record('projects', $p_id);
+            LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1);
+            LET $schema_id = IF array::len($schema_res) > 0 {
+                $schema_res[0]
+            } ELSE {
+                (CREATE entity_schemas SET
+                    project_id = $p_rec,
+                    type_key = $entity_type,
+                    type_name = $entity_type,
+                    icon = 'box',
+                    color = 'var(--text-accent)'
+                )[0].id
+            };
+            LET $e_rec = type::record('entities', $e_id);
+            UPSERT $e_rec SET
+                project_id = $p_rec,
+                schema_id = $schema_id,
+                name = $name,
+                description = $description,
+                attributes = $attributes,
+                updated_at = time::now();
+
+            DELETE tagged_with WHERE in = $e_rec;
+            FOR $tag_name IN $tags {
+                IF string::len(string::trim($tag_name)) > 0 {
+                    LET $clean_tag = string::trim($tag_name);
+                    LET $existing_tag = (SELECT VALUE id FROM tags WHERE project_id = $p_rec AND name = $clean_tag LIMIT 1);
+                    LET $tag_id = IF array::len($existing_tag) > 0 { $existing_tag[0] } ELSE { (CREATE tags SET project_id = $p_rec, name = $clean_tag, color = 'var(--text-accent)')[0].id };
+                    RELATE $e_rec -> tagged_with -> $tag_id SET project_id = $p_rec;
+                };
             };
         "#;
         let mut res = self
@@ -96,7 +118,7 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw));";
+        let sql = "SELECT id, project_id, schema_id.type_key AS type_key, name, description, attributes, (->tagged_with.out.name) AS tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw);";
         let mut res = self
             .db
             .query(sql)
@@ -146,7 +168,7 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) AND (entity_type = $type_key OR type_key = $type_key) ORDER BY name ASC;";
+        let sql = "SELECT id, project_id, schema_id.type_key AS type_key, name, description, attributes, (->tagged_with.out.name) AS tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND schema_id.type_key = $type_key ORDER BY name ASC;";
         let mut res = self
             .db
             .query(sql)
@@ -168,7 +190,7 @@ impl EntityRepository for SurrealEntityRepository {
             .trim_matches('⟩')
             .trim()
             .to_string();
-        let sql = "SELECT id, project_id, entity_type, name, description, attributes, tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY name ASC;";
+        let sql = "SELECT id, project_id, schema_id.type_key AS type_key, name, description, attributes, (->tagged_with.out.name) AS tags, created_at, updated_at FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) ORDER BY name ASC;";
         let mut res = self
             .db
             .query(sql)

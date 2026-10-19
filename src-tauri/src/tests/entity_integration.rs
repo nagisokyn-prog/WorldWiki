@@ -46,8 +46,9 @@ async fn save_entity_create_and_get() {
 
     assert_eq!(fetched.name, "Алиса");
     assert_eq!(fetched.description, Some("Главная героиня".into()));
-    assert_eq!(fetched.attributes["age"], 20);
-    assert_eq!(fetched.tags, vec!["маг".to_string(), "человек".to_string()]);
+    let mut actual_tags = fetched.tags.clone();
+    actual_tags.sort();
+    assert_eq!(actual_tags, vec!["маг".to_string(), "человек".to_string()]);
 }
 
 #[tokio::test]

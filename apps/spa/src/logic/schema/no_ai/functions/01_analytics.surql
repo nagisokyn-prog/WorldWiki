@@ -21,7 +21,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
         SELECT 
             id, 
             name, 
-            entity_type,
+            schema_id.type_key AS entity_type,
             (attributes['статус_категория'] = 'Мёртв' OR attributes.is_deceased = true) AS is_deceased,
             IF attributes['дата_смерти']['m_abs'] != NONE {
                 attributes['дата_смерти']['m_abs']
@@ -35,22 +35,11 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             } AS birth_m_abs,
             attributes['роль_в_истории'] AS role_in_story,
             attributes['статус_категория'] AS status_category,
-            array::concat(
-                (->appears_in.{
-                    chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
-                    source: source,
-                    role: role
-                }),
-                (SELECT 
-                    IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) } AS chapter_id,
-                    'scene' AS source,
-                    'scene_participant' AS role
-                 FROM plot_promises 
-                 WHERE project_id = $p_rec
-                   AND ($parent.id IN participant_ids 
-                        OR type::string($parent.id) IN participant_ids 
-                        OR ($parent.name != NONE AND $parent.name IN participant_ids)))
-            ) AS appearances
+            (->appears_in.{
+                chapter_id: IF string::starts_with(type::string(out), 'text_blocks') { IF out.chapter_id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) } } ELSE IF out.id != NONE { out.id } ELSE { type::string(out) },
+                source: IF string::starts_with(type::string(out), 'text_blocks') { 'scene' } ELSE { source },
+                role: role
+            }) AS appearances
         FROM entities 
         WHERE project_id = $p_rec
         ORDER BY name ASC
@@ -87,7 +76,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             <-participates_in<-entities.{
                 id: IF id.id != NONE { id.id } ELSE { type::string(id) },
                 name: name,
-                entity_type: entity_type
+                entity_type: schema_id.type_key
             } AS participants
         FROM timeline_events
         WHERE project_id = $p_rec
@@ -143,7 +132,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
 
     LET $nodes = (
-        SELECT id, name, entity_type, tags, attributes 
+        SELECT id, name, schema_id.type_key AS entity_type, (->tagged_with.out.name) AS tags, attributes 
         FROM entities 
         WHERE project_id = $p_rec
         LIMIT 2000
@@ -179,7 +168,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
 
 -- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
-    LET $info = (SELECT id, name, entity_type, attributes FROM $entity LIMIT 1);
+    LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM $entity LIMIT 1);
     LET $appearances = (
         SELECT 
             out.id AS chapter_id,
@@ -189,7 +178,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             role,
             created_at
         FROM appears_in 
-        WHERE in = $entity
+        WHERE in = $entity AND string::starts_with(type::string(out), 'chapters')
         LIMIT 1000
     );
     LET $events = (
@@ -216,33 +205,58 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         WHERE in = $entity OR out = $entity
         LIMIT 1000
     );
+    LET $scene_blocks = (
+        SELECT VALUE out FROM appears_in 
+        WHERE in = $entity AND string::starts_with(type::string(out), 'text_blocks')
+    );
     LET $promises = (
         SELECT 
             id, 
             kind, 
-            quote, 
+            title AS quote, 
             status,
             paragraph_index,
-            block_id,
-            chapter_id.id AS chapter_id,
-            chapter_id.title AS chapter_title,
-            IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 } AS planted_order,
+            IF block_id != NONE { block_id }
+               ELSE IF (->promise_milestones.out)[0] != NONE { (->promise_milestones.out)[0].id }
+               ELSE { NONE } AS block_id,
+            IF chapter_id != NONE { chapter_id.id } 
+               ELSE IF (->promise_milestones.out.chapter_id)[0] != NONE { (->promise_milestones.out.chapter_id)[0].id }
+               ELSE { NONE } AS chapter_id,
+            IF chapter_id.title != NONE { chapter_id.title }
+               ELSE IF (->promise_milestones.out.chapter_id.title)[0] != NONE { (->promise_milestones.out.chapter_id.title)[0] }
+               ELSE { NONE } AS chapter_title,
+            IF chapter_id.sort_order != NONE { chapter_id.sort_order }
+               ELSE IF (->promise_milestones.out.chapter_id.sort_order)[0] != NONE { (->promise_milestones.out.chapter_id.sort_order)[0] }
+               ELSE { 0 } AS planted_order,
             IF resolved_in_chapter.sort_order != NONE { resolved_in_chapter.sort_order } ELSE { NONE } AS resolved_order,
-            arc_id.id AS arc_id,
-            arc_id.title AS arc_title,
-            arc_id.color AS arc_color,
-            arc_phase,
+            IF arc_id != NONE { arc_id.id }
+               ELSE IF (->promise_milestones.out.arc_id.id)[0] != NONE { (->promise_milestones.out.arc_id.id)[0] }
+               ELSE { NONE } AS arc_id,
+            IF arc_id.title != NONE { arc_id.title }
+               ELSE IF (->promise_milestones.out.arc_id.title)[0] != NONE { (->promise_milestones.out.arc_id.title)[0] }
+               ELSE { NONE } AS arc_title,
+            IF arc_id.color != NONE { arc_id.color }
+               ELSE IF (->promise_milestones.out.arc_id.color)[0] != NONE { (->promise_milestones.out.arc_id.color)[0] }
+               ELSE { NONE } AS arc_color,
+            IF arc_phase != NONE { arc_phase }
+               ELSE IF (->promise_milestones.out.arc_phase)[0] != NONE { (->promise_milestones.out.arc_phase)[0] }
+               ELSE { NONE } AS arc_phase,
             arcs,
             IF m_abs != NONE { m_abs } 
                ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
+               ELSE IF (->promise_milestones.out.timeline_event_id.m_abs)[0] != NONE { (->promise_milestones.out.timeline_event_id.m_abs)[0] }
                ELSE { NONE } AS m_abs,
             IF calendar_id != NONE { calendar_id } 
                ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
+               ELSE IF (->promise_milestones.out.timeline_event_id.calendar_id)[0] != NONE { (->promise_milestones.out.timeline_event_id.calendar_id)[0] }
                ELSE { NONE } AS calendar_id,
             date_fields,
-            timeline_event_id
+            IF timeline_event_id != NONE { timeline_event_id }
+               ELSE IF (->promise_milestones.out.timeline_event_id)[0] != NONE { (->promise_milestones.out.timeline_event_id)[0] }
+               ELSE { NONE } AS timeline_event_id
         FROM plot_promises 
-        WHERE $entity IN participant_ids
+        WHERE (array::len($scene_blocks) > 0 AND array::len(array::intersect(->promise_milestones.out, $scene_blocks)) > 0)
+           OR $entity IN participant_ids
            OR type::string($entity) IN participant_ids 
            OR $entity.id IN participant_ids
            OR ($info[0].name != NONE AND $info[0].name IN participant_ids)

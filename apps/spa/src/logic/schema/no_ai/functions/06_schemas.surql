@@ -62,6 +62,12 @@ DEFINE FUNCTION OVERWRITE fn::delete_entity_schema($proj: record<projects>, $typ
         LIMIT 1000
     );
     DELETE entity_rel WHERE project_id = $p_rec AND rel_type IN $matching_rel_keys;
-    DELETE entities WHERE project_id = $p_rec AND entity_type = $type_key;
+    LET $schemas = (
+        SELECT VALUE id FROM entity_schemas 
+        WHERE project_id = $p_rec AND type_key = $type_key
+    );
+    FOR $schema_id IN $schemas {
+        DELETE entities WHERE project_id = $p_rec AND schema_id = $schema_id;
+    };
     DELETE entity_schemas WHERE project_id = $p_rec AND type_key = $type_key;
 };

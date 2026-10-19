@@ -271,7 +271,14 @@ pub(crate) async fn get_multi_character_journey_impl(
         let ch_promises: Vec<&MultiJourneyRawPromise> = raw
             .promises
             .iter()
-            .filter(|p| p.chapter_id.as_deref() == Some(grp.chapter_id))
+            .filter(|p| {
+                if let Some(ref cid) = p.chapter_id {
+                    cid == grp.chapter_id
+                        || cid.trim_start_matches("chapters:") == grp.chapter_id.trim_start_matches("chapters:")
+                } else {
+                    false
+                }
+            })
             .collect();
 
         let scene_m_abs = ch_promises.iter().find_map(|p| p.m_abs);

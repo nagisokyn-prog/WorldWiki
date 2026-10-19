@@ -88,10 +88,10 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
         SELECT 
             in.id AS entity_id,
             in.name AS entity_name,
-            out.id AS chapter_id,
-            out.title AS chapter_title,
-            IF out.volume_id.title != NONE { out.volume_id.title } ELSE { NONE } AS volume_title,
-            IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
+            IF string::starts_with(type::string(out), 'text_blocks') { type::string(out.chapter_id) } ELSE { type::string(out.id) } AS chapter_id,
+            IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.title } ELSE { out.title } AS chapter_title,
+            IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.volume_id.title } ELSE IF out.volume_id.title != NONE { out.volume_id.title } ELSE { NONE } AS volume_title,
+            IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.sort_order } ELSE IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
             source,
             role,
             created_at
@@ -117,28 +117,15 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
     LET $promises = (
         SELECT 
-            id, 
-            kind, 
-            title, 
-            status,
-            ->promise_milestones.{
-                stage: stage,
-                quote: quote,
-                note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id.id,
-                chapter_title: out.chapter_id.title,
-                volume_title: out.chapter_id.volume_id.title,
-                sort_order: out.chapter_id.sort_order,
-                arc_id: out.arc_id.id,
-                arc_title: out.arc_id.title,
-                arc_color: out.arc_id.color,
-                arc_phase: out.arc_phase,
-                m_abs: out.timeline_event_id.m_abs,
-                calendar_id: out.timeline_event_id.calendar_id
-            } AS milestones
-        FROM plot_promises 
-        WHERE project_id = $p_rec
+            type::string(out.chapter_id) AS chapter_id,
+            type::string(out.arc_id) AS arc_id,
+            out.arc_id.title AS arc_title,
+            out.arc_phase AS arc_phase,
+            out.arc_id.color AS arc_color,
+            out.timeline_event_id.m_abs AS m_abs,
+            IF array::len(out<-appears_in<-entities.id) > 0 { out<-appears_in<-entities.id } ELSE { NONE } AS participant_ids
+        FROM promise_milestones 
+        WHERE project_id = $p_rec OR in.project_id = $p_rec
         LIMIT 2000
     );
 

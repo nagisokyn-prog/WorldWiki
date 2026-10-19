@@ -55,7 +55,6 @@ DEFINE INDEX OVERWRITE idx_schema_history_schema  ON schema_history FIELDS schem
 DEFINE INDEX OVERWRITE idx_entity_project      ON entities FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_entity_schema_id    ON entities FIELDS schema_id;
 DEFINE INDEX OVERWRITE idx_entity_proj_schema  ON entities FIELDS project_id, schema_id;
-DEFINE INDEX OVERWRITE idx_entity_proj_type    ON entities FIELDS project_id, entity_type;
 DEFINE INDEX OVERWRITE idx_entity_name_ft      ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_entity_desc_ft   ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 

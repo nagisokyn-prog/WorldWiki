@@ -6,7 +6,7 @@ import { useTimelinePanel } from '../useTimelinePanel';
 let mockGetCalendars: any;
 let mockSettingsCb: any;
 
-vi.mock('../../../../../stores/calendar.store', () => ({
+vi.mock('../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: (...args: any[]) => mockGetCalendars(...args),
     isValidCalendar: () => true,
@@ -128,7 +128,6 @@ describe('useTimelinePanel', () => {
   });
 
   it('converts date info across seasons, times of day, and invalid calendar IDs', () => {
-
     const panel = useTimelinePanel(props, emit);
     panel.availableCalendars.value = [mockCalendar];
 
@@ -411,6 +410,3 @@ describe('useTimelinePanel', () => {
     });
   });
 });
-
-
-

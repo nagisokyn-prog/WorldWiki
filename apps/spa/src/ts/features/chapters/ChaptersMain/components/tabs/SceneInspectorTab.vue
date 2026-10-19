@@ -61,10 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import TimelinePanel from '../../../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
+import TimelinePanel from '../../../../timeline/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../../../ParticipantsPanel/ParticipantsPanel.vue';
 import type { ChapterWithHierarchy } from '@/stores/chapter.store';
-import type { TimelineEvent } from '../../../../timeline/Calendars/TimelinePanel/useTimelinePanel';
+import type { TimelineEvent } from '../../../../timeline/TimelinePanel/useTimelinePanel';
 import type { ParticipantItem } from '../../../ParticipantsPanel/useParticipantsPanel';
 import type { PanelResizeType } from '../ChapterRightSidebar.model';
 

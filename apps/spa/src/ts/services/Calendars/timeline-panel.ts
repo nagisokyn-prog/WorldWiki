@@ -3,7 +3,7 @@ import { XboxWheel } from '@worldwiki/components';
 import {
   useTimelinePanel,
   type TimelineEvent,
-} from '@/features/timeline/Calendars/TimelinePanel/useTimelinePanel';
+} from '@/features/timeline/TimelinePanel/useTimelinePanel';
 
 export type { TimelineEvent };
 

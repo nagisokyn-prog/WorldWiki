@@ -3,8 +3,7 @@ import { projectService } from '../../services/project.service';
 import type { ProjectFormData } from './projectLauncher.constants';
 
 export function useProjectLauncherModal(
-  loadProjects: () => Promise<void>,
-  calendarsPanelRef: Ref<{ saveAll?: () => Promise<void> } | null>
+  loadProjects: () => Promise<void>
 ) {
   const modalVisible = ref(false);
   const isEditing = ref(false);
@@ -66,9 +65,6 @@ export function useProjectLauncherModal(
           genres: formData.value.genres,
           perfLevel: formData.value.perfLevel
         });
-        if (calendarsPanelRef.value && calendarsPanelRef.value.saveAll) {
-          await calendarsPanelRef.value.saveAll();
-        }
         await loadProjects();
       } else {
         await projectService.createProject({
@@ -77,9 +73,6 @@ export function useProjectLauncherModal(
           genres: formData.value.genres,
           perfLevel: formData.value.perfLevel
         });
-        if (calendarsPanelRef.value && calendarsPanelRef.value.saveAll) {
-          await calendarsPanelRef.value.saveAll();
-        }
         await loadProjects();
       }
       closeModal();

@@ -82,6 +82,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
 
 -- 34.1. ПОЛУЧЕНИЕ ЕДИНИЧНОЙ СУЩНОСТИ ПО ID С КАНОНИЧЕСКОЙ ПРОЕКЦИЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_entity($id: record<entities>) {
+    LET $tags = (SELECT VALUE out.name FROM tagged_with WHERE in = $id ORDER BY out.name ASC LIMIT 100);
     LET $res = (
         SELECT 
             id, 
@@ -91,11 +92,12 @@ DEFINE FUNCTION OVERWRITE fn::get_entity($id: record<entities>) {
             name, 
             description, 
             attributes, 
-            (SELECT VALUE out.name FROM tagged_with WHERE in = $id ORDER BY out.name ASC) AS tags, 
+            $tags AS tags, 
             embeddings, 
             created_at, 
             updated_at 
         FROM ONLY $id
+        LIMIT 1
     );
     RETURN $res;
 };
@@ -171,6 +173,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
     };
 
     -- 4. Возвращаем каноническую проекцию с entity_type и tags
+    LET $tags_res = (SELECT VALUE out.name FROM tagged_with WHERE in = $rec_id ORDER BY out.name ASC LIMIT 100);
     RETURN (
         SELECT 
             id,
@@ -180,11 +183,12 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
             name,
             description,
             attributes,
-            (SELECT VALUE out.name FROM tagged_with WHERE in = $rec_id ORDER BY out.name ASC) AS tags,
+            $tags_res AS tags,
             embeddings,
             created_at,
             updated_at
         FROM ONLY $rec_id
+        LIMIT 1
     );
 };
 
@@ -343,6 +347,7 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
             created_at,
             updated_at
         FROM ONLY $main_id
+        LIMIT 1
     );
 };
 

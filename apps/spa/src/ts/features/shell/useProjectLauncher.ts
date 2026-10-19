@@ -22,7 +22,6 @@ export function useProjectLauncher() {
   const router = useRouter();
 
   const projects = shallowRef<ProjectData[]>([]);
-  const calendarsPanelRef = ref<{ saveAll?: () => Promise<void> } | null>(null);
   const cloudSyncMode = ref<'import' | 'export'>('export');
 
   async function loadProjects() {
@@ -50,7 +49,7 @@ export function useProjectLauncher() {
     editProject,
     closeModal,
     submitForm
-  } = useProjectLauncherModal(loadProjects, calendarsPanelRef);
+  } = useProjectLauncherModal(loadProjects);
 
   const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.name.localeCompare(b.name));
@@ -106,7 +105,6 @@ export function useProjectLauncher() {
     modalVisible,
     isEditing,
     editingProjectName,
-    calendarsPanelRef,
     cloudSyncMode,
     formData,
     projectTypes,

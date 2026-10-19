@@ -32,7 +32,7 @@ import {
 import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
 import ChaptersViewVue from '../features/chapters/ChaptersView.vue';
 import EditorCoreVue from '../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanelVue from '../features/timeline/Calendars/TimelinePanel/TimelinePanel.vue';
+import TimelinePanelVue from '../features/timeline/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
 import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
 import ExportModalVue from '../features/chapters/Export/ExportModal.vue';

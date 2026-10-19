@@ -5,7 +5,7 @@ import { useTimelineStore } from './timeline.store';
 import * as api from '../services/api.client';
 import { useCalendarStore } from './calendar.store';
 import type { Chapter } from '../types/generated/Chapter';
-import type { TimelineEvent } from '@/features/timeline/Calendars/TimelinePanel/useTimelinePanel';
+import type { TimelineEvent } from '@/features/timeline/TimelinePanel/useTimelinePanel';
 import type { ParticipantItem } from '@/features/chapters/ParticipantsPanel/useParticipantsPanel';
 
 export type ChapterWithHierarchy = Omit<Chapter, 'timeline_events' | 'participants' | 'footnotes'> & {

@@ -168,7 +168,7 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
 
 -- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
-    LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM $entity LIMIT 1);
+    LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM ONLY $entity LIMIT 1);
     LET $appearances = (
         SELECT 
             out.id AS chapter_id,
@@ -208,6 +208,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
     LET $scene_blocks = (
         SELECT VALUE out FROM appears_in 
         WHERE in = $entity AND string::starts_with(type::string(out), 'text_blocks')
+        LIMIT 1000
     );
     LET $promises = (
         SELECT 
@@ -217,54 +218,54 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             status,
             paragraph_index,
             IF block_id != NONE { block_id }
-               ELSE IF (->promise_milestones.out)[0] != NONE { (->promise_milestones.out)[0].id }
+               ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id }
                ELSE { NONE } AS block_id,
             IF chapter_id != NONE { chapter_id.id } 
-               ELSE IF (->promise_milestones.out.chapter_id)[0] != NONE { (->promise_milestones.out.chapter_id)[0].id }
+               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE { array::first(->promise_milestones.out.chapter_id).id }
                ELSE { NONE } AS chapter_id,
             IF chapter_id.title != NONE { chapter_id.title }
-               ELSE IF (->promise_milestones.out.chapter_id.title)[0] != NONE { (->promise_milestones.out.chapter_id.title)[0] }
+               ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
                ELSE { NONE } AS chapter_title,
             IF chapter_id.sort_order != NONE { chapter_id.sort_order }
-               ELSE IF (->promise_milestones.out.chapter_id.sort_order)[0] != NONE { (->promise_milestones.out.chapter_id.sort_order)[0] }
+               ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
                ELSE { 0 } AS planted_order,
             IF resolved_in_chapter.sort_order != NONE { resolved_in_chapter.sort_order } ELSE { NONE } AS resolved_order,
             IF arc_id != NONE { arc_id.id }
-               ELSE IF (->promise_milestones.out.arc_id.id)[0] != NONE { (->promise_milestones.out.arc_id.id)[0] }
+               ELSE IF array::first(->promise_milestones.out.arc_id.id) != NONE { array::first(->promise_milestones.out.arc_id.id) }
                ELSE { NONE } AS arc_id,
             IF arc_id.title != NONE { arc_id.title }
-               ELSE IF (->promise_milestones.out.arc_id.title)[0] != NONE { (->promise_milestones.out.arc_id.title)[0] }
+               ELSE IF array::first(->promise_milestones.out.arc_id.title) != NONE { array::first(->promise_milestones.out.arc_id.title) }
                ELSE { NONE } AS arc_title,
             IF arc_id.color != NONE { arc_id.color }
-               ELSE IF (->promise_milestones.out.arc_id.color)[0] != NONE { (->promise_milestones.out.arc_id.color)[0] }
+               ELSE IF array::first(->promise_milestones.out.arc_id.color) != NONE { array::first(->promise_milestones.out.arc_id.color) }
                ELSE { NONE } AS arc_color,
             IF arc_phase != NONE { arc_phase }
-               ELSE IF (->promise_milestones.out.arc_phase)[0] != NONE { (->promise_milestones.out.arc_phase)[0] }
+               ELSE IF array::first(->promise_milestones.out.arc_phase) != NONE { array::first(->promise_milestones.out.arc_phase) }
                ELSE { NONE } AS arc_phase,
             arcs,
             IF m_abs != NONE { m_abs } 
                ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
-               ELSE IF (->promise_milestones.out.timeline_event_id.m_abs)[0] != NONE { (->promise_milestones.out.timeline_event_id.m_abs)[0] }
+               ELSE IF array::first(->promise_milestones.out.timeline_event_id.m_abs) != NONE { array::first(->promise_milestones.out.timeline_event_id.m_abs) }
                ELSE { NONE } AS m_abs,
             IF calendar_id != NONE { calendar_id } 
                ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
-               ELSE IF (->promise_milestones.out.timeline_event_id.calendar_id)[0] != NONE { (->promise_milestones.out.timeline_event_id.calendar_id)[0] }
+               ELSE IF array::first(->promise_milestones.out.timeline_event_id.calendar_id) != NONE { array::first(->promise_milestones.out.timeline_event_id.calendar_id) }
                ELSE { NONE } AS calendar_id,
             date_fields,
             IF timeline_event_id != NONE { timeline_event_id }
-               ELSE IF (->promise_milestones.out.timeline_event_id)[0] != NONE { (->promise_milestones.out.timeline_event_id)[0] }
+               ELSE IF array::first(->promise_milestones.out.timeline_event_id) != NONE { array::first(->promise_milestones.out.timeline_event_id) }
                ELSE { NONE } AS timeline_event_id
         FROM plot_promises 
         WHERE (array::len($scene_blocks) > 0 AND array::len(array::intersect(->promise_milestones.out, $scene_blocks)) > 0)
            OR $entity IN participant_ids
            OR type::string($entity) IN participant_ids 
            OR $entity.id IN participant_ids
-           OR ($info[0].name != NONE AND $info[0].name IN participant_ids)
+           OR ($info.name != NONE AND $info.name IN participant_ids)
         LIMIT 1000
     );
 
     RETURN {
-        entity: $info[0],
+        entity: $info,
         appearances: $appearances,
         events: $events,
         relations: $relations,

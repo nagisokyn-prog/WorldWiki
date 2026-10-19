@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue';
-import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
-import type { CalendarData } from '../../../../services/Calendars/calendar.types';
-import type { CalendarRecord } from '../../../../stores/calendar.store';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
+import type { CalendarData } from '@/services/Calendars/calendar.types';
+import type { CalendarRecord } from '@/stores/calendar.store';
 import type { TimelineEvent } from './useTimelinePanel';
 
 export function useTimelineEventOps(

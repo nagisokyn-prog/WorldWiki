@@ -1,6 +1,6 @@
 import type { ActiveTreeNode } from '../useChaptersMain';
 import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store';
-import type { TimelineEvent } from '../../../timeline/Calendars/TimelinePanel/useTimelinePanel';
+import type { TimelineEvent } from '../../../timeline/TimelinePanel/useTimelinePanel';
 import type { ParticipantItem } from '../../ParticipantsPanel/useParticipantsPanel';
 
 export type SidebarTabType = 'promises' | 'plans';

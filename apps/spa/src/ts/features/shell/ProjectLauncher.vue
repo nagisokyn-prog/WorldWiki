@@ -139,12 +139,6 @@ v-model="formData.type"
                             <small class="glass-label">Выберите один или нескольких жанров</small>
                         </div>
 
-                        <div class="form-group calendar-fullwidth">
-                            <label class="glass-label">📅 Календарь мира</label>
-                            <calendars-panel ref="calendarsPanelRef" :project="formData.name"></calendars-panel>
-                            <small class="glass-label">Управление календарями мира. Эти настройки будут сохранены
-                                независимо.</small>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -163,9 +157,7 @@ v-model="formData.type"
 
 <script setup lang="ts">
 import { AppDialog, XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
-import CalendarsPanel from '../../features/timeline/CalendarsPanel/CalendarsPanel.vue';
 import CloudSyncModal from '../../features/sync/CloudSyncModal.vue';
-import GlobalTimeViewer from '../../features/timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue';
 import { useProjectLauncher } from './useProjectLauncher';
 
 const {
@@ -173,7 +165,6 @@ const {
   sortedProjects,
   modalVisible,
   isEditing,
-  calendarsPanelRef,
   formData,
   projectTypes,
   genres,

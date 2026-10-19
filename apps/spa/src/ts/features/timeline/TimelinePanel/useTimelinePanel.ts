@@ -1,8 +1,8 @@
 import { ref, onMounted, computed, toRef } from 'vue';
-import { useCalendarStore } from '../../../../stores/calendar.store';
-import type { CalendarRecord } from '../../../../stores/calendar.store';
-import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
-import type { CalendarData, CalendarEra, CalendarMonth } from '../../../../services/Calendars/calendar.types';
+import { useCalendarStore } from '@/stores/calendar.store';
+import type { CalendarRecord } from '@/stores/calendar.store';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
+import type { CalendarData, CalendarEra, CalendarMonth } from '@/services/Calendars/calendar.types';
 import { settingsService, type AppSettings } from '@worldwiki/components';
 import { useTimelineEventConversion } from './useTimelineEventConversion';
 import { useTimelineEventOps } from './useTimelineEventOps';

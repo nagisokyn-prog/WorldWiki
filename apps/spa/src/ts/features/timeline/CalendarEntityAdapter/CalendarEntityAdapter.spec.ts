@@ -2,6 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { useCalendarEntityAdapter } from './useCalendarEntityAdapter';
 import type { CalendarRecord } from '@/stores/calendar.store';
 
+vi.mock('@/stores/calendar.store', () => ({
+  useCalendarStore: () => ({
+    calendars: [
+      { id: 'cal_123', name: 'Григорианский', is_master: true, is_default: true, data: {} },
+    ],
+    getCalendars: vi.fn().mockResolvedValue([]),
+    saveCalendar: vi.fn().mockResolvedValue({ success: true }),
+  }),
+}));
+
 describe('useCalendarEntityAdapter', () => {
   const dummyProps = {
     calendarId: 'cal_123',
@@ -9,64 +19,40 @@ describe('useCalendarEntityAdapter', () => {
     isPreview: false,
   };
 
-  it('initializes with null calendar record', () => {
+  it('инициализирует дефолтный режим calendar', () => {
     const emit = vi.fn();
-    const { currentCalendarRecord } = useCalendarEntityAdapter(dummyProps, emit);
-    expect(currentCalendarRecord.value).toBeNull();
+    const adapter = useCalendarEntityAdapter(dummyProps, emit);
+    expect(adapter.activeMode.value).toBe('calendar');
+    expect(adapter.selectedCalendarId.value).toBe('cal_123');
   });
 
-  it('handles calendar updates and emits update:modelValue and modified', () => {
+  it('переключает режим на планету при выборе планеты', () => {
     const emit = vi.fn();
-    const { currentCalendarRecord, onCalendarUpdate } = useCalendarEntityAdapter(
-      dummyProps,
-      emit
-    );
+    const adapter = useCalendarEntityAdapter(dummyProps, emit);
+    adapter.onSelectPlanet({ id: 'mars_1', name: 'Марс', orbit_days: 687.0 });
 
-    const testCalendar: CalendarRecord = {
-      id: 'cal_123',
-      name: 'Григорианский',
-      is_master: true,
-      is_default: true,
-      data: {
-        название: 'Григорианский',
-        часов_в_дне: 24,
-      } as any,
-    };
-
-    onCalendarUpdate(testCalendar);
-
-    expect(currentCalendarRecord.value).toEqual(testCalendar);
-    expect(emit).toHaveBeenCalledWith(
-      'update:modelValue',
-      expect.objectContaining({
-        id: 'cal_123',
-        name: 'Григорианский',
-        is_master: true,
-        is_default: true,
-        часов_в_дне: 24,
-      })
-    );
-    expect(emit).toHaveBeenCalledWith('modified');
+    expect(adapter.activeMode.value).toBe('planet');
+    expect(adapter.selectedPlanetId.value).toBe('mars_1');
+    expect(adapter.selectedNodeId.value).toBe('planet:mars_1');
   });
 
-  it('handles calendar save and emits save event', () => {
+  it('переключает режим обратно на календарь при выборе календаря', () => {
     const emit = vi.fn();
-    const { currentCalendarRecord, onCalendarSave } = useCalendarEntityAdapter(
-      dummyProps,
-      emit
-    );
+    const adapter = useCalendarEntityAdapter(dummyProps, emit);
+    adapter.onSelectPlanet({ id: 'mars_1', name: 'Марс', orbit_days: 687.0 });
+    adapter.onSelectCalendar(0);
 
-    const testCalendar: CalendarRecord = {
-      id: 'cal_123',
-      name: 'Солнечный',
-      is_master: false,
-      is_default: false,
-      data: {} as any,
-    };
+    expect(adapter.activeMode.value).toBe('calendar');
+    expect(adapter.selectedCalendarId.value).toBe('cal_123');
+  });
 
-    onCalendarSave(testCalendar);
+  it('добавляет новую планету', () => {
+    const emit = vi.fn();
+    const adapter = useCalendarEntityAdapter(dummyProps, emit);
+    const initialPlanets = adapter.planetsList.value.length;
+    adapter.onAddPlanet();
 
-    expect(currentCalendarRecord.value).toEqual(testCalendar);
-    expect(emit).toHaveBeenCalledWith('save', testCalendar);
+    expect(adapter.planetsList.value.length).toBe(initialPlanets + 1);
+    expect(adapter.activeMode.value).toBe('planet');
   });
 });

@@ -1,72 +1,81 @@
+/**
+ * @file Tab1Structure.spec.ts
+ * @description Unit-тесты для useTab1Structure (DialHierarchy, дни недели, високосы)
+ */
+
 import { describe, it, expect, vi } from 'vitest';
 import { useTab1Structure } from './useTab1Structure';
+import type { Tab1StructureProps, Tab1StructureEmits } from './Tab1Structure.model';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 
 describe('useTab1Structure', () => {
   const mockCalendar: CalendarData = {
-    название: 'Test Calendar',
+    название: 'Тестовый',
     месяцы: [
-      { название: 'Месяц 1', дней: 30 },
-      { название: 'Месяц 2', дней: 31 },
+      { название: 'Январь', дней: 31 },
+      { название: 'Февраль', дней: 28 },
     ],
-    дни_недели: [
-      { название: 'День 1' },
-      { название: 'День 2' },
-    ],
-    дней_вне_месяцев: 5,
+    названия_дней_недели: ['Пн', 'Вт', 'Ср'],
+    pause_on_holidays: false,
+    day_start_offset: 'midnight',
   };
 
-  it('correctly computes months, weekdays, and totalYearDays', () => {
-    const emit = vi.fn();
-    const { months, weekdays, totalYearDays, extraDays } = useTab1Structure(
-      { calendarData: mockCalendar },
-      emit
-    );
+  it('применяет пресеты циферблата (DialHierarchy)', () => {
+    const emit = vi.fn() as unknown as Tab1StructureEmits;
+    const { applyDialPreset } = useTab1Structure({ calendarData: mockCalendar }, emit);
 
-    expect(months.value.length).toBe(2);
-    expect(weekdays.value.length).toBe(2);
-    expect(extraDays.value).toBe(5);
-    expect(totalYearDays.value).toBe(30 + 31 + 5);
+    applyDialPreset('fantasy');
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      dial_units: expect.arrayContaining([
+        expect.objectContaining({ name: 'Стража', subdivisions: 4 }),
+      ]),
+    }));
   });
 
-  it('updates months and emits update event', () => {
-    const emit = vi.fn();
-    const { updateMonths } = useTab1Structure(
+  it('применяет пресет недели и меняет порядок дней', () => {
+    const emit = vi.fn() as unknown as Tab1StructureEmits;
+    const { applyWeekPreset, reorderWeekday, addCustomWeekday, removeWeekday } = useTab1Structure(
       { calendarData: mockCalendar },
       emit
     );
 
-    updateMonths([{ название: 'Новый месяц', дней: 28 }]);
-    expect(emit).toHaveBeenCalledWith('update', {
-      месяцы: [{ название: 'Новый месяц', дней: 28 }],
-    });
+    applyWeekPreset(7);
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      названия_дней_недели: expect.arrayContaining(['Понедельник', 'Воскресенье']),
+    }));
+
+    reorderWeekday(0, 1);
+    expect(emit).toHaveBeenCalled();
+
+    addCustomWeekday('НовыйДень');
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      названия_дней_недели: ['Пн', 'Вт', 'Ср', 'НовыйДень'],
+    }));
+
+    removeWeekday(1);
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      названия_дней_недели: ['Пн', 'Ср'],
+    }));
   });
 
-  it('balances months evenly', () => {
-    const emit = vi.fn();
-    const { balanceMonthsEvenly } = useTab1Structure(
-      { calendarData: mockCalendar },
-      emit
-    );
+  it('устанавливает чекбокс pause_on_holidays', () => {
+    const emit = vi.fn() as unknown as Tab1StructureEmits;
+    const { setPauseOnHolidays } = useTab1Structure({ calendarData: mockCalendar }, emit);
+
+    setPauseOnHolidays(true);
+    expect(emit).toHaveBeenCalledWith('update', { pause_on_holidays: true });
+  });
+
+  it('добавляет месяц и выравнивает дни поровну', () => {
+    const emit = vi.fn() as unknown as Tab1StructureEmits;
+    const { addMonth, balanceMonthsEvenly } = useTab1Structure({ calendarData: mockCalendar }, emit);
+
+    addMonth();
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      месяцы: expect.arrayContaining([expect.objectContaining({ дней: 30 })]),
+    }));
 
     balanceMonthsEvenly();
-    expect(emit).toHaveBeenCalledWith('update', {
-      месяцы: [
-        { название: 'Месяц 1', дней: 180 },
-        { название: 'Месяц 2', дней: 180 },
-      ],
-    });
-  });
-
-  it('handles empty calendar data gracefully', () => {
-    const emit = vi.fn();
-    const { months, weekdays, totalYearDays } = useTab1Structure(
-      { calendarData: null },
-      emit
-    );
-
-    expect(months.value).toEqual([]);
-    expect(weekdays.value).toEqual([]);
-    expect(totalYearDays.value).toBe(0);
+    expect(emit).toHaveBeenCalled();
   });
 });

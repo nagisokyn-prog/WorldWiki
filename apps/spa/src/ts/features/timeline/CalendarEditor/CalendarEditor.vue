@@ -65,11 +65,37 @@
 
       <!-- Контейнер активной вкладки -->
       <main class="calendar-tab-content">
-        <Tab1Structure v-if="activeTab === 'structure'" :calendar-data="calData" :is-read-only="isReadOnly" @update="patchCalendarData" />
-        <Tab2Astronomy v-else-if="activeTab === 'astronomy'" :calendar-data="calData" :is-read-only="isReadOnly" @update="patchCalendarData" />
-        <Tab3Chronology v-else-if="activeTab === 'chronology'" :calendar-data="calData" :is-read-only="isReadOnly" @update="patchCalendarData" />
-        <Tab4SyncLeap v-else-if="activeTab === 'syncLeap'" :calendar-data="calData" :is-read-only="isReadOnly" @update="patchCalendarData" />
-        <Tab5ReformsDst v-else-if="activeTab === 'reformsDst'" :calendar-data="calData" :is-read-only="isReadOnly" @update="patchCalendarData" />
+        <Tab1Structure
+          v-if="activeTab === 'timeGrid'"
+          :calendar-data="calData"
+          :is-read-only="isReadOnly"
+          @update="patchCalendarData"
+        />
+        <Tab2ErasSync
+          v-else-if="activeTab === 'erasSync'"
+          :calendar-data="calData"
+          :master-calendar-data="masterCalData"
+          :is-read-only="isReadOnly"
+          @update="patchCalendarData"
+        />
+        <Tab3CultureLore
+          v-else-if="activeTab === 'cultureLore'"
+          :calendar-data="calData"
+          :is-read-only="isReadOnly"
+          @update="patchCalendarData"
+        />
+        <Tab4Playground
+          v-else-if="activeTab === 'playground'"
+          :calendar-data="calData"
+          :is-read-only="isReadOnly"
+          @update="patchCalendarData"
+        />
+        <Tab5ReformsDst
+          v-else-if="activeTab === 'reformsDst'"
+          :calendar-data="calData"
+          :is-read-only="isReadOnly"
+          @update="patchCalendarData"
+        />
       </main>
     </div>
 
@@ -87,9 +113,9 @@
 import type { CalendarEditorProps, CalendarEditorEmits } from './CalendarEditor.model';
 import { useCalendarEditor } from './useCalendarEditor';
 import Tab1Structure from './Tab1Structure/Tab1Structure.vue';
-import Tab2Astronomy from './Tab2Astronomy/Tab2Astronomy.vue';
-import Tab3Chronology from './Tab3Chronology/Tab3Chronology.vue';
-import Tab4SyncLeap from './Tab4SyncLeap/Tab4SyncLeap.vue';
+import Tab2ErasSync from './Tab2ErasSync/Tab2ErasSync.vue';
+import Tab3CultureLore from './Tab3CultureLore/Tab3CultureLore.vue';
+import Tab4Playground from './Tab4Playground/Tab4Playground.vue';
 import Tab5ReformsDst from './Tab5ReformsDst/Tab5ReformsDst.vue';
 import CalendarAuditModal from '../Calendars/CalendarAuditModal/CalendarAuditModal.vue';
 
@@ -100,6 +126,7 @@ const {
   activeTab,
   calendarRecord,
   calData,
+  masterCalData,
   isLoading,
   isSaving,
   isAuditModalOpen,

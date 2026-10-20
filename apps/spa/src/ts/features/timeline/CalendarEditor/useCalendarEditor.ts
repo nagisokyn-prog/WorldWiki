@@ -1,11 +1,11 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
-import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
+import { CalendarEngine } from '@/services/Calendars/useCalendarEngine';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 import type {
   CalendarEditorProps,
   CalendarEditorTab,
-  TabItem,
+  CalendarTabInfo,
   CalendarEditorEmits,
 } from './CalendarEditor.model';
 
@@ -15,8 +15,9 @@ export function useCalendarEditor(
 ) {
   const calendarStore = useCalendarStore();
 
-  const activeTab = ref<CalendarEditorTab>('structure');
+  const activeTab = ref<CalendarEditorTab>('timeGrid');
   const calendarRecord = ref<CalendarRecord | null>(null);
+  const masterCalendarRecord = ref<CalendarRecord | null>(null);
   const isLoading = ref<boolean>(false);
   const isSaving = ref<boolean>(false);
   const error = ref<string | null>(null);
@@ -26,55 +27,50 @@ export function useCalendarEditor(
     return (calendarRecord.value?.data as CalendarData) || null;
   });
 
+  const masterCalData = computed<CalendarData | null>(() => {
+    return (masterCalendarRecord.value?.data as CalendarData) || null;
+  });
+
   const totalDays = computed<number>(() => {
     if (!calData.value) return 365;
     const monthsDays = (calData.value.месяцы || []).reduce(
       (sum, m) => sum + (Number(m.дней) || 0),
       0
     );
-    const extraDays = Number(calData.value.дней_вне_месяцев) || 0;
+    const extraDays = Number(calData.value.extra_days) || 0;
     return monthsDays + extraDays;
   });
 
-  const hasReforms = computed<boolean>(() => {
-    const data = calData.value as unknown as Record<string, unknown> | null;
-    return Boolean(
-      (data?.reforms && Array.isArray(data.reforms) && data.reforms.length > 0) ||
-      data?.dst_policy
-    );
-  });
-
-  const tabsList = computed<TabItem[]>(() => [
+  const tabsList = computed<CalendarTabInfo[]>(() => [
     {
-      id: 'structure',
+      id: 'timeGrid',
       label: '1. Время и Сетка',
       icon: '⏰',
       badge: `${totalDays.value} дн`,
     },
     {
-      id: 'astronomy',
-      label: '2. Астрономия & Сезоны',
-      icon: '🔭',
-      badge: calData.value?.сезоны ? `${calData.value.сезоны.length} сез.` : undefined,
-    },
-    {
-      id: 'chronology',
-      label: '3. Летоисчисление & Эры',
+      id: 'erasSync',
+      label: '2. Летоисчисление & Якорь',
       icon: '🏛️',
       badge: calData.value?.эпохи ? `${calData.value.эпохи.length} эр` : undefined,
     },
     {
-      id: 'syncLeap',
-      label: '4. Синхронизация & Високосы',
-      icon: '⚙️',
-      badge: (calData.value?.високос_настройки as { тип_правила?: string } | undefined)?.тип_правила || 'Високосы',
+      id: 'cultureLore',
+      label: '3. Культура и Лор',
+      icon: '🎉',
+      badge: calData.value?.праздники ? `${calData.value.праздники.length} праздн.` : undefined,
+    },
+    {
+      id: 'playground',
+      label: '4. Песочница (1-я глава)',
+      icon: '🧪',
+      badge: 'Сюжет',
     },
     {
       id: 'reformsDst',
       label: '5. Реформы & DST',
       icon: '🔄',
-      badge: hasReforms.value ? 'Активны' : undefined,
-      isWarning: hasReforms.value,
+      badge: 'Стиль',
     },
   ]);
 
@@ -84,13 +80,15 @@ export function useCalendarEditor(
     try {
       const list = await calendarStore.getCalendars(props.projectId);
       const found = list.find((c) => c.id === props.calendarId) || list[0] || null;
+      masterCalendarRecord.value = list.find((c) => c.is_master) || null;
+
       if (found) {
         calendarRecord.value = JSON.parse(JSON.stringify(found));
         if (!calendarRecord.value?.data) {
-          calendarRecord.value!.data = CalendarMath.getDefaultCalendar();
+          calendarRecord.value!.data = CalendarEngine.getDefaultCalendar();
         }
       } else {
-        const defaultData = CalendarMath.getDefaultCalendar();
+        const defaultData = CalendarEngine.getDefaultCalendar();
         calendarRecord.value = {
           id: props.calendarId || 'cal_new',
           name: defaultData.название || 'Новый календарь',
@@ -99,36 +97,54 @@ export function useCalendarEditor(
           data: defaultData,
         };
       }
-    } catch (e) {
-      error.value = 'Ошибка загрузки данных календаря';
-      console.error(e);
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Не удалось загрузить календарь';
+      console.error('[CalendarEditor] Ошибка загрузки:', e);
     } finally {
       isLoading.value = false;
     }
   }
 
+  function patchCalendarData(patch: Partial<CalendarData>) {
+    if (!calendarRecord.value) return;
+    calendarRecord.value.data = {
+      ...calendarRecord.value.data,
+      ...patch,
+    };
+    if (patch.название) {
+      calendarRecord.value.name = patch.название;
+    }
+    if (patch.is_master !== undefined) {
+      calendarRecord.value.is_master = patch.is_master;
+    }
+    emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);
+  }
+
+  function updateName(name: string) {
+    if (!calendarRecord.value) return;
+    calendarRecord.value.name = name;
+    if (calendarRecord.value.data) {
+      calendarRecord.value.data.название = name;
+    }
+    emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);
+  }
+
   async function saveCalendar() {
-    if (!calendarRecord.value || !calendarRecord.value.data) return;
+    if (!calendarRecord.value) return;
     isSaving.value = true;
     error.value = null;
     try {
-      const payload = {
-        ...calendarRecord.value.data,
+      await calendarStore.saveCalendar(props.projectId, {
         id: calendarRecord.value.id,
-        _id: calendarRecord.value.id,
+        name: calendarRecord.value.name || calendarRecord.value.data?.название || 'Календарь',
         is_default: calendarRecord.value.is_default,
         is_master: calendarRecord.value.is_master,
-      };
-      const ok = await calendarStore.saveCalendar(props.projectId, payload);
-      if (ok) {
-        emit('save', calendarRecord.value);
-        emit('update:calendar', calendarRecord.value);
-      } else {
-        error.value = 'Не удалось сохранить календарь';
-      }
-    } catch (e) {
-      error.value = 'Ошибка при сохранении календаря';
-      console.error(e);
+        data: calendarRecord.value.data,
+      });
+      emit('save', calendarRecord.value.data as Record<string, unknown>);
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Не удалось сохранить календарь';
+      console.error('[CalendarEditor] Ошибка сохранения:', e);
     } finally {
       isSaving.value = false;
     }
@@ -136,14 +152,13 @@ export function useCalendarEditor(
 
   async function deleteCalendar() {
     if (!calendarRecord.value?.id) return;
+    if (!confirm('Вы уверены, что хотите удалить этот календарь?')) return;
     try {
-      const ok = await calendarStore.deleteCalendar(calendarRecord.value.id);
-      if (ok) {
-        emit('delete', calendarRecord.value.id);
-      }
-    } catch (e) {
-      error.value = 'Ошибка удаления календаря';
-      console.error(e);
+      await calendarStore.deleteCalendar(calendarRecord.value.id);
+      emit('delete', calendarRecord.value.id);
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Не удалось удалить календарь';
+      console.error('[CalendarEditor] Ошибка удаления:', e);
     }
   }
 
@@ -153,58 +168,34 @@ export function useCalendarEditor(
 
   function openAuditModal() {
     isAuditModalOpen.value = true;
-    if (calendarRecord.value?.id) {
-      emit('audit', calendarRecord.value.id);
-    }
   }
 
-  function closeAuditModal() {
-    isAuditModalOpen.value = false;
-  }
-
-  function patchCalendarData(patch: Partial<CalendarData>) {
-    if (!calendarRecord.value?.data) return;
-    calendarRecord.value.data = {
-      ...calendarRecord.value.data,
-      ...patch,
-    };
-    emit('update:calendar', calendarRecord.value);
-  }
-
-  function updateName(name: string) {
-    if (!calendarRecord.value) return;
-    calendarRecord.value.name = name;
-    if (calendarRecord.value.data) {
-      calendarRecord.value.data.название = name;
-    }
-    emit('update:calendar', calendarRecord.value);
-  }
-
-  watch(() => props.calendarId, () => {
-    loadCalendar();
+  onMounted(async () => {
+    await loadCalendar();
   });
 
-  onMounted(() => {
-    loadCalendar();
-  });
+  watch(
+    () => props.calendarId,
+    async () => {
+      await loadCalendar();
+    }
+  );
 
   return {
     activeTab,
     calendarRecord,
     calData,
+    masterCalData,
     isLoading,
     isSaving,
     error,
     isAuditModalOpen,
     tabsList,
     totalDays,
-    hasReforms,
     setTab,
-    loadCalendar,
     saveCalendar,
     deleteCalendar,
     openAuditModal,
-    closeAuditModal,
     patchCalendarData,
     updateName,
   };

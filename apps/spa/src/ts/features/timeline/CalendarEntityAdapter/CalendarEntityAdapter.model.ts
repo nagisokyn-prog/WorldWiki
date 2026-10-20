@@ -1,5 +1,7 @@
 import type { CalendarRecord } from '@/stores/calendar.store';
 
+export type CalendarAdapterMode = 'planet' | 'calendar';
+
 export interface CalendarEntityAdapterProps {
   calendarId: string;
   projectId: string;

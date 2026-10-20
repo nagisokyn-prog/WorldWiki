@@ -1,20 +1,16 @@
-import type { CalendarRecord } from '@/stores/calendar.store';
+/**
+ * @file CalendarEditor.model.ts
+ * @description Модель данных и типы для главного контейнера редактирования календаря (Calendar View)
+ */
 
 export type CalendarEditorTab =
-  | 'structure'
-  | 'astronomy'
-  | 'chronology'
-  | 'syncLeap'
+  | 'timeGrid'
+  | 'erasSync'
+  | 'cultureLore'
+  | 'playground'
   | 'reformsDst';
 
-export interface CalendarEditorProps {
-  calendarId: string;
-  projectId: string;
-  planetId?: string;
-  isReadOnly?: boolean;
-}
-
-export interface TabItem {
+export interface CalendarTabInfo {
   id: CalendarEditorTab;
   label: string;
   icon: string;
@@ -22,9 +18,14 @@ export interface TabItem {
   isWarning?: boolean;
 }
 
+export interface CalendarEditorProps {
+  calendarId: string | null;
+  projectId: string;
+  isReadOnly?: boolean;
+}
+
 export type CalendarEditorEmits = {
-  (e: 'update:calendar', calendar: CalendarRecord): void;
-  (e: 'save', calendar: CalendarRecord): void;
-  (e: 'delete', calendarId: string): void;
-  (e: 'audit', calendarId: string): void;
+  (e: 'update:calendar', data: Record<string, unknown>): void;
+  (e: 'save', data: Record<string, unknown>): void;
+  (e: 'delete', id: string): void;
 };

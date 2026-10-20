@@ -10,24 +10,12 @@
 //! `create_test_db()` открывает **уникальный временный каталог** (process id +
 //! атомарный счётчик) — гарантированная изоляция без блокировок.
 
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-use surrealdb::engine::local::{Db, SurrealKv};
+use surrealdb::engine::local::{Db, Mem};
 use surrealdb::Surreal;
-
-/// Глобальный счётчик для уникальных имён временных БД между параллельными тестами.
-static __DB_IDX: AtomicUsize = AtomicUsize::new(0);
 
 /// Создаёт свежую in-memory БД с применённой прод-схемой.
 pub async fn create_test_db() -> Surreal<Db> {
-    let idx = __DB_IDX.fetch_add(1, Ordering::SeqCst);
-    let unique_id = format!("{}-{}-{}", std::process::id(), idx, uuid::Uuid::new_v4());
-    let dir = std::env::temp_dir().join(format!("worldwiki-test-{}", unique_id));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).expect("create db temp dir");
-
-    // IntoEndpoint<SurrealKv> требует owned PathBuf (см. продовой init_database в lib.rs).
-    let db = Surreal::new::<SurrealKv>(dir)
+    let db = Surreal::new::<Mem>(())
         .await
         .expect("Failed to start in-memory SurrealDB");
     db.use_ns("test")

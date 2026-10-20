@@ -17,7 +17,7 @@ tokio = { version = "1", features = ["sync", "time", "rt", "fs"] }
 dashmap = "6.2"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
-surrealdb = { version = "3.3.3", default-features = false, features = ["kv-surrealkv", "kv-mem"] }
+surrealdb = { version = "3.3.4", default-features = false, features = ["kv-surrealkv", "kv-mem"] }
 zip = "8.6.0"
 reqwest = { version = "0.13.5", features = ["json", "form"] }
 tracing = "0.1"

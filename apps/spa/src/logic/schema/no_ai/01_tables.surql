@@ -334,3 +334,9 @@ DEFINE FIELD OVERWRITE quote      ON promise_milestones TYPE string;
 DEFINE FIELD OVERWRITE note       ON promise_milestones TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON promise_milestones TYPE datetime DEFAULT time::now();
 
+-- 23. СИСТЕМНЫЕ МЕТАДАННЫЕ (ВЕРСИОНИРОВАНИЕ СХЕМЫ, ХЭШИ ДЛЯ БЫСТРОГО СТАРТА)
+DEFINE TABLE OVERWRITE system_meta SCHEMAFULL;
+DEFINE FIELD OVERWRITE ddl_hash    ON system_meta TYPE string;
+DEFINE FIELD OVERWRITE updated_at  ON system_meta TYPE datetime DEFAULT time::now();
+
+

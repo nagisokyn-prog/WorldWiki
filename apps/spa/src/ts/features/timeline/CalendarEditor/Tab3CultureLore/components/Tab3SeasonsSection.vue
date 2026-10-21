@@ -82,6 +82,7 @@
 <script setup lang="ts">
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { CultureSeasonDto } from '../Tab3CultureLore.model';
+import { useTab3SeasonsSection } from './useTab3SeasonsSection';
 
 const props = defineProps<{
   seasons: CultureSeasonDto[];
@@ -95,23 +96,5 @@ const emit = defineEmits<{
   (e: 'remove-season', idx: number): void;
 }>();
 
-function toggleHemisphere(s: CultureSeasonDto) {
-  if (props.isReadOnly) return;
-  s.hemisphere = s.hemisphere === 'southern' ? 'northern' : 'southern';
-  emit('update-seasons', [...props.seasons]);
-}
-
-function toggleMonthInSeason(s: CultureSeasonDto, mIdx: number) {
-  if (props.isReadOnly) return;
-  const currentMonths = [...(s.месяцы || [])];
-  const foundIdx = currentMonths.indexOf(mIdx);
-  if (foundIdx >= 0) {
-    currentMonths.splice(foundIdx, 1);
-  } else {
-    currentMonths.push(mIdx);
-    currentMonths.sort((a, b) => a - b);
-  }
-  s.месяцы = currentMonths;
-  emit('update-seasons', [...props.seasons]);
-}
+const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, (e, list) => emit(e, list));
 </script>

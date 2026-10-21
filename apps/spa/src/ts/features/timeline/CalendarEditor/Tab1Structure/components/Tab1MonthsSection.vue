@@ -51,7 +51,7 @@
           </td>
           <td>
             <span class="status-chip" style="font-size: 11px;">
-              {{ getSeasonLabel(idx, months.length) }}
+              {{ seasonLabels[idx] }}
             </span>
           </td>
           <td>
@@ -73,8 +73,9 @@
 
 <script setup lang="ts">
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
+import { useTab1MonthsSection } from './useTab1MonthsSection';
 
-defineProps<{
+const props = defineProps<{
   months: CalendarMonth[];
   totalYearDays: number;
   isReadOnly?: boolean;
@@ -86,12 +87,5 @@ defineEmits<{
   (e: 'update-months', months: CalendarMonth[]): void;
 }>();
 
-function getSeasonLabel(idx: number, total: number): string {
-  if (total === 0) return '—';
-  const quarter = Math.floor((idx / total) * 4);
-  if (quarter === 0) return '❄️ Зима';
-  if (quarter === 1) return '🌸 Весна';
-  if (quarter === 2) return '☀️ Лето';
-  return '🍂 Осень';
-}
+const { seasonLabels } = useTab1MonthsSection(props);
 </script>

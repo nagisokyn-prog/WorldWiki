@@ -99,7 +99,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type {
   HarmonicRule,
@@ -111,6 +110,7 @@ import type { UpcomingYearDto, YearTapeItem } from '../tab1Leap.utils';
 import Tab1LeapPresets from './Tab1LeapPresets.vue';
 import Tab1ExtraDaysTape from './Tab1ExtraDaysTape.vue';
 import Tab1LeapRulesInspector from './Tab1LeapRulesInspector.vue';
+import { useTab1LeapSection } from './useTab1LeapSection';
 
 defineProps<{
   activeSystemPreset: SystemPresetType;
@@ -157,6 +157,5 @@ defineEmits<{
   (e: 'add-harmonic', weight: number, defaultPeriod: number): void;
 }>();
 
-const isCollapsed = ref(false);
-const showSuggestions = ref(false);
+const { isCollapsed, showSuggestions } = useTab1LeapSection();
 </script>

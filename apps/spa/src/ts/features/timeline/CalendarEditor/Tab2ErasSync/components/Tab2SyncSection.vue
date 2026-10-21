@@ -59,196 +59,43 @@
       </div>
 
       <!-- Вариант 1: К опорному событию -->
-      <div
+      <Tab2SyncEventForm
         v-if="syncType === 'event'"
-        style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;"
-      >
-        <div class="grid-3" style="align-items: end;">
-          <div class="form-group">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label class="form-label" style="margin: 0;">Опорное событие</label>
-              <button
-                v-if="!isReadOnly"
-                type="button"
-                class="btn-ghost-sm"
-                style="padding: 1px 6px; font-size: 10px;"
-                @click="$emit('add-new-event')"
-              >
-                ➕ Новое событие
-              </button>
-            </div>
-            <select
-              class="form-select"
-              :value="selectedEventId"
-              :disabled="isReadOnly"
-              @change="$emit('update-selected-event', ($event.target as HTMLSelectElement).value)"
-            >
-              <option v-for="ev in anchorEvents" :key="ev.id || ev.name" :value="ev.id || ev.name">
-                {{ ev.name }} (Год {{ ev.year }})
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Направление</label>
-            <div style="display: flex; gap: 12px; padding-top: 6px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
-                <input
-                  type="radio"
-                  name="sync-dir-event"
-                  value="after"
-                  :checked="offsetDirection === 'after'"
-                  :disabled="isReadOnly"
-                  @change="$emit('update-offset-direction', 'after')"
-                />
-                <span>После события</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
-                <input
-                  type="radio"
-                  name="sync-dir-event"
-                  value="before"
-                  :checked="offsetDirection === 'before'"
-                  :disabled="isReadOnly"
-                  @change="$emit('update-offset-direction', 'before')"
-                />
-                <span>До события</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Смещение (лет)</label>
-            <input
-              type="number"
-              class="form-input"
-              :value="offsetYears"
-              min="0"
-              :disabled="isReadOnly"
-              @input="$emit('update-offset-years', parseInt(($event.target as HTMLInputElement).value) || 0)"
-            />
-          </div>
-        </div>
-
-        <!-- Быстрое редактирование выбранной вехи прямо здесь -->
-        <div
-          v-if="currentEvent"
-          style="display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-subtle);"
-        >
-          <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Веха:</span>
-          <input
-            :value="currentEvent.name"
-            type="text"
-            class="form-input"
-            style="flex: 1; padding: 4px 8px; font-size: 12px;"
-            :disabled="isReadOnly"
-            @input="$emit('save-current-event', { ...currentEvent, name: ($event.target as HTMLInputElement).value })"
-          />
-          <span style="font-size: 11px; color: var(--text-muted);">Год в Календаре Мира:</span>
-          <input
-            :value="currentEvent.year"
-            type="number"
-            class="form-input"
-            style="width: 80px; padding: 4px 8px; font-size: 12px;"
-            :disabled="isReadOnly"
-            @input="$emit('save-current-event', { ...currentEvent, year: +($event.target as HTMLInputElement).value })"
-          />
-        </div>
-      </div>
+        :selected-event-id="selectedEventId"
+        :anchor-events="anchorEvents"
+        :current-event="currentEvent"
+        :offset-direction="offsetDirection"
+        :offset-years="offsetYears"
+        :is-read-only="isReadOnly"
+        @add-new-event="$emit('add-new-event')"
+        @update-selected-event="$emit('update-selected-event', $event)"
+        @update-offset-direction="$emit('update-offset-direction', $event)"
+        @update-offset-years="$emit('update-offset-years', $event)"
+        @save-current-event="$emit('save-current-event', $event)"
+      />
 
       <!-- Вариант 2: К календарю другого поселения -->
-      <div
+      <Tab2SyncCalendarForm
         v-if="syncType === 'calendar'"
-        style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;"
-      >
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Календарь другого поселения / культуры</label>
-            <select
-              class="form-select"
-              :value="targetCalendarId"
-              :disabled="isReadOnly"
-              @change="$emit('update-target-calendar', ($event.target as HTMLSelectElement).value)"
-            >
-              <option value="julian">Юлианский календарь (Церковный)</option>
-              <option value="padishah">Имперский Стандарт Падишаха</option>
-              <option value="fremen">Цикл Сиетча Табр (Фременский)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Когда там шёл год</label>
-            <input
-              type="number"
-              class="form-input"
-              :value="targetCalendarYear"
-              min="1"
-              :disabled="isReadOnly"
-              @input="$emit('update-target-calendar-year', parseInt(($event.target as HTMLInputElement).value) || 1)"
-            />
-          </div>
-        </div>
-      </div>
+        :target-calendar-id="targetCalendarId"
+        :target-calendar-year="targetCalendarYear"
+        :is-read-only="isReadOnly"
+        @update-target-calendar="$emit('update-target-calendar', $event)"
+        @update-target-calendar-year="$emit('update-target-calendar-year', $event)"
+      />
 
       <!-- Вариант 3: К Календарю Мира / Эпохе -->
-      <div
+      <Tab2SyncEraForm
         v-if="syncType === 'master_era'"
-        style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;"
-      >
-        <div class="grid-3">
-          <div class="form-group">
-            <label class="form-label">Опорная эпоха в Календаре Мира</label>
-            <select
-              class="form-select"
-              :value="selectedMasterEraIndex"
-              :disabled="isReadOnly"
-              @change="$emit('update-master-era', parseInt(($event.target as HTMLSelectElement).value) || 0)"
-            >
-              <option :value="-1">🌍 От начала Календаря Мира (Год 1)</option>
-              <option v-for="(era, idx) in masterEras" :key="idx" :value="idx">
-                🏛️ {{ era.название }} (с {{ era.год_начала }} г.)
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Направление отсчёта</label>
-            <div style="display: flex; gap: 12px; padding-top: 6px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
-                <input
-                  type="radio"
-                  name="sync-dir-era"
-                  value="after"
-                  :checked="offsetDirection === 'after'"
-                  :disabled="isReadOnly"
-                  @change="$emit('update-offset-direction', 'after')"
-                />
-                <span>После начала</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
-                <input
-                  type="radio"
-                  name="sync-dir-era"
-                  value="before"
-                  :checked="offsetDirection === 'before'"
-                  :disabled="isReadOnly"
-                  @change="$emit('update-offset-direction', 'before')"
-                />
-                <span>До начала</span>
-              </label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Смещение (лет)</label>
-            <input
-              type="number"
-              class="form-input"
-              :value="offsetYears"
-              min="0"
-              :disabled="isReadOnly"
-              @input="$emit('update-offset-years', parseInt(($event.target as HTMLInputElement).value) || 0)"
-            />
-          </div>
-        </div>
-      </div>
+        :selected-master-era-index="selectedMasterEraIndex"
+        :master-eras="masterEras"
+        :offset-direction="offsetDirection"
+        :offset-years="offsetYears"
+        :is-read-only="isReadOnly"
+        @update-master-era="$emit('update-master-era', $event)"
+        @update-offset-direction="$emit('update-offset-direction', $event)"
+        @update-offset-years="$emit('update-offset-years', $event)"
+      />
 
       <!-- Конкретный день и месяц привязки в Календаре Мира -->
       <div class="grid-2" style="margin-bottom: 12px;">
@@ -280,7 +127,7 @@
       </div>
 
       <!-- Карточка статуса сопряжения -->
-      <div class="drift-banner" style="background: rgba(56, 189, 248, 0.08); border-color: var(--border-accent); color: var(--text-main);">
+      <div class="drift-banner" style="background: var(--info-bg); border-color: var(--border-accent); color: var(--text-main);">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 20px;">✓</span>
           <div>
@@ -298,9 +145,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { CalendarEra, CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { AnchorEventDto, SyncDirection, SyncTargetType } from '../Tab2ErasSync.model';
+import Tab2SyncEventForm from './Tab2SyncEventForm.vue';
+import Tab2SyncCalendarForm from './Tab2SyncCalendarForm.vue';
+import Tab2SyncEraForm from './Tab2SyncEraForm.vue';
+import { useTab2SyncSection } from './useTab2SyncSection';
 
 defineProps<{
   isMaster: boolean;
@@ -335,5 +185,5 @@ defineEmits<{
   (e: 'update-anchor-day', day: number): void;
 }>();
 
-const isCollapsed = ref(false);
+const { isCollapsed } = useTab2SyncSection();
 </script>

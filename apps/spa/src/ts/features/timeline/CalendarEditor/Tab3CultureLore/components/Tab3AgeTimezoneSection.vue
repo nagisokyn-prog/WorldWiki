@@ -84,7 +84,7 @@
               style="cursor: pointer;"
               @click="$emit('toggle-region', reg.id)"
             >
-              {{ selectedRegions.includes(reg.id) ? '✓ ' : '' }}{{ reg.name }}
+              <span v-if="selectedRegions.includes(reg.id)">✓ </span>{{ reg.name }}
             </span>
           </div>
 
@@ -138,8 +138,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { CharacterAgeRuleDto } from '../Tab3CultureLore.model';
+import { useTab3AgeTimezoneSection } from './useTab3AgeTimezoneSection';
 
 defineProps<{
   ageRule: CharacterAgeRuleDto;
@@ -156,15 +156,7 @@ const emit = defineEmits<{
   (e: 'add-region', name: string): void;
 }>();
 
-const showAddRegion = ref(false);
-const newRegionName = ref('');
-
-function submitNewRegion() {
-  const name = newRegionName.value.trim();
-  if (name) {
-    emit('add-region', name);
-    newRegionName.value = '';
-    showAddRegion.value = false;
-  }
-}
+const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(
+  name => emit('add-region', name),
+);
 </script>

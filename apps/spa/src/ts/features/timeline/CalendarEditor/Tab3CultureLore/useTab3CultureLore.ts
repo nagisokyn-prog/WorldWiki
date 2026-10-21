@@ -22,10 +22,10 @@ export function useTab3CultureLore(
       return raw as CultureSeasonDto[];
     }
     return [
-      { название: '❄️ Зима', цвет: '#38bdf8', hemisphere: 'northern', месяцы: [0, 1, 11] },
-      { название: '🌸 Весна', цвет: '#10b981', hemisphere: 'northern', месяцы: [2, 3, 4] },
-      { название: '☀️ Лето', цвет: '#f59e0b', hemisphere: 'northern', месяцы: [5, 6, 7] },
-      { название: '🍂 Осень', цвет: '#ea580c', hemisphere: 'northern', месяцы: [8, 9, 10] },
+      { название: '❄️ Зима', цвет: 'var(--accent-primary)', hemisphere: 'northern', месяцы: [0, 1, 11] },
+      { название: '🌸 Весна', цвет: 'var(--accent-success)', hemisphere: 'northern', месяцы: [2, 3, 4] },
+      { название: '☀️ Лето', цвет: 'var(--accent-warning)', hemisphere: 'northern', месяцы: [5, 6, 7] },
+      { название: '🍂 Осень', цвет: 'var(--accent-danger)', hemisphere: 'northern', месяцы: [8, 9, 10] },
     ];
   });
 
@@ -94,7 +94,7 @@ export function useTab3CultureLore(
     const list = [...seasons.value];
     list.push({
       название: `Сезон ${list.length + 1}`,
-      цвет: '#a855f7',
+      цвет: 'var(--accent-purple)',
       hemisphere: 'northern',
       месяцы: [0],
     });

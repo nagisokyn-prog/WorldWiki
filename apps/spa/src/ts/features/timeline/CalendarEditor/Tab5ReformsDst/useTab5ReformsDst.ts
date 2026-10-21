@@ -142,9 +142,9 @@ export function useTab5ReformsDst(props: Tab5ReformsDstProps, emit: Tab5ReformsD
 
   const springAlertStyle = computed(() => {
     const h = Math.floor(springSliderVal.value / 60);
-    if (h === 2) return { background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.5)' };
-    if (h >= 3) return { background: 'rgba(34,197,94,0.08)', borderColor: 'rgba(34,197,94,0.3)' };
-    return { background: 'rgba(56,189,248,0.08)', borderColor: 'rgba(56,189,248,0.3)' };
+    if (h === 2) return { background: 'var(--danger-bg)', borderColor: 'var(--accent-danger)' };
+    if (h >= 3) return { background: 'var(--success-bg)', borderColor: 'var(--accent-success)' };
+    return { background: 'var(--info-bg)', borderColor: 'var(--accent-primary)' };
   });
 
   const springAlertTextColor = computed(() => {
@@ -167,7 +167,7 @@ export function useTab5ReformsDst(props: Tab5ReformsDstProps, emit: Tab5ReformsD
   });
 
   const autumnAlertStyle = computed(() => {
-    return { background: 'rgba(168,85,247,0.08)', borderColor: 'rgba(168,85,247,0.4)' };
+    return { background: 'var(--bg-surface-elevated)', borderColor: 'var(--accent-purple)' };
   });
 
   function selectReformPreset(key: ReformPresetKey) {

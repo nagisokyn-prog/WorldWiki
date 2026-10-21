@@ -20,45 +20,45 @@
       <div class="form-group">
         <label class="form-label">🌑 Новолуние (фаза 0.0)</label>
         <input
-          v-model="phaseNames.new"
+          :value="phaseNames.new"
           type="text"
           class="form-input"
           placeholder="Темная Ночь / Ночь Воров"
           :disabled="isReadOnly"
-          @input="$emit('update-phase-names', phaseNames)"
+          @input="$emit('update-phase-names', { ...phaseNames, new: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="form-group">
         <label class="form-label">🌓 Растущая (фаза 0.25)</label>
         <input
-          v-model="phaseNames.waxing"
+          :value="phaseNames.waxing"
           type="text"
           class="form-input"
           placeholder="Серп Охотника"
           :disabled="isReadOnly"
-          @input="$emit('update-phase-names', phaseNames)"
+          @input="$emit('update-phase-names', { ...phaseNames, waxing: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="form-group">
         <label class="form-label">🌕 Полнолуние (фаза 0.50)</label>
         <input
-          v-model="phaseNames.full"
+          :value="phaseNames.full"
           type="text"
           class="form-input"
           placeholder="Око Саурона / Кровавая Луна"
           :disabled="isReadOnly"
-          @input="$emit('update-phase-names', phaseNames)"
+          @input="$emit('update-phase-names', { ...phaseNames, full: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="form-group">
         <label class="form-label">🌗 Убывающая (фаза 0.75)</label>
         <input
-          v-model="phaseNames.waning"
+          :value="phaseNames.waning"
           type="text"
           class="form-input"
           placeholder="Ущерб / Тающий Лик"
           :disabled="isReadOnly"
-          @input="$emit('update-phase-names', phaseNames)"
+          @input="$emit('update-phase-names', { ...phaseNames, waning: ($event.target as HTMLInputElement).value })"
         />
       </div>
     </div>

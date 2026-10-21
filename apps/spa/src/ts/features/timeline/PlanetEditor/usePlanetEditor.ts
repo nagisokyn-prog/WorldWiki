@@ -108,13 +108,6 @@ export function usePlanetEditor(
     recalculateAstroPoints();
   }
 
-  function updateOrbitFromFraction() {
-    if (planet.value.orbit_days_den > 0) {
-      planet.value.orbit_days =
-        Number((planet.value.orbit_days_num / planet.value.orbit_days_den).toFixed(6));
-      recalculateAstroPoints();
-    }
-  }
 
   function recalculateAstroPoints() {
     planet.value.solstices = calculateSolstices(planet.value.orbit_days);
@@ -252,7 +245,6 @@ export function usePlanetEditor(
     updateName,
     updateDayTicks,
     updateOrbitDays,
-    updateOrbitFromFraction,
     recalculateAstroPoints,
     addTimezone,
     removeTimezone,

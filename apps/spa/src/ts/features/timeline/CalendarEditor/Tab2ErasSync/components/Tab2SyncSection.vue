@@ -137,21 +137,21 @@
         >
           <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Веха:</span>
           <input
-            v-model="currentEvent.name"
+            :value="currentEvent.name"
             type="text"
             class="form-input"
             style="flex: 1; padding: 4px 8px; font-size: 12px;"
             :disabled="isReadOnly"
-            @input="$emit('save-current-event', currentEvent)"
+            @input="$emit('save-current-event', { ...currentEvent, name: ($event.target as HTMLInputElement).value })"
           />
           <span style="font-size: 11px; color: var(--text-muted);">Год в Календаре Мира:</span>
           <input
-            v-model.number="currentEvent.year"
+            :value="currentEvent.year"
             type="number"
             class="form-input"
             style="width: 80px; padding: 4px 8px; font-size: 12px;"
             :disabled="isReadOnly"
-            @input="$emit('save-current-event', currentEvent)"
+            @input="$emit('save-current-event', { ...currentEvent, year: +($event.target as HTMLInputElement).value })"
           />
         </div>
       </div>

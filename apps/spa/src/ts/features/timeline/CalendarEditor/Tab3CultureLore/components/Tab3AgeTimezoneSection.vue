@@ -141,7 +141,7 @@
 import { ref } from 'vue';
 import type { CharacterAgeRuleDto } from '../Tab3CultureLore.model';
 
-const props = defineProps<{
+defineProps<{
   ageRule: CharacterAgeRuleDto;
   calendarTimezone: string;
   regionsList: { id: string; name: string }[];

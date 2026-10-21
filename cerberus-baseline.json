@@ -1,1 +1,242 @@
-[]
+[
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncSection.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (308) exceeds strict limit (265)",
+    "fingerprint": "ceb4191274e9eeebc4baf7544e69d2b59736ccf10d916dd76f320d5b1ade51a0"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/components/Tab5DstSection.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (191) exceeds recommended limit (165)",
+    "fingerprint": "72ff79b0c143209d43e41caedd0b64dd3287d7914bf80bd45ad2905dca219499"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts",
+    "line": 25,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#38bdf8' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "1f74d8cfff8b829b7b2d051180d5d080fb9ab4a0ec6068f40038dcce1a73dd88"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts",
+    "line": 26,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#10b981' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "447c930503f4afe292773dd0fe7c4c5c761f398f350cb584ac66e3d849345db6"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts",
+    "line": 27,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#f59e0b' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "be23416f684a1a9ed4f3d2058557d3f254e4609f223ef3791900ccd0a8195cf5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts",
+    "line": 28,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ea580c' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "53f5bb988813c2cefd9efbda345374754b61caf82d62f1e34e3eea9a36115dd2"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts",
+    "line": 97,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#a855f7' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "27ba896325f634d5b88f8c96dc61ecf658abeeb6e6752a7a6acc1662306ab2b3"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 145,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(239,68,68,0.12)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "dcbb7db4c32202fae6c3bc174782785fd1bf2574760cb2178ec54ffee31ffb83"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 145,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(239,68,68,0.5)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "dcbb7db4c32202fae6c3bc174782785fd1bf2574760cb2178ec54ffee31ffb83"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 146,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(34,197,94,0.08)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "f280d358ffaba90af62d1b2b21fe2cbafc4e9387cb4c78c58f393ef00be04f41"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 146,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(34,197,94,0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "f280d358ffaba90af62d1b2b21fe2cbafc4e9387cb4c78c58f393ef00be04f41"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 147,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(56,189,248,0.08)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6fce746697b6defafb4aaf1f23614d3c515ba29de22eef30c0469173abc8c461"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 147,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(56,189,248,0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6fce746697b6defafb4aaf1f23614d3c515ba29de22eef30c0469173abc8c461"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 170,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(168,85,247,0.08)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "138febda044c3bc149540c55ab7dcc762d5561fad2559347433172ebb55bfb8f"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/useTab5ReformsDst.ts",
+    "line": 170,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(168,85,247,0.4)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "138febda044c3bc149540c55ab7dcc762d5561fad2559347433172ebb55bfb8f"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1LeapSection.vue",
+    "line": 101,
+    "symbol": "Tab1LeapSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1LeapSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "2541143f62bfb64ca42f0c68c1ab13534d2809fe101f437c86599637d52364d1"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1MonthsSection.vue",
+    "line": 74,
+    "symbol": "Tab1MonthsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1MonthsSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "68b911ad647a9c40f9669ba480a85f2bde9e20985845de9fc4f7518421f9ebb5"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventsSection.vue",
+    "line": 80,
+    "symbol": "Tab2AnchorEventsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2AnchorEventsSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "020e1d69e052454c89bf63207d1a8c9a831c7f8df0618622660cb98cda160077"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncSection.vue",
+    "line": 300,
+    "symbol": "Tab2SyncSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "4141f34aa15a8a1a351b4e1e7e88f4f52b68ed3bcaa4272ab97dc4b207d6683d"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3AgeTimezoneSection.vue",
+    "line": 140,
+    "symbol": "Tab3AgeTimezoneSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3AgeTimezoneSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "9113288b208d6a8f083ab169ff4a6aa871f320563bafa9e5a0128ec21dc219ac"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3HolidaysSection.vue",
+    "line": 117,
+    "symbol": "Tab3HolidaysSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3HolidaysSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "9a33f92ed79d09cc6c2d2359550caa5f56d28b7bd7e8b75cc87edf4c0b95c141"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3SeasonsSection.vue",
+    "line": 82,
+    "symbol": "Tab3SeasonsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3SeasonsSection.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "89528659b2d623aee154ce33c253e0bf96d36f126a5b87e172dfc4a97296875f"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1LeapSection.vue",
+    "line": 101,
+    "symbol": "Tab1LeapSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1LeapSection.vue' is missing required companion hook useTab1LeapSection.ts",
+    "fingerprint": "ff121f575003719f6f97dc88d156bc29b997f70bf8715a01c9d207350a17c35c"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1MonthsSection.vue",
+    "line": 74,
+    "symbol": "Tab1MonthsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1MonthsSection.vue' is missing required companion hook useTab1MonthsSection.ts",
+    "fingerprint": "cef04660400fe2508e636a9d807037d78aa70ac93fa6b40940284e72a6cec5cf"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventsSection.vue",
+    "line": 80,
+    "symbol": "Tab2AnchorEventsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2AnchorEventsSection.vue' is missing required companion hook useTab2AnchorEventsSection.ts",
+    "fingerprint": "68991944c6e28aae5f50159b848824143ae52afffb4f8a8288584c3b14f70507"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncSection.vue",
+    "line": 300,
+    "symbol": "Tab2SyncSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncSection.vue' is missing required companion hook useTab2SyncSection.ts",
+    "fingerprint": "fbd88ed82e08f97c19de01cf843bd442018f6bb700485b663e6bb2f41fc83f46"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3AgeTimezoneSection.vue",
+    "line": 140,
+    "symbol": "Tab3AgeTimezoneSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3AgeTimezoneSection.vue' is missing required companion hook useTab3AgeTimezoneSection.ts",
+    "fingerprint": "cddc9b4623b7ec8bec506827f2714c76efdc4004d207449a66f3b88ccc374552"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3HolidaysSection.vue",
+    "line": 117,
+    "symbol": "Tab3HolidaysSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3HolidaysSection.vue' is missing required companion hook useTab3HolidaysSection.ts",
+    "fingerprint": "a6dd8d9898cda174bc1bfe202fcc86df2ad9d7b12aff1c84a8891557537a396e"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3SeasonsSection.vue",
+    "line": 82,
+    "symbol": "Tab3SeasonsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3SeasonsSection.vue' is missing required companion hook useTab3SeasonsSection.ts",
+    "fingerprint": "4aaa754dbd64dc85e6a4bac6c841e445f82e92e2c7f3189d7dd91e3a17cb94b9"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3AgeTimezoneSection.vue",
+    "line": 87,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "ba87687a765385695cf8fc0aa10c9f6abc9591fcd1dd3dbac4160f1f2b8dea77"
+  }
+]

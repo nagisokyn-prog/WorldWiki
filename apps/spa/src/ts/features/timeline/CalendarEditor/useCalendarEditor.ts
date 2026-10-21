@@ -42,7 +42,7 @@ export function useCalendarEditor(
   });
 
   const planetOrbitDays = computed<number>(() => {
-    return Number((calData.value as any)?.planet_orbit_days) || 365.2422;
+    return Number((calData.value as Record<string, unknown>)?.planet_orbit_days) || 365.2422;
   });
 
   const tabsList = computed<CalendarTabInfo[]>(() => [

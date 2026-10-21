@@ -81,7 +81,7 @@
 import { ref } from 'vue';
 import type { AnchorEventDto } from '../Tab2ErasSync.model';
 
-const props = defineProps<{
+defineProps<{
   anchorEvents: AnchorEventDto[];
   isReadOnly?: boolean;
 }>();

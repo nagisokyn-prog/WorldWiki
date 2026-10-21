@@ -56,7 +56,7 @@
       :target-month-preview="leap.targetMonthPreview.value"
       :harmonics="leap.harmonics.value"
       :upcoming-years="leap.upcomingYears.value"
-      :suggestions="leap.suggestions"
+      :suggestions="leap.suggestions.value"
       :is-read-only="isReadOnly"
       @select-system-preset="leap.selectSystemPreset"
       @select-rule-type="leap.selectRuleType"

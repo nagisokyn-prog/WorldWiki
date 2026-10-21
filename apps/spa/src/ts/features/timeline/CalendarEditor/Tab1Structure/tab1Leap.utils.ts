@@ -10,6 +10,7 @@ import {
   type LeapHarmonic,
 } from '@/services/Calendars/calendar.wasm-bridge';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
+import type { LeapSuggestionDto } from './Tab1Structure.model';
 
 export interface YearTapeItem {
   type: 'month' | 'extra_days';
@@ -36,28 +37,30 @@ export interface HarmonicRule {
 export function ruleToWasmHarmonics(
   ruleType: 'gregorian' | 'simple' | 'custom' | 'none',
   harmonics: HarmonicRule[] = [],
-  simpleInterval = 4
+  simpleInterval = 4,
+  leapOffset = 1
 ): LeapHarmonic[] {
   if (ruleType === 'none') {
     return [];
   }
+  const offset = leapOffset || 1;
   if (ruleType === 'gregorian') {
     return [
-      { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
-      { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
-      { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
+      { weight: 1 * offset, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+      { weight: -1 * offset, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
+      { weight: 1 * offset, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
     ];
   }
   if (ruleType === 'simple') {
     return [
-      { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: simpleInterval || 4 },
+      { weight: 1 * offset, multiplier_a: 1, shift_b: 0, divisor_c: simpleInterval || 4 },
     ];
   }
   if (ruleType === 'custom') {
     return harmonics
       .filter((h) => h.period > 0)
       .map((h) => ({
-        weight: h.weight,
+        weight: h.weight * offset,
         multiplier_a: 1,
         shift_b: 0,
         divisor_c: h.period,
@@ -178,10 +181,10 @@ export function calculateCenturyDrift(
   orbitDays: number,
   ruleType: 'gregorian' | 'simple' | 'custom' | 'none',
   harmonics: HarmonicRule[] = [],
-  _leapOffset = 1
+  leapOffset = 1
 ): { driftCentury: number; label: string; isOk: boolean } {
   const nominalYear = baseDays + extraDays;
-  const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics);
+  const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics, 4, leapOffset);
 
   // Вызов нативного ядра WASM (f64 drift per 100 years)
   const driftCentury = CalendarWasmBridge.calculateDriftPerCentury(
@@ -197,34 +200,55 @@ export function calculateCenturyDrift(
   return { driftCentury, label, isOk };
 }
 
-export const STANDARD_LEAP_SUGGESTIONS = [
-  {
-    key: 'simple',
-    ratio: '1 дн. / 4 года',
-    desc: 'Простое правило: каждые 4 года +1 день (Юлианский стиль)',
-    drift: '+0.780 сут/век',
-    isOk: false,
-  },
-  {
-    key: 'persian',
-    ratio: '8 дн. / 33 года',
-    desc: 'Персидский цикл (Омар Хайям): 8 високосов за 33 года',
-    drift: '+0.020 сут/век',
-    isOk: true,
-  },
-  {
-    key: 'gregorian',
-    ratio: '97 дн. / 400 лет',
-    desc: 'Григорианский стандарт: каждые 4 года (+1), кроме 100 (-1), плюс 400 (+1)',
-    drift: '-0.030 сут/век',
-    isOk: true,
-  },
-  {
-    key: 'medler',
-    ratio: '31 дн. / 128 лет',
-    desc: 'Цикл Медлера: каждые 4 года (+1), кроме 128 (-1). 1 день за 100 000 лет!',
-    drift: '+0.001 сут/век',
-    isOk: true,
-  },
-];
+export function calculateWasmLeapSuggestions(
+  orbitDays: number,
+  baseDays: number
+): LeapSuggestionDto[] {
+  const suggestionsDefs = [
+    {
+      key: 'simple',
+      ratio: '1 дн. / 4 года',
+      desc: 'Простое правило: каждые 4 года +1 день (Юлианский стиль)',
+      harmonics: [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 }],
+    },
+    {
+      key: 'persian',
+      ratio: '8 дн. / 33 года',
+      desc: 'Персидский цикл (Омар Хайям): 8 високосов за 33 года',
+      harmonics: [{ weight: 8, multiplier_a: 1, shift_b: 0, divisor_c: 33 }],
+    },
+    {
+      key: 'gregorian',
+      ratio: '97 дн. / 400 лет',
+      desc: 'Григорианский стандарт: каждые 4 года (+1), кроме 100 (-1), плюс 400 (+1)',
+      harmonics: [
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
+      ],
+    },
+    {
+      key: 'medler',
+      ratio: '31 дн. / 128 лет',
+      desc: 'Цикл Медлера: каждые 4 года (+1), кроме 128 (-1). Точность: 1 день за 100 000 лет!',
+      harmonics: [
+        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 128 },
+      ],
+    },
+  ];
+
+  return suggestionsDefs.map((def) => {
+    const drift = CalendarWasmBridge.calculateDriftPerCentury(baseDays, def.harmonics, orbitDays);
+    const sign = drift >= 0 ? '+' : '';
+    return {
+      key: def.key,
+      ratio: def.ratio,
+      desc: def.desc,
+      drift: `${sign}${drift.toFixed(3)} сут/век`,
+      isOk: Math.abs(drift) < 0.1,
+    };
+  });
+}
+
 

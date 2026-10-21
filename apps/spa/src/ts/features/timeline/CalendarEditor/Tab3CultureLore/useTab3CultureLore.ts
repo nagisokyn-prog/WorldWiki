@@ -6,7 +6,7 @@ import type {
   CultureHolidayDto,
   CharacterAgeRuleDto,
 } from './Tab3CultureLore.model';
-import type { CalendarMonth, MoonPhaseNames } from '@/services/Calendars/calendar.types';
+import type { CalendarData, CalendarMonth, MoonPhaseNames } from '@/services/Calendars/calendar.types';
 
 export function useTab3CultureLore(
   props: Tab3CultureLoreProps,
@@ -57,7 +57,7 @@ export function useTab3CultureLore(
   });
 
   const ageRule = computed<CharacterAgeRuleDto>(() => {
-    const raw = props.calendarData?.character_age_rules as any;
+    const raw = props.calendarData?.character_age_rules as unknown as CharacterAgeRuleDto | undefined;
     if (raw && typeof raw === 'object') {
       return {
         age_at_birth: raw.age_at_birth ?? 0,
@@ -127,7 +127,7 @@ export function useTab3CultureLore(
 
   function updatePhaseNames(names: MoonPhaseNames) {
     phaseNames.value = { ...names };
-    emit('update', { moon_phase_names: names as any });
+    emit('update', { moon_phase_names: names } as unknown as Partial<CalendarData>);
   }
 
   function findDoubleFullMoon() {
@@ -136,8 +136,8 @@ export function useTab3CultureLore(
 
   function updateAgeRule(patch: Partial<CharacterAgeRuleDto>) {
     emit('update', {
-      character_age_rules: { ...ageRule.value, ...patch } as any,
-    });
+      character_age_rules: { ...ageRule.value, ...patch },
+    } as unknown as Partial<CalendarData>);
   }
 
   function toggleRegion(id: string) {
@@ -149,14 +149,14 @@ export function useTab3CultureLore(
       list.push(id);
     }
     selectedRegions.value = list;
-    emit('update', { culture_regions: list as any });
+    emit('update', { culture_regions: list } as unknown as Partial<CalendarData>);
   }
 
   function addRegion(name: string) {
     const id = `reg_${Date.now()}`;
     regionsList.value.push({ id, name: `📍 ${name}` });
     selectedRegions.value.push(id);
-    emit('update', { culture_regions: selectedRegions.value as any });
+    emit('update', { culture_regions: selectedRegions.value } as unknown as Partial<CalendarData>);
   }
 
   function setCalendarTimezone(tz: string) {

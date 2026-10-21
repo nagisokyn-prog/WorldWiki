@@ -143,7 +143,6 @@ const {
   updateName,
   updateDayTicks,
   updateOrbitDays,
-  updateOrbitFromFraction,
   recalculateAstroPoints,
   applyTimezonePreset,
   addTimezone,

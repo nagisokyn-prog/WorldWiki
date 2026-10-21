@@ -8,14 +8,13 @@ import type { CalendarData, CalendarMonth, ExtraDaysConfig } from '@/services/Ca
 import type {
   HarmonicRule,
   LeapRuleType,
-  LeapSuggestionDto,
   SystemPresetType,
 } from './Tab1Structure.model';
 import {
   calculateCenturyDrift,
   calculateUpcomingYears,
+  calculateWasmLeapSuggestions,
   calculateYearTape,
-  STANDARD_LEAP_SUGGESTIONS,
   type UpcomingYearDto,
   type YearTapeItem,
 } from './tab1Leap.utils';
@@ -132,7 +131,9 @@ export function useTab1Leap(
       harmonics.value
     );
   });
-  const suggestions = STANDARD_LEAP_SUGGESTIONS;
+  const suggestions = computed(() => {
+    return calculateWasmLeapSuggestions(orbitDays.value, totalNominalDays.value);
+  });
   function updateConfig(patch: Partial<ExtraDaysConfig>) {
     const current: ExtraDaysConfig = extraDaysConfig.value || {
       base_days: extraDaysCount.value,
@@ -250,7 +251,7 @@ export function useTab1Leap(
     resetExtraDays,
     updateExtraDays: (val: number) => updateConfig({ base_days: val }),
     updateExtraName: (name: string) => updateConfig({ name }),
-    updatePlacement: (p: any) => updateConfig({ placement: p }),
+    updatePlacement: (p: 'end_of_year' | 'mid_year' | 'start_of_year' | 'after_month') => updateConfig({ placement: p }),
     updateAfterMonth: (idx: number) => updateConfig({ after_month_index: idx }),
     updatePauseWeekdays: (paused: boolean) => updateConfig({ pause_weekdays: paused }),
     updateLeapOffset: (val: number) => updateConfig({ leap_days: val }),

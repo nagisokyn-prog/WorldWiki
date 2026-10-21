@@ -7,7 +7,7 @@ import type {
   SyncDirection,
   ExtendedEraDto,
 } from './Tab2ErasSync.model';
-import type { CalendarMonth, CalendarEra, SyncAnchor } from '@/services/Calendars/calendar.types';
+import type { CalendarMonth, CalendarEra, SyncAnchor, CalendarAnchorEvent } from '@/services/Calendars/calendar.types';
 
 export function useTab2ErasSync(
   props: Tab2ErasSyncProps,
@@ -138,7 +138,7 @@ export function useTab2ErasSync(
   }
 
   function updateAnchorEvents(events: AnchorEventDto[]) {
-    emit('update', { anchor_events: events as any });
+    emit('update', { anchor_events: events as unknown as CalendarAnchorEvent[] });
   }
 
   function addAnchorEvent(event: AnchorEventDto) {

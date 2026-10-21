@@ -48,31 +48,31 @@ export function useCalendarEditor(
   const tabsList = computed<CalendarTabInfo[]>(() => [
     {
       id: 'timeGrid',
-      label: '1. Время и Сетка',
+      label: 'Структура года',
       icon: '⏰',
       badge: `${totalDays.value} дн`,
     },
     {
       id: 'erasSync',
-      label: '2. Летоисчисление & Якорь',
+      label: 'Летоисчисление и эры',
       icon: '🏛️',
       badge: calData.value?.эпохи ? `${calData.value.эпохи.length} эр` : undefined,
     },
     {
       id: 'cultureLore',
-      label: '3. Культура и Лор',
-      icon: '🎉',
+      label: 'Традиции и культура',
+      icon: '🎭',
       badge: calData.value?.праздники ? `${calData.value.праздники.length} праздн.` : undefined,
     },
     {
       id: 'playground',
-      label: '4. Песочница (1-я глава)',
+      label: 'Калькулятор дат сюжета',
       icon: '🧪',
       badge: 'Сюжет',
     },
     {
       id: 'reformsDst',
-      label: '5. Реформы & DST',
+      label: 'Реформы и перевод часов',
       icon: '🔄',
       badge: 'Стиль',
     },

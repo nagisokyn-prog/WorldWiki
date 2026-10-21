@@ -2,9 +2,9 @@
   <div class="section-card">
     <div class="section-header">
       <div>
-        <div class="section-title">📜 Исторические реформы календаря (Calendar Succession & ReformMode)</div>
+        <div class="section-title">📜 Исторические реформы календаря (Смена стиля и переход)</div>
         <div class="section-desc">
-          Смена стиля или переход культуры с одного календаря на другой в ходе истории. Все стили синхронизированы через единую мировую ось M_abs.
+          Смена стиля или переход культуры с одного календаря на другой в ходе истории. Все даты разных стилей согласованы по единой шкале времени.
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -33,7 +33,7 @@
 
     <!-- Режимы перехода (3 радио-карточки) -->
     <div class="form-group" style="margin-bottom: 14px;">
-      <label class="form-label">Математический режим перехода (ReformMode):</label>
+      <label class="form-label">Способ перехода и смены стиля:</label>
       <div class="grid-3">
         <div
           v-for="c in modeCards"

@@ -2,9 +2,9 @@
   <div class="section-card">
     <div class="section-header">
       <div>
-        <div class="section-title">☀️ Сезонный перевод часов (Daylight Saving Time / DST)</div>
+        <div class="section-title">☀️ Сезонный перевод часов (Летнее и зимнее время)</div>
         <div class="section-desc">
-          Настройка правил летнего времени (перевод часов весной вперед и осенью назад). Система автоматически обрабатывает «провал во времени» и повторяющийся «час-дубликат» (Fold).
+          Настройка правил летнего времени (перевод часов весной вперед и осенью назад). Система автоматически обрабатывает «провал во времени» и повторяющийся час при переводе назад.
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -33,7 +33,7 @@
 
     <!-- Выбор типа политики DST -->
     <div class="form-group" style="margin-bottom: 14px;">
-      <label class="form-label">Тип политики DST (DstPolicy):</label>
+      <label class="form-label">Правило выбора дня перевода:</label>
       <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px;">
         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
           <input type="radio" :checked="policyConfig.policy === 'relative'" :disabled="isReadOnly" @change="$emit('update-policy-type', 'relative')" />
@@ -45,7 +45,7 @@
         </label>
         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
           <input type="radio" :checked="policyConfig.policy === 'none'" :disabled="isReadOnly" @change="$emit('update-policy-type', 'none')" />
-          <span><strong>Отключено (None)</strong></span>
+          <span><strong>Отключено (без перевода)</strong></span>
         </label>
       </div>
     </div>
@@ -54,7 +54,7 @@
     <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
       <div class="grid-2" style="align-items: center;">
         <div class="form-group">
-          <label class="form-label">⚙️ Величина сезонного сдвига времени (shift_minutes)</label>
+          <label class="form-label">⚙️ Величина сезонного сдвига времени</label>
           <div style="display: flex; gap: 8px; align-items: center;">
             <select class="form-select" :value="shiftSelectVal" style="flex: 1;" :disabled="isReadOnly || policyConfig.policy === 'none'" @change="$emit('update-shift-select', ($event.target as HTMLSelectElement).value)">
               <option value="60">+60 минут (+1 час — стандарт Земли)</option>

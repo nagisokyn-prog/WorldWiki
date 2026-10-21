@@ -18,7 +18,7 @@
 
     <div class="grid-4" style="margin-top: 6px;">
       <div class="form-group">
-        <label class="form-label">🌑 Новолуние (фаза 0.0)</label>
+        <label class="form-label">🌑 Новолуние</label>
         <input
           :value="phaseNames.new"
           type="text"
@@ -29,7 +29,7 @@
         />
       </div>
       <div class="form-group">
-        <label class="form-label">🌓 Растущая (фаза 0.25)</label>
+        <label class="form-label">🌓 Первая четверть (растущая)</label>
         <input
           :value="phaseNames.waxing"
           type="text"
@@ -40,7 +40,7 @@
         />
       </div>
       <div class="form-group">
-        <label class="form-label">🌕 Полнолуние (фаза 0.50)</label>
+        <label class="form-label">🌕 Полнолуние</label>
         <input
           :value="phaseNames.full"
           type="text"
@@ -51,7 +51,7 @@
         />
       </div>
       <div class="form-group">
-        <label class="form-label">🌗 Убывающая (фаза 0.75)</label>
+        <label class="form-label">🌗 Последняя четверть (убывающая)</label>
         <input
           :value="phaseNames.waning"
           type="text"

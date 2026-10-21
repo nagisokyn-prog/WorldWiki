@@ -3,7 +3,7 @@
     <div class="section-header" style="margin-bottom: 10px;">
       <div>
         <div class="section-title" style="font-size: 13px;">
-          🔬 Интерактивный симулятор суток перехода (Gap & Fold Inspector)
+          🔬 Проверка суток перевода часов (Весна и Осень)
         </div>
         <div class="section-desc">
           Проверьте, как система автоматически защищает писателя от парадоксов несуществующего часа и двойного часа.
@@ -16,7 +16,7 @@
           :style="{ fontWeight: simTab === 'spring' ? '600' : 'normal', borderColor: simTab === 'spring' ? 'var(--accent-primary)' : 'var(--border-subtle)' }"
           @click="$emit('switch-sim-tab', 'spring')"
         >
-          🌸 Весенний прыжок (Gap)
+          🌸 Перевод вперед (Весна)
         </button>
         <button
           type="button"
@@ -24,7 +24,7 @@
           :style="{ fontWeight: simTab === 'autumn' ? '600' : 'normal', borderColor: simTab === 'autumn' ? 'var(--accent-purple)' : 'var(--border-subtle)' }"
           @click="$emit('switch-sim-tab', 'autumn')"
         >
-          🍂 Осенний откат (Fold)
+          🍂 Перевод назад (Осень)
         </button>
       </div>
     </div>
@@ -47,8 +47,8 @@
         />
         <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 2px;">
           <span>01:00 (Зима)</span>
-          <span style="color: var(--accent-warning);">01:59:59 ⏩ Прыжок</span>
-          <span style="color: var(--accent-danger);">02:00..02:59 (Провал)</span>
+          <span style="color: var(--accent-warning);">01:59:59 ⏩ Перевод</span>
+          <span style="color: var(--accent-danger);">02:00..02:59 (Пропуск часа)</span>
           <span style="color: var(--accent-success);">03:00 (Лето)</span>
           <span>04:00</span>
         </div>

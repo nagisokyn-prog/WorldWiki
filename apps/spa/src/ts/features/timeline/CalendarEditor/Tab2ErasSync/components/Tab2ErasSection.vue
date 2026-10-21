@@ -34,7 +34,7 @@
             @input="$emit('update-eras', [...eras])"
           />
           <div style="display: flex; align-items: center; gap: 4px;">
-            <span style="font-size: 11px; color: var(--text-muted)">Старт:</span>
+            <span style="font-size: 11px; color: var(--text-muted)">С года:</span>
             <input
               v-model.number="era.год_начала"
               type="number"
@@ -45,7 +45,7 @@
             />
           </div>
           <div style="display: flex; align-items: center; gap: 4px;">
-            <span style="font-size: 11px; color: var(--text-muted)">Конец:</span>
+            <span style="font-size: 11px; color: var(--text-muted)">По год:</span>
             <input
               v-model.number="era.год_конца"
               type="number"

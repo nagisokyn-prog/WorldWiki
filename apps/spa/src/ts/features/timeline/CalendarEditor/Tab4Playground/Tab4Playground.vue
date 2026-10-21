@@ -113,7 +113,7 @@
     <div v-if="liveCalculation" class="section-card" style="margin-top: 12px;">
       <div class="section-header">
         <div>
-          <div class="section-title">🧪 Живой тестер параметров континуума</div>
+          <div class="section-title">🧪 Проверка даты и событий дня</div>
           <div class="section-desc">
             Выбранная дата: <strong>{{ testDay }}.{{ testMonth + 1 }}.{{ testYear }}</strong>
           </div>
@@ -137,7 +137,7 @@
         </div>
 
         <div class="astro-card">
-          <span class="astro-label">⏱️ Мировой тик (M_abs)</span>
+          <span class="astro-label">⏱️ Шкала времени мира (минуты)</span>
           <span class="astro-val">{{ liveCalculation.absMinute }}</span>
         </div>
       </div>

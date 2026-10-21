@@ -63,7 +63,7 @@
         :class="{ active: activeTab === 'astrophysics' }"
         @click="setTab('astrophysics')"
       >
-        <span>🪐 1. Астрофизика & Орбита</span>
+        <span>🪐 Орбита и сутки</span>
       </button>
       <button
         type="button"
@@ -71,7 +71,7 @@
         :class="{ active: activeTab === 'timezones' }"
         @click="setTab('timezones')"
       >
-        <span>🌍 2. Часовые пояса & Регионы</span>
+        <span>🌍 Часовые пояса и регионы</span>
         <span class="tab-badge">{{ planet.timezones.length }}</span>
       </button>
       <button
@@ -80,7 +80,7 @@
         :class="{ active: activeTab === 'moons' }"
         @click="setTab('moons')"
       >
-        <span>🌕 3. Спутники & Луны</span>
+        <span>🌕 Спутники и луны</span>
         <span class="tab-badge">{{ planet.moons.length }} лун</span>
       </button>
     </nav>

@@ -72,7 +72,7 @@
     <!-- БЛОК 3: Пользовательский конструктор условий (гармоник) -->
     <div v-if="ruleType === 'custom'" class="correction-subcard" style="margin-top: 12px;">
       <div class="correction-subcard-title">
-        <span>⚙️ Условия високосных правил (Кастомные гармоники)</span>
+        <span>⚙️ Правила добавления и исключения високосных дней</span>
         <span class="drift-badge" :class="customDriftIsOk ? 'drift-ok' : 'drift-warning'">
           {{ customDriftLabel }}
         </span>

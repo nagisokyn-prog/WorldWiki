@@ -38,7 +38,7 @@
           :disabled="isReadOnly"
           @click="$emit('select-system-preset', 'custom')"
         >
-          ⚙️ Кастом (+3 каждые 10/20/200 лет)
+          ⚙️ Своё правило (+3 каждые 10/20/200 лет)
         </button>
       </div>
     </div>
@@ -82,7 +82,7 @@
           :disabled="isReadOnly"
           @click="$emit('select-rule-type', 'custom')"
         >
-          Пользовательский конструктор (кастомные условия)
+          Пользовательский конструктор (свои условия)
         </button>
         <button
           type="button"

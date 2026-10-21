@@ -46,7 +46,7 @@ describe('useTab3CultureLore', () => {
     expect(emit).toHaveBeenCalled();
   });
 
-  it('обновляет правило возраста персонажей (Спецификация 4.13)', () => {
+  it('обновляет правило возраста персонажей', () => {
     const emit = vi.fn() as unknown as Tab3CultureLoreEmits;
     const { updateAgeRule } = useTab3CultureLore({ calendarData: mockCalendar }, emit);
 
@@ -56,7 +56,7 @@ describe('useTab3CultureLore', () => {
     }));
   });
 
-  it('управляет регионами распространения (Спецификация 4.11)', () => {
+  it('управляет регионами распространения', () => {
     const emit = vi.fn() as unknown as Tab3CultureLoreEmits;
     const { toggleRegion, addRegion } = useTab3CultureLore({ calendarData: mockCalendar }, emit);
 

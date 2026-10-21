@@ -6,7 +6,7 @@
           🧮 Проверка двойной датировки для рукописи (Старый и Новый стиль)
         </div>
         <div class="section-desc">
-          Введите дату любого исторического события в романе, чтобы увидеть, как она записывается в обоих стилях и какова ее точка M_abs.
+          Введите дату любого исторического события в романе, чтобы увидеть, как она записывается в обоих стилях и где находится на шкале времени мира.
         </div>
       </div>
     </div>
@@ -28,15 +28,15 @@
     </div>
     <div class="grid-3" style="background: var(--bg-surface); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
       <div>
-        <span style="font-size: 11px; color: var(--text-muted); display: block;">Старый стиль (O.S.):</span>
+        <span style="font-size: 11px; color: var(--text-muted); display: block;">Старый стиль (до реформы):</span>
         <strong style="font-size: 14px; color: var(--text-main);">{{ dualDatingResult.osDateStr }}</strong>
       </div>
       <div>
-        <span style="font-size: 11px; color: var(--text-muted); display: block;">Новый стиль (N.S.):</span>
+        <span style="font-size: 11px; color: var(--text-muted); display: block;">Новый стиль (после реформы):</span>
         <strong style="font-size: 14px; color: var(--accent-primary);">{{ dualDatingResult.nsDateStr }}</strong>
       </div>
       <div>
-        <span style="font-size: 11px; color: var(--text-muted); display: block;">Мировая минута (M_abs):</span>
+        <span style="font-size: 11px; color: var(--text-muted); display: block;">Минута на шкале мира:</span>
         <strong style="font-size: 13px; font-family: var(--font-mono); color: var(--accent-purple);">{{ dualDatingResult.mabsMinutes.toLocaleString('ru-RU') }} мин</strong>
       </div>
     </div>

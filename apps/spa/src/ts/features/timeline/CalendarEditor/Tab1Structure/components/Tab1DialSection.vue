@@ -2,7 +2,7 @@
   <section class="section-card">
     <header class="section-header">
       <div>
-        <div class="section-title">⏰ Деление суток (Циферблат: DialHierarchy)</div>
+        <div class="section-title">⏰ Деление суток (Часы, стражи, минуты)</div>
         <div class="section-desc">
           Произвольная цепочка делений дня от старшей к младшей (часы, стражи, минуты, удары гонга).
         </div>

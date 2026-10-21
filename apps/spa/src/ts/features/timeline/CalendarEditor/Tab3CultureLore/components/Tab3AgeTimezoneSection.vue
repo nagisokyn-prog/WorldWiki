@@ -4,7 +4,7 @@
     <div class="section-card">
       <div class="section-header">
         <div>
-          <div class="section-title">🧓 Правило возраста персонажей (Спецификация 4.13)</div>
+          <div class="section-title">🧓 Правило возраста персонажей</div>
           <div class="section-desc">Как жители этой культуры считают возраст своих героев в диалогах и биографиях книги.</div>
         </div>
       </div>
@@ -59,7 +59,7 @@
     <div class="section-card" style="margin-top: 12px;">
       <div class="section-header">
         <div>
-          <div class="section-title">🗺️ Географические регионы и часовой пояс календаря (Спецификация 4.11)</div>
+          <div class="section-title">🗺️ Регионы распространения и часовой пояс</div>
           <div class="section-desc">Где используется этот календарь. Одна культура может охватывать несколько регионов и городов планеты.</div>
         </div>
         <button

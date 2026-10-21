@@ -68,6 +68,7 @@
         <Tab1Structure
           v-if="activeTab === 'timeGrid'"
           :calendar-data="calData"
+          :planet-orbit-days="planetOrbitDays"
           :is-read-only="isReadOnly"
           @update="patchCalendarData"
         />
@@ -138,7 +139,8 @@ const {
   openAuditModal,
   patchCalendarData,
   updateName,
+  planetOrbitDays,
 } = useCalendarEditor(props, emit);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarEditor.css"></style>
+<style src="@worldwiki/resources/styles/features/timeline/CalendarEditor.css"></style>

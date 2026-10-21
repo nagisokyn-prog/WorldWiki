@@ -23,7 +23,9 @@ import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
 import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
 import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
-import CalendarEntityAdapterVue from '@/features/timeline/CalendarEntityAdapter/CalendarEntityAdapter.vue';
+import CalendarEditorVue from '@/features/timeline/CalendarEditor/CalendarEditor.vue';
+import PlanetEditorVue from '@/features/timeline/PlanetEditor/PlanetEditor.vue';
+import type { PlanetDto } from '@/features/timeline/PlanetEditor/PlanetEditor.model';
 
 export default defineComponent({
   name: 'EditorView',
@@ -32,7 +34,8 @@ export default defineComponent({
     EditorGroupPaneVue,
     ChaptersMainVue,
     EntityEditorVue,
-    CalendarEntityAdapterVue,
+    CalendarEditorVue,
+    PlanetEditorVue,
     SchemaEditorMainVue,
     CrossReferenceMatrixVue,
     ConsistencyCheckerVue,
@@ -62,6 +65,28 @@ export default defineComponent({
       shell.isWowilonOpen = !shell.isWowilonOpen;
     };
 
+    const planetRenamedListener = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+      for (const group of shell.editorGroups) {
+        for (const tab of group.tabs) {
+          if (tab.entityType === 'planet' && (tab.rawId === id || tab.id.endsWith(id) || tab.id === `entity:planet:${id}`)) {
+            tab.title = name;
+          }
+        }
+      }
+    };
+
+    const calendarRenamedListener = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+      for (const group of shell.editorGroups) {
+        for (const tab of group.tabs) {
+          if (tab.entityType === 'calendar' && (tab.rawId === id || tab.id.endsWith(id) || tab.id === `entity:calendar:${id}`)) {
+            tab.title = name;
+          }
+        }
+      }
+    };
+
     onMounted(() => {
       shell.quickOpenRef = quickOpenRef.value;
       shell.commandPaletteRef = commandPaletteRef.value;
@@ -73,11 +98,15 @@ export default defineComponent({
       shell.restoreState();
       
       document.addEventListener('ww:toggle-wowilon', toggleWowilonHandler);
+      document.addEventListener('ww:planet-renamed', planetRenamedListener as EventListener);
+      document.addEventListener('ww:calendar-renamed', calendarRenamedListener as EventListener);
     });
 
     onUnmounted(() => {
       hotkeys.unregister();
       document.removeEventListener('ww:toggle-wowilon', toggleWowilonHandler);
+      document.removeEventListener('ww:planet-renamed', planetRenamedListener as EventListener);
+      document.removeEventListener('ww:calendar-renamed', calendarRenamedListener as EventListener);
     });
 
     // Initialize shell with project name
@@ -129,6 +158,11 @@ export default defineComponent({
     // Methods - direct references from store
     const selectSidebarTab = shell.selectSidebarTab;
     const openEntity = shell.openEntity;
+    const openPlanetViewer = (planet: Record<string, unknown>) => {
+      const id = String(planet.id ?? '');
+      const title = typeof planet.name === 'string' ? planet.name : undefined;
+      openEntity({ ...planet, entityType: 'planet', id, title });
+    };
     const openSchemaEditor = shell.openSchemaEditor;
     const openChapterTab = shell.openChapterTab;
     const closeEditor = shell.closeEditor;
@@ -145,6 +179,18 @@ export default defineComponent({
     const resetSettings = shell.resetSettings;
     const addLog = shell.addLog;
     const handleUpdateData = shell.handleUpdateData;
+    const handleUpdatePlanetName = (tabId: string, newName: string) => {
+      for (const group of shell.editorGroups) {
+        for (const tab of group.tabs) {
+          if (tab.id === tabId) {
+            tab.title = newName;
+          }
+        }
+      }
+    };
+    const handleUpdatePlanet = (tabId: string, planetData: PlanetDto | Record<string, unknown>) => {
+      handleUpdateData(tabId, planetData as unknown as Record<string, unknown>);
+    };
     const getEntityDisplayName = schema.getEntityDisplayName;
     const deleteEntity = shell.deleteEntity;
     const deleteVolume = shell.deleteVolume;
@@ -223,6 +269,7 @@ export default defineComponent({
       // Methods
       selectSidebarTab,
       openEntity,
+      openPlanetViewer,
       openSchemaEditor,
       openChapterTab,
       closeEditor,
@@ -239,6 +286,8 @@ export default defineComponent({
       resetSettings,
       addLog,
       handleUpdateData,
+      handleUpdatePlanetName,
+      handleUpdatePlanet,
       getEntityDisplayName,
       deleteEntity,
       deleteVolume,

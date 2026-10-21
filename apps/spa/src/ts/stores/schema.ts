@@ -59,6 +59,12 @@ export const useSchemaStore = defineStore('schema', () => {
 
   const getEntityDisplayName = (entity: Record<string, unknown>, entityType?: string): string => {
     if (!entity) return 'Без названия';
+    if (entityType === 'planet' || entityType === 'calendar') {
+      const explicitName = entity.name || entity.Name || entity.title || entity.название;
+      if (explicitName && typeof explicitName === 'string' && explicitName.trim().length > 0) {
+        return explicitName.trim();
+      }
+    }
     if (entityType && schemaCache.value[entityType]) {
       const path = schemaCache.value[entityType].titleField;
       if (path) {

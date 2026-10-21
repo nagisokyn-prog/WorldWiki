@@ -1,13 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useCalendarEntityAdapter } from './useCalendarEntityAdapter';
-import type { CalendarRecord } from '@/stores/calendar.store';
 
 vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
-    calendars: [
-      { id: 'cal_123', name: 'Григорианский', is_master: true, is_default: true, data: {} },
-    ],
-    getCalendars: vi.fn().mockResolvedValue([]),
+    getCalendars: vi.fn().mockResolvedValue([
+      { id: 'cal_123', name: 'Григорианский', is_master: true, is_default: true, data: { название: 'Григорианский' } },
+    ]),
+    getPlanets: vi.fn().mockReturnValue([
+      { id: 'earth', project_id: 'test_project', name: 'Земля', orbit_days: 365.25, ticks_per_day: 86400 },
+    ]),
+    savePlanet: vi.fn(),
     saveCalendar: vi.fn().mockResolvedValue({ success: true }),
   }),
 }));
@@ -29,17 +31,31 @@ describe('useCalendarEntityAdapter', () => {
   it('переключает режим на планету при выборе планеты', () => {
     const emit = vi.fn();
     const adapter = useCalendarEntityAdapter(dummyProps, emit);
-    adapter.onSelectPlanet({ id: 'mars_1', name: 'Марс', orbit_days: 687.0 });
+    adapter.onSelectPlanet({
+      id: 'mars_1',
+      project_id: 'test_project',
+      name: 'Марс',
+      orbit_days: 687.0,
+      ticks_per_day: 88775,
+    });
 
     expect(adapter.activeMode.value).toBe('planet');
     expect(adapter.selectedPlanetId.value).toBe('mars_1');
     expect(adapter.selectedNodeId.value).toBe('planet:mars_1');
   });
 
-  it('переключает режим обратно на календарь при выборе календаря', () => {
+  it('переключает режим обратно на календарь при выборе календаря', async () => {
     const emit = vi.fn();
     const adapter = useCalendarEntityAdapter(dummyProps, emit);
-    adapter.onSelectPlanet({ id: 'mars_1', name: 'Марс', orbit_days: 687.0 });
+    adapter.onSelectPlanet({
+      id: 'mars_1',
+      project_id: 'test_project',
+      name: 'Марс',
+      orbit_days: 687.0,
+      ticks_per_day: 88775,
+    });
+    // Ждем первоначальной загрузки списка календарей
+    await Promise.resolve();
     adapter.onSelectCalendar(0);
 
     expect(adapter.activeMode.value).toBe('calendar');

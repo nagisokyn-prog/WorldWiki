@@ -3,7 +3,7 @@
  * @description Unit-тесты логики главного контейнера CalendarEditor
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useCalendarEditor } from './useCalendarEditor';
 import type { CalendarEditorProps, CalendarEditorEmits } from './CalendarEditor.model';
 

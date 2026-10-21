@@ -135,10 +135,7 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
         );
         if let Err(e) = apply_schema_pipeline(&db).await {
             eprintln!("[CRITICAL] Schema pipeline failed to apply: {}", e);
-            return Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                e.to_string(),
-            )));
+            return Err(Box::new(std::io::Error::other(e.to_string())));
         }
 
         let save_hash_query = "UPSERT type::record('system_meta', 'schema_version') SET ddl_hash = $hash, updated_at = time::now()";

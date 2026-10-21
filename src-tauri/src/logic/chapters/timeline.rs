@@ -104,20 +104,25 @@ pub async fn get_planet_calendar_bundle_inner(
     Ok(val.unwrap_or(json!({ "planets": [], "calendars": [] })))
 }
 
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct SavePlanetParams {
+    pub project: String,
+    pub planet_id: Option<String>,
+    pub name: String,
+    pub ticks_per_day: i64,
+    pub axial_tilt_mdeg: Option<i64>,
+    pub orbit_days_num: Option<i64>,
+    pub orbit_days_den: Option<i64>,
+    pub moons: Option<Value>,
+}
+
 /// Сохранить планету через хранимую функцию SurrealDB
 pub async fn save_planet_inner(
     db: &Surreal<Db>,
-    project: &str,
-    planet_id: Option<String>,
-    name: &str,
-    ticks_per_day: i64,
-    axial_tilt_mdeg: Option<i64>,
-    orbit_days_num: Option<i64>,
-    orbit_days_den: Option<i64>,
-    moons: Option<Value>,
+    params: SavePlanetParams,
 ) -> Result<Value, ChapterError> {
-    let clean_pid = project.trim().replace("projects:", "");
-    let id_clause = if let Some(ref pid) = planet_id {
+    let clean_pid = params.project.trim().replace("projects:", "");
+    let id_clause = if let Some(ref pid) = params.planet_id {
         format!("type::record('planets', '{}')", pid.trim().replace("planets:", ""))
     } else {
         "NONE".to_string()
@@ -129,12 +134,12 @@ pub async fn save_planet_inner(
     let mut res = db
         .query(&query_str)
         .bind(("p", clean_pid))
-        .bind(("name", name.to_string()))
-        .bind(("ticks", ticks_per_day))
-        .bind(("tilt", axial_tilt_mdeg))
-        .bind(("num", orbit_days_num))
-        .bind(("den", orbit_days_den))
-        .bind(("moons", moons))
+        .bind(("name", params.name))
+        .bind(("ticks", params.ticks_per_day))
+        .bind(("tilt", params.axial_tilt_mdeg))
+        .bind(("num", params.orbit_days_num))
+        .bind(("den", params.orbit_days_den))
+        .bind(("moons", params.moons))
         .await?;
     let val: Option<Value> = res.take(0)?;
     Ok(val.unwrap_or(json!({ "success": true })))

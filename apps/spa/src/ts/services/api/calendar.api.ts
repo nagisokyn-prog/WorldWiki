@@ -44,38 +44,48 @@ export const calendarApi = {
     invoke<{ success: boolean }>('save_global_timeline', { project, data }),
 
   getPlanetCalendarBundle: (project: string): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::get_planet_calendar_bundle(type::record("projects", $project));',
-      params: { project },
-    }),
+    invoke<unknown>('get_planet_calendar_bundle', { project }),
 
   savePlanetDirect: (project: string, planetId: string | null, name: string, data: Record<string, unknown>): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::save_planet(type::record("projects", $project), $planetId, $name, $data);',
-      params: { project, planetId, name, data },
+    invoke<unknown>('save_planet', {
+      params: {
+        project,
+        planet_id: planetId || null,
+        name,
+        ticks_per_day: Number(data.ticks_per_day) || 86400,
+        axial_tilt_mdeg: Number(data.axial_tilt_mdeg) || 0,
+        orbit_days_num: Number(data.orbit_days_num) || 365,
+        orbit_days_den: Number(data.orbit_days_den) || 1,
+        moons: data.moons || null,
+      },
     }),
 
   saveCalendarDirect: (project: string, calendarId: string | null, planetId: string | null, name: string, isMaster: boolean, data: Record<string, unknown>): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::save_calendar(type::record("projects", $project), $calendarId, $planetId, $name, $isMaster, $data);',
-      params: { project, calendarId, planetId, name, isMaster, data },
+    invoke<unknown>('save_calendar_direct', {
+      project,
+      calendarId: calendarId || null,
+      planetId: planetId || 'earth',
+      name,
+      isMaster,
+      data,
     }),
 
-  setMasterCalendar: (project: string, calendarId: string): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::set_master_calendar(type::record("projects", $project), type::record("calendars", $calendarId));',
-      params: { project, calendarId },
+  setMasterCalendar: (project: string, planetId: string, calendarId: string): Promise<unknown> =>
+    invoke<unknown>('set_master_calendar', {
+      project,
+      planetId,
+      calendarId,
     }),
 
-  deletePlanetDirect: (planetId: string): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::delete_planet(type::record("planets", $planetId));',
-      params: { planetId },
+  deletePlanetDirect: (project: string, planetId: string, cascade?: boolean): Promise<unknown> =>
+    invoke<unknown>('delete_planet', {
+      project,
+      planetId,
+      cascade: cascade ?? true,
     }),
 
   deleteCalendarDirect: (calendarId: string): Promise<unknown> =>
-    invoke<unknown>('run_surql_query', {
-      query: 'RETURN fn::delete_calendar(type::record("calendars", $calendarId));',
-      params: { calendarId },
+    invoke<unknown>('delete_calendar_direct', {
+      calendarId,
     }),
 };

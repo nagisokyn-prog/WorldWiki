@@ -5,15 +5,18 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { useTab4Playground } from './useTab4Playground';
-import type { Tab4PlaygroundProps, Tab4PlaygroundEmits } from './Tab4Playground.model';
+import type { Tab4PlaygroundEmits } from './Tab4Playground.model';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 
 describe('useTab4Playground', () => {
   const mockCalendar: CalendarData = {
     название: 'Песочница Календаря',
-    точка_отсчета: { эпоха: 0, год: 1024, месяц: 2, день: 15, час: 14, минута: 30 },
-    месяцы: [{ название: 'Март', дней: 31 }],
+    дней_в_неделе: 7,
     названия_дней_недели: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    первый_месяц_года: 0,
+    месяцы: [{ название: 'Март', дней: 31 }],
+    эпохи: [{ название: 'Эра', год_начала: 1, год_конца: 9999 }],
+    точка_отсчета: { эпоха: 0, год: 1024, месяц: 2, день: 15, день_недели: 0, час: 14, минута: 30 } as unknown as CalendarData['точка_отсчета'],
   };
 
   it('инициализирует точку отсчета сюжета', () => {

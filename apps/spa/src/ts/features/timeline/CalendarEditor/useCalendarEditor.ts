@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { CalendarEngine } from '@/services/Calendars/useCalendarEngine';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
@@ -39,6 +39,10 @@ export function useCalendarEditor(
     );
     const extraDays = Number(calData.value.extra_days) || 0;
     return monthsDays + extraDays;
+  });
+
+  const planetOrbitDays = computed<number>(() => {
+    return Number((calData.value as any)?.planet_orbit_days) || 365.2422;
   });
 
   const tabsList = computed<CalendarTabInfo[]>(() => [
@@ -108,9 +112,9 @@ export function useCalendarEditor(
   function patchCalendarData(patch: Partial<CalendarData>) {
     if (!calendarRecord.value) return;
     calendarRecord.value.data = {
-      ...calendarRecord.value.data,
+      ...(calendarRecord.value.data || {}),
       ...patch,
-    };
+    } as CalendarData & Record<string, unknown>;
     if (patch.название) {
       calendarRecord.value.name = patch.название;
     }
@@ -126,6 +130,9 @@ export function useCalendarEditor(
     if (calendarRecord.value.data) {
       calendarRecord.value.data.название = name;
     }
+    document.dispatchEvent(new CustomEvent('ww:calendar-renamed', {
+      detail: { id: calendarRecord.value.id || props.calendarId, name },
+    }));
     emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);
   }
 
@@ -134,13 +141,17 @@ export function useCalendarEditor(
     isSaving.value = true;
     error.value = null;
     try {
-      await calendarStore.saveCalendar(props.projectId, {
+      const dataToSave = {
+        ...(calendarRecord.value.data || {}),
         id: calendarRecord.value.id,
+        _id: calendarRecord.value.id,
         name: calendarRecord.value.name || calendarRecord.value.data?.название || 'Календарь',
+        название: calendarRecord.value.name || calendarRecord.value.data?.название || 'Календарь',
         is_default: calendarRecord.value.is_default,
         is_master: calendarRecord.value.is_master,
-        data: calendarRecord.value.data,
-      });
+      } as unknown as CalendarData & Record<string, unknown>;
+
+      await calendarStore.saveCalendar(props.projectId, dataToSave);
       emit('save', calendarRecord.value.data as Record<string, unknown>);
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Не удалось сохранить календарь';
@@ -172,6 +183,19 @@ export function useCalendarEditor(
 
   onMounted(async () => {
     await loadCalendar();
+    const handleRenamed = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+      if (calendarRecord.value && (calendarRecord.value.id === id || String(calendarRecord.value.id).endsWith(id) || props.calendarId === id)) {
+        if (calendarRecord.value.name !== name) {
+          calendarRecord.value.name = name;
+          if (calendarRecord.value.data) calendarRecord.value.data.название = name;
+        }
+      }
+    };
+    document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
+    onUnmounted(() => {
+      document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
+    });
   });
 
   watch(
@@ -198,5 +222,6 @@ export function useCalendarEditor(
     openAuditModal,
     patchCalendarData,
     updateName,
+    planetOrbitDays,
   };
 }

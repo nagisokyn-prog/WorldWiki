@@ -256,6 +256,30 @@ export async function saveGlobalTimeline(project: string, data: unknown): Promis
     return await invoke('save_global_timeline', { project, data });
 }
 
+export async function getPlanetCalendarBundle(project: string): Promise<unknown> {
+    return await invoke('get_planet_calendar_bundle', { project });
+}
+
+export async function savePlanet(params: unknown): Promise<unknown> {
+    return await invoke('save_planet', { params });
+}
+
+export async function saveCalendarDirect(project: string, calendarId: string | null, planetId: string, name: string, isMaster: boolean, data: unknown): Promise<unknown> {
+    return await invoke('save_calendar_direct', { project, calendarId, planetId, name, isMaster, data });
+}
+
+export async function setMasterCalendar(project: string, planetId: string, calendarId: string): Promise<unknown> {
+    return await invoke('set_master_calendar', { project, planetId, calendarId });
+}
+
+export async function deletePlanet(project: string, planetId: string, cascade: boolean | null): Promise<unknown> {
+    return await invoke('delete_planet', { project, planetId, cascade });
+}
+
+export async function deleteCalendarDirect(calendarId: string): Promise<unknown> {
+    return await invoke('delete_calendar_direct', { calendarId });
+}
+
 export async function exportChapters(project: string, chapters: unknown[], format: string): Promise<string> {
     return await invoke('export_chapters', { project, chapters, format });
 }

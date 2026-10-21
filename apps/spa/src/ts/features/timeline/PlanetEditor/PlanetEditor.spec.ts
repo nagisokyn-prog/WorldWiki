@@ -46,13 +46,12 @@ describe('usePlanetEditor', () => {
     expect(editor.planet.value.ticks_per_day).toBe(30 * 3600);
   });
 
-  it('пересчитывает орбиту из рациональной дроби и обновляет точки солнцестояний', () => {
+  it('пересчитывает орбиту и обновляет точки солнцестояний', () => {
     const editor = usePlanetEditor(props, emit);
-    editor.planet.value.orbit_days_num = 400;
-    editor.planet.value.orbit_days_den = 1;
-    editor.updateOrbitFromFraction();
+    editor.updateOrbitDays(400);
     expect(editor.planet.value.orbit_days).toBe(400);
     expect(editor.planet.value.solstices.summer).toBeCloseTo(400 * 0.471, 1);
+    expect(editor.planet.value.solstices.winter).toBeCloseTo(400 * 0.972, 1);
   });
 
   it('применяет пресет 24 часовых поясов', () => {

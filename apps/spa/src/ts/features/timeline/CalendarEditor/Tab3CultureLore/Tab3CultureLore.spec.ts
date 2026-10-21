@@ -1,18 +1,23 @@
 /**
  * @file Tab3CultureLore.spec.ts
- * @description Unit-тесты для useTab3CultureLore
+ * @description Unit-тесты для useTab3CultureLore (Сезоны, праздники, фазы луны, возраст, регионы)
  */
 
 import { describe, it, expect, vi } from 'vitest';
 import { useTab3CultureLore } from './useTab3CultureLore';
-import type { Tab3CultureLoreProps, Tab3CultureLoreEmits } from './Tab3CultureLore.model';
+import type { Tab3CultureLoreEmits } from './Tab3CultureLore.model';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 
 describe('useTab3CultureLore', () => {
   const mockCalendar: CalendarData = {
     название: 'Лор Календарь',
-    сезоны: [{ название: 'Лето', месяцы: [0] }],
-    праздники: [{ название: 'Солнцеворот', дата_начала: { месяц: 5, день: 21 }, дата_конца: { месяц: 5, день: 21 } }],
+    дней_в_неделе: 7,
+    названия_дней_недели: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    первый_месяц_года: 0,
+    месяцы: [{ название: 'Январь', дней: 31 }],
+    эпохи: [{ название: 'Новая Эра', год_начала: 1, год_конца: 9999 }],
+    сезоны: [{ название: 'Лето', цвет: '#f59e0b', hemisphere: 'northern', месяцы: [0] }],
+    праздники: [{ название: 'Солнцеворот', дата_начала: { месяц: 5, день: 21 }, is_range: false }],
   };
 
   it('добавляет и удаляет сезоны', () => {
@@ -45,17 +50,22 @@ describe('useTab3CultureLore', () => {
     const emit = vi.fn() as unknown as Tab3CultureLoreEmits;
     const { updateAgeRule } = useTab3CultureLore({ calendarData: mockCalendar }, emit);
 
-    updateAgeRule({ ratio_to_earth: 1.5, step_on_new_year: true });
+    updateAgeRule({ age_at_birth: 1, step_on_new_year: true, year_only: true });
     expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
-      character_age_rules: expect.objectContaining({ ratio_to_earth: 1.5, step_on_new_year: true }),
+      character_age_rules: expect.objectContaining({ age_at_birth: 1, step_on_new_year: true, year_only: true }),
     }));
   });
 
-  it('обновляет часовой пояс календаря (Спецификация 4.11)', () => {
+  it('управляет регионами распространения (Спецификация 4.11)', () => {
     const emit = vi.fn() as unknown as Tab3CultureLoreEmits;
-    const { setCalendarTimezone } = useTab3CultureLore({ calendarData: mockCalendar }, emit);
+    const { toggleRegion, addRegion } = useTab3CultureLore({ calendarData: mockCalendar }, emit);
 
-    setCalendarTimezone('UTC+5');
-    expect(emit).toHaveBeenCalledWith('update', { calendar_timezone: 'UTC+5' });
+    toggleRegion('desert');
+    expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
+      culture_regions: expect.arrayContaining(['desert']),
+    }));
+
+    addRegion('Новая Провинция');
+    expect(emit).toHaveBeenCalled();
   });
 });

@@ -1,21 +1,44 @@
 <template>
   <div class="tab4-playground">
     <!-- СЕКЦИЯ 1: ТОЧКА ОТСЧЕТА ПРОИЗВЕДЕНИЯ (ДАТА НАЧАЛА СЮЖЕТА / 1-Й ГЛАВЫ) -->
-    <section class="section-card">
-      <header class="section-header">
-        <div>
-          <div class="section-title text-warning">
-            🎯 Точка отсчёта произведения (Дата начала сюжета / 1-й главы)
-          </div>
-          <div class="section-desc">
-            Истинный момент времени, с которого стартует повествование книги.
+    <div class="section-card" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.04);">
+      <div class="section-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <input
+            type="checkbox"
+            checked
+            style="accent-color: var(--accent-warning); width: 18px; height: 18px;"
+            :disabled="isReadOnly"
+          />
+          <div>
+            <div class="section-title" style="color: var(--accent-warning);">
+              🎯 Точка отсчёта произведения (Дата начала сюжета / 1-й главы)
+            </div>
+            <div class="section-desc">
+              Дата в этом календаре, с которой стартует повествование произведения.
+            </div>
           </div>
         </div>
-      </header>
+        <span class="status-chip warning">🌟 Активная точка отсчёта сюжета</span>
+      </div>
 
-      <div class="grid-4 mb-3">
+      <div class="grid-4" style="margin-top: 12px;">
         <div class="form-group">
-          <label class="form-label">Год сюжета</label>
+          <label class="form-label">Эпоха / Эра</label>
+          <select
+            v-model.number="storyOrigin.era_index"
+            class="form-select"
+            :disabled="isReadOnly"
+            @change="updateOrigin({ era_index: storyOrigin.era_index })"
+          >
+            <option v-for="(era, idx) in eras" :key="idx" :value="idx">
+              {{ era.название }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Год начала истории</label>
           <input
             v-model.number="storyOrigin.year"
             type="number"
@@ -27,14 +50,16 @@
 
         <div class="form-group">
           <label class="form-label">Месяц</label>
-          <input
+          <select
             v-model.number="storyOrigin.month"
-            type="number"
-            class="form-input"
-            min="0"
+            class="form-select"
             :disabled="isReadOnly"
-            @input="updateOrigin({ month: storyOrigin.month })"
-          />
+            @change="updateOrigin({ month: storyOrigin.month })"
+          >
+            <option v-for="(name, idx) in monthNames" :key="idx" :value="idx">
+              {{ name }}
+            </option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -48,116 +73,101 @@
             @input="updateOrigin({ day: storyOrigin.day })"
           />
         </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 8px;">
+        <div class="form-group">
+          <label class="form-label">День недели для даты старта истории</label>
+          <select
+            v-model.number="storyOrigin.weekday_index"
+            class="form-select"
+            :disabled="isReadOnly"
+            @change="updateOrigin({ weekday_index: storyOrigin.weekday_index })"
+          >
+            <option v-for="(wName, wIdx) in weekdayNames" :key="wIdx" :value="wIdx">
+              {{ wName }}
+            </option>
+          </select>
+        </div>
 
         <div class="form-group">
-          <label class="form-label">Время (ч:м)</label>
-          <div class="flex gap-1 items-center">
-            <input
-              v-model.number="storyOrigin.hour"
-              type="number"
-              class="form-input w-16"
-              min="0"
-              max="23"
-              :disabled="isReadOnly"
-              @input="updateOrigin({ hour: storyOrigin.hour })"
-            /> :
-            <input
-              v-model.number="storyOrigin.minute"
-              type="number"
-              class="form-input w-16"
-              min="0"
-              max="59"
-              :disabled="isReadOnly"
-              @input="updateOrigin({ minute: storyOrigin.minute })"
-            />
+          <label class="form-label">Статус привязки к произведению</label>
+          <div style="font-size: 12px; color: var(--text-muted); padding-top: 6px;">
+            Этот календарь выбран как <strong>основной хронологический ориентир начала романа</strong>.
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- СЕКЦИЯ 2: ИНТЕРАКТИВНАЯ МАТРИЦА МЕСЯЦА -->
-    <section class="section-card">
-      <header class="section-header">
-        <div>
-          <div class="section-title">
-            🗓️ Сетка месяца (Интерактивная матрица)
-          </div>
-          <div class="section-desc">Кликните на любой день для живой проверки параметров лора.</div>
-        </div>
-      </header>
-
-      <div class="month-matrix-grid flex flex-wrap gap-2 mb-3">
-        <div
-          v-for="d in monthMatrixDays"
-          :key="d.day"
-          class="matrix-day-cell p-2 rounded border border-subtle cursor-pointer text-center w-14"
-          :class="{
-            'bg-accent text-white font-bold': d.isSelected,
-            'bg-surface hover:bg-hover': !d.isSelected,
-            'border-warning': d.isHoliday
-          }"
-          @click="selectMatrixDay(d.day)"
-        >
-          <div class="text-xs opacity-75">{{ d.weekdayName.slice(0, 2) }}</div>
-          <div class="text-base">{{ d.day }}</div>
-          <div v-if="d.isHoliday" class="text-xs">🎉</div>
-        </div>
-      </div>
-    </section>
+    <!-- СЕКЦИЯ 2: ИНТЕРАКТИВНАЯ МАТРИЦА МЕСЯЦА (7-КОЛОНОЧНЫЙ КАЛЕНДАРЬ) -->
+    <Tab4MatrixSection
+      :current-month-title="currentMonthTitle"
+      :weekday-headers="weekdayHeaders"
+      :month-matrix-days="monthMatrixDays"
+      @prev-month="prevMonth"
+      @next-month="nextMonth"
+      @select-day="selectMatrixDay"
+    />
 
     <!-- СЕКЦИЯ 3: ЖИВОЙ ТЕСТЕР ДАТЫ -->
-    <section class="section-card" v-if="liveCalculation">
-      <header class="section-header">
+    <div v-if="liveCalculation" class="section-card" style="margin-top: 12px;">
+      <div class="section-header">
         <div>
           <div class="section-title">🧪 Живой тестер параметров континуума</div>
           <div class="section-desc">
             Выбранная дата: <strong>{{ testDay }}.{{ testMonth + 1 }}.{{ testYear }}</strong>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div class="grid-4">
-        <div class="p-2 rounded bg-surface border border-subtle text-center">
-          <span class="text-xs text-muted block mb-1">🌿 Сезон</span>
-          <strong class="text-sm">{{ liveCalculation.seasonName }}</strong>
+      <div class="astro-cards-grid">
+        <div class="astro-card">
+          <span class="astro-label">🌿 Сезон</span>
+          <span class="astro-val">{{ liveCalculation.seasonName }}</span>
         </div>
 
-        <div class="p-2 rounded bg-surface border border-subtle text-center">
-          <span class="text-xs text-muted block mb-1">🎉 Праздник</span>
-          <strong class="text-sm">{{ liveCalculation.isHoliday ? 'Да (Праздничный день)' : 'Будний день' }}</strong>
+        <div class="astro-card">
+          <span class="astro-label">🎉 Праздник</span>
+          <span class="astro-val">{{ liveCalculation.isHoliday ? 'Да (Праздничный день)' : 'Будний день' }}</span>
         </div>
 
-        <div class="p-2 rounded bg-surface border border-subtle text-center">
-          <span class="text-xs text-muted block mb-1">⚖️ Високосный год</span>
-          <strong class="text-sm">{{ liveCalculation.isLeapYear ? 'Високосный' : 'Обычный' }}</strong>
+        <div class="astro-card">
+          <span class="astro-label">⚖️ Високосный год</span>
+          <span class="astro-val">{{ liveCalculation.isLeapYear ? 'Високосный' : 'Обычный' }}</span>
         </div>
 
-        <div class="p-2 rounded bg-surface border border-subtle text-center">
-          <span class="text-xs text-muted block mb-1">⏱️ Мировой тик (M_abs)</span>
-          <strong class="text-sm font-mono">{{ liveCalculation.absMinute }}</strong>
+        <div class="astro-card">
+          <span class="astro-label">⏱️ Мировой тик (M_abs)</span>
+          <span class="astro-val">{{ liveCalculation.absMinute }}</span>
         </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Tab4PlaygroundProps, Tab4PlaygroundEmits } from './Tab4Playground.model';
 import { useTab4Playground } from './useTab4Playground';
+import Tab4MatrixSection from './components/Tab4MatrixSection.vue';
 
 const props = defineProps<Tab4PlaygroundProps>();
 const emit = defineEmits<Tab4PlaygroundEmits>();
 
 const {
+  eras,
   storyOrigin,
   testYear,
   testMonth,
   testDay,
+  currentMonthTitle,
+  monthNames,
+  weekdayNames,
+  weekdayHeaders,
   liveCalculation,
   monthMatrixDays,
   updateOrigin,
   selectMatrixDay,
+  prevMonth,
+  nextMonth,
 } = useTab4Playground(props, emit);
 </script>
-
-<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarEditor.css"></style>

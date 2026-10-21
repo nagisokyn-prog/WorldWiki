@@ -1,0 +1,430 @@
+:root,
+.planet-editor,
+.main-workspace {
+  --bg-canvas: var(--bg-base);
+  --bg-sidebar: var(--bg-secondary);
+  --bg-surface: var(--bg-card);
+  --bg-surface-elevated: var(--bg-panel);
+  --border-subtle: var(--border-color);
+  --border-accent: var(--accent-glow);
+  --border-focus: var(--accent);
+  --text-dim: var(--text-disabled);
+  --accent-primary: var(--info, var(--accent));
+  --accent-primary-hover: var(--accent-hover);
+  --accent-success: var(--success);
+  --accent-warning: var(--warning);
+  --accent-danger: var(--error);
+  --accent-purple: var(--accent);
+  --radius-full: var(--radius-round);
+}
+
+.planet-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Dashboard карточка планеты */
+.dashboard-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent);
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.dashboard-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.dashboard-title-input {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  width: 100%;
+  max-width: 420px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-title-input:hover,
+.dashboard-title-input:focus {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface-elevated);
+}
+
+.dashboard-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.btn-dashboard:hover {
+  border-color: var(--border-focus);
+}
+
+.btn-dashboard.btn-save {
+  background: var(--accent-primary);
+  color: var(--text-inverted, var(--text-on-accent, var(--text-main)));
+  border-color: var(--accent-primary);
+}
+
+.btn-dashboard.btn-save:hover {
+  filter: brightness(1.1);
+}
+
+.btn-dashboard.btn-danger {
+  color: var(--accent-danger);
+  border-color: var(--danger-border, var(--border-subtle));
+}
+
+.btn-dashboard.btn-danger:hover {
+  background: var(--danger-bg, var(--bg-surface-elevated));
+}
+
+/* Навигация табов планеты */
+.planet-tabs-nav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-surface-elevated);
+}
+
+.tab-btn.active {
+  color: var(--accent-primary);
+  background: var(--info-bg, var(--bg-surface-elevated));
+  border-color: var(--border-focus);
+  font-weight: 600;
+}
+
+.tab-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill, 10px);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Панель содержимого таба */
+.tab-pane {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.tab-pane.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Карточки секций */
+.section-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  margin-bottom: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Сетки */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Формы */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.form-input,
+.form-select {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* Астрономические карточки */
+.astro-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.astro-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.astro-label {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.astro-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono, monospace);
+}
+
+.astro-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono, monospace);
+}
+
+/* Таблицы */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.items-table th {
+  text-align: left;
+  padding: 8px 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.items-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.table-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  padding: 4px 6px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.table-input:hover,
+.table-input:focus {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-subtle);
+}
+
+.btn-icon-table {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.btn-icon-table:hover {
+  opacity: 1;
+  background: var(--bg-surface-elevated);
+}
+
+.btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-ghost-sm:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-focus);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+.status-chip.success {
+  color: var(--accent-success);
+  border-color: var(--success-border, var(--border-subtle));
+  background: var(--success-bg, var(--bg-surface-elevated));
+}

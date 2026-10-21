@@ -77,6 +77,12 @@ pub fn run() {
             remove_connections_by_source,
             get_global_timeline,
             save_global_timeline,
+            get_planet_calendar_bundle,
+            save_planet,
+            save_calendar_direct,
+            set_master_calendar,
+            delete_planet,
+            delete_calendar_direct,
             // --- Экспорт и История ---
             worldwiki_tauri::commands::export_chapters,
             worldwiki_tauri::commands::export_document_docx,

@@ -62,6 +62,7 @@ export interface PlanetEditorProps {
 }
 
 export interface PlanetEditorEmits {
+  (e: 'update:name', name: string): void;
   (e: 'update:planet', planet: PlanetDto): void;
   (e: 'save', planet: PlanetDto): void;
   (e: 'delete', planetId: string): void;

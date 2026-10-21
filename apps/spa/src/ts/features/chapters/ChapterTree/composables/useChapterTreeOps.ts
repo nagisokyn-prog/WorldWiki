@@ -3,6 +3,9 @@ import type { Ref } from 'vue';
 import * as api from '@/services/api.client';
 import { appAlert, appConfirm } from '@worldwiki/components';
 import type { ChapterHierarchy } from '@/stores/chapter.store';
+import { useCalendarStore, getDefaultPlanet } from '@/stores/calendar.store';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
+import type { CalendarData, PlanetEntity } from '@/services/Calendars/calendar.types';
 import type { ExplorerNode, ExplorerNodeData } from './useChapterTreeSections';
 
 export interface UseChapterTreeOpsOptions {
@@ -60,6 +63,44 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
             } else {
                 options.emit('create-chapter-in', { volumeId: parentId });
             }
+        } else if (sectionId === 'calendars') {
+            const calendarStore = useCalendarStore();
+            if (!parentId) {
+                // Создание новой планеты
+                const newId = `planet_${Date.now()}`;
+                const newName = name?.trim() || 'Новая планета';
+                const newPlanet = {
+                    ...getDefaultPlanet(options.project),
+                    id: newId,
+                    name: newName,
+                };
+                calendarStore.savePlanet(options.project, newPlanet);
+                await options.load();
+                document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+                options.emit('open-planet-viewer', newPlanet);
+                options.emit('open-entity', { ...newPlanet, entityType: 'planet', id: newId, name: newName, title: newName });
+            } else {
+                // Создание календаря на планете
+                const planetId = parentId.replace(/^planet:/, '');
+                const calName = name?.trim() || 'Новый календарь';
+                const defaultCalData = CalendarMath.getDefaultCalendar();
+                defaultCalData.planet_id = planetId;
+                defaultCalData.название = calName;
+                defaultCalData.is_master = false;
+                await calendarStore.saveCalendar(options.project, {
+                    ...defaultCalData,
+                    name: calName,
+                    is_master: false,
+                    is_default: false,
+                } as unknown as CalendarData);
+                await options.load();
+                document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+                const cals = await calendarStore.getCalendars(options.project);
+                const created = cals.find(c => c.name === calName) || cals[cals.length - 1];
+                if (created) {
+                    options.emit('open-entity', { ...created, entityType: 'calendar', id: created.id, name: created.name, title: created.name });
+                }
+            }
         } else if (name) {
             options.emit('add-entity', sectionId, name);
         }
@@ -71,6 +112,12 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.emit('create-chapter-in', { volumeId: parentId });
             } else {
                 options.emit('create-chapter-in', { volumeId: null });
+            }
+        } else if (sectionId === 'calendars') {
+            if (parentId) {
+                await handleCreate({ sectionId: 'calendars', parentId, name: 'Новый календарь' });
+            } else {
+                options.explorerTreeRef.value?.startCreate(sectionId);
             }
         } else {
             options.explorerTreeRef.value?.startCreate(sectionId);
@@ -100,6 +147,24 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 };
                 document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
                 options.emit('rename-chapter', data.original, newName);
+            } else if (data?.type === 'planet' && data.original) {
+                const calendarStore = useCalendarStore();
+                const planet = data.original as unknown as PlanetEntity;
+                planet.name = newName;
+                calendarStore.savePlanet(options.project, planet);
+                document.dispatchEvent(new CustomEvent('ww:planet-renamed', { detail: { id: String(planet.id), name: newName } }));
+                await options.load();
+            } else if (data?.type === 'calendar' && data.original) {
+                const calendarStore = useCalendarStore();
+                const cal = data.original as { id?: string; name?: string; data?: Record<string, unknown>; [key: string]: unknown };
+                cal.name = newName;
+                if (cal.data) {
+                    cal.data.название = newName;
+                    cal.data.name = newName;
+                }
+                await calendarStore.saveCalendar(options.project, { ...(cal.data || {}), id: cal.id, name: newName } as unknown as CalendarData);
+                document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: cal.id, name: newName } }));
+                await options.load();
             } else if (data?.isEntity && data.original) {
                 const entityType = data.type || '';
                 const originalId = data.original.id;
@@ -145,6 +210,30 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.emit('delete-volume', original, chapters, ids.length > 1);
             } else if (type === 'chapter') {
                 options.emit('delete-chapter', original, ids.length > 1);
+            } else if (type === 'planet') {
+                const calendarStore = useCalendarStore();
+                const plId = String(original.id || id).replace(/^planet:/, '');
+                const plName = (original as { name?: string }).name || id;
+                const confirmed = await appConfirm(
+                    `Удалить планету "${plName}"?`,
+                    'Удаление планеты'
+                );
+                if (confirmed) {
+                    calendarStore.deletePlanet(options.project, plId);
+                    document.dispatchEvent(new CustomEvent('ww:planet-deleted', { detail: { id: plId } }));
+                }
+            } else if (type === 'calendar') {
+                const calendarStore = useCalendarStore();
+                const calId = String(original.id || id).replace(/^calendar:/, '');
+                const calName = (original as { name?: string }).name || id;
+                const confirmed = await appConfirm(
+                    `Удалить календарь "${calName}"?`,
+                    'Удаление календаря'
+                );
+                if (confirmed) {
+                    await calendarStore.deleteCalendar(calId);
+                    document.dispatchEvent(new CustomEvent('ww:calendar-deleted', { detail: { id: calId } }));
+                }
             } else if (data.isEntity && type) {
                 options.emit('delete-entity', options.entityKey(type, String(original.id)), type, ids.length > 1);
             }

@@ -89,10 +89,45 @@ export function useChapterTree(
         void load();
     };
 
+    const planetRenamedHandler = (e: Event) => {
+        const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+        const pl = planets.value.find((p) => String(p.id) === String(id) || compareIds(p.id, id));
+        if (pl) {
+            pl.name = name;
+            triggerRef(planets);
+        } else {
+            void load();
+        }
+    };
+
+    const calendarRenamedHandler = (e: Event) => {
+        const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+        const c = calendars.value.find((cal) => String(cal.id) === String(id) || compareIds(cal.id, id));
+        if (c) {
+            c.name = name;
+            if (c.data) c.data.название = name;
+            triggerRef(calendars);
+        } else {
+            void load();
+        }
+    };
+
+    const planetDeletedHandler = () => {
+        void load();
+    };
+
+    const calendarDeletedHandler = () => {
+        void load();
+    };
+
     onMounted(() => {
         document.addEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
         document.addEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
         document.addEventListener('ww:entity-saved', entitySavedHandler);
+        document.addEventListener('ww:planet-renamed', planetRenamedHandler as EventListener);
+        document.addEventListener('ww:calendar-renamed', calendarRenamedHandler as EventListener);
+        document.addEventListener('ww:planet-deleted', planetDeletedHandler);
+        document.addEventListener('ww:calendar-deleted', calendarDeletedHandler);
         window.addEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
 
@@ -100,6 +135,10 @@ export function useChapterTree(
         document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
         document.removeEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
         document.removeEventListener('ww:entity-saved', entitySavedHandler);
+        document.removeEventListener('ww:planet-renamed', planetRenamedHandler as EventListener);
+        document.removeEventListener('ww:calendar-renamed', calendarRenamedHandler as EventListener);
+        document.removeEventListener('ww:planet-deleted', planetDeletedHandler);
+        document.removeEventListener('ww:calendar-deleted', calendarDeletedHandler);
         window.removeEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
 
@@ -113,13 +152,15 @@ export function useChapterTree(
         const data = node.data as ExplorerNodeData | undefined;
 
         if (data?.type === 'planet') {
-            emit('open-planet-viewer', data.original);
+            const planetObj = (data.original as Record<string, unknown>) || {};
+            emit('open-planet-viewer', planetObj);
+            emit('open-entity', { ...planetObj, entityType: 'planet', id: planetObj.id, name: planetObj.name, title: planetObj.name });
             return;
         }
 
         if (data?.type === 'calendar') {
             const calObj = (data.original as Record<string, unknown>) || {};
-            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id });
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id, name: calObj.name, title: calObj.name });
             return;
         }
 
@@ -141,10 +182,12 @@ export function useChapterTree(
     const handleOpen = (node: { id: string; data?: unknown }) => {
         const data = node.data as ExplorerNodeData | undefined;
         if (data?.type === 'planet') {
-            emit('open-planet-viewer', data.original);
+            const planetObj = (data.original as Record<string, unknown>) || {};
+            emit('open-planet-viewer', planetObj);
+            emit('open-entity', { ...planetObj, entityType: 'planet', id: planetObj.id, name: planetObj.name, title: planetObj.name });
         } else if (data?.type === 'calendar') {
             const calObj = (data.original as Record<string, unknown>) || {};
-            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id });
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id, name: calObj.name, title: calObj.name });
         } else if (data?.isEntity) {
             emit('open-entity', { ...data.original, entityType: data.type });
         } else if (data?.type === 'chapter') {

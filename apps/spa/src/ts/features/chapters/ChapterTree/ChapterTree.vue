@@ -1,20 +1,5 @@
 <template>
   <div class="chapter-tree-wrapper">
-    <div
-      v-if="project"
-      class="calendar-widget-container"
-      :style="{ '--calendar-h': calendarHeight + 'px' }"
-    >
-      <GlobalCalendarWidget :project="project" />
-    </div>
-
-    <div
-      v-if="project"
-      class="panel-resize-handle panel-resize-handle-h"
-      title="Потяните для изменения высоты календаря"
-      @mousedown="startResizeCalendar"
-    ></div>
-
     <ExplorerTree
       ref="explorerTreeRef"
       class="explorer-tree-flex"
@@ -70,6 +55,29 @@
           </div>
         </template>
 
+        <template v-else-if="isNodeType(node, 'planet')">
+          <div class="ctx-item" @click="startRename(node, close)">
+            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
+            <kbd class="ctx-kbd">F2</kbd>
+          </div>
+          <div class="ctx-item" @click="handleCreate({ sectionId: 'calendars', parentId: node.id, name: 'Новый календарь' }); close()">
+            <span class="ctx-label"><i class="fas fa-calendar-plus ctx-icon"></i> Добавить календарь</span>
+          </div>
+          <div class="ctx-item" @click="handleOpen(node); close()">
+            <span class="ctx-label"><i class="fas fa-edit ctx-icon"></i> Открыть настройки планеты</span>
+          </div>
+        </template>
+
+        <template v-else-if="isNodeType(node, 'calendar')">
+          <div class="ctx-item" @click="startRename(node, close)">
+            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
+            <kbd class="ctx-kbd">F2</kbd>
+          </div>
+          <div class="ctx-item" @click="handleOpen(node); close()">
+            <span class="ctx-label"><i class="fas fa-edit ctx-icon"></i> Открыть календарь</span>
+          </div>
+        </template>
+
         <div class="ctx-sep"></div>
 
         <div class="ctx-danger ctx-item" @click="handleDelete([node.id]); close()">
@@ -86,7 +94,6 @@
 
 <script setup lang="ts">
 import { ExplorerTree } from '@worldwiki/components';
-import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import type { ChapterTreeProps } from './ChapterTree.model';
 
@@ -102,8 +109,6 @@ const emit = defineEmits([
 ]);
 
 const {
-  calendarHeight,
-  startResizeCalendar,
   isNodeType,
   isEntityNode,
   explorerSections,

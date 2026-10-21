@@ -10,6 +10,7 @@ import type {
   LeapRuleDto,
 } from './Tab1Structure.model';
 import type { DialUnit } from '@worldwiki/calendar-wasm';
+import { useTab1Leap } from './useTab1Leap';
 
 export function useTab1Structure(
   props: Tab1StructureProps,
@@ -46,10 +47,10 @@ export function useTab1Structure(
 
   // Момент смены суток
   const dayStartOffset = computed<string>(() => {
-    return (props.calendarData?.day_start_offset as string) || 'midnight';
+    return String(props.calendarData?.day_start_offset ?? 'midnight');
   });
 
-  // Високосные правила
+  // Високосные правила (legacy DTO)
   const leapRules = computed<LeapRuleDto[]>(() => {
     const raw = props.calendarData?.правило_високосного_года;
     if (Array.isArray(raw) && raw.length > 0) {
@@ -99,7 +100,7 @@ export function useTab1Structure(
   }
 
   function setDayStartOffset(offset: DayStartMode) {
-    emit('update', { day_start_offset: offset });
+    emit('update', { day_start_offset: offset as unknown as number });
   }
 
   // Пресеты недели
@@ -165,10 +166,33 @@ export function useTab1Structure(
     updateMonths(updated);
   }
 
+  const newWeekdayName = ref('');
+
+  function addNewDay() {
+    const trimmed = newWeekdayName.value.trim();
+    if (trimmed) {
+      addCustomWeekday(trimmed);
+      newWeekdayName.value = '';
+    }
+  }
+
   // Високосы
   function updateLeapRules(rules: LeapRuleDto[]) {
-    emit('update', { правило_високосного_года: rules });
+    emit('update', { правило_високосного_года: rules as unknown as string });
   }
+
+  function updateLeapRuleField(field: 'interval' | 'day_offset' | 'target_month', val: number) {
+    const current = leapRules.value[0] || { interval: 4, day_offset: 1, target_month: 1 };
+    const updated = [{ ...current, [field]: val }];
+    updateLeapRules(updated);
+  }
+
+  // Подключаем специализированный WASM composable високосов
+  const leap = useTab1Leap(
+    () => props.calendarData,
+    () => props.planetOrbitDays,
+    emit
+  );
 
   return {
     months,
@@ -191,5 +215,9 @@ export function useTab1Structure(
     addMonth,
     balanceMonthsEvenly,
     updateLeapRules,
+    newWeekdayName,
+    addNewDay,
+    updateLeapRuleField,
+    leap,
   };
 }

@@ -24,6 +24,7 @@
           @delete-volume="deleteVolume"
           @open-sandbox="openSandbox"
           @edit-schema="openSchemaEditor"
+          @open-planet-viewer="openPlanetViewer"
         ></chapter-tree-vue>
       </div>
 
@@ -50,7 +51,7 @@
               :can-close="editorGroups.length > 1"
               :is-sandbox="false"
               class="editor-group-pane-basis"
-              :style="{ '--group-basis': group.flexBasis + '%' }"
+              :style="{ '--group-basis': (editorGroups.length <= 1 ? 100 : group.flexBasis) + '%' }"
               @focus="focusGroup(group.id)"
               @activate-tab="activateTabInGroup"
               @close-tab="onGroupCloseTab"
@@ -75,7 +76,33 @@
               </template>
 
               <template #entity="{ tab, groupId }">
-                <div class="chapter-editor flex-1 p-6 flex-col overflow-hidden">
+                <!-- 1. Полный вьюпорт для Календарей и Планет (по прототипу main-workspace) -->
+                <div
+                  v-if="tab.entityType === 'planet' || tab.entityType === 'calendar'"
+                  class="main-workspace"
+                >
+                  <planet-editor-vue
+                    v-if="tab.entityType === 'planet'"
+                    :key="'planet-' + tab.id + '-' + groupId"
+                    :planet-id="tab.rawId"
+                    :project-id="projectName || 'default'"
+                    @update:name="handleUpdatePlanetName(tab.id, $event)"
+                    @update:planet="handleUpdatePlanet(tab.id, $event)"
+                    @save="markSaved(tab.id)"
+                  ></planet-editor-vue>
+
+                  <calendar-editor-vue
+                    v-else-if="tab.entityType === 'calendar'"
+                    :key="'cal-' + tab.id + '-' + groupId"
+                    :calendar-id="tab.rawId"
+                    :project-id="projectName || 'default'"
+                    @update:calendar="handleUpdateData(tab.id, $event)"
+                    @save="markSaved(tab.id)"
+                  ></calendar-editor-vue>
+                </div>
+
+                <!-- 2. Обычные сущности с карточкой и тулбаром рукописи -->
+                <div v-else class="chapter-editor flex-1 p-6 flex-col overflow-hidden">
                   <div class="glass-card-container flex-1 flex-col">
                     <div class="glass-card-bg"></div>
                     <div class="glass-card-content flex-1 flex-col p-0 overflow-hidden">
@@ -120,18 +147,7 @@
                         </div>
                       </div>
 
-                      <calendar-entity-adapter-vue
-                        v-if="tab.entityType === 'calendar'"
-                        :key="'cal-' + tab.id + '-' + groupId"
-                        :calendar-id="tab.rawId"
-                        :project-id="projectName || 'default'"
-                        :initial-data="tab.data"
-                        @update:model-value="handleUpdateData(tab.id, $event)"
-                        @modified="markUnsaved(tab.id)"
-                      ></calendar-entity-adapter-vue>
-
                       <entity-editor-vue
-                        v-else
                         :key="tab.id + '-' + groupId"
                         :entity-id="tab.rawId"
                         :entity-type="tab.entityType"

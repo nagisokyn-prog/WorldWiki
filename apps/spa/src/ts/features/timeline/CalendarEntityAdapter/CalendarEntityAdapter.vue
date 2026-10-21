@@ -6,10 +6,10 @@
         :planets="planetsList"
         :calendars="calendarsList"
         :selected-id="selectedNodeId"
-        @select:planet="onSelectPlanet"
-        @select:calendar="onSelectCalendar"
-        @add:planet="onAddPlanet"
-        @add:calendar="onAddCalendar"
+        @select-planet="onSelectPlanet"
+        @select-calendar="onSelectCalendar"
+        @add-planet="onAddPlanet"
+        @add-calendar="onAddCalendar"
       />
     </aside>
 

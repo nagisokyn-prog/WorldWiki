@@ -49,6 +49,32 @@ export function useShellNavigation(deps: ShellNavigationDeps) {
     }
     const rawId = String(entity.id);
     const tabId = `entity:${entityType}:${rawId}`;
+
+    if (entityType === 'planet' || entityType === 'calendar') {
+      const tabTitle = (entity.Name || entity.name || entity.title || (entityType === 'planet' ? 'Планета' : 'Календарь')) as string;
+      if (!deps.eg.findTabGlobal(tabId)) {
+        deps.eg.openTab({
+          id: tabId,
+          rawId,
+          title: tabTitle,
+          entityType,
+          tabType: 'entity',
+          data: (entity.data || entity) as Record<string, unknown>,
+          unsaved: false,
+        });
+        deps.addLog(`Editor -> Opened ${entityType} [${tabTitle}]`, 'info');
+      } else {
+        const g = deps.eg.findGroupByTab(tabId);
+        if (g) {
+          g.activeTabId = tabId;
+          deps.eg.activeGroupId.value = g.id;
+        }
+      }
+      deps.layout.showSettings.value = false;
+      deps.layout.activeView.value = 'entity';
+      return;
+    }
+
     if (!deps.eg.findTabGlobal(tabId)) {
       try {
         await deps.schema.loadSchema(entityType);

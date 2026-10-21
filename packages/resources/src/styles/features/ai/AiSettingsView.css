@@ -88,7 +88,8 @@
   overflow-y: auto;
 }
 
-.tab-pane {
+.ai-settings-view .tab-pane,
+.tab-body .tab-pane {
   max-width: 600px;
   animation: fadeIn 0.2s ease;
 }

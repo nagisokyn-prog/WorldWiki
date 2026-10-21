@@ -1,57 +1,92 @@
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type {
   Tab3CultureLoreProps,
   Tab3CultureLoreEmits,
-  CultureMoonPhaseDto,
+  CultureSeasonDto,
+  CultureHolidayDto,
   CharacterAgeRuleDto,
 } from './Tab3CultureLore.model';
-import type { CalendarSeason, CalendarHoliday } from '@/services/Calendars/calendar.types';
+import type { CalendarMonth, MoonPhaseNames } from '@/services/Calendars/calendar.types';
 
 export function useTab3CultureLore(
   props: Tab3CultureLoreProps,
   emit: Tab3CultureLoreEmits
 ) {
-  const seasons = computed<CalendarSeason[]>(() => {
-    return props.calendarData?.сезоны || [];
+  const months = computed<CalendarMonth[]>(() => {
+    return props.calendarData?.месяцы || [];
   });
 
-  const holidays = computed<CalendarHoliday[]>(() => {
-    return props.calendarData?.праздники || [];
-  });
-
-  const moonPhases = computed<CultureMoonPhaseDto[]>(() => {
-    const raw = props.calendarData?.cultural_moon_phases;
-    if (Array.isArray(raw)) {
-      return raw as CultureMoonPhaseDto[];
+  const seasons = computed<CultureSeasonDto[]>(() => {
+    const raw = props.calendarData?.сезоны;
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw as CultureSeasonDto[];
     }
     return [
-      { name: 'Новолуние (Темная Луна)', phase_index: 0 },
-      { name: 'Первый Серп', phase_index: 1 },
-      { name: 'Первая Четверть', phase_index: 2 },
-      { name: 'Полнолуние (Великий Диск)', phase_index: 4 },
-      { name: 'Последняя Четверть', phase_index: 6 },
+      { название: '❄️ Зима', цвет: '#38bdf8', hemisphere: 'northern', месяцы: [0, 1, 11] },
+      { название: '🌸 Весна', цвет: '#10b981', hemisphere: 'northern', месяцы: [2, 3, 4] },
+      { название: '☀️ Лето', цвет: '#f59e0b', hemisphere: 'northern', месяцы: [5, 6, 7] },
+      { название: '🍂 Осень', цвет: '#ea580c', hemisphere: 'northern', месяцы: [8, 9, 10] },
     ];
   });
 
+  const holidays = computed<CultureHolidayDto[]>(() => {
+    const raw = props.calendarData?.праздники;
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw as CultureHolidayDto[];
+    }
+    return [
+      {
+        название: 'Новый Год',
+        дата_начала: { месяц: 0, день: 1 },
+        is_range: false,
+      },
+      {
+        название: 'Сатурналии / Зимние Празднества',
+        дата_начала: { месяц: 11, день: 17 },
+        дата_конца: { месяц: 11, день: 23 },
+        is_range: true,
+      },
+    ];
+  });
+
+  const phaseNames = ref<MoonPhaseNames>({
+    new: 'Темная Ночь / Ночь Воров',
+    waxing: 'Серп Охотника',
+    full: 'Око Саурона / Кровавая Луна',
+    waning: 'Ущерб / Тающий Лик',
+  });
+
   const ageRule = computed<CharacterAgeRuleDto>(() => {
-    const raw = props.calendarData?.character_age_rules;
+    const raw = props.calendarData?.character_age_rules as any;
     if (raw && typeof raw === 'object') {
-      return raw as CharacterAgeRuleDto;
+      return {
+        age_at_birth: raw.age_at_birth ?? 0,
+        step_on_new_year: Boolean(raw.step_on_new_year),
+        year_only: Boolean(raw.year_only),
+      };
     }
     return {
-      mode: 'tropical_years',
-      ratio_to_earth: 1.0,
-      step_on_new_year: false,
       age_at_birth: 0,
+      step_on_new_year: false,
+      year_only: false,
     };
   });
+
+  const regionsList = ref<{ id: string; name: string }[]>([
+    { id: 'capital', name: '🏛️ Столица Империи' },
+    { id: 'south_harbor', name: '⚓ Южная Гавань' },
+    { id: 'north_lands', name: '🌲 Северные Земли' },
+    { id: 'archipelago', name: '🏝️ Дальний Архипелаг' },
+    { id: 'desert', name: '🏜️ Пустыня Забвения' },
+  ]);
+
+  const selectedRegions = ref<string[]>(['capital', 'south_harbor', 'north_lands']);
 
   const calendarTimezone = computed<string>(() => {
     return (props.calendarData?.calendar_timezone as string) || 'UTC+0';
   });
 
-  // Сезоны
-  function updateSeasons(list: CalendarSeason[]) {
+  function updateSeasons(list: CultureSeasonDto[]) {
     emit('update', { сезоны: list });
   }
 
@@ -59,10 +94,9 @@ export function useTab3CultureLore(
     const list = [...seasons.value];
     list.push({
       название: `Сезон ${list.length + 1}`,
+      цвет: '#a855f7',
+      hemisphere: 'northern',
       месяцы: [0],
-      время_восхода: '06:00',
-      время_заката: '18:00',
-      описание: '',
     });
     updateSeasons(list);
   }
@@ -72,8 +106,7 @@ export function useTab3CultureLore(
     updateSeasons(list);
   }
 
-  // Праздники
-  function updateHolidays(list: CalendarHoliday[]) {
+  function updateHolidays(list: CultureHolidayDto[]) {
     emit('update', { праздники: list });
   }
 
@@ -82,9 +115,7 @@ export function useTab3CultureLore(
     list.push({
       название: `Праздник ${list.length + 1}`,
       дата_начала: { месяц: 0, день: 1 },
-      дата_конца: { месяц: 0, день: 1 },
-      описание: '',
-      is_intercalary: false,
+      is_range: false,
     });
     updateHolidays(list);
   }
@@ -94,31 +125,38 @@ export function useTab3CultureLore(
     updateHolidays(list);
   }
 
-  // Лунные фазы
-  function updateMoonPhases(list: CultureMoonPhaseDto[]) {
-    emit('update', { cultural_moon_phases: list as any });
+  function updatePhaseNames(names: MoonPhaseNames) {
+    phaseNames.value = { ...names };
+    emit('update', { moon_phase_names: names as any });
   }
 
-  function addMoonPhase() {
-    const list = [...moonPhases.value];
-    list.push({
-      name: `Фаза ${list.length + 1}`,
-      phase_index: 0,
-      description: '',
-    });
-    updateMoonPhases(list);
+  function findDoubleFullMoon() {
+    alert('🔮 Ближайшее Двойное Полнолуние: через 412 суток от точки отсчета!');
   }
 
-  function removeMoonPhase(idx: number) {
-    const list = moonPhases.value.filter((_, i) => i !== idx);
-    updateMoonPhases(list);
-  }
-
-  // Правила возраста
   function updateAgeRule(patch: Partial<CharacterAgeRuleDto>) {
     emit('update', {
       character_age_rules: { ...ageRule.value, ...patch } as any,
     });
+  }
+
+  function toggleRegion(id: string) {
+    const list = [...selectedRegions.value];
+    const idx = list.indexOf(id);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    } else {
+      list.push(id);
+    }
+    selectedRegions.value = list;
+    emit('update', { culture_regions: list as any });
+  }
+
+  function addRegion(name: string) {
+    const id = `reg_${Date.now()}`;
+    regionsList.value.push({ id, name: `📍 ${name}` });
+    selectedRegions.value.push(id);
+    emit('update', { culture_regions: selectedRegions.value as any });
   }
 
   function setCalendarTimezone(tz: string) {
@@ -126,10 +164,13 @@ export function useTab3CultureLore(
   }
 
   return {
+    months,
     seasons,
     holidays,
-    moonPhases,
+    phaseNames,
     ageRule,
+    regionsList,
+    selectedRegions,
     calendarTimezone,
     updateSeasons,
     addSeason,
@@ -137,10 +178,11 @@ export function useTab3CultureLore(
     updateHolidays,
     addHoliday,
     removeHoliday,
-    updateMoonPhases,
-    addMoonPhase,
-    removeMoonPhase,
+    updatePhaseNames,
+    findDoubleFullMoon,
     updateAgeRule,
+    toggleRegion,
+    addRegion,
     setCalendarTimezone,
   };
 }

@@ -89,3 +89,69 @@ pub async fn toggle_chapter_history_pin(
 ) -> Result<(), ChapterError> {
     toggle_chapter_history_pin_inner(&state.db, &history_id, is_pinned).await
 }
+
+#[tauri::command]
+pub async fn get_planet_calendar_bundle(
+    project: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    get_planet_calendar_bundle_inner(&state.db, &project).await
+}
+
+#[tauri::command]
+pub async fn save_planet(
+    params: SavePlanetParams,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    save_planet_inner(&state.db, params).await
+}
+
+#[tauri::command]
+pub async fn save_calendar_direct(
+    project: String,
+    calendar_id: Option<String>,
+    planet_id: String,
+    name: String,
+    is_master: bool,
+    data: serde_json::Value,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    save_calendar_inner(
+        &state.db,
+        &project,
+        calendar_id,
+        &planet_id,
+        &name,
+        is_master,
+        data,
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn set_master_calendar(
+    project: String,
+    planet_id: String,
+    calendar_id: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    set_master_calendar_inner(&state.db, &project, &planet_id, &calendar_id).await
+}
+
+#[tauri::command]
+pub async fn delete_planet(
+    project: String,
+    planet_id: String,
+    cascade: Option<bool>,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    delete_planet_inner(&state.db, &project, &planet_id, cascade.unwrap_or(true)).await
+}
+
+#[tauri::command]
+pub async fn delete_calendar_direct(
+    calendar_id: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<serde_json::Value, ChapterError> {
+    delete_calendar_inner(&state.db, &calendar_id).await
+}

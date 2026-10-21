@@ -6,7 +6,9 @@ import type {
   CalendarEntityAdapterEmits,
   CalendarAdapterMode,
 } from './CalendarEntityAdapter.model';
-import type { PlanetNode, CalendarNode } from '../Calendars/PlanetCalendarTree/PlanetCalendarTree.model';
+import type { PlanetEntity } from '../Calendars/PlanetCalendarTree/PlanetCalendarTree.model';
+import type { CalendarData } from '@/services/Calendars/calendar.types';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 
 export function useCalendarEntityAdapter(
   props: CalendarEntityAdapterProps,
@@ -15,9 +17,10 @@ export function useCalendarEntityAdapter(
   const calendarStore = useCalendarStore();
 
   const activeMode = ref<CalendarAdapterMode>('calendar');
-  const selectedPlanetId = ref<string>('earth_default');
+  const selectedPlanetId = ref<string>('earth');
   const selectedCalendarId = ref<string>(props.calendarId);
   const currentCalendarRecord = ref<CalendarRecord | null>(null);
+  const rawCalendarsList = ref<CalendarRecord[]>([]);
 
   const selectedNodeId = computed<string>(() => {
     return activeMode.value === 'planet'
@@ -25,22 +28,23 @@ export function useCalendarEntityAdapter(
       : `cal:${selectedCalendarId.value}`;
   });
 
-  const planetsList = ref<PlanetNode[]>([
-    { id: 'earth_default', name: 'Земля (Earth)', orbit_days: 365.2422 },
-  ]);
+  const planetsList = ref<PlanetEntity[]>([]);
 
-  const calendarsList = computed<CalendarNode[]>(() => {
-    return calendarStore.calendars.map((c, idx) => ({
+  const calendarsList = computed(() => {
+    return rawCalendarsList.value.map((c, idx) => ({
+      id: c.id,
       idx,
       name: c.name || c.data?.название || `Календарь ${idx + 1}`,
-      planet_id: (c.data as any)?.planet_id || 'earth_default',
+      planet_id: (c.data?.planet_id as string) || (planetsList.value[0]?.id ?? 'earth'),
       is_master: c.is_master,
+      data: (c.data || {}) as CalendarData,
     }));
   });
 
   async function loadData() {
     try {
-      await calendarStore.getCalendars(props.projectId);
+      planetsList.value = calendarStore.getPlanets(props.projectId);
+      rawCalendarsList.value = await calendarStore.getCalendars(props.projectId);
       if (props.calendarId) {
         selectedCalendarId.value = props.calendarId;
       }
@@ -49,14 +53,14 @@ export function useCalendarEntityAdapter(
     }
   }
 
-  function onSelectPlanet(planet: PlanetNode) {
+  function onSelectPlanet(planet: PlanetEntity) {
     activeMode.value = 'planet';
     selectedPlanetId.value = planet.id;
   }
 
   function onSelectCalendar(calIdx: number) {
     activeMode.value = 'calendar';
-    const found = calendarStore.calendars[calIdx];
+    const found = rawCalendarsList.value[calIdx];
     if (found && found.id) {
       selectedCalendarId.value = found.id;
     }
@@ -64,28 +68,34 @@ export function useCalendarEntityAdapter(
 
   function onAddPlanet() {
     const newId = `planet_${Date.now()}`;
-    planetsList.value.push({
+    const newPlanet: PlanetEntity = {
       id: newId,
+      project_id: props.projectId,
       name: `Новая планета ${planetsList.value.length + 1}`,
-      orbit_days: 365.0,
-    });
+      ticks_per_day: 86400,
+      orbit_days: 365.25,
+      axial_tilt: 23.5,
+    };
+    calendarStore.savePlanet(props.projectId, newPlanet);
+    planetsList.value = calendarStore.getPlanets(props.projectId);
     activeMode.value = 'planet';
     selectedPlanetId.value = newId;
+    emit('modified');
   }
 
   async function onAddCalendar(planetId: string) {
     try {
+      const defaultData = CalendarMath.getDefaultCalendar();
+      defaultData.название = `Новый календарь ${rawCalendarsList.value.length + 1}`;
+      defaultData.planet_id = planetId;
       await calendarStore.saveCalendar(props.projectId, {
-        name: 'Новый календарь',
+        ...defaultData,
         is_default: false,
         is_master: false,
-        data: {
-          название: 'Новый календарь',
-          planet_id: planetId,
-        } as any,
-      });
-      await calendarStore.getCalendars(props.projectId);
+      } as unknown as CalendarData);
+      rawCalendarsList.value = await calendarStore.getCalendars(props.projectId);
       activeMode.value = 'calendar';
+      emit('modified');
     } catch (e) {
       console.error('[CalendarEntityAdapter] Ошибка создания календаря:', e);
     }

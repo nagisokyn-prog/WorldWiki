@@ -4,7 +4,7 @@
  * Бизнес-сохранение делегирует calendarApi, математические расчеты — ядру календаря.
  */
 
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import type {
   PlanetEditorProps,
   PlanetEditorEmits,
@@ -14,64 +14,74 @@ import type {
   PlanetRegion,
   PlanetMoon,
 } from './PlanetEditor.model';
+import {
+  toPlanetEntity,
+  createDefaultPlanetDto,
+  populatePlanetFromEntity,
+  calculateSolstices,
+  buildEarth24Timezones,
+} from './planetEditor.utils';
 import { calendarApi } from '@/services/api/calendar.api';
+import { useCalendarStore } from '@/stores/calendar.store';
 
 export function usePlanetEditor(
   props: PlanetEditorProps,
   emit: PlanetEditorEmits
 ) {
+  const calendarStore = useCalendarStore();
   const activeTab = ref<PlanetEditorTab>('astrophysics');
   const isSaving = ref(false);
   const errorMessage = ref<string | null>(null);
 
   // Реактивное состояние редактируемой планеты
-  const planet = ref<PlanetDto>({
-    id: props.planetId || null,
-    name: 'Земля (Earth)',
-    icon: '🪐',
-    ticks_per_day: 86400,
-    day_hours: 24,
-    day_minutes: 0,
-    day_seconds: 0,
-    orbit_days_num: 3652422,
-    orbit_days_den: 10000,
-    orbit_days: 365.2422,
-    axial_tilt_mdeg: 23440,
-    rotation_direction: 'direct',
-    solstices: {
-      winter: 355.0,
-      spring: 80.0,
-      summer: 172.0,
-      autumn: 266.0,
-    },
-    timezones: [
-      { name: 'Столичный меридиан', code: 'UTC+0', offset_hours: 0.0, dst_rule: 'eu' },
-      { name: 'Восточный рубеж', code: 'UTC+3', offset_hours: 3.0, dst_rule: 'none' },
-      { name: 'Дальний Архипелаг', code: 'UTC+8', offset_hours: 8.0, dst_rule: 'none' },
-      { name: 'Западные Земли', code: 'UTC-5', offset_hours: -5.0, dst_rule: 'us' },
-    ],
-    regions: [
-      {
-        name: 'Столица Империи',
-        timezone_code: 'UTC+0',
-        latitude: 55.75,
-        longitude: 37.61,
-        max_day_hours: '17ч 34м',
-        min_day_hours: '7ч 12м',
-      },
-      {
-        name: 'Южная Гавань',
-        timezone_code: 'UTC+3',
-        latitude: 30.2,
-        longitude: 60.0,
-        max_day_hours: '14ч 10м',
-        min_day_hours: '10ч 20м',
-      },
-    ],
-    moons: [
-      { name: 'Луна (Селена)', orbital_period: 29.53, start_phase: 0.5, color: '#e2e8f0' },
-    ],
+  const planet = ref<PlanetDto>(createDefaultPlanetDto(props.planetId));
+
+  function loadPlanetData() {
+    const planetsList = calendarStore.getPlanets(props.projectId);
+    const found = planetsList.find(
+      (p) => String(p.id) === String(props.planetId) ||
+             String(p.id).endsWith(String(props.planetId)) ||
+             p.name === props.planetId
+    );
+    if (found) {
+      populatePlanetFromEntity(planet.value, found);
+    } else {
+      planet.value.id = props.planetId || null;
+      if (props.planetId && props.planetId !== 'earth') {
+        planet.value.name = props.planetId;
+      }
+    }
+  }
+
+  onMounted(() => {
+    loadPlanetData();
+    const handleRenamed = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+      if (props.planetId && (id === props.planetId || String(props.planetId).endsWith(id))) {
+        if (planet.value.name !== name) {
+          planet.value.name = name;
+        }
+      }
+    };
+    document.addEventListener('ww:planet-renamed', handleRenamed as EventListener);
+    onUnmounted(() => {
+      document.removeEventListener('ww:planet-renamed', handleRenamed as EventListener);
+    });
   });
+
+  watch(() => props.planetId, () => {
+    loadPlanetData();
+  });
+
+  function updateName(newName: string) {
+    planet.value.name = newName;
+    calendarStore.savePlanet(props.projectId, toPlanetEntity(planet.value, props.projectId));
+    emit('update:name', newName);
+    emit('update:planet', planet.value);
+    document.dispatchEvent(new CustomEvent('ww:planet-renamed', {
+      detail: { id: props.planetId || planet.value.id, name: newName },
+    }));
+  }
 
   const decimalAxialTilt = computed({
     get: () => planet.value.axial_tilt_mdeg / 1000,
@@ -91,6 +101,13 @@ export function usePlanetEditor(
     planet.value.ticks_per_day = hours * 3600 + minutes * 60 + seconds;
   }
 
+  function updateOrbitDays(days: number) {
+    planet.value.orbit_days = days;
+    planet.value.orbit_days_num = Math.round(days * 10000);
+    planet.value.orbit_days_den = 10000;
+    recalculateAstroPoints();
+  }
+
   function updateOrbitFromFraction() {
     if (planet.value.orbit_days_den > 0) {
       planet.value.orbit_days =
@@ -100,13 +117,7 @@ export function usePlanetEditor(
   }
 
   function recalculateAstroPoints() {
-    const total = planet.value.orbit_days;
-    planet.value.solstices = {
-      spring: Number((total * 0.219).toFixed(1)),
-      summer: Number((total * 0.471).toFixed(1)),
-      autumn: Number((total * 0.728).toFixed(1)),
-      winter: Number((total * 0.972).toFixed(1)),
-    };
+    planet.value.solstices = calculateSolstices(planet.value.orbit_days);
   }
 
   // Часовые пояса
@@ -131,17 +142,7 @@ export function usePlanetEditor(
         { name: 'Нулевой меридиан', code: 'UTC+0', offset_hours: 0, dst_rule: 'none' },
       ];
     } else if (preset === 'earth24') {
-      const list: PlanetTimezone[] = [];
-      for (let h = -12; h <= 12; h++) {
-        const sign = h >= 0 ? '+' : '';
-        list.push({
-          name: h === 0 ? 'Гринвич / Меридиан' : `Пояс ${sign}${h}`,
-          code: `UTC${sign}${h}`,
-          offset_hours: h,
-          dst_rule: 'none',
-        });
-      }
-      planet.value.timezones = list;
+      planet.value.timezones = buildEarth24Timezones();
     }
   }
 
@@ -169,7 +170,7 @@ export function usePlanetEditor(
       name: moon?.name || `Луна ${planet.value.moons.length + 1}`,
       orbital_period: moon?.orbital_period ?? 28.0,
       start_phase: moon?.start_phase ?? 0.0,
-      color: moon?.color || '#cbd5e1',
+      color: moon?.color || 'var(--color-moon-secondary, var(--color-border-subtle))',
     });
   }
 
@@ -197,6 +198,7 @@ export function usePlanetEditor(
         solstices: planet.value.solstices,
       };
 
+      calendarStore.savePlanet(props.projectId, toPlanetEntity(planet.value, props.projectId));
       await calendarApi.savePlanetDirect(
         props.projectId,
         planet.value.id || null,
@@ -204,7 +206,12 @@ export function usePlanetEditor(
         payload
       );
 
+      document.dispatchEvent(new CustomEvent('ww:planet-renamed', {
+        detail: { id: props.planetId || planet.value.id, name: planet.value.name },
+      }));
+
       emit('save', planet.value);
+      emit('update:name', planet.value.name);
       emit('update:planet', planet.value);
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
@@ -222,7 +229,11 @@ export function usePlanetEditor(
     }
 
     try {
-      await calendarApi.deletePlanetDirect(planet.value.id);
+      calendarStore.deletePlanet(props.projectId, String(planet.value.id || props.planetId));
+      await calendarApi.deletePlanetDirect(props.projectId, planet.value.id);
+      document.dispatchEvent(new CustomEvent('ww:planet-deleted', {
+        detail: { id: props.planetId || planet.value.id },
+      }));
       emit('delete', planet.value.id);
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
@@ -238,7 +249,9 @@ export function usePlanetEditor(
     isSaving,
     errorMessage,
     setTab,
+    updateName,
     updateDayTicks,
+    updateOrbitDays,
     updateOrbitFromFraction,
     recalculateAstroPoints,
     addTimezone,

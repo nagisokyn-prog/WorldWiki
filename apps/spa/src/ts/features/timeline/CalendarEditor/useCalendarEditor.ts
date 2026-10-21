@@ -130,6 +130,7 @@ export function useCalendarEditor(
     if (calendarRecord.value.data) {
       calendarRecord.value.data.название = name;
     }
+    emit('update:name', name);
     document.dispatchEvent(new CustomEvent('ww:calendar-renamed', {
       detail: { id: calendarRecord.value.id || props.calendarId, name },
     }));
@@ -165,8 +166,12 @@ export function useCalendarEditor(
     if (!calendarRecord.value?.id) return;
     if (!confirm('Вы уверены, что хотите удалить этот календарь?')) return;
     try {
-      await calendarStore.deleteCalendar(calendarRecord.value.id);
-      emit('delete', calendarRecord.value.id);
+      const calId = calendarRecord.value.id;
+      await calendarStore.deleteCalendar(calId);
+      document.dispatchEvent(new CustomEvent('ww:calendar-deleted', {
+        detail: { id: calId },
+      }));
+      emit('delete', calId);
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Не удалось удалить календарь';
       console.error('[CalendarEditor] Ошибка удаления:', e);

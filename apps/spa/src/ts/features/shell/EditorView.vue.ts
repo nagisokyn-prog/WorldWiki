@@ -4,6 +4,7 @@ import { useShellStore } from '@/stores/shell';
 import { useConsoleStore } from '@/stores/console';
 import { useSchemaStore } from '@/stores/schema';
 import { useHotkeysStore } from '@/stores/hotkeys';
+import { useEditorViewListeners } from './useEditorViewListeners';
 export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
 
 // Component imports for template
@@ -61,31 +62,7 @@ export default defineComponent({
     const schema = useSchemaStore();
     const hotkeys = useHotkeysStore();
 
-    const toggleWowilonHandler = () => {
-      shell.isWowilonOpen = !shell.isWowilonOpen;
-    };
-
-    const planetRenamedListener = (e: Event) => {
-      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
-      for (const group of shell.editorGroups) {
-        for (const tab of group.tabs) {
-          if (tab.entityType === 'planet' && (tab.rawId === id || tab.id.endsWith(id) || tab.id === `entity:planet:${id}`)) {
-            tab.title = name;
-          }
-        }
-      }
-    };
-
-    const calendarRenamedListener = (e: Event) => {
-      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
-      for (const group of shell.editorGroups) {
-        for (const tab of group.tabs) {
-          if (tab.entityType === 'calendar' && (tab.rawId === id || tab.id.endsWith(id) || tab.id === `entity:calendar:${id}`)) {
-            tab.title = name;
-          }
-        }
-      }
-    };
+    useEditorViewListeners({ shell });
 
     onMounted(() => {
       shell.quickOpenRef = quickOpenRef.value;
@@ -96,17 +73,10 @@ export default defineComponent({
 
       // Восстанавливаем состояние (открытые вкладки, скролл, боковую панель)
       shell.restoreState();
-      
-      document.addEventListener('ww:toggle-wowilon', toggleWowilonHandler);
-      document.addEventListener('ww:planet-renamed', planetRenamedListener as EventListener);
-      document.addEventListener('ww:calendar-renamed', calendarRenamedListener as EventListener);
     });
 
     onUnmounted(() => {
       hotkeys.unregister();
-      document.removeEventListener('ww:toggle-wowilon', toggleWowilonHandler);
-      document.removeEventListener('ww:planet-renamed', planetRenamedListener as EventListener);
-      document.removeEventListener('ww:calendar-renamed', calendarRenamedListener as EventListener);
     });
 
     // Initialize shell with project name
@@ -180,6 +150,15 @@ export default defineComponent({
     const addLog = shell.addLog;
     const handleUpdateData = shell.handleUpdateData;
     const handleUpdatePlanetName = (tabId: string, newName: string) => {
+      for (const group of shell.editorGroups) {
+        for (const tab of group.tabs) {
+          if (tab.id === tabId) {
+            tab.title = newName;
+          }
+        }
+      }
+    };
+    const handleUpdateCalendarName = (tabId: string, newName: string) => {
       for (const group of shell.editorGroups) {
         for (const tab of group.tabs) {
           if (tab.id === tabId) {
@@ -287,6 +266,7 @@ export default defineComponent({
       addLog,
       handleUpdateData,
       handleUpdatePlanetName,
+      handleUpdateCalendarName,
       handleUpdatePlanet,
       getEntityDisplayName,
       deleteEntity,

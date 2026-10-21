@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type {
   Tab4PlaygroundProps,
   Tab4PlaygroundEmits,
@@ -36,6 +36,16 @@ export function useTab4Playground(
   const testYear = ref(storyOrigin.value.year);
   const testMonth = ref(storyOrigin.value.month);
   const testDay = ref(storyOrigin.value.day);
+
+  watch(
+    () => props.calendarData?.точка_отсчета,
+    () => {
+      testYear.value = storyOrigin.value.year;
+      testMonth.value = storyOrigin.value.month;
+      testDay.value = storyOrigin.value.day;
+    },
+    { deep: true }
+  );
 
   // Вычисляемые характеристики для тестовой даты
   const liveCalculation = computed(() => {
@@ -119,6 +129,9 @@ export function useTab4Playground(
 
   function updateOrigin(patch: Partial<StoryOriginDateDto>) {
     const updated = { ...storyOrigin.value, ...patch };
+    if (patch.year !== undefined) testYear.value = patch.year;
+    if (patch.month !== undefined) testMonth.value = patch.month;
+    if (patch.day !== undefined) testDay.value = patch.day;
     emit('update', {
       точка_отсчета: {
         эпоха: updated.era_index,

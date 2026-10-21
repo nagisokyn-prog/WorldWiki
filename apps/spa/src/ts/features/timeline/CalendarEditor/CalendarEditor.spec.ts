@@ -67,4 +67,11 @@ describe('useCalendarEditor', () => {
       'reformsDst',
     ]);
   });
+
+  it('эмитит update:name при изменении названия календаря', () => {
+    const emitFn = vi.fn();
+    const editor = useCalendarEditor(props, emitFn as unknown as CalendarEditorEmits);
+    editor.updateName('567');
+    expect(emitFn).toHaveBeenCalledWith('update:name', '567');
+  });
 });

@@ -89,6 +89,7 @@
                     @update:name="handleUpdatePlanetName(tab.id, $event)"
                     @update:planet="handleUpdatePlanet(tab.id, $event)"
                     @save="markSaved(tab.id)"
+                    @delete="closeEditor(tab.id)"
                   ></planet-editor-vue>
 
                   <calendar-editor-vue
@@ -96,8 +97,10 @@
                     :key="'cal-' + tab.id + '-' + groupId"
                     :calendar-id="tab.rawId"
                     :project-id="projectName || 'default'"
+                    @update:name="handleUpdateCalendarName(tab.id, $event)"
                     @update:calendar="handleUpdateData(tab.id, $event)"
                     @save="markSaved(tab.id)"
+                    @delete="closeEditor(tab.id)"
                   ></calendar-editor-vue>
                 </div>
 

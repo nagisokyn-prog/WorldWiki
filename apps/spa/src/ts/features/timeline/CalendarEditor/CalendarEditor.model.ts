@@ -25,6 +25,7 @@ export interface CalendarEditorProps {
 }
 
 export type CalendarEditorEmits = {
+  (e: 'update:name', name: string): void;
   (e: 'update:calendar', data: Record<string, unknown>): void;
   (e: 'save', data: Record<string, unknown>): void;
   (e: 'delete', id: string): void;

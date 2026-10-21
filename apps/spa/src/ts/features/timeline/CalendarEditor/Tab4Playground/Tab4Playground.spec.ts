@@ -54,4 +54,12 @@ describe('useTab4Playground', () => {
     selectMatrixDay(20);
     expect(testDay.value).toBe(20);
   });
+
+  it('синхронизирует testYear и заголовок месяца при updateOrigin', () => {
+    const emit = vi.fn() as unknown as Tab4PlaygroundEmits;
+    const { updateOrigin, currentMonthTitle } = useTab4Playground({ calendarData: mockCalendar }, emit);
+
+    updateOrigin({ year: 1566 });
+    expect(currentMonthTitle.value).toContain('1566');
+  });
 });

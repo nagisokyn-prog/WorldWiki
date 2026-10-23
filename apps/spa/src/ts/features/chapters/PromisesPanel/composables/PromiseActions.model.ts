@@ -14,10 +14,8 @@ export interface PromiseMilestone {
   created_at?: string | null;
 }
 
-export interface SceneArcItem {
-  arc_id: string;
-  arc_phase?: string | null;
-}
+import type { SceneArcItem } from '@/types/generated/SceneArcItem';
+export type { SceneArcItem };
 
 export type RichPlotPromise = PlotPromise & {
   chapter_id?: string;

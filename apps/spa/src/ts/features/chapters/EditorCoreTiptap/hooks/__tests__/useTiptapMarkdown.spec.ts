@@ -107,7 +107,7 @@ describe('useTiptapMarkdown', () => {
       md.onMarkdownKeydown(event);
 
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '(Arthur)');
+      expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '((Arthur))');
 
       // With no selection
       textarea.selectionStart = 5;
@@ -133,12 +133,10 @@ describe('useTiptapMarkdown', () => {
       } as any;
 
       md.onMarkdownKeydown(qEvent);
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'ww:open-entity-selector',
-          detail: { target: 'markdown' },
-        })
-      );
+      expect(dispatchSpy).toHaveBeenCalled();
+      const lastCall = dispatchSpy.mock.calls[0][0] as CustomEvent;
+      expect(lastCall.type).toBe('ww:open-entity-selector');
+      expect(lastCall.detail).toEqual({ target: 'markdown', query: 'Arthur' });
 
       // Without entity pattern
       textarea.value = 'normal text without parens';

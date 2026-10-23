@@ -186,7 +186,7 @@ pub fn run() {
             // --- Генерируемые команды для системных сущностей ---
             @entities: [StoryArc, Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
-            @relations: [Cites, ArcChapter, ArcEntity, RevealedIn]
+            @relations: [Cites, ParticipantOf, AdvancesArc, OccursAt, RevealedIn]
 ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())

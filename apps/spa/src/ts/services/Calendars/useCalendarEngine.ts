@@ -120,6 +120,32 @@ export const CalendarEngine = {
     return `${day} ${monthName} ${year}`;
   },
 
+  mergeCalendarData(target: CalendarData, source: Partial<CalendarData>): CalendarData {
+    const baseSettings = target.настройки_времени || {
+      часов_в_сутках: 24,
+      минут_в_часе: 60,
+      секунд_в_минуте: 60,
+      широта: 0,
+      учитывать_сезонную_длительность_дня: false,
+    };
+    return {
+      ...target,
+      ...source,
+      настройки_времени: {
+        ...baseSettings,
+        ...(source.настройки_времени || {}),
+      },
+    };
+  },
+
+  getMonthName(cal: CalendarData, idx: number): string {
+    return (cal.месяцы && cal.месяцы[idx]?.название) ? cal.месяцы[idx].название : 'Неизвестный месяц';
+  },
+
+  getDayName(cal: CalendarData, idx: number): string {
+    return (cal.названия_дней_недели && cal.названия_дней_недели[idx]) ? cal.названия_дней_недели[idx] : 'День';
+  },
+
   getSeasonForDate(calendar: CalendarData, year: number, monthIdx: number): string {
     return CalendarFormat.getSeasonForDate(calendar, year, monthIdx);
   },

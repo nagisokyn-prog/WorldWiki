@@ -1,7 +1,7 @@
 -- 07_NARRATIVE_AND_JOURNEY.SURQL — СЮЖЕТНЫЕ ОБЕЩАНИЯ И ИНВЕНТАРЬ
 
 
--- 40. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ (PLOT PROMISE)
+-- 40. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ (PLOT PROMISE / NARRATIVE HUB)
 DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $id: string,
     $proj: record<projects>,
@@ -19,6 +19,14 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             title: IF $data.title != NONE { $data.title } ELSE { '' },
             note: IF $data.note != NONE { $data.note } ELSE { NONE },
             status: IF $data.status != NONE { $data.status } ELSE { 'planted' },
+            location_id: IF $data.location_id != NONE { $data.location_id } ELSE { NONE },
+            timeline_event_id: IF $data.timeline_event_id != NONE { 
+                IF $data.timeline_event_id != NULL { type::record('timeline_events', type::string($data.timeline_event_id).replace('timeline_events:', '')) } ELSE { NONE }
+            } ELSE { NONE },
+            m_abs: IF $data.m_abs != NONE { $data.m_abs } ELSE { NONE },
+            calendar_id: IF $data.calendar_id != NONE {
+                IF $data.calendar_id != NULL { type::record('calendars', type::string($data.calendar_id).replace('calendars:', '')) } ELSE { NONE }
+            } ELSE { NONE },
             updated_at: time::now()
         }
     );
@@ -39,6 +47,51 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         };
     };
 
+    -- Синхронизация участников (participant_of): entities -> participant_of -> plot_promises
+    DELETE participant_of WHERE out = $rec_id;
+    LET $participants = IF $data.participant_ids != NONE { $data.participant_ids } ELSE { [] };
+    IF array::len($participants) > 0 {
+        FOR $pid IN $participants {
+            IF $pid != NONE AND $pid != NULL {
+                LET $ent_rec = type::record('entities', type::string($pid).replace('entities:', ''));
+                RELATE $ent_rec->participant_of->$rec_id SET
+                    project_id = $p_rec,
+                    created_at = time::now();
+            };
+        };
+    };
+
+    -- Синхронизация сюжетных арок (advances_arc): plot_promises -> advances_arc -> story_arcs
+    DELETE advances_arc WHERE in = $rec_id;
+    LET $arcs = IF $data.arcs != NONE { $data.arcs } ELSE { [] };
+    IF array::len($arcs) > 0 {
+        FOR $a IN $arcs {
+            IF $a.arc_id != NONE AND $a.arc_id != NULL {
+                LET $arc_rec = type::record('story_arcs', type::string($a.arc_id).replace('story_arcs:', ''));
+                RELATE $rec_id->advances_arc->$arc_rec SET
+                    project_id = $p_rec,
+                    phase = IF $a.arc_phase != NONE { $a.arc_phase } ELSE { 'setup' },
+                    created_at = time::now();
+            };
+        };
+    } ELSE IF $data.arc_id != NONE AND $data.arc_id != NULL {
+        LET $arc_rec = type::record('story_arcs', type::string($data.arc_id).replace('story_arcs:', ''));
+        RELATE $rec_id->advances_arc->$arc_rec SET
+            project_id = $p_rec,
+            phase = IF $data.arc_phase != NONE { $data.arc_phase } ELSE { 'setup' },
+            created_at = time::now();
+    };
+
+    -- Синхронизация таймлайна (occurs_at): plot_promises -> occurs_at -> timeline_events
+    DELETE occurs_at WHERE in = $rec_id;
+    IF $data.timeline_event_id != NONE AND $data.timeline_event_id != NULL {
+        LET $evt_rec = type::record('timeline_events', type::string($data.timeline_event_id).replace('timeline_events:', ''));
+        RELATE $rec_id->occurs_at->$evt_rec SET
+            project_id = $p_rec,
+            time_nature = IF $data.time_nature != NONE { $data.time_nature } ELSE { 'present' },
+            created_at = time::now();
+    };
+
     RETURN (
         SELECT 
             id,
@@ -47,6 +100,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             title,
             note,
             status,
+            location_id,
+            timeline_event_id,
+            m_abs,
+            calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -57,7 +114,14 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 block_id: out.id,
                 chapter_id: out.chapter_id,
                 order_index: out.order_index
-            } AS milestones
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs,
+            ->advances_arc.out.id[0] AS arc_id,
+            ->advances_arc.phase[0] AS arc_phase
         FROM $rec_id
         LIMIT 1
     )[0];
@@ -84,7 +148,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
         LIMIT 500
     );
 
-    LET $appearances = (
+    LET $appears_in_list = (
         SELECT 
             in.id AS entity_id,
             in.name AS entity_name,
@@ -99,6 +163,24 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
         WHERE in IN $rec_ids
         LIMIT 2000
     );
+
+    LET $participant_list = (
+        SELECT 
+            in.id AS entity_id,
+            in.name AS entity_name,
+            type::string(array::first(out->promise_milestones.out.chapter_id)) AS chapter_id,
+            array::first(out->promise_milestones.out.chapter_id.title) AS chapter_title,
+            array::first(out->promise_milestones.out.chapter_id.volume_id.title) AS volume_title,
+            IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS chapter_order,
+            'scene' AS source,
+            role,
+            created_at
+        FROM participant_of 
+        WHERE in IN $rec_ids
+        LIMIT 2000
+    );
+
+    LET $appearances = array::concat($appears_in_list, $participant_list);
 
     LET $events = (
         SELECT 
@@ -117,15 +199,15 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
     LET $promises = (
         SELECT 
-            type::string(out.chapter_id) AS chapter_id,
-            type::string(out.arc_id) AS arc_id,
-            out.arc_id.title AS arc_title,
-            out.arc_phase AS arc_phase,
-            out.arc_id.color AS arc_color,
-            out.timeline_event_id.m_abs AS m_abs,
-            IF array::len(out<-appears_in<-entities.id) > 0 { out<-appears_in<-entities.id } ELSE { NONE } AS participant_ids
-        FROM promise_milestones 
-        WHERE project_id = $p_rec OR in.project_id = $p_rec
+            IF array::len(->promise_milestones) > 0 { type::string(array::first(->promise_milestones.out.chapter_id)) } ELSE { NONE } AS chapter_id,
+            IF array::len(->advances_arc) > 0 { type::string(array::first(->advances_arc.out.id)) } ELSE { NONE } AS arc_id,
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.title) } ELSE { NONE } AS arc_title,
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.phase) } ELSE { NONE } AS arc_phase,
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.color) } ELSE { NONE } AS arc_color,
+            m_abs,
+            IF array::len(<-participant_of) > 0 { (SELECT VALUE type::string(id) FROM <-participant_of<-entities) } ELSE { [] } AS participant_ids
+        FROM plot_promises 
+        WHERE project_id = $p_rec
         LIMIT 2000
     );
 
@@ -166,9 +248,9 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            type::string(->promise_milestones.out.chapter_id[0]) AS chapter_id, 
-            ->promise_milestones.out.timeline_event_id.m_abs[0] AS m_abs, 
-            [] AS participant_ids, 
+            type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id, 
+            m_abs, 
+            <-participant_of.in.id AS participant_ids, 
             title, 
             IF note != NONE { note } ELSE { '' } AS description
         FROM plot_promises
@@ -179,7 +261,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            type::string(->revealed_in.out[0]) AS chapter_id, 
+            type::string(array::first(->revealed_in.out)) AS chapter_id, 
             m_abs, 
             <-participates_in.in AS participants, 
             title, 
@@ -235,8 +317,8 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            type::string(->promise_milestones.out.chapter_id[0]) AS chapter_id, 
-            ->promise_milestones.out.timeline_event_id.m_abs[0] AS m_abs, 
+            type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id, 
+            IF m_abs != NONE { m_abs } ELSE { array::first(->promise_milestones.out.timeline_event_id.m_abs) } AS m_abs, 
             [] AS participant_ids, 
             title, 
             IF note != NONE { note } ELSE { '' } AS description
@@ -248,7 +330,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            type::string(->revealed_in.out[0]) AS chapter_id, 
+            type::string(array::first(->revealed_in.out)) AS chapter_id, 
             m_abs, 
             <-participates_in.in AS participants, 
             title, 

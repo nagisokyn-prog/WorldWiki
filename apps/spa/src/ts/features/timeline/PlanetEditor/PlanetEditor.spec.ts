@@ -14,6 +14,14 @@ vi.mock('@/services/api/calendar.api', () => ({
   },
 }));
 
+vi.mock('@/stores/calendar.store', () => ({
+  useCalendarStore: () => ({
+    loadCalendars: vi.fn().mockResolvedValue([]),
+    getCalendars: vi.fn().mockResolvedValue([]),
+    calendars: [],
+  }),
+}));
+
 describe('usePlanetEditor', () => {
   const props: PlanetEditorProps = {
     planetId: 'earth_id',

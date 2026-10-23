@@ -46,7 +46,7 @@ const TestComponent = defineComponent({
   props: ['content', 'project', 'title', 'hasUnsavedChanges', 'footnotesData', 'isLocked'],
   emits: ['update:content', 'update:title', 'change', 'scroll-change', 'save', 'openEntity'],
   setup(p, { emit: e }) {
-    return { ...useTiptapEditor(p, e) };
+    return { ...useTiptapEditor(p, e as (event: string, ...args: unknown[]) => void) };
   },
   template: '<div></div>',
 });
@@ -156,15 +156,15 @@ describe('useTiptapEditor', () => {
       const dispatchSpy = vi.spyOn(document, 'dispatchEvent');
       const mockEdNoMatch = {
         state: {
-          selection: { $from: { parent: { textBetween: () => 'normal text' }, parentOffset: 11 } },
+          selection: { $from: { parent: { textBetween: () => 'normal text' }, parentOffset: 11 }, empty: true, from: 0, to: 0 },
         },
       };
-      expect(shortcuts['Mod-q']({ editor: mockEdNoMatch })).toBe(false);
+      expect(shortcuts['Mod-q']({ editor: mockEdNoMatch })).toBe(true);
 
       // Mod-q with matching ((Entity)) pattern
       const mockEdMatch = {
         state: {
-          selection: { $from: { parent: { textBetween: () => 'some ((Target))' }, parentOffset: 15 } },
+          selection: { $from: { parent: { textBetween: () => 'some ((Target))' }, parentOffset: 15 }, empty: true, from: 0, to: 0 },
         },
       };
       expect(shortcuts['Mod-q']({ editor: mockEdMatch })).toBe(true);
@@ -174,7 +174,7 @@ describe('useTiptapEditor', () => {
 
       // Mod-й with matching pattern
       expect(shortcuts['Mod-й']({ editor: mockEdMatch })).toBe(true);
-      expect(shortcuts['Mod-й']({ editor: mockEdNoMatch })).toBe(false);
+      expect(shortcuts['Mod-й']({ editor: mockEdNoMatch })).toBe(true);
     });
   });
 

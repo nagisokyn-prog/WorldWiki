@@ -8,7 +8,6 @@ import type {
   JourneyEvent,
   JourneyRelation,
   JourneyPromise,
-  MultiJourneyResponse,
 } from '../CharacterJourney.model';
 import { formatDiegeticDate, computeMabsFromDateFields, calculateDiegeticAge } from './useJourneyChronology';
 

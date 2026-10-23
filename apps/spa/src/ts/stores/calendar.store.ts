@@ -91,21 +91,10 @@ export const useCalendarStore = defineStore('calendar', () => {
 
     try {
       const rawList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
-      const list = (rawList || []).map((c) => {
-        let calData = c.data;
-        if (calData && typeof calData === 'object' && 'data' in calData && typeof (calData as Record<string, unknown>).data === 'object' && !Array.isArray((calData as Record<string, unknown>).data)) {
-          calData = (calData as Record<string, unknown>).data as CalendarData;
-        }
-        if (calData && (calData.название === 'Календарь Мира' || !calData.название)) {
-          calData.название = 'Григорианский';
-        }
-        return {
-          ...c,
-          id: normalizeCalendarId(c.id),
-          name: (c.name === 'Календарь Мира' ? 'Григорианский' : (c.name || 'Григорианский')),
-          ...(calData ? { data: calData as CalendarData } : {})
-        };
-      });
+      const list = (rawList || []).map((c) => ({
+        ...c,
+        id: normalizeCalendarId(c.id),
+      }));
 
       if (list && list.length > 0) {
         const hasMaster = list.some((c) => c.is_master);
@@ -118,9 +107,9 @@ export const useCalendarStore = defineStore('calendar', () => {
             if (defaultCal.data) {
               defaultCal.data.is_master = true;
               defaultCal.data.calendar_type = 'master';
-              if (list.length === 1 && (!defaultCal.data.название || defaultCal.data.название === 'Календарь Мира')) {
-                defaultCal.data.название = 'Григорианский';
-                defaultCal.name = 'Григорианский';
+              if (list.length === 1) {
+                defaultCal.data.название = 'Календарь Мира';
+                defaultCal.name = 'Календарь Мира';
               }
             }
             await saveCalendar(projectName, { ...(defaultCal.data || {}), id: defaultCal.id, is_default: defaultCal.is_default, is_master: true } as unknown as CalendarData);

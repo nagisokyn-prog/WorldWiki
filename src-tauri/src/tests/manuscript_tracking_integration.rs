@@ -33,7 +33,7 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 use super::common::{create_test_db, create_test_services, seed_project};
-use worldwiki_domain::plot::{ArcChapterRelation, ArcStatus, ArcType, StoryArc};
+use worldwiki_domain::plot::{ArcStatus, ArcType, StoryArc};
 
 /// Структура сцены для проверки двухосевого порядка и детекции флэшбеков
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -194,20 +194,32 @@ async fn create_scene_promise(
             project_id = $p_rec,
             kind = 'scene',
             title = $quote,
-            status = 'planted';
+            status = 'planted',
+            timeline_event_id = IF $tid != NONE { type::record('timeline_events', $tid) } ELSE { NONE },
+            m_abs = IF $tid != NONE { (SELECT VALUE m_abs FROM ONLY type::record('timeline_events', $tid)) } ELSE { NONE };
 
         UPSERT $tb_rec SET
             project_id = $p_rec,
             chapter_id = $c_rec,
             order_index = $p_idx,
-            content = $quote,
-            timeline_event_id = IF $tid != NONE { type::record('timeline_events', $tid) } ELSE { NONE },
-            arc_id = IF $aid != NONE { type::record('story_arcs', $aid) } ELSE { NONE };
+            content = $quote;
 
         RELATE $prom_rec -> promise_milestones -> $tb_rec SET
             project_id = $p_rec,
             stage = 'plant',
             quote = $quote;
+
+        IF $aid != NONE {
+            RELATE $prom_rec -> advances_arc -> (type::record('story_arcs', $aid)) SET
+                project_id = $p_rec,
+                phase = 'setup';
+        };
+
+        IF $tid != NONE {
+            RELATE $prom_rec -> occurs_at -> (type::record('timeline_events', $tid)) SET
+                project_id = $p_rec,
+                time_nature = 'present';
+        };
     "#;
 
     let tid_opt = timeline_event_id.map(|t| t.strip_prefix("timeline_events:").unwrap_or(t));
@@ -234,8 +246,8 @@ async fn create_scene_promise(
             let part_sql = r#"
                 LET $p_rec = type::record('projects', $pid);
                 LET $e_rec = type::record('entities', $eid);
-                LET $tb_rec = type::record('text_blocks', $id);
-                RELATE $e_rec -> appears_in -> $tb_rec SET project_id = $p_rec, source = 'scene', role = 'main';
+                LET $prom_rec = type::record('plot_promises', $id);
+                RELATE $e_rec -> participant_of -> $prom_rec SET project_id = $p_rec, role = 'main';
             "#;
             let _ = db.query(part_sql)
                 .bind(("pid", proj_raw))
@@ -406,20 +418,20 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
     )
     .await;
 
-    // 5. Выборка через SurrealQL с резолвингом реляций
+    // 5. Выборка через SurrealQL с резолвингом реляций нарративного хаба
     let mut res = db
         .query(
             r#"
         SELECT 
             type::string(id) AS id,
-            content AS quote,
-            type::string(chapter_id) AS chapter_id,
-            chapter_id.title AS chapter_title,
-            chapter_id.sort_order AS chapter_order,
-            timeline_event_id.m_abs AS m_abs,
-            type::string(arc_id) AS arc_id,
-            arc_id.title AS arc_title
-        FROM text_blocks
+            title AS quote,
+            type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id,
+            array::first(->promise_milestones.out.chapter_id.title) AS chapter_title,
+            array::first(->promise_milestones.out.chapter_id.sort_order) AS chapter_order,
+            m_abs,
+            type::string(array::first(->advances_arc.out.id)) AS arc_id,
+            array::first(->advances_arc.out.title) AS arc_title
+        FROM plot_promises
         WHERE project_id = type::record('projects', $pid)
     "#,
         )
@@ -523,37 +535,13 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
         "Пятой идет сцена 12 (день 15)"
     );
 
-    // 9. Проверяем связь арок с главами через ArcChapterRelation
-    services
-        .story_arcs
-        .assign_chapter(&ArcChapterRelation {
-            arc_id: arc_sin.id.clone(),
-            chapter_id: ch1.clone(),
-            sort_order: 1,
-            phase: Some("climax".to_string()),
-        })
-        .await
-        .expect("assign ch1 to arc_sin");
-
-    services
-        .story_arcs
-        .assign_chapter(&ArcChapterRelation {
-            arc_id: arc_sin.id.clone(),
-            chapter_id: ch2.clone(),
-            sort_order: 2,
-            phase: Some("setup".to_string()),
-        })
-        .await
-        .expect("assign ch2 to arc_sin");
-
+    // 9. Проверяем связь арок с главами через нарративные узлы
     let arc_chaps = services
         .story_arcs
         .list_chapters_for_arc(&arc_sin.id)
         .await
         .expect("get arc chapters");
-    assert_eq!(arc_chaps.len(), 2, "Арка связана с 2 главами");
-    assert_eq!(arc_chaps[0].phase, Some("climax".to_string()));
-    assert_eq!(arc_chaps[1].phase, Some("setup".to_string()));
+    assert_eq!(arc_chaps.len(), 2, "Арка связана с 2 главами через нарративный хаб");
 }
 
 /// ТЕСТ 2: Хронологическое окно и раскрытие событий (fn::get_timeline_inspector_data)
@@ -961,19 +949,23 @@ async fn test_granular_scenes_and_promise_lifecycle() {
             project_id = $p_rec,
             title = 'Герой обнажил клинок перед троном',
             kind = 'scene',
-            status = 'planted';
+            status = 'planted',
+            timeline_event_id = type::record('timeline_events', 'ev_duel');
 
         UPSERT $tb_rec SET
             project_id = $p_rec,
             chapter_id = $c_rec,
             order_index = 42,
-            content = 'Герой обнажил клинок перед троном',
-            timeline_event_id = type::record('timeline_events', 'ev_duel');
+            content = 'Герой обнажил клинок перед троном';
 
         RELATE $prom_rec -> promise_milestones -> $tb_rec SET
             project_id = $p_rec,
             stage = 'plant',
             quote = 'Герой обнажил клинок перед троном';
+
+        RELATE $prom_rec -> occurs_at -> (type::record('timeline_events', 'ev_duel')) SET
+            project_id = $p_rec,
+            time_nature = 'present';
     "#;
     let mut res = db.query(prom_sql)
         .bind(("p", proj_key))
@@ -1061,19 +1053,22 @@ async fn test_cascade_delete_integrity_for_arcs_and_chapters() {
     let _ch = create_test_chapter(&db, proj_key, "ch_del", "Удаляемая глава", 1).await;
     let _ent = create_test_entity(&db, proj_key, "ent_del", "Персонаж", "character").await;
 
-    // Создаем арку и связи arc_chapters и arc_entities
+    // Создаем арку, обещание и ребра advances_arc / participant_of
     let arc_sql = "UPSERT type::record('story_arcs', 'arc_del') SET project_id = type::record('projects', $p), title = 'Арка на удаление', arc_type = 'character', status = 'planned'";
     let _ = db.query(arc_sql).bind(("p", proj_key)).await.expect("create arc");
 
-    let _ = db.query("RELATE (type::record('story_arcs', 'arc_del')) -> arc_chapters -> (type::record('chapters', 'ch_del')) SET project_id = type::record('projects', $p), sort_order = 1")
-        .bind(("p", proj_key))
-        .await
-        .expect("relate arc_chapters");
+    let prom_sql = "UPSERT type::record('plot_promises', 'prom_del') SET project_id = type::record('projects', $p), title = 'Обещание', kind = 'gun', status = 'planted'";
+    let _ = db.query(prom_sql).bind(("p", proj_key)).await.expect("create promise");
 
-    let _ = db.query("RELATE (type::record('story_arcs', 'arc_del')) -> arc_entities -> (type::record('entities', 'ent_del')) SET project_id = type::record('projects', $p)")
+    let _ = db.query("RELATE (type::record('plot_promises', 'prom_del')) -> advances_arc -> (type::record('story_arcs', 'arc_del')) SET project_id = type::record('projects', $p), phase = 'setup'")
         .bind(("p", proj_key))
         .await
-        .expect("relate arc_entities");
+        .expect("relate advances_arc");
+
+    let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> participant_of -> (type::record('plot_promises', 'prom_del')) SET project_id = type::record('projects', $p)")
+        .bind(("p", proj_key))
+        .await
+        .expect("relate participant_of");
 
     let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> appears_in -> (type::record('chapters', 'ch_del')) SET project_id = type::record('projects', $p), source = 'manual'")
         .bind(("p", proj_key))
@@ -1084,14 +1079,18 @@ async fn test_cascade_delete_integrity_for_arcs_and_chapters() {
     let mut del_arc = db.query("DELETE type::record('story_arcs', 'arc_del');").await.expect("delete arc");
     assert!(del_arc.take_errors().is_empty());
 
-    // Проверяем, что ребра arc_chapters и arc_entities удалились каскадно по DDL EVENT
-    let mut check_arcs = db.query("SELECT * FROM arc_chapters WHERE in = type::record('story_arcs', 'arc_del');").await.expect("check arc_chapters");
-    let arc_chaps: Vec<Value> = check_arcs.take(0).expect("take arc_chapters");
-    assert_eq!(arc_chaps.len(), 0, "Ребра arc_chapters должны удалиться каскадно");
+    // Проверяем, что ребро advances_arc удалилось каскадно по DDL EVENT
+    let mut check_arcs = db.query("SELECT * FROM advances_arc WHERE out = type::record('story_arcs', 'arc_del');").await.expect("check advances_arc");
+    let adv_arcs: Vec<Value> = check_arcs.take(0).expect("take advances_arc");
+    assert_eq!(adv_arcs.len(), 0, "Ребра advances_arc должны удалиться каскадно при удалении арки");
 
-    let mut check_ents = db.query("SELECT * FROM arc_entities WHERE in = type::record('story_arcs', 'arc_del');").await.expect("check arc_entities");
-    let arc_ents: Vec<Value> = check_ents.take(0).expect("take arc_entities");
-    assert_eq!(arc_ents.len(), 0, "Ребра arc_entities должны удалиться каскадно");
+    // Удаляем обещание plot_promises:prom_del
+    let mut del_prom = db.query("DELETE type::record('plot_promises', 'prom_del');").await.expect("delete promise");
+    assert!(del_prom.take_errors().is_empty());
+
+    let mut check_parts = db.query("SELECT * FROM participant_of WHERE out = type::record('plot_promises', 'prom_del');").await.expect("check participant_of");
+    let parts: Vec<Value> = check_parts.take(0).expect("take participant_of");
+    assert_eq!(parts.len(), 0, "Ребра participant_of должны удалиться каскадно при удалении обещания");
 
     // Удаляем главу chapters:ch_del
     let mut del_chap = db.query("DELETE type::record('chapters', 'ch_del');").await.expect("delete chapter");

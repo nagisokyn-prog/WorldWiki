@@ -136,82 +136,37 @@ impl StoryArcRepository for SurrealStoryArcRepository {
         take_list(&mut res, 0)
     }
 
-    async fn assign_chapter(&self, relation: &ArcChapterRelation) -> Result<(), DomainError> {
-        let arc_clean = relation.arc_id.trim_start_matches("story_arcs:");
-        let ch_clean = relation.chapter_id.trim_start_matches("chapters:");
-        let sql = r#"
-            RELATE (type::record('story_arcs', $arc))->arc_chapters->(type::record('chapters', $ch)) CONTENT {
-                project_id: (SELECT VALUE project_id FROM ONLY type::record('story_arcs', $arc)),
-                sort_order: $sort_order,
-                phase: $phase
-            };
-        "#;
-        self.db
-            .query(sql)
-            .bind(("arc", arc_clean.to_string()))
-            .bind(("ch", ch_clean.to_string()))
-            .bind(("sort_order", relation.sort_order as i64))
-            .bind(("phase", relation.phase.clone()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    async fn assign_chapter(&self, _relation: &ArcChapterRelation) -> Result<(), DomainError> {
+        // Связь арки с главами определяется нарративными узлами (plot_promises) через advances_arc
         Ok(())
     }
 
-    async fn remove_chapter(&self, arc_id: &str, chapter_id: &str) -> Result<(), DomainError> {
-        let arc_clean = arc_id.trim_start_matches("story_arcs:");
-        let ch_clean = chapter_id.trim_start_matches("chapters:");
-        let sql = "DELETE arc_chapters WHERE (in = type::record('story_arcs', $arc) OR in = $arc_full) AND (out = type::record('chapters', $ch) OR out = $ch_full);";
-        let arc_full = format!("story_arcs:{arc_clean}");
-        let ch_full = format!("chapters:{ch_clean}");
-        self.db
-            .query(sql)
-            .bind(("arc", arc_clean.to_string()))
-            .bind(("arc_full", arc_full))
-            .bind(("ch", ch_clean.to_string()))
-            .bind(("ch_full", ch_full))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    async fn remove_chapter(&self, _arc_id: &str, _chapter_id: &str) -> Result<(), DomainError> {
         Ok(())
     }
 
-    async fn assign_entity(&self, relation: &ArcEntityRelation) -> Result<(), DomainError> {
-        let arc_clean = relation.arc_id.trim_start_matches("story_arcs:");
-        let ent_clean = relation.entity_id.trim_start_matches("entities:");
-        let sql = r#"
-            RELATE (type::record('story_arcs', $arc))->arc_entities->(type::record('entities', $ent)) CONTENT {
-                project_id: (SELECT VALUE project_id FROM ONLY type::record('story_arcs', $arc))
-            };
-        "#;
-        self.db
-            .query(sql)
-            .bind(("arc", arc_clean.to_string()))
-            .bind(("ent", ent_clean.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    async fn assign_entity(&self, _relation: &ArcEntityRelation) -> Result<(), DomainError> {
+        // Связь арки с сущностями определяется участниками сцен (participant_of) через advances_arc
         Ok(())
     }
 
-    async fn remove_entity(&self, arc_id: &str, entity_id: &str) -> Result<(), DomainError> {
-        let arc_clean = arc_id.trim_start_matches("story_arcs:");
-        let ent_clean = entity_id.trim_start_matches("entities:");
-        let sql = "DELETE arc_entities WHERE (in = type::record('story_arcs', $arc) OR in = $arc_full) AND (out = type::record('entities', $ent) OR out = $ent_full);";
-        let arc_full = format!("story_arcs:{arc_clean}");
-        let ent_full = format!("entities:{ent_clean}");
-        self.db
-            .query(sql)
-            .bind(("arc", arc_clean.to_string()))
-            .bind(("arc_full", arc_full))
-            .bind(("ent", ent_clean.to_string()))
-            .bind(("ent_full", ent_full))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    async fn remove_entity(&self, _arc_id: &str, _entity_id: &str) -> Result<(), DomainError> {
         Ok(())
     }
 
     async fn list_chapters_for_arc(&self, arc_id: &str) -> Result<Vec<ArcChapterRelation>, DomainError> {
         let arc_clean = arc_id.trim_start_matches("story_arcs:");
         let arc_full = format!("story_arcs:{arc_clean}");
-        let sql = "SELECT in AS arc_id, out AS chapter_id, sort_order, phase FROM arc_chapters WHERE in = type::record('story_arcs', $arc) OR in = $arc_full ORDER BY sort_order ASC;";
+        let sql = r#"
+            SELECT 
+                type::string(out) AS arc_id,
+                type::string(array::first(in->promise_milestones.out.chapter_id)) AS chapter_id,
+                0 AS sort_order,
+                phase
+            FROM advances_arc 
+            WHERE (out = type::record('story_arcs', $arc) OR out = $arc_full)
+              AND array::len(in->promise_milestones) > 0;
+        "#;
         let mut res = self
             .db
             .query(sql)
@@ -219,13 +174,28 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             .bind(("arc_full", arc_full))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        let list: Vec<ArcChapterRelation> = take_list(&mut res, 0)?;
+        let mut deduped = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        for item in list {
+            if !item.chapter_id.is_empty() && seen.insert(item.chapter_id.clone()) {
+                deduped.push(item);
+            }
+        }
+        Ok(deduped)
     }
 
     async fn list_entities_for_arc(&self, arc_id: &str) -> Result<Vec<ArcEntityRelation>, DomainError> {
         let arc_clean = arc_id.trim_start_matches("story_arcs:");
         let arc_full = format!("story_arcs:{arc_clean}");
-        let sql = "SELECT in AS arc_id, out AS entity_id FROM arc_entities WHERE in = type::record('story_arcs', $arc) OR in = $arc_full;";
+        let sql = r#"
+            SELECT 
+                type::string(out) AS arc_id,
+                type::string(array::first(in<-participant_of.in.id)) AS entity_id
+            FROM advances_arc 
+            WHERE (out = type::record('story_arcs', $arc) OR out = $arc_full)
+              AND array::len(in<-participant_of) > 0;
+        "#;
         let mut res = self
             .db
             .query(sql)
@@ -233,6 +203,14 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             .bind(("arc_full", arc_full))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        let list: Vec<ArcEntityRelation> = take_list(&mut res, 0)?;
+        let mut deduped = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        for item in list {
+            if !item.entity_id.is_empty() && seen.insert(item.entity_id.clone()) {
+                deduped.push(item);
+            }
+        }
+        Ok(deduped)
     }
 }

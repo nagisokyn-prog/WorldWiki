@@ -93,11 +93,16 @@ export const CalendarDateConversions = {
       ? date.original_input
       : (date as CalendarDateParts);
 
+    const eraIdx = Number(raw?.era_index ?? 0);
+    const era = cal.эпохи?.[eraIdx];
     const y = Number(raw?.year ?? 1);
     const m = Number(raw?.month ?? 0);
     const d = Number(raw?.day ?? 1);
     const h = Number(raw?.hour ?? 0);
     const min = Number(raw?.minute ?? 0);
+
+    const isReverse = !!era?.обратный_отсчет || y < 0;
+    const effectiveY = Math.abs(y);
 
     const baseDays = this.getBaseDaysInYear(cal);
     const harmonics = (cal.правило_високосного_года === 'каждый 4 год')
@@ -109,24 +114,29 @@ export const CalendarDateConversions = {
         ];
     const leapOffset = cal.пользовательское_високосное_правило?.день_смещения ?? 1;
 
-    let totalDays = Number(defaultWasmEngine.days_up_to_year(BigInt(y), BigInt(baseDays), harmonics, BigInt(leapOffset)));
+    let totalDays = Number(defaultWasmEngine.days_up_to_year(BigInt(effectiveY), BigInt(baseDays), harmonics, BigInt(leapOffset)));
     for (let mi = 0; mi < m; mi++) {
-      totalDays += this.getDaysInMonth(cal, y, mi);
+      totalDays += this.getDaysInMonth(cal, effectiveY, mi);
     }
     totalDays += (d - 1);
 
-    return totalDays * minsInDay + h * mInHour + min;
+    const forwardMin = totalDays * minsInDay + h * mInHour + min;
+    return isReverse ? -forwardMin : forwardMin;
   },
 
   getDateFromAbsolute(absMin: number, cal: CalendarData, eraIndex: number = 0): SyncAnchorDate {
     if (!cal) return { year: 1, month: 0, day: 1, hour: 0, minute: 0, era_index: 0 };
+    const era = cal.эпохи?.[eraIndex];
+    const isReverse = !!era?.обратный_отсчет;
+    const effectiveAbsMin = isReverse ? Math.abs(absMin) : absMin;
+
     const settings = cal.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
     const hInDay = settings.часов_в_сутках || 24;
     const mInHour = settings.минут_в_часе || 60;
     const minsInDay = hInDay * mInHour;
 
-    const dayIndex = Math.floor(absMin / minsInDay);
-    const remMin = ((absMin % minsInDay) + minsInDay) % minsInDay;
+    const dayIndex = Math.floor(effectiveAbsMin / minsInDay);
+    const remMin = ((effectiveAbsMin % minsInDay) + minsInDay) % minsInDay;
     const hour = Math.floor(remMin / mInHour);
     const minute = remMin % mInHour;
 
@@ -141,8 +151,9 @@ export const CalendarDateConversions = {
     const leapOffset = cal.пользовательское_високосное_правило?.день_смещения ?? 1;
 
     const yearRes = defaultWasmEngine.year_from_days(BigInt(dayIndex), BigInt(baseDays), harmonics, BigInt(leapOffset));
-    const year = typeof yearRes === 'object' && yearRes !== null && 'year' in yearRes ? Number((yearRes as { year: number }).year) : Number(yearRes);
-    const yearStartDay = Number(defaultWasmEngine.days_up_to_year(BigInt(year), BigInt(baseDays), harmonics, BigInt(leapOffset)));
+    const rawYear = typeof yearRes === 'object' && yearRes !== null && 'year' in yearRes ? Number((yearRes as { year: number }).year) : Number(yearRes);
+    const year = isReverse ? Math.abs(rawYear) : rawYear;
+    const yearStartDay = Number(defaultWasmEngine.days_up_to_year(BigInt(rawYear), BigInt(baseDays), harmonics, BigInt(leapOffset)));
     let dayInYear = dayIndex - yearStartDay;
 
     let month = 0;
@@ -234,7 +245,18 @@ export const CalendarDateConversions = {
     const days = Math.floor(Math.abs(offsetMins) / minsInDay);
     const remMins = Math.abs(offsetMins) % minsInDay;
     const hours = Math.floor(remMins / mInHour);
-    const sign = offsetMins >= 0 ? '+' : '-';
-    return `Смещение относительно Календаря Мира: ${sign}${days} дн. ${hours} ч.`;
+
+    const direction = offsetMins < 0 ? 'раньше Календаря Мира' : 'позже Календаря Мира';
+    const baseDays = this.getBaseDaysInYear(localCal) || 365;
+    const years = Math.floor(days / baseDays);
+    const remDays = days % baseDays;
+
+    const parts: string[] = [];
+    if (years > 0) parts.push(`${years} г.`);
+    if (remDays > 0) parts.push(`${remDays} дн.`);
+    if (hours > 0) parts.push(`${hours} ч.`);
+    if (parts.length === 0) parts.push('0 дн.');
+
+    return `Точка отсчета на ${parts.join(' ')} ${direction}.`;
   },
 };

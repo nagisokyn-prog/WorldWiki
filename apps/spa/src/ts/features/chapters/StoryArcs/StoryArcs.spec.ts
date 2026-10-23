@@ -7,12 +7,6 @@ vi.mock('@/services/api.client', () => ({
   getStoryArcs: vi.fn(),
   saveStoryArc: vi.fn(),
   deleteStoryArc: vi.fn(),
-  assignArcChapter: vi.fn(),
-  removeArcChapter: vi.fn(),
-  assignArcEntity: vi.fn(),
-  removeArcEntity: vi.fn(),
-  getArcChapters: vi.fn(),
-  getArcEntities: vi.fn(),
   getPlotPromises: vi.fn().mockResolvedValue([]),
 }));
 

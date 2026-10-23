@@ -18,11 +18,11 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE appears_in WHERE project_id = $p_rec;
     DELETE participates_in WHERE project_id = $p_rec;
     DELETE revealed_in WHERE project_id = $p_rec;
-    DELETE arc_entities WHERE project_id = $p_rec;
-    DELETE arc_chapters WHERE project_id = $p_rec;
+    DELETE participant_of WHERE project_id = $p_rec;
     DELETE advances_arc WHERE project_id = $p_rec;
     DELETE occurs_at WHERE project_id = $p_rec;
     DELETE story_arcs WHERE project_id = $p_rec;
+    DELETE plot_promises WHERE project_id = $p_rec;
     DELETE entity_revisions WHERE project_id = $p_rec;
     DELETE entity_rel_revisions WHERE project_id = $p_rec;
     DELETE tagged_with WHERE project_id = $p_rec;
@@ -65,7 +65,6 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
     DELETE text_blocks WHERE chapter_id = $before.id;
     DELETE appears_in WHERE out = $before.id;
-    DELETE arc_chapters WHERE out = $before.id;
     DELETE revealed_in WHERE out = $before.id;
     DELETE contains WHERE out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
@@ -79,8 +78,6 @@ DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "D
 
 -- 2.1. КАСКАД СЮЖЕТНЫХ АРОК
 DEFINE EVENT OVERWRITE cascade_story_arc_delete ON TABLE story_arcs WHEN $event = "DELETE" THEN {
-    DELETE arc_entities WHERE in = $before.id;
-    DELETE arc_chapters WHERE in = $before.id;
     DELETE advances_arc WHERE out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
     DELETE plans_for WHERE out = $before.id;
@@ -88,8 +85,6 @@ DEFINE EVENT OVERWRITE cascade_story_arc_delete ON TABLE story_arcs WHEN $event 
 
 -- 2.2. КАСКАД БЛОКОВ ТЕКСТА
 DEFINE EVENT OVERWRITE cascade_text_block_delete ON TABLE text_blocks WHEN $event = "DELETE" THEN {
-    DELETE advances_arc WHERE in = $before.id;
-    DELETE occurs_at WHERE in = $before.id;
     DELETE promise_milestones WHERE out = $before.id;
     DELETE appears_in WHERE out = $before.id;
 };
@@ -97,6 +92,9 @@ DEFINE EVENT OVERWRITE cascade_text_block_delete ON TABLE text_blocks WHEN $even
 -- 2.3. КАСКАД СЮЖЕТНЫХ ОБЕЩАНИЙ
 DEFINE EVENT OVERWRITE cascade_plot_promise_delete ON TABLE plot_promises WHEN $event = "DELETE" THEN {
     DELETE promise_milestones WHERE in = $before.id;
+    DELETE participant_of WHERE out = $before.id;
+    DELETE advances_arc WHERE in = $before.id;
+    DELETE occurs_at WHERE in = $before.id;
 };
 
 -- 3. КАСКАД КАЛЕНДАРЯ
@@ -118,7 +116,7 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
     DELETE entity_rel WHERE in = $before.id;
     DELETE entity_rel WHERE out = $before.id;
     DELETE appears_in WHERE in = $before.id;
-    DELETE arc_entities WHERE out = $before.id;
+    DELETE participant_of WHERE in = $before.id;
     DELETE revealed_in WHERE pov_id = $before.id;
     DELETE participates_in WHERE in = $before.id;
     DELETE tagged_with WHERE in = $before.id;
@@ -132,7 +130,7 @@ DEFINE EVENT OVERWRITE cascade_timeline_event_delete ON TABLE timeline_events WH
     DELETE participates_in WHERE out = $before.id;
     DELETE revealed_in WHERE in = $before.id;
     DELETE occurs_at WHERE out = $before.id;
-    UPDATE text_blocks SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
+    UPDATE plot_promises SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
 };
 
 -- 6. ЛОГИРОВАНИЕ РЕВИЗИЙ СУЩНОСТЕЙ

@@ -35,6 +35,15 @@ vi.mock('../../../../stores/chapter.store', () => ({
   }),
 }));
 
+vi.mock('../../../../stores/calendar.store', () => ({
+  useCalendarStore: () => ({
+    loadCalendars: vi.fn().mockResolvedValue([]),
+    getCalendars: vi.fn().mockResolvedValue([]),
+    getPlanets: vi.fn().mockReturnValue([]),
+    calendars: ref([]),
+  }),
+}));
+
 vi.mock('../../../../services/Entity/entity.tree', () => ({
   useEntityTree: () => ({
     entities: ref({ character: [{ id: 'char_1', name: 'Arthur' }] }),
@@ -71,7 +80,8 @@ describe('useChapterTree', () => {
     const tree = useChapterTree(props, emit);
 
     expect(tree.activeId.value).toBe('ch_1');
-    expect(tree.explorerSections.value[0].nodes.length).toBe(2); // volume, root chapter
+    const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
+    expect(msSection?.nodes.length).toBe(2); // volume, root chapter
 
     // Fallback activeId to activeNode
     props.activeEditorId = null;

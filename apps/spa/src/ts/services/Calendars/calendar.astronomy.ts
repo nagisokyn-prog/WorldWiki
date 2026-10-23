@@ -79,37 +79,37 @@ export const CalendarAstronomy = {
         BigInt(initialPhaseBp)
       );
 
-      const emojis: Record<string, string> = {
-        new_moon: '🌑',
-        waxing_crescent: '🌒',
-        first_quarter: '🌓',
-        waxing_gibbous: '🌔',
-        full_moon: '🌕',
-        waning_gibbous: '🌖',
-        last_quarter: '🌗',
-        waning_crescent: '🌘',
-      };
-
-      const titles: Record<string, string> = {
-        new_moon: 'Новолуние',
-        waxing_crescent: 'Молодая луна',
-        first_quarter: 'Первая четверть',
-        waxing_gibbous: 'Прибывающая луна',
-        full_moon: 'Полнолуние',
-        waning_gibbous: 'Убывающая луна',
-        last_quarter: 'Последняя четверть',
-        waning_crescent: 'Старая луна',
-      };
-
       const phaseFrac = res.basis_points / 10000;
-      const title = titles[res.phase_name] || res.phase_name;
+      let phaseKey: 'new' | 'waxing' | 'full' | 'waning';
+      let defaultName: string;
+      let defaultEmoji: string;
+
+      if (phaseFrac < 0.05 || phaseFrac >= 0.95) {
+        phaseKey = 'new';
+        defaultName = 'Новолуние';
+        defaultEmoji = '🌑';
+      } else if (phaseFrac < 0.45) {
+        phaseKey = 'waxing';
+        defaultName = 'Растущая';
+        defaultEmoji = '🌓';
+      } else if (phaseFrac <= 0.55) {
+        phaseKey = 'full';
+        defaultName = 'Полнолуние';
+        defaultEmoji = '🌕';
+      } else {
+        phaseKey = 'waning';
+        defaultName = 'Убывающая';
+        defaultEmoji = '🌗';
+      }
+
+      const phaseName = m.phase_names?.[phaseKey] || defaultName;
 
       return {
         moon: m,
         phase: phaseFrac,
-        name: m.name || title,
-        phaseName: title,
-        emoji: emojis[res.phase_name] || '🌕',
+        name: phaseName,
+        phaseName,
+        emoji: defaultEmoji,
         dayInCycle: phaseFrac * (periodNum / periodDen),
       };
     });
@@ -171,15 +171,15 @@ export const CalendarAstronomy = {
     const frac = moment.day_fraction;
     const getSunPhase = (f: number): { phase: 'dawn' | 'day' | 'dusk' | 'night'; phase_label: string } => {
       if (f >= 0.22 && f < 0.28) {
-        return { phase: 'dawn', phase_label: 'Рассвет / Сумерки' };
+        return { phase: 'dawn', phase_label: '🌅 Рассвет' };
       }
       if (f >= 0.28 && f < 0.72) {
-        return { phase: 'day', phase_label: 'День / Солнце в зените' };
+        return { phase: 'day', phase_label: '☀️ День' };
       }
       if (f >= 0.72 && f < 0.78) {
-        return { phase: 'dusk', phase_label: 'Закат / Вечерние сумерки' };
+        return { phase: 'dusk', phase_label: '🌇 Закат' };
       }
-      return { phase: 'night', phase_label: 'Ночь / Тьма' };
+      return { phase: 'night', phase_label: '🌙 Ночь' };
     };
 
     const { phase, phase_label } = getSunPhase(frac);
@@ -189,7 +189,7 @@ export const CalendarAstronomy = {
     const zenith_time = daylight?.zenith || '12:00';
     const daylight_text = daylight
       ? `Световой день ~${Math.round(daylight.duration_hours)} ч.`
-      : 'Стандартный световой день';
+      : 'Стандартный световой день (~12 ч.)';
 
     return {
       phase,

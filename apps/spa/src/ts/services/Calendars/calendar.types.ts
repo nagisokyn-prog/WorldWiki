@@ -58,6 +58,7 @@ export interface CalendarSeason {
 
 export interface CalendarHoliday {
   название: string;
+  описание?: string;
   дата_начала: { месяц: number; день: number };
   дата_конца?: { месяц: number; день: number };
 }

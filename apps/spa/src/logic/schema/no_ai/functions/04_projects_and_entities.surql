@@ -360,9 +360,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
     DELETE entity_rel WHERE project_id = $p_rec;
     DELETE appears_in WHERE project_id = $p_rec;
     DELETE participates_in WHERE project_id = $p_rec;
-    DELETE revealed_in WHERE project_id = $p_rec;
-    DELETE arc_entities WHERE project_id = $p_rec;
-    DELETE arc_chapters WHERE project_id = $p_rec;
+    DELETE participant_of WHERE project_id = $p_rec;
     DELETE advances_arc WHERE project_id = $p_rec;
     DELETE occurs_at WHERE project_id = $p_rec;
     DELETE story_arcs WHERE project_id = $p_rec;

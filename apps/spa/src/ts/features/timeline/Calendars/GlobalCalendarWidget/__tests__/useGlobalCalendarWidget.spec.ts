@@ -69,10 +69,10 @@ describe('useGlobalCalendarWidget', () => {
     // Setup master calendar and local calendars
     const store = useCalendarStore();
     const list = await store.getCalendars('my-proj');
-    widget.masterCalendar.value = list.find((c: any) => c.is_master);
+    widget.masterCalendar.value = list.find((c: any) => c.is_master) ?? null;
     widget.localCalendars.value = [
       ...list.filter((c: any) => !c.is_master),
-      { id: 'cal_nodata', is_master: false, data: null },
+      { id: 'cal_nodata', is_master: false } as any,
     ];
 
     expect(widget.currentMasterInput.value.year).toBe(1);

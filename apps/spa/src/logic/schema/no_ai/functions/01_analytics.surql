@@ -34,12 +34,18 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
                 attributes.birth_m_abs
             } AS birth_m_abs,
             attributes['роль_в_истории'] AS role_in_story,
-            attributes['статус_категория'] AS status_category,
-            (->appears_in.{
-                chapter_id: IF string::starts_with(type::string(out), 'text_blocks') { IF out.chapter_id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) } } ELSE IF out.id != NONE { out.id } ELSE { type::string(out) },
-                source: IF string::starts_with(type::string(out), 'text_blocks') { 'scene' } ELSE { source },
-                role: role
-            }) AS appearances
+            array::concat(
+                (->appears_in.{
+                    chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
+                    source: source,
+                    role: role
+                }),
+                (->participant_of.{
+                    chapter_id: IF array::len(out->promise_milestones) > 0 { array::first(out->promise_milestones.out.chapter_id) } ELSE { NONE },
+                    source: 'scene',
+                    role: role
+                })
+            ) AS appearances
         FROM entities 
         WHERE project_id = $p_rec
         ORDER BY name ASC
@@ -171,7 +177,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
     LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM ONLY $entity LIMIT 1);
     LET $ent_clean = type::string($entity).replace('entities:', '');
     LET $ent_prefixed = 'entities:' + $ent_clean;
-    LET $appearances = (
+    LET $appears_in_list = (
         SELECT 
             IF string::starts_with(type::string(out), 'text_blocks') { type::string(out.chapter_id) } ELSE { type::string(out.id) } AS chapter_id,
             IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.title } ELSE { out.title } AS chapter_title,
@@ -184,6 +190,19 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         WHERE in = $entity
         LIMIT 1000
     );
+    LET $participant_list = (
+        SELECT 
+            type::string(array::first(out->promise_milestones.out.chapter_id)) AS chapter_id,
+            array::first(out->promise_milestones.out.chapter_id.title) AS chapter_title,
+            IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS chapter_order,
+            'scene' AS source,
+            role,
+            created_at
+        FROM participant_of 
+        WHERE in = $entity
+        LIMIT 1000
+    );
+    LET $appearances = array::concat($appears_in_list, $participant_list);
     LET $events = (
         SELECT 
             out.id AS event_id,
@@ -247,19 +266,20 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
                ELSE { NONE } AS arc_phase,
             arcs,
             IF m_abs != NONE { m_abs } 
-               ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
-               ELSE IF array::first(->promise_milestones.out.timeline_event_id.m_abs) != NONE { array::first(->promise_milestones.out.timeline_event_id.m_abs) }
-               ELSE { NONE } AS m_abs,
+            ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
+            ELSE IF array::first(->promise_milestones.out.timeline_event_id.m_abs) != NONE { array::first(->promise_milestones.out.timeline_event_id.m_abs) }
+            ELSE { NONE } AS m_abs,
             IF calendar_id != NONE { calendar_id } 
-               ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
-               ELSE IF array::first(->promise_milestones.out.timeline_event_id.calendar_id) != NONE { array::first(->promise_milestones.out.timeline_event_id.calendar_id) }
-               ELSE { NONE } AS calendar_id,
+            ELSE IF timeline_event_id.calendar_id != NONE { timeline_event_id.calendar_id } 
+            ELSE IF array::first(->promise_milestones.out.timeline_event_id.calendar_id) != NONE { array::first(->promise_milestones.out.timeline_event_id.calendar_id) }
+            ELSE { NONE } AS calendar_id,
             date_fields,
             IF timeline_event_id != NONE { timeline_event_id }
-               ELSE IF array::first(->promise_milestones.out.timeline_event_id) != NONE { array::first(->promise_milestones.out.timeline_event_id) }
-               ELSE { NONE } AS timeline_event_id
+            ELSE IF array::first(->promise_milestones.out.timeline_event_id) != NONE { array::first(->promise_milestones.out.timeline_event_id) }
+            ELSE { NONE } AS timeline_event_id
         FROM plot_promises 
         WHERE (array::len($scene_blocks) > 0 AND array::len(array::intersect(->promise_milestones.out, $scene_blocks)) > 0)
+           OR $entity IN <-participant_of.in
            OR $entity IN participant_ids
            OR $ent_clean IN participant_ids
            OR $ent_prefixed IN participant_ids

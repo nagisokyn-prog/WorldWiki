@@ -125,10 +125,20 @@ export function useCalendarEditor(
   }
 
   function updateName(name: string) {
-    if (!calendarRecord.value) return;
-    calendarRecord.value.name = name;
-    if (calendarRecord.value.data) {
-      calendarRecord.value.data.название = name;
+    if (!calendarRecord.value) {
+      const defaultData = CalendarEngine.getDefaultCalendar();
+      calendarRecord.value = {
+        id: props.calendarId || 'cal_new',
+        name,
+        is_default: false,
+        is_master: false,
+        data: { ...defaultData, название: name },
+      };
+    } else {
+      calendarRecord.value.name = name;
+      if (calendarRecord.value.data) {
+        calendarRecord.value.data.название = name;
+      }
     }
     emit('update:name', name);
     document.dispatchEvent(new CustomEvent('ww:calendar-renamed', {

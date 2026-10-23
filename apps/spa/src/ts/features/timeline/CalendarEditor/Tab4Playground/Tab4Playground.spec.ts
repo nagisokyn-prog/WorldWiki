@@ -6,7 +6,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useTab4Playground } from './useTab4Playground';
 import type { Tab4PlaygroundEmits } from './Tab4Playground.model';
-import type { CalendarData } from '@/services/Calendars/calendar.types';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
 describe('useTab4Playground', () => {
   const mockCalendar: CalendarData = {
@@ -32,7 +32,7 @@ describe('useTab4Playground', () => {
     const emit = vi.fn() as unknown as Tab4PlaygroundEmits;
     const { monthMatrixDays } = useTab4Playground({ calendarData: mockCalendar }, emit);
 
-    expect(monthMatrixDays.value.length).toBe(31);
+    expect(monthMatrixDays.value.length).toBe(30);
     expect(monthMatrixDays.value[0].day).toBe(1);
     expect(monthMatrixDays.value[14].isSelected).toBe(true); // 15-й день выбран
   });

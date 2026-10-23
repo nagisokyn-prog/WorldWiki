@@ -102,5 +102,7 @@ export function useArcCard(props: ArcCardProps) {
     phaseCounts,
     displayBlocks,
     getArcTypeLabel,
+    getPhaseInfo,
+    formatChapterName,
   };
 }

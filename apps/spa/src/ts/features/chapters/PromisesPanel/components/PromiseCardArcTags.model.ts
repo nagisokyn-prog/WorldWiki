@@ -1,11 +1,9 @@
 import type { StoryArc } from '@/stores/story_arcs.store';
 
-export type ArcPhase = 'setup' | 'escalation' | 'climax' | 'resolution';
+import type { SceneArcItem } from '@/types/generated/SceneArcItem';
 
-export interface SceneArcItem {
-  arc_id: string;
-  arc_phase?: ArcPhase | string | null;
-}
+export type ArcPhase = 'setup' | 'escalation' | 'climax' | 'resolution';
+export type { SceneArcItem };
 
 export interface BoundArcWithMeta {
   arcId: string;

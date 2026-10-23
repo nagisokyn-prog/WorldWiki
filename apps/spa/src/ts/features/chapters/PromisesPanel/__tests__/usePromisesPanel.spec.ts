@@ -198,8 +198,8 @@ describe('usePromisesPanel', () => {
       quote: 'Gun cleaned',
       paragraph_index: 5,
     });
-    expect(existing.status).toBe('developed');
-    expect(existing.progressions).toHaveLength(1);
+    expect(panel.promises.value[0].status).toBe('developed');
+    expect(panel.promises.value[0].progressions).toHaveLength(1);
 
     // Resolution milestone
     vi.mocked(api.savePlotPromise).mockResolvedValueOnce(existing as any);
@@ -209,9 +209,9 @@ describe('usePromisesPanel', () => {
       quote: 'Gun fired',
       paragraph_index: 10,
     });
-    expect(existing.status).toBe('resolved');
-    expect(existing.resolution).toBeDefined();
-    expect(existing.resolved_in_volume).toBe('vol_1');
+    expect(panel.promises.value[0].status).toBe('resolved');
+    expect(panel.promises.value[0].resolution).toBeDefined();
+    expect(panel.promises.value[0].resolved_in_volume).toBe('vol_1');
 
     // Unknown promiseId does nothing
     await panel.addMilestone({

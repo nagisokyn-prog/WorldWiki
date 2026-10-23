@@ -50,6 +50,14 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       title: payload.quote,
       note: null,
       status: 'planted',
+      location_id: null,
+      timeline_event_id: null,
+      m_abs: null,
+      calendar_id: null,
+      participant_ids: [],
+      arcs: [],
+      arc_id: null,
+      arc_phase: null,
       milestones: [
         {
           milestone_id: `ms_${Date.now()}`,

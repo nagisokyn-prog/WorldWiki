@@ -254,6 +254,14 @@ pub struct PromiseMilestone {
     pub order_index: Option<i64>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
+pub struct SceneArcItem {
+    pub arc_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arc_phase: Option<String>,
+}
+
 surreal_entity! {
     #[table = "plot_promises"]
     #[project_scoped]
@@ -264,6 +272,16 @@ surreal_entity! {
         #[serde(skip_serializing_if = "Option::is_none")] pub note: Option<String>,
         pub status: String,
         #[serde(default)] pub milestones: Vec<PromiseMilestone>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub location_id: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub timeline_event_id: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[ts(type = "number | null")]
+        pub m_abs: Option<i64>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub calendar_id: Option<String>,
+        #[serde(default)] pub participant_ids: Vec<String>,
+        #[serde(default)] pub arcs: Vec<SceneArcItem>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub arc_id: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub arc_phase: Option<String>,
     }
 }
 
@@ -460,23 +478,33 @@ surreal_relation! {
 }
 
 surreal_relation! {
-    #[edge = "arc_chapters"]
-    #[from = story_arcs]
-    #[to = chapters]
+    #[edge = "participant_of"]
+    #[from = entities]
+    #[to = plot_promises]
     #[tauri_commands]
-    pub struct ArcChapter {
-        #[ts(type = "number")] pub sort_order: i64,
-        pub phase: Option<String>,
+    pub struct ParticipantOf {
+        pub role: Option<String>,
     }
 }
 
 surreal_relation! {
-    #[edge = "arc_entities"]
-    #[from = story_arcs]
-    #[to = entities]
+    #[edge = "advances_arc"]
+    #[from = plot_promises]
+    #[to = story_arcs]
     #[tauri_commands]
-    pub struct ArcEntity {
-        pub role: Option<String>,
+    pub struct AdvancesArc {
+        pub phase: String,
+        pub transition: Option<String>,
+    }
+}
+
+surreal_relation! {
+    #[edge = "occurs_at"]
+    #[from = plot_promises]
+    #[to = timeline_events]
+    #[tauri_commands]
+    pub struct OccursAt {
+        pub time_nature: Option<String>,
     }
 }
 
@@ -529,8 +557,9 @@ mod ts_export_tests {
         PlotPromise::export(&cfg).expect(export_err_msg);
         PromiseMilestone::export(&cfg).expect(export_err_msg);
         StoryArc::export(&cfg).expect(export_err_msg);
-        ArcChapter::export(&cfg).expect(export_err_msg);
-        ArcEntity::export(&cfg).expect(export_err_msg);
+        ParticipantOf::export(&cfg).expect(export_err_msg);
+        AdvancesArc::export(&cfg).expect(export_err_msg);
+        OccursAt::export(&cfg).expect(export_err_msg);
         RevealedIn::export(&cfg).expect(export_err_msg);
         Volume::export(&cfg).expect(export_err_msg);
         Chapter::export(&cfg).expect(export_err_msg);

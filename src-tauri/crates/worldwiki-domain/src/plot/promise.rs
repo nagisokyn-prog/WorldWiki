@@ -49,6 +49,13 @@ pub struct PromiseMilestone {
     pub order_index: Option<i32>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SceneArcItem {
+    pub arc_id: String,
+    #[serde(default)]
+    pub arc_phase: Option<String>,
+}
+
 fn default_datetime() -> DateTime<Utc> {
     DateTime::UNIX_EPOCH
 }
@@ -65,6 +72,22 @@ pub struct PlotPromise {
     pub status: PromiseStatus,
     #[serde(default)]
     pub milestones: Vec<PromiseMilestone>,
+    #[serde(default)]
+    pub location_id: Option<String>,
+    #[serde(default)]
+    pub timeline_event_id: Option<String>,
+    #[serde(default)]
+    pub m_abs: Option<i64>,
+    #[serde(default)]
+    pub calendar_id: Option<String>,
+    #[serde(default)]
+    pub participant_ids: Vec<String>,
+    #[serde(default)]
+    pub arcs: Vec<SceneArcItem>,
+    #[serde(default)]
+    pub arc_id: Option<String>,
+    #[serde(default)]
+    pub arc_phase: Option<String>,
     #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
     #[serde(default = "default_datetime")]
@@ -85,6 +108,14 @@ impl PlotPromise {
             note: None,
             status: PromiseStatus::Planted,
             milestones: Vec::new(),
+            location_id: None,
+            timeline_event_id: None,
+            m_abs: None,
+            calendar_id: None,
+            participant_ids: Vec::new(),
+            arcs: Vec::new(),
+            arc_id: None,
+            arc_phase: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

@@ -1,0 +1,284 @@
+{
+  "$schema": "https://cerberus-firewall.dev/schema.json",
+  "version": "1.0",
+  "ignore": [
+    ".logic_legacy/**",
+    "tests/fixtures/**",
+    "target/**",
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "**/libs/**",
+    "**/*.min.js",
+    "**/*.prod.js",
+    "vendor/**",
+    "crates/cargo-cerberus/**",
+    "crates/cerberus-application/**",
+    "crates/cerberus-domain/**",
+    "crates/cerberus-infrastructure/**",
+    "crates/cerberus-ports/**",
+    "crates/cerberus-sfc/**",
+    "crates/cerberus-surql/**",
+    "crates/cerberus-testability/**",
+    "src/dist-check/**",
+    "__tests__/**",
+    "**/tests/**",
+    "**/test/",
+    "**/*test.ts",
+    "**/font-awesome.min.css",
+    "**/*assets/**",
+    "**/api.client.ts",
+    "scripts/",
+    "**/data/backup_latest.surql",
+    "**/e2e/",
+    "/src-tauri/llama-sys/prebuilt-libs/bindings.rs",
+    "packages/calendar-wasm/pkg/**"
+  ],
+  "extends": [
+    "cerberus:rust-hexagonal",
+    "cerberus:surrealdb-v3",
+    "cerberus:vue-clean-architecture",
+    "cerberus:fsd-strict",
+    "cerberus:perf-high-fps",
+    "cerberus:css-design-tokens"
+  ],
+  "layers": {
+    "core": {
+      "patterns": [
+        "**/crates/worldwiki-calendar-core/**",
+        "**/crates/worldwiki-calendar-wasm/**"
+      ],
+      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
+      "allowed_deps": []
+    },
+    "domain": {
+      "patterns": [
+        "**/crates/worldwiki-domain/**",
+        "**/surreal_domain/surreal_domain_macros/**"
+      ],
+      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
+      "allowed_deps": ["core"]
+    },
+    "application": {
+      "patterns": [
+        "**/crates/worldwiki-application/**",
+        "**/surreal_domain/surreal_domain_facade/**"
+      ],
+      "forbidden_external": ["tauri"],
+      "allowed_deps": ["domain", "ports", "infrastructure"]
+    },
+    "ports": {
+      "patterns": [
+        "**/crates/worldwiki-ports/**"
+      ],
+      "forbidden_external": ["tauri", "surrealdb"],
+      "allowed_deps": ["domain"]
+    },
+    "infrastructure": {
+      "patterns": [
+        "**/crates/worldwiki-infrastructure/**",
+        "**/surreal_domain/surreal_domain_core/**",
+        "**/llama-sys/**"
+      ],
+      "allowed_deps": ["domain", "ports", "application"]
+    },
+    "adapters_tauri": {
+      "aliases": ["adapter", "adapters", "tauri"],
+      "patterns": [
+        "src-tauri/**",
+        "**/crates/worldwiki-tauri/**",
+        "**/tauri_shell/**"
+      ],
+      "allowed_external": ["tauri", "surrealdb"],
+      "allowed_deps": ["domain", "application", "ports", "infrastructure"]
+    }
+  },
+  "surrealdb": {
+    "schema_roots": [
+      "logic/schema/no_ai/**",
+      "logic/schema/ai/**",
+      "tauri-surreal-kit/**",
+      "src-tauri"
+    ],
+    "strict_mode": true,
+    "enforce_idempotent_ddl": true,
+    "ban_schemaless": true,
+    "ban_vector_in_revisions": true,
+    "enforce_100pct_parameterization": true
+  },
+  "frontend_layers": {
+    "shared": {
+      "order": 1,
+      "allowed_deps": []
+    },
+    "entities": {
+      "order": 2,
+      "aliases": ["entity"],
+      "allowed_deps": ["shared"]
+    },
+    "features": {
+      "order": 3,
+      "aliases": ["feature"],
+      "allowed_deps": ["entities", "shared"]
+    },
+    "widgets": {
+      "order": 4,
+      "aliases": ["widget"],
+      "allowed_deps": ["features", "entities", "shared"]
+    },
+    "pages": {
+      "order": 5,
+      "aliases": ["page", "views", "view", "screens", "screen"],
+      "allowed_deps": ["widgets", "features", "entities", "shared"]
+    },
+    "app": {
+      "order": 6,
+      "aliases": ["application"],
+      "allowed_deps": ["shell", "pages", "widgets", "features", "entities", "shared"]
+    },
+    "shell": {
+      "order": 6,
+      "is_orchestrator": true,
+      "allow_cross_slice": true,
+      "allowed_deps": ["pages", "widgets", "features", "entities", "shared", "app"]
+    }
+  },
+  "design_tokens": {
+    "tokens_roots": [
+      "packages/resources/src/styles/tokens/**",
+      "packages/tokens/**",
+      "**/settings.defaults.ts",
+      "**/settings.dom.ts",
+      "**/useSettingsAppearance.ts",
+      "**/palette.ts",
+      "**/*tokens.ts",
+      "apps/spa/src/ts/services/document/profiles/defaults.ts"
+    ]
+  },
+  "css_perf": {
+    "max_blur_radius_px": 30,
+    "max_filter_functions": 4
+  },
+  "limits": {
+    "max_sloc_warn": 300,
+    "max_sloc_deny": 500,
+    "max_vue_sloc_logic_warn": 150,
+    "max_vue_sloc_logic_deny": 250,
+    "max_composable_sloc_warn": 250,
+    "max_composable_sloc_deny": 450,
+    "max_functions_warn": 20,
+    "max_functions_deny": 35,
+    "sloc_grace_lines": 15,
+    "max_destructure_fields": 3,
+    "max_pressure_warn": 200.0,
+    "max_pressure_deny": 400.0,
+    "max_style_lines": 0,
+    "max_script_setup_lines": 0
+  },
+  "rules": {
+    "arch/domain-purity": "deny",
+    "arch/ports-isolation": "deny",
+    "arch/tauri-isolation": "deny",
+    "arch/manifest-hierarchy": "deny",
+    "arch/missing-layer": "warn",
+    "arch/zone-of-pain": "warn",
+    "arch/god-object-blast-radius": "warn",
+    "arch/layer-inversion": "deny",
+    "arch/module-boundary": "deny",
+    "arch/cqrs-isolation": "deny",
+    "arch/event-decoupling": "deny",
+    "arch/cyclic-dependency": "deny",
+
+    "code/max-pressure": "warn",
+    "code/max-sloc": "deny",
+
+    "async/no-sync-mutex-in-await": "deny",
+    "async/no-zombie-spawn": "warn",
+    "conc/no-orphan-spawn": "warn",
+    "conc/no-double-lock": "deny",
+    "conc/no-static-mut": "deny",
+    "conc/no-poison-swallow": "deny",
+
+    "robustness/no-raw-unwrap-panic": "warn",
+    "quality/ai-slop-detector": "warn",
+
+    "sec/taint-sink-execution": "deny",
+    "sec/transitive-capabilities": "warn",
+
+    "surql/schemaless-table-ban": "deny",
+    "surql/idempotent-ddl": "deny",
+    "surql/require-field-type": "deny",
+    "surql/indexed-fk": "warn",
+    "surql/flexible-field-ban": "deny",
+    "surql/readonly-metadata": "warn",
+    "surql/unconstrained-string": "deny",
+    "surql/full-parameterization": "deny",
+    "surql/unbounded-select": "deny",
+    "surql/missing-where-limit": "warn",
+    "surql/record-id-manipulation": "deny",
+    "surql/idempotent-mutations": "warn",
+    "surql/unescaped-identifiers": "deny",
+    "surql/inefficient-subqueries": "warn",
+    "surql/fts-analyzer-defined": "deny",
+    "surql/bm25-pipeline-valid": "warn",
+    "surql/fts-operator-indexed": "deny",
+    "surql/no-vector-in-revisions": "deny",
+    "surql/hnsw-distance-defined": "deny",
+    "surql/hnsw-dimension-specified": "warn",
+    "surql/no-recursive-cascade-loops": "warn",
+    "surql/no-interactive-tx-in-handlers": "deny",
+    "surql/encapsulate-rag-functions": "deny",
+    "surql/migration-version-header": "warn",
+    "surql/ban-deprecated-v1-v2-syntax": "deny",
+    "surql/no-types-in-domain": "deny",
+
+    "vue/no-monolith-script-setup": "deny",
+    "vue/require-companion-hook": "deny",
+    "vue/no-types-in-sfc": "deny",
+
+    "css/no-hardcoded-colors": "deny",
+    "css/require-design-tokens": "deny",
+    "css/no-raw-colors-in-ts": "deny",
+    "css/max-style-lines": "warn",
+    "css/no-will-change-overuse": "warn",
+    "css/blur-budget-exceeded": "warn",
+    "css/compositor-only-animations": "warn",
+    "css/no-transition-all": "deny",
+    "css/require-reduced-motion": "warn",
+    "ds/no-primitive-spectral-tokens": "deny",
+    "ds/no-local-theme-overrides": "deny",
+    "ds/token-role-mismatch": "deny",
+
+    "fsd/layer-imports-hierarchy": "deny",
+    "fsd/public-api-only": "deny",
+    "fsd/ui-kit-zero-domain": "deny",
+    "fsd/no-cross-slice-imports": "deny",
+
+    "perf/shallow-ref-for-heavy-ast": "deny",
+    "perf/no-reactive-canvas-three": "deny",
+    "perf/no-allocations-in-raf": "deny",
+    "perf/no-template-methods-in-loops": "deny",
+    "perf/no-cascading-watchers": "deny",
+    "perf/layout-thrashing": "deny",
+
+    "leak/uncleaned-ipc-listener": "deny",
+    "fe/raii-cleanup": "deny",
+
+    "ts/store-aliasing": "deny",
+    "ts/exhaustive-match": "deny",
+
+    "ERR-001": "deny",
+    "ERR-002": "deny",
+    "ERR-003": "deny",
+    "ERR-004": "deny",
+    "ERR-005": "deny",
+    "ERR-006": "deny",
+    "ERR-007": "deny",
+    "SDB-009": "deny",
+    "FE-ERR-001": "deny",
+    "FE-ERR-002": "deny",
+    "FE-ERR-003": "deny",
+    "FE-ERR-004": "deny",
+    "FE-ERR-007": "deny"
+  }
+}

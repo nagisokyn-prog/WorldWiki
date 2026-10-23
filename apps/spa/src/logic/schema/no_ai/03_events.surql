@@ -41,7 +41,6 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     -- 4. Планирование и сюжетные обещания
     DELETE plans_for WHERE project_id = $p_rec;
     DELETE plans WHERE project_id = $p_rec;
-    DELETE plot_promises WHERE project_id = $p_rec;
 
     -- 5. Таймлайн СТРОГО ДО календарей и планет (чтобы не триггерить cascade_calendar_delete)
     DELETE timeline_events WHERE project_id = $p_rec;

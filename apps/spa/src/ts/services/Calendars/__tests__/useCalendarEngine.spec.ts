@@ -180,7 +180,7 @@ describe('useCalendarEngine', () => {
     it('finds next double full moon when both moons align', () => {
       const moon1: MoonConfig = {
         name: 'M1',
-        period_days_num: 20,
+        period_days_num: 10,
         period_days_den: 1,
         initial_phase_bp: 0,
       };

@@ -1,5 +1,5 @@
 // additional tests for shell store to cover uncovered branches
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useShellStore } from '../shell';
 import { entityApi } from '../../services/Entity/entity.api';
@@ -83,8 +83,15 @@ describe('shell store additional coverage', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
     store = useShellStore();
     consoleMod = useConsoleStore();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('openEntity creates tab and avoids duplicate', async () => {

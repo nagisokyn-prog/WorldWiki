@@ -169,16 +169,19 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
 -- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
     LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM ONLY $entity LIMIT 1);
+    LET $ent_clean = type::string($entity).replace('entities:', '');
+    LET $ent_prefixed = 'entities:' + $ent_clean;
     LET $appearances = (
         SELECT 
-            out.id AS chapter_id,
-            out.title AS chapter_title,
-            IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
+            IF string::starts_with(type::string(out), 'text_blocks') { type::string(out.chapter_id) } ELSE { type::string(out.id) } AS chapter_id,
+            IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.title } ELSE { out.title } AS chapter_title,
+            IF string::starts_with(type::string(out), 'text_blocks') { IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order } ELSE { 0 } }
+               ELSE IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
             source,
             role,
             created_at
         FROM appears_in 
-        WHERE in = $entity AND string::starts_with(type::string(out), 'chapters')
+        WHERE in = $entity
         LIMIT 1000
     );
     LET $events = (
@@ -258,6 +261,8 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         FROM plot_promises 
         WHERE (array::len($scene_blocks) > 0 AND array::len(array::intersect(->promise_milestones.out, $scene_blocks)) > 0)
            OR $entity IN participant_ids
+           OR $ent_clean IN participant_ids
+           OR $ent_prefixed IN participant_ids
            OR type::string($entity) IN participant_ids 
            OR $entity.id IN participant_ids
            OR ($info.name != NONE AND $info.name IN participant_ids)

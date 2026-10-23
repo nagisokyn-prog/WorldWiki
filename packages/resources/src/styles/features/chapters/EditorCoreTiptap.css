@@ -557,7 +557,34 @@
 
 .promise-highlight-target {
   animation: promisePulse 2.2s ease-out forwards;
-  border-radius: var(--radius-xs);
+}
+
+.editor-core-tiptap .scene-selected-frame,
+.editor-core-tiptap .promise-highlight-target,
+.scene-selected-frame,
+.promise-highlight-target {
+  border-left: 3px solid var(--accent);
+  border-right: 1px dashed var(--border-subtle);
+  border-top: 1px dashed var(--border-subtle);
+  border-bottom: 1px dashed var(--border-subtle);
+  background-color: var(--bg-selected);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  margin: 4px 0;
+  box-shadow: 0 0 10px var(--accent-glow);
+  position: relative;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.scene-selected-frame:first-of-type::before {
+  content: '🎬 Выделенная сцена';
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-bottom: 4px;
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

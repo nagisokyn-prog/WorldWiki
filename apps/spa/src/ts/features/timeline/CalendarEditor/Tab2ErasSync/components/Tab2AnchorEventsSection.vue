@@ -19,7 +19,7 @@
     <div class="chip-list">
       <span
         v-for="(ev, idx) in anchorEvents"
-        :key="ev.id || idx"
+        :key="ev.id ? `${ev.id}_${idx}` : `ev_idx_${idx}`"
         class="preset-chip active"
         style="display: inline-flex; align-items: center; gap: 6px;"
       >

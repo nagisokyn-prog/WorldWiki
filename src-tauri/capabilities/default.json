@@ -1,8 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main", "entity-editor-*"],
+  "windows": ["main", "entity-editor-*", "character-journey-*"],
   "permissions": [
     "core:default",
     "opener:default",

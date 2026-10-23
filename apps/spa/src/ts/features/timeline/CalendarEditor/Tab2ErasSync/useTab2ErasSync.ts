@@ -58,12 +58,15 @@ export function useTab2ErasSync(
   const anchorEvents = computed<AnchorEventDto[]>(() => {
     const raw = props.calendarData?.anchor_events;
     if (Array.isArray(raw) && raw.length > 0) {
-      return raw as AnchorEventDto[];
+      return raw.map((ev: CalendarAnchorEvent, idx: number) => ({
+        ...ev,
+        id: ev.id ? String(ev.id) : `ev_${idx + 1}_${Date.now()}`
+      })) as AnchorEventDto[];
     }
     return [
-      { id: 'ev_1', name: '👑 Коронация Первого Императора', year: 1, month: 2, day: 15 },
-      { id: 'ev_2', name: '☄️ Падение Метеорита', year: -312, month: 5, day: 1 },
-      { id: 'ev_3', name: '🗡️ Битва Пяти Воинств', year: 2941, month: 10, day: 23 },
+      { id: 'ev_default_1', name: '👑 Коронация Первого Императора', year: 1, month: 2, day: 15 },
+      { id: 'ev_default_2', name: '☄️ Падение Метеорита', year: -312, month: 5, day: 1 },
+      { id: 'ev_default_3', name: '🗡️ Битва Пяти Воинств', year: 2941, month: 10, day: 23 },
     ];
   });
 

@@ -76,10 +76,14 @@ export function usePromiseParticipants(
 
   const removeParticipant = (nameOrId: string) => {
     const targetName = getParticipantDisplayName(nameOrId).toLowerCase();
-    const cleanTargetId = String(nameOrId).trim().toLowerCase();
-    const current = (props.item.participant_ids || []).filter(
-      (p: string) => getParticipantDisplayName(p).toLowerCase() !== targetName && p.toLowerCase() !== cleanTargetId
-    );
+    const cleanTarget = String(nameOrId).trim().toLowerCase();
+    const bareTarget = cleanTarget.replace(/^(characters|entities|character):/, '');
+    const current = (props.item.participant_ids || []).filter((p: string) => {
+      const pName = getParticipantDisplayName(p).toLowerCase();
+      const pRaw = String(p).trim().toLowerCase();
+      const pBare = pRaw.replace(/^(characters|entities|character):/, '');
+      return pName !== targetName && pRaw !== cleanTarget && pBare !== bareTarget;
+    });
     const updated = {
       ...props.item,
       participant_ids: current

@@ -25,6 +25,7 @@ export interface InsertEntityPayload {
 export interface EntityLinkSelectorProps {
   project: string;
   isOpen?: boolean;
+  initialQuery?: string;
 }
 
 export interface EntityLinkSelectorEmits {

@@ -12,25 +12,70 @@ export const EnterHandler = Extension.create({
       'Shift-Enter': ({ editor }) => {
         return editor.commands.setHardBreak();
       },
-      'Mod-q': ({ editor }) => {
+      '(': ({ editor }) => {
         const { state } = editor;
-        const { $from } = state.selection;
-        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        if (/\(\([^)]*\)\)$/.test(textBefore)) {
-          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
-          return true;
+        const { from, to, empty } = state.selection;
+        if (!empty && to > from) {
+          const selectedText = state.doc.textBetween(from, to, ' ');
+          if (selectedText.trim()) {
+            editor.chain().focus().insertContentAt({ from, to }, `((${selectedText}))`).run();
+            document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+              detail: { target: 'wysiwyg', query: selectedText.trim() }
+            }));
+            return true;
+          }
         }
         return false;
       },
-      'Mod-й': ({ editor }) => {
+      'Mod-q': ({ editor }) => {
         const { state } = editor;
+        const { from, to, empty } = state.selection;
+        if (!empty && to > from) {
+          const selectedText = state.doc.textBetween(from, to, ' ');
+          if (selectedText.trim()) {
+            editor.chain().focus().insertContentAt({ from, to }, `((${selectedText}))`).run();
+            document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+              detail: { target: 'wysiwyg', query: selectedText.trim() }
+            }));
+            return true;
+          }
+        }
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        if (/\(\([^)]*\)\)$/.test(textBefore)) {
-          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
+        const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+        if (match) {
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+            detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }
+          }));
           return true;
         }
-        return false;
+        document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
+        return true;
+      },
+      'Mod-й': ({ editor }) => {
+        const { state } = editor;
+        const { from, to, empty } = state.selection;
+        if (!empty && to > from) {
+          const selectedText = state.doc.textBetween(from, to, ' ');
+          if (selectedText.trim()) {
+            editor.chain().focus().insertContentAt({ from, to }, `((${selectedText}))`).run();
+            document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+              detail: { target: 'wysiwyg', query: selectedText.trim() }
+            }));
+            return true;
+          }
+        }
+        const { $from } = state.selection;
+        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
+        const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+        if (match) {
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+            detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }
+          }));
+          return true;
+        }
+        document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
+        return true;
       }
     };
   }

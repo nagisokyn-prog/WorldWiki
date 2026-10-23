@@ -244,7 +244,8 @@ DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now(
 DEFINE TABLE OVERWRITE plans SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE title       ON plans TYPE string;
-DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<projects> | record<volumes> | record<story_arcs> | record<chapters> | record<plans> | null>;
+DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<projects> | record<volumes> | record<story_arcs> | record<chapters> | record<plans> | string | null>
+  VALUE IF $value == NONE OR $value == NULL OR $value == '' { NONE } ELSE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE parent_type ON plans TYPE string
   ASSERT $value IN ['project', 'volume', 'story_arc', 'chapter', 'plan'];
 DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;

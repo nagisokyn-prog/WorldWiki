@@ -98,12 +98,30 @@
                 />
               </div>
               <div class="nested-field-group">
-                <label class="nested-field-label">📅 Дата окончания (по календарю мира)</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label class="nested-field-label">📅 Дата окончания (по календарю мира)</label>
+                  <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--text-muted, #a1a1aa);">
+                    <input
+                      type="checkbox"
+                      :checked="!nItem['конечная_дата']"
+                      @change="(e) => {
+                        const target = e.target as HTMLInputElement;
+                        nItem['конечная_дата'] = target.checked ? null : undefined;
+                        notifyNestedItemUpdate(subConf.dataPath || subConf.id);
+                      }"
+                    />
+                    По настоящее время
+                  </label>
+                </div>
                 <UniversalDatePicker
+                  v-if="nItem['конечная_дата'] !== null && nItem['конечная_дата'] !== undefined"
                   :model-value="(nItem['конечная_дата'] as any)"
                   :project="props.project"
                   @update:model-value="(val) => { nItem['конечная_дата'] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 />
+                <div v-else class="text-xs text-muted" style="padding: 6px 0; font-style: italic; opacity: 0.8;">
+                  Отношения продолжаются (без даты окончания)
+                </div>
               </div>
             </div>
             
@@ -203,12 +221,29 @@
                   />
                 </div>
                 <div class="nested-field-group">
-                  <label class="nested-field-label text-info">📅 Дата окончания (по календарю мира)</label>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label class="nested-field-label text-info">📅 Дата окончания (по календарю мира)</label>
+                    <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--text-muted, #a1a1aa);">
+                      <input
+                        type="checkbox"
+                        :checked="!nItem['конечная_дата']"
+                        @change="(e) => {
+                          const target = e.target as HTMLInputElement;
+                          updateForeignNestedField(nItem, 'конечная_дата', target.checked ? null : undefined);
+                        }"
+                      />
+                      По настоящее время
+                    </label>
+                  </div>
                   <UniversalDatePicker
+                    v-if="nItem['конечная_дата'] !== null && nItem['конечная_дата'] !== undefined"
                     :model-value="(nItem['конечная_дата'] as any)"
                     :project="props.project"
                     @update:model-value="(val) => updateForeignNestedField(nItem, 'конечная_дата', val)"
                   />
+                  <div v-else class="text-xs text-muted" style="padding: 6px 0; font-style: italic; opacity: 0.8;">
+                    Отношения продолжаются (без даты окончания)
+                  </div>
                 </div>
               </div>
               

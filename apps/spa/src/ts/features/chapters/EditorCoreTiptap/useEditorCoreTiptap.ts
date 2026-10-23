@@ -14,6 +14,7 @@ export function useEditorCoreTiptap(
 ) {
   const isExportModalOpen = ref(false);
   const isEntitySelectorOpen = ref(false);
+  const entitySelectorQuery = ref('');
   const activeEditorTarget = ref<'wysiwyg' | 'markdown'>('markdown');
   const markdownTextareaRef = ref<HTMLTextAreaElement | null>(null);
 
@@ -75,8 +76,9 @@ export function useEditorCoreTiptap(
   });
 
   const handleOpenEntitySelector = (e: Event) => {
-    const detail = (e as CustomEvent<{ target?: 'wysiwyg' | 'markdown' }>).detail;
+    const detail = (e as CustomEvent<{ target?: 'wysiwyg' | 'markdown'; query?: string }>).detail;
     activeEditorTarget.value = detail?.target || 'markdown';
+    entitySelectorQuery.value = detail?.query || '';
     isEntitySelectorOpen.value = true;
   };
 
@@ -204,16 +206,20 @@ export function useEditorCoreTiptap(
             firstTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
 
-          // Пульсирующая подсветка для ВСЕХ абзацев сцены одновременно
+          // Рамка-обрамление и подсветка для ВСЕХ абзацев выделенной сцены
+          const prevFrames = editorDom.querySelectorAll('.scene-selected-frame');
+          prevFrames.forEach(f => f.classList.remove('scene-selected-frame'));
+
           for (const el of targetElements) {
             el.classList.remove('promise-highlight-target');
+            el.classList.add('scene-selected-frame');
           }
           requestAnimationFrame(() => {
             for (const el of targetElements) {
               el.classList.add('promise-highlight-target');
               setTimeout(() => {
                 el.classList.remove('promise-highlight-target');
-              }, 2500);
+              }, 3000);
             }
           });
         }
@@ -266,6 +272,7 @@ export function useEditorCoreTiptap(
     ...promiseMenu,
     isExportModalOpen,
     isEntitySelectorOpen,
+    entitySelectorQuery,
     activeEditorTarget,
     markdownTextareaRef,
     currentSemanticDocument,

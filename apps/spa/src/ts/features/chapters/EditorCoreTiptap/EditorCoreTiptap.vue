@@ -66,6 +66,7 @@
     <EditorModals
       :project="project"
       :is-entity-selector-open="isEntitySelectorOpen"
+      :entity-selector-query="entitySelectorQuery"
       :is-promise-menu-open="isPromiseMenuOpen"
       :promise-menu-pos="promiseMenuPos"
       :existing-promises="existingPromises"
@@ -144,6 +145,7 @@ const {
   isCurrentPageLandscape,
   currentPageSize,
   isEntitySelectorOpen,
+  entitySelectorQuery,
   isPromiseMenuOpen,
   promiseMenuPos,
   isExportModalOpen,

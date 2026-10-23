@@ -33,7 +33,7 @@
           ref="searchInput"
           v-model="searchQuery"
           type="text" 
-          placeholder="Поиск сущности или #тега..."
+          placeholder="Поиск сущности или тега..."
           class="selector-search"
           @keydown.down.prevent="moveSelection(1)"
           @keydown.up.prevent="moveSelection(-1)"

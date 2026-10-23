@@ -196,8 +196,9 @@ async function init() {
         import('@tauri-apps/api/event').then(({ listen }) => {
           listen<{ type: string; id: string }>('ww-entity-saved', (event) => {
             const { type, id } = event.payload;
-            const rawId = id.replace('entities:', '');
-            if (type === entityType && (rawId === entityId || id === entityId)) {
+            const cleanId = (id || '').replace(/^entities:/, '');
+            const cleanEntityId = (entityId || '').replace(/^entities:/, '');
+            if (type === entityType && (cleanId === cleanEntityId || id === entityId)) {
               // Если сохранили не мы (или даже мы), перезагружаем данные для синхронизации
               loadData();
             }
@@ -205,12 +206,14 @@ async function init() {
           
           listen<{ type: string; id: string; data: Record<string, unknown> }>('ww-entity-live-sync', (event) => {
             const { type, id, data } = event.payload;
-            const rawId = id.replace('entities:', '');
-            if (type === entityType && (rawId === entityId || id === entityId)) {
+            const cleanId = (id || '').replace(/^entities:/, '');
+            const cleanEntityId = (entityId || '').replace(/^entities:/, '');
+            if (type === entityType && (cleanId === cleanEntityId || id === entityId)) {
               if (initialData.value) {
                 console.log('[LiveSync] Received in ui_editor', data);
                 isLiveSyncing = true;
                 merge(initialData.value, data);
+                initialData.value = { ...initialData.value };
                 setTimeout(() => { isLiveSyncing = false; }, 50);
               }
             }

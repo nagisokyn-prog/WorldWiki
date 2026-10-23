@@ -21,7 +21,9 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
   const filteredTimelineItems = computed<JourneyTimelineItem[]>(() => {
     let items = allTimelineItems.value.filter((item) => {
       if (filterType.value === 'scenes') {
-        if (item.type !== 'promise' || (item.kind && item.kind !== 'scene')) return false;
+        const isScenePromise = item.type === 'promise' && (!item.kind || item.kind === 'scene');
+        const isAppearance = item.type === 'appearance';
+        if (!isScenePromise && !isAppearance) return false;
       } else if (filterType.value === 'promises') {
         if (item.type !== 'promise' || item.kind === 'scene') return false;
       } else if (filterType.value === 'events') {

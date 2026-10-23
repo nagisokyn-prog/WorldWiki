@@ -64,8 +64,8 @@ describe('useCharacterJourney Composable', () => {
     const { timelineItems, arcGroups, viewMode, filterType, refresh } = useCharacterJourney('test_proj', 'ent:1');
     await refresh();
 
-    // 1. Total items check (2 events + 1 relation + 2 promises = 5 items; appearances excluded)
-    expect(timelineItems.value.length).toBe(5);
+    // 1. Total items check (2 events + 1 relation + 2 promises + 2 appearances = 7 items)
+    expect(timelineItems.value.length).toBe(7);
 
     // 2. Arc Grouping check
     expect(arcGroups.value.length).toBeGreaterThan(0);
@@ -75,8 +75,7 @@ describe('useCharacterJourney Composable', () => {
 
     // 3. Filter by scenes
     filterType.value = 'scenes';
-    expect(timelineItems.value.length).toBe(1);
-    expect(timelineItems.value[0].kind).toBe('scene');
+    expect(timelineItems.value.length).toBe(3);
 
     // 4. Filter by promises (guns)
     filterType.value = 'promises';
@@ -86,7 +85,7 @@ describe('useCharacterJourney Composable', () => {
     // 5. Reset filter and switch to Chronology mode
     filterType.value = 'all';
     viewMode.value = 'CHRONOLOGY';
-    expect(timelineItems.value.length).toBe(5);
+    expect(timelineItems.value.length).toBe(7);
     // 6. Check fullText preservation and phase labels
     const promiseItem = timelineItems.value.find((i) => i.id === 'prom-prom:1');
     expect(promiseItem?.fullText).toBe('Чтение Евангелия');

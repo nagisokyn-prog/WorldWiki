@@ -763,7 +763,7 @@ async fn test_character_journey_and_cross_reference_matrix() {
     let journey_data: Option<Value> = journey_res.take(0).expect("take journey data");
     let journey = journey_data.expect("journey must not be null");
 
-    assert_eq!(journey["appearances"].as_array().unwrap().len(), 1);
+    assert_eq!(journey["appearances"].as_array().unwrap().len(), 2, "Должно быть 2 появления: в гл.1 и в сцене гл.2");
     assert_eq!(journey["events"].as_array().unwrap().len(), 0);
     assert_eq!(journey["promises"].as_array().unwrap().len(), 1, "Сцена должна отразиться в promises пути персонажа");
 }

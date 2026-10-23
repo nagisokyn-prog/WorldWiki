@@ -108,7 +108,9 @@ export function usePromisesPanel(
 
         // ── Путь 1: block_id ──────────────────────────────────────────────
         if (p.block_id) {
-          const blockEl = doc.querySelector(`[data-block-id="${p.block_id}"]`);
+          const rawId = p.block_id;
+          const cleanId = rawId.replace(/^(text_blocks|blocks):/, '');
+          const blockEl = doc.querySelector(`[data-block-id="${rawId}"], [data-block-id="${cleanId}"], [data-id="${rawId}"], [data-id="${cleanId}"]`);
           if (blockEl) {
             const newText = blockEl.textContent?.trim() ?? '';
             if (newText && p.quote !== newText) {
@@ -119,12 +121,36 @@ export function usePromisesPanel(
             if (p.is_orphaned) { p.is_orphaned = false; hasChanges = true; }
             continue; // block_id нашли → boundary matching не нужен
           }
-          // block_id не нашли (параграф удалён) → падаем на boundary matching
+          // block_id не нашли (параграф удалён) → падаем на поиск цитаты
+        }
+
+        // ── Путь 1.5: Прямой поиск цитаты в параграфах рукописи ───────────
+        const trimmed = currentQuote.trim();
+        const normQuote = normalizeChunk(trimmed);
+        
+        let directFoundIdx = -1;
+        for (let i = 0; i < pNodes.length; i++) {
+          const nodeNorm = normalizeChunk(pNodes[i].textContent ?? '');
+          if (nodeNorm.includes(normQuote) || (normQuote.length > 15 && nodeNorm.includes(normQuote.slice(0, 30)))) {
+            directFoundIdx = i;
+            break;
+          }
+        }
+
+        if (directFoundIdx !== -1) {
+          p.paragraph_index = directFoundIdx + 1;
+          if (p.is_orphaned) { p.is_orphaned = false; hasChanges = true; }
+          continue;
+        }
+
+        // Проверяем наличие текста в теле документа целиком
+        const fullDocText = normalizeChunk(doc.body?.textContent ?? '');
+        if (normQuote.length >= 8 && fullDocText.includes(normQuote)) {
+          if (p.is_orphaned) { p.is_orphaned = false; hasChanges = true; }
+          continue;
         }
 
         // ── Путь 2: Boundary matching ─────────────────────────────────────
-        const trimmed = currentQuote.trim();
-
         // Якорь начала: текст до первого «—» / первые ~25 символов
         const normStart = extractStartAnchor(trimmed);
 

@@ -93,18 +93,37 @@ export function useTiptapMarkdown(
         const text = target.value;
         const selected = text.substring(start, end);
         
-        document.execCommand('insertText', false, '(' + selected + ')');
-        
-        // Restore selection around the text
-        target.setSelectionRange(start + 1, start + 1 + selected.length);
+        document.execCommand('insertText', false, '((' + selected + '))');
+        target.setSelectionRange(start + 2, start + 2 + selected.length);
+        document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+          detail: { target: 'markdown', query: selected.trim() }
+        }));
       }
     } else if ((e.ctrlKey || e.metaKey) && (e.key?.toLowerCase() === 'q' || e.code === 'KeyQ' || e.key === 'й' || e.key === 'Й')) {
       const target = e.target as HTMLTextAreaElement;
       if (target) {
-        const textBefore = target.value.substring(0, target.selectionStart);
-        if (/\(\([^)]*\)\)$/.test(textBefore)) {
+        if (target.selectionStart !== target.selectionEnd) {
           e.preventDefault();
-          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'markdown' } }));
+          const start = target.selectionStart;
+          const end = target.selectionEnd;
+          const selected = target.value.substring(start, end);
+          document.execCommand('insertText', false, '((' + selected + '))');
+          target.setSelectionRange(start + 2, start + 2 + selected.length);
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+            detail: { target: 'markdown', query: selected.trim() }
+          }));
+        } else {
+          const textBefore = target.value.substring(0, target.selectionStart);
+          const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+          if (match) {
+            e.preventDefault();
+            document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
+              detail: { target: 'markdown', query: match[1]?.trim() || '' }
+            }));
+          } else {
+            e.preventDefault();
+            document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'markdown' } }));
+          }
         }
       }
     }

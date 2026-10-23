@@ -70,7 +70,7 @@ export function usePlanningPanel(props: PlanningPanelProps) {
                 id: item.id || null,
                 project_id: projectRecordId(props.project),
                 parent_type: props.parentType || '',
-                parent_ref: props.parentId || '',
+                parent_ref: props.parentId || null,
                 title: item.text,
                 completed: item.done,
                 sort_order: item.sort_order ?? items.value.indexOf(item)

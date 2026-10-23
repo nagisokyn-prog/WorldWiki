@@ -1,9 +1,9 @@
 import { ref, computed, watch, onMounted } from 'vue';
-import * as api from '@/services/api.client';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
 import { usePromiseDateTime } from './usePromiseDateTime';
 import { usePromiseParticipants } from './usePromiseParticipants';
+import { fetchPromiseCardEntities } from './usePromiseCardEntitiesLoader';
 import type { RichPlotPromise } from '../usePromisesPanel';
 import type { SceneArcItem } from './PromiseCardArcTags.model';
 import type {
@@ -36,86 +36,12 @@ export function usePromiseCardMeta(
   const loadProjectEntities = async () => {
     if (!props.project) return;
     try {
-      const [locs, places, chars, timelineData, calList] = await Promise.all([
-        api.getEntities(props.project, 'location').catch(() => []),
-        api.getEntities(props.project, 'place').catch(() => []),
-        api.getEntities(props.project, 'character').catch(() => []),
-        api.getGlobalTimeline(props.project).catch(() => null),
-        calendarStore.getCalendars(props.project).catch(() => []),
-        arcsStore.loadArcs(props.project).catch(() => [])
-      ]);
-
-      calendars.value = calList || [];
-
-      const allLocs: ProjectEntityOption[] = [];
-      const seenLocs = new Set<string>();
-
-      const addLocList = (list: unknown[], type: string) => {
-        if (Array.isArray(list)) {
-          for (const item of list) {
-            const ent = item as { id?: string; name?: string; title?: string };
-            const id = ent.id || '';
-            const name = ent.name || ent.title || id;
-            if (id && !seenLocs.has(id)) {
-              seenLocs.add(id);
-              allLocs.push({ id, name, type });
-            }
-          }
-        }
-      };
-
-      addLocList(locs, 'location');
-      addLocList(places, 'place');
-      projectLocations.value = allLocs;
-
-      if (Array.isArray(chars)) {
-        projectCharacters.value = chars.map((c: unknown) => {
-          const char = c as { id?: string; name?: string; title?: string };
-          return {
-            id: char.id || '',
-            name: char.name || char.title || char.id || '',
-            type: 'character'
-          };
-        }).filter(c => Boolean(c.id));
-      }
-
-      const eventsList: TimelineEventOption[] = [];
-      const seenEventIds = new Set<string>();
-
-      if (Array.isArray(timelineData)) {
-        for (const ch of timelineData as Array<{ id?: string; title?: string; timeline_events?: Array<{ id?: string; title?: string; name?: string; m_abs?: number }> }>) {
-          const chTitle = ch.title || (ch.id ? ch.id.replace(/^chapters:/, 'Глава ') : 'Глава');
-          if (Array.isArray(ch.timeline_events)) {
-            for (const ev of ch.timeline_events) {
-              if (ev.id && !seenEventIds.has(ev.id)) {
-                seenEventIds.add(ev.id);
-                eventsList.push({
-                  id: ev.id,
-                  title: `[${chTitle}] ${ev.title || ev.name || ev.id}`,
-                  m_abs: ev.m_abs
-                });
-              }
-            }
-          }
-        }
-      } else if (timelineData && typeof timelineData === 'object') {
-        const events = (timelineData as { events?: Array<{ id?: string; title?: string; name?: string; m_abs?: number }> }).events || [];
-        if (Array.isArray(events)) {
-          for (const ev of events) {
-            if (ev.id && !seenEventIds.has(ev.id)) {
-              seenEventIds.add(ev.id);
-              eventsList.push({
-                id: ev.id,
-                title: ev.title || ev.name || ev.id || 'Событие',
-                m_abs: ev.m_abs
-              });
-            }
-          }
-        }
-      }
-
-      projectTimelineEvents.value = eventsList;
-      dateTime.syncInitialTimelineDate(props.item, props.item.timeline_event_id, eventsList);
+      const res = await fetchPromiseCardEntities(props.project, calendarStore, arcsStore);
+      calendars.value = res.calendars;
+      projectLocations.value = res.locations;
+      projectCharacters.value = res.characters;
+      projectTimelineEvents.value = res.timelineEvents;
+      dateTime.syncInitialTimelineDate(props.item, props.item.timeline_event_id, res.timelineEvents);
     } catch (err) {
       console.warn('[usePromiseCardMeta] Failed to load project timeline events:', err);
     }
@@ -139,6 +65,50 @@ export function usePromiseCardMeta(
 
   watch(() => props.project, loadProjectEntities);
   onMounted(loadProjectEntities);
+
+  const isLocationDropdownOpen = ref(false);
+
+  const filteredLocations = computed(() => {
+    const q = locationDraft.value.trim().toLowerCase();
+    if (!q) return projectLocations.value;
+    return projectLocations.value.filter(l => l.name.toLowerCase().includes(q));
+  });
+
+  const getLocationDisplayName = (locIdOrName: string): string => {
+    if (!locIdOrName) return '';
+    const clean = String(locIdOrName).trim();
+    const found = projectLocations.value.find(l => 
+      l.id === clean || 
+      l.id.replace(/^(locations|entities):/, '') === clean || 
+      l.name.toLowerCase() === clean.toLowerCase()
+    );
+    return found?.name || clean;
+  };
+
+  const selectLocation = (locName: string) => {
+    const clean = locName.trim();
+    const found = projectLocations.value.find(l => l.name.toLowerCase() === clean.toLowerCase());
+    const finalVal = found ? found.name : clean;
+    const updated = {
+      ...props.item,
+      location_id: finalVal || null
+    };
+    emit('update:item', updated);
+    emit('change');
+    locationDraft.value = '';
+    isLocationDropdownOpen.value = false;
+  };
+
+  const clearLocation = () => {
+    const updated = {
+      ...props.item,
+      location_id: null
+    };
+    emit('update:item', updated);
+    emit('change');
+    locationDraft.value = '';
+    isLocationDropdownOpen.value = false;
+  };
 
   const saveLocation = () => {
     const val = locationDraft.value.trim();
@@ -227,6 +197,11 @@ export function usePromiseCardMeta(
   return {
     isEditingMeta,
     locationDraft,
+    isLocationDropdownOpen,
+    filteredLocations,
+    getLocationDisplayName,
+    selectLocation,
+    clearLocation,
     availableArcs,
     localArcId,
     localArcPhase,

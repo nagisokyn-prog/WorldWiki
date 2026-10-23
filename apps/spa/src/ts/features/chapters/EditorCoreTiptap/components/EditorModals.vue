@@ -4,6 +4,7 @@
     <EntityLinkSelector
       :project="project"
       :is-open="isEntitySelectorOpen"
+      :initial-query="entitySelectorQuery"
       @close="$emit('close-entity-selector')"
       @insert="$emit('insert-entity', $event)"
     />
@@ -50,6 +51,7 @@ import type { InsertEntityPayload } from '../EntityLinkSelector.model';
 defineProps<{
   project: string;
   isEntitySelectorOpen: boolean;
+  entitySelectorQuery?: string;
   isPromiseMenuOpen: boolean;
   promiseMenuPos: { x: number; y: number };
   existingPromises?: (PlotPromise | RichPlotPromise)[];

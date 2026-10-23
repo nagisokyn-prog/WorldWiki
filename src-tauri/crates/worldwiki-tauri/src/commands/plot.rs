@@ -21,13 +21,13 @@ pub async fn get_plot_promises(
             created_at,
             updated_at,
             ->promise_milestones.{
-                id AS milestone_id,
-                stage,
-                quote,
-                note,
-                out.id AS block_id,
-                out.chapter_id AS chapter_id,
-                out.order_index AS order_index
+                milestone_id: id,
+                stage: stage,
+                quote: quote,
+                note: note,
+                block_id: out.id,
+                chapter_id: out.chapter_id,
+                order_index: out.order_index
             } AS milestones
         FROM plot_promises 
         WHERE project_id = fn::normalize_project_id($p);

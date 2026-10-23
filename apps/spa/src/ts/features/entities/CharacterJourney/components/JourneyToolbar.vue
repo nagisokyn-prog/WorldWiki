@@ -19,7 +19,7 @@
       <JourneyModeToggle
         v-if="selectedEntities.length > 1"
         :model-value="filterMode"
-        @update:model-value="$emit('update:filterMode', $event)"
+        @update:model-value="onFilterModeUpdate"
       />
     </div>
 
@@ -113,15 +113,21 @@ defineProps<{
   isLoading: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'add-entity', val: string): void;
   (e: 'remove-entity', val: string): void;
   (e: 'update:filterMode', val: JourneyFilterMode): void;
+  (e: 'update:filter-mode', val: JourneyFilterMode): void;
   (e: 'update:viewMode', val: CharacterJourneyViewMode): void;
   (e: 'update:selectedArcFilter', val: string): void;
   (e: 'update:filterType', val: string): void;
   (e: 'refresh'): void;
 }>();
+
+const onFilterModeUpdate = (val: JourneyFilterMode) => {
+  emit('update:filterMode', val);
+  emit('update:filter-mode', val);
+};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

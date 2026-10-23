@@ -82,31 +82,26 @@ export function useEntityLinkSelector(
     const q = searchQuery.value.trim().toLowerCase();
     if (!q) return list;
 
-    const isTagSearch = q.startsWith('#');
-    const tagQuery = isTagSearch ? q.slice(1) : q;
+    const cleanQ = q.replace(/^#/, '');
 
     return list.filter((e) => {
-      // Поиск по тегам
-      const matchesTag = e.tags?.some(tag => {
-        const cleanTag = tag.startsWith('#') ? tag.slice(1).toLowerCase() : tag.toLowerCase();
-        return cleanTag.includes(tagQuery);
-      });
+      // Поиск по тегам (как с #, так и без решётки)
+      const matchesTag = e.cleanTags?.some(cleanTag => cleanTag.toLowerCase().includes(cleanQ)) ||
+        e.tags?.some(tag => tag.replace(/^#/, '').toLowerCase().includes(cleanQ));
 
-      if (isTagSearch) {
-        return matchesTag;
-      }
-
-      // Поиск по имени, id или тегам
+      // Поиск по имени, id, типу или тегам
       const matchesName = e.name.toLowerCase().includes(q);
-      const matchesId = e.id.toLowerCase().includes(q);
-      return matchesName || matchesId || matchesTag;
+      const matchesId = e.id.toLowerCase().includes(q) || (e.shortId && e.shortId.toLowerCase().includes(q));
+      const matchesType = e.type_name?.toLowerCase().includes(q);
+      return matchesName || matchesId || matchesType || matchesTag;
     });
   });
 
   const showQuickCreate = computed(() => {
     const q = searchQuery.value.trim();
     if (!q || isCreating.value) return false;
-    const exists = allEntities.value.some(e => e.name.toLowerCase() === q.toLowerCase());
+    const cleanQ = q.replace(/^#/, '').toLowerCase();
+    const exists = allEntities.value.some(e => e.name.toLowerCase() === cleanQ || e.name.toLowerCase() === q.toLowerCase());
     return !exists;
   });
 
@@ -132,11 +127,16 @@ export function useEntityLinkSelector(
 
   watch(isModalOpen, async (open) => {
     if (open) {
-      searchQuery.value = '';
+      searchQuery.value = props.initialQuery ? props.initialQuery.replace(/^\(\(/, '').replace(/\)\)$/, '').trim() : '';
       activeTypeFilter.value = 'all';
       selectedIndex.value = 0;
       await loadData();
-      void nextTick(() => searchInput.value?.focus());
+      void nextTick(() => {
+        searchInput.value?.focus();
+        if (searchQuery.value) {
+          searchInput.value?.select();
+        }
+      });
     }
   }, { immediate: true });
 

@@ -44,7 +44,13 @@ export interface UpdateDataParams {
 
 export function performUpdateData(params: UpdateDataParams): void {
   const { tabId, newData, fromLiveSync, allTabs, getEntityDisplayName, isLiveSyncing, onEmitLiveSync } = params;
-  const tabsToUpdate = allTabs.filter((t) => t.id === tabId || t.rawId === tabId.replace('entities:', ''));
+  const cleanTabId = tabId.replace(/^entity:[^:]+:/, '').replace(/^entities:/, '');
+  const tabsToUpdate = allTabs.filter((t) => {
+    if (t.id === tabId) return true;
+    const cleanRaw = (t.rawId || '').replace(/^entities:/, '');
+    const cleanId = (t.id || '').replace(/^entity:[^:]+:/, '').replace(/^entities:/, '');
+    return cleanRaw === cleanTabId || cleanId === cleanTabId;
+  });
   if (tabsToUpdate.length === 0) return;
 
   let updatedEntityType: string | null = null;
@@ -54,6 +60,7 @@ export function performUpdateData(params: UpdateDataParams): void {
     const { __foreignUpdates, ...dataToMerge } = newData as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };
     const oldTitle = tab.title;
     deepMergeData(tab.data, dataToMerge);
+    tab.data = { ...(tab.data as Record<string, unknown>) };
     if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) {
       tab._foreignUpdates = __foreignUpdates;
     }

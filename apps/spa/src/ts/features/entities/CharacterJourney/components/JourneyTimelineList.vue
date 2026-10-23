@@ -100,9 +100,9 @@
             </div>
           </div>
 
-          <!-- FULL SCENE TEXT (Без обрезки) -->
-          <div v-else-if="item.fullText || item.description" class="journey-scene-fulltext">
-            «{{ item.fullText || item.description }}»
+          <!-- FULL SCENE TEXT / QUOTE (Без обрезки) -->
+          <div v-if="item.fullText || item.description || item.subtitle" class="journey-scene-fulltext">
+            «{{ item.fullText || item.description || item.subtitle }}»
           </div>
 
           <!-- Dual-Time Meta Row -->

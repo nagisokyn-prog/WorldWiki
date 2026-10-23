@@ -21,8 +21,8 @@
         <button
           type="button"
           class="tag-remove"
-          title="Удалить"
-          @click.stop="$emit('remove-participant', pid)"
+          title="Удалить участника"
+          @click.stop.prevent="$emit('remove-participant', pid)"
         >
           ✕
         </button>
@@ -37,14 +37,20 @@
         @input="$emit('update:participantInputQuery', ($event.target as HTMLInputElement).value)"
         @keydown.enter.prevent="$emit('add-participant', participantInputQuery)"
         @keydown.backspace="$emit('backspace')"
+        @keydown.esc="$emit('close-dropdown')"
       />
     </div>
 
     <!-- Выпадающий список персонажей для быстрого выбора с солидным непрозрачным фоном -->
     <div 
-      v-if="isParticipantDropdownOpen && (availableCharacters.length > 0 || participantInputQuery.trim())" 
+      v-if="isParticipantDropdownOpen" 
       class="character-dropdown shadow-dropdown"
     >
+      <div class="flex items-center justify-between px-2 py-1 border-b border-subtle text-xs text-muted">
+        <span>Выберите персонажа:</span>
+        <button type="button" class="btn-ghost-xs text-muted hover:text-main" @click.stop="$emit('close-dropdown')">✕ Скрыть</button>
+      </div>
+
       <div
         v-for="char in availableCharacters"
         :key="char.id"
@@ -64,6 +70,10 @@
         <span>＋</span>
         <span>Добавить «{{ participantInputQuery.trim() }}»</span>
       </div>
+      
+      <div v-if="availableCharacters.length === 0 && !participantInputQuery.trim()" class="p-2 text-xs text-muted text-center">
+        Все персонажи добавлены
+      </div>
     </div>
   </div>
 </template>
@@ -82,6 +92,7 @@ defineProps<{
 defineEmits<{
   (e: 'update:participantInputQuery', val: string): void;
   (e: 'open-dropdown'): void;
+  (e: 'close-dropdown'): void;
   (e: 'add-participant', name: string): void;
   (e: 'remove-participant', name: string): void;
   (e: 'backspace'): void;

@@ -3,6 +3,7 @@ import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { StoryArc } from '@/types/generated/StoryArc';
 import type {
   CharacterJourneyData,
+  JourneyAppearance,
   JourneyTimelineItem,
   JourneyEvent,
   JourneyRelation,
@@ -47,44 +48,75 @@ export function buildTimelineItems(
   const activeCal = calendarData || CalendarFormat.getDefaultCalendar();
   const birthMabs = extractBirthMabs(data, activeCal);
 
-  // 1. Global Timeline Events (diegetic M_abs)
-  data.events.forEach((ev: JourneyEvent) => {
-    const formattedDate = formatDiegeticDate(ev.m_abs, null, activeCal);
-    const ageInfo = calculateDiegeticAge(birthMabs, ev.m_abs, activeCal);
-    items.push({
-      id: `ev-${ev.event_id}`,
-      type: 'event',
-      title: `Событие мира: ${ev.event_title}`,
-      subtitle: formattedDate,
-      fullText: ev.event_desc || ev.role || undefined,
-      timeLabel: formattedDate,
-      phaseLabel: '⏳ Событие',
-      m_abs: ev.m_abs,
-      birth_m_abs: birthMabs,
-      ageLabel: ageInfo?.ageLabel,
-      isBeforeBirth: ageInfo?.isBeforeBirth,
-      badge: 'Событие мира',
-      badgeType: 'warning',
-      description: ev.event_desc || (ev.role ? `Участие: ${ev.role}` : undefined),
+  // 0. Chapter / Scene Appearances
+  if (Array.isArray(data.appearances)) {
+    data.appearances.forEach((app: JourneyAppearance) => {
+      const appTitle = app.chapter_title ? `Глава «${app.chapter_title}»` : `Глава #${app.chapter_order ?? '?'}`;
+      const appFullText = app.role
+        ? `Роль: ${app.role}`
+        : (app.source === 'scene' ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`);
+      items.push({
+        id: `app-${app.chapter_id}-${app.source || 'mention'}-${app.created_at || Math.random()}`,
+        type: 'appearance',
+        kind: app.source || 'scene',
+        title: app.chapter_title ? `Появление: ${app.chapter_title}` : `Глава #${app.chapter_order ?? '?'}`,
+        subtitle: app.role ? `Роль: ${app.role}` : (app.source === 'scene' ? 'Сцена в главе' : 'Упоминание в рукописи'),
+        fullText: appFullText,
+        description: app.chapter_title ? `Глава: «${app.chapter_title}»` : undefined,
+        chapter_id: app.chapter_id,
+        chapter_title: app.chapter_title,
+        chapter_order: app.chapter_order,
+        phaseLabel: '📖 Появление',
+        badge: app.source === 'scene' ? 'Сцена' : 'Упоминание',
+        badgeType: 'accent',
+      });
     });
-  });
+  }
+
+  // 1. Global Timeline Events (diegetic M_abs)
+  if (Array.isArray(data.events)) {
+    data.events.forEach((ev: JourneyEvent) => {
+      const formattedDate = formatDiegeticDate(ev.m_abs, null, activeCal);
+      const ageInfo = calculateDiegeticAge(birthMabs, ev.m_abs, activeCal);
+      items.push({
+        id: `ev-${ev.event_id}`,
+        type: 'event',
+        title: `Событие мира: ${ev.event_title}`,
+        subtitle: formattedDate,
+        fullText: ev.event_desc || ev.role || `Событие: ${ev.event_title}`,
+        timeLabel: formattedDate,
+        phaseLabel: '⏳ Событие',
+        m_abs: ev.m_abs,
+        birth_m_abs: birthMabs,
+        ageLabel: ageInfo?.ageLabel,
+        isBeforeBirth: ageInfo?.isBeforeBirth,
+        badge: 'Событие мира',
+        badgeType: 'warning',
+        description: ev.event_desc || (ev.role ? `Участие: ${ev.role}` : undefined),
+      });
+    });
+  }
 
   // 2. Relations
-  data.relations.forEach((rel: JourneyRelation) => {
-    items.push({
-      id: `rel-${rel.id}`,
-      type: 'relation_change',
-      title: `Связь с «${rel.target_name}» (${rel.rel_type})`,
-      subtitle: rel.start_order ? `С главы #${rel.start_order}` : 'С начала',
-      phaseLabel: '👥 Связь',
-      chapter_order: rel.start_order,
-      badge: `Сила: ${rel.strength ?? 0}`,
-      badgeType: (rel.strength ?? 0) >= 0 ? 'success' : 'danger',
+  if (Array.isArray(data.relations)) {
+    data.relations.forEach((rel: JourneyRelation) => {
+      items.push({
+        id: `rel-${rel.id}`,
+        type: 'relation_change',
+        title: `Связь с «${rel.target_name}» (${rel.rel_type})`,
+        subtitle: rel.start_order ? `С главы #${rel.start_order}` : 'С начала',
+        fullText: `Отношение «${rel.rel_type}» с персонажем ${rel.target_name}`,
+        phaseLabel: '👥 Связь',
+        chapter_order: rel.start_order,
+        badge: `Сила: ${rel.strength ?? 0}`,
+        badgeType: (rel.strength ?? 0) >= 0 ? 'success' : 'danger',
+      });
     });
-  });
+  }
 
   // 3. Narrative Blocks (Plot Promises / Scenes) with multi-arc support
-  data.promises.forEach((p: JourneyPromise) => {
+  if (Array.isArray(data.promises)) {
+    data.promises.forEach((p: JourneyPromise) => {
     const boundArcs: Array<{
       arcId: string;
       arcTitle: string;
@@ -161,16 +193,18 @@ export function buildTimelineItems(
     const formattedDate = formatDiegeticDate(computedMabs, p.date_fields, activeCal);
     const sceneKind = p.kind || 'scene';
     const ageInfo = calculateDiegeticAge(birthMabs, computedMabs, activeCal);
+    const rawQuote = p.quote || (p as unknown as { title?: string }).title || 'Сюжетная сцена';
+    const quoteSnippet = rawQuote.length > 45 ? `${rawQuote.slice(0, 45)}...` : rawQuote;
 
     items.push({
       id: `prom-${p.id}`,
       type: 'promise',
       kind: sceneKind,
-      title: `${sceneKind === 'scene' ? 'Сцена' : 'Обещание'}: «${p.quote.slice(0, 45)}${p.quote.length > 45 ? '...' : ''}»`,
+      title: `${sceneKind === 'scene' ? 'Сцена' : 'Обещание'}: «${quoteSnippet}»`,
       subtitle: p.chapter_title
         ? `Глава: ${p.chapter_title}`
         : `Глава #${p.planted_order ?? '?'}`,
-      fullText: p.quote,
+      fullText: rawQuote,
       timeLabel: formattedDate,
       phaseLabel: primaryArc?.phaseLabel || getPhaseLabel(p.arc_phase),
       chapter_id: p.chapter_id || undefined,
@@ -196,88 +230,10 @@ export function buildTimelineItems(
       description: primaryArc?.phase ? `Фаза арки: ${primaryArc.phase}` : undefined,
     });
   });
-
-  return items;
-}
-
-export function buildMultiJourneyTimelineItems(
-  response: MultiJourneyResponse | null,
-  storyArcs: StoryArc[]
-): JourneyTimelineItem[] {
-  if (!response || !response.scenes) return [];
-  const items: JourneyTimelineItem[] = [];
-
-  for (const scene of response.scenes) {
-    const boundArcs: Array<{
-      arcId: string;
-      arcTitle: string;
-      arcColor?: string;
-      phase: string;
-      phaseLabel: string;
-    }> = [];
-    const allArcIds: string[] = [];
-
-    // Aggregate arcs across all present entities
-    for (const part of scene.present_entities) {
-      if (Array.isArray(part.arcs)) {
-        for (const a of part.arcs) {
-          if (!a.arc_id) continue;
-          const cleanId = a.arc_id.replace(/^story_arcs:/, '');
-          const matchArc = storyArcs.find((arc) => (arc.id || '').replace(/^story_arcs:/, '') === cleanId);
-          const resolvedId = matchArc?.id || a.arc_id;
-          const resolvedTitle = matchArc?.title || a.arc_title || 'Сюжетная арка';
-          const resolvedColor = matchArc?.color || a.color || undefined;
-          const phase = a.arc_phase || 'setup';
-
-          if (!allArcIds.includes(resolvedId)) {
-            allArcIds.push(resolvedId);
-            boundArcs.push({
-              arcId: resolvedId,
-              arcTitle: resolvedTitle,
-              arcColor: resolvedColor,
-              phase,
-              phaseLabel: getPhaseLabel(phase),
-            });
-          }
-        }
-      }
-    }
-
-    const primaryArc = boundArcs[0];
-    const combinedArcTitle = boundArcs.length > 0
-      ? boundArcs.map((b) => b.arcTitle).join(' & ')
-      : undefined;
-
-    const partCount = scene.present_entities.length;
-    const partNames = scene.present_entities.map((p) => p.entity_name).join(', ');
-
-    items.push({
-      id: `scene-${scene.id}`,
-      type: 'appearance',
-      kind: scene.item_type || 'scene',
-      title: scene.chapter_title ? `${scene.chapter_title}` : `Глава #${scene.sort_order}`,
-      subtitle: scene.volume_title ? `${scene.volume_title} • ${partNames}` : partNames,
-      fullText: partNames,
-      timeLabel: scene.scene_date_formatted || undefined,
-      phaseLabel: primaryArc?.phaseLabel || '🌱 Сцена',
-      chapter_id: scene.chapter_id || undefined,
-      chapter_title: scene.chapter_title || undefined,
-      chapter_order: scene.sort_order,
-      m_abs: scene.scene_m_abs,
-      arc_id: primaryArc?.arcId,
-      arc_title: combinedArcTitle,
-      arc_color: primaryArc?.arcColor,
-      arc_phase: primaryArc?.phase,
-      boundArcs,
-      allArcIds,
-      badge: `${partCount} перс.`,
-      badgeType: partCount > 1 ? 'accent' : 'muted',
-      description: scene.volume_title ? `Том: ${scene.volume_title}` : undefined,
-      participants: scene.present_entities,
-      meetingGap: scene.meeting_gap,
-    });
   }
 
   return items;
 }
+
+export { buildMultiJourneyTimelineItems } from './useMultiJourneyItemsBuilder';
 

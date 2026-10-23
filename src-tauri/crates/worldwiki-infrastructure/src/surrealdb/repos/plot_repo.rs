@@ -33,13 +33,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 created_at,
                 updated_at,
                 ->promise_milestones.{
-                    id AS milestone_id,
-                    stage,
-                    quote,
-                    note,
-                    out.id AS block_id,
-                    out.chapter_id AS chapter_id,
-                    out.order_index AS order_index
+                    milestone_id: id,
+                    stage: stage,
+                    quote: quote,
+                    note: note,
+                    block_id: out.id,
+                    chapter_id: out.chapter_id,
+                    order_index: out.order_index
                 } AS milestones
             FROM type::record('plot_promises', $id)
             LIMIT 1;
@@ -105,13 +105,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 created_at,
                 updated_at,
                 ->promise_milestones.{
-                    id AS milestone_id,
-                    stage,
-                    quote,
-                    note,
-                    out.id AS block_id,
-                    out.chapter_id AS chapter_id,
-                    out.order_index AS order_index
+                    milestone_id: id,
+                    stage: stage,
+                    quote: quote,
+                    note: note,
+                    block_id: out.id,
+                    chapter_id: out.chapter_id,
+                    order_index: out.order_index
                 } AS milestones
             FROM plot_promises 
             WHERE ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
@@ -143,13 +143,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 created_at,
                 updated_at,
                 ->promise_milestones.{
-                    id AS milestone_id,
-                    stage,
-                    quote,
-                    note,
-                    out.id AS block_id,
-                    out.chapter_id AS chapter_id,
-                    out.order_index AS order_index
+                    milestone_id: id,
+                    stage: stage,
+                    quote: quote,
+                    note: note,
+                    block_id: out.id,
+                    chapter_id: out.chapter_id,
+                    order_index: out.order_index
                 } AS milestones
             FROM plot_promises 
             WHERE status != 'resolved' AND ->promise_milestones.out.chapter_id CONTAINSANY $chapters;

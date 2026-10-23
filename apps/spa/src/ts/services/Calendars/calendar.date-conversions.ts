@@ -22,22 +22,26 @@ export const CalendarDateConversions = {
     if (!cal) return false;
     const rule = cal.правило_високосного_года;
     if (rule === 'нет' || rule === 'отсутствует') return false;
-    if (rule === 'каждый 4 год') {
-      return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 }], 0);
-    }
-    if (rule === 'пользовательское') {
-      if (cal.високосные_правила && cal.високосные_правила.length > 0) {
-        return defaultWasmEngine.is_leap_year(BigInt(year), cal.високосные_правила, 0);
+    try {
+      if (rule === 'каждый 4 год') {
+        return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 }], 0);
       }
-      const period = cal.пользовательское_високосное_правило?.период || 4;
-      return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: period }], 0);
-    }
-    if (rule === 'григорианский' || rule === 'григорианское' || !rule) {
-      return defaultWasmEngine.is_leap_year(BigInt(year), [
-        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
-        { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
-        { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
-      ], 0);
+      if (rule === 'пользовательское') {
+        if (cal.високосные_правила && cal.високосные_правила.length > 0) {
+          return defaultWasmEngine.is_leap_year(BigInt(year), cal.високосные_правила, 0);
+        }
+        const period = cal.пользовательское_високосное_правило?.период || 4;
+        return defaultWasmEngine.is_leap_year(BigInt(year), [{ weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: period }], 0);
+      }
+      if (rule === 'григорианский' || rule === 'григорианское' || !rule) {
+        return defaultWasmEngine.is_leap_year(BigInt(year), [
+          { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 4 },
+          { weight: -1, multiplier_a: 1, shift_b: 0, divisor_c: 100 },
+          { weight: 1, multiplier_a: 1, shift_b: 0, divisor_c: 400 },
+        ], 0);
+      }
+    } catch {
+      return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
     }
     return false;
   },

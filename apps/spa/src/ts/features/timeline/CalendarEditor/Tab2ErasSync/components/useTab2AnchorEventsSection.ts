@@ -10,6 +10,7 @@ export function useTab2AnchorEventsSection(emit: (e: 'add-anchor-event', event: 
     const name = newEventName.value.trim();
     if (!name) return;
     emit('add-anchor-event', {
+      id: `ev_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       name,
       year: newEventYear.value || 1,
       month: 0,

@@ -1,5 +1,5 @@
 {
-  "name": "Персонаж",
+  "name": "Персонажи",
   "icon": "fa-user",
   "iconEmoji": "👤",
   "photoField": "фото",
@@ -1782,6 +1782,22 @@
           "emptyMessage": "Семейные отношения не добавлены",
           "template": "familyRelationTemplate",
           "dataPath": "семейные_отношения"
+        },
+        {
+          "id": "characterOrganizations",
+          "type": "dynamic",
+          "title": "Организации и фракции",
+          "emptyMessage": "Связи с организациями не добавлены",
+          "template": "characterOrganizationTemplate",
+          "dataPath": "состоит_в_организациях"
+        },
+        {
+          "id": "characterStates",
+          "type": "dynamic",
+          "title": "Государственная принадлежность и подданство",
+          "emptyMessage": "Подданство или статус в государствах не указаны",
+          "template": "characterStateTemplate",
+          "dataPath": "подданство_и_статус"
         }
       ]
     },
@@ -2421,6 +2437,276 @@
       ],
       "itemClass": "dynamic-item",
       "headerTitle": "Семейное отношение"
+    },
+    "characterOrganizationTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Организация",
+          "entityType": "organization",
+          "placeholder": "Выберите организацию..."
+        },
+        {
+          "type": "text",
+          "class": "должность_ранг",
+          "label": "Должность / Звание / Ранг",
+          "placeholder": "Например: Капитан стражи, Архимаг, Рядовой..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Роль и членство",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "лидер",
+              "label": "👑 Лидер / Глава"
+            },
+            {
+              "value": "член",
+              "label": "👤 Полноправный участник"
+            },
+            {
+              "value": "новобранец",
+              "label": "🔰 Новобранец / Стажер"
+            },
+            {
+              "value": "агент",
+              "label": "🕵️ Тайный агент / Информатор"
+            },
+            {
+              "value": "союзник",
+              "label": "🤝 Внештатный союзник"
+            },
+            {
+              "value": "бывший_член",
+              "label": "🚪 Бывший участник / В отставке"
+            },
+            {
+              "value": "дезертир_враг",
+              "label": "⚔️ Дезертир / Изменник"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Обязанности и влияние в организации",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Членство в организации",
+      "dynamicContainers": [
+        {
+          "id": "карьера_в_организации",
+          "type": "timeline",
+          "title": "КАРЬЕРА И ИСТОРИЯ ЧЛЕНСТВА",
+          "emptyMessage": "Добавьте этапы службы или смены рангов",
+          "template": "characterOrganizationStateTemplate",
+          "dataPath": "история_членства"
+        }
+      ]
+    },
+    "characterOrganizationStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Событие карьеры",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "вступление",
+              "label": "🟢 Вступление / Присяга"
+            },
+            {
+              "value": "повышение",
+              "label": "📈 Повышение в звании"
+            },
+            {
+              "value": "награда",
+              "label": "🎖️ Награда / Орден"
+            },
+            {
+              "value": "понижение",
+              "label": "📉 Разжалование"
+            },
+            {
+              "value": "увольнение",
+              "label": "🟡 Почетная отставка"
+            },
+            {
+              "value": "изгнание",
+              "label": "🔴 Исключение / Трибунал"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Подробности события",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ЭТАП СЛУЖБЫ"
+    },
+    "characterStateTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Государство",
+          "entityType": "state",
+          "placeholder": "Выберите государство..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Правовой статус и подданство",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "гражданин",
+              "label": "🟢 Гражданин / Подданный"
+            },
+            {
+              "value": "правитель",
+              "label": "👑 Монарх / Глава государства"
+            },
+            {
+              "value": "госслужащий",
+              "label": "🏛️ Чиновник / Министр"
+            },
+            {
+              "value": "дворянин",
+              "label": "⚜️ Аристократ / Дворянин"
+            },
+            {
+              "value": "иностранец",
+              "label": "⚪ Иностранец / Гость"
+            },
+            {
+              "value": "беженец",
+              "label": "🟡 Беженец / Проситель убежища"
+            },
+            {
+              "value": "изгнанник",
+              "label": "🟠 Изгнанник / Лишен прав"
+            },
+            {
+              "value": "враг_народа",
+              "label": "🔴 Государственный преступник / В розыске"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Статус перед законом и отношение властей",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Отношения с государством",
+      "dynamicContainers": [
+        {
+          "id": "динамика_подданства",
+          "type": "timeline",
+          "title": "ЭВОЛЮЦИЯ СТАТУСА В ГОСУДАРСТВЕ",
+          "emptyMessage": "Добавьте изменения статуса (розыск, амнистия, награды)",
+          "template": "characterStateStateTemplate",
+          "dataPath": "динамика_подданства"
+        }
+      ]
+    },
+    "characterStateStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Событие статуса",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "получение_прав",
+              "label": "🟢 Получение подданства"
+            },
+            {
+              "value": "госнаграда",
+              "label": "🎖️ Государственная награда"
+            },
+            {
+              "value": "объявлен_розыск",
+              "label": "🔴 Объявлен в розыск"
+            },
+            {
+              "value": "амнистия",
+              "label": "🕊️ Амнистия / Помилование"
+            },
+            {
+              "value": "лишение_прав",
+              "label": "❌ Лишение титула / Изгнание"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание указа или инцидента",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ИЗМЕНЕНИЕ СТАТУСА"
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Локация",
+  "name": "Локации",
   "icon": "fa-map-marker-alt",
   "iconEmoji": "📍",
   "photoField": "фото",
@@ -352,10 +352,75 @@
           "type": "dynamic",
           "title": "Торговые и стратегические связи",
           "emptyMessage": "Связи не добавлены",
-          "template": "Двунаправленная связь",
+          "template": "locationRelTemplate",
           "dataPath": "связанные_локации"
         }
       ]
     }
-  ]
+  ],
+  "templates": {
+    "locationRelTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Смежная локация",
+          "entityType": "location",
+          "placeholder": "Выберите локацию..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип маршрута / Связи",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "соседство",
+              "label": "🗺️ Граничит / Смежная территория"
+            },
+            {
+              "value": "торговый_тракт",
+              "label": "🛣️ Торговый тракт / Дорога"
+            },
+            {
+              "value": "водный_путь",
+              "label": "⛵ Речной / Морской путь"
+            },
+            {
+              "value": "тайный_проход",
+              "label": "🗝️ Тайный ход / Подземный тоннель"
+            },
+            {
+              "value": "портал",
+              "label": "🌀 Магический портал / Телепорт"
+            },
+            {
+              "value": "космический_маршрут",
+              "label": "🚀 Гиперпространственный маршрут"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "class": "время_в_пути",
+          "label": "Время в пути / Расстояние",
+          "placeholder": "Например: 3 дня на лошадях, 2 часа пешком"
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Опасности на маршруте и особенности перехода",
+          "rows": 2
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Связь между локациями"
+    }
+  }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Предмет / Артефакт",
+  "name": "Предметы / Артефакты",
   "icon": "fa-magic",
   "iconEmoji": "🗡️",
   "photoField": "фото",
@@ -258,10 +258,132 @@
           "type": "dynamic",
           "title": "Связи с фракциями и персонажами",
           "emptyMessage": "Связи не добавлены",
-          "template": "Двунаправленная связь",
+          "template": "itemRelationshipTemplate",
           "dataPath": "двунаправленные_связи"
         }
       ]
     }
-  ]
+  ],
+  "templates": {
+    "itemRelationshipTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Связанная сущность",
+          "entityType": "generic",
+          "placeholder": "Выберите персонажа, организацию или государство..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип связи с предметом",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "владелец",
+              "label": "👤 Законный владелец / Носитель"
+            },
+            {
+              "value": "создатель",
+              "label": "⚒️ Создатель / Кузнец / Автор"
+            },
+            {
+              "value": "ищет",
+              "label": "🔍 Охотится за предметом / Ищет"
+            },
+            {
+              "value": "хранитель",
+              "label": "🛡️ Охраняет / Сторожит артефакт"
+            },
+            {
+              "value": "уничтожитель",
+              "label": "💥 Пытается уничтожить"
+            },
+            {
+              "value": "символ_власти",
+              "label": "👑 Государственный символ власти"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "История связи и роль предмета",
+          "rows": 2
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Связь с предметом",
+      "dynamicContainers": [
+        {
+          "id": "динамика_связи",
+          "type": "timeline",
+          "title": "ИСТОРИЯ СВЯЗИ",
+          "emptyMessage": "Добавьте этапы взаимодействия",
+          "template": "itemRelationshipStateTemplate",
+          "dataPath": "динамика_связи"
+        }
+      ]
+    },
+    "itemRelationshipStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус связи",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "обретение",
+              "label": "✨ Находка / Получение"
+            },
+            {
+              "value": "потеря",
+              "label": "❌ Потеря / Кража"
+            },
+            {
+              "value": "передача",
+              "label": "🤝 Добровольная передача"
+            },
+            {
+              "value": "применение",
+              "label": "⚡ Ключевое применение"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Обстоятельства",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ЭТАП ВЛАДЕНИЯ"
+    }
+  }
 }

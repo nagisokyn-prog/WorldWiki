@@ -76,6 +76,12 @@ pub struct PlotPromise {
     #[serde(default)]
     pub milestones: Vec<PromiseMilestone>,
     #[serde(default)]
+    pub chapter_id: Option<String>,
+    #[serde(default)]
+    pub paragraph_index: Option<i32>,
+    #[serde(default)]
+    pub block_id: Option<String>,
+    #[serde(default)]
     pub location_id: Option<String>,
     #[serde(default)]
     pub timeline_event_id: Option<String>,
@@ -111,6 +117,9 @@ impl PlotPromise {
             note: None,
             status: PromiseStatus::Planted,
             milestones: Vec::new(),
+            chapter_id: None,
+            paragraph_index: None,
+            block_id: None,
             location_id: None,
             timeline_event_id: None,
             m_abs: None,

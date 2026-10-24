@@ -78,7 +78,7 @@
     <!-- 2. Сюжетные Арки и Фазы (Мульти-привязка к аркам сцены) -->
     <PromiseCardArcTags
       :project="project"
-      :arcs="item.arcs"
+      :arcs="effectiveArcs"
       :available-arcs="availableArcs"
       @update:arcs="onArcsUpdate"
       @change="$emit('change')"
@@ -143,7 +143,6 @@ const {
   locationDraft,
   isLocationDropdownOpen,
   filteredLocations,
-  getLocationDisplayName,
   isEntityLocation,
   selectLocation,
   onLocationBlur,
@@ -176,6 +175,7 @@ const {
   onDateFieldsChange,
   onCalendarChange,
   toggleDatePicker,
+  effectiveArcs,
   onArcsUpdate
 } = usePromiseCardMeta(props, emit);
 </script>

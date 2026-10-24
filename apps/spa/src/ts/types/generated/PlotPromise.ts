@@ -2,4 +2,4 @@
 import type { PromiseMilestone } from "./PromiseMilestone";
 import type { SceneArcItem } from "./SceneArcItem";
 
-export type PlotPromise = { id: string | null, project_id: string | null, kind: string, title: string, note: string | null, status: string, milestones: Array<PromiseMilestone>, location_id: string | null, timeline_event_id: string | null, m_abs: number | null, calendar_id: string | null, participant_ids: Array<string>, arcs: Array<SceneArcItem>, arc_id: string | null, arc_phase: string | null, };
+export type PlotPromise = { id: string | null, project_id: string | null, kind: string, title: string, note: string | null, status: string, milestones: Array<PromiseMilestone>, chapter_id?: string | null, paragraph_index?: number | null, block_id?: string | null, location_id: string | null, timeline_event_id: string | null, m_abs: number | null, calendar_id: string | null, participant_ids: Array<string>, arcs: Array<SceneArcItem>, arc_id: string | null, arc_phase: string | null, };

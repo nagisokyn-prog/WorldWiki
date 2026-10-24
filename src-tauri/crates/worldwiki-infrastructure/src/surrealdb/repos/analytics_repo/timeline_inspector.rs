@@ -26,6 +26,10 @@ struct RawTimelineEventNode {
     reveals: Vec<RawTimelineRevealLink>,
     #[serde(default)]
     participants: Vec<RawParticipant>,
+    #[serde(default)]
+    kind: Option<String>,
+    #[serde(default)]
+    location_id: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -116,6 +120,8 @@ pub(crate) async fn get_timeline_inspector_data_impl(
             calendar_id: ev.calendar_id.unwrap_or_default(),
             participants: ev.participants.into_iter().map(|p| p.into_id()).collect(),
             reveals: reveals_dto,
+            kind: ev.kind,
+            location_id: ev.location_id,
         });
     }
 

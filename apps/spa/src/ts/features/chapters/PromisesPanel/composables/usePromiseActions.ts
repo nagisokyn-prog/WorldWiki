@@ -4,6 +4,8 @@ import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
 import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
 
+import { preparePromisePayload, createNewPromiseRecord } from './usePromisePayloadBuilder';
+
 export function usePromiseActions(params: UsePromiseActionsParams) {
   const { promises, emit } = params;
   const editingNoteId = ref<string | null>(null);
@@ -23,20 +25,17 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   };
 
   const persist = async (item: RichPlotPromise, logMsg: string) => {
+    let payloadForLog: PlotPromise | null = null;
     try {
       console.log(logMsg, { project: getProject(), item });
-      const payload: PlotPromise = {
-        ...(item as unknown as PlotPromise),
-        arcs: Array.isArray(item.arcs) ? item.arcs : [],
-        arc_id: typeof item.arc_id === 'string' ? item.arc_id : null,
-        arc_phase: typeof item.arc_phase === 'string' ? item.arc_phase : null,
-      };
+      const payload = preparePromisePayload(item, getChapterId());
+      payloadForLog = payload;
       await plotApi.savePlotPromise(getProject(), payload);
     } catch (err) {
       console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
         errorMsg: err instanceof Error ? err.message : String(err),
         item,
-        payload
+        payload: payloadForLog
       });
     }
     syncLocalBackup();
@@ -53,41 +52,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     const chapterId = getChapterId();
     if (!project || !chapterId) return;
 
-    const newPromise: RichPlotPromise = {
-      id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      project_id: project,
-      kind: payload.kind,
-      title: payload.quote,
-      note: null,
-      status: 'planted',
-      location_id: null,
-      timeline_event_id: null,
-      m_abs: null,
-      calendar_id: null,
-      participant_ids: [],
-      arcs: [],
-      arc_id: null,
-      arc_phase: null,
-      milestones: [
-        {
-          milestone_id: `ms_${Date.now()}`,
-          stage: 'plant',
-          quote: payload.quote,
-          note: null,
-          block_id: payload.block_id || '',
-          chapter_id: chapterId || null,
-          order_index: payload.paragraph_index
-        }
-      ],
-      chapter_id: chapterId,
-      quote: payload.quote,
-      paragraph_index: payload.paragraph_index,
-      block_id: payload.block_id || null,
-      progressions: [],
-      resolution: null,
-      resolved_in_volume: null,
-      resolved_in_chapter: null
-    };
+    const newPromise = createNewPromiseRecord(project, chapterId, payload);
 
     try {
       const created = await plotApi.savePlotPromise(project, newPromise as unknown as PlotPromise);
@@ -206,15 +171,15 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   };
 
   const locateSource = (item: {
-    chapter_id: string;
-    paragraph_index: number;
-    quote: string;
+    chapter_id?: string | null;
+    paragraph_index?: number | null;
+    quote?: string | null;
     block_id?: string | null;
   }) => {
     emit('locate', {
-      chapterId: item.chapter_id,
-      paragraphIndex: item.paragraph_index,
-      quote: item.quote,
+      chapterId: item.chapter_id || getChapterId() || '',
+      paragraphIndex: item.paragraph_index ?? 1,
+      quote: item.quote || '',
       blockId: item.block_id || undefined
     });
   };

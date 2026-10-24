@@ -26,6 +26,9 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             SELECT 
                 id,
                 project_id,
+                chapter_id,
+                paragraph_index,
+                block_id,
                 kind,
                 title,
                 note,
@@ -67,9 +70,9 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
         let clean = promise.id.trim_start_matches("plot_promises:").to_string();
         let proj_clean = promise.project_id.trim_start_matches("projects:").to_string();
         let ch_clean = promise
-            .milestones
-            .first()
-            .and_then(|m| m.chapter_id.as_deref())
+            .chapter_id
+            .as_deref()
+            .or_else(|| promise.milestones.first().and_then(|m| m.chapter_id.as_deref()))
             .unwrap_or("")
             .trim_start_matches("chapters:")
             .to_string();
@@ -110,6 +113,9 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             SELECT 
                 id,
                 project_id,
+                chapter_id,
+                paragraph_index,
+                block_id,
                 kind,
                 title,
                 note,
@@ -135,7 +141,8 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                     arc_phase: phase
                 } AS arcs
             FROM plot_promises 
-            WHERE ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
+            WHERE chapter_id = type::record('chapters', $chapter_id)
+               OR ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
         "#;
         let mut res = self
             .db
@@ -157,6 +164,9 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             SELECT 
                 id,
                 project_id,
+                chapter_id,
+                paragraph_index,
+                block_id,
                 kind,
                 title,
                 note,
@@ -182,7 +192,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                     arc_phase: phase
                 } AS arcs
             FROM plot_promises 
-            WHERE status != 'resolved' AND ->promise_milestones.out.chapter_id CONTAINSANY $chapters;
+            WHERE status != 'resolved' AND (chapter_id CONTAINSANY $chapters OR ->promise_milestones.out.chapter_id CONTAINSANY $chapters);
         "#;
         let mut res = self
             .db

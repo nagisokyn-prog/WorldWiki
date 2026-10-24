@@ -176,8 +176,8 @@ describe('usePromiseCardMeta', () => {
 
     expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
       arcs: [{ arc_id: 'arc:1', arc_phase: 'escalation' }],
-      arc_id: null,
-      arc_phase: null
+      arc_id: 'arc:1',
+      arc_phase: 'escalation'
     }));
     expect(emit).toHaveBeenCalledWith('change');
   });

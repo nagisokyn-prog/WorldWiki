@@ -12,9 +12,32 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     LET $rec_id = type::record('plot_promises', $id);
     LET $milestones = IF $data.milestones != NONE { $data.milestones } ELSE { [] };
     
+    LET $target_chap = IF $chap != NONE AND $chap != NULL AND type::string($chap) != '' {
+        type::record('chapters', type::string($chap).replace('chapters:', ''))
+    } ELSE IF $data.chapter_id != NONE AND $data.chapter_id != NULL AND type::string($data.chapter_id) != '' {
+        type::record('chapters', type::string($data.chapter_id).replace('chapters:', ''))
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).chapter_id != NONE AND type::string(array::first($milestones).chapter_id) != '' {
+        type::record('chapters', type::string(array::first($milestones).chapter_id).replace('chapters:', ''))
+    } ELSE { NONE };
+
+    LET $target_para = IF $data.paragraph_index != NONE { 
+        $data.paragraph_index 
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).order_index != NONE {
+        array::first($milestones).order_index
+    } ELSE { NONE };
+
+    LET $target_block = IF $data.block_id != NONE AND type::string($data.block_id) != '' {
+        type::string($data.block_id)
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' {
+        type::string(array::first($milestones).block_id)
+    } ELSE { NONE };
+
     LET $promise = (
         UPSERT $rec_id MERGE {
             project_id: $p_rec,
+            chapter_id: $target_chap,
+            paragraph_index: $target_para,
+            block_id: $target_block,
             kind: IF $data.kind != NONE { $data.kind } ELSE { 'gun' },
             title: IF $data.title != NONE { $data.title } ELSE { '' },
             note: IF $data.note != NONE { $data.note } ELSE { NONE },
@@ -64,7 +87,13 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
 
     -- Синхронизация сюжетных арок (advances_arc): plot_promises -> advances_arc -> story_arcs
     DELETE advances_arc WHERE in = $rec_id;
-    LET $arcs = IF $data.arcs != NONE { $data.arcs } ELSE { [] };
+    LET $arcs = IF $data.arcs != NONE AND array::len($data.arcs) > 0 {
+        $data.arcs
+    } ELSE IF $data.arc_id != NONE AND $data.arc_id != NULL {
+        [{ arc_id: $data.arc_id, arc_phase: IF $data.arc_phase != NONE { $data.arc_phase } ELSE { 'setup' } }]
+    } ELSE {
+        []
+    };
     IF array::len($arcs) > 0 {
         FOR $a IN $arcs {
             IF $a.arc_id != NONE AND $a.arc_id != NULL {
@@ -112,7 +141,9 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             } AS milestones,
             <-participant_of.in.id AS participant_ids,
             ->advances_arc.{
-                arc_id: out.id,
+                arc_id: type::string(out.id),
+                arc_title: out.title,
+                arc_color: out.color,
                 arc_phase: phase
             } AS arcs
         FROM $rec_id
@@ -161,13 +192,21 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
         SELECT 
             in.id AS entity_id,
             in.name AS entity_name,
-            type::string(array::first(out->promise_milestones.out.chapter_id)) AS chapter_id,
-            array::first(out->promise_milestones.out.chapter_id.title) AS chapter_title,
-            array::first(out->promise_milestones.out.chapter_id.volume_id.title) AS volume_title,
-            IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS chapter_order,
+            IF out.chapter_id != NONE { type::string(out.chapter_id) }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) }
+               ELSE { '' } AS chapter_id,
+            IF out.chapter_id.title != NONE { out.chapter_id.title }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.title) }
+               ELSE { 'Сцена' } AS chapter_title,
+            IF out.chapter_id.volume_id.title != NONE { out.chapter_id.volume_id.title }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id.volume_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.volume_id.title) }
+               ELSE { NONE } AS volume_title,
+            IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) }
+               ELSE { 0 } AS chapter_order,
             'scene' AS source,
             role,
-            created_at
+            IF created_at != NONE { type::string(created_at) } ELSE { '' } AS created_at
         FROM participant_of 
         WHERE in IN $rec_ids
         LIMIT 2000
@@ -192,7 +231,25 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
     LET $promises = (
         SELECT 
-            IF array::len(->promise_milestones) > 0 { type::string(array::first(->promise_milestones.out.chapter_id)) } ELSE { NONE } AS chapter_id,
+            id,
+            kind,
+            IF title != NONE { title } ELSE { '' } AS quote,
+            status,
+            IF chapter_id != NONE { type::string(chapter_id) }
+               ELSE IF array::len(->promise_milestones) > 0 { type::string(array::first(->promise_milestones.out.chapter_id)) }
+               ELSE { NONE } AS chapter_id,
+            IF chapter_id.title != NONE { chapter_id.title }
+               ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
+               ELSE { 'Сцена' } AS chapter_title,
+            IF chapter_id.sort_order != NONE { chapter_id.sort_order }
+               ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
+               ELSE { 0 } AS planted_order,
+            ->advances_arc.{
+                arc_id: type::string(out.id),
+                arc_title: out.title,
+                arc_color: out.color,
+                arc_phase: phase
+            } AS arcs,
             IF array::len(->advances_arc) > 0 { type::string(array::first(->advances_arc.out.id)) } ELSE { NONE } AS arc_id,
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.title) } ELSE { NONE } AS arc_title,
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.phase) } ELSE { NONE } AS arc_phase,

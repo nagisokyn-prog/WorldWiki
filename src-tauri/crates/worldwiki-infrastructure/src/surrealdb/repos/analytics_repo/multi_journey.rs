@@ -11,24 +11,72 @@ use worldwiki_domain::errors::DomainError;
 
 #[derive(Debug, serde::Deserialize)]
 pub(crate) struct MultiJourneyRawEntity {
-    pub id: String,
-    pub name: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
     #[serde(default)]
     pub attributes: serde_json::Value,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct MultiJourneyCleanEntity {
+    pub id: String,
+    pub name: String,
+    pub attributes: serde_json::Value,
+}
+
+impl MultiJourneyRawEntity {
+    fn clean(self) -> MultiJourneyCleanEntity {
+        MultiJourneyCleanEntity {
+            id: self.id.unwrap_or_default(),
+            name: self.name.unwrap_or_else(|| "Без имени".to_string()),
+            attributes: self.attributes,
+        }
+    }
+}
+
 #[derive(Debug, serde::Deserialize)]
 pub(crate) struct MultiJourneyRawAppearance {
+    #[serde(default)]
+    pub entity_id: Option<String>,
+    #[serde(default)]
+    pub entity_name: Option<String>,
+    #[serde(default)]
+    pub chapter_id: Option<String>,
+    #[serde(default)]
+    pub chapter_title: Option<String>,
+    #[serde(default)]
+    pub volume_title: Option<String>,
+    #[serde(default)]
+    pub chapter_order: Option<i32>,
+    #[serde(default)]
+    pub role: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct MultiJourneyCleanAppearance {
     pub entity_id: String,
     pub entity_name: String,
     pub chapter_id: String,
     pub chapter_title: String,
-    #[serde(default)]
     pub volume_title: Option<String>,
-    #[serde(default)]
     pub chapter_order: i32,
-    #[serde(default)]
     pub role: Option<String>,
+}
+
+impl MultiJourneyRawAppearance {
+    fn clean(self) -> MultiJourneyCleanAppearance {
+        MultiJourneyCleanAppearance {
+            entity_id: self.entity_id.unwrap_or_default(),
+            entity_name: self.entity_name.unwrap_or_else(|| "Без имени".to_string()),
+            chapter_id: self.chapter_id.unwrap_or_default(),
+            chapter_title: self.chapter_title.unwrap_or_else(|| "Сцена".to_string()),
+            volume_title: self.volume_title,
+            chapter_order: self.chapter_order.unwrap_or(0),
+            role: self.role,
+        }
+    }
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -61,7 +109,7 @@ impl MultiJourneyRawPromise {
         })
     }
 
-    fn matches_participant(&self, part: &MultiJourneyRawAppearance) -> bool {
+    fn matches_participant(&self, part: &MultiJourneyCleanAppearance) -> bool {
         self.participant_ids
             .as_ref()
             .map(|ids| {
@@ -90,12 +138,12 @@ struct ChapterGroup<'a> {
     chapter_title: &'a str,
     volume_title: Option<&'a str>,
     chapter_order: i32,
-    participants: Vec<&'a MultiJourneyRawAppearance>,
+    participants: Vec<&'a MultiJourneyCleanAppearance>,
 }
 
 fn build_entity_map(
-    entities: &[MultiJourneyRawEntity],
-) -> HashMap<&str, &MultiJourneyRawEntity> {
+    entities: &[MultiJourneyCleanEntity],
+) -> HashMap<&str, &MultiJourneyCleanEntity> {
     let mut map = HashMap::with_capacity(entities.len() * 3);
     for ent in entities {
         map.insert(ent.id.as_str(), ent);
@@ -106,7 +154,7 @@ fn build_entity_map(
 }
 
 fn group_appearances_by_chapter<'a>(
-    appearances: &'a [MultiJourneyRawAppearance],
+    appearances: &'a [MultiJourneyCleanAppearance],
 ) -> HashMap<&'a str, ChapterGroup<'a>> {
     let mut groups = HashMap::new();
     for app in appearances {
@@ -127,7 +175,7 @@ fn group_appearances_by_chapter<'a>(
 }
 
 fn extract_participant_arcs(
-    part: &MultiJourneyRawAppearance,
+    part: &MultiJourneyCleanAppearance,
     promises: &[&MultiJourneyRawPromise],
 ) -> Vec<JourneyParticipantArcDto> {
     let mut arcs_set = HashSet::new();
@@ -161,8 +209,8 @@ fn calculate_diegetic_age(birth_m_abs: Option<i64>, scene_m_abs: Option<i64>) ->
 }
 
 fn build_participant_dto(
-    part: &MultiJourneyRawAppearance,
-    ent_info: Option<&&MultiJourneyRawEntity>,
+    part: &MultiJourneyCleanAppearance,
+    ent_info: Option<&&MultiJourneyCleanEntity>,
     promises: &[&MultiJourneyRawPromise],
     scene_m_abs: Option<i64>,
 ) -> JourneyParticipantDto {
@@ -262,8 +310,13 @@ pub(crate) async fn get_multi_character_journey_impl(
         promises: Vec::new(),
     });
 
-    let entity_map = build_entity_map(&raw.entities);
-    let chapter_groups = group_appearances_by_chapter(&raw.appearances);
+    let clean_entities: Vec<MultiJourneyCleanEntity> =
+        raw.entities.into_iter().map(|e| e.clean()).collect();
+    let clean_appearances: Vec<MultiJourneyCleanAppearance> =
+        raw.appearances.into_iter().map(|a| a.clean()).collect();
+
+    let entity_map = build_entity_map(&clean_entities);
+    let chapter_groups = group_appearances_by_chapter(&clean_appearances);
 
     let mut scenes = Vec::with_capacity(chapter_groups.len());
 

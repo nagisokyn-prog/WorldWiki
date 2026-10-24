@@ -282,6 +282,9 @@ DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 -- 22. СЮЖЕТНЫЕ ОБЕЩАНИЯ (НАРРАТИВНЫЙ УЗЕЛ / ЧЕХОВСКИЕ РУЖЬЯ / СЦЕНАРНЫЕ ЕДИНИЦЫ)
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id        ON plot_promises TYPE record<projects> | string VALUE fn::normalize_project_id($value);
+DEFINE FIELD OVERWRITE chapter_id        ON plot_promises TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE paragraph_index   ON plot_promises TYPE option<int | null>;
+DEFINE FIELD OVERWRITE block_id          ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE kind              ON plot_promises TYPE string
   ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'conflict', 'scene'];
 DEFINE FIELD OVERWRITE title             ON plot_promises TYPE string;

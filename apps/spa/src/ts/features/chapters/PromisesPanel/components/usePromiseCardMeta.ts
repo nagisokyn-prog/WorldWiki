@@ -152,12 +152,26 @@ export function usePromiseCardMeta(
     emit('change');
   };
 
+  const effectiveArcs = computed<SceneArcItem[]>(() => {
+    if (Array.isArray(props.item.arcs) && props.item.arcs.length > 0) {
+      return props.item.arcs;
+    }
+    if (props.item.arc_id) {
+      return [{
+        arc_id: props.item.arc_id,
+        arc_phase: props.item.arc_phase ?? 'setup'
+      }];
+    }
+    return [];
+  });
+
   const onArcsUpdate = (newArcs: SceneArcItem[]) => {
+    const primary = newArcs[0];
     const updated: RichPlotPromise = {
       ...props.item,
       arcs: newArcs,
-      arc_id: null,
-      arc_phase: null
+      arc_id: primary?.arc_id ? String(primary.arc_id) : null,
+      arc_phase: primary?.arc_phase ? String(primary.arc_phase) : (primary?.arc_id ? 'setup' : null)
     };
     emit('update:item', updated);
     emit('change');
@@ -265,6 +279,7 @@ export function usePromiseCardMeta(
     toggleDatePicker: dateTime.toggleDatePicker,
     saveLocation,
     updateKind,
+    effectiveArcs,
     onArcChange,
     onArcsUpdate,
     loadProjectEntities

@@ -21,6 +21,10 @@ pub struct TimelineInspectorEventNode {
     pub calendar_id: String,
     pub participants: Vec<String>,
     pub reveals: Vec<TimelineRevealLink>,
+    #[serde(default)]
+    pub kind: Option<String>,
+    #[serde(default)]
+    pub location_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

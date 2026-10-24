@@ -679,7 +679,7 @@
   align-items: center;
   gap: 6px;
   cursor: text;
-  transform: none !important;
+  transform: none;
   transition: border-color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
 }
 
@@ -687,7 +687,7 @@
 .promise-card-meta .tags-input-container:active,
 .promise-card-meta .tags-input-container:focus-within {
   border-color: var(--accent);
-  transform: none !important;
+  transform: none;
 }
 
 .promise-card-meta .tag-pill {

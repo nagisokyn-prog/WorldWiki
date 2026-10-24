@@ -67,6 +67,8 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             id,
             title,
             description,
+            'event' AS kind,
+            location_id,
             m_abs,
             IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
             ->revealed_in.{
@@ -93,8 +95,17 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
     LET $scene_events = (
         SELECT 
             id,
-            IF quote != NONE AND string::len(quote) > 0 { quote } ELSE { 'Сцена' } AS title,
+            IF title != NONE AND string::len(title) > 0 { title }
+               ELSE IF quote != NONE AND string::len(quote) > 0 { quote }
+               ELSE IF kind == 'conflict' { 'Конфликт' }
+               ELSE IF kind == 'gun' { 'Чеховское ружьё' }
+               ELSE IF kind == 'foreshadowing' { 'Предзнаменование' }
+               ELSE IF kind == 'mystery' { 'Загадка' }
+               ELSE IF kind == 'question' { 'Вопрос' }
+               ELSE { 'Сцена' } AS title,
             note AS description,
+            IF kind != NONE { kind } ELSE { 'scene' } AS kind,
+            location_id,
             m_abs,
             IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
             [
@@ -104,12 +115,16 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     chapter_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     chapter_sort_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
                     pov_id: NONE,
-                    kind: IF kind != NONE { kind } ELSE { 'direct' },
+                    kind: 'direct',
                     block_id: block_id,
                     is_anachronism: false
                 }
             ] AS reveals,
-            [] AS participants
+            <-participant_of<-entities.{
+                id: IF id.id != NONE { id.id } ELSE { type::string(id) },
+                name: name,
+                entity_type: schema_id.type_key
+            } AS participants
         FROM plot_promises
         WHERE project_id = $p_rec
           AND m_abs != NONE
@@ -192,9 +207,15 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
     );
     LET $participant_list = (
         SELECT 
-            IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) } ELSE { '' } AS chapter_id,
-            IF array::first(out->promise_milestones.out.chapter_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.title) } ELSE { 'Сцена' } AS chapter_title,
-            IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS chapter_order,
+            IF out.chapter_id != NONE { type::string(out.chapter_id) }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) }
+               ELSE { '' } AS chapter_id,
+            IF out.chapter_id.title != NONE { out.chapter_id.title }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.title) }
+               ELSE { 'Сцена' } AS chapter_title,
+            IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order }
+               ELSE IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) }
+               ELSE { 0 } AS chapter_order,
             'scene' AS source,
             role,
             IF created_at != NONE { type::string(created_at) } ELSE { '' } AS created_at
@@ -238,33 +259,40 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             kind, 
             IF title != NONE { title } ELSE { '' } AS quote, 
             status,
-            paragraph_index,
+            IF paragraph_index != NONE { paragraph_index }
+               ELSE IF array::first(->promise_milestones.order_index) != NONE { array::first(->promise_milestones.order_index) }
+               ELSE { 1 } AS paragraph_index,
             IF block_id != NONE { block_id }
                ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id }
                ELSE { NONE } AS block_id,
-            IF chapter_id != NONE { chapter_id.id } 
-               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE { array::first(->promise_milestones.out.chapter_id).id }
+            IF chapter_id != NONE { type::string(chapter_id) } 
+               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE { type::string(array::first(->promise_milestones.out.chapter_id)) }
                ELSE { NONE } AS chapter_id,
             IF chapter_id.title != NONE { chapter_id.title }
                ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
-               ELSE { NONE } AS chapter_title,
+               ELSE { 'Сцена' } AS chapter_title,
             IF chapter_id.sort_order != NONE { chapter_id.sort_order }
                ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
                ELSE { 0 } AS planted_order,
             IF resolved_in_chapter.sort_order != NONE { resolved_in_chapter.sort_order } ELSE { NONE } AS resolved_order,
-            IF arc_id != NONE { arc_id.id }
-               ELSE IF array::first(->promise_milestones.out.arc_id.id) != NONE { array::first(->promise_milestones.out.arc_id.id) }
+            ->advances_arc.{
+                arc_id: type::string(out.id),
+                arc_title: out.title,
+                arc_color: out.color,
+                arc_phase: phase
+            } AS arcs,
+            IF array::len(->advances_arc) > 0 { type::string(array::first(->advances_arc.out.id)) }
+               ELSE IF arc_id != NONE { type::string(arc_id) }
                ELSE { NONE } AS arc_id,
-            IF arc_id.title != NONE { arc_id.title }
-               ELSE IF array::first(->promise_milestones.out.arc_id.title) != NONE { array::first(->promise_milestones.out.arc_id.title) }
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.title) }
+               ELSE IF arc_id.title != NONE { arc_id.title }
                ELSE { NONE } AS arc_title,
-            IF arc_id.color != NONE { arc_id.color }
-               ELSE IF array::first(->promise_milestones.out.arc_id.color) != NONE { array::first(->promise_milestones.out.arc_id.color) }
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.color) }
+               ELSE IF arc_id.color != NONE { arc_id.color }
                ELSE { NONE } AS arc_color,
-            IF arc_phase != NONE { arc_phase }
-               ELSE IF array::first(->promise_milestones.out.arc_phase) != NONE { array::first(->promise_milestones.out.arc_phase) }
+            IF array::len(->advances_arc) > 0 { array::first(->advances_arc.phase) }
+               ELSE IF arc_phase != NONE { arc_phase }
                ELSE { NONE } AS arc_phase,
-            arcs,
             IF m_abs != NONE { m_abs } 
             ELSE IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } 
             ELSE IF array::first(->promise_milestones.out.timeline_event_id.m_abs) != NONE { array::first(->promise_milestones.out.timeline_event_id.m_abs) }

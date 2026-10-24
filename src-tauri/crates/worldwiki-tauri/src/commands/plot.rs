@@ -14,6 +14,9 @@ pub async fn get_plot_promises(
         SELECT 
             id,
             project_id,
+            chapter_id,
+            paragraph_index,
+            block_id,
             kind,
             title,
             note,

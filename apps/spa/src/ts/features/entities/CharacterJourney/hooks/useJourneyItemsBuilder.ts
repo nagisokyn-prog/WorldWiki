@@ -50,23 +50,24 @@ export function buildTimelineItems(
   // 0. Chapter / Scene Appearances
   if (Array.isArray(data.appearances)) {
     data.appearances.forEach((app: JourneyAppearance) => {
+      const isScene = (app.source as string) === 'scene';
       const appTitle = app.chapter_title ? `Глава «${app.chapter_title}»` : `Глава #${app.chapter_order ?? '?'}`;
       const appFullText = app.role
         ? `Роль: ${app.role}`
-        : (app.source === 'scene' ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`);
+        : (isScene ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`);
       items.push({
         id: `app-${app.chapter_id}-${app.source || 'mention'}-${app.created_at || Math.random()}`,
         type: 'appearance',
         kind: app.source || 'scene',
         title: app.chapter_title ? `Появление: ${app.chapter_title}` : `Глава #${app.chapter_order ?? '?'}`,
-        subtitle: app.role ? `Роль: ${app.role}` : (app.source === 'scene' ? 'Сцена в главе' : 'Упоминание в рукописи'),
+        subtitle: app.role ? `Роль: ${app.role}` : (isScene ? 'Сцена в главе' : 'Упоминание в рукописи'),
         fullText: appFullText,
         description: app.chapter_title ? `Глава: «${app.chapter_title}»` : undefined,
         chapter_id: app.chapter_id,
         chapter_title: app.chapter_title,
         chapter_order: app.chapter_order,
         phaseLabel: '📖 Появление',
-        badge: app.source === 'scene' ? 'Сцена' : 'Упоминание',
+        badge: isScene ? 'Сцена' : 'Упоминание',
         badgeType: 'accent',
       });
     });

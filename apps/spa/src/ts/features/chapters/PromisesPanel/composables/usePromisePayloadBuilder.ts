@@ -65,10 +65,10 @@ export function createNewPromiseRecord(
         order_index: payload.paragraph_index
       }
     ],
-    chapter_id: chapterId,
+    chapter_id: chapterId || undefined,
     quote: payload.quote,
     paragraph_index: payload.paragraph_index,
-    block_id: payload.block_id || null,
+    block_id: payload.block_id || undefined,
     progressions: [],
     resolution: null,
     resolved_in_volume: null,

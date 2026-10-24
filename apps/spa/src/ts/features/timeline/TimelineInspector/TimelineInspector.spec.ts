@@ -53,4 +53,47 @@ describe('useTimelineInspector Composable', () => {
     expect(flashbackLine).toBeDefined();
     expect(flashbackLine?.isFlashback).toBe(true);
   });
+
+  it('maps event kinds correctly and provides navigation handlers', async () => {
+    vi.mocked(apiClient.getTimelineInspectorData).mockResolvedValueOnce({
+      chapters: [
+        { id: 'chapters:ch_1', title: 'Глава 1', sort_order: 1 },
+      ],
+      events: [
+        {
+          id: 'plot_promises:conf_1',
+          title: 'Дуэль на мосту',
+          m_abs: 200,
+          kind: 'conflict',
+          location_id: 'locations:bridge',
+          reveals: [
+            { chapter_id: 'chapters:ch_1', chapter_title: 'Глава 1', chapter_order: 1, kind: 'direct', block_id: 'b_1' },
+          ],
+          participants: [{ id: 'ent:1', name: 'Рыцарь', entity_type: 'character' }],
+        },
+      ],
+    });
+
+    const emit = vi.fn();
+    const { formattedEvents, navigateToScene, navigateToChapter, refresh } = useTimelineInspector(
+      { projectId: 'test_proj' },
+      emit
+    );
+    await refresh();
+
+    expect(formattedEvents.value).toHaveLength(1);
+    const ev = formattedEvents.value[0];
+    expect(ev.kind).toBe('conflict');
+    expect(ev.kindMeta.label).toBe('Конфликт');
+    expect(ev.kindMeta.icon).toBe('⚔️');
+    expect(ev.title).toBe('Дуэль на мосту');
+    expect(ev.location_id).toBe('locations:bridge');
+
+    // Navigation tests
+    navigateToChapter({ id: 'chapters:ch_1', title: 'Глава 1', sort_order: 1 });
+    expect(emit).toHaveBeenCalledWith('open-chapter', { id: 'ch_1', title: 'Глава 1' });
+
+    navigateToScene(ev);
+    expect(emit).toHaveBeenCalledWith('open-chapter', { id: 'ch_1', title: 'Глава 1' });
+  });
 });

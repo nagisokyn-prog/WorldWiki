@@ -4,16 +4,28 @@ import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
 import { useCalendarStore } from '@/stores/calendar.store';
-import type {
-  TimelineInspectorData,
-  TimelineInspectorFilterState,
-  InspectorEvent,
-  InspectorChapter,
-  InspectorReveal,
-  VisualizedConnectionLine,
+import {
+  type TimelineInspectorData,
+  type TimelineInspectorFilterState,
+  type InspectorEvent,
+  type InspectorChapter,
+  type InspectorReveal,
+  type VisualizedConnectionLine,
+  type FormattedInspectorEvent,
+  type TimelineInspectorProps,
+  type TimelineInspectorEmits,
+  getInspectorKindMeta,
 } from './TimelineInspector.model';
 
-export function useTimelineInspector(projectId: string) {
+export function useTimelineInspector(
+  propsOrProjectId: TimelineInspectorProps | string,
+  emit?: TimelineInspectorEmits
+) {
+  const getProjectId = () =>
+    typeof propsOrProjectId === 'string'
+      ? propsOrProjectId
+      : (propsOrProjectId.projectId || '');
+
   const calendarStore = useCalendarStore();
   const calendarData = ref<CalendarData | null>(null);
   const data = ref<TimelineInspectorData | null>(null);
@@ -29,17 +41,18 @@ export function useTimelineInspector(projectId: string) {
   });
 
   const loadInspectorData = async () => {
-    if (!projectId) return;
+    const proj = getProjectId();
+    if (!proj) return;
     isLoading.value = true;
     error.value = null;
     try {
-      const cals = await calendarStore.getCalendars(projectId);
+      const cals = await calendarStore.getCalendars(proj);
       if (cals && cals.length > 0) {
         const master = cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_master) || cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_default) || cals[0];
         calendarData.value = (master?.data as CalendarData) || null;
       }
       const raw = await getTimelineInspectorData(
-        projectId,
+        proj,
         filters.value.readerHorizonChapterOrder
       );
       data.value = (raw as TimelineInspectorData) || { events: [], chapters: [] };
@@ -91,7 +104,7 @@ export function useTimelineInspector(projectId: string) {
     return ev.event_id || ev.id || '';
   };
 
-  const formattedEvents = computed(() => {
+  const formattedEvents = computed<FormattedInspectorEvent[]>(() => {
     const cal = calendarData.value;
 
     return filteredEvents.value.map((ev) => {
@@ -115,15 +128,24 @@ export function useTimelineInspector(projectId: string) {
         (p) => p && p.name && p.name.trim().length > 0
       );
 
+      const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
+      const kindMeta = getInspectorKindMeta(kind);
+
       return {
         ...ev,
         id: evId,
         formattedDate,
         cleanParticipants,
         isScene: evId.startsWith('plot_promises:') || !evId.startsWith('timeline_events:'),
+        kind,
+        kindMeta,
       };
     });
   });
+
+  const chapterSpacing = 135;
+  const eventSpacing = 150;
+  const startX = 60;
 
   const connectionLines = computed<VisualizedConnectionLine[]>(() => {
     const lines: VisualizedConnectionLine[] = [];
@@ -131,10 +153,6 @@ export function useTimelineInspector(projectId: string) {
     const evs = filteredEvents.value;
 
     if (!chs.length || !evs.length) return [];
-
-    const chapterSpacing = 170;
-    const eventSpacing = 190;
-    const startX = 100;
 
     const chapterPositions = new Map<string, number>();
     chs.forEach((ch, idx) => {
@@ -170,9 +188,9 @@ export function useTimelineInspector(projectId: string) {
             kind: r.kind,
             isFlashback,
             x1,
-            y1: 105,
+            y1: 60,
             x2,
-            y2: 365,
+            y2: 170,
           });
         }
       });
@@ -182,12 +200,49 @@ export function useTimelineInspector(projectId: string) {
   });
 
   const canvasMinWidth = computed(() => {
-    const chWidth = 100 + filteredChapters.value.length * 170 + 150;
-    const evWidth = 100 + filteredEvents.value.length * 190 + 150;
-    return `${Math.max(1200, Math.max(chWidth, evWidth))}px`;
+    const chWidth = startX + filteredChapters.value.length * chapterSpacing + 80;
+    const evWidth = startX + filteredEvents.value.length * eventSpacing + 80;
+    return `${Math.max(480, Math.max(chWidth, evWidth))}px`;
   });
 
-  watch(() => [projectId, filters.value.readerHorizonChapterOrder], loadInspectorData);
+  const navigateToChapter = (chapterIdOrObj: string | InspectorChapter) => {
+    const chId = typeof chapterIdOrObj === 'string'
+      ? chapterIdOrObj
+      : chapterIdOrObj.id;
+    const cleanId = chId.replace(/^chapters:/, '');
+    const title = typeof chapterIdOrObj === 'string'
+      ? (filteredChapters.value.find((c) => c.id === chId || c.id.replace(/^chapters:/, '') === cleanId)?.title || `Глава ${cleanId}`)
+      : chapterIdOrObj.title;
+
+    if (emit) {
+      emit('open-chapter', { id: cleanId, title });
+    }
+  };
+
+  const navigateToScene = (ev: FormattedInspectorEvent) => {
+    const reveal = ev.reveals?.[0];
+    if (!reveal?.chapter_id) return;
+    const cleanChId = reveal.chapter_id.replace(/^chapters:/, '');
+    const title = reveal.chapter_title || `Глава ${cleanChId}`;
+
+    if (emit) {
+      emit('open-chapter', { id: cleanChId, title });
+    }
+    setTimeout(() => {
+      document.dispatchEvent(
+        new CustomEvent('ww:locate-promise', {
+          detail: {
+            chapterId: cleanChId,
+            paragraphIndex: 1,
+            quote: ev.title,
+            blockId: reveal.block_id || undefined,
+          },
+        })
+      );
+    }, 150);
+  };
+
+  watch(() => [getProjectId(), filters.value.readerHorizonChapterOrder], loadInspectorData);
   onMounted(loadInspectorData);
 
   return {
@@ -200,5 +255,7 @@ export function useTimelineInspector(projectId: string) {
     isLoading,
     error,
     refresh: loadInspectorData,
+    navigateToChapter,
+    navigateToScene,
   };
 }

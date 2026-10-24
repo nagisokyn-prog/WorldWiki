@@ -23,6 +23,42 @@ export interface InspectorEvent {
   calendar_id?: string;
   reveals: InspectorReveal[];
   participants: InspectorParticipant[];
+  kind?: string;
+  location_id?: string | null;
+}
+
+export interface InspectorKindMeta {
+  label: string;
+  icon: string;
+  badgeClass: string;
+}
+
+export function getInspectorKindMeta(kind?: string): InspectorKindMeta {
+  switch (kind) {
+    case 'conflict':
+      return { label: 'Конфликт', icon: '⚔️', badgeClass: 'badge-conflict' };
+    case 'gun':
+      return { label: 'Чеховское ружьё', icon: '🔫', badgeClass: 'badge-gun' };
+    case 'foreshadowing':
+      return { label: 'Предзнаменование', icon: '🔮', badgeClass: 'badge-foreshadowing' };
+    case 'mystery':
+      return { label: 'Загадка', icon: '❓', badgeClass: 'badge-mystery' };
+    case 'question':
+      return { label: 'Вопрос', icon: '💭', badgeClass: 'badge-question' };
+    case 'event':
+      return { label: 'Событие мира', icon: '⏳', badgeClass: 'badge-event' };
+    case 'scene':
+    default:
+      return { label: 'Сцена', icon: '🎬', badgeClass: 'badge-scene' };
+  }
+}
+
+export interface FormattedInspectorEvent extends InspectorEvent {
+  id: string;
+  formattedDate: string;
+  cleanParticipants: InspectorParticipant[];
+  isScene: boolean;
+  kindMeta: InspectorKindMeta;
 }
 
 export interface InspectorChapter {
@@ -58,4 +94,12 @@ export interface VisualizedConnectionLine {
   y1: number; // chapter Y
   x2: number; // event X on diegetic axis
   y2: number; // event Y
+}
+
+export interface TimelineInspectorProps {
+  projectId?: string;
+}
+
+export interface TimelineInspectorEmits {
+  (e: 'open-chapter', chapter: { id: string; title: string }): void;
 }

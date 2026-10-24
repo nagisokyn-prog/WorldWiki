@@ -139,8 +139,8 @@
 
 .dual-axis-canvas {
   position: relative;
-  height: 520px;
-  min-width: 1200px;
+  height: 290px;
+  min-width: 480px;
 }
 
 /* Оболочки треков */
@@ -151,32 +151,32 @@
 }
 
 .narrative-wrapper {
-  top: 15px;
-  height: 130px;
+  top: 10px;
+  height: 75px;
 }
 
 .diegetic-wrapper {
-  top: 340px;
-  height: 150px;
+  top: 155px;
+  height: 120px;
 }
 
 /* Визуальные рельсы-направляющие осей */
 .axis-rail {
   position: absolute;
-  left: 40px;
-  right: 40px;
-  height: 3px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
   border-radius: var(--radius-full, 9999px);
   z-index: 1;
 }
 
 .axis-rail-narrative {
-  top: 24px;
+  top: 20px;
   background: linear-gradient(90deg, var(--border-color) 0%, var(--accent) 50%, var(--border-color) 100%);
 }
 
 .axis-rail-diegetic {
-  top: 24px;
+  top: 20px;
   background: linear-gradient(90deg, var(--border-color) 0%, var(--warning) 50%, var(--border-color) 100%);
 }
 
@@ -184,10 +184,10 @@
 .axis-badge {
   position: absolute;
   left: 8px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
   border-radius: var(--radius-sm, 4px);
   user-select: none;
   z-index: 3;
@@ -207,20 +207,20 @@
   border: 1px solid var(--border-color);
 }
 
-/* Карточка главы */
+/* Карточка главы (Компактный узел) */
 .chapter-node {
   position: absolute;
-  top: 32px;
+  top: 24px;
   transform: translateX(-50%);
-  padding: 8px 12px;
-  border-radius: var(--radius-md, 6px);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 4px);
   border: 1px solid var(--border-color);
   background-color: var(--bg-card);
   box-shadow: var(--shadow-sm);
   text-align: center;
   cursor: pointer;
-  min-width: 130px;
-  max-width: 150px;
+  min-width: 95px;
+  max-width: 125px;
   transition: border-color 0.15s ease, transform 0.15s ease;
   z-index: 2;
 }
@@ -233,38 +233,38 @@
 
 .chapter-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: var(--radius-sm, 4px);
   background-color: var(--bg-hover);
   color: var(--accent);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .chapter-node-title {
-  font-weight: 700;
-  font-size: var(--font-size-xs, 12px);
+  font-weight: 600;
+  font-size: var(--font-size-xs, 11px);
   color: var(--text-main);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Карточка события / сцены */
+/* Карточка события / сцены / конфликта (Компактный узел) */
 .event-node {
   position: absolute;
-  top: 32px;
+  top: 24px;
   transform: translateX(-50%);
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-radius: var(--radius-md, 6px);
   border: 1px solid var(--border-color);
   background-color: var(--bg-card);
   box-shadow: var(--shadow-sm);
   text-align: left;
   cursor: pointer;
-  min-width: 150px;
-  max-width: 175px;
+  min-width: 125px;
+  max-width: 145px;
   transition: border-color 0.15s ease, transform 0.15s ease;
   z-index: 2;
 }
@@ -279,40 +279,103 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
-.event-kind-icon {
-  font-size: 12px;
+.event-kind-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.event-kind-badge.badge-conflict {
+  background-color: var(--bg-hover);
+  color: var(--danger);
+  border: 1px solid var(--border-color);
+}
+
+.event-kind-badge.badge-scene {
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+}
+
+.event-kind-badge.badge-gun {
+  background-color: var(--bg-hover);
+  color: var(--warning);
+  border: 1px solid var(--border-color);
+}
+
+.event-kind-badge.badge-foreshadowing {
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+}
+
+.event-kind-badge.badge-event {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
 }
 
 .event-node-title {
   font-weight: 700;
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, 11px);
   color: var(--text-main);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.3;
+}
+
+.event-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
 }
 
 .event-date-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
+  gap: 2px;
+  padding: 1px 4px;
   border-radius: var(--radius-sm, 4px);
   background-color: var(--bg-hover);
   color: var(--warning);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
+}
+
+.event-location-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
 }
 
 .event-participants-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 3px;
+  margin-top: 3px;
 }
 
 .participant-chip {
@@ -324,7 +387,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 140px;
+  max-width: 110px;
+}
+
+.participant-more {
+  font-size: 8px;
+  color: var(--text-muted);
+  align-self: center;
 }
 
 /* Точки привязки (Пины коннекторов) */

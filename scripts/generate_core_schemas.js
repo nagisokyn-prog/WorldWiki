@@ -74,7 +74,7 @@ function patchCharacterSchema() {
       aliasField.path = 'прозвище';
       aliasField.isSystem = true;
       aliasField.preventDelete = true;
-      aliasField.hint = 'Алиасы для авто-поиска меншенов ((Имя)) в рукописи';
+      aliasField.hint = 'Второе имя или прозвище персонажа';
     }
 
     // 3. Обновляем Роль в истории

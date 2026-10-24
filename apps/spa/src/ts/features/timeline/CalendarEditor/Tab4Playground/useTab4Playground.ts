@@ -3,6 +3,7 @@ import type {
   Tab4PlaygroundProps,
   Tab4PlaygroundEmits,
   StoryOriginDateDto,
+  MonthMatrixDayDto,
 } from './Tab4Playground.model';
 import type { CalendarData, CalendarEra } from '@/services/Calendars/calendar.types';
 import { CalendarEngine } from '@/services/Calendars/useCalendarEngine';
@@ -105,9 +106,41 @@ export function useTab4Playground(
     const weekdaysList = weekdayNames.value;
     const weekdaysCount = Math.max(1, weekdaysList.length);
 
-    const days = [];
+    // Вычисляем абсолютные минуты для 1-го числа текущего месяца и для точки отсчета
+    const timeSettings = cal.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const minInDay = Math.max(1, (timeSettings.часов_в_сутках || 24) * (timeSettings.минут_в_часе || 60));
+    const day1Min = CalendarEngine.getAbsoluteMinute(
+      { year: testYear.value, month: testMonth.value, day: 1 },
+      cal
+    );
+    const originMin = CalendarEngine.getAbsoluteMinute(
+      { year: storyOrigin.value.year, month: storyOrigin.value.month, day: storyOrigin.value.day },
+      cal
+    );
+
+    const day1WorldDay = Math.floor(day1Min / minInDay);
+    const originWorldDay = Math.floor(originMin / minInDay);
+    const originWeekday = storyOrigin.value.weekday_index ?? 0;
+    const dayDiff = day1WorldDay - originWorldDay;
+    const day1Offset = (((originWeekday + dayDiff) % weekdaysCount) + weekdaysCount) % weekdaysCount;
+
+    const days: MonthMatrixDayDto[] = [];
+
+    // Пустые ячейки-отступы перед 1 числом
+    for (let p = 0; p < day1Offset; p++) {
+      days.push({
+        day: 0,
+        isPadding: true,
+        weekdayName: weekdaysList[p] || '',
+        weekdayShort: (weekdaysList[p] || '').slice(0, 2),
+        isHoliday: false,
+        isSelected: false,
+        isStoryOrigin: false,
+      });
+    }
+
     for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
-      const weekdayIdx = (dayNum - 1) % weekdaysCount;
+      const weekdayIdx = (day1Offset + dayNum - 1) % weekdaysCount;
       const isHol = CalendarEngine.isHoliday(cal, testYear.value, testMonth.value, dayNum);
       const isOrigin =
         dayNum === storyOrigin.value.day &&
@@ -116,6 +149,7 @@ export function useTab4Playground(
 
       days.push({
         day: dayNum,
+        isPadding: false,
         weekdayName: weekdaysList[weekdayIdx] || `День ${weekdayIdx + 1}`,
         weekdayShort: (weekdaysList[weekdayIdx] || `День ${weekdayIdx + 1}`).slice(0, 2),
         isHoliday: isHol,

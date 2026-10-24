@@ -1,6 +1,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
 import type { EntitySchema } from '../../../types/generated/EntitySchema';
+import { computeSimilarity } from './utils/entityMatch.utils';
 import type {
   EntityTypeItem,
   EntitySelectorItem,
@@ -48,12 +49,15 @@ export function useEntityLinkSelector(
       const entityType = String(r.entity_type || (r as { type?: string }).type || 'unknown');
       const schema = schemaMap.value.get(entityType);
 
-      let tags: string[] = [];
-      let cleanTags: string[] = [];
-      if (Array.isArray(r.tags)) {
-        tags = r.tags.map(t => String(t).trim()).filter(Boolean);
-        cleanTags = tags.map(t => t.replace(/^#/, ''));
-      }
+      const rawAttrs = (r as { attributes?: Record<string, unknown> }).attributes;
+      let rawTags: unknown[] = [];
+      if (Array.isArray(r.tags)) rawTags = r.tags;
+      else if (rawAttrs && Array.isArray(rawAttrs.tags)) rawTags = rawAttrs.tags;
+      else if (rawAttrs && Array.isArray(rawAttrs['теги'])) rawTags = rawAttrs['теги'];
+      else if (typeof r.tags === 'string') rawTags = (r.tags as string).split(',');
+
+      const tags = rawTags.map(t => String(t).trim()).filter(Boolean);
+      const cleanTags = tags.map(t => t.replace(/^#/, ''));
 
       const entityId = String(r.id || '');
       const shortId = entityId.split(':').pop() || '';
@@ -82,15 +86,21 @@ export function useEntityLinkSelector(
     const q = searchQuery.value.trim().toLowerCase();
     if (!q) return list;
 
+    const isTagSearch = q.startsWith('#');
     const cleanQ = q.replace(/^#/, '');
 
     return list.filter((e) => {
-      // Поиск по тегам (как с #, так и без решётки)
-      const matchesTag = e.cleanTags?.some(cleanTag => cleanTag.toLowerCase().includes(cleanQ)) ||
-        e.tags?.some(tag => tag.replace(/^#/, '').toLowerCase().includes(cleanQ));
+      // Поиск по тегам (точное вхождение или сходство >= 50%)
+      const matchesTag = e.cleanTags?.some(t => {
+        const lower = t.toLowerCase();
+        return lower.includes(cleanQ) || computeSimilarity(lower, cleanQ) >= 0.5;
+      });
 
-      // Поиск по имени, id, типу или тегам
-      const matchesName = e.name.toLowerCase().includes(q);
+      if (isTagSearch) return matchesTag;
+
+      // Поиск по имени (вхождение или нечёткое сходство >= 50%)
+      const lowerName = e.name.toLowerCase();
+      const matchesName = lowerName.includes(q) || computeSimilarity(lowerName, q) >= 0.5;
       const matchesId = e.id.toLowerCase().includes(q) || (e.shortId && e.shortId.toLowerCase().includes(q));
       const matchesType = e.type_name?.toLowerCase().includes(q);
       return matchesName || matchesId || matchesType || matchesTag;
@@ -173,6 +183,21 @@ export function useEntityLinkSelector(
   };
 
   const selectEntity = (entity: EntitySelectorItem) => {
+    const q = searchQuery.value.trim().replace(/^#/, '').replace(/^\(\(/, '').replace(/\)\)$/, '').trim();
+    if (q && props.project) {
+      const isExactMatch = entity.name.toLowerCase() === q.toLowerCase() ||
+        (entity.cleanTags || []).some(t => t.toLowerCase() === q.toLowerCase());
+      if (!isExactMatch) {
+        const nextTags = Array.from(new Set([...(entity.cleanTags || []), q]));
+        void api.saveEntity(props.project, {
+          ...entity,
+          tags: nextTags,
+          attributes: (entity as { attributes?: Record<string, unknown> }).attributes || {}
+        } as never).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
+        entity.cleanTags = nextTags;
+        entity.tags = nextTags;
+      }
+    }
     emit('insert', {
       type: entity.entity_type,
       id: entity.id,
@@ -193,6 +218,7 @@ export function useEntityLinkSelector(
       const payload: Record<string, unknown> = {
         name,
         entity_type: chosenType,
+        attributes: {},
         tags: []
       };
       const created = await api.saveEntity(props.project, payload as never);

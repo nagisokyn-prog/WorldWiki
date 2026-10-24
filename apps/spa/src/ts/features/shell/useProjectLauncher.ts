@@ -1,4 +1,4 @@
-import { ref, shallowRef, computed, onMounted, onUnmounted } from 'vue';
+import { ref, shallowRef, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 import { projectService } from '../../services/project.service';
@@ -87,17 +87,19 @@ export function useProjectLauncher() {
     }
   };
 
-  onMounted(async () => {
-    window.addEventListener('keydown', handleKeydown, true);
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      window.addEventListener('keydown', handleKeydown, true);
 
-    await settingsService.loadSettings();
-    settingsService.applySettings();
-    await loadProjects();
-  });
+      await settingsService.loadSettings();
+      settingsService.applySettings();
+      await loadProjects();
+    });
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown, true);
-  });
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeydown, true);
+    });
+  }
 
   return {
     projects,

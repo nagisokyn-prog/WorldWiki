@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { useChapterStore } from '@/stores/chapter.store';
 import type { ManuscriptPoint, ManuscriptPointPickerProps } from './ManuscriptPointPicker.model';
@@ -235,46 +235,50 @@ export function useManuscriptPointPicker(
     document.addEventListener('ww:timeline-auto-extended', handleCustomEvent);
   }
 
-  onMounted(async () => {
-    try {
-      unlistenTauri = await listen<{ chapter_id?: string; volume_id?: string }>(
-        'ww:timeline-auto-extended',
-        (event) => {
-          if (event.payload) {
-            applyNewPoint(event.payload);
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      try {
+        unlistenTauri = await listen<{ chapter_id?: string; volume_id?: string }>(
+          'ww:timeline-auto-extended',
+          (event) => {
+            if (event.payload) {
+              applyNewPoint(event.payload);
+            }
           }
-        }
-      );
-      unlistenHealed = await listen<{ deleted_chapter_id?: string; fallback_point?: { chapter_id?: string | null; volume_id?: string | null } | null }>(
-        'ww:timeline-healed',
-        (event) => {
-          if (event.payload) {
-            handleHealedEvent(event.payload);
+        );
+        unlistenHealed = await listen<{ deleted_chapter_id?: string; fallback_point?: { chapter_id?: string | null; volume_id?: string | null } | null }>(
+          'ww:timeline-healed',
+          (event) => {
+            if (event.payload) {
+              handleHealedEvent(event.payload);
+            }
           }
-        }
-      );
-    } catch (e) {
-      console.warn('[useManuscriptPointPicker] Tauri event listener setup failed (running in browser?):', e);
-    }
+        );
+      } catch (e) {
+        console.warn('[useManuscriptPointPicker] Tauri event listener setup failed (running in browser?):', e);
+      }
 
-    // Если уже включено автопродление, выставляем последнюю актуальную точку
-    if (internalPoint.value.is_auto_extend && latestValidPoint.value) {
-      internalPoint.value.volume_id = latestValidPoint.value.volume_id;
-      internalPoint.value.chapter_id = latestValidPoint.value.chapter_id;
-    }
-  });
+      // Если уже включено автопродление, выставляем последнюю актуальную точку
+      if (internalPoint.value.is_auto_extend && latestValidPoint.value) {
+        internalPoint.value.volume_id = latestValidPoint.value.volume_id;
+        internalPoint.value.chapter_id = latestValidPoint.value.chapter_id;
+      }
+    });
 
-  onUnmounted(() => {
-    document.removeEventListener('ww:timeline-auto-extended', handleCustomEvent);
-    if (unlistenTauri) {
-      unlistenTauri();
-      unlistenTauri = null;
-    }
-    if (unlistenHealed) {
-      unlistenHealed();
-      unlistenHealed = null;
-    }
-  });
+    onUnmounted(() => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('ww:timeline-auto-extended', handleCustomEvent);
+      }
+      if (unlistenTauri) {
+        unlistenTauri();
+        unlistenTauri = null;
+      }
+      if (unlistenHealed) {
+        unlistenHealed();
+        unlistenHealed = null;
+      }
+    });
+  }
 
   return {
     internalPoint,

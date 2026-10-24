@@ -23,9 +23,14 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     const saving = ref(false);
 
     // ─── Computed ────────────────────────────────────────────
+    const normalizedParentType = computed(() => {
+        if (!props.parentType) return '';
+        return props.parentType === 'arc' ? 'story_arc' : props.parentType;
+    });
+
     const nodeIcon = computed(() => {
         if (props.parentType === 'volume') return '📚';
-        if (props.parentType === 'arc') return '🌀';
+        if (props.parentType === 'arc' || props.parentType === 'story_arc') return '🌀';
         return '📖';
     });
 
@@ -44,8 +49,12 @@ export function usePlanningPanel(props: PlanningPanelProps) {
         }
         try {
             const plans = (await api.getPlans(props.project)) || [];
+            const targetType = normalizedParentType.value;
             items.value = plans
-                .filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId)
+                .filter(p => {
+                    const pType = p.parent_type === 'arc' ? 'story_arc' : p.parent_type;
+                    return pType === targetType && p.parent_ref === props.parentId;
+                })
                 .map(p => ({
                     id: p.id || '',
                     text: p.title || '',
@@ -69,7 +78,7 @@ export function usePlanningPanel(props: PlanningPanelProps) {
             const planToSave = {
                 id: item.id || null,
                 project_id: projectRecordId(props.project),
-                parent_type: props.parentType || '',
+                parent_type: normalizedParentType.value || '',
                 parent_ref: props.parentId || null,
                 title: item.text,
                 completed: item.done,

@@ -32,9 +32,10 @@ describe('useTab4Playground', () => {
     const emit = vi.fn() as unknown as Tab4PlaygroundEmits;
     const { monthMatrixDays } = useTab4Playground({ calendarData: mockCalendar }, emit);
 
-    expect(monthMatrixDays.value.length).toBe(30);
-    expect(monthMatrixDays.value[0].day).toBe(1);
-    expect(monthMatrixDays.value[14].isSelected).toBe(true); // 15-й день выбран
+    const regularDays = monthMatrixDays.value.filter(d => !d.isPadding);
+    expect(regularDays.length).toBe(30);
+    expect(regularDays[0].day).toBe(1);
+    expect(regularDays[14].isSelected).toBe(true); // 15-й день выбран
   });
 
   it('обновляет точку отсчета сюжета', () => {

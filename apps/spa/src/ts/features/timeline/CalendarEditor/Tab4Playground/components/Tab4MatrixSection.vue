@@ -46,19 +46,27 @@
       </div>
 
       <div
-        v-for="d in monthMatrixDays"
-        :key="d.day"
+        v-for="(d, idx) in monthMatrixDays"
+        :key="d.isPadding ? `pad-${idx}` : d.day"
         class="matrix-day-cell"
         :class="{
+          'is-padding': d.isPadding,
           'active': d.isSelected,
           'is-origin': d.isStoryOrigin,
           'is-holiday': d.isHoliday,
         }"
         :title="d.isStoryOrigin ? 'День начала сюжета произведения (Глава 1)!' : (d.isHoliday ? 'Праздничный день' : undefined)"
-        @click="$emit('select-day', d.day)"
+        @click="!d.isPadding && $emit('select-day', d.day)"
       >
+        <!-- Пустой день-отступ -->
+        <template v-if="d.isPadding">
+          <div class="cell-top opacity-0">
+            <span>&nbsp;</span>
+          </div>
+        </template>
+
         <!-- День старта сюжета -->
-        <template v-if="d.isStoryOrigin">
+        <template v-else-if="d.isStoryOrigin">
           <div class="cell-top">
             <span style="color: var(--accent-warning); font-weight: 700;">{{ d.day }}</span>
             <span class="cell-badge" style="background: var(--accent-warning); color: #000; font-weight: 700;">

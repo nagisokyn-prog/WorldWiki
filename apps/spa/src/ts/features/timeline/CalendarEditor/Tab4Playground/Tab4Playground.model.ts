@@ -12,6 +12,7 @@ export interface StoryOriginDateDto {
 
 export interface MonthMatrixDayDto {
   day: number;
+  isPadding?: boolean;
   weekdayName: string;
   weekdayShort: string;
   isHoliday: boolean;

@@ -31,8 +31,9 @@ import type { AgentMemory } from '../types/generated/AgentMemory';
 import type { WebCache } from '../types/generated/WebCache';
 import type { DictionaryWord } from '../types/generated/DictionaryWord';
 import type { Cites } from '../types/generated/Cites';
-import type { ArcChapter } from '../types/generated/ArcChapter';
-import type { ArcEntity } from '../types/generated/ArcEntity';
+import type { ParticipantOf } from '../types/generated/ParticipantOf';
+import type { AdvancesArc } from '../types/generated/AdvancesArc';
+import type { OccursAt } from '../types/generated/OccursAt';
 import type { RevealedIn } from '../types/generated/RevealedIn';
 
 // --- Normal Commands ---
@@ -894,24 +895,40 @@ export async function deleteCite(id: string): Promise<void> {
     return await invoke('delete_cite', { id });
 }
 
-export async function createArcChapter(fromId: string, toId: string, data: ArcChapter): Promise<ArcChapter> {
-    return await invoke('create_arc_chapter', { fromId, toId, data });
+export async function getParticipantOfs(fromId: string, toId: string): Promise<ParticipantOf[]> {
+    return await invoke('get_participant_ofs', { fromId, toId });
 }
 
-export async function deleteArcChapter(id: string): Promise<void> {
-    return await invoke('delete_arc_chapter', { id });
+export async function createParticipantOf(fromId: string, toId: string, data: ParticipantOf): Promise<ParticipantOf> {
+    return await invoke('create_participant_of', { fromId, toId, data });
 }
 
-export async function getArcEntitys(fromId: string, toId: string): Promise<ArcEntity[]> {
-    return await invoke('get_arc_entitys', { fromId, toId });
+export async function deleteParticipantOf(id: string): Promise<void> {
+    return await invoke('delete_participant_of', { id });
 }
 
-export async function createArcEntity(fromId: string, toId: string, data: ArcEntity): Promise<ArcEntity> {
-    return await invoke('create_arc_entity', { fromId, toId, data });
+export async function getAdvancesArcs(fromId: string, toId: string): Promise<AdvancesArc[]> {
+    return await invoke('get_advances_arcs', { fromId, toId });
 }
 
-export async function deleteArcEntity(id: string): Promise<void> {
-    return await invoke('delete_arc_entity', { id });
+export async function createAdvancesArc(fromId: string, toId: string, data: AdvancesArc): Promise<AdvancesArc> {
+    return await invoke('create_advances_arc', { fromId, toId, data });
+}
+
+export async function deleteAdvancesArc(id: string): Promise<void> {
+    return await invoke('delete_advances_arc', { id });
+}
+
+export async function getOccursAts(fromId: string, toId: string): Promise<OccursAt[]> {
+    return await invoke('get_occurs_ats', { fromId, toId });
+}
+
+export async function createOccursAt(fromId: string, toId: string, data: OccursAt): Promise<OccursAt> {
+    return await invoke('create_occurs_at', { fromId, toId, data });
+}
+
+export async function deleteOccursAt(id: string): Promise<void> {
+    return await invoke('delete_occurs_at', { id });
 }
 
 export async function getRevealedIns(fromId: string, toId: string): Promise<RevealedIn[]> {

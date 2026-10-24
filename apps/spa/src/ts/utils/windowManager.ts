@@ -8,6 +8,8 @@ export async function openEntityEditorWindow(project: string, type: string, id: 
         const windows = await getAllWebviewWindows();
         const existingWindow = windows.find((w: WebviewWindow) => w.label === label);
         if (existingWindow) {
+            await existingWindow.unminimize?.().catch(() => {});
+            await existingWindow.show?.().catch(() => {});
             await existingWindow.setFocus();
             return;
         }
@@ -44,6 +46,8 @@ export async function openCharacterJourneyWindow(project: string, entityId?: str
         const windows = await getAllWebviewWindows();
         const existingWindow = windows.find((w: WebviewWindow) => w.label === label);
         if (existingWindow) {
+            await existingWindow.unminimize?.().catch(() => {});
+            await existingWindow.show?.().catch(() => {});
             await existingWindow.setFocus();
             return true;
         }

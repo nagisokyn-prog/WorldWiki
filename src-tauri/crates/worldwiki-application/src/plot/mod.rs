@@ -62,6 +62,18 @@ impl PlotServices {
         Ok(promise.clone())
     }
 
+    pub async fn delete_promise(&self, promise_id: &str) -> Result<(), ApplicationError> {
+        self.promise_repo.delete(promise_id).await?;
+        self.events
+            .publish(PlotPromiseUpdatedEvent {
+                promise_id: promise_id.to_string(),
+                status: "deleted".to_string(),
+                timestamp: Utc::now().timestamp(),
+            })
+            .await?;
+        Ok(())
+    }
+
     pub async fn complete_plan(&self, plan_id: &str) -> Result<(), ApplicationError> {
         if let Some(mut plan) = self.plan_repo.get_by_id(plan_id).await? {
             plan.complete();

@@ -633,6 +633,14 @@
   background: var(--bg-selected);
 }
 
+.matrix-day-cell.is-padding {
+  background: transparent;
+  border: 1px dashed var(--border-subtle);
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
 .cell-top {
   display: flex;
   justify-content: space-between;

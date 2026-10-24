@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import type { Ref } from 'vue';
 import { invoke } from '@worldwiki/components';
 import { useCalendarStore } from '../../../../stores/calendar.store';
@@ -58,16 +58,24 @@ export function useGlobalTimeViewer(projectNameInput?: string | Ref<string | und
     localDates.value = results;
   };
 
-  onMounted(async () => {
-    window.addEventListener('keydown', handleKeydown);
-    if (getProjectName()) {
-      await loadCalendars();
-    }
-  });
+  const toggle = () => { isVisible.value = !isVisible.value; };
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown);
-  });
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      window.addEventListener('keydown', handleKeydown);
+      window.addEventListener('ww:toggle-global-time', toggle);
+      window.addEventListener('ww:open-global-time', open);
+      if (getProjectName()) {
+        await loadCalendars();
+      }
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener('ww:toggle-global-time', toggle);
+      window.removeEventListener('ww:open-global-time', open);
+    });
+  }
 
   watch(minute, () => {
     updateLocalDates();

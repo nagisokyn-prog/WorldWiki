@@ -236,7 +236,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         SELECT 
             id, 
             kind, 
-            title AS quote, 
+            IF title != NONE { title } ELSE { '' } AS quote, 
             status,
             paragraph_index,
             IF block_id != NONE { block_id }

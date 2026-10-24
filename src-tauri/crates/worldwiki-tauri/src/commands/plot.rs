@@ -18,6 +18,10 @@ pub async fn get_plot_promises(
             title,
             note,
             status,
+            location_id,
+            timeline_event_id,
+            m_abs,
+            calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -28,7 +32,14 @@ pub async fn get_plot_promises(
                 block_id: out.id,
                 chapter_id: out.chapter_id,
                 order_index: out.order_index
-            } AS milestones
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs,
+            ->advances_arc.out.id[0] AS arc_id,
+            ->advances_arc.phase[0] AS arc_phase
         FROM plot_promises 
         WHERE project_id = fn::normalize_project_id($p);
     "#;
@@ -41,6 +52,19 @@ pub async fn get_plot_promises(
         .map_err(|e| IpcError::from(e.to_string()))?;
     let items: Vec<serde_json::Value> = res.take(0).map_err(|e| IpcError::from(e.to_string()))?;
     Ok(items)
+}
+
+#[tauri::command]
+pub async fn delete_plot_promise(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .plot
+        .delete_promise(&id)
+        .await
+        .map_err(IpcError::from)
 }
 
 #[tauri::command]

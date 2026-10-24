@@ -40,8 +40,13 @@ pub struct JourneyRelationDto {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct JourneyPromiseDto {
     pub id: String,
+    #[serde(default)]
+    pub title: Option<String>,
+    #[serde(default)]
     pub kind: String,
+    #[serde(default)]
     pub quote: String,
+    #[serde(default)]
     pub status: String,
     #[serde(default)]
     pub planted_order: Option<i32>,

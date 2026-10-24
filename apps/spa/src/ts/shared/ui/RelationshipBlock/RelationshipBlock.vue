@@ -103,10 +103,10 @@
                   <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--text-muted, #a1a1aa);">
                     <input
                       type="checkbox"
-                      :checked="!nItem['конечная_дата']"
+                      :checked="!nItem['конечная_дата'] || nItem['конечная_дата'] === null"
                       @change="(e) => {
                         const target = e.target as HTMLInputElement;
-                        nItem['конечная_дата'] = target.checked ? null : undefined;
+                        nItem['конечная_дата'] = target.checked ? null : (nItem['начальная_дата'] ? JSON.parse(JSON.stringify(nItem['начальная_дата'])) : {});
                         notifyNestedItemUpdate(subConf.dataPath || subConf.id);
                       }"
                     />
@@ -114,7 +114,7 @@
                   </label>
                 </div>
                 <UniversalDatePicker
-                  v-if="nItem['конечная_дата'] !== null && nItem['конечная_дата'] !== undefined"
+                  v-if="Boolean(nItem['конечная_дата']) && nItem['конечная_дата'] !== null"
                   :model-value="(nItem['конечная_дата'] as any)"
                   :project="props.project"
                   @update:model-value="(val) => { nItem['конечная_дата'] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
@@ -226,17 +226,17 @@
                     <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--text-muted, #a1a1aa);">
                       <input
                         type="checkbox"
-                        :checked="!nItem['конечная_дата']"
+                        :checked="!nItem['конечная_дата'] || nItem['конечная_дата'] === null"
                         @change="(e) => {
                           const target = e.target as HTMLInputElement;
-                          updateForeignNestedField(nItem, 'конечная_дата', target.checked ? null : undefined);
+                          updateForeignNestedField(nItem, 'конечная_дата', target.checked ? null : (nItem['начальная_дата'] ? JSON.parse(JSON.stringify(nItem['начальная_дата'])) : {}));
                         }"
                       />
                       По настоящее время
                     </label>
                   </div>
                   <UniversalDatePicker
-                    v-if="nItem['конечная_дата'] !== null && nItem['конечная_дата'] !== undefined"
+                    v-if="Boolean(nItem['конечная_дата']) && nItem['конечная_дата'] !== null"
                     :model-value="(nItem['конечная_дата'] as any)"
                     :project="props.project"
                     @update:model-value="(val) => updateForeignNestedField(nItem, 'конечная_дата', val)"

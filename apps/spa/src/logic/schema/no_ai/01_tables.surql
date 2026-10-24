@@ -211,7 +211,8 @@ DEFINE FIELD OVERWRITE title       ON plans TYPE string;
 DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<projects> | record<volumes> | record<story_arcs> | record<chapters> | record<plans> | string | null>
   VALUE IF $value == NONE OR $value == NULL OR $value == '' { NONE } ELSE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE parent_type ON plans TYPE string
-  ASSERT $value IN ['project', 'volume', 'story_arc', 'chapter', 'plan'];
+  VALUE IF $value == 'arc' { 'story_arc' } ELSE { $value }
+  ASSERT $value IN ['project', 'volume', 'story_arc', 'arc', 'chapter', 'plan'];
 DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();

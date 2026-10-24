@@ -76,7 +76,7 @@ impl EditManuscriptAtomicWorkflow {
                 stage: MilestoneStage::Plant,
                 quote: Some(p.quote),
                 note: p.note,
-                block_id: String::new(),
+                block_id: None,
                 chapter_id: Some(chapter.id.clone()),
                 order_index: Some(1),
             });

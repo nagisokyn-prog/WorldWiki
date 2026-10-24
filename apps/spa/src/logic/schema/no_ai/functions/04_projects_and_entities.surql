@@ -109,8 +109,8 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
     $entity_type: string,
     $name: string,
     $desc: option<string | null>,
-    $attrs: option<object>,
-    $tags: option<array<string>>,
+    $attrs: option<object | null>,
+    $tags: option<array<string> | null>,
     $embeds: option<object | array | null>
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
@@ -137,7 +137,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
             schema_id = $schema_id,
             name = $name,
             description = IF $desc != NONE AND $desc != NULL { $desc } ELSE IF $existing != NONE { $existing.description } ELSE { NONE },
-            attributes = IF $attrs != NONE AND array::len(object::keys($attrs)) > 0 { $attrs } ELSE IF $existing != NONE { $existing.attributes } ELSE { {} },
+            attributes = IF $attrs != NONE AND $attrs != NULL AND array::len(object::keys($attrs)) > 0 { $attrs } ELSE IF $existing != NONE { $existing.attributes } ELSE { {} },
             embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE IF $existing != NONE { $existing.embeddings } ELSE { {} }
         )[0].id
     } ELSE {
@@ -146,13 +146,13 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
             schema_id = $schema_id,
             name = $name,
             description = $desc,
-            attributes = IF $attrs != NONE { $attrs } ELSE { {} },
+            attributes = IF $attrs != NONE AND $attrs != NULL { $attrs } ELSE { {} },
             embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE { {} }
         )[0].id
     };
 
     -- 3. Синхронизируем теги через ребро tagged_with
-    IF $tags != NONE {
+    IF $tags != NONE AND $tags != NULL {
         DELETE tagged_with WHERE in = $rec_id;
         FOR $tag_name IN $tags {
             IF string::len(string::trim($tag_name)) > 0 {

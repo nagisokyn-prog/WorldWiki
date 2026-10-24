@@ -1,7 +1,7 @@
 <template>
     <div class="app-container">
         <AppDialog />
-        <GlobalTimeViewer />
+        <GlobalTimeViewer :project-name="projects[0]?.name" />
         <!-- Хедер -->
         <header v-motion-slide-top class="launcher-header glass-panel">
             <div class="logo">
@@ -9,6 +9,11 @@
                 <p>Выберите или создайте проект</p>
             </div>
             <div class="header-actions flex gap-2 items-center">
+                <button
+class="glass-btn outline interactive-el" title="Мировое время (Ctrl+Shift+T)"
+                    @click="toggleGlobalTime">
+                    ⏱️ Время
+                </button>
                 <button
 class="glass-btn outline interactive-el" title="Загрузить из облака"
                     @click="openCloudSync('import')">
@@ -180,6 +185,10 @@ const {
   openCloudSync,
   showToast
 } = useProjectLauncher();
+
+const toggleGlobalTime = () => {
+  window.dispatchEvent(new CustomEvent('ww:toggle-global-time'));
+};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/shell/ProjectLauncher.css"></style>

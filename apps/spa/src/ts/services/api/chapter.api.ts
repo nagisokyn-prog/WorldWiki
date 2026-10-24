@@ -120,7 +120,11 @@ export const chapterApi = {
     }
     const allPlans = (await invoke<RawPlan[]>('get_plans', { project })) || [];
     const cleanPlans = allPlans.map(processIds);
-    const list = cleanPlans.filter((p) => p.parent_type === parentType && p.parent_ref === parentId);
+    const targetType = parentType === 'arc' ? 'story_arc' : parentType;
+    const list = cleanPlans.filter((p) => {
+      const pType = p.parent_type === 'arc' ? 'story_arc' : p.parent_type;
+      return pType === targetType && p.parent_ref === parentId;
+    });
     return list.map((p) => ({
       id: p.id,
       parentType: p.parent_type || '',
@@ -140,7 +144,7 @@ export const chapterApi = {
       project_id: projectRecordId(project),
       title: item.text,
       parent_ref: item.parentId,
-      parent_type: item.parentType,
+      parent_type: item.parentType === 'arc' ? 'story_arc' : item.parentType,
       sort_order: item.sort_order || 0,
       completed: item.done || false
     };

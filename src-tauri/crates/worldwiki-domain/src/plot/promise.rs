@@ -37,12 +37,14 @@ pub enum MilestoneStage {
 pub struct PromiseMilestone {
     #[serde(default)]
     pub milestone_id: Option<String>,
+    #[serde(default)]
     pub stage: MilestoneStage,
     #[serde(default)]
     pub quote: Option<String>,
     #[serde(default)]
     pub note: Option<String>,
-    pub block_id: String,
+    #[serde(default)]
+    pub block_id: Option<String>,
     #[serde(default)]
     pub chapter_id: Option<String>,
     #[serde(default)]
@@ -65,6 +67,7 @@ pub struct PlotPromise {
     pub id: String,
     pub project_id: String,
     pub kind: PromiseKind,
+    #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub note: Option<String>,

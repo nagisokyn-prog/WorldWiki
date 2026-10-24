@@ -76,7 +76,10 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
         let data = prepare_data_for_upsert(
             serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
         );
-        let sql = "RETURN fn::upsert_plot_promise($id, type::record('projects', $p_id), type::record('chapters', $c_id), $data);";
+        let sql = r#"
+            LET $c_rec = IF $c_id != "" { type::record('chapters', $c_id) } ELSE { NONE };
+            RETURN fn::upsert_plot_promise($id, type::record('projects', $p_id), $c_rec, $data);
+        "#;
         let res = self
             .db
             .query(sql)

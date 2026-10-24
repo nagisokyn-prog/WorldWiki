@@ -192,12 +192,12 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
     );
     LET $participant_list = (
         SELECT 
-            type::string(array::first(out->promise_milestones.out.chapter_id)) AS chapter_id,
-            array::first(out->promise_milestones.out.chapter_id.title) AS chapter_title,
+            IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) } ELSE { '' } AS chapter_id,
+            IF array::first(out->promise_milestones.out.chapter_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.title) } ELSE { 'Сцена' } AS chapter_title,
             IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS chapter_order,
             'scene' AS source,
             role,
-            created_at
+            IF created_at != NONE { type::string(created_at) } ELSE { '' } AS created_at
         FROM participant_of 
         WHERE in = $entity
         LIMIT 1000

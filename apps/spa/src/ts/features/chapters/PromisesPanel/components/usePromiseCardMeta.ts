@@ -85,6 +85,16 @@ export function usePromiseCardMeta(
     return found?.name || clean;
   };
 
+  const isEntityLocation = computed(() => {
+    if (!props.item.location_id) return false;
+    const clean = String(props.item.location_id).trim().toLowerCase();
+    return projectLocations.value.some(l => 
+      l.id.toLowerCase() === clean || 
+      l.id.toLowerCase().replace(/^(locations|entities):/, '') === clean || 
+      l.name.toLowerCase() === clean
+    );
+  });
+
   const selectLocation = (locName: string) => {
     const clean = locName.trim();
     const found = projectLocations.value.find(l => l.name.toLowerCase() === clean.toLowerCase());
@@ -95,8 +105,19 @@ export function usePromiseCardMeta(
     };
     emit('update:item', updated);
     emit('change');
-    locationDraft.value = '';
+    locationDraft.value = finalVal;
     isLocationDropdownOpen.value = false;
+  };
+
+  const onLocationBlur = () => {
+    setTimeout(() => {
+      isLocationDropdownOpen.value = false;
+      const currentVal = (props.item.location_id || '').trim();
+      const draftVal = locationDraft.value.trim();
+      if (draftVal !== currentVal) {
+        selectLocation(draftVal);
+      }
+    }, 200);
   };
 
   const clearLocation = () => {
@@ -199,7 +220,9 @@ export function usePromiseCardMeta(
     isLocationDropdownOpen,
     filteredLocations,
     getLocationDisplayName,
+    isEntityLocation,
     selectLocation,
+    onLocationBlur,
     clearLocation,
     availableArcs,
     localArcId,

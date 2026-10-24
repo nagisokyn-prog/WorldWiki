@@ -181,4 +181,16 @@ describe('usePromiseCardMeta', () => {
     }));
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  it('allows entering custom location text directly and keeps locationDraft in sync', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+
+    meta.selectLocation('Заброшенная хижина в лесу');
+    expect(meta.locationDraft.value).toBe('Заброшенная хижина в лесу');
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
+      location_id: 'Заброшенная хижина в лесу'
+    }));
+    expect(emit).toHaveBeenCalledWith('change');
+  });
 });

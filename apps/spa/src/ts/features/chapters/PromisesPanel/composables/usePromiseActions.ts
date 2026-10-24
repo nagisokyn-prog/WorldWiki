@@ -33,7 +33,11 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       };
       await plotApi.savePlotPromise(getProject(), payload);
     } catch (err) {
-      console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err);
+      console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
+        errorMsg: err instanceof Error ? err.message : String(err),
+        item,
+        payload
+      });
     }
     syncLocalBackup();
     emit('change');

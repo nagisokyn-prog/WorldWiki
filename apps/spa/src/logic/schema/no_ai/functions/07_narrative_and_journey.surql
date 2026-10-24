@@ -5,7 +5,7 @@
 DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $id: string,
     $proj: record<projects>,
-    $chap: record<chapters>,
+    $chap: option<record<chapters> | string | null>,
     $data: object
 ) {
     LET $p_rec = fn::normalize_project_id($proj);

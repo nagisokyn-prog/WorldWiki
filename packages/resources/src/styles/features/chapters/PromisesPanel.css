@@ -679,12 +679,15 @@
   align-items: center;
   gap: 6px;
   cursor: text;
+  transform: none !important;
   transition: border-color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
 }
 
 .promise-card-meta .tags-input-container:hover,
+.promise-card-meta .tags-input-container:active,
 .promise-card-meta .tags-input-container:focus-within {
   border-color: var(--accent);
+  transform: none !important;
 }
 
 .promise-card-meta .tag-pill {
@@ -730,6 +733,16 @@
   font-size: 12px;
   color: var(--text-main);
   padding: 2px 4px;
+}
+
+.promise-card-meta .badge-entity-link {
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--surface-active);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  line-height: 1.2;
 }
 
 .promise-card-meta .character-dropdown {

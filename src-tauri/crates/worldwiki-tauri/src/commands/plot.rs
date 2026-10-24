@@ -37,9 +37,7 @@ pub async fn get_plot_promises(
             ->advances_arc.{
                 arc_id: out.id,
                 arc_phase: phase
-            } AS arcs,
-            ->advances_arc.out.id[0] AS arc_id,
-            ->advances_arc.phase[0] AS arc_phase
+            } AS arcs
         FROM plot_promises 
         WHERE project_id = fn::normalize_project_id($p);
     "#;

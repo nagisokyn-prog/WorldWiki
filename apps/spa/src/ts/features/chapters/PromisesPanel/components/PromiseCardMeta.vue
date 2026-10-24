@@ -5,44 +5,47 @@
       <span class="meta-icon text-accent text-sm flex-shrink-0" title="Локация действия">📍</span>
       
       <div 
-        class="tags-input-container interactive-el flex-1 relative flex items-center"
-        @click="focusLocationInput"
+        class="tags-input-container flex-1 relative flex items-center"
       >
-        <!-- Если локация выбрана: показываем чип с возможностью удаления -->
-        <div v-if="item.location_id" class="tag-pill">
-          <span>📍</span>
-          <span class="font-medium">{{ getLocationDisplayName(item.location_id) }}</span>
-          <button
-            type="button"
-            class="tag-remove"
-            title="Очистить локацию"
-            @mousedown.stop
-            @click.stop="clearLocation"
-          >
-            ✕
-          </button>
-        </div>
-
-        <!-- Если локация не выбрана: гибридный ввод с выпадающим списком -->
         <input
-          v-else
-          ref="locationInputRef"
           v-model="locationDraft"
           type="text"
           placeholder="Локация (выберите или введите текст)..."
-          class="tags-input"
+          class="tags-input flex-1"
           @focus="isLocationDropdownOpen = true"
+          @blur="onLocationBlur"
           @keydown.enter.prevent="selectLocation(locationDraft)"
           @keydown.esc="isLocationDropdownOpen = false"
         />
 
+        <!-- Бейдж привязки к сущности мира -->
+        <span 
+          v-if="isEntityLocation" 
+          class="badge-entity-link font-mono text-xs text-accent px-1.5 py-0.5 rounded border border-border flex-shrink-0 select-none"
+          title="Связано с сущностью мира"
+        >
+          сущность
+        </span>
+
+        <!-- Кнопка очистки поля -->
+        <button
+          v-if="locationDraft.trim() || item.location_id"
+          type="button"
+          class="tag-remove flex-shrink-0"
+          title="Очистить локацию"
+          @mousedown.stop.prevent="clearLocation"
+        >
+          ✕
+        </button>
+
+        <!-- Выпадающий список локаций -->
         <div 
-          v-if="isLocationDropdownOpen" 
+          v-if="isLocationDropdownOpen && (filteredLocations.length > 0 || locationDraft.trim())" 
           class="character-dropdown shadow-dropdown"
         >
           <div class="flex items-center justify-between px-2 py-1 border-b border-subtle text-xs text-muted">
-            <span>Выберите локацию:</span>
-            <button type="button" class="btn-ghost-xs text-muted hover:text-main" @click.stop="isLocationDropdownOpen = false">✕ Скрыть</button>
+            <span>Выберите или введите локацию:</span>
+            <button type="button" class="btn-ghost-xs text-muted hover:text-main" @mousedown.stop.prevent="isLocationDropdownOpen = false">✕ Скрыть</button>
           </div>
 
           <div
@@ -63,10 +66,6 @@
           >
             <span>＋</span>
             <span>Использовать «{{ locationDraft.trim() }}»</span>
-          </div>
-
-          <div v-if="filteredLocations.length === 0 && !locationDraft.trim()" class="p-2 text-xs text-muted text-center">
-            Локации не созданы в проекте
           </div>
         </div>
       </div>
@@ -131,7 +130,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import PromiseCardArcTags from './PromiseCardArcTags.vue';
 import PromiseCardParticipants from './PromiseCardParticipants.vue';
 import PromiseCardTimeline from './PromiseCardTimeline.vue';
@@ -141,20 +139,14 @@ import type { PromiseCardMetaProps, PromiseCardMetaEmits } from './PromiseCardMe
 const props = defineProps<PromiseCardMetaProps>();
 const emit = defineEmits<PromiseCardMetaEmits>();
 
-const locationInputRef = ref<HTMLInputElement | null>(null);
-const focusLocationInput = () => {
-  if (!props.item.location_id) {
-    locationInputRef.value?.focus();
-    isLocationDropdownOpen.value = true;
-  }
-};
-
 const {
   locationDraft,
   isLocationDropdownOpen,
   filteredLocations,
   getLocationDisplayName,
+  isEntityLocation,
   selectLocation,
+  onLocationBlur,
   clearLocation,
   participantInputQuery,
   isParticipantDropdownOpen,

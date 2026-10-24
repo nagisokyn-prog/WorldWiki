@@ -8,7 +8,7 @@
     </div>
 
     <div 
-      class="tags-input-container interactive-el"
+      class="tags-input-container"
       @click="$emit('open-dropdown')"
     >
       <div

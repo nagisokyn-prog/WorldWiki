@@ -196,21 +196,23 @@ export function useCalendarEditor(
     isAuditModalOpen.value = true;
   }
 
-  onMounted(async () => {
-    await loadCalendar();
-    const handleRenamed = (e: Event) => {
-      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
-      if (calendarRecord.value && (calendarRecord.value.id === id || String(calendarRecord.value.id).endsWith(id) || props.calendarId === id)) {
-        if (calendarRecord.value.name !== name) {
-          calendarRecord.value.name = name;
-          if (calendarRecord.value.data) calendarRecord.value.data.название = name;
-        }
+  const handleRenamed = (e: Event) => {
+    const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
+    if (calendarRecord.value && (calendarRecord.value.id === id || String(calendarRecord.value.id).endsWith(id) || props.calendarId === id)) {
+      if (calendarRecord.value.name !== name) {
+        calendarRecord.value.name = name;
+        if (calendarRecord.value.data) calendarRecord.value.data.название = name;
       }
-    };
+    }
+  };
+
+  onMounted(async () => {
     document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
-    onUnmounted(() => {
-      document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
-    });
+    await loadCalendar();
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
   });
 
   watch(

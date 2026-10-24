@@ -74,9 +74,10 @@
 }
 
 .explorer-tree-flex {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
-  overflow-y: auto;
+  height: 100%;
+  overflow: hidden;
 }
 
 .calendar-widget-container::-webkit-scrollbar {

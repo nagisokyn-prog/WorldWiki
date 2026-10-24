@@ -16,6 +16,9 @@
         @day-change="onDayChange"
       />
     </div>
+    <div v-else class="no-locals-box glass-panel">
+      Опорный календарь Мира еще не создан или загружается...
+    </div>
 
     <!-- Список локальных летоисчислений культур -->
     <div class="section-label">

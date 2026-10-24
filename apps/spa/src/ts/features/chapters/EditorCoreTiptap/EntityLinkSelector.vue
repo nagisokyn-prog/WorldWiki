@@ -42,6 +42,10 @@
         />
 
         <div ref="listEl" class="selector-list">
+          <div v-if="isFallbackList" class="selector-fallback-hint">
+            <span>ℹ️ По запросу совпадений не найдено. Выберите сущность для привязки тега «{{ cleanSearchQuery }}» или создайте новую:</span>
+          </div>
+
           <div 
             v-for="(entity, idx) in filteredEntities" 
             :key="entity.id"
@@ -115,6 +119,7 @@ const {
   entityTypes,
   availableCreationTypes,
   filteredEntities,
+  isFallbackList,
   showQuickCreate,
   moveSelection,
   selectCurrent,

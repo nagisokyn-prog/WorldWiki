@@ -13,6 +13,7 @@
   -webkit-backdrop-filter: blur(var(--glass-blur-sm, 12px));
   user-select: none;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .global-calendar-widget *,

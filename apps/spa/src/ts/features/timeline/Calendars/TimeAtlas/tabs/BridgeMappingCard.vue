@@ -1,5 +1,5 @@
 <template>
-  <div :class="['calendar-sync-card', isMaster ? 'is-master pinned-card' : 'glass-panel']">
+  <div v-if="calData && localDate" :class="['calendar-sync-card', isMaster ? 'is-master pinned-card' : 'glass-panel']">
     <div class="cal-badge-row">
       <span :class="isMaster ? 'badge-master' : 'badge-local'">
         {{ isMaster ? 'Мастер' : 'Культура' }}
@@ -12,7 +12,7 @@
       <div v-if="calData.эпохи && calData.эпохи.length > 0" class="control-group">
         <label class="control-label">Эпоха</label>
         <select
-          :value="localDate.era_index"
+          :value="localDate.era_index ?? 0"
           class="interactive-el glass-select"
           @change="$emit('era-change', calData, $event)"
         >
@@ -29,7 +29,7 @@
       <div class="control-group">
         <label class="control-label">Год</label>
         <input
-          :value="localDate.year"
+          :value="localDate.year ?? 1"
           type="number"
           class="interactive-el glass-input"
           @input="$emit('year-change', calData, $event)"
@@ -39,7 +39,7 @@
       <div class="control-group flex-1">
         <label class="control-label">Месяц</label>
         <select
-          :value="localDate.month"
+          :value="localDate.month ?? 0"
           class="interactive-el glass-select"
           @change="$emit('month-change', calData, $event)"
         >
@@ -56,7 +56,7 @@
       <div class="control-group">
         <label class="control-label">День</label>
         <input
-          :value="localDate.day"
+          :value="localDate.day ?? 1"
           type="number"
           min="1"
           class="interactive-el glass-input day-input"
@@ -65,9 +65,9 @@
       </div>
     </div>
 
-    <div class="card-meta">
+    <div v-if="dateMeta" class="card-meta">
       <div class="meta-row">
-        <span class="meta-pill season-pill">
+        <span v-if="dateMeta.season" class="meta-pill season-pill">
           🌱 {{ dateMeta.season }}
         </span>
         <span
@@ -99,13 +99,13 @@
 import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../../services/Calendars/calendar.types';
 
 defineProps<{
-  calData: CalendarData;
-  localDate: CalendarDate['original_input'];
-  dateMeta: {
+  calData?: CalendarData | null;
+  localDate?: CalendarDate['original_input'] | null;
+  dateMeta?: {
     season: string;
     holiday: string | null;
     moons: MoonPhaseResult[];
-  };
+  } | null;
   isMaster?: boolean;
 }>();
 

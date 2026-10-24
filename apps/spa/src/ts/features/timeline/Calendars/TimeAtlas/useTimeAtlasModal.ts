@@ -11,6 +11,25 @@ export interface CalendarColumnState {
   input: CalendarDate['original_input'];
 }
 
+export function extractCalendarData(rec: CalendarRecord | null | undefined): CalendarData | null {
+  if (!rec) return null;
+  if (rec.data && typeof rec.data === 'object' && Object.keys(rec.data).length > 0) {
+    return {
+      ...rec.data,
+      _id: rec.id || rec.data._id,
+      название: rec.data.название || rec.name || 'Календарь'
+    } as CalendarData;
+  }
+  if ('дни_в_неделе' in rec || 'месяцы' in rec || 'эпохи' in rec) {
+    return {
+      ...(rec as unknown as CalendarData),
+      _id: rec.id,
+      название: (rec as unknown as CalendarData).название || rec.name || 'Календарь'
+    };
+  }
+  return null;
+}
+
 export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _emit?: (e: 'close') => void) {
   const activeTab = ref<'converter' | 'matrix' | 'world_time' | 'snippets'>('converter');
   const allCalendars = ref<CalendarRecord[]>([]);
@@ -26,7 +45,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
   });
 
   const masterCalendar = computed<CalendarData | null>(() => {
-    return masterCalendarRecord.value ? (masterCalendarRecord.value.data as CalendarData) : null;
+    return extractCalendarData(masterCalendarRecord.value);
   });
 
   // Текущая мировая абсолютная минута (единый якорь времени в Атласе)
@@ -37,7 +56,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
 
   const getCalendarById = (id: string): CalendarData | null => {
     const rec = allCalendars.value.find(c => c.id === id);
-    return rec ? (rec.data as CalendarData) : null;
+    return extractCalendarData(rec);
   };
 
   const getLocalDateForCal = (cal: CalendarData) => {
@@ -146,7 +165,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     }
 
     for (const calRec of allCalendars.value) {
-      const cal = calRec.data as CalendarData;
+      const cal = extractCalendarData(calRec);
       if (!cal) continue;
       const date = getLocalDateForCal(cal);
       const meta = getDateMeta(cal, date);
@@ -173,7 +192,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     }) : '';
 
     for (const calRec of allCalendars.value) {
-      const cal = calRec.data as CalendarData;
+      const cal = extractCalendarData(calRec);
       if (!cal) continue;
       const localDate = getLocalDateForCal(cal);
       const localStr = CalendarMath.formatDate(cal, {

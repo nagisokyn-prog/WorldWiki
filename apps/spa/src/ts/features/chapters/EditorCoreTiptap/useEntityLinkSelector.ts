@@ -39,6 +39,68 @@ export function useEntityLinkSelector(
     return map;
   });
 
+function extractCleanTags(raw: unknown): string[] {
+  if (!raw) return [];
+  let items: unknown[] = [];
+  if (Array.isArray(raw)) {
+    items = raw;
+  } else if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) items = parsed;
+        else items = [trimmed];
+      } catch {
+        items = trimmed.split(',');
+      }
+    } else {
+      items = trimmed.split(',');
+    }
+  }
+  const result: string[] = [];
+  for (const item of items) {
+    if (!item) continue;
+    if (typeof item === 'string') {
+      const clean = item.trim().replace(/^#/, '');
+      if (clean) result.push(clean);
+    } else if (typeof item === 'object') {
+      const name = (item as { name?: string; title?: string; id?: string }).name ||
+                   (item as { name?: string; title?: string; id?: string }).title ||
+                   (item as { name?: string; title?: string; id?: string }).id;
+      if (name && typeof name === 'string') {
+        const clean = name.trim().replace(/^#/, '');
+        if (clean) result.push(clean);
+      }
+    }
+  }
+  return Array.from(new Set(result));
+}
+
+function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): string[] {
+  const sources = [
+    raw,
+    rawAttrs?.aliases,
+    rawAttrs?.['псевдонимы'],
+    rawAttrs?.['алиасы']
+  ];
+  const list: string[] = [];
+  for (const s of sources) {
+    if (!s) continue;
+    if (Array.isArray(s)) {
+      for (const item of s) {
+        if (typeof item === 'string' && item.trim()) list.push(item.trim());
+      }
+    } else if (typeof s === 'string') {
+      const parts = s.split(',');
+      for (const p of parts) {
+        if (p.trim()) list.push(p.trim());
+      }
+    }
+  }
+  return Array.from(new Set(list));
+}
+
   const allEntities = computed<EntitySelectorItem[]>(() => {
     return rawEntities.value.map((r) => {
       let name = 'Без названия';
@@ -50,23 +112,14 @@ export function useEntityLinkSelector(
       const schema = schemaMap.value.get(entityType);
 
       const rawAttrs = (r as { attributes?: Record<string, unknown> }).attributes;
-      let rawTags: unknown[] = [];
-      if (Array.isArray(r.tags)) rawTags = r.tags;
-      else if (rawAttrs && Array.isArray(rawAttrs.tags)) rawTags = rawAttrs.tags;
-      else if (rawAttrs && Array.isArray(rawAttrs['теги'])) rawTags = rawAttrs['теги'];
-      else if (typeof r.tags === 'string') rawTags = (r.tags as string).split(',');
+      const cleanTags = Array.from(new Set([
+        ...extractCleanTags(r.tags),
+        ...extractCleanTags(rawAttrs?.tags),
+        ...extractCleanTags(rawAttrs?.['теги']),
+        ...extractCleanTags((r as { tag_names?: unknown }).tag_names)
+      ]));
 
-      const tags = rawTags.map(t => String(t).trim()).filter(Boolean);
-      const cleanTags = tags.map(t => t.replace(/^#/, ''));
-
-      let rawAliases: unknown[] = [];
-      if (Array.isArray((r as { aliases?: unknown[] }).aliases)) rawAliases = (r as { aliases?: unknown[] }).aliases!;
-      else if (rawAttrs && Array.isArray(rawAttrs.aliases)) rawAliases = rawAttrs.aliases;
-      else if (rawAttrs && Array.isArray(rawAttrs['псевдонимы'])) rawAliases = rawAttrs['псевдонимы'];
-      else if (rawAttrs && Array.isArray(rawAttrs['алиасы'])) rawAliases = rawAttrs['алиасы'];
-      else if (typeof (r as { aliases?: unknown }).aliases === 'string') rawAliases = ((r as { aliases?: string }).aliases!).split(',');
-
-      const aliases = rawAliases.map(a => String(a).trim()).filter(Boolean);
+      const aliases = extractAliases((r as { aliases?: unknown }).aliases, rawAttrs);
 
       const entityId = String(r.id || '');
       const shortId = entityId.split(':').pop() || '';
@@ -79,7 +132,7 @@ export function useEntityLinkSelector(
         entity_type: entityType,
         type_name: schema?.name || entityType,
         type_icon: schema?.icon || '📌',
-        tags,
+        tags: cleanTags,
         cleanTags,
         aliases
       };
@@ -102,7 +155,7 @@ export function useEntityLinkSelector(
     ];
   });
 
-  const filteredEntities = computed(() => {
+  const matchingEntities = computed(() => {
     let list = allEntities.value;
 
     if (activeTypeFilter.value !== 'all') {
@@ -116,27 +169,48 @@ export function useEntityLinkSelector(
     const cleanQ = cleanSearchQuery.value.toLowerCase();
 
     return list.filter((e) => {
-      // Поиск по тегам (точное вхождение или нечёткое сходство >= 50%)
+      // Поиск по тегам (точное совпадение, вхождение или нечёткое сходство >= 50%)
       const matchesTag = e.cleanTags?.some(t => {
         const lower = t.toLowerCase();
-        return lower.includes(cleanQ) || computeSimilarity(lower, cleanQ) >= 0.5;
+        return lower === cleanQ || lower.includes(cleanQ) || cleanQ.includes(lower) || computeSimilarity(lower, cleanQ) >= 0.5;
       });
 
       // Поиск по псевдонимам/алиасам
       const matchesAlias = e.aliases?.some((a: string) => {
         const lower = a.toLowerCase();
-        return lower.includes(cleanQ) || computeSimilarity(lower, cleanQ) >= 0.5;
+        return lower === cleanQ || lower.includes(cleanQ) || cleanQ.includes(lower) || computeSimilarity(lower, cleanQ) >= 0.5;
       });
 
       if (isTagSearch) return matchesTag;
 
       // Поиск по имени (вхождение или нечёткое сходство по Левенштейну >= 50%)
       const lowerName = e.name.toLowerCase();
-      const matchesName = lowerName.includes(cleanQ) || computeSimilarity(lowerName, cleanQ) >= 0.5;
+      const matchesName = lowerName === cleanQ || lowerName.includes(cleanQ) || cleanQ.includes(lowerName) || computeSimilarity(lowerName, cleanQ) >= 0.5;
       const matchesId = e.id.toLowerCase().includes(cleanQ) || (e.shortId && e.shortId.toLowerCase().includes(cleanQ));
       const matchesType = e.type_name?.toLowerCase().includes(cleanQ);
       return matchesName || matchesId || matchesType || matchesTag || matchesAlias;
     });
+  });
+
+  const isFallbackList = computed(() => {
+    return cleanSearchQuery.value.length > 0 && matchingEntities.value.length === 0 && allEntities.value.length > 0;
+  });
+
+  const filteredEntities = computed(() => {
+    if (matchingEntities.value.length > 0) {
+      return matchingEntities.value;
+    }
+    // Если по поисковому запросу ничего не найдено, но есть сущности,
+    // возвращаем список всех сущностей (Use-Case 2: пользователь ввел тег, которого еще нет ни у одной сущности,
+    // и хочет выбрать существующую сущность для привязки этого тега)
+    if (cleanSearchQuery.value) {
+      let list = allEntities.value;
+      if (activeTypeFilter.value !== 'all') {
+        list = list.filter(e => e.entity_type === activeTypeFilter.value);
+      }
+      return list;
+    }
+    return [];
   });
 
   const showQuickCreate = computed(() => {
@@ -215,6 +289,7 @@ export function useEntityLinkSelector(
   };
 
   const selectEntity = (entity: EntitySelectorItem) => {
+    if (!entity) return;
     const q = cleanSearchQuery.value;
     if (q && props.project) {
       const isExactMatch = entity.name.toLowerCase() === q.toLowerCase() ||
@@ -222,10 +297,15 @@ export function useEntityLinkSelector(
         (entity.aliases || []).some((a: string) => a.toLowerCase() === q.toLowerCase());
       if (!isExactMatch) {
         const nextTags = Array.from(new Set([...(entity.cleanTags || []), q]));
+        const currentAttrs = (entity as { attributes?: Record<string, unknown> }).attributes || {};
+        const nextAttrs = {
+          ...currentAttrs,
+          tags: nextTags
+        };
         void api.saveEntity(props.project, {
           ...entity,
           tags: nextTags,
-          attributes: (entity as { attributes?: Record<string, unknown> }).attributes || {}
+          attributes: nextAttrs
         } as never).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
         entity.cleanTags = nextTags;
         entity.tags = nextTags;
@@ -288,6 +368,7 @@ export function useEntityLinkSelector(
     entityTypes,
     availableCreationTypes,
     filteredEntities,
+    isFallbackList,
     showQuickCreate,
     moveSelection,
     selectCurrent,

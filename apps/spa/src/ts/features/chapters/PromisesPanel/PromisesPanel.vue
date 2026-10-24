@@ -125,9 +125,7 @@ const {
   getKindInfo,
   getChapterTitle,
   isCurrentChapterPromise,
-  promptAttachMilestone,
-  isResizing,
-  startVerticalResize
+  promptAttachMilestone
 } = usePromisesPanel(props, emit);
 
 defineExpose({

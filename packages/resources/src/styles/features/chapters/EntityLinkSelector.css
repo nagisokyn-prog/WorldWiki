@@ -269,3 +269,14 @@
 .type-btn-icon {
   font-size: 13px;
 }
+
+.selector-fallback-hint {
+  padding: 8px 12px;
+  background: var(--bg-hover);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}

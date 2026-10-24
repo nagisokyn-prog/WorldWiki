@@ -14,19 +14,20 @@ export interface TimeAtlasBridgeTabProps {
   };
 }
 
+import { extractCalendarData } from '../useTimeAtlasModal';
+
 export function useTimeAtlasBridgeTab(props: TimeAtlasBridgeTabProps) {
   const masterCalData = computed<CalendarData | null>(() => {
-    return (props.masterCalendarRecord?.data as CalendarData) || null;
+    return extractCalendarData(props.masterCalendarRecord);
   });
 
   const localCalsWithData = computed<Array<{ id: string; name: string; data: CalendarData }>>(() => {
     return props.localCalendarRecords
-      .filter(c => !!c.data)
-      .map(c => ({
-        id: c.id || '',
-        name: (c.data as CalendarData).название || 'Календарь',
-        data: c.data as CalendarData
-      }));
+      .map(c => {
+        const d = extractCalendarData(c);
+        return d ? { id: c.id || '', name: d.название || 'Календарь', data: d } : null;
+      })
+      .filter((x): x is { id: string; name: string; data: CalendarData } => x !== null);
   });
 
   const onEraChange = (cal: CalendarData, e: Event) => {

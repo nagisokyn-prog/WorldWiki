@@ -59,6 +59,15 @@ export function useEntityLinkSelector(
       const tags = rawTags.map(t => String(t).trim()).filter(Boolean);
       const cleanTags = tags.map(t => t.replace(/^#/, ''));
 
+      let rawAliases: unknown[] = [];
+      if (Array.isArray((r as { aliases?: unknown[] }).aliases)) rawAliases = (r as { aliases?: unknown[] }).aliases!;
+      else if (rawAttrs && Array.isArray(rawAttrs.aliases)) rawAliases = rawAttrs.aliases;
+      else if (rawAttrs && Array.isArray(rawAttrs['псевдонимы'])) rawAliases = rawAttrs['псевдонимы'];
+      else if (rawAttrs && Array.isArray(rawAttrs['алиасы'])) rawAliases = rawAttrs['алиасы'];
+      else if (typeof (r as { aliases?: unknown }).aliases === 'string') rawAliases = ((r as { aliases?: string }).aliases!).split(',');
+
+      const aliases = rawAliases.map(a => String(a).trim()).filter(Boolean);
+
       const entityId = String(r.id || '');
       const shortId = entityId.split(':').pop() || '';
 
@@ -71,9 +80,26 @@ export function useEntityLinkSelector(
         type_name: schema?.name || entityType,
         type_icon: schema?.icon || '📌',
         tags,
-        cleanTags
+        cleanTags,
+        aliases
       };
     });
+  });
+
+  const cleanSearchQuery = computed(() => {
+    return searchQuery.value.trim().replace(/^#/, '').replace(/^\(\(/, '').replace(/\)\)$/, '').trim();
+  });
+
+  const availableCreationTypes = computed<EntityTypeItem[]>(() => {
+    if (entityTypes.value.length > 0) {
+      return entityTypes.value;
+    }
+    return [
+      { id: 'character', name: 'Персонаж', icon: '👤' },
+      { id: 'location', name: 'Локация', icon: '📍' },
+      { id: 'item', name: 'Предмет', icon: '⚔️' },
+      { id: 'faction', name: 'Фракция', icon: '🛡️' }
+    ];
   });
 
   const filteredEntities = computed(() => {
@@ -87,31 +113,37 @@ export function useEntityLinkSelector(
     if (!q) return list;
 
     const isTagSearch = q.startsWith('#');
-    const cleanQ = q.replace(/^#/, '');
+    const cleanQ = cleanSearchQuery.value.toLowerCase();
 
     return list.filter((e) => {
-      // Поиск по тегам (точное вхождение или сходство >= 50%)
+      // Поиск по тегам (точное вхождение или нечёткое сходство >= 50%)
       const matchesTag = e.cleanTags?.some(t => {
         const lower = t.toLowerCase();
         return lower.includes(cleanQ) || computeSimilarity(lower, cleanQ) >= 0.5;
       });
 
+      // Поиск по псевдонимам/алиасам
+      const matchesAlias = e.aliases?.some((a: string) => {
+        const lower = a.toLowerCase();
+        return lower.includes(cleanQ) || computeSimilarity(lower, cleanQ) >= 0.5;
+      });
+
       if (isTagSearch) return matchesTag;
 
-      // Поиск по имени (вхождение или нечёткое сходство >= 50%)
+      // Поиск по имени (вхождение или нечёткое сходство по Левенштейну >= 50%)
       const lowerName = e.name.toLowerCase();
-      const matchesName = lowerName.includes(q) || computeSimilarity(lowerName, q) >= 0.5;
-      const matchesId = e.id.toLowerCase().includes(q) || (e.shortId && e.shortId.toLowerCase().includes(q));
-      const matchesType = e.type_name?.toLowerCase().includes(q);
-      return matchesName || matchesId || matchesType || matchesTag;
+      const matchesName = lowerName.includes(cleanQ) || computeSimilarity(lowerName, cleanQ) >= 0.5;
+      const matchesId = e.id.toLowerCase().includes(cleanQ) || (e.shortId && e.shortId.toLowerCase().includes(cleanQ));
+      const matchesType = e.type_name?.toLowerCase().includes(cleanQ);
+      return matchesName || matchesId || matchesType || matchesTag || matchesAlias;
     });
   });
 
   const showQuickCreate = computed(() => {
-    const q = searchQuery.value.trim();
+    const q = cleanSearchQuery.value;
     if (!q || isCreating.value) return false;
-    const cleanQ = q.replace(/^#/, '').toLowerCase();
-    const exists = allEntities.value.some(e => e.name.toLowerCase() === cleanQ || e.name.toLowerCase() === q.toLowerCase());
+    const lowerQ = q.toLowerCase();
+    const exists = allEntities.value.some(e => e.name.toLowerCase() === lowerQ);
     return !exists;
   });
 
@@ -183,10 +215,11 @@ export function useEntityLinkSelector(
   };
 
   const selectEntity = (entity: EntitySelectorItem) => {
-    const q = searchQuery.value.trim().replace(/^#/, '').replace(/^\(\(/, '').replace(/\)\)$/, '').trim();
+    const q = cleanSearchQuery.value;
     if (q && props.project) {
       const isExactMatch = entity.name.toLowerCase() === q.toLowerCase() ||
-        (entity.cleanTags || []).some(t => t.toLowerCase() === q.toLowerCase());
+        (entity.cleanTags || []).some(t => t.toLowerCase() === q.toLowerCase()) ||
+        (entity.aliases || []).some((a: string) => a.toLowerCase() === q.toLowerCase());
       if (!isExactMatch) {
         const nextTags = Array.from(new Set([...(entity.cleanTags || []), q]));
         void api.saveEntity(props.project, {
@@ -207,11 +240,11 @@ export function useEntityLinkSelector(
   };
 
   const quickCreateEntity = async (typeKey?: string) => {
-    const name = searchQuery.value.trim();
+    const name = cleanSearchQuery.value;
     if (!name || isCreating.value) return;
 
-    // Выбираем тип: активный фильтр, либо переданный, либо первый доступный, либо character
-    const chosenType = typeKey || (activeTypeFilter.value !== 'all' ? activeTypeFilter.value : entityTypes.value[0]?.id || 'character');
+    // Выбираем тип: переданный, либо активный фильтр, либо первый доступный из доступных типов
+    const chosenType = typeKey || (activeTypeFilter.value !== 'all' ? activeTypeFilter.value : availableCreationTypes.value[0]?.id || 'character');
 
     isCreating.value = true;
     try {
@@ -246,12 +279,14 @@ export function useEntityLinkSelector(
 
   return {
     searchQuery,
+    cleanSearchQuery,
     activeTypeFilter,
     selectedIndex,
     searchInput,
     listEl,
     isCreating,
     entityTypes,
+    availableCreationTypes,
     filteredEntities,
     showQuickCreate,
     moveSelection,

@@ -12,6 +12,7 @@ export interface EntitySelectorItem {
   type_icon?: string;
   tags?: string[];
   cleanTags?: string[];
+  aliases?: string[];
   shortId?: string;
   [key: string]: unknown;
 }

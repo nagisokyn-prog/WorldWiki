@@ -126,4 +126,91 @@ describe('useEntityLinkSelector', () => {
       name: 'Рейнский замок'
     });
   });
+
+  describe('4 Mandatory Use-Cases', () => {
+    it('Case 1: User types ((абв)) and character A with tag "абв" is offered', async () => {
+      vi.mocked(api.getEntities).mockResolvedValueOnce([
+        { id: 'entities:char_a', name: 'Персонаж А', entity_type: 'character', tags: ['абв'] }
+      ] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((абв))' }, emit);
+      await flushPromises();
+
+      expect(selector.filteredEntities.value.map(e => e.name)).toContain('Персонаж А');
+    });
+
+    it('Case 2: Character A does not have tag "абв"; user selects A and "абв" is added to tags', async () => {
+      const charA = { id: 'entities:char_a', name: 'Персонаж А', entity_type: 'character', tags: ['другой_тег'] };
+      vi.mocked(api.getEntities).mockResolvedValueOnce([charA] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((абв))' }, emit);
+      await flushPromises();
+
+      selector.selectEntity(selector.filteredEntities.value[0]);
+
+      expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
+        id: 'entities:char_a',
+        tags: expect.arrayContaining(['другой_тег', 'абв'])
+      }));
+      expect(emit).toHaveBeenCalledWith('insert', {
+        type: 'character',
+        id: 'entities:char_a',
+        name: 'Персонаж А'
+      });
+    });
+
+    it('Case 3: Character "Лёха" exists; user types ((Лёша)) -> approximate search suggests Лёха, and selection adds Лёша to tags', async () => {
+      const charLyoha = { id: 'entities:lyoha', name: 'Лёха', entity_type: 'character', tags: ['друг'] };
+      vi.mocked(api.getEntities).mockResolvedValueOnce([charLyoha] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Лёша))' }, emit);
+      await flushPromises();
+
+      expect(selector.filteredEntities.value.map(e => e.name)).toContain('Лёха');
+
+      const foundLyoha = selector.filteredEntities.value.find(e => e.name === 'Лёха');
+      expect(foundLyoha).toBeDefined();
+      selector.selectEntity(foundLyoha!);
+
+      expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
+        id: 'entities:lyoha',
+        tags: expect.arrayContaining(['друг', 'Лёша'])
+      }));
+      expect(emit).toHaveBeenCalledWith('insert', {
+        type: 'character',
+        id: 'entities:lyoha',
+        name: 'Лёха'
+      });
+    });
+
+    it('Case 4: User types ((Кира)) -> entity does not exist -> chooses type (location) and new entity is created', async () => {
+      vi.mocked(api.getEntities).mockResolvedValueOnce([
+        { id: 'entities:other', name: 'Другой', entity_type: 'character', tags: [] }
+      ] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Кира))' }, emit);
+      await flushPromises();
+
+      expect(selector.showQuickCreate.value).toBe(true);
+      expect(selector.cleanSearchQuery.value).toBe('Кира');
+      expect(selector.availableCreationTypes.value.some(t => t.id === 'location')).toBe(true);
+
+      await selector.quickCreateEntity('location');
+
+      expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
+        name: 'Кира',
+        entity_type: 'location'
+      }));
+      expect(emit).toHaveBeenCalledWith('insert', {
+        type: 'location',
+        id: 'entities:new_created',
+        name: 'Кира'
+      });
+      expect(emit).toHaveBeenCalledWith('close');
+    });
+  });
 });

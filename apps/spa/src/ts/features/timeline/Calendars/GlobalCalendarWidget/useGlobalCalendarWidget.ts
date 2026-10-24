@@ -11,6 +11,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
 
   const selectedLocalCal = ref<string | null>(null);
   const isAtlasOpen = ref(false);
+  const isLoading = ref(true);
 
   const currentMasterInput = ref({
     era_index: 0,
@@ -22,11 +23,16 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   });
 
   const loadCalendars = async () => {
-    const list = await useCalendarStore().getCalendars(props.project);
-    masterCalendar.value = list.find((c: CalendarRecord) => c.is_master) || null;
-    localCalendars.value = list.filter((c: CalendarRecord) => !c.is_master);
-    if (localCalendars.value.length > 0 && !selectedLocalCal.value) {
-      selectedLocalCal.value = localCalendars.value[0].id || null;
+    isLoading.value = true;
+    try {
+      const list = await useCalendarStore().getCalendars(props.project);
+      masterCalendar.value = list.find((c: CalendarRecord) => c.is_master) || null;
+      localCalendars.value = list.filter((c: CalendarRecord) => !c.is_master);
+      if (localCalendars.value.length > 0 && !selectedLocalCal.value) {
+        selectedLocalCal.value = localCalendars.value[0].id || null;
+      }
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -192,6 +198,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     activeMoons,
     activeHoliday,
     isAtlasOpen,
+    isLoading,
     openAtlas,
     closeAtlas,
     prevDay,

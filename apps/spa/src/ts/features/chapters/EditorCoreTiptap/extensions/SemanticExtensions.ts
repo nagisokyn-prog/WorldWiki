@@ -42,7 +42,7 @@ export const EnterHandler = Extension.create({
         }
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
         if (match) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
             detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }
@@ -67,7 +67,7 @@ export const EnterHandler = Extension.create({
         }
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
         if (match) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
             detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }

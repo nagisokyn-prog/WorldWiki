@@ -92,7 +92,7 @@ export function useEditorCoreTiptap(
         const { state } = tiptap.editor.value;
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
         if (match) {
           const start = $from.pos - match[0].length;
           const end = $from.pos;
@@ -115,18 +115,30 @@ export function useEditorCoreTiptap(
         const selStart = target.selectionStart;
         const selEnd = target.selectionEnd;
         const before = val.substring(0, selStart);
-        const match = /\(\(([^)]*)\)\)$/.exec(before);
+        const after = val.substring(selEnd);
+        
+        let match = /\(\(([^)]*)\)\)$/.exec(before);
+        let replaceStart = selStart;
+        let replaceEnd = selEnd;
+        let finalName = displayName;
+
         if (match) {
-          const replaceStart = selStart - match[0].length;
-          const finalName = match[1]?.trim() || displayName;
-          const fullInsert = `((${finalName}))[${url}]`;
-          target.setRangeText(fullInsert, replaceStart, selEnd, 'end');
-          target.dispatchEvent(new Event('input', { bubbles: true }));
+          replaceStart = selStart - match[0].length;
+          finalName = match[1]?.trim() || displayName;
         } else {
-          const fullInsert = `((${displayName}))[${url}]`;
-          target.setRangeText(fullInsert, selStart, selEnd, 'end');
-          target.dispatchEvent(new Event('input', { bubbles: true }));
+          match = /\(\(([^)]*)$/.exec(before);
+          if (match) {
+            replaceStart = selStart - match[0].length;
+            finalName = match[1]?.trim() || displayName;
+            if (after.startsWith('))')) {
+              replaceEnd = selEnd + 2;
+            }
+          }
         }
+
+        const fullInsert = `((${finalName}))[${url}]`;
+        target.setRangeText(fullInsert, replaceStart, replaceEnd, 'end');
+        target.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
 

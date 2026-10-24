@@ -163,7 +163,6 @@ v-model="formData.type"
 <script setup lang="ts">
 import { AppDialog, XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CloudSyncModal from '../../features/sync/CloudSyncModal.vue';
-import GlobalTimeViewer from '../timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue';
 import { useProjectLauncher } from './useProjectLauncher';
 
 const {

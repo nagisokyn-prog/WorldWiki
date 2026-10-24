@@ -114,7 +114,7 @@ export function useTiptapMarkdown(
           }));
         } else {
           const textBefore = target.value.substring(0, target.selectionStart);
-          const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
+          const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
           if (match) {
             e.preventDefault();
             document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {

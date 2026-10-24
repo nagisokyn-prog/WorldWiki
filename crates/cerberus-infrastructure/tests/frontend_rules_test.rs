@@ -110,6 +110,24 @@ fn test_vue_types_in_sfc_and_v_for_method() {
 }
 
 #[test]
+fn test_vue_003_inline_macro_types() {
+    let code = r#"
+        <script setup lang="ts">
+        const props = defineProps<{
+            projectId?: string;
+        }>();
+        const emit = defineEmits<{
+            (e: 'save'): void;
+        }>();
+        </script>
+    "#;
+    let file = Path::new("src/components/MyComp.vue");
+    let violations = PerfRulesChecker::check_source(code, file);
+    let vue003_count = violations.iter().filter(|v| v.rule_id == "VUE-003").count();
+    assert_eq!(vue003_count, 2);
+}
+
+#[test]
 fn test_deep_watch_cascade_check() {
     let code = "watch(props.modelValue, (val) => {}, { deep: true });";
     let file = Path::new("src/useForm.ts");

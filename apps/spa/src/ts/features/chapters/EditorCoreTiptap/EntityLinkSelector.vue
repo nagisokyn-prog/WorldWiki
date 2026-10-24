@@ -63,17 +63,26 @@
             <span class="item-id">{{ entity.shortId }}</span>
           </div>
 
-          <!-- Кнопка быстрого создания новой сущности -->
+          <!-- Быстрое создание новой сущности с выбором типа -->
           <div
             v-if="showQuickCreate"
-            class="selector-item quick-create"
-            :class="{ active: selectedIndex === filteredEntities.length }"
-            @click="quickCreateEntity()"
-            @mouseenter="selectedIndex = filteredEntities.length"
+            class="quick-create-box"
           >
-            <span class="item-icon">✨</span>
-            <div class="item-details">
-              <span class="item-name">+ Создать "{{ searchQuery.trim() }}"</span>
+            <div class="quick-create-title">
+              <span>✨ Создать «{{ cleanSearchQuery }}» как:</span>
+            </div>
+            <div class="quick-create-types">
+              <button
+                v-for="t in availableCreationTypes"
+                :key="t.id"
+                type="button"
+                class="quick-type-btn interactive-el"
+                :title="`Создать как ${t.name}`"
+                @click.stop="quickCreateEntity(t.id)"
+              >
+                <span class="type-btn-icon">{{ t.icon }}</span>
+                <span class="type-btn-name">{{ t.name }}</span>
+              </button>
             </div>
           </div>
 
@@ -98,11 +107,13 @@ const emit = defineEmits<EntityLinkSelectorEmits>();
 
 const {
   searchQuery,
+  cleanSearchQuery,
   activeTypeFilter,
   selectedIndex,
   searchInput,
   listEl,
   entityTypes,
+  availableCreationTypes,
   filteredEntities,
   showQuickCreate,
   moveSelection,

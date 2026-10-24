@@ -13,6 +13,7 @@
         <slot name="header-actions"></slot>
       </div>
     </div>
+    <slot name="after-header"></slot>
 
     <!-- Body -->
     <div class="tree-body">

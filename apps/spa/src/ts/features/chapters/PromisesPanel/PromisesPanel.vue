@@ -2,7 +2,6 @@
   <div class="tool-section promises-section flex-1 min-h-0 flex flex-col">
     <div class="section-header" @click="isCollapsed = !isCollapsed">
       <div class="flex items-center gap-2">
-        <span class="collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
         <span class="font-bold text-sm">🎯 Сцены & Блоки</span>
         <span v-if="promises.length > 0" class="badge badge-subtle">
           {{ promises.length }}
@@ -83,13 +82,7 @@
       </div>
     </div>
 
-    <div
-      v-show="!isCollapsed"
-      class="panel-resize-handle-vertical"
-      :class="{ 'is-resizing': isResizing }"
-      title="Потяните для изменения высоты"
-      @mousedown="startVerticalResize"
-    ></div>
+    
   </div>
 </template>
 

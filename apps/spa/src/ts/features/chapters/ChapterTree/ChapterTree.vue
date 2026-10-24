@@ -26,6 +26,10 @@
         </button>
       </template>
 
+      <template #after-header>
+        <GlobalCalendarWidget :project="project" />
+      </template>
+
       <!-- Контекстное меню -->
       <template #context-menu="{ node, close }">
         <template v-if="isNodeType(node, 'chapter')">
@@ -94,6 +98,7 @@
 
 <script setup lang="ts">
 import { ExplorerTree } from '@worldwiki/components';
+import GlobalCalendarWidget from '@/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import type { ChapterTreeProps } from './ChapterTree.model';
 

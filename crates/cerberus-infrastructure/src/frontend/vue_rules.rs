@@ -91,25 +91,34 @@ impl VueRuleChecker {
             });
         }
 
-        // 2. VUE-001 & VUE-002: Script Setup Purity & Companion Hook Check
+        // 2. VUE-001: Script Setup Purity Check
         if let Some(script_setup) = &sfc.script_setup {
-            let has_heavy_logic = script_setup.contains("function ")
-                || script_setup.contains("reactive(")
-                || script_setup.contains("computed(")
-                || script_setup.contains("watch(")
-                || script_setup.contains("ref(");
+            let is_heavy_line = |l: &str| -> bool {
+                let t = l.trim();
+                if t.is_empty() || t.starts_with("//") || t.starts_with("/*") || t.starts_with('*') {
+                    return false;
+                }
+                t.starts_with("function ")
+                    || t.contains("reactive(")
+                    || t.contains("computed(")
+                    || t.contains("watch(")
+                    || t.contains("ref(")
+                    || ((t.starts_with("const ") || t.starts_with("let ") || t.starts_with("var "))
+                        && (t.contains("= () =>")
+                            || (t.contains("= (") && t.contains(") =>"))
+                            || t.contains("= async (")
+                            || t.contains("= async () =>")))
+                    || t.contains("=> {")
+                    || (t.contains("=>") && t.contains("emit("))
+            };
+
+            let has_heavy_logic = script_setup.lines().any(is_heavy_line);
 
             if has_heavy_logic {
                 let logic_snippet = script_setup
                     .lines()
                     .map(|l| l.trim())
-                    .filter(|l| {
-                        l.starts_with("function ")
-                            || l.contains("reactive(")
-                            || l.contains("computed(")
-                            || l.contains("watch(")
-                            || l.contains("ref(")
-                    })
+                    .filter(|l| is_heavy_line(l))
                     .take(3)
                     .collect::<Vec<_>>()
                     .join("\n");
@@ -127,23 +136,56 @@ impl VueRuleChecker {
                     symbol: file_stem.to_string(),
                     snippet: logic_snippet.clone(),
                     message: format!(
-                        "Vue component '{}' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+                        "Vue component '{}' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
                         file_path.display()
                     ),
                     remediation: format!("Extract all functions, state, computed properties, and watchers into companion composable use{}.ts.", file_stem),
                     fingerprint,
                 });
+            }
 
+            // 3. VUE-002: Companion Hook Check
+            let path_str = file_path.to_string_lossy();
+            let is_fsd_complex = path_str.contains("features") || path_str.contains("widgets") || path_str.contains("pages");
+            let is_slice_root = if let Some(parent_dir) = file_dir {
+                if let Some(parent_name) = parent_dir.file_name().and_then(|n| n.to_str()) {
+                    parent_name == file_stem
+                } else {
+                    false
+                }
+            } else {
+                false
+            };
+
+            let is_subcomponent = path_str.contains("/components/")
+                || path_str.contains("\\components\\")
+                || path_str.contains("/tabs/")
+                || path_str.contains("\\tabs\\")
+                || path_str.contains("/modals/")
+                || path_str.contains("\\modals\\")
+                || path_str.contains("/dialogs/")
+                || path_str.contains("\\dialogs\\");
+
+            // A companion hook is required if:
+            // 1. Component has raw heavy logic in script setup (must be extracted to hook)
+            // 2. Component is a Feature/Widget Slice Root (FeatureName/FeatureName.vue must orchestrate via useFeatureName.ts)
+            // 3. Component explicitly invokes its companion hook (then the companion file must exist on disk)
+            let calls_companion_hook = script_setup.contains(&format!("use{}(", file_stem))
+                || script_setup.contains(&format!("use{} (", file_stem));
+            let requires_hook = has_heavy_logic || (is_fsd_complex && is_slice_root) || calls_companion_hook;
+
+            if requires_hook {
                 let has_companion = if let Some(dir) = file_dir {
                     let companion1 = dir.join(format!("use{}.ts", file_stem));
                     let companion2 = dir.join("hooks").join(format!("use{}.ts", file_stem));
-                    companion1.exists() || companion2.exists()
+                    let companion3 = dir.join("composables").join(format!("use{}.ts", file_stem));
+                    companion1.exists() || companion2.exists() || companion3.exists()
                 } else {
                     false
                 };
 
                 if !has_companion {
-                    let fp2 = compute_fingerprint("VUE-002", "1.0", file_stem, &logic_snippet);
+                    let fp2 = compute_fingerprint("VUE-002", "1.0", file_stem, "missing_hook");
                     violations.push(Violation {
                         rule_id: "VUE-002".into(),
                         rule_version: "1.0".into(),
@@ -153,7 +195,7 @@ impl VueRuleChecker {
                         line: sfc.script_setup_start_line,
                         column: 1,
                         symbol: file_stem.to_string(),
-                        snippet: logic_snippet,
+                        snippet: format!("use{}.ts", file_stem),
                         message: format!(
                             "Vue component '{}' is missing required companion hook use{}.ts",
                             file_path.display(),
@@ -161,6 +203,57 @@ impl VueRuleChecker {
                         ),
                         remediation: format!("Create use{}.ts alongside {}.vue.", file_stem, file_stem),
                         fingerprint: fp2,
+                    });
+                }
+            }
+
+            // 4. VUE-004: Companion Model Contract Check
+            // A companion contract is required for:
+            // 1. Slice Root components in features/widgets/pages (FeatureName/FeatureName.vue must define FeatureName.model.ts)
+            // 2. Non-subcomponent feature components declaring props/emits
+            let declares_props_or_emits = script_setup.contains("defineProps") || script_setup.contains("defineEmits");
+            let requires_model = (is_fsd_complex && is_slice_root) || (is_fsd_complex && !is_subcomponent && declares_props_or_emits);
+
+            if requires_model {
+                let has_model = if let Some(dir) = file_dir {
+                    let model1 = dir.join(format!("{}.model.ts", file_stem));
+                    let model2 = dir.join(format!("{}.types.ts", file_stem));
+                    let model3 = dir.join("models").join(format!("{}.model.ts", file_stem));
+                    let model4 = dir.join("types").join(format!("{}.types.ts", file_stem));
+                    let has_parent_feature_model = dir.parent().map_or(false, |p| {
+                        if let Ok(entries) = std::fs::read_dir(p) {
+                            entries.filter_map(|e| e.ok()).any(|e| {
+                                let name = e.file_name().to_string_lossy().to_string();
+                                name.ends_with(".model.ts") || name.ends_with(".types.ts")
+                            })
+                        } else {
+                            false
+                        }
+                    });
+                    model1.exists() || model2.exists() || model3.exists() || model4.exists() || has_parent_feature_model
+                } else {
+                    false
+                };
+
+                if !has_model {
+                    let fp_model = compute_fingerprint("VUE-004", "1.0", file_stem, "missing_model");
+                    violations.push(Violation {
+                        rule_id: "VUE-004".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: sfc.script_setup_start_line,
+                        column: 1,
+                        symbol: file_stem.to_string(),
+                        snippet: format!("{}.model.ts", file_stem),
+                        message: format!(
+                            "Vue component '{}' is missing required companion contract '{}.model.ts' defining Props, Emits, and DTO contracts",
+                            file_path.display(),
+                            file_stem
+                        ),
+                        remediation: format!("Create {}.model.ts alongside {}.vue and move Props/Emits type definitions there.", file_stem, file_stem),
+                        fingerprint: fp_model,
                     });
                 }
             }
@@ -676,5 +769,121 @@ mod tests {
         };
         let violations3 = VueRuleChecker::check(&sfc_clean, Path::new("src/Clean.vue"));
         assert!(violations3.is_empty());
+    }
+
+    #[test]
+    fn test_vue_rule_checker_arrow_functions_vue001() {
+        let sfc = VueSfc {
+            script_setup: Some("const handleClick = () => { console.log('clicked'); };".into()),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/features/timeline/Button.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-001"));
+    }
+
+    #[test]
+    fn test_vue_rule_checker_inline_emit_callback_vue001() {
+        let sfc = VueSfc {
+            script_setup: Some("useFeature(props.id, { onSave: (val) => emit('save', val) });".into()),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/features/timeline/Button.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-001"));
+    }
+
+    #[test]
+    fn test_vue_rule_checker_missing_model_vue004() {
+        let temp = tempdir().unwrap();
+        let feature_dir = temp.path().join("features").join("timeline");
+        std::fs::create_dir_all(&feature_dir).unwrap();
+        let comp_path = feature_dir.join("TimelineInspector.vue");
+
+        // Write companion hook so VUE-002 passes
+        std::fs::write(
+            feature_dir.join("useTimelineInspector.ts"),
+            "export const useTimelineInspector = () => {};",
+        )
+        .unwrap();
+
+        let sfc = VueSfc {
+            script_setup: Some("import { useTimelineInspector } from './useTimelineInspector';\nconst props = defineProps<Props>();\nconst { data } = useTimelineInspector();".into()),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+
+        // Without TimelineInspector.model.ts -> VUE-004 must fire
+        let violations = VueRuleChecker::check(&sfc, &comp_path);
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-004"));
+
+        // Now create companion model -> must pass
+        std::fs::write(feature_dir.join("TimelineInspector.model.ts"), "export interface Props {}").unwrap();
+        let violations_with_model = VueRuleChecker::check(&sfc, &comp_path);
+        assert!(violations_with_model.is_empty());
+    }
+
+    #[test]
+    fn test_vue_rule_checker_subcomponent_in_components_dir_no_false_positives() {
+        let temp = tempdir().unwrap();
+        let feature_dir = temp.path().join("features").join("timeline").join("PlanetEditor");
+        let components_dir = feature_dir.join("components");
+        std::fs::create_dir_all(&components_dir).unwrap();
+
+        // 1. Feature model exists on feature level
+        std::fs::write(
+            feature_dir.join("PlanetEditor.model.ts"),
+            "export interface PlanetMoonsTabProps { id: string; }",
+        )
+        .unwrap();
+
+        // 2. Pure dumb presentation subcomponent without business logic
+        let subcomp_path = components_dir.join("PlanetMoonsTab.vue");
+        let sfc = VueSfc {
+            script_setup: Some(
+                "import type { PlanetMoonsTabProps } from '../PlanetEditor.model';\nconst props = defineProps<PlanetMoonsTabProps>();\nconst emit = defineEmits<Emits>();".into(),
+            ),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+
+        // Subcomponent MUST NOT require usePlanetMoonsTab.ts (VUE-002) nor PlanetMoonsTab.model.ts (VUE-004)
+        let violations = VueRuleChecker::check(&sfc, &subcomp_path);
+        assert!(
+            violations.is_empty(),
+            "Pure subcomponent in components/ must not trigger false positive VUE-002 or VUE-004: {:?}",
+            violations
+        );
+    }
+
+    #[test]
+    fn test_vue_rule_checker_subcomponent_calling_hook_validates_hook_existence() {
+        let temp = tempdir().unwrap();
+        let feature_dir = temp.path().join("features").join("timeline").join("Tab2ErasSync");
+        let components_dir = feature_dir.join("components");
+        std::fs::create_dir_all(&components_dir).unwrap();
+
+        // Subcomponent explicitly calls useTab2SyncSection()
+        let subcomp_path = components_dir.join("Tab2SyncSection.vue");
+        let sfc = VueSfc {
+            script_setup: Some(
+                "import { useTab2SyncSection } from './useTab2SyncSection';\nconst { isCollapsed } = useTab2SyncSection();".into(),
+            ),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+
+        // When useTab2SyncSection.ts is missing -> VUE-002 must fire
+        let violations_missing = VueRuleChecker::check(&sfc, &subcomp_path);
+        assert!(violations_missing.iter().any(|v| v.rule_id == "VUE-002"));
+
+        // When useTab2SyncSection.ts exists -> passes cleanly
+        std::fs::write(
+            components_dir.join("useTab2SyncSection.ts"),
+            "export const useTab2SyncSection = () => ({ isCollapsed: false });",
+        )
+        .unwrap();
+        let violations_present = VueRuleChecker::check(&sfc, &subcomp_path);
+        assert!(violations_present.is_empty());
     }
 }

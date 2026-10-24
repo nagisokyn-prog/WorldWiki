@@ -162,13 +162,18 @@ fn check_layout_thrashing(trimmed: &str, file_path: &Path, line: usize, out: &mu
 }
 
 fn check_vue_types(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<Violation>) {
-    if (trimmed.starts_with("interface Props")
-        || trimmed.starts_with("interface Emits")
-        || trimmed.starts_with("export interface")
-        || trimmed.starts_with("type Props =")
-        || trimmed.starts_with("type Emits ="))
-        && !trimmed.contains("import")
-    {
+    let is_inline_macro_type = (trimmed.contains("defineProps<{")
+        || trimmed.contains("defineProps< {")
+        || trimmed.contains("defineEmits<{")
+        || trimmed.contains("defineEmits< {"))
+        && !trimmed.contains("import");
+
+    let is_type_declaration = (trimmed.starts_with("interface ")
+        || trimmed.starts_with("export interface ")
+        || (trimmed.starts_with("type ") && trimmed.contains(" = ")))
+        && !trimmed.starts_with("import ");
+
+    if is_inline_macro_type || is_type_declaration {
         out.push(Violation {
             rule_id: "VUE-003".into(),
             rule_version: "1.0".into(),
@@ -179,8 +184,8 @@ fn check_vue_types(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<V
             column: 1,
             symbol: "interface".into(),
             snippet: trimmed.to_string(),
-            message: "Declaring TypeScript interfaces inside .vue SFC is forbidden".into(),
-            remediation: "Move interface declarations to <Component>.model.ts or <Component>.types.ts.".into(),
+            message: "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden".into(),
+            remediation: "Move interface declarations and macro types to <Component>.model.ts or <Component>.types.ts.".into(),
             fingerprint: compute_fingerprint("VUE-003", "1.0", "interface_in_sfc", trimmed),
         });
     }

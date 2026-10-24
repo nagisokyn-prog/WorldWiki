@@ -115,7 +115,8 @@
     </div>
 
     <div v-else class="gc-empty">
-      <small>Загрузка календаря...</small>
+      <small v-if="isLoading">Загрузка календаря...</small>
+      <small v-else>Календарь не настроен</small>
     </div>
 
     <!-- Модальное окно Атласа Времени -->
@@ -131,8 +132,9 @@
 import { useGlobalCalendarWidget } from './useGlobalCalendarWidget';
 import CalendarExplainerCard from './CalendarExplainerCard.vue';
 import TimeAtlasModal from '../TimeAtlas/TimeAtlasModal.vue';
+import type { GlobalCalendarWidgetProps } from './GlobalCalendarWidget.model';
 
-const props = defineProps<{ project: string }>();
+const props = defineProps<GlobalCalendarWidgetProps>();
 
 const {
   masterCalendar,
@@ -146,6 +148,7 @@ const {
   activeMoons,
   activeHoliday,
   isAtlasOpen,
+  isLoading,
   openAtlas,
   closeAtlas,
   prevDay,

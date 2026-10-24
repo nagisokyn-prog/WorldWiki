@@ -55,15 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import type { LoreDateExplanation } from '../../../../services/Calendars/calendar.types';
+import type { CalendarExplainerCardProps, CalendarExplainerCardEmits } from './GlobalCalendarWidget.model';
 
-defineProps<{
-  dateExplanation: LoreDateExplanation;
-  isCopied: boolean;
-}>();
-
-defineEmits<{
-  (e: 'close'): void;
-  (e: 'copy-snippet'): void;
-}>();
+defineProps<CalendarExplainerCardProps>();
+defineEmits<CalendarExplainerCardEmits>();
 </script>

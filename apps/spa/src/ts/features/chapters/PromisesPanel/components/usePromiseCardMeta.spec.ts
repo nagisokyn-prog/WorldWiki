@@ -172,22 +172,13 @@ describe('usePromiseCardMeta', () => {
     const emit = vi.fn();
     const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
 
-    meta.localArcId.value = 'arc:1';
-    meta.localArcPhase.value = 'escalation';
-    meta.onArcChange();
+    meta.onArcsUpdate([{ arc_id: 'arc:1', arc_phase: 'escalation' }]);
 
     expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
-      arc_id: 'arc:1',
-      arc_phase: 'escalation'
-    }));
-    expect(emit).toHaveBeenCalledWith('change');
-
-    meta.localArcId.value = null;
-    meta.onArcChange();
-
-    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
+      arcs: [{ arc_id: 'arc:1', arc_phase: 'escalation' }],
       arc_id: null,
       arc_phase: null
     }));
+    expect(emit).toHaveBeenCalledWith('change');
   });
 });

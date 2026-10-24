@@ -13,18 +13,36 @@ export const plotApi = {
   getPlotPromises: async (project: string): Promise<PlotPromise[]> => {
     const rawProject = (project || '').replace(/^projects:/, '');
     const list = await api.getPlotPromises(rawProject);
-    return (list as PlotPromise[]).map(processIds).filter((p): p is PlotPromise => Boolean(p));
+    return (list as PlotPromise[])
+      .map(processIds)
+      .filter((p): p is PlotPromise => Boolean(p))
+      .map((p) => ({
+        ...p,
+        arcs: Array.isArray(p.arcs) ? p.arcs : [],
+        arc_id: typeof p.arc_id === 'string' ? p.arc_id : null,
+        arc_phase: typeof p.arc_phase === 'string' ? p.arc_phase : null,
+      }));
   },
 
   getPlotPromise: async (id: string): Promise<PlotPromise | null> => {
     const item = await api.getPlotPromise(id);
-    return item ? processIds(item) : null;
+    if (!item) return null;
+    const p = processIds(item);
+    return {
+      ...p,
+      arcs: Array.isArray(p.arcs) ? p.arcs : [],
+      arc_id: typeof p.arc_id === 'string' ? p.arc_id : null,
+      arc_phase: typeof p.arc_phase === 'string' ? p.arc_phase : null,
+    };
   },
 
   savePlotPromise: async (project: string, data: PlotPromise): Promise<PlotPromise> => {
     const normalizedData: PlotPromise = {
       ...data,
       project_id: projectRecordId(project),
+      arcs: Array.isArray(data.arcs) ? data.arcs : [],
+      arc_id: typeof data.arc_id === 'string' ? data.arc_id : null,
+      arc_phase: typeof data.arc_phase === 'string' ? data.arc_phase : null,
     };
     const rawProject = (project || '').replace(/^projects:/, '');
     const res = await api.savePlotPromise(rawProject, normalizedData);

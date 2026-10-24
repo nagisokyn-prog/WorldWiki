@@ -16,8 +16,11 @@ struct TimelineRaw {
 struct RawTimelineEventNode {
     id: String,
     title: String,
+    #[serde(default)]
     description: Option<String>,
-    m_abs: i64,
+    #[serde(default)]
+    m_abs: Option<i64>,
+    #[serde(default)]
     calendar_id: Option<String>,
     #[serde(default)]
     reveals: Vec<RawTimelineRevealLink>,
@@ -109,7 +112,7 @@ pub(crate) async fn get_timeline_inspector_data_impl(
             event_id: ev.id,
             title: ev.title,
             description: ev.description,
-            m_abs: ev.m_abs,
+            m_abs: ev.m_abs.unwrap_or(0),
             calendar_id: ev.calendar_id.unwrap_or_default(),
             participants: ev.participants.into_iter().map(|p| p.into_id()).collect(),
             reveals: reveals_dto,

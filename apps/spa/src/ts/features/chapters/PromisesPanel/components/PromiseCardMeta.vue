@@ -4,26 +4,33 @@
     <div class="meta-row flex items-center gap-1.5 relative">
       <span class="meta-icon text-accent text-sm flex-shrink-0" title="Локация действия">📍</span>
       
-      <!-- Если локация выбрана: показываем чип с возможностью удаления -->
-      <div v-if="item.location_id" class="tag-pill flex items-center gap-1.5 flex-1" style="background: var(--surface-active, rgba(255,255,255,0.06)); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-subtle);">
-        <span class="font-medium text-main flex-1">{{ getLocationDisplayName(item.location_id) }}</span>
-        <button
-          type="button"
-          class="tag-remove text-muted hover:text-main"
-          title="Очистить локацию"
-          @click.stop="clearLocation"
-        >
-          ✕
-        </button>
-      </div>
+      <div 
+        class="tags-input-container interactive-el flex-1 relative flex items-center"
+        @click="focusLocationInput"
+      >
+        <!-- Если локация выбрана: показываем чип с возможностью удаления -->
+        <div v-if="item.location_id" class="tag-pill">
+          <span>📍</span>
+          <span class="font-medium">{{ getLocationDisplayName(item.location_id) }}</span>
+          <button
+            type="button"
+            class="tag-remove"
+            title="Очистить локацию"
+            @mousedown.stop
+            @click.stop="clearLocation"
+          >
+            ✕
+          </button>
+        </div>
 
-      <!-- Если локация не выбрана: гибридный ввод с выпадающим списком -->
-      <div v-else class="flex-1 relative flex items-center">
+        <!-- Если локация не выбрана: гибридный ввод с выпадающим списком -->
         <input
+          v-else
+          ref="locationInputRef"
           v-model="locationDraft"
           type="text"
           placeholder="Локация (выберите или введите текст)..."
-          class="meta-input-field flex-1"
+          class="tags-input"
           @focus="isLocationDropdownOpen = true"
           @keydown.enter.prevent="selectLocation(locationDraft)"
           @keydown.esc="isLocationDropdownOpen = false"
@@ -74,8 +81,6 @@
       :project="project"
       :arcs="item.arcs"
       :available-arcs="availableArcs"
-      :legacy-arc-id="item.arc_id"
-      :legacy-arc-phase="item.arc_phase"
       @update:arcs="onArcsUpdate"
       @change="$emit('change')"
     />
@@ -126,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import PromiseCardArcTags from './PromiseCardArcTags.vue';
 import PromiseCardParticipants from './PromiseCardParticipants.vue';
 import PromiseCardTimeline from './PromiseCardTimeline.vue';
@@ -134,6 +140,14 @@ import type { PromiseCardMetaProps, PromiseCardMetaEmits } from './PromiseCardMe
 
 const props = defineProps<PromiseCardMetaProps>();
 const emit = defineEmits<PromiseCardMetaEmits>();
+
+const locationInputRef = ref<HTMLInputElement | null>(null);
+const focusLocationInput = () => {
+  if (!props.item.location_id) {
+    locationInputRef.value?.focus();
+    isLocationDropdownOpen.value = true;
+  }
+};
 
 const {
   locationDraft,

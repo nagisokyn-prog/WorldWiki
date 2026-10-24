@@ -132,12 +132,11 @@ export function usePromiseCardMeta(
   };
 
   const onArcsUpdate = (newArcs: SceneArcItem[]) => {
-    const first = newArcs[0];
     const updated: RichPlotPromise = {
       ...props.item,
       arcs: newArcs,
-      arc_id: first?.arc_id ? String(first.arc_id) : null,
-      arc_phase: first?.arc_id ? String(first.arc_phase || 'setup') : null
+      arc_id: null,
+      arc_phase: null
     };
     emit('update:item', updated);
     emit('change');

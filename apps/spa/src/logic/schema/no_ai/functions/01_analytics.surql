@@ -41,7 +41,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
                     role: role
                 }),
                 (->participant_of.{
-                    chapter_id: IF array::len(out->promise_milestones) > 0 { array::first(out->promise_milestones.out.chapter_id) } ELSE { NONE },
+                    chapter_id: IF array::len(out->promise_milestones) > 0 { type::string(array::first(out->promise_milestones.out.chapter_id)) } ELSE { NONE },
                     source: 'scene',
                     role: role
                 })

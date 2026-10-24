@@ -53,7 +53,8 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     IF array::len($participants) > 0 {
         FOR $pid IN $participants {
             IF $pid != NONE AND $pid != NULL {
-                LET $ent_rec = type::record('entities', type::string($pid).replace('entities:', ''));
+                LET $clean_id = type::string($pid).replace('characters:', '').replace('character:', '').replace('entities:', '');
+                LET $ent_rec = type::record('entities', $clean_id);
                 RELATE $ent_rec->participant_of->$rec_id SET
                     project_id = $p_rec,
                     created_at = time::now();
@@ -74,12 +75,6 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                     created_at = time::now();
             };
         };
-    } ELSE IF $data.arc_id != NONE AND $data.arc_id != NULL {
-        LET $arc_rec = type::record('story_arcs', type::string($data.arc_id).replace('story_arcs:', ''));
-        RELATE $rec_id->advances_arc->$arc_rec SET
-            project_id = $p_rec,
-            phase = IF $data.arc_phase != NONE { $data.arc_phase } ELSE { 'setup' },
-            created_at = time::now();
     };
 
     -- Синхронизация таймлайна (occurs_at): plot_promises -> occurs_at -> timeline_events
@@ -119,9 +114,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             ->advances_arc.{
                 arc_id: out.id,
                 arc_phase: phase
-            } AS arcs,
-            ->advances_arc.out.id[0] AS arc_id,
-            ->advances_arc.phase[0] AS arc_phase
+            } AS arcs
         FROM $rec_id
         LIMIT 1
     )[0];

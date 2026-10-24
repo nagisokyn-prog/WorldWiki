@@ -7,10 +7,9 @@ describe('usePromiseCardArcTags', () => {
     setActivePinia(createPinia());
   });
 
-  it('initializes bound arcs from legacy props when arcs array is missing', () => {
+  it('initializes bound arcs from arcs array', () => {
     const props = {
-      legacyArcId: 'arc:1',
-      legacyArcPhase: 'escalation',
+      arcs: [{ arc_id: 'arc:1', arc_phase: 'escalation' }],
       availableArcs: [
         { id: 'arc:1', title: 'Арка Мести', arc_type: 'character', status: 'in_progress', project_id: 'p1' }
       ]

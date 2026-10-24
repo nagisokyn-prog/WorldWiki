@@ -75,6 +75,7 @@ export function usePromiseParticipants(
   };
 
   const removeParticipant = (nameOrId: string) => {
+    console.log('[usePromiseParticipants] removeParticipant called with:', nameOrId, 'from current:', props.item.participant_ids);
     const targetName = getParticipantDisplayName(nameOrId).toLowerCase();
     const cleanTarget = String(nameOrId).trim().toLowerCase();
     const bareTarget = cleanTarget.replace(/^(characters|entities|character):/, '');
@@ -82,8 +83,10 @@ export function usePromiseParticipants(
       const pName = getParticipantDisplayName(p).toLowerCase();
       const pRaw = String(p).trim().toLowerCase();
       const pBare = pRaw.replace(/^(characters|entities|character):/, '');
-      return pName !== targetName && pRaw !== cleanTarget && pBare !== bareTarget;
+      const isMatch = pName === targetName || pRaw === cleanTarget || pBare === bareTarget;
+      return !isMatch;
     });
+    console.log('[usePromiseParticipants] participant_ids after removal:', current);
     const updated = {
       ...props.item,
       participant_ids: current

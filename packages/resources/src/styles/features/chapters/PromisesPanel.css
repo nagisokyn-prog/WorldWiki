@@ -702,15 +702,23 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 2px 4px;
   line-height: 1;
   color: var(--text-muted);
   font-size: 12px;
   margin-left: 2px;
+  position: relative;
+  z-index: 2;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
 }
 
 .promise-card-meta .tag-remove:hover {
   color: var(--color-danger);
+  background: var(--surface-active);
 }
 
 .promise-card-meta .tags-input {

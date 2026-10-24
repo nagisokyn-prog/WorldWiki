@@ -11,7 +11,8 @@ use worldwiki_domain::errors::DomainError;
 #[derive(serde::Deserialize)]
 pub(crate) struct RawChapterHeader {
     pub id: String,
-    pub title: String,
+    #[serde(default)]
+    pub title: Option<String>,
     #[serde(default)]
     pub sort_order: Option<i32>,
     #[serde(default)]
@@ -22,7 +23,7 @@ impl RawChapterHeader {
     pub(crate) fn into_dto(self) -> ChapterHeaderDto {
         ChapterHeaderDto {
             id: self.id,
-            title: self.title,
+            title: self.title.unwrap_or_default(),
             sort_order: self.sort_order.unwrap_or(0),
             word_count: self.word_count.unwrap_or(0),
         }
@@ -31,36 +32,41 @@ impl RawChapterHeader {
 
 #[derive(serde::Deserialize)]
 struct CrossRefRaw {
+    #[serde(default)]
     chapters: Vec<RawChapterHeader>,
+    #[serde(default)]
     entities: Vec<RawEntityRow>,
 }
 
 #[derive(serde::Deserialize)]
 struct RawEntityRow {
-    id: String,
-    name: String,
-    entity_type: String,
+    pub id: String,
     #[serde(default)]
-    is_deceased: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    death_m_abs: Option<i64>,
+    pub entity_type: Option<String>,
     #[serde(default)]
-    birth_m_abs: Option<i64>,
+    pub is_deceased: Option<bool>,
     #[serde(default)]
-    role_in_story: Option<String>,
+    pub death_m_abs: Option<i64>,
     #[serde(default)]
-    status_category: Option<String>,
+    pub birth_m_abs: Option<i64>,
     #[serde(default)]
-    appearances: Vec<RawAppearanceEdge>,
+    pub role_in_story: Option<String>,
+    #[serde(default)]
+    pub status_category: Option<String>,
+    #[serde(default)]
+    pub appearances: Vec<RawAppearanceEdge>,
 }
 
 #[derive(serde::Deserialize)]
 struct RawAppearanceEdge {
-    chapter_id: String,
     #[serde(default)]
-    source: Option<String>,
+    pub chapter_id: Option<String>,
     #[serde(default)]
-    role: Option<String>,
+    pub source: Option<String>,
+    #[serde(default)]
+    pub role: Option<String>,
 }
 
 fn build_entity_appearances(
@@ -73,9 +79,13 @@ fn build_entity_appearances(
 
     for ch in chapters {
         let found_app = ent.appearances.iter().find(|a| {
-            a.chapter_id == ch.id
-                || a.chapter_id.trim_start_matches("chapters:")
-                    == ch.id.trim_start_matches("chapters:")
+            if let Some(ch_id) = &a.chapter_id {
+                ch_id == &ch.id
+                    || ch_id.trim_start_matches("chapters:")
+                        == ch.id.trim_start_matches("chapters:")
+            } else {
+                false
+            }
         });
 
         let ch_order = ch.sort_order.unwrap_or(0);
@@ -126,7 +136,7 @@ fn check_absence_warning(
 
         Some(AbsenceWarningDto {
             entity_id: ent.id.clone(),
-            entity_name: ent.name.clone(),
+            entity_name: ent.name.clone().unwrap_or_default(),
             missing_since_chapter_id,
             missing_since_order: last_seen_order,
             skipped_chapters_count: gap,
@@ -169,8 +179,8 @@ pub(crate) async fn get_cross_reference_matrix_impl(
 
         entities_dto.push(EntityRowDto {
             id: ent.id,
-            name: ent.name,
-            entity_type: ent.entity_type,
+            name: ent.name.unwrap_or_default(),
+            entity_type: ent.entity_type.unwrap_or_else(|| "character".to_string()),
             is_deceased: ent.is_deceased.unwrap_or(false),
             death_m_abs: ent.death_m_abs,
             birth_m_abs: ent.birth_m_abs,

@@ -25,7 +25,13 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const persist = async (item: RichPlotPromise, logMsg: string) => {
     try {
       console.log(logMsg, { project: getProject(), item });
-      await plotApi.savePlotPromise(getProject(), item as unknown as PlotPromise);
+      const payload: PlotPromise = {
+        ...(item as unknown as PlotPromise),
+        arcs: Array.isArray(item.arcs) ? item.arcs : [],
+        arc_id: typeof item.arc_id === 'string' ? item.arc_id : null,
+        arc_phase: typeof item.arc_phase === 'string' ? item.arc_phase : null,
+      };
+      await plotApi.savePlotPromise(getProject(), payload);
     } catch (err) {
       console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err);
     }
@@ -226,7 +232,8 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
 
   const updatePromise = async (updatedItem: RichPlotPromise) => {
     if (!updatedItem.id) return;
-    const index = promises.value.findIndex((p) => p.id === updatedItem.id);
+    const targetClean = cleanId(updatedItem.id);
+    const index = promises.value.findIndex((p) => p.id === updatedItem.id || cleanId(p.id) === targetClean);
     if (index !== -1) {
       promises.value[index] = { ...updatedItem };
     }

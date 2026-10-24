@@ -17,8 +17,6 @@ export interface PromiseCardArcTagsProps {
   project?: string;
   arcs?: SceneArcItem[] | null;
   availableArcs?: StoryArc[];
-  legacyArcId?: string | null;
-  legacyArcPhase?: string | null;
 }
 
 export interface PromiseCardArcTagsEmits {

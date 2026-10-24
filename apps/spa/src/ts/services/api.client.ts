@@ -505,6 +505,10 @@ export async function savePlotPromise(project: string, data: PlotPromise): Promi
     return await invoke('save_plot_promise', { project, data });
 }
 
+export async function deletePlotPromise(id: string): Promise<void> {
+    return await invoke('delete_plot_promise', { id });
+}
+
 export async function completePlan(planId: string): Promise<void> {
     return await invoke('complete_plan', { planId });
 }
@@ -660,10 +664,6 @@ export async function deletePlan(id: string): Promise<void> {
 
 export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
     return await invoke('get_plot_promise', { id });
-}
-
-export async function deletePlotPromise(id: string): Promise<void> {
-    return await invoke('delete_plot_promise', { id });
 }
 
 export async function getTags(project: string): Promise<Tag[]> {

@@ -49,9 +49,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 ->advances_arc.{
                     arc_id: out.id,
                     arc_phase: phase
-                } AS arcs,
-                ->advances_arc.out.id[0] AS arc_id,
-                ->advances_arc.phase[0] AS arc_phase
+                } AS arcs
             FROM type::record('plot_promises', $id)
             LIMIT 1;
         "#;
@@ -132,9 +130,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 ->advances_arc.{
                     arc_id: out.id,
                     arc_phase: phase
-                } AS arcs,
-                ->advances_arc.out.id[0] AS arc_id,
-                ->advances_arc.phase[0] AS arc_phase
+                } AS arcs
             FROM plot_promises 
             WHERE ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
         "#;
@@ -181,9 +177,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 ->advances_arc.{
                     arc_id: out.id,
                     arc_phase: phase
-                } AS arcs,
-                ->advances_arc.out.id[0] AS arc_id,
-                ->advances_arc.phase[0] AS arc_phase
+                } AS arcs
             FROM plot_promises 
             WHERE status != 'resolved' AND ->promise_milestones.out.chapter_id CONTAINSANY $chapters;
         "#;

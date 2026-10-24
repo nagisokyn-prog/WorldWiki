@@ -22,7 +22,8 @@
           type="button"
           class="tag-remove"
           title="Удалить участника"
-          @click.stop.prevent="$emit('remove-participant', pid)"
+          @mousedown.stop
+          @click.stop="handleRemove(pid, $event)"
         >
           ✕
         </button>
@@ -89,7 +90,7 @@ defineProps<{
   getParticipantDisplayName: (idOrName: string) => string;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:participantInputQuery', val: string): void;
   (e: 'open-dropdown'): void;
   (e: 'close-dropdown'): void;
@@ -97,4 +98,10 @@ defineEmits<{
   (e: 'remove-participant', name: string): void;
   (e: 'backspace'): void;
 }>();
+
+const handleRemove = (pid: string, event: Event) => {
+  event.stopPropagation();
+  console.log('[PromiseCardParticipants] Removing participant:', pid);
+  emit('remove-participant', pid);
+};
 </script>

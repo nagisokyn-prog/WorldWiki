@@ -21,12 +21,6 @@ export function usePromiseCardArcTags(
     if (Array.isArray(props.arcs) && props.arcs.length > 0) {
       return props.arcs;
     }
-    if (props.legacyArcId) {
-      return [{
-        arc_id: props.legacyArcId,
-        arc_phase: props.legacyArcPhase || 'setup'
-      }];
-    }
     return [];
   });
 
@@ -48,11 +42,14 @@ export function usePromiseCardArcTags(
     }
 
     for (const item of currentRawArcs.value) {
-      if (!item.arc_id) continue;
-      const arcObj = arcsMap.get(item.arc_id) || arcsMap.get(item.arc_id.replace(/^story_arcs:/, ''));
-      const title = arcObj?.title || item.arc_id.replace(/^story_arcs:/, 'Арка ');
+      if (!item || !item.arc_id) continue;
+      const arcIdStr = typeof item.arc_id === 'string' ? item.arc_id : String(item.arc_id || '');
+      if (!arcIdStr) continue;
+      const clean = arcIdStr.replace(/^story_arcs:/, '');
+      const arcObj = arcsMap.get(arcIdStr) || arcsMap.get(clean);
+      const title = arcObj?.title || arcIdStr.replace(/^story_arcs:/, 'Арка ');
       list.push({
-        arcId: item.arc_id,
+        arcId: arcIdStr,
         title,
         color: arcObj?.color,
         arcType: arcObj?.arc_type,

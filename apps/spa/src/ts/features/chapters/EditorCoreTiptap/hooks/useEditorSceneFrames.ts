@@ -85,20 +85,36 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
     if (!editorDom) return;
 
     // Сброс старых рамок
-    const existingFrames = editorDom.querySelectorAll('.scene-frame');
+    const existingFrames = editorDom.querySelectorAll('.scene-frame, .narrative-frame');
     existingFrames.forEach(el => {
-      el.classList.remove('scene-frame');
+      el.classList.remove(
+        'scene-frame',
+        'narrative-frame',
+        'narrative-frame-first',
+        'narrative-frame-middle',
+        'narrative-frame-last',
+        'narrative-frame-single',
+        'narrative-kind-scene',
+        'narrative-kind-conflict',
+        'narrative-kind-gun',
+        'narrative-kind-foreshadowing',
+        'narrative-kind-mystery',
+        'narrative-kind-question'
+      );
       el.removeAttribute('data-scene-id');
+      el.removeAttribute('data-narrative-id');
+      el.removeAttribute('data-narrative-kind');
     });
 
     const promises = options.existingPromises.value || [];
     const currentChapterClean = normalizeId(options.chapterId.value);
 
-    // Фильтруем активные сцены
-    const scenes = promises.filter(p => p && p.kind === 'scene');
+    // Обрабатываем все сюжетные единицы: сцены, конфликты, чеховские ружья, тайны и т.д.
+    const narrativeItems = promises.filter(p => p && p.id);
 
-    for (const scene of scenes) {
-      const milestones = scene.milestones || [];
+    for (const item of narrativeItems) {
+      const kind = item.kind || 'scene';
+      const milestones = item.milestones || [];
       const relevantMilestones = milestones.filter(m => {
         if (!m.chapter_id || !currentChapterClean) return true;
         return normalizeId(m.chapter_id) === currentChapterClean;
@@ -108,19 +124,51 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
         chapter_id: options.chapterId.value || '',
         order_index: 1,
         block_id: null,
-        quote: scene.title,
+        quote: item.title,
         stage: 'setup' as const
       }];
 
+      // Собираем все абзацы, принадлежащие этому узлу
+      const matchedElements: HTMLElement[] = [];
       for (const m of itemsToMatch) {
         const mObj = m as unknown as { block_id?: string | null; quote?: string | null; paragraph_index?: number; order_index?: number | null };
         const pIdx = mObj.paragraph_index ?? (mObj.order_index ? Number(mObj.order_index) : 1);
-        const elements = findSceneElements(editorDom, m.quote || scene.title, mObj.block_id || undefined, pIdx);
+        const elements = findSceneElements(editorDom, m.quote || item.title, mObj.block_id || undefined, pIdx);
         for (const el of elements) {
-          el.classList.add('scene-frame');
-          el.setAttribute('data-scene-id', scene.id || '');
+          if (!matchedElements.includes(el)) {
+            matchedElements.push(el);
+          }
         }
       }
+
+      if (matchedElements.length === 0) continue;
+
+      // Упорядочиваем элементы по их положению в DOM-дереве редактора
+      matchedElements.sort((a, b) => {
+        if (a === b) return 0;
+        return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+      });
+
+      const count = matchedElements.length;
+      matchedElements.forEach((el, index) => {
+        el.classList.add('narrative-frame', `narrative-kind-${kind}`);
+        if (kind === 'scene') {
+          el.classList.add('scene-frame');
+        }
+        el.setAttribute('data-narrative-id', item.id || '');
+        el.setAttribute('data-narrative-kind', kind);
+        el.setAttribute('data-scene-id', item.id || '');
+
+        if (count === 1) {
+          el.classList.add('narrative-frame-single');
+        } else if (index === 0) {
+          el.classList.add('narrative-frame-first');
+        } else if (index === count - 1) {
+          el.classList.add('narrative-frame-last');
+        } else {
+          el.classList.add('narrative-frame-middle');
+        }
+      });
     }
   };
 

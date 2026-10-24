@@ -2,7 +2,7 @@ import { ref, computed, onMounted } from 'vue';
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { RichPlotPromise, SceneArcItem } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
-import * as api from '@/services/api.client';
+import { plotApi } from '@/services/api/plot.api';
 import type {
   ArcStatus,
   ArcType,
@@ -70,9 +70,10 @@ export function useArcBoard(projectId: string) {
   const loadPromises = async () => {
     if (!projectId) return;
     try {
-      const data = await api.getPlotPromises(projectId);
+      const data = await plotApi.getPlotPromises(projectId);
       promises.value = Array.isArray(data) ? (data as unknown as RichPlotPromise[]) : [];
-    } catch {
+    } catch (err) {
+      console.warn('[useArcBoard] Failed to load plot promises:', err);
       promises.value = [];
     }
   };

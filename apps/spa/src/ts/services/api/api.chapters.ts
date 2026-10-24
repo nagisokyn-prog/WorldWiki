@@ -2,7 +2,6 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { Volume } from '../../types/generated/Volume';
 import type { Plan } from '../../types/generated/Plan';
-import type { PlotPromise } from '../../types/generated/PlotPromise';
 import type { TextBlock } from '../../types/generated/TextBlock';
 import type { EntityRel } from '../../types/generated/EntityRel';
 import type { ChapterHierarchy, SearchResult } from './api.types';
@@ -161,26 +160,6 @@ export async function deletePlan(id: string): Promise<void> {
 
 export async function completePlan(planId: string): Promise<void> {
   return await invoke('complete_plan', { planId });
-}
-
-export async function getPlotPromises(project: string): Promise<PlotPromise[]> {
-  return await invoke('get_plot_promises', { project });
-}
-
-export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
-  return await invoke('get_plot_promise', { id });
-}
-
-export async function savePlotPromise(project: string, data: PlotPromise): Promise<PlotPromise> {
-  return await invoke('save_plot_promise', { project, data });
-}
-
-export async function deletePlotPromise(id: string): Promise<void> {
-  return await invoke('delete_plot_promise', { id });
-}
-
-export async function plantPlotPromise(promise: PlotPromise): Promise<void> {
-  return await invoke('plant_plot_promise', { promise });
 }
 
 export async function auditVolumeConsistency(volumeId: string): Promise<unknown> {

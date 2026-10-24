@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import * as api from '@/services/api.client';
+import { plotApi } from '@/services/api/plot.api';
 import {
   usePromiseFiltering,
   cleanId,
@@ -221,7 +221,7 @@ export function usePromisesPanel(
     loading.value = true;
     const localKey = `ww_plot_promises_${props.project}`;
     try {
-      const rawList = await api.getPlotPromises(props.project);
+      const rawList = await plotApi.getPlotPromises(props.project);
       const list = Array.isArray(rawList) ? (rawList as unknown as RichPlotPromise[]) : [];
       promises.value = list.map((p) => {
         const milestones = Array.isArray(p.milestones) ? p.milestones : [];

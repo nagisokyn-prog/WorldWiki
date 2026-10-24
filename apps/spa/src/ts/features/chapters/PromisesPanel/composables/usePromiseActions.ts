@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import * as api from '@/services/api.client';
+import { plotApi } from '@/services/api/plot.api';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
 import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
@@ -25,7 +25,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const persist = async (item: RichPlotPromise, logMsg: string) => {
     try {
       console.log(logMsg, { project: getProject(), item });
-      await api.savePlotPromise(getProject(), item as unknown as PlotPromise);
+      await plotApi.savePlotPromise(getProject(), item as unknown as PlotPromise);
     } catch (err) {
       console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err);
     }
@@ -80,12 +80,13 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     };
 
     try {
-      const created = await api.savePlotPromise(project, newPromise as unknown as PlotPromise);
+      const created = await plotApi.savePlotPromise(project, newPromise as unknown as PlotPromise);
       promises.value.push({
         ...newPromise,
         ...((created as unknown as Partial<RichPlotPromise>) || {})
       });
-    } catch {
+    } catch (err) {
+      console.warn('[usePromiseActions] Failed to persist new promise to backend, keeping local state:', err);
       promises.value.push(newPromise);
     }
     syncLocalBackup();
@@ -185,7 +186,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
     try {
-      await api.deletePlotPromise(item.id);
+      await plotApi.deletePlotPromise(item.id);
     } catch (err) {
       console.warn('[usePromiseActions] Failed to delete promise from backend:', err);
     }

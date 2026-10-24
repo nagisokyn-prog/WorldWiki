@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Calendar, Cites, Plan, PlotPromise, Tag } from './types';
+import type { Calendar, Cites, Plan, Tag } from './types';
 
 export async function convertAbsoluteToLocal(absoluteMinute: number, calendar: unknown, eraIndex: number): Promise<unknown> {
   return await invoke('convert_absolute_to_local', { absoluteMinute, calendar, eraIndex });
@@ -9,9 +9,6 @@ export async function convertCalendarDate(params: unknown): Promise<unknown> {
   return await invoke('convert_calendar_date', { params });
 }
 
-export async function plantPlotPromise(promise: PlotPromise): Promise<void> {
-  return await invoke('plant_plot_promise', { promise });
-}
 
 export async function completePlan(planId: string): Promise<void> {
   return await invoke('complete_plan', { planId });
@@ -37,21 +34,6 @@ export async function deletePlan(id: string): Promise<void> {
   return await invoke('delete_plan', { id });
 }
 
-export async function getPlotPromises(project: string): Promise<PlotPromise[]> {
-  return await invoke('get_plot_promises', { project });
-}
-
-export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
-  return await invoke('get_plot_promise', { id });
-}
-
-export async function savePlotPromise(project: string, data: PlotPromise): Promise<PlotPromise> {
-  return await invoke('save_plot_promise', { project, data });
-}
-
-export async function deletePlotPromise(id: string): Promise<void> {
-  return await invoke('delete_plot_promise', { id });
-}
 
 export async function getTags(project: string): Promise<Tag[]> {
   return await invoke('get_tags', { project });

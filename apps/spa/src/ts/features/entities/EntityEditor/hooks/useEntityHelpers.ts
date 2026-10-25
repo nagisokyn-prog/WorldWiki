@@ -55,6 +55,20 @@ export function useEntityHelpers(
       if (current === undefined || current === null || typeof current !== 'object') return '';
       current = (current as Record<string, unknown>)[parts[i]];
     }
+
+    // Если значение первого поля сущности (по позиции в схеме) пустое, но есть системное имя (name)
+    if ((current === undefined || current === null || current === '') && obj === formData.value) {
+      const firstSection = config.value?.sections?.[0];
+      const firstField = firstSection?.fields?.[0];
+      const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || config.value?.titleField;
+      if (firstFieldPath && firstFieldPath === path) {
+        const entityName = (formData.value as Record<string, unknown>)?.name;
+        if (entityName !== undefined && entityName !== null && entityName !== '') {
+          return entityName;
+        }
+      }
+    }
+
     return current;
   };
 
@@ -72,6 +86,14 @@ export function useEntityHelpers(
       obj = (objOrPath && typeof objOrPath === 'object' ? objOrPath : formData.value) as Record<string, unknown>;
     }
     if (!path) return;
+
+    // Синхронизируем name, если редактируется первое поле схемы по позиции
+    const firstSection = config.value?.sections?.[0];
+    const firstField = firstSection?.fields?.[0];
+    const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || config.value?.titleField;
+    if (firstFieldPath && firstFieldPath === path && obj === formData.value) {
+      (formData.value as Record<string, unknown>).name = val;
+    }
     const parts = path.split('.');
     let current: Record<string, unknown> = obj;
     for (let i = 0; i < parts.length - 1; i++) {

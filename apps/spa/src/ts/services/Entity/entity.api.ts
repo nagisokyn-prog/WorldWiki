@@ -39,6 +39,12 @@ export const entityApi = {
       result.tags = cleanTags;
       result['теги'] = cleanTags;
 
+      const resolvedName = (result.name as string) || (result['название'] as string) || '';
+      if (resolvedName) {
+        result.name = resolvedName;
+        result['название'] = resolvedName;
+      }
+
       return result;
     });
   },
@@ -69,20 +75,31 @@ export const entityApi = {
         : [];
     result.tags = cleanTags;
     result['теги'] = cleanTags;
+
+    // Синхронизация name <-> название
+    const resolvedName = (result.name as string) || (result['название'] as string) || '';
+    if (resolvedName) {
+      result.name = resolvedName;
+      result['название'] = resolvedName;
+    }
     
     return result;
   },
 
   formatEntityPayload: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Record<string, unknown> => {
     const actualData = JSON.parse(JSON.stringify(data));
-    let extractedName = name || 'Новая сущность';
+    let extractedName = name || (actualData['название'] as string) || (actualData.name as string) || 'Новая сущность';
 
     if (extractedName === 'Новая сущность' || !name) {
-      const keys = Object.keys(actualData).filter(k => k !== 'id' && k !== 'project_id' && k !== 'entity_type' && k !== 'attributes');
-      if (keys.length > 0) {
-        const firstVal = actualData[keys[0]];
-        if (typeof firstVal === 'string' && firstVal.trim() !== '') {
-          extractedName = firstVal.trim();
+      if (actualData['название'] && typeof actualData['название'] === 'string' && (actualData['название'] as string).trim() !== '') {
+        extractedName = (actualData['название'] as string).trim();
+      } else {
+        const keys = Object.keys(actualData).filter(k => k !== 'id' && k !== 'project_id' && k !== 'entity_type' && k !== 'attributes');
+        if (keys.length > 0) {
+          const firstVal = actualData[keys[0]];
+          if (typeof firstVal === 'string' && firstVal.trim() !== '') {
+            extractedName = firstVal.trim();
+          }
         }
       }
     }
@@ -102,6 +119,7 @@ export const entityApi = {
         ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
         : [];
 
+    cleanAttributes['название'] = extractedName;
     cleanAttributes['теги'] = cleanTags;
 
     return {

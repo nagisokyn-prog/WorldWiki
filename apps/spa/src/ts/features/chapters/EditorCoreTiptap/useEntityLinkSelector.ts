@@ -1,5 +1,6 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
+import { invalidateCache } from '../../../utils/requestCache';
 import type { EntitySchema } from '../../../types/generated/EntitySchema';
 import { computeSimilarity } from './utils/entityMatch.utils';
 import type {
@@ -14,6 +15,8 @@ export function useEntityLinkSelector(
   emit: EntityLinkSelectorEmits
 ) {
   const searchQuery = ref('');
+  const sourceMention = ref('');
+  const saveAsTag = ref(true);
   const activeTypeFilter = ref<string>('all');
   const selectedIndex = ref(0);
   const searchInput = ref<HTMLInputElement | null>(null);
@@ -203,7 +206,7 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
       return matchingEntities.value;
     }
     // Если по поисковому запросу ничего не найдено, но есть сущности,
-    // возвращаем список всех сущностей (Use-Case 2: пользователь ввел тег, которого еще нет ни у одной сущности,
+    // возвращаем список всех сущностей (пользователь ввел тег, которого еще нет,
     // и хочет выбрать существующую сущность для привязки этого тега)
     if (cleanSearchQuery.value) {
       let list = allEntities.value;
@@ -215,8 +218,30 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
     return [];
   });
 
+  // Остальные сущности категории, не вошедшие в matchingEntities при активном поиске
+  const otherEntities = computed(() => {
+    if (!cleanSearchQuery.value || matchingEntities.value.length === 0) return [];
+    const matchIds = new Set(matchingEntities.value.map(e => e.id));
+    let list = allEntities.value.filter(e => !matchIds.has(e.id));
+    if (activeTypeFilter.value !== 'all') {
+      list = list.filter(e => e.entity_type === activeTypeFilter.value);
+    }
+    return list;
+  });
+
+  const allSelectableEntities = computed(() => {
+    if (cleanSearchQuery.value && matchingEntities.value.length > 0 && otherEntities.value.length > 0) {
+      return [...matchingEntities.value, ...otherEntities.value];
+    }
+    return filteredEntities.value;
+  });
+
+  const quickCreateName = computed(() => {
+    return cleanSearchQuery.value || sourceMention.value;
+  });
+
   const showQuickCreate = computed(() => {
-    const q = cleanSearchQuery.value;
+    const q = quickCreateName.value;
     if (!q || isCreating.value) return false;
     const lowerQ = q.toLowerCase();
     const exists = allEntities.value.some(e => e.name.toLowerCase() === lowerQ);
@@ -224,7 +249,7 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
   });
 
   const totalItemsCount = computed(() => {
-    return filteredEntities.value.length + (showQuickCreate.value ? 1 : 0);
+    return allSelectableEntities.value.length + (showQuickCreate.value ? 1 : 0);
   });
 
   const isModalOpen = computed(() => props.isOpen);
@@ -243,9 +268,17 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
     }
   };
 
+  const sanitizeMention = (query?: string): string => {
+    if (!query) return '';
+    return query.trim().replace(/^\(\(/, '').replace(/\)\)$/, '').replace(/^#/, '').trim();
+  };
+
   watch(isModalOpen, async (open) => {
     if (open) {
-      searchQuery.value = props.initialQuery ? props.initialQuery.replace(/^\(\(/, '').replace(/\)\)$/, '').trim() : '';
+      const mention = sanitizeMention(props.initialQuery);
+      sourceMention.value = mention;
+      saveAsTag.value = true;
+      searchQuery.value = mention;
       activeTypeFilter.value = 'all';
       selectedIndex.value = 0;
       await loadData();
@@ -257,6 +290,14 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
       });
     }
   }, { immediate: true });
+
+  watch(() => props.initialQuery, (newQ) => {
+    if (props.isOpen && newQ !== undefined) {
+      const mention = sanitizeMention(newQ);
+      sourceMention.value = mention;
+      searchQuery.value = mention;
+    }
+  });
 
   watch([searchQuery, activeTypeFilter], () => {
     selectedIndex.value = 0;
@@ -280,8 +321,8 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
   };
 
   const selectCurrent = () => {
-    if (selectedIndex.value < filteredEntities.value.length) {
-      const entity = filteredEntities.value[selectedIndex.value];
+    if (selectedIndex.value < allSelectableEntities.value.length) {
+      const entity = allSelectableEntities.value[selectedIndex.value];
       if (entity) {
         selectEntity(entity);
       }
@@ -292,22 +333,26 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
 
   const selectEntity = (entity: EntitySelectorItem) => {
     if (!entity) return;
-    const q = cleanSearchQuery.value;
-    if (q && props.project) {
-      const isExactMatch = entity.name.toLowerCase() === q.toLowerCase() ||
-        (entity.cleanTags || []).some(t => t.toLowerCase() === q.toLowerCase()) ||
-        (entity.aliases || []).some((a: string) => a.toLowerCase() === q.toLowerCase());
+    const targetTag = saveAsTag.value
+      ? (sourceMention.value || cleanSearchQuery.value)
+      : '';
+    if (targetTag && props.project) {
+      const tagLower = targetTag.toLowerCase();
+      const isExactMatch = entity.name.toLowerCase() === tagLower ||
+        (entity.cleanTags || []).some(t => t.toLowerCase() === tagLower) ||
+        (entity.aliases || []).some((a: string) => a.toLowerCase() === tagLower);
       if (!isExactMatch) {
-        const nextTags = Array.from(new Set([...(entity.cleanTags || []), q]));
+        const nextTags = Array.from(new Set([...(entity.cleanTags || []), targetTag]));
         const currentAttrs = (entity as { attributes?: Record<string, unknown> }).attributes || {};
         const currentAliases = Array.isArray(currentAttrs.aliases)
           ? (currentAttrs.aliases as string[])
           : Array.isArray(currentAttrs['псевдонимы'])
             ? (currentAttrs['псевдонимы'] as string[])
             : [];
-        const nextAliases = Array.from(new Set([...currentAliases, q]));
+        const nextAliases = Array.from(new Set([...currentAliases, targetTag]));
         const nextAttrs = {
           ...currentAttrs,
+          'название': currentAttrs['название'] || entity.name,
           tags: nextTags,
           'теги': nextTags,
           aliases: nextAliases,
@@ -318,11 +363,17 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
           tags: nextTags,
           'теги': nextTags,
           attributes: nextAttrs
-        } as never).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
+        } as never).then(() => {
+          invalidateCache('entities:');
+          invalidateCache('tags:');
+          document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: { project: props.project, entityId: entity.id, tags: nextTags } }));
+        }).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
+
         entity.cleanTags = nextTags;
         entity.tags = nextTags;
         (entity as Record<string, unknown>)['теги'] = nextTags;
-        (entity as Record<string, unknown>).aliases = nextAliases;
+        entity.aliases = nextAliases;
+        (entity as Record<string, unknown>)['псевдонимы'] = nextAliases;
       }
     }
     emit('insert', {
@@ -334,7 +385,7 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
   };
 
   const quickCreateEntity = async (typeKey?: string) => {
-    const name = cleanSearchQuery.value;
+    const name = quickCreateName.value;
     if (!name || isCreating.value) return;
 
     // Выбираем тип: переданный, либо активный фильтр, либо первый доступный из доступных типов
@@ -342,14 +393,43 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
 
     isCreating.value = true;
     try {
+      const schema = loadedSchemas.value.find(s => s.type_key === chosenType);
+      const fullSchema = schema?.full_schema as Record<string, unknown> | undefined;
+      const firstSection = (fullSchema?.sections as Array<{ fields?: Array<{ path?: string; id?: string; class?: string }> }>)?.[0];
+      const firstField = firstSection?.fields?.[0];
+      const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || (fullSchema?.titleField as string) || 'название';
+
+      const initialTags: string[] = [];
+      const initialAliases: string[] = [];
+      if (saveAsTag.value && sourceMention.value && sourceMention.value.toLowerCase() !== name.toLowerCase()) {
+        initialTags.push(sourceMention.value);
+        initialAliases.push(sourceMention.value);
+      }
+
+      const attributes: Record<string, unknown> = {
+        name,
+        'теги': initialTags,
+        tags: initialTags,
+        aliases: initialAliases,
+        'псевдонимы': initialAliases,
+        [firstFieldPath]: name
+      };
+
       const payload: Record<string, unknown> = {
         name,
         entity_type: chosenType,
-        attributes: {},
-        tags: []
+        attributes,
+        tags: initialTags,
+        'теги': initialTags
       };
       const created = await api.saveEntity(props.project, payload as never);
+      invalidateCache('entities:');
+      invalidateCache('tags:');
       const newId = String(created.id || '');
+      document.dispatchEvent(new CustomEvent('ww:entity-saved', { detail: { type: chosenType, id: newId } }));
+      if (initialTags.length > 0) {
+        document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: { project: props.project, entityId: newId, tags: initialTags } }));
+      }
       emit('insert', {
         type: chosenType,
         id: newId,
@@ -374,6 +454,8 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
   return {
     searchQuery,
     cleanSearchQuery,
+    sourceMention,
+    saveAsTag,
     activeTypeFilter,
     selectedIndex,
     searchInput,
@@ -382,8 +464,11 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
     entityTypes,
     availableCreationTypes,
     filteredEntities,
+    otherEntities,
+    allSelectableEntities,
     isFallbackList,
     showQuickCreate,
+    quickCreateName,
     moveSelection,
     selectCurrent,
     selectEntity,
@@ -392,3 +477,4 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
     close
   };
 }
+

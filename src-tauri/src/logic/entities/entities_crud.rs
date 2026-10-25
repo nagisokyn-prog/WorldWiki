@@ -116,8 +116,24 @@ pub async fn delete_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<(), EntityError> {
-    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id).trim_matches('⟨').trim_matches('⟩').trim_matches('`');
-    let _: Option<Value> = db.delete(("entities", actual_id)).await?;
+    let clean = id.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
+    let actual_id = if let Some((_, rest)) = clean.rsplit_once("entities:") {
+        rest
+    } else if let Some((_, rest)) = clean.rsplit_once(':') {
+        rest
+    } else {
+        clean
+    };
+    let actual_id = actual_id.trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
+
+    eprintln!("[delete_entity_inner] Deleting entity raw='{}', parsed id='{}'", id, actual_id);
+
+    let deleted: Option<Value> = db.delete(("entities", actual_id)).await?;
+    if deleted.is_none() {
+        eprintln!("[delete_entity_inner] Entity 'entities:{}' not found in database for deletion (raw input: '{}')", actual_id, id);
+    } else {
+        eprintln!("[delete_entity_inner] Successfully deleted entity 'entities:{}'", actual_id);
+    }
     Ok(())
 }
 

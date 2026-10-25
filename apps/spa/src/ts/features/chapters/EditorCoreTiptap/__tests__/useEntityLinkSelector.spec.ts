@@ -98,7 +98,10 @@ describe('useEntityLinkSelector', () => {
 
     expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
       name: 'Новый герой',
-      entity_type: 'character'
+      entity_type: 'character',
+      attributes: expect.objectContaining({
+        'название': 'Новый герой'
+      })
     }));
 
     expect(emit).toHaveBeenCalledWith('insert', {
@@ -213,4 +216,100 @@ describe('useEntityLinkSelector', () => {
       expect(emit).toHaveBeenCalledWith('close');
     });
   });
+
+  describe('Source Mention and Decoupled Search', () => {
+    it('extracts and preserves sourceMention even when search input is cleared', async () => {
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Мелкая))' }, emit);
+      await flushPromises();
+
+      expect(selector.sourceMention.value).toBe('Мелкая');
+      expect(selector.searchQuery.value).toBe('Мелкая');
+      expect(selector.saveAsTag.value).toBe(true);
+
+      // Clearing search query
+      selector.searchQuery.value = '';
+      expect(selector.sourceMention.value).toBe('Мелкая');
+      expect(selector.cleanSearchQuery.value).toBe('');
+    });
+
+    it('attaches sourceMention to selected entity even after search query was erased or changed', async () => {
+      const katya = { id: 'entities:katya', name: 'Катя', entity_type: 'character', tags: ['девочка'] };
+      vi.mocked(api.getEntities).mockResolvedValueOnce([katya] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Мелкая))' }, emit);
+      await flushPromises();
+
+      // Пользователь стёр поле поиска, чтобы найти Катю
+      selector.searchQuery.value = '';
+      expect(selector.cleanSearchQuery.value).toBe('');
+
+      selector.selectEntity(katya);
+
+      expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
+        id: 'entities:katya',
+        tags: expect.arrayContaining(['девочка', 'Мелкая']),
+        attributes: expect.objectContaining({
+          aliases: expect.arrayContaining(['Мелкая'])
+        })
+      }));
+    });
+
+    it('does not attach mention when saveAsTag toggle is unchecked', async () => {
+      const katya = { id: 'entities:katya', name: 'Катя', entity_type: 'character', tags: ['девочка'] };
+      vi.mocked(api.getEntities).mockResolvedValueOnce([katya] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Мелкая))' }, emit);
+      await flushPromises();
+
+      selector.saveAsTag.value = false;
+      selector.searchQuery.value = '';
+
+      selector.selectEntity(katya);
+
+      expect(api.saveEntity).not.toHaveBeenCalled();
+      expect(emit).toHaveBeenCalledWith('insert', {
+        type: 'character',
+        id: 'entities:katya',
+        name: 'Катя'
+      });
+    });
+
+    it('computes otherEntities for entities not matched by active search query', async () => {
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true }, emit);
+      await flushPromises();
+
+      selector.searchQuery.value = 'Рейн';
+      expect(selector.filteredEntities.value.map(e => e.name)).toEqual([
+        'Рейн',
+        'Рейнский замок',
+        'Рейнджеры Севера'
+      ]);
+      expect(selector.otherEntities.value.map(e => e.name)).toEqual(['Валентин']);
+    });
+
+    it('quick-creates entity with sourceMention added to tags when name differs', async () => {
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true, initialQuery: '((Мелкая))' }, emit);
+      await flushPromises();
+
+      // Пользователь ввел новое имя "Екатерина" вместо "Мелкая"
+      selector.searchQuery.value = 'Екатерина';
+      await selector.quickCreateEntity('character');
+
+      expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
+        name: 'Екатерина',
+        tags: expect.arrayContaining(['Мелкая']),
+        attributes: expect.objectContaining({
+          'название': 'Екатерина',
+          tags: expect.arrayContaining(['Мелкая']),
+          aliases: expect.arrayContaining(['Мелкая'])
+        })
+      }));
+    });
+  });
 });
+

@@ -186,6 +186,17 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
           : [];
       rawInitial['теги'] = cleanInitialTags;
       rawInitial.tags = cleanInitialTags;
+      
+      // Первое поле схемы по положению в первой секции (независимо от имени/пути поля)
+      const firstSection = ctx.config.value?.sections?.[0];
+      const firstField = firstSection?.fields?.[0];
+      const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || ctx.config.value?.titleField;
+      if (firstFieldPath) {
+        const entityName = rawInitial.name || (ctx.props.initialData && (ctx.props.initialData as Record<string, unknown>).name);
+        if (entityName && !rawInitial[firstFieldPath]) {
+          rawInitial[firstFieldPath] = entityName;
+        }
+      }
       ctx.formData.value = rawInitial;
       ctx.foreignUpdates.value = {};
 

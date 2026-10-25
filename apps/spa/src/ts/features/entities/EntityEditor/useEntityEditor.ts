@@ -7,11 +7,30 @@ import { useEntityDynamicOps } from './hooks/useEntityDynamicOps';
 import { useEntityConfigLoader } from './hooks/useEntityConfigLoader';
 import type { EntityEditorProps, SchemaConfig, SchemaSection, SchemaField } from './EntityEditor.model';
 
+export function normalizeEntityFormData(data: Record<string, unknown> | undefined | null): Record<string, unknown> {
+  const normalized = data ? JSON.parse(JSON.stringify(data)) : {};
+  const rawTags = normalized['теги'] ?? normalized.tags ?? (normalized.attributes && (normalized.attributes['теги'] ?? normalized.attributes.tags)) ?? [];
+  const cleanTags = Array.isArray(rawTags)
+    ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
+    : typeof rawTags === 'string'
+      ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+      : [];
+  normalized['теги'] = cleanTags;
+  normalized.tags = cleanTags;
+  if (!normalized['название'] && normalized.name) {
+    normalized['название'] = normalized.name;
+  }
+  if (!normalized.name && normalized['название']) {
+    normalized.name = normalized['название'];
+  }
+  return normalized;
+}
+
 export function useEntityEditor(props: EntityEditorProps, emit: (event: string, ...args: unknown[]) => void) {
   const loading = ref(true);
   const isInitializing = ref(false);
   const config = shallowRef<SchemaConfig | null>(null);
-  const formData = ref<Record<string, unknown>>(props.initialData ? JSON.parse(JSON.stringify(props.initialData)) : {});
+  const formData = ref<Record<string, unknown>>(normalizeEntityFormData(props.initialData));
   const lastEmittedData = ref<string | null>(null);
   const foreignUpdates = ref<Record<string, unknown>>({});
   const activeSection = ref('');
@@ -103,22 +122,31 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   });
 
   watch(() => config.value, (newConfig) => {
-    if (newConfig && newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
-      if (props.initialSection && newConfig.sections.some((s: SchemaSection) => s.id === props.initialSection)) {
-        activeSection.value = props.initialSection;
-      } else {
-        activeSection.value = newConfig.sections[0].id;
+    if (newConfig) {
+      const firstSection = newConfig.sections?.[0];
+      const firstField = firstSection?.fields?.[0];
+      const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || newConfig.titleField;
+      if (firstFieldPath && formData.value.name && !formData.value[firstFieldPath]) {
+        formData.value[firstFieldPath] = formData.value.name;
       }
-      emit('section-change', activeSection.value);
+      if (newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
+        if (props.initialSection && newConfig.sections.some((s: SchemaSection) => s.id === props.initialSection)) {
+          activeSection.value = props.initialSection;
+        } else {
+          activeSection.value = newConfig.sections[0].id;
+        }
+        emit('section-change', activeSection.value);
+      }
     }
   }, { immediate: true });
 
   watch(() => props.initialData, (newVal) => {
     if (!historyHook.isPreviewingHistory.value) {
-      const isDiff = JSON.stringify(newVal) !== JSON.stringify(formData.value);
+      const normalized = normalizeEntityFormData(newVal);
+      const isDiff = JSON.stringify(normalized) !== JSON.stringify(formData.value);
       if (isDiff) {
         isInitializing.value = true;
-        formData.value = JSON.parse(JSON.stringify(newVal || {}));
+        formData.value = normalized;
         lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: foreignUpdates.value });
         nextTick(() => {
           isInitializing.value = false;

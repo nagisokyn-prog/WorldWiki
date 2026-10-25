@@ -171,18 +171,25 @@ async function init() {
         }
       };
 
+      let currentWindowLabel = `entity-editor-${entityType}-${entityId.replace(/:/g, '-')}`;
+      if (typeof window !== 'undefined' && window.__TAURI__) {
+        import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
+          currentWindowLabel = getCurrentWebviewWindow().label;
+        }).catch(() => {});
+      }
+
       const handleUpdateData = (data: Record<string, unknown>) => {
         if (isLiveSyncing) return;
         if (liveSyncTimer) clearTimeout(liveSyncTimer);
         liveSyncTimer = setTimeout(async () => {
           try {
-            console.log('[LiveSync] Emitting ww-entity-live-sync from ui_editor', { entityType, entityId });
+            console.log('[LiveSync] Emitting ww-entity-live-sync from ui_editor', { entityType, entityId, sender: currentWindowLabel });
             const { emit } = await import('@tauri-apps/api/event');
-            await emit('ww-entity-live-sync', { type: entityType, id: entityId, data });
+            await emit('ww-entity-live-sync', { type: entityType, id: entityId, data, sender: currentWindowLabel });
           } catch(e) {
             console.error('[LiveSync] Error emitting', e);
           }
-        }, 150);
+        }, 250);
       };
 
       onMounted(() => {
@@ -204,17 +211,25 @@ async function init() {
             }
           });
           
-          listen<{ type: string; id: string; data: Record<string, unknown> }>('ww-entity-live-sync', (event) => {
+          listen<{ type: string; id: string; data: Record<string, unknown>; sender?: string }>('ww-entity-live-sync', (event) => {
+            if (event.payload.sender && event.payload.sender === currentWindowLabel) {
+              // Игнорируем собственные широковещательные события этого же окна
+              return;
+            }
             const { type, id, data } = event.payload;
             const cleanId = (id || '').replace(/^entities:/, '');
             const cleanEntityId = (entityId || '').replace(/^entities:/, '');
             if (type === entityType && (cleanId === cleanEntityId || id === entityId)) {
               if (initialData.value) {
-                console.log('[LiveSync] Received in ui_editor', data);
+                const currentStr = JSON.stringify(initialData.value);
+                const nextStr = JSON.stringify({ ...initialData.value, ...data });
+                if (currentStr === nextStr) return;
+
+                console.log('[LiveSync] Received in ui_editor from', event.payload.sender, data);
                 isLiveSyncing = true;
                 merge(initialData.value, data);
                 initialData.value = { ...initialData.value };
-                setTimeout(() => { isLiveSyncing = false; }, 50);
+                setTimeout(() => { isLiveSyncing = false; }, 100);
               }
             }
           });

@@ -117,15 +117,21 @@ export function useTagsField(
     }
   };
 
+  const handleTagsUpdated = () => {
+    void loadAllTags();
+  };
+
   onMounted(async () => {
     await loadAllTags();
     document.addEventListener('click', handleClickOutside);
+    document.addEventListener('ww:tags-updated', handleTagsUpdated);
     window.addEventListener('resize', updateDropdownPosition);
     window.addEventListener('scroll', updateDropdownPosition, { passive: true, capture: true });
   });
 
   onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('ww:tags-updated', handleTagsUpdated);
     window.removeEventListener('resize', updateDropdownPosition);
     window.removeEventListener('scroll', updateDropdownPosition, true);
   });
@@ -141,6 +147,7 @@ export function useTagsField(
 
   const openDropdown = () => {
     isDropdownOpen.value = true;
+    void loadAllTags();
     void nextTick(updateDropdownPosition);
   };
 

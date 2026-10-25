@@ -6,6 +6,18 @@
         <button class="close-btn" @click="close">✕</button>
       </div>
 
+      <!-- Исходное упоминание из текста и переключатель автосохранения в теги -->
+      <div v-if="sourceMention" class="selector-mention-bar">
+        <div class="mention-info">
+          <span class="mention-label">🔗 В тексте:</span>
+          <span class="mention-badge" :title="sourceMention">#{{ sourceMention }}</span>
+        </div>
+        <label class="mention-tag-toggle">
+          <input type="checkbox" v-model="saveAsTag" class="checkbox-accent" />
+          <span>Сохранить в теги</span>
+        </label>
+      </div>
+
       <!-- Фильтры по типам -->
       <div class="selector-tabs">
         <button
@@ -46,6 +58,7 @@
             <span>ℹ️ По запросу совпадений не найдено. Выберите сущность для привязки тега «{{ cleanSearchQuery }}» или создайте новую:</span>
           </div>
 
+          <!-- Результаты совпадения поиска / Основной список -->
           <div 
             v-for="(entity, idx) in filteredEntities" 
             :key="entity.id"
@@ -67,13 +80,40 @@
             <span class="item-id">{{ entity.shortId }}</span>
           </div>
 
+          <!-- Остальные сущности категории (если есть поисковый фильтр) -->
+          <template v-if="otherEntities.length > 0">
+            <div class="selector-section-divider">
+              <span>Все остальные ({{ otherEntities.length }})</span>
+            </div>
+            <div 
+              v-for="(entity, oIdx) in otherEntities" 
+              :key="entity.id"
+              class="selector-item is-other"
+              :class="{ active: selectedIndex === filteredEntities.length + oIdx }"
+              @click="selectEntity(entity)"
+              @mouseenter="selectedIndex = filteredEntities.length + oIdx"
+            >
+              <span class="item-icon">{{ entity.type_icon }}</span>
+              <div class="item-details">
+                <div class="item-main">
+                  <span class="item-name">{{ entity.name }}</span>
+                  <span class="item-type-badge">({{ entity.type_name }})</span>
+                </div>
+                <div v-if="entity.cleanTags && entity.cleanTags.length > 0" class="item-tags">
+                  <span v-for="tag in entity.cleanTags" :key="tag" class="tag-badge">#{{ tag }}</span>
+                </div>
+              </div>
+              <span class="item-id">{{ entity.shortId }}</span>
+            </div>
+          </template>
+
           <!-- Быстрое создание новой сущности с выбором типа -->
           <div
             v-if="showQuickCreate"
             class="quick-create-box"
           >
             <div class="quick-create-title">
-              <span>✨ Создать «{{ cleanSearchQuery }}» как:</span>
+              <span>✨ Создать «{{ quickCreateName }}» как:</span>
             </div>
             <div class="quick-create-types">
               <button
@@ -90,7 +130,7 @@
             </div>
           </div>
 
-          <div v-if="filteredEntities.length === 0 && !showQuickCreate" class="selector-empty">
+          <div v-if="filteredEntities.length === 0 && otherEntities.length === 0 && !showQuickCreate" class="selector-empty">
             Сущности не найдены
           </div>
         </div>
@@ -112,6 +152,8 @@ const emit = defineEmits<EntityLinkSelectorEmits>();
 const {
   searchQuery,
   cleanSearchQuery,
+  sourceMention,
+  saveAsTag,
   activeTypeFilter,
   selectedIndex,
   searchInput,
@@ -119,8 +161,10 @@ const {
   entityTypes,
   availableCreationTypes,
   filteredEntities,
+  otherEntities,
   isFallbackList,
   showQuickCreate,
+  quickCreateName,
   moveSelection,
   selectCurrent,
   selectEntity,
@@ -131,4 +175,5 @@ const {
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/EntityLinkSelector.css"></style>
+
 

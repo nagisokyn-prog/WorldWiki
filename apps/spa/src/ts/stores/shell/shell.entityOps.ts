@@ -65,13 +65,13 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
         if (liveSyncTimer) clearTimeout(liveSyncTimer);
         liveSyncTimer = setTimeout(async () => {
           try {
-            console.log('[LiveSync] Emitting ww-entity-live-sync from shell', { type, id });
+            console.log('[LiveSync] Emitting ww-entity-live-sync from shell', { type, id, sender: 'main' });
             const { emit } = await import('@tauri-apps/api/event');
-            await emit('ww-entity-live-sync', { type, id, data });
+            await emit('ww-entity-live-sync', { type, id, data, sender: 'main' });
           } catch (e) {
             console.error('[LiveSync] Error emitting from shell', e);
           }
-        }, 150);
+        }, 250);
       }
     });
   };

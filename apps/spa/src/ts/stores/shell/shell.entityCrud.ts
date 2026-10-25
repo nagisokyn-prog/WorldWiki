@@ -38,18 +38,23 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
     const colonIdx = tabId.indexOf(':');
     const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
 
+    console.log(`[deleteEntity] Initiating deletion: tabId='${tabId}', rawId='${rawId}', type='${entityType}'`);
+    deps.addLog(`[deleteEntity] Запрос на удаление '${rawId}' (${entityType})...`, 'info');
+
     try {
       await api.deleteEntity(rawId);
+      console.log(`[deleteEntity] Successfully deleted '${rawId}' in backend`);
       await deps.closeEditor(tabId, true);
-      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === entityType && deps.activeTreeNode.value.node.id === rawId) {
+      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === entityType && (deps.activeTreeNode.value.node.id === rawId || tabId.includes(String(deps.activeTreeNode.value.node.id)))) {
         deps.activeTreeNode.value = null;
       }
       if (deps.currentSidebarTab.value) await deps.loadEntityList(deps.currentSidebarTab.value);
       if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
+      deps.addLog(`[deleteEntity] Сущность '${rawId}' успешно удалена из проекта`, 'info');
       deps.addToast('Запись удалена', 'warn');
     } catch (e) {
       console.error(`[deleteEntity] ERROR:`, e);
-      deps.addLog(`Entity -> Delete error: ${e}`, 'error');
+      deps.addLog(`[deleteEntity] Ошибка при удалении '${rawId}': ${e}`, 'error');
       const { appAlert } = await import('@worldwiki/components');
       appAlert(`Ошибка при удалении сущности: ${e}`);
     }

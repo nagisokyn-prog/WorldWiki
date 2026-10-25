@@ -185,6 +185,21 @@ describe('entityApi', () => {
       expect(res.tags).toEqual(['Ника', 'вера']);
       expect(res['теги']).toEqual(['Ника', 'вера']);
     });
+
+    it('populates both name and название from either source in getEntity', async () => {
+      const mockRawEntity = {
+        id: 'entities:char_2',
+        name: 'Катя',
+        tags: [],
+        attributes: {},
+      };
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockRawEntity);
+
+      const res = await entityApi.getEntity('proj_1', 'character', 'entities:char_2');
+
+      expect(res.name).toBe('Катя');
+      expect(res['название']).toBe('Катя');
+    });
   });
 
   describe('deleteEntity & history', () => {

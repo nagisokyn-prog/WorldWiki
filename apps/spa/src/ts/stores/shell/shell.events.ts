@@ -52,7 +52,10 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
       document.dispatchEvent(new CustomEvent('ww:entity-saved', { detail: { type, id } }));
     })?.catch?.(() => {});
 
-    listen<{ type: string; id: string; data: Record<string, unknown> }>('ww-entity-live-sync', (event) => {
+    listen<{ type: string; id: string; data: Record<string, unknown>; sender?: string }>('ww-entity-live-sync', (event) => {
+      if (event.payload.sender === 'main') {
+        return;
+      }
       const { type, id, data } = event.payload;
       const cleanTargetId = (id || '').replace(/^entities:/, '');
 
@@ -61,14 +64,14 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
           const tabCleanRawId = (tab.rawId || '').replace(/^entities:/, '');
           const tabCleanId = (tab.id || '').replace(/^entity:[^:]+:/, '').replace(/^entities:/, '');
           if (tab.entityType === type && (tabCleanRawId === cleanTargetId || tabCleanId === cleanTargetId)) {
-            console.log('[LiveSync] Received in shell', data);
+            console.log('[LiveSync] Received in shell from', event.payload.sender, data);
             deps.entityOps.setIsLiveSyncing(true);
             deps.entityOps.handleUpdateData(tab.id, data, true);
             tab.data = { ...(tab.data as Record<string, unknown>) };
             deps.eg.updateTabData(tab.id, { data: tab.data });
             setTimeout(() => {
               deps.entityOps.setIsLiveSyncing(false);
-            }, 50);
+            }, 100);
           }
         });
       });

@@ -4,7 +4,7 @@ import type { RichPlotPromise } from './PromiseActions.model';
 export function preparePromisePayload(
   item: RichPlotPromise,
   fallbackChapterId: string | null
-): PlotPromise {
+): RichPlotPromise {
   const chapId = item.chapter_id || fallbackChapterId || null;
   const arcsArr = Array.isArray(item.arcs) && item.arcs.length > 0 ? item.arcs : [];
   const primaryArc = arcsArr.length > 0 ? arcsArr[0] : null;
@@ -20,7 +20,7 @@ export function preparePromisePayload(
 
   return {
     ...(item as unknown as PlotPromise),
-    chapter_id: chapId,
+    chapter_id: chapId || undefined,
     paragraph_index: item.paragraph_index ?? 1,
     block_id: item.block_id || null,
     arcs: finalArcs,

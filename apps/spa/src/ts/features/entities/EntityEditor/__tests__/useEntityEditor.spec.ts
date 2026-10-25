@@ -295,6 +295,31 @@ describe('useEntityEditor', () => {
     expect(editor.formData.value.bio).toBe('Updated Bio');
   });
 
+  it('normalizes tags into теги and populates first field on initialData and config', async () => {
+    const reactiveProps = reactive({
+      ...props,
+      initialData: { name: 'Катя', tags: ['Мелкая', 'Сестра'] },
+    });
+
+    const editor = useEntityEditor(reactiveProps, emit);
+    expect(editor.formData.value['теги']).toEqual(['Мелкая', 'Сестра']);
+
+    editor.config.value = {
+      sections: [{
+        id: 'basic',
+        title: 'Основные',
+        fields: [{ id: 'heroName', path: 'first_name_field' }]
+      }]
+    };
+    await nextTick();
+    expect(editor.formData.value['first_name_field']).toBe('Катя');
+
+    reactiveProps.initialData = { name: 'Екатерина', tags: ['Королева'] };
+    await nextTick();
+    expect(editor.formData.value['теги']).toEqual(['Королева']);
+    expect(editor.getProp('first_name_field')).toBe('Екатерина');
+  });
+
   it('handles section changes and active section persistence', () => {
     const editor = useEntityEditor(props, emit);
     editor.activeSection.value = 'sec_2';

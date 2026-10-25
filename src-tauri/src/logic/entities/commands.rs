@@ -46,7 +46,17 @@ pub async fn delete_entity(
     id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), EntityError> {
-    delete_entity_inner(&state.db, &id).await
+    eprintln!("[IPC command] delete_entity requested for id='{}'", id);
+    match delete_entity_inner(&state.db, &id).await {
+        Ok(()) => {
+            eprintln!("[IPC command] delete_entity succeeded for id='{}'", id);
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("[IPC command] delete_entity failed for id='{}': {:?}", id, e);
+            Err(e)
+        }
+    }
 }
 
 #[tauri::command]

@@ -114,7 +114,13 @@ export const CalendarDateConversions = {
         ];
     const leapOffset = cal.пользовательское_високосное_правило?.день_смещения ?? 1;
 
-    let totalDays = Number(defaultWasmEngine.days_up_to_year(BigInt(effectiveY), BigInt(baseDays), harmonics, BigInt(leapOffset)));
+    let totalDays: number;
+    try {
+      totalDays = Number(defaultWasmEngine.days_up_to_year(BigInt(effectiveY), BigInt(baseDays), harmonics, BigInt(leapOffset)));
+      if (isNaN(totalDays)) throw new Error('NaN totalDays');
+    } catch {
+      totalDays = Math.max(0, effectiveY - 1) * baseDays;
+    }
     for (let mi = 0; mi < m; mi++) {
       totalDays += this.getDaysInMonth(cal, effectiveY, mi);
     }
@@ -150,11 +156,20 @@ export const CalendarDateConversions = {
         ];
     const leapOffset = cal.пользовательское_високосное_правило?.день_смещения ?? 1;
 
-    const yearRes = defaultWasmEngine.year_from_days(BigInt(dayIndex), BigInt(baseDays), harmonics, BigInt(leapOffset));
-    const rawYear = typeof yearRes === 'object' && yearRes !== null && 'year' in yearRes ? Number((yearRes as { year: number }).year) : Number(yearRes);
+    let rawYear: number;
+    let yearStartDay: number;
+    try {
+      const yearRes = defaultWasmEngine.year_from_days(BigInt(dayIndex), BigInt(baseDays), harmonics, BigInt(leapOffset));
+      rawYear = typeof yearRes === 'object' && yearRes !== null && 'year' in yearRes ? Number((yearRes as { year: number }).year) : Number(yearRes);
+      if (isNaN(rawYear)) throw new Error('NaN year');
+      yearStartDay = Number(defaultWasmEngine.days_up_to_year(BigInt(rawYear), BigInt(baseDays), harmonics, BigInt(leapOffset)));
+      if (isNaN(yearStartDay)) throw new Error('NaN yearStartDay');
+    } catch {
+      rawYear = Math.floor(dayIndex / Math.max(1, baseDays)) + 1;
+      yearStartDay = Math.max(0, rawYear - 1) * baseDays;
+    }
     const year = isReverse ? Math.abs(rawYear) : rawYear;
-    const yearStartDay = Number(defaultWasmEngine.days_up_to_year(BigInt(rawYear), BigInt(baseDays), harmonics, BigInt(leapOffset)));
-    let dayInYear = dayIndex - yearStartDay;
+    let dayInYear = Math.max(0, dayIndex - yearStartDay);
 
     let month = 0;
     const monthsCount = cal.месяцы?.length || 12;

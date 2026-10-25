@@ -27,7 +27,10 @@
       </template>
 
       <template #after-header>
-        <GlobalCalendarWidget :project="project" />
+        <div class="calendar-widget-container" :style="{ '--calendar-h': calendarHeight + 'px' }">
+          <GlobalCalendarWidget :project="props.project" />
+        </div>
+        <div class="panel-resize-handle-h" title="Потяните, чтобы изменить высоту" @mousedown="startVerticalResize"></div>
       </template>
 
       <!-- Контекстное меню -->
@@ -100,12 +103,15 @@
 import { ExplorerTree } from '@worldwiki/components';
 import GlobalCalendarWidget from '@/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
+import { useCalendarTreeResize } from './composables/useCalendarTreeResize';
 import type { ChapterTreeProps } from './ChapterTree.model';
 
 const props = withDefaults(defineProps<ChapterTreeProps>(), {
   activeNode: null,
   activeEditorId: null
 });
+
+const { calendarHeight, startVerticalResize } = useCalendarTreeResize();
 
 const emit = defineEmits([
   'select-node', 'select-chapter', 'create-chapter-in', 'rename-chapter', 'delete-chapter',

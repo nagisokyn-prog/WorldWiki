@@ -46,8 +46,20 @@ export const calendarApi = {
   getPlanetCalendarBundle: (project: string): Promise<unknown> =>
     invoke<unknown>('get_planet_calendar_bundle', { project }),
 
-  savePlanetDirect: (project: string, planetId: string | null, name: string, data: Record<string, unknown>): Promise<unknown> =>
-    invoke<unknown>('save_planet', {
+  savePlanetDirect: (project: string, planetId: string | null, name: string, data: Record<string, unknown>): Promise<unknown> => {
+    const rawMoons = Array.isArray(data.moons) ? data.moons : null;
+    const sanitizedMoons = rawMoons
+      ? rawMoons.map((m: unknown) => {
+          if (typeof m === 'object' && m !== null) {
+            const rest = { ...(m as Record<string, unknown>) };
+            delete rest.color;
+            return rest;
+          }
+          return m;
+        })
+      : null;
+
+    return invoke<unknown>('save_planet', {
       params: {
         project,
         planet_id: planetId || null,
@@ -56,9 +68,10 @@ export const calendarApi = {
         axial_tilt_mdeg: Number(data.axial_tilt_mdeg) || 0,
         orbit_days_num: Number(data.orbit_days_num) || 365,
         orbit_days_den: Number(data.orbit_days_den) || 1,
-        moons: data.moons || null,
+        moons: sanitizedMoons,
       },
-    }),
+    });
+  },
 
   saveCalendarDirect: (project: string, calendarId: string | null, planetId: string | null, name: string, isMaster: boolean, data: Record<string, unknown>): Promise<unknown> =>
     invoke<unknown>('save_calendar_direct', {

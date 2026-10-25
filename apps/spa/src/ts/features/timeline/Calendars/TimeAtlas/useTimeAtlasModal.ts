@@ -67,20 +67,34 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     currentWorldMinute.value = CalendarMath.localDateToMasterMinute(localDate, cal, masterCalendar.value);
   };
 
-  const getDateMeta = (cal: CalendarData, date: CalendarDate['original_input']) => {
-    const season = CalendarMath.getSeasonForDate(cal, date.year, date.month);
+  const getDateMeta = (cal?: CalendarData | null, date?: CalendarDate['original_input'] | null) => {
+    if (!cal || !date) {
+      return { season: 'Вне сезона', holiday: null, moons: [] };
+    }
+    const safeYear = date.year ?? 1;
+    const safeMonth = date.month ?? 0;
+    const safeDay = date.day ?? 1;
+
+    let season: string;
+    try {
+      season = CalendarMath.getSeasonForDate(cal, safeYear, safeMonth) || 'Вне сезона';
+    } catch {
+      season = 'Вне сезона';
+    }
+
     let holiday: string | null = null;
-    if (cal.праздники) {
+    if (cal.праздники && Array.isArray(cal.праздники)) {
       for (const h of cal.праздники) {
+        if (!h || !h.дата_начала) continue;
         const sm = h.дата_начала.месяц, sd = h.дата_начала.день;
         const em = h.дата_конца?.месяц ?? sm, ed = h.дата_конца?.день ?? sd;
-        if (date.month >= sm && date.month <= em) {
-          if (date.month === sm && date.month === em) {
-            if (date.day >= sd && date.day <= ed) { holiday = h.название; break; }
-          } else if (date.month === sm) {
-            if (date.day >= sd) { holiday = h.название; break; }
-          } else if (date.month === em) {
-            if (date.day <= ed) { holiday = h.название; break; }
+        if (safeMonth >= sm && safeMonth <= em) {
+          if (safeMonth === sm && safeMonth === em) {
+            if (safeDay >= sd && safeDay <= ed) { holiday = h.название; break; }
+          } else if (safeMonth === sm) {
+            if (safeDay >= sd) { holiday = h.название; break; }
+          } else if (safeMonth === em) {
+            if (safeDay <= ed) { holiday = h.название; break; }
           } else {
             holiday = h.название; break;
           }
@@ -88,8 +102,13 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
       }
     }
 
-    const absMin = CalendarMath.getAbsoluteMinute(date, cal);
-    const moons: MoonPhaseResult[] = CalendarMath.calculateMoonPhases(absMin, cal.moons || [], cal);
+    let moons: MoonPhaseResult[];
+    try {
+      const absMin = CalendarMath.getAbsoluteMinute(date, cal);
+      moons = CalendarMath.calculateMoonPhases(absMin, cal.moons || [], cal);
+    } catch {
+      moons = [];
+    }
 
     return { season, holiday, moons };
   };
@@ -122,28 +141,50 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     maxMinutes,
     worldHour,
     worldMinute
-  } = useTimeAtlasWorldTime(masterCalendar, currentWorldMinute, getLocalDateForCal);
+  } = useTimeAtlasWorldTime(masterCalendar, currentWorldMinute, getLocalDateForCal, computed(() => props.project));
 
   const loadCalendars = async () => {
-    if (!props.project) return;
+    console.log('[TimeAtlas] loadCalendars called. props =', { project: props.project, isOpen: props.isOpen });
+    if (!props.project) {
+      console.warn('[TimeAtlas] ⚠️ props.project is EMPTY or undefined! Cannot load calendars.');
+      return;
+    }
     loading.value = true;
     try {
       const list: CalendarRecord[] = await useCalendarStore().getCalendars(props.project);
+      console.log('[TimeAtlas] 📅 getCalendars returned', list?.length, 'records:', list);
       const sorted = (list || []).slice().sort((a: CalendarRecord, b: CalendarRecord) => (b.is_master ? 1 : 0) - (a.is_master ? 1 : 0));
       allCalendars.value = sorted;
 
       const master = sorted.find((c: CalendarRecord) => c.is_master) || sorted[0];
+      console.log('[TimeAtlas] 👑 Master calendar:', master);
       if (master && selectedCalIds.value.length === 0) {
         selectedCalIds.value = sorted.map((c: CalendarRecord) => c.id!).filter(Boolean);
         matrixBaseCalId.value = sorted.find((c: CalendarRecord) => !c.is_master)?.id || master.id || '';
         matrixCompareCalId.value = master.id || '';
       }
+
+      if (typeof window !== 'undefined') {
+        (window as unknown as Record<string, unknown>).__TIME_ATLAS_DEBUG__ = {
+          props,
+          allCalendars: allCalendars.value,
+          masterCalendar: masterCalendar.value,
+          masterCalendarRecord: masterCalendarRecord.value,
+          localCalendarRecords: localCalendarRecords.value,
+          currentWorldMinute: currentWorldMinute.value,
+          activeTab: activeTab.value,
+          loading: loading.value,
+        };
+      }
+    } catch (err) {
+      console.error('[TimeAtlas] 🔥 loadCalendars failed with error:', err);
     } finally {
       loading.value = false;
     }
   };
 
   watch(() => props.isOpen, (open) => {
+    console.log('[TimeAtlas] watch isOpen changed to:', open, 'props.project =', props.project);
     if (open) {
       loadCalendars();
     }

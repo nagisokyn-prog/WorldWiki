@@ -121,7 +121,7 @@
 
     <!-- Модальное окно Атласа Времени -->
     <TimeAtlasModal
-      :project="project"
+      :project="props.project"
       :is-open="isAtlasOpen"
       @close="closeAtlas"
     />

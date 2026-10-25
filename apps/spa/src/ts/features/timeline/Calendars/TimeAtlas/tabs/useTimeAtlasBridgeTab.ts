@@ -7,7 +7,7 @@ export interface TimeAtlasBridgeTabProps {
   localCalendarRecords: CalendarRecord[];
   getLocalDateForCal: (cal: CalendarData) => CalendarDate['original_input'];
   updateFromLocalDate: (cal: CalendarData, localDate: CalendarDate['original_input']) => void;
-  getDateMeta: (cal: CalendarData, date: CalendarDate['original_input']) => {
+  getDateMeta: (cal?: CalendarData | null, date?: CalendarDate['original_input'] | null) => {
     season: string;
     holiday: string | null;
     moons: MoonPhaseResult[];
@@ -18,16 +18,20 @@ import { extractCalendarData } from '../useTimeAtlasModal';
 
 export function useTimeAtlasBridgeTab(props: TimeAtlasBridgeTabProps) {
   const masterCalData = computed<CalendarData | null>(() => {
-    return extractCalendarData(props.masterCalendarRecord);
+    const data = extractCalendarData(props.masterCalendarRecord);
+    console.log('[TimeAtlasBridgeTab] masterCalData evaluated:', data ? data.название : null, 'raw record:', props.masterCalendarRecord);
+    return data;
   });
 
   const localCalsWithData = computed<Array<{ id: string; name: string; data: CalendarData }>>(() => {
-    return props.localCalendarRecords
+    const res = props.localCalendarRecords
       .map(c => {
         const d = extractCalendarData(c);
         return d ? { id: c.id || '', name: d.название || 'Календарь', data: d } : null;
       })
       .filter((x): x is { id: string; name: string; data: CalendarData } => x !== null);
+    console.log('[TimeAtlasBridgeTab] localCalsWithData evaluated:', res.length, 'records:', res);
+    return res;
   });
 
   const onEraChange = (cal: CalendarData, e: Event) => {

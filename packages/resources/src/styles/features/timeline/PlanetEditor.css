@@ -189,7 +189,7 @@
 }
 
 /* Панель содержимого таба */
-.tab-pane {
+.planet-editor .tab-pane {
   display: none;
   flex-direction: column;
   gap: 20px;
@@ -200,7 +200,7 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
-.tab-pane.active {
+.planet-editor .tab-pane.active {
   display: flex;
 }
 

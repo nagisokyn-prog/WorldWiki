@@ -28,7 +28,7 @@ import initWasm, {
   type YearPreview,
 } from '@worldwiki/calendar-wasm';
 import type { MoonConfig } from './calendar.types';
-import { createWasmFallback } from './calendar.wasm-fallback';
+import wasmUrl from '../../../../../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm?url';
 
 interface NodeFsModule {
   existsSync(path: string): boolean;
@@ -53,12 +53,16 @@ export function isWasmReady(): boolean {
 export async function ensureWasmInitialized(): Promise<WasmCalendarEngine> {
   if (wasmEngineInstance) return wasmEngineInstance;
   if (!wasmInitPromise) {
-    wasmInitPromise = initWasm().then(() => {
-      wasmEngineInstance = new WasmCalendarEngine();
-      isWasmInitialized = true;
-    }).catch(err => {
-      console.warn('[calendar.wasm-bridge] WASM initialization failed, using JS fallback:', err);
-    });
+    wasmInitPromise = (async () => {
+      try {
+        await initWasm({ module_or_path: wasmUrl });
+        wasmEngineInstance = new WasmCalendarEngine();
+        isWasmInitialized = true;
+        console.log('✅ [calendar.wasm-bridge] WebAssembly calendar engine successfully initialized!');
+      } catch (err) {
+        console.warn('[calendar.wasm-bridge] WASM initialization failed, using JS fallback:', err);
+      }
+    })();
   }
   await wasmInitPromise;
   return wasmEngineInstance!;
@@ -102,8 +106,11 @@ export function getWasmEngine(): WasmCalendarEngine | null {
           console.debug('[calendar.wasm-bridge] Node.js sync WASM fallback unavailable:', err);
         }
       }
-      wasmEngineInstance = new WasmCalendarEngine();
-      isWasmInitialized = true;
+      if (isWasmInitialized) {
+        wasmEngineInstance = new WasmCalendarEngine();
+      } else {
+        return null;
+      }
     } catch (err) {
       console.debug('[calendar.wasm-bridge] WASM module not yet ready, using TS fallback Proxy:', err);
       return null;
@@ -119,7 +126,7 @@ export const defaultWasmEngine: WasmCalendarEngine = new Proxy({} as WasmCalenda
       const value = Reflect.get(engine, prop, receiver);
       return typeof value === 'function' ? value.bind(engine) : value;
     }
-    return createWasmFallback(prop);
+    throw new Error(`[calendar.wasm-bridge] Cannot call WasmCalendarEngine.${String(prop)}: WASM is not initialized yet. Call await ensureWasmInitialized() first.`);
   },
 });
 

@@ -165,10 +165,13 @@ export const CalendarAstronomy = {
     region: WorldRegion,
     moment: WorldMoment,
     cal: CalendarData,
-    calcDaylight: (absMin: number, c: CalendarData) => DaylightResult | null
+    calcDaylight: (absMin: number, c: CalendarData) => DaylightResult | null,
+    offsetHours: number = 0
   ): RegionSunStatus {
-    const daylight = calcDaylight(Math.round(moment.day_index * 1440 + moment.day_fraction * 1440), cal);
-    const frac = moment.day_fraction;
+    const settings = cal.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const hInDay = settings.часов_в_сутках || 24;
+    const localFrac = (((moment.day_fraction + offsetHours / hInDay) % 1) + 1) % 1;
+    const daylight = calcDaylight(Math.round(moment.day_index * 1440 + localFrac * 1440), cal);
     const getSunPhase = (f: number): { phase: 'dawn' | 'day' | 'dusk' | 'night'; phase_label: string } => {
       if (f >= 0.22 && f < 0.28) {
         return { phase: 'dawn', phase_label: '🌅 Рассвет' };
@@ -182,7 +185,7 @@ export const CalendarAstronomy = {
       return { phase: 'night', phase_label: '🌙 Ночь' };
     };
 
-    const { phase, phase_label } = getSunPhase(frac);
+    const { phase, phase_label } = getSunPhase(localFrac);
 
     const sunrise_time = daylight?.sunrise || '06:00';
     const sunset_time = daylight?.sunset || '18:00';

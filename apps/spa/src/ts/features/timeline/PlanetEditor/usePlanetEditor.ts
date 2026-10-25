@@ -185,7 +185,15 @@ export function usePlanetEditor(
         orbit_days_num: planet.value.orbit_days_num,
         orbit_days_den: planet.value.orbit_days_den,
         rotation_direction: planet.value.rotation_direction,
-        moons: planet.value.moons,
+        moons: planet.value.moons.map((m) => {
+          const clean: Record<string, unknown> = {
+            name: m.name,
+            orbital_period: m.orbital_period,
+            start_phase: m.start_phase,
+          };
+          if (m.id) clean.id = m.id;
+          return clean;
+        }),
         timezones: planet.value.timezones,
         regions: planet.value.regions,
         solstices: planet.value.solstices,

@@ -182,9 +182,10 @@ export const CalendarEngine = {
     region: WorldRegion,
     moment: WorldMoment,
     cal: CalendarData,
-    _timezones?: WorldTimezone[]
+    _timezones?: WorldTimezone[],
+    offsetHours: number = 0
   ): RegionSunStatus {
-    return CalendarAstronomy.calculateSunForRegion(region, moment, cal, (m, c) => this.calculateDaylight(m, c));
+    return CalendarAstronomy.calculateSunForRegion(region, moment, cal, (m, c) => this.calculateDaylight(m, c), offsetHours);
   },
 
   parseDurationString(input: string, cal: CalendarData): number {

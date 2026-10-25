@@ -30,6 +30,15 @@ export const entityApi = {
       }
       delete result.attributes;
       delete result.data;
+      const rawTags = item.tags ?? result.tags ?? result['теги'] ?? [];
+      const cleanTags = Array.isArray(rawTags)
+        ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
+        : typeof rawTags === 'string'
+          ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+          : [];
+      result.tags = cleanTags;
+      result['теги'] = cleanTags;
+
       return result;
     });
   },
@@ -48,6 +57,18 @@ export const entityApi = {
     }
     delete result.attributes;
     delete result.data;
+
+    // Синхронизация tags <-> теги:
+    // SurrealDB возвращает tags: string[] через ребра tagged_with.
+    // Схемы сущностей в UI (character.json, location.json и др.) привязаны к path = "теги".
+    const rawTags = processed.tags ?? result.tags ?? result['теги'] ?? [];
+    const cleanTags = Array.isArray(rawTags)
+      ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
+      : typeof rawTags === 'string'
+        ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+        : [];
+    result.tags = cleanTags;
+    result['теги'] = cleanTags;
     
     return result;
   },
@@ -66,11 +87,22 @@ export const entityApi = {
       }
     }
 
-    const SYSTEM_FIELDS = new Set(['id', 'project_id', 'entity_type', 'name', 'description', 'tags', 'embedding', 'created_at', 'updated_at', 'attributes']);
+    const SYSTEM_FIELDS = new Set(['id', 'project_id', 'entity_type', 'name', 'description', 'tags', 'теги', 'embedding', 'created_at', 'updated_at', 'attributes']);
     const cleanAttributes: Record<string, unknown> = {};
     for (const k of Object.keys(actualData)) {
       if (!SYSTEM_FIELDS.has(k)) cleanAttributes[k] = actualData[k];
     }
+
+    const rawTags = actualData['теги'] !== undefined && actualData['теги'] !== null
+      ? actualData['теги']
+      : actualData.tags;
+    const cleanTags = Array.isArray(rawTags)
+      ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
+      : typeof rawTags === 'string'
+        ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+        : [];
+
+    cleanAttributes['теги'] = cleanTags;
 
     return {
       id: id ?? null,
@@ -79,7 +111,7 @@ export const entityApi = {
       name: extractedName,
       description: actualData.description || null,
       attributes: cleanAttributes,
-      tags: actualData.tags || [],
+      tags: cleanTags,
     };
   },
 

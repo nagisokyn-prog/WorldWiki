@@ -156,6 +156,35 @@ describe('entityApi', () => {
       });
       expect(result).toEqual(mockSaveResult);
     });
+
+    it('should synchronize "теги" from UI into tags and cleanAttributes["теги"]', () => {
+      const flatData = {
+        name: 'Hero',
+        теги: ['Ника', 'вера', 'какой-то важный статус'],
+      };
+
+      const formatted = entityApi.formatEntityPayload('proj_1', 'character', flatData);
+
+      expect(formatted.tags).toEqual(['Ника', 'вера', 'какой-то важный статус']);
+      expect((formatted.attributes as Record<string, unknown>)['теги']).toEqual(['Ника', 'вера', 'какой-то важный статус']);
+    });
+  });
+
+  describe('getEntity tags synchronization', () => {
+    it('populates both tags and теги from database tags array', async () => {
+      const mockRawEntity = {
+        id: 'entities:char_1',
+        name: 'Ника',
+        tags: ['Ника', 'вера'],
+        attributes: { age: 25 },
+      };
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockRawEntity);
+
+      const res = await entityApi.getEntity('proj_1', 'character', 'entities:char_1');
+
+      expect(res.tags).toEqual(['Ника', 'вера']);
+      expect(res['теги']).toEqual(['Ника', 'вера']);
+    });
   });
 
   describe('deleteEntity & history', () => {

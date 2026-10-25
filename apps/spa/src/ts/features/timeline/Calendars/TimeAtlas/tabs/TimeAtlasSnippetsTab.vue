@@ -1,5 +1,5 @@
 <template>
-  <div class="tab-pane">
+  <div class="atlas-tab-pane tab-pane">
     <div class="snippets-intro">
       <p>Готовые стилизованные формулировки текущего момента времени для быстрой вставки в текст глав или сносок летописей:</p>
     </div>

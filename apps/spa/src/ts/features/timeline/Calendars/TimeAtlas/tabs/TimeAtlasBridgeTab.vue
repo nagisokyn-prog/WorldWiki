@@ -1,5 +1,5 @@
 <template>
-  <div class="tab-pane">
+  <div class="atlas-tab-pane tab-pane">
     <!-- Опорный мастер-календарь -->
     <div v-if="masterCalData" class="master-pinned-section">
       <div class="section-label">

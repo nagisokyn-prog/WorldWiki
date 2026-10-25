@@ -76,19 +76,25 @@ export function applySettingsToDOM(settings: AppSettings): void {
   if (g.highlight) style.setProperty('--glass-highlight', g.highlight);
 
   // 3. Динамический расчет цветов карточек, панелей и фонов
-  const bgCardRgb = extractRgb(c.bgCard) || [22, 22, 26];
-  const bgPanelRgb = extractRgb(c.bgPanel) || [15, 15, 18];
-  const bgInputRgb = extractRgb(c.bgInput) || [22, 22, 26];
+  const isLight = settings.theme === 'light' || root.getAttribute('data-theme') === 'light';
+  const defaultCardRgb: [number, number, number] = isLight ? [255, 255, 255] : [22, 22, 26];
+  const defaultPanelRgb: [number, number, number] = isLight ? [240, 240, 245] : [15, 15, 18];
+  const defaultInputRgb: [number, number, number] = isLight ? [255, 255, 255] : [22, 22, 26];
+  const defaultGlassRgb: [number, number, number] = isLight ? [245, 245, 250] : [20, 20, 25];
+
+  const bgCardRgb = extractRgb(c.bgCard) || defaultCardRgb;
+  const bgPanelRgb = extractRgb(c.bgPanel) || defaultPanelRgb;
+  const bgInputRgb = extractRgb(c.bgInput) || defaultInputRgb;
 
   style.setProperty('--bg-card-rgb', `${bgCardRgb[0]}, ${bgCardRgb[1]}, ${bgCardRgb[2]}`);
   style.setProperty('--bg-panel-rgb', `${bgPanelRgb[0]}, ${bgPanelRgb[1]}, ${bgPanelRgb[2]}`);
   style.setProperty('--bg-input-rgb', `${bgInputRgb[0]}, ${bgInputRgb[1]}, ${bgInputRgb[2]}`);
 
   // Динамические фоны, зависимые от альфа-канала
-  const computedBgCard = toRgbaString(c.bgCard, cardAlpha, [22, 22, 26]);
-  const computedBgPanel = toRgbaString(c.bgPanel, islandAlpha, [15, 15, 18]);
-  const computedGlassBg = toRgbaString(c.bgPanel, islandAlpha, [20, 20, 25]);
-  const computedBgInput = toRgbaString(c.bgInput, 0.6, [22, 22, 26]);
+  const computedBgCard = toRgbaString(c.bgCard, cardAlpha, defaultCardRgb);
+  const computedBgPanel = toRgbaString(c.bgPanel, islandAlpha, defaultPanelRgb);
+  const computedGlassBg = toRgbaString(c.bgPanel, islandAlpha, defaultGlassRgb);
+  const computedBgInput = toRgbaString(c.bgInput, isLight ? 0.8 : 0.6, defaultInputRgb);
 
   style.setProperty('--bg-card', computedBgCard);
   style.setProperty('--glass-card', computedBgCard);
@@ -251,7 +257,6 @@ export function applySettingsToDOM(settings: AppSettings): void {
   }
 
   // 13. Выпадающие списки (Dropdowns)
-  const isLight = settings.theme === 'light' || root.getAttribute('data-theme') === 'light';
   const defaultDropdownRgb: [number, number, number] = isLight ? [255, 255, 255] : [26, 26, 32];
   const t = settings.dropdowns?.transparency !== undefined ? settings.dropdowns.transparency : 0;
   const op = String((100 - t) / 100);

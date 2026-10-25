@@ -18,13 +18,19 @@
   border-radius: var(--radius-input);
   min-height: 42px;
   cursor: text;
-  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
+  transform: none;
+  transition: opacity 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.tags-input-container:hover {
+  transform: none;
 }
 
 .tags-input-container:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
   background: var(--bg-hover);
+  transform: none;
 }
 
 .tag-pill {

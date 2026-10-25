@@ -114,6 +114,7 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
       const rawAttrs = (r as { attributes?: Record<string, unknown> }).attributes;
       const cleanTags = Array.from(new Set([
         ...extractCleanTags(r.tags),
+        ...extractCleanTags((r as Record<string, unknown>)['теги']),
         ...extractCleanTags(rawAttrs?.tags),
         ...extractCleanTags(rawAttrs?.['теги']),
         ...extractCleanTags((r as { tag_names?: unknown }).tag_names)
@@ -133,6 +134,7 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
         type_name: schema?.name || entityType,
         type_icon: schema?.icon || '📌',
         tags: cleanTags,
+        'теги': cleanTags,
         cleanTags,
         aliases
       };
@@ -298,17 +300,29 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
       if (!isExactMatch) {
         const nextTags = Array.from(new Set([...(entity.cleanTags || []), q]));
         const currentAttrs = (entity as { attributes?: Record<string, unknown> }).attributes || {};
+        const currentAliases = Array.isArray(currentAttrs.aliases)
+          ? (currentAttrs.aliases as string[])
+          : Array.isArray(currentAttrs['псевдонимы'])
+            ? (currentAttrs['псевдонимы'] as string[])
+            : [];
+        const nextAliases = Array.from(new Set([...currentAliases, q]));
         const nextAttrs = {
           ...currentAttrs,
-          tags: nextTags
+          tags: nextTags,
+          'теги': nextTags,
+          aliases: nextAliases,
+          'псевдонимы': nextAliases
         };
         void api.saveEntity(props.project, {
           ...entity,
           tags: nextTags,
+          'теги': nextTags,
           attributes: nextAttrs
         } as never).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
         entity.cleanTags = nextTags;
         entity.tags = nextTags;
+        (entity as Record<string, unknown>)['теги'] = nextTags;
+        (entity as Record<string, unknown>).aliases = nextAliases;
       }
     }
     emit('insert', {

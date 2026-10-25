@@ -177,7 +177,16 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
         ctx.emit('section-change', ctx.activeSection.value);
       }
 
-      ctx.formData.value = JSON.parse(JSON.stringify(ctx.props.initialData || {}));
+      const rawInitial = ctx.props.initialData ? JSON.parse(JSON.stringify(ctx.props.initialData)) : {};
+      const rawTags = rawInitial['теги'] ?? rawInitial.tags ?? (rawInitial.attributes && (rawInitial.attributes['теги'] ?? rawInitial.attributes.tags)) ?? [];
+      const cleanInitialTags = Array.isArray(rawTags)
+        ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
+        : typeof rawTags === 'string'
+          ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+          : [];
+      rawInitial['теги'] = cleanInitialTags;
+      rawInitial.tags = cleanInitialTags;
+      ctx.formData.value = rawInitial;
       ctx.foreignUpdates.value = {};
 
       ctx.lastEmittedData.value = JSON.stringify({ ...ctx.formData.value, __foreignUpdates: {} });

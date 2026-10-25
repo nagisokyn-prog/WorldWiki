@@ -1,5 +1,5 @@
 <template>
-  <div class="tab-pane">
+  <div class="atlas-tab-pane tab-pane">
     <div class="matrix-toolbar glass-panel">
       <div class="matrix-selector-group">
         <label>Базовый календарь (сетка):</label>
@@ -9,7 +9,7 @@
           @change="$emit('update:matrixBaseCalId', ($event.target as HTMLSelectElement).value)"
         >
           <option v-for="c in allCalendars" :key="c.id" :value="c.id">
-            {{ c.data?.название }}
+            {{ c.data?.название || c.name || 'Календарь' }}
           </option>
         </select>
       </div>
@@ -22,7 +22,7 @@
           @change="$emit('update:matrixCompareCalId', ($event.target as HTMLSelectElement).value)"
         >
           <option v-for="c in allCalendars" :key="c.id" :value="c.id">
-            {{ c.data?.название }}
+            {{ c.data?.название || c.name || 'Календарь' }}
           </option>
         </select>
       </div>

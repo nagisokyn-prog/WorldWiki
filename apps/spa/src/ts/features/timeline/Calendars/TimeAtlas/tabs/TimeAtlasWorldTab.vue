@@ -1,5 +1,5 @@
 <template>
-  <div class="tab-pane">
+  <div class="atlas-tab-pane tab-pane">
     <div class="world-time-intro flex justify-between items-center flex-wrap gap-3">
       <p class="m-0">Синхронный срез физического времени и астрономического солнца по всем регионам планеты в этот момент:</p>
       

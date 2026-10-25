@@ -1,5 +1,5 @@
 <template>
-  <div v-if="calData && localDate" :class="['calendar-sync-card', isMaster ? 'is-master pinned-card' : 'glass-panel']">
+  <div v-if="calData" :class="['calendar-sync-card', isMaster ? 'is-master pinned-card' : 'glass-panel']">
     <div class="cal-badge-row">
       <span :class="isMaster ? 'badge-master' : 'badge-local'">
         {{ isMaster ? 'Мастер' : 'Культура' }}
@@ -12,7 +12,7 @@
       <div v-if="calData.эпохи && calData.эпохи.length > 0" class="control-group">
         <label class="control-label">Эпоха</label>
         <select
-          :value="localDate.era_index ?? 0"
+          :value="safeDate.era_index ?? 0"
           class="interactive-el glass-select"
           @change="$emit('era-change', calData, $event)"
         >
@@ -29,7 +29,7 @@
       <div class="control-group">
         <label class="control-label">Год</label>
         <input
-          :value="localDate.year ?? 1"
+          :value="safeDate.year ?? 1"
           type="number"
           class="interactive-el glass-input"
           @input="$emit('year-change', calData, $event)"
@@ -39,7 +39,7 @@
       <div class="control-group flex-1">
         <label class="control-label">Месяц</label>
         <select
-          :value="localDate.month ?? 0"
+          :value="safeDate.month ?? 0"
           class="interactive-el glass-select"
           @change="$emit('month-change', calData, $event)"
         >
@@ -48,7 +48,7 @@
             :key="mIdx"
             :value="mIdx"
           >
-            {{ m.название }}
+            {{ m.название || (m as unknown as { name?: string }).name || `Месяц ${mIdx + 1}` }}
           </option>
         </select>
       </div>
@@ -56,7 +56,7 @@
       <div class="control-group">
         <label class="control-label">День</label>
         <input
-          :value="localDate.day ?? 1"
+          :value="safeDate.day ?? 1"
           type="number"
           min="1"
           class="interactive-el glass-input day-input"
@@ -86,9 +86,9 @@
           v-for="(m, mIdx) in dateMeta.moons"
           :key="mIdx"
           class="moon-badge"
-          :title="`${m.moon.name}: ${m.name}`"
+          :title="`${m.moon?.name || m.name}: ${m.name}`"
         >
-          {{ m.emoji }} {{ m.moon.name }}: {{ m.name }}
+          {{ m.emoji }} {{ m.moon?.name || m.name }}: {{ m.name }}
         </span>
       </div>
     </div>
@@ -96,9 +96,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../../services/Calendars/calendar.types';
 
-defineProps<{
+const props = defineProps<{
   calData?: CalendarData | null;
   localDate?: CalendarDate['original_input'] | null;
   dateMeta?: {
@@ -108,6 +109,17 @@ defineProps<{
   } | null;
   isMaster?: boolean;
 }>();
+
+const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
+  return props.localDate || {
+    era_index: 0,
+    year: 1,
+    month: 0,
+    day: 1,
+    hour: 0,
+    minute: 0
+  };
+});
 
 defineEmits<{
   (e: 'era-change', cal: CalendarData, ev: Event): void;

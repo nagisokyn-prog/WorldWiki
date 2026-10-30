@@ -151,7 +151,8 @@ export const useShellStore = defineStore('shell', () => {
     sidebarItems,
     schema,
     openChapterTab: navigation.openChapterTab,
-    openEntity: navigation.openEntity
+    openEntity: navigation.openEntity,
+    setActivePanelTab: (tab: string) => { layout.activePanelTab.value = tab; }
   });
 
   // Синхронизация состояния приложения в localStorage при изменениях
@@ -271,6 +272,11 @@ export const useShellStore = defineStore('shell', () => {
     // Manuscript Ops
     loadChapters: manuscript.loadChapters,
     createChapterIn: manuscript.createChapterIn,
+    openCreateChapterModal: manuscript.openCreateChapterModal,
+    closeCreateChapterModal: manuscript.closeCreateChapterModal,
+    confirmCreateChapter: manuscript.confirmCreateChapter,
+    isCreateChapterModalOpen: manuscript.isCreateChapterModalOpen,
+    createChapterTargetVolumeId: manuscript.createChapterTargetVolumeId,
     deleteChapter: manuscript.deleteChapter,
     renameChapter: manuscript.renameChapter,
     deleteVolume: manuscript.deleteVolume,
@@ -290,6 +296,9 @@ export const useShellStore = defineStore('shell', () => {
     openTagsManager: quickOpen.openTagsManager,
     quickOpenDataSource: quickOpen.quickOpenDataSource,
     handleQuickOpenSelect: quickOpen.handleQuickOpenSelect,
+    paletteCommands: quickOpen.paletteCommands,
+    updatePaletteCommands: quickOpen.updatePaletteCommands,
+    openCommandPalette: quickOpen.openCommandPalette,
 
     // Groups Navigation
     selectTreeNode: (node: { type: string; node: { id?: string; [key: string]: unknown } } | null) => { activeTreeNode.value = node; },

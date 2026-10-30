@@ -27,9 +27,10 @@ export function useProjectLauncher() {
   async function loadProjects() {
     try {
       const list = await projectService.getProjects();
-      projects.value = list.map((p: { name: string; icon?: unknown; stats?: unknown }) => ({
+      projects.value = list.map((p: { name: string; icon?: unknown; stats?: unknown; cover_image?: unknown }) => ({
         name: p.name,
         icon: String(p.icon || '📁'),
+        cover_image: typeof p.cover_image === 'string' ? p.cover_image : null,
         stats: (p.stats as unknown as Record<string, number>) || {}
       }));
     } catch (e) {
@@ -43,11 +44,22 @@ export function useProjectLauncher() {
     isEditing,
     editingProjectName,
     formData,
+    customGenreInput,
+    customTypeInput,
+    customGenresList,
+    availableProjectTypes,
+    saveCustomTypeToWheel,
     modalTitle,
     submitButtonText,
     openCreateModal,
     editProject,
     closeModal,
+    addCustomGenre,
+    deleteCustomGenre,
+    removeGenre,
+    selectCoverImage,
+    removeCoverImage,
+    resolveCoverUrl,
     submitForm
   } = useProjectLauncherModal(loadProjects);
 
@@ -113,6 +125,11 @@ export function useProjectLauncher() {
     editingProjectName,
     cloudSyncMode,
     formData,
+    customGenreInput,
+    customTypeInput,
+    customGenresList,
+    availableProjectTypes,
+    saveCustomTypeToWheel,
     projectTypes,
     genres,
     modalTitle,
@@ -124,6 +141,12 @@ export function useProjectLauncher() {
     confirmDelete,
     submitForm,
     closeModal,
+    addCustomGenre,
+    deleteCustomGenre,
+    removeGenre,
+    selectCoverImage,
+    removeCoverImage,
+    resolveCoverUrl,
     openCloudSync,
     showToast,
     toggleGlobalTime

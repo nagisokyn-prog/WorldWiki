@@ -3,7 +3,7 @@
  * @description Pinia store для управления зумом приложения
  */
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, onUnmounted, onScopeDispose } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 
 export const useZoomStore = defineStore('zoom', () => {
@@ -15,7 +15,7 @@ export const useZoomStore = defineStore('zoom', () => {
     localStorage.setItem('app-zoom', String(clamped));
 
     // Native Webview Zoom in Tauri (scales entire application rendering)
-    if (typeof window !== 'undefined' && (window as unknown as { __TAURI__?: unknown }).__TAURI__) {
+    if (typeof window !== 'undefined' && ((window as unknown as { __TAURI__?: unknown }).__TAURI__ || (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__)) {
       try {
         await getCurrentWebview().setZoom(clamped);
         // Clear HTML/body style zoom to avoid dual-scaling/layout distortions
@@ -28,11 +28,50 @@ export const useZoomStore = defineStore('zoom', () => {
       }
     }
 
-    // Web / Browser Fallback
+    // Web / Browser Fallback - apply strictly once to documentElement, not body
     document.documentElement.style.setProperty('--app-zoom', String(clamped));
     (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
-    (document.body.style as unknown as Record<string, string>).zoom = String(clamped);
+    (document.body.style as unknown as Record<string, string>).zoom = '';
   };
+
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === 'app-zoom' && e.newValue) {
+      const val = parseFloat(e.newValue);
+      if (!isNaN(val) && val !== zoomLevel.value) {
+        applyZoom(val);
+      }
+    }
+  };
+
+  // Sync zoom changes across tabs/windows with symmetric cleanup
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', handleStorage);
+  }
+
+  try {
+    onUnmounted(() => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorage);
+      }
+    });
+  } catch (err: unknown) {
+    console.debug('[zoomStore] onUnmounted hook registration skipped:', err);
+  }
+
+  try {
+    if (typeof onScopeDispose === 'function') {
+      onScopeDispose(() => {
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('storage', handleStorage);
+        }
+      });
+    }
+  } catch (err: unknown) {
+    console.debug('[zoomStore] onScopeDispose hook registration skipped:', err);
+  }
+
+  // Initial apply
+  applyZoom(zoomLevel.value);
 
   return {
     zoomLevel,

@@ -19,6 +19,7 @@ export { default as HighlightText } from './components/Vue/HighlightText.vue';
 // Types
 export type { TreeNodeData, TreeSectionData } from './types';
 export type { AppSettings } from './ts/types/settings.js';
+export type { PaletteCommand } from './components/Vue/useCommandPalette.js';
 
 // Composables
 export { useEditorGroups } from './ts/composables/useEditorGroups.js';

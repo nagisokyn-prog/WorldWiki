@@ -13,6 +13,8 @@
  * worldwiki:planets:{project}                 — calendar.store (planets)
  * editor-state-{project}-*                    — useTiptapState (getStateKey: `editor-state-${project}-${title}`)
  * entity-editor-draft-{project}               — entity editor draft
+ * calendar-state-{project}-*                  — useCalendarEditor (getStateKey: `calendar-state-${project}-${calendarId}`)
+ * calendar-scroll-{project}-*                 — useCalendarEditor (getScrollKey: `calendar-scroll-${project}-${calendarId}`)
  *
  * === PER-SESSION / GLOBAL (сбрасываем при смене/удалении проекта) ===
  * chapters-sidebar-selected-arc-id            — useChapterRightSidebar

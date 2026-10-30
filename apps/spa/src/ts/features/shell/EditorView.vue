@@ -370,9 +370,10 @@
 
     <command-palette-vue
       ref="commandPaletteRef"
+      :commands="paletteCommands"
       @save-all="saveAll"
       @new-entity="addNewEntity(currentSidebarTab || '')"
-      @new-chapter="createChapterIn({})"
+      @new-chapter="createChapterIn()"
       @open-settings="toggleSettings()"
       @toggle-sidebar="toggleSidebar"
       @toggle-panel="togglePanel"
@@ -384,6 +385,30 @@
       @open-tags="openTagsManager()"
       @open-sandbox="openSandbox()"
     ></command-palette-vue>
+
+    <create-chapter-modal-vue
+      :is-open="isCreateChapterModalOpen"
+      :project-name="projectName"
+      :initial-volume-id="createChapterTargetVolumeId"
+      @close="closeCreateChapterModal"
+      @create="confirmCreateChapter"
+    ></create-chapter-modal-vue>
+
+    <div
+      v-if="showSettings"
+      class="settings-overlay-modal"
+      @click.self="toggleSettings(false)"
+    >
+      <div class="settings-modal-dialog">
+        <div class="settings-modal-header">
+          <h2>⚙️ Настройки приложения</h2>
+          <button class="settings-close-btn" @click="toggleSettings(false)">✕</button>
+        </div>
+        <div class="settings-modal-body">
+          <settings-vue @close="toggleSettings(false)" />
+        </div>
+      </div>
+    </div>
 
     <tags-manager-modal-vue
       ref="tagsManagerRef"

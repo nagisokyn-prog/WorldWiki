@@ -3,7 +3,7 @@
 
 -- 13. СПИСОК ВСЕХ ПРОЕКТОВ
 DEFINE FUNCTION OVERWRITE fn::get_projects_list() {
-    RETURN (SELECT id, name, created_at, data, type, genres, perfLevel, type::string(id) AS id FROM projects ORDER BY created_at DESC LIMIT 1000);
+    RETURN (SELECT id, name, created_at, data, type, genres, perfLevel, cover_image, type::string(id) AS id FROM projects ORDER BY created_at DESC LIMIT 1000);
 };
 
 -- 14. ПОЛУЧЕНИЕ КОНФИГУРАЦИИ ПРОЕКТА
@@ -13,7 +13,7 @@ DEFINE FUNCTION OVERWRITE fn::get_project_config($name: any) {
     };
     LET $p_rec = fn::normalize_project_id($name);
     LET $res = (
-        SELECT id, name, created_at, data, type, genres, perfLevel, type::string(id) AS id FROM projects 
+        SELECT id, name, created_at, data, type, genres, perfLevel, cover_image, type::string(id) AS id FROM projects 
         WHERE id = $p_rec OR name = type::string($name)
         LIMIT 1
     );

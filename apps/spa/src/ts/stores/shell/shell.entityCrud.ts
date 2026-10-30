@@ -91,10 +91,20 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
   };
 
   const addNewEntity = async (entityType: string, preDefinedName?: string) => {
-    if (!entityType || isCreatingEntity.value) return;
+    let resolvedType = entityType;
+    if (!resolvedType) {
+      if (deps.currentSidebarTab.value && deps.currentSidebarTab.value !== 'chapters') {
+        resolvedType = deps.currentSidebarTab.value;
+      } else {
+        const chosen = prompt('Создание новой сущности. Введите тип (например: character, location, item, event, organization):', 'character');
+        if (!chosen) return;
+        resolvedType = chosen.trim().toLowerCase();
+      }
+    }
+    if (!resolvedType || isCreatingEntity.value) return;
     isCreatingEntity.value = true;
     try {
-      if (entityType === 'chapters') {
+      if (resolvedType === 'chapters') {
         const newChapterTitle = preDefinedName || prompt('Введите название новой главы:', 'Новая глава');
         if (newChapterTitle === null) return;
         const newChapter: Chapter = {
@@ -120,7 +130,7 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
         return;
       }
 
-      const sch = await deps.schema.loadSchema(entityType);
+      const sch = await deps.schema.loadSchema(resolvedType);
       const titleFieldPath: string = sch?.titleField || sch?.sections?.[0]?.fields?.[0]?.path || 'name';
       const initialData: Record<string, unknown> = {};
       const nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
@@ -135,24 +145,24 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
         current[parts[parts.length - 1]] = nameToSet;
       }
 
-      const saveResult = await entityApi.saveEntity(deps.projectName.value, entityType, initialData, undefined, nameToSet);
+      const saveResult = await entityApi.saveEntity(deps.projectName.value, resolvedType, initialData, undefined, nameToSet);
       const newEntityId = saveResult.id;
       if (!newEntityId) {
         deps.addLog(`Entity -> Error: не удалось сохранить сущность`, 'error');
         return;
       }
 
-      const newEntity = await entityApi.getEntity(deps.projectName.value, entityType, newEntityId as string);
+      const newEntity = await entityApi.getEntity(deps.projectName.value, resolvedType, newEntityId as string);
       if (!newEntity) {
         deps.addLog(`Entity -> Error: не удалось загрузить только что созданную сущность`, 'error');
         return;
       }
 
       deps.addLog(`Entity -> Created`, 'success');
-      await deps.loadEntityList(entityType);
+      await deps.loadEntityList(resolvedType);
       if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
 
-      const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType };
+      const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType: resolvedType };
       deps.openEntity(entityToOpen);
     } catch (e) {
       deps.addLog(`Entity -> Error: ${e}`, 'error');

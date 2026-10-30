@@ -315,6 +315,12 @@
   background: var(--warning-bg);
 }
 
+.status-chip.accent {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
 .chip-list {
   display: flex;
   gap: 8px;

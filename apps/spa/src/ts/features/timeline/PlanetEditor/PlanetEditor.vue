@@ -32,6 +32,15 @@
         <button
           v-if="!isReadOnly"
           type="button"
+          class="btn-dashboard interactive-el"
+          title="Библиотека астрофизических пресетов планет"
+          @click="openPresetsModal"
+        >
+          ✨ Пресеты
+        </button>
+        <button
+          v-if="!isReadOnly"
+          type="button"
           class="btn-dashboard btn-danger interactive-el"
           title="Удалить планету"
           @click="deletePlanet"
@@ -120,6 +129,14 @@
       @add-moon="addMoon"
       @remove-moon="removeMoon"
     />
+
+    <!-- Модалка пресетов планет -->
+    <PlanetPresetsModal
+      v-if="isPresetsModalOpen"
+      :model-value="isPresetsModalOpen"
+      @update:model-value="isPresetsModalOpen = $event"
+      @select-preset="applyPreset"
+    />
   </div>
 </template>
 
@@ -129,6 +146,7 @@ import { usePlanetEditor } from './usePlanetEditor';
 import PlanetAstrophysicsTab from './components/PlanetAstrophysicsTab.vue';
 import PlanetTimezonesTab from './components/PlanetTimezonesTab.vue';
 import PlanetMoonsTab from './components/PlanetMoonsTab.vue';
+import PlanetPresetsModal from './PlanetPresetsModal/PlanetPresetsModal.vue';
 
 const props = defineProps<PlanetEditorProps>();
 const emit = defineEmits<PlanetEditorEmits>();
@@ -139,6 +157,9 @@ const {
   decimalAxialTilt,
   isSaving,
   errorMessage,
+  isPresetsModalOpen,
+  openPresetsModal,
+  applyPreset,
   setTab,
   updateName,
   updateDayTicks,

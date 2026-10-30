@@ -14,6 +14,7 @@ import type {
   PlanetRegion,
   PlanetMoon,
 } from './PlanetEditor.model';
+import type { PlanetPreset } from './presets/planet.presets';
 import {
   toPlanetEntity,
   createDefaultPlanetDto,
@@ -243,12 +244,43 @@ export function usePlanetEditor(
     }
   }
 
+  const isPresetsModalOpen = ref(false);
+
+  function openPresetsModal() {
+    isPresetsModalOpen.value = true;
+  }
+
+  function applyPreset(preset: PlanetPreset) {
+    const p = preset.data;
+    if (p.name) planet.value.name = p.name;
+    if (p.icon) planet.value.icon = p.icon;
+    if (p.ticks_per_day !== undefined) planet.value.ticks_per_day = p.ticks_per_day;
+    if (p.day_hours !== undefined) planet.value.day_hours = p.day_hours;
+    if (p.day_minutes !== undefined) planet.value.day_minutes = p.day_minutes;
+    if (p.day_seconds !== undefined) planet.value.day_seconds = p.day_seconds;
+    if (p.orbit_days !== undefined) planet.value.orbit_days = p.orbit_days;
+    if (p.orbit_days_num !== undefined) planet.value.orbit_days_num = p.orbit_days_num;
+    if (p.orbit_days_den !== undefined) planet.value.orbit_days_den = p.orbit_days_den;
+    if (p.axial_tilt_mdeg !== undefined) planet.value.axial_tilt_mdeg = p.axial_tilt_mdeg;
+    if (p.rotation_direction) planet.value.rotation_direction = p.rotation_direction;
+    if (p.solstices) planet.value.solstices = { ...p.solstices };
+    if (p.timezones) planet.value.timezones = JSON.parse(JSON.stringify(p.timezones));
+    if (p.regions) planet.value.regions = JSON.parse(JSON.stringify(p.regions));
+    if (p.moons) planet.value.moons = JSON.parse(JSON.stringify(p.moons));
+
+    emit('update:name', planet.value.name);
+    emit('update:planet', planet.value);
+  }
+
   return {
     activeTab,
     planet,
     decimalAxialTilt,
     isSaving,
     errorMessage,
+    isPresetsModalOpen,
+    openPresetsModal,
+    applyPreset,
     setTab,
     updateName,
     updateDayTicks,

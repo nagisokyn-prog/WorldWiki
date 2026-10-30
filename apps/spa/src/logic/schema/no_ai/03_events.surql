@@ -17,7 +17,6 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE entity_rel WHERE project_id = $p_rec;
     DELETE appears_in WHERE project_id = $p_rec;
     DELETE participates_in WHERE project_id = $p_rec;
-    DELETE revealed_in WHERE project_id = $p_rec;
     DELETE participant_of WHERE project_id = $p_rec;
     DELETE advances_arc WHERE project_id = $p_rec;
     DELETE occurs_at WHERE project_id = $p_rec;
@@ -63,8 +62,6 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
 
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
     DELETE text_blocks WHERE chapter_id = $before.id;
-    DELETE appears_in WHERE out = $before.id;
-    DELETE revealed_in WHERE out = $before.id;
     DELETE contains WHERE out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
     DELETE plans_for WHERE out = $before.id;

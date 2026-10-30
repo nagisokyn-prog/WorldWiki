@@ -1,7 +1,6 @@
 <template>
     <div class="app-container">
         <AppDialog />
-        <GlobalTimeViewer :project-name="projects[0]?.name" />
         <!-- Хедер -->
         <header v-motion-slide-top class="launcher-header glass-panel">
             <div class="logo">
@@ -10,17 +9,12 @@
             </div>
             <div class="header-actions flex gap-2 items-center">
                 <button
-class="glass-btn outline interactive-el" title="Мировое время (Ctrl+Shift+T)"
-                    @click="toggleGlobalTime">
-                    ⏱️ Время
-                </button>
-                <button
-class="glass-btn outline interactive-el" title="Загрузить из облака"
+                    class="glass-btn outline interactive-el" title="Загрузить из облака"
                     @click="openCloudSync('import')">
                     ☁️ Импорт
                 </button>
                 <button
-class="glass-btn outline interactive-el" title="Сохранить в облако"
+                    class="glass-btn outline interactive-el" title="Сохранить в облако"
                     @click="openCloudSync('export')">
                     ☁️ Экспорт
                 </button>
@@ -55,8 +49,20 @@ class="glass-btn outline" title="Редактировать"
 class="glass-btn outline" title="Удалить"
                                     @click.stop="confirmDelete(project.name)">🗑️</button>
                             </div>
-                            <div class="project-icon">{{ project.icon }}</div>
-                            <h3>{{ project.name }}</h3>
+                            <div class="project-card-layout">
+                                <div v-if="project.cover_image" class="project-cover-container">
+                                    <img :src="resolveCoverUrl(project.cover_image)" class="project-card-cover" alt="Обложка" />
+                                </div>
+                                <div v-else class="project-icon-placeholder">
+                                    <span class="project-icon">{{ project.icon }}</span>
+                                </div>
+                                <div class="project-card-meta">
+                                    <h3>{{ project.name }}</h3>
+                                    <div v-if="project.stats" class="project-stats">
+                                        <span>{{ project.stats.chapters || 0 }} глав</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -82,11 +88,11 @@ class="glass-btn outline" title="Удалить"
                     <div class="hotkeys-header-row">
                         <span class="text-lg">⌨️</span>
                         <h3 class="m-0 text-sm font-semibold text-main">Горячие клавиши в редакторе</h3>
-                        <span class="text-xs text-muted ml-auto">Ctrl+Shift+P — открыть список всех команд</span>
+                        <span class="text-xs text-muted ml-auto">Ctrl+K / Ctrl+Shift+P — командная панель</span>
                     </div>
                     <div class="hotkeys-grid-cols">
+                        <div class="hk-item"><kbd>Ctrl+K</kbd> <span>Командная панель</span></div>
                         <div class="hk-item"><kbd>Ctrl+P</kbd> <span>Быстрое открытие</span></div>
-                        <div class="hk-item"><kbd>Ctrl+Shift+P</kbd> <span>Командная панель</span></div>
                         <div class="hk-item"><kbd>Ctrl+S</kbd> <span>Сохранить всё</span></div>
                         <div class="hk-item"><kbd>Ctrl+W</kbd> <span>Закрыть вкладку</span></div>
                         <div class="hk-item"><kbd>Ctrl+Tab</kbd> <span>Следующая вкладка</span></div>
@@ -111,37 +117,116 @@ class="glass-btn outline" title="Удалить"
                 </div>
                 <div class="modal-body">
                     <form id="createProjectForm" @submit.prevent="submitForm">
-                        <div class="project-compact-header">
-                            <div class="form-group flex-1">
-                                <label class="glass-label" for="projectName">Название произведения</label>
-                                <input
-id="projectName" v-model="formData.name" type="text" class="glass-input"
-                                    :disabled="isEditing" placeholder="Введите название произведения" required>
-                                <small class="glass-label">Название вашего произведения</small>
-                            </div>
-
-                            <div class="form-group form-group-fixed-type">
-                                <label class="glass-label">Тип произведения</label>
-                                <vanilla-xbox-wheel
-v-model="formData.type"
-                                    :options="projectTypes"></vanilla-xbox-wheel>
-                            </div>
-                        </div>
-
-                        <div class="form-group genres-fullwidth">
-                            <label class="glass-label">Жанры произведения</label>
-                            <div class="genres-grid glass-card">
-                                <div class="glass-card-bg"></div>
-                                <div class="glass-card-content genres-card-content">
-                                    <div class="genres-grid-inner">
-                                        <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
-                                            <input v-model="formData.genres" type="checkbox" :value="genre.value">
-                                            <span>{{ (genre as any).icon || '' }} {{ genre.label }}</span>
-                                        </label>
-                                    </div>
+                        <div class="project-modal-columns">
+                            <!-- Левая колонка: Обложка произведения -->
+                            <div class="project-cover-column">
+                                <label class="glass-label">Обложка</label>
+                                <div class="project-cover-slot" @click="selectCoverImage">
+                                    <template v-if="formData.cover_image">
+                                        <img :src="resolveCoverUrl(formData.cover_image)" class="project-cover-poster" alt="Обложка произведения">
+                                    </template>
+                                    <template v-else>
+                                        <div class="cover-empty-placeholder">
+                                            <span class="cover-upload-icon">🖼️</span>
+                                            <span class="cover-upload-text">Выбрать обложку</span>
+                                            <small class="cover-upload-hint">.png, .jpg, .webp</small>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div v-if="formData.cover_image" class="cover-slot-controls">
+                                    <button type="button" class="glass-btn outline sm flex-1" @click.stop="selectCoverImage">
+                                        🖼️ Заменить
+                                    </button>
+                                    <button type="button" class="glass-btn outline sm flex-1" @click.stop="removeCoverImage">
+                                        🗑️ Удалить
+                                    </button>
                                 </div>
                             </div>
-                            <small class="glass-label">Выберите один или нескольких жанров</small>
+
+                            <!-- Правая колонка: Название, Тип и Жанры -->
+                            <div class="project-info-column">
+                                <div class="project-compact-header">
+                                    <div class="form-group flex-1">
+                                        <label class="glass-label" for="projectName">Название произведения</label>
+                                        <input
+id="projectName" v-model="formData.name" type="text" class="glass-input"
+                                            placeholder="Введите название произведения" required>
+                                        <small class="glass-label">Название вашего произведения</small>
+                                    </div>
+
+                                    <div class="form-group form-group-fixed-type">
+                                        <label class="glass-label">Тип произведения</label>
+                                        <vanilla-xbox-wheel
+                                            v-model="formData.type"
+                                            :options="availableProjectTypes"></vanilla-xbox-wheel>
+                                        <div v-if="formData.type === 'custom'" class="flex gap-2 mt-2">
+                                            <input
+                                                v-model="customTypeInput"
+                                                type="text"
+                                                class="glass-input custom-type-input flex-1"
+                                                placeholder="Введите тип (напр. Манга, Фанфик...)"
+                                                @keydown.enter.prevent="saveCustomTypeToWheel"
+                                            >
+                                            <button
+                                                type="button"
+                                                class="glass-btn primary sm"
+                                                title="Сохранить и добавить в барабан"
+                                                @click.prevent="saveCustomTypeToWheel"
+                                            >
+                                                + В барабан
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group genres-fullwidth">
+                                    <label class="glass-label">Жанры произведения</label>
+                                    <div class="genres-grid glass-card">
+                                        <div class="glass-card-bg"></div>
+                                        <div class="glass-card-content genres-card-content">
+                                            <div class="genres-grid-inner">
+                                                <!-- Стандартные жанры -->
+                                                <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
+                                                    <input v-model="formData.genres" type="checkbox" :value="genre.value">
+                                                    <span>{{ (genre as any).icon || '' }} {{ genre.label }}</span>
+                                                </label>
+
+                                                <!-- Кастомные жанры пользователя -->
+                                                <label
+                                                    v-for="cGenre in customGenresList"
+                                                    :key="cGenre.value"
+                                                    class="genre-checkbox custom-genre"
+                                                    :title="'Кастомный жанр: ' + cGenre.label"
+                                                >
+                                                    <input v-model="formData.genres" type="checkbox" :value="cGenre.value">
+                                                    <span>✨ {{ cGenre.label }}</span>
+                                                    <button
+                                                        type="button"
+                                                        class="custom-genre-remove"
+                                                        title="Удалить этот жанр"
+                                                        @click.stop.prevent="deleteCustomGenre(cGenre.value)"
+                                                    >×</button>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Строка ввода своего жанра -->
+                                    <div class="custom-genres-row">
+                                        <input
+                                            v-model="customGenreInput"
+                                            type="text"
+                                            class="glass-input flex-1"
+                                            placeholder="Добавить свой жанр..."
+                                            @keydown.enter.prevent="addCustomGenre"
+                                        >
+                                        <button type="button" class="glass-btn outline" @click="addCustomGenre">
+                                            Добавить
+                                        </button>
+                                    </div>
+                                    <small class="glass-label">Выберите предустановленные жанры или добавьте свои</small>
+                                </div>
+                            </div>
                         </div>
 
                     </form>
@@ -163,16 +248,18 @@ v-model="formData.type"
 <script setup lang="ts">
 import { AppDialog, XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CloudSyncModal from '../../features/sync/CloudSyncModal.vue';
-import GlobalTimeViewer from '../timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue';
 import { useProjectLauncher } from './useProjectLauncher';
 
 const {
   projects,
   sortedProjects,
   modalVisible,
-  isEditing,
   formData,
-  projectTypes,
+  customGenreInput,
+  customTypeInput,
+  customGenresList,
+  availableProjectTypes,
+  saveCustomTypeToWheel,
   genres,
   modalTitle,
   submitButtonText,
@@ -182,9 +269,13 @@ const {
   confirmDelete,
   submitForm,
   closeModal,
+  addCustomGenre,
+  deleteCustomGenre,
+  selectCoverImage,
+  removeCoverImage,
+  resolveCoverUrl,
   openCloudSync,
-  showToast,
-  toggleGlobalTime
+  showToast
 } = useProjectLauncher();
 </script>
 

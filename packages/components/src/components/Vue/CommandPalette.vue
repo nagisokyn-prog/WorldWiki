@@ -10,13 +10,13 @@
               ref="inputRef"
               v-model="query"
               class="cp-input"
-              placeholder="Type a command..."
+              placeholder="Введите команду или начните поиск главы, персонажа, локации..."
               @keydown.down.prevent="moveDown"
               @keydown.up.prevent="moveUp"
               @keydown.enter.prevent="runActive"
               @keydown.escape.prevent="close"
             />
-            <span class="cp-hint-tag">⌘⇧P</span>
+            <span class="cp-hint-tag">Ctrl+K</span>
           </div>
 
           <!-- Results -->
@@ -39,14 +39,14 @@
                 <kbd v-if="idx === activeIdx" class="cp-enter-hint">↵</kbd>
               </div>
             </template>
-            <div v-else class="cp-empty">No command found</div>
+            <div v-else class="cp-empty">Ничего не найдено</div>
           </div>
 
           <!-- Footer -->
           <div class="cp-footer">
-            <span><kbd>↑↓</kbd> select</span>
-            <span><kbd>↵</kbd> run</span>
-            <span><kbd>Esc</kbd> close</span>
+            <span><kbd>↑↓</kbd> навигация</span>
+            <span><kbd>↵</kbd> выбрать</span>
+            <span><kbd>Esc</kbd> закрыть</span>
           </div>
         </div>
       </div>

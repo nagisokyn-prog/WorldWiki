@@ -14,8 +14,9 @@ import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
 import ChaptersMainVue from '@/features/chapters/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
 import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMain.vue';
-import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue } from '@worldwiki/components';
+import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue, Settings as SettingsVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
+import CreateChapterModalVue from '@/features/chapters/CreateChapterModal/CreateChapterModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
 import ConsistencyCheckerVue from '@/features/analytics/ConsistencyChecker/ConsistencyChecker.vue';
@@ -48,6 +49,8 @@ export default defineComponent({
     QuickOpenVue,
     CommandPaletteVue,
     TagsManagerModalVue,
+    CreateChapterModalVue,
+    SettingsVue,
     WowilonPanelVue,
     AppDialog,
   },
@@ -272,10 +275,16 @@ export default defineComponent({
       deleteEntity,
       deleteVolume,
       createChapterIn,
+      isCreateChapterModalOpen: computed(() => shell.isCreateChapterModalOpen),
+      createChapterTargetVolumeId: computed(() => shell.createChapterTargetVolumeId),
+      closeCreateChapterModal: shell.closeCreateChapterModal,
+      confirmCreateChapter: shell.confirmCreateChapter,
       deleteChapter,
       renameChapter,
       renameEntity,
       applyZoom,
+      paletteCommands: shell.paletteCommands,
+      openCommandPalette: shell.openCommandPalette,
       quickOpenDataSource,
       handleQuickOpenSelect,
       selectTreeNode,

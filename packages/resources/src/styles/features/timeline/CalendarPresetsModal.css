@@ -1,0 +1,256 @@
+/* ==========================================================================
+   CALENDAR PRESETS MODAL STYLES (100% Design Tokens, No Raw Colors)
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(var(--glass-blur, 8px));
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.presets-dialog {
+  width: 900px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.presets-modal-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  padding: 20px;
+  gap: 16px;
+}
+
+.presets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.presets-header-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.presets-header-icon {
+  font-size: 28px;
+}
+
+.presets-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.presets-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.presets-category-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.pill-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease);
+}
+
+.pill-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.pill-btn.active {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.presets-search-box {
+  flex: 1;
+  max-width: 320px;
+}
+
+.presets-search-input {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.presets-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 250px;
+  padding-right: 4px;
+}
+
+.presets-empty {
+  padding: 40px 0;
+}
+
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.preset-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  transition: transform var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease);
+}
+
+.preset-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.preset-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.preset-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.preset-meta-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.preset-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-name {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-heading);
+}
+
+.preset-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.preset-badge.real_world {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.preset-badge.fantasy {
+  background: var(--accent-bg, var(--accent-glow));
+  color: var(--accent);
+}
+
+.preset-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+  flex: 1;
+}
+
+.preset-stats-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.stat-chip {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.preset-card-actions {
+  margin-top: auto;
+}
+
+.preset-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(var(--glass-blur, 4px));
+  padding: 20px;
+}
+
+.preset-confirm-dialog {
+  max-width: 440px;
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-modal);
+}
+
+.preset-confirm-dialog h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-heading);
+}
+
+.preset-confirm-dialog p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.preset-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

@@ -2,6 +2,7 @@ export interface ProjectData {
   name: string;
   icon: string;
   stats: Record<string, number>;
+  cover_image?: string | null;
 }
 
 export interface ProjectFormData {
@@ -9,15 +10,21 @@ export interface ProjectFormData {
   type: string;
   genres: string[];
   perfLevel: string;
+  cover_image?: string | null;
 }
 
 export const projectTypes = [
-  { value: 'book', label: 'Книга' },
-  { value: 'story', label: 'Рассказ' },
   { value: 'novel', label: 'Роман' },
+  { value: 'novella', label: 'Повесть' },
+  { value: 'short-story', label: 'Рассказ' },
+  { value: 'screenplay', label: 'Сценарий' },
+  { value: 'anthology', label: 'Сборник' },
+  { value: 'lorebook', label: 'Лорбук / Энциклопедия' },
+  { value: 'book', label: 'Книга' },
   { value: 'series', label: 'Серия' },
   { value: 'world', label: 'Мир' },
-  { value: 'other', label: 'Другое' }
+  { value: 'other', label: 'Другое' },
+  { value: 'custom', label: '✨ Свой тип...' }
 ];
 
 export const genres = [

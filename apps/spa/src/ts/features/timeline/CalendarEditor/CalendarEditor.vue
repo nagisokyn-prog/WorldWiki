@@ -18,10 +18,20 @@
           <div class="dashboard-tags">
             <span class="status-chip">📅 Год: <strong>{{ totalDays }} дн.</strong></span>
             <span v-if="calendarRecord.is_master" class="status-chip warning">🌟 Мастер-календарь</span>
+            <span v-if="hasUnsavedDraft" class="status-chip accent">● Черновик (не сохранено)</span>
           </div>
         </div>
 
         <div class="dashboard-actions">
+          <button
+            v-if="!isReadOnly"
+            type="button"
+            class="btn-action"
+            title="Библиотека пресетов календаря"
+            @click="openPresetsModal"
+          >
+            ✨ Пресеты
+          </button>
           <button type="button" class="btn-action" title="Аудит календаря" @click="openAuditModal">
             🔍 Аудит
           </button>
@@ -107,6 +117,14 @@
       :calendar="calData"
       @update:model-value="isAuditModalOpen = $event"
     />
+
+    <!-- Модалка пресетов календаря -->
+    <CalendarPresetsModal
+      v-if="isPresetsModalOpen"
+      :model-value="isPresetsModalOpen"
+      @update:model-value="isPresetsModalOpen = $event"
+      @select-preset="applyPreset"
+    />
   </div>
 </template>
 
@@ -119,6 +137,7 @@ import Tab3CultureLore from './Tab3CultureLore/Tab3CultureLore.vue';
 import Tab4Playground from './Tab4Playground/Tab4Playground.vue';
 import Tab5ReformsDst from './Tab5ReformsDst/Tab5ReformsDst.vue';
 import CalendarAuditModal from '../Calendars/CalendarAuditModal/CalendarAuditModal.vue';
+import CalendarPresetsModal from '../Calendars/CalendarPresetsModal/CalendarPresetsModal.vue';
 
 const props = defineProps<CalendarEditorProps>();
 const emit = defineEmits<CalendarEditorEmits>();
@@ -131,12 +150,16 @@ const {
   isLoading,
   isSaving,
   isAuditModalOpen,
+  isPresetsModalOpen,
+  hasUnsavedDraft,
   tabsList,
   totalDays,
   setTab,
   saveCalendar,
   deleteCalendar,
   openAuditModal,
+  openPresetsModal,
+  applyPreset,
   patchCalendarData,
   updateName,
   planetOrbitDays,

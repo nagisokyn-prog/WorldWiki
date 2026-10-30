@@ -11,7 +11,7 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
     // Блокируем браузерные дефолты для всех Ctrl-шорткатов которые мы перехватываем
     if (e.ctrlKey) {
       const BROWSER_OVERRIDES = new Set([
-        'KeyS', 'KeyP', 'KeyN', 'KeyW', 'KeyF', 'KeyB',
+        'KeyS', 'KeyP', 'KeyK', 'KeyN', 'KeyW', 'KeyF', 'KeyB',
         'Comma', 'Minus', 'Equal', 'Digit0', 'Backquote',
         'Tab', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5',
         'Digit6', 'Digit7', 'Digit8', 'Digit9', 'F11', 'KeyT',
@@ -67,6 +67,11 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
         case 'KeyP':
           if (shell.quickOpenRef && typeof shell.quickOpenRef.open === 'function') {
             shell.quickOpenRef.open();
+          }
+          return;
+        case 'KeyK':
+          if (shell.commandPaletteRef && typeof shell.commandPaletteRef.open === 'function') {
+            shell.commandPaletteRef.open();
           }
           return;
         case 'KeyN': {

@@ -562,3 +562,200 @@
         max-width: 95%;
     }
 }
+
+
+/* ===== Project Card Book Layout (Vertical Poster 9:16) ===== */
+.project-card-layout {
+    display: flex;
+    gap: calc(16px * var(--density-mult, 1));
+    align-items: center;
+    height: 100%;
+}
+
+.project-cover-container {
+    width: 76px;
+    height: auto;
+    aspect-ratio: 9 / 16;
+    flex-shrink: 0;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    background: var(--bg-hover);
+}
+
+.project-card-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.project-icon-placeholder {
+    width: 76px;
+    height: auto;
+    aspect-ratio: 9 / 16;
+    flex-shrink: 0;
+    border-radius: var(--radius-xs);
+    border: 1px dashed var(--border-color);
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.project-icon-placeholder .project-icon {
+    font-size: 32px;
+    margin-bottom: 0;
+}
+
+.project-card-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.project-card-meta h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: var(--text-heading);
+    word-break: break-word;
+}
+
+/* ===== Project Modal 2-Column Layout (Cover Left, Info Right) ===== */
+.project-modal-columns {
+    display: flex;
+    gap: calc(24px * var(--density-mult, 1));
+    align-items: flex-start;
+}
+
+.project-cover-column {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.project-cover-slot {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9 / 16;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-color);
+    background: var(--bg-input);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--anim-speed) var(--anim-ease), background var(--anim-speed) var(--anim-ease);
+}
+
+.project-cover-slot:hover {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+}
+
+.project-cover-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cover-empty-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.cover-upload-icon {
+    font-size: 32px;
+}
+
+.cover-upload-text {
+    font-size: 13px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-main);
+}
+
+.cover-upload-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.cover-slot-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.cover-slot-controls .sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.project-info-column {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-type-input {
+    margin-top: 8px;
+}
+
+/* ===== Custom Genres in Grid ===== */
+.custom-genres-row {
+    display: flex;
+    gap: calc(8px * var(--density-mult, 1));
+    margin-top: calc(10px * var(--density-mult, 1));
+}
+
+.genre-checkbox.custom-genre {
+    border: 1px dashed var(--accent);
+    background: var(--bg-hover);
+}
+
+.genre-checkbox.custom-genre span {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.custom-genre-remove {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.custom-genre-remove:hover {
+    color: var(--error);
+}
+
+@media (max-width: 768px) {
+    .project-modal-columns {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .project-cover-column {
+        width: 100%;
+        max-width: 180px;
+        margin: 0 auto 16px auto;
+    }
+}

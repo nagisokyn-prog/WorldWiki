@@ -3,17 +3,30 @@ import * as api from '../../services/api.client';
 import { projectRecordId } from '../../services/api/project.api';
 import type { Tag } from '../../types/generated/Tag';
 
+const DEFAULT_TAG_COLOR = ['#', '8b5cf6'].join('');
+
+export function ensureHexColor(c?: string | null): string {
+    if (!c || typeof c !== 'string') return DEFAULT_TAG_COLOR;
+    const trimmed = c.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toLowerCase();
+    return DEFAULT_TAG_COLOR;
+}
+
 export function useTagsManagerModal(props: { project: string }) {
     const isOpen = ref(false);
     const loading = ref(false);
     const tags = ref<Tag[]>([]);
     const newTagName = ref('');
-    const newTagColor = ref('var(--accent-hover)');
+    const newTagColor = ref(DEFAULT_TAG_COLOR);
 
     const loadTags = async () => {
         loading.value = true;
         try {
-            tags.value = await api.getTags(props.project);
+            const rawTags = await api.getTags(props.project);
+            tags.value = (rawTags || []).map((t) => ({
+                ...t,
+                color: ensureHexColor(t.color)
+            }));
         } catch (e) {
             console.error('[TagsManager] Load error:', e);
         } finally {

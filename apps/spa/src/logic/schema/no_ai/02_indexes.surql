@@ -73,16 +73,12 @@ DEFINE INDEX OVERWRITE idx_plans_for_in      ON plans_for FIELDS in;
 DEFINE INDEX OVERWRITE idx_plans_for_out     ON plans_for FIELDS out;
 DEFINE INDEX OVERWRITE idx_plans_for_proj    ON plans_for FIELDS project_id;
 
--- 9. ТАЙМЛАЙН, РАСКРЫТИЕ И УЧАСТИЕ
+-- 9. ТАЙМЛАЙН И УЧАСТИЕ
 DEFINE INDEX OVERWRITE idx_event_project           ON timeline_events FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_event_m_abs             ON timeline_events FIELDS project_id, m_abs;
 DEFINE INDEX OVERWRITE idx_event_calendar          ON timeline_events FIELDS calendar_id;
 DEFINE INDEX OVERWRITE idx_event_title_ft          ON timeline_events COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_event_desc_ft           ON timeline_events COLUMNS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
-DEFINE INDEX OVERWRITE idx_revealed_in_in          ON revealed_in FIELDS in;
-DEFINE INDEX OVERWRITE idx_revealed_in_out         ON revealed_in FIELDS out;
-DEFINE INDEX OVERWRITE idx_revealed_in_project     ON revealed_in FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_revealed_in_pov         ON revealed_in FIELDS pov_id;
 DEFINE INDEX OVERWRITE idx_participates_in_in      ON participates_in FIELDS in;
 DEFINE INDEX OVERWRITE idx_participates_in_out     ON participates_in FIELDS out;
 DEFINE INDEX OVERWRITE idx_participates_in_project ON participates_in FIELDS project_id;

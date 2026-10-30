@@ -5,11 +5,11 @@
 -- 1. project_id есть у всех таблиц и означает владение проектом, а не связь.
 -- 2. Связи двух видов: RELATION-таблицы (contains, advances_arc, occurs_at,
 --    promise_milestones, tagged_with, plans_for, entity_rel, appears_in, 
---    revealed_in, participates_in, arc_entities, arc_chapters)
+--    participates_in, participant_of)
 --    и структурные поля-ссылки record<...>.
 -- 3. entities.schema_id -> entity_schemas (строгая типизация классов лора).
 -- 4. Текст рукописи декомпозирован в text_blocks (семантические блоки/сцены).
--- 5. Время вселенной привязано к text_blocks (occurs_at) и timeline_events.
+-- 5. Время вселенной привязано к plot_promises (occurs_at) и timeline_events (block_id).
 -- ==============================================================================
 -- Включает:
 -- 1. projects (Проекты)
@@ -17,11 +17,7 @@
 -- 3. volumes (Тома)
 -- 4. chapters (Главы рукописи)
 -- 5. story_arcs (Сюжетные арки / сторилайны)
--- 5.1. arc_entities (Связь арки с сущностями фокуса)
--- 5.2. arc_chapters (Охват глав сюжетной аркой)
 -- 6. text_blocks (Семантические блоки текста / сцены)
--- 6.1. advances_arc (Продвижение фазы арки в блоке текста)
--- 6.2. occurs_at (Фиксация времени и диегетической природы сцены)
 -- 7. tags (Теги лора)
 -- 7.1. tagged_with (Тегирование сущностей)
 -- 8. planets (Планеты)
@@ -31,17 +27,16 @@
 -- 11. entities (Сущности лора / энциклопедии)
 -- 12. relation_schemas (Схемы типов связей)
 -- 13. entity_rel (Графовые связи между сущностями)
--- 14. appears_in (Связь участия сущностей в главах)
+-- 14. appears_in (Связь участия сущностей в блоках текста)
 -- 15. plans (Планы и иерархические чек-листы)
 -- 15.1. plans_for (Графовая привязка планов к томам, главам, аркам)
 -- 16. timeline_events (События таймлайна с абсолютной минутой m_abs)
--- 17. revealed_in (Раскрытие событий таймлайна в главах рукописи)
--- 18. participates_in (Связь участия сущностей в событиях таймлайна)
--- 19. entity_revisions (История ревизий сущностей без векторов)
--- 20. entity_rel_revisions (История ревизий связей сущностей)
--- 21. chapter_revisions (История ревизий текста глав)
--- 22. plot_promises (Сюжетные обещания: чеховские ружья, тайны)
--- 22.1. promise_milestones (Жизненный цикл ружья в блоках текста)
+-- 17. participates_in (Связь участия сущностей в событиях таймлайна)
+-- 18. entity_revisions (История ревизий сущностей без векторов)
+-- 19. entity_rel_revisions (История ревизий связей сущностей)
+-- 20. chapter_revisions (История ревизий текста глав)
+-- 21. plot_promises (Сюжетные обещания: чеховские ружья, тайны)
+-- 21.1. promise_milestones (Жизненный цикл ружья в блоках текста)
 -- ==============================================================================
 
 -- 1. ПРОЕКТЫ
@@ -52,6 +47,7 @@ DEFINE FIELD OVERWRITE data        ON projects TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE type        ON projects TYPE option<string | null>;
 DEFINE FIELD OVERWRITE genres      ON projects TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string | null>;
+DEFINE FIELD OVERWRITE cover_image ON projects TYPE option<string | null>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
 DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes OUT volumes | chapters SCHEMAFULL;
@@ -74,8 +70,6 @@ DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime | null> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes       ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
-DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 
 -- 5. СЮЖЕТНЫЕ АРКИ (СТОРИЛАЙНЫ)
 DEFINE TABLE OVERWRITE story_arcs SCHEMAFULL;
@@ -195,8 +189,8 @@ DEFINE FIELD OVERWRITE end_chapter    ON entity_rel TYPE option<record<chapters>
 DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
--- 14. УЧАСТИЕ В ГЛАВАХ
-DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters | text_blocks SCHEMAFULL;
+-- 14. УЧАСТИЕ В БЛОКАХ ТЕКСТА РУКОПИСИ
+DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT text_blocks SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'
   ASSERT $value IN ['mention', 'manual', 'scene'];
@@ -233,16 +227,7 @@ DEFINE FIELD OVERWRITE calendar_id   ON timeline_events TYPE record<calendars>;
 DEFINE FIELD OVERWRITE block_id      ON timeline_events TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at    ON timeline_events TYPE datetime DEFAULT time::now();
 
--- 17. РАСКРЫТИЕ СОБЫТИЙ В ГЛАВАХ (M:N СВЯЗЬ DIEGETIC СОБЫТИЙ С ГЛАВАМИ ЧТЕНИЯ)
-DEFINE TABLE OVERWRITE revealed_in TYPE RELATION IN timeline_events OUT chapters SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON revealed_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE pov_id     ON revealed_in TYPE option<record<entities> | null>; -- От чьего лица раскрыто
-DEFINE FIELD OVERWRITE kind       ON revealed_in TYPE string DEFAULT 'direct'
-  ASSERT $value IN ['direct', 'flashback', 'mention', 'rumor'];
-DEFINE FIELD OVERWRITE block_id   ON revealed_in TYPE option<string | null>;
-DEFINE FIELD OVERWRITE created_at ON revealed_in TYPE datetime DEFAULT time::now();
-
--- 18. УЧАСТИЕ В СОБЫТИЯХ ТАЙМЛАЙНА
+-- 17. УЧАСТИЕ В СОБЫТИЯХ ТАЙМЛАЙНА
 DEFINE TABLE OVERWRITE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON participates_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE role       ON participates_in TYPE option<string | null>;

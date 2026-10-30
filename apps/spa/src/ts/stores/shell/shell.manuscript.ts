@@ -3,7 +3,7 @@
  * @description Доменная логика структуры произведения: главы, тома
  */
 
-import type { Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import * as api from '../../services/api.client';
 import { projectRecordId } from '../../services/api/project.api';
 import type { Chapter } from '../../types/generated/Chapter';
@@ -26,6 +26,18 @@ export interface ManuscriptDeps {
 
 export function useShellManuscript(deps: ManuscriptDeps) {
   let isCreatingChapter = false;
+  const isCreateChapterModalOpen = ref(false);
+  const createChapterTargetVolumeId = ref<string | null>(null);
+
+  const openCreateChapterModal = (volumeId?: string | null) => {
+    createChapterTargetVolumeId.value = volumeId || null;
+    isCreateChapterModalOpen.value = true;
+  };
+
+  const closeCreateChapterModal = () => {
+    isCreateChapterModalOpen.value = false;
+    createChapterTargetVolumeId.value = null;
+  };
 
   const compareIds = (id1: unknown, id2: unknown) => {
     if (!id1 && !id2) return true;
@@ -33,15 +45,6 @@ export function useShellManuscript(deps: ManuscriptDeps) {
     const s1 = typeof id1 === 'object' && id1 !== null && 'id' in id1 ? String((id1 as { id: unknown }).id) : String(id1);
     const s2 = typeof id2 === 'object' && id2 !== null && 'id' in id2 ? String((id2 as { id: unknown }).id) : String(id2);
     return s1.split(':').pop() === s2.split(':').pop();
-  };
-
-  const closeEditorsFor = (predicate: (e: EditorTab) => boolean) => {
-    for (const ed of deps.openEditors.value.filter(predicate)) {
-      deps.closeEditor(ed.id, true);
-      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && deps.activeTreeNode.value.node.id === ed.id) {
-        deps.activeTreeNode.value = null;
-      }
-    }
   };
 
   const loadChapters = async () => {
@@ -54,37 +57,20 @@ export function useShellManuscript(deps: ManuscriptDeps) {
     }
   };
 
-  const createChapterIn = async ({ volumeId }: { volumeId?: string } = {}) => {
+  const createChapterIn = ({ volumeId }: { volumeId?: string | null } = {}) => {
+    openCreateChapterModal(volumeId);
+  };
+
+  const confirmCreateChapter = async ({ title, volumeId }: { title: string; volumeId: string | null }) => {
     if (isCreatingChapter) return;
     isCreatingChapter = true;
     try {
-      const hierarchy = await api.getChapterHierarchy(deps.projectName.value);
-      const allChapters = hierarchy.chapters || [];
-      let maxNum = 0;
-      let relevantCount = 0;
-      if (Array.isArray(allChapters)) {
-        const relevantChapters = allChapters.filter((c) => {
-          const cVolId = c.volume_id ? String(c.volume_id) : null;
-          const targetVolId = volumeId ? String(volumeId) : null;
-          if (targetVolId) return cVolId === targetVolId;
-          return !cVolId;
-        });
-        relevantCount = relevantChapters.length;
-        relevantChapters.forEach((c) => {
-          const m = (c.title || '').match(/Глава\s*(\d+)/i);
-          if (m) {
-            const n = parseInt(m[1]);
-            if (n > maxNum) maxNum = n;
-          }
-        });
-      }
-      const num = maxNum + 1;
-      deps.addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
+      const trimmedTitle = title.trim();
       const newCh: Chapter = {
         id: `chapters:chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         project_id: projectRecordId(deps.projectName.value),
-        title: `Глава ${num}`,
-        content: '# Новая глава\n\n',
+        title: trimmedTitle,
+        content: `# ${trimmedTitle}\n\n`,
         summary: undefined,
         word_count: 0 as unknown as bigint,
         embeddings: {},
@@ -96,15 +82,18 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       const saveRes = await api.saveChapter(newCh);
       if (saveRes && saveRes.id) newCh.id = saveRes.id;
       if (volumeId && newCh.id) await api.assignChapter(deps.projectName.value, newCh.id, volumeId || null);
-      deps.addLog('Manuscript -> Created new chapter', 'success');
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load(newCh.id || undefined);
+      deps.addLog(`Manuscript -> Created chapter "${trimmedTitle}"`, 'success');
+      if (deps.chapterTreeRef.value?.load) await deps.chapterTreeRef.value.load(newCh.id || undefined);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
       if (deps.chapters.value) {
         deps.chapters.value = [...deps.chapters.value, newCh];
       }
       deps.openChapterTab(newCh);
+      closeCreateChapterModal();
     } catch (e) {
+      console.error('[confirmCreateChapter] Error:', e);
       deps.addLog(`Manuscript -> Error creating chapter: ${e}`, 'error');
+      deps.addToast(`Ошибка создания главы: ${e}`, 'error');
     } finally {
       isCreatingChapter = false;
     }
@@ -117,84 +106,89 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       const chaps = deps.chapters.value || [];
       const cleanTargetId = String(chapter.id).replace(/^[^:]+:/, '');
       const idx = chaps.findIndex(c => String(c.id).replace(/^[^:]+:/, '') === cleanTargetId);
-      let fallbackPoint: api.AutoExtendResult | null = null;
-
-      if (idx !== -1) {
-        // Если перед удаляемой есть глава — берём её (Глава N-1)
-        if (idx > 0) {
-          const prev = chaps[idx - 1] as unknown as Record<string, unknown>;
-          const prevId = String(prev.id || '');
-          if (prevId) {
-            fallbackPoint = {
-              chapter_id: prevId,
-              volume_id: (prev.volume_id as string) || (prev.volumeId as string) || null,
-              updated_count: 0
-            };
+      let fallbackPoint: { computed_epoch: number; computed_minute: number } | null = null;
+      if (idx > 0) {
+        const prevChapter = chaps[idx - 1];
+        try {
+          const detail = await api.getChapter(String(prevChapter.id));
+          if (detail && detail.summary) {
+            try {
+              const parsed = typeof detail.summary === 'string' ? JSON.parse(detail.summary) as Record<string, unknown> : detail.summary as Record<string, unknown>;
+              if (parsed && parsed.end_point_abs != null) {
+                fallbackPoint = {
+                  computed_epoch: typeof parsed.end_epoch === 'number' ? parsed.end_epoch : 1,
+                  computed_minute: Number(parsed.end_point_abs)
+                };
+              }
+            } catch (err: unknown) {
+              console.warn('[deleteChapter] Could not parse chapter summary for timeline fallback:', err);
+            }
           }
-        } else if (chaps.length > 1) {
-          // Если удалили первую главу, берем следующую оставшуюся
-          const next = chaps[1] as unknown as Record<string, unknown>;
-          const nextId = String(next.id || '');
-          if (nextId) {
-            fallbackPoint = {
-              chapter_id: nextId,
-              volume_id: (next.volume_id as string) || (next.volumeId as string) || null,
-              updated_count: 0
-            };
-          }
+        } catch (e) {
+          console.warn('[deleteChapter] Could not fetch previous chapter summary for fallback:', e);
         }
       }
 
-      // 2. Исцеляем точки сущностей в SurrealDB до физического удаления главы
-      try {
-        await api.healDeletedChapter(deps.projectName.value, chapter.id, fallbackPoint);
-      } catch (healErr) {
-        console.warn('[Timeline AutoHeal] Failed to heal points on backend:', healErr);
-      }
-
       await api.deleteChapter(chapter.id);
-      deps.addLog(`Manuscript -> Deleted chapter ${chapter.title || chapter.id}`, 'success');
-      document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
-      deps.closeEditor(chapter.id);
+      deps.addLog(`Deleted chapter [${chapter.id}]`, 'warn');
+      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
+      deps.closeEditor(chapter.id, true);
+      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && compareIds(deps.activeTreeNode.value.node.id, chapter.id)) {
+        deps.activeTreeNode.value = null;
+      }
+      deps.addToast(`Глава "${chapter.title || 'Безымянная'}" удалена`, 'warn');
+      if (deps.currentSidebarTab.value === 'chapters') deps.loadEntityList('chapters');
+
+      // Публикуем событие отката таймлайна, если есть предыдущая глава
+      if (fallbackPoint) {
+        document.dispatchEvent(new CustomEvent('ww:chapter-deleted-timeline-rollback', {
+          detail: {
+            deletedChapterId: chapter.id,
+            fallbackPoint
+          }
+        }));
+      }
     } catch (e) {
-      deps.addLog(`Manuscript -> Error deleting chapter: ${e}`, 'error');
+      deps.addLog(`Error deleting chapter: ${e}`, 'error');
     }
   };
 
-  const renameChapter = async (chapter: { id?: string | null }, newTitle: string) => {
-    if (!chapter.id) return;
+  const renameChapter = async (chapterId: string, newTitle: string) => {
     try {
-      const targetId = chapter.id;
-      deps.chapters.value = deps.chapters.value.map((c) => c.id === targetId ? { ...c, title: newTitle } : c);
-      const fullData = await api.getChapter(targetId);
-      if (fullData) {
-        fullData.title = newTitle;
-        await api.saveChapter(fullData);
+      const chapter = await api.getChapter(chapterId);
+      if (chapter) {
+        chapter.title = newTitle;
+        await api.saveChapter(chapter);
+        deps.updateTabData(chapterId, { title: newTitle });
+        deps.addLog(`Manuscript -> Renamed chapter to: ${newTitle}`, 'info');
+        if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
+        if (deps.currentSidebarTab.value === 'chapters') deps.loadEntityList('chapters');
+        document.dispatchEvent(new CustomEvent('ww:chapter-renamed', {
+          detail: { id: chapterId, title: newTitle }
+        }));
       }
-      deps.addLog(`Chapter renamed: ${newTitle}`, 'success');
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-      document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
     } catch (e) {
-      console.error('Failed to rename chapter:', e);
       deps.addLog(`Error renaming chapter: ${e}`, 'error');
     }
   };
 
-  const onChapterRenamed = ({ id, title }: { id: string; title: string }) => {
-    deps.updateTabData(id, { title });
+  const onChapterRenamed = (data: { id: string; title: string }) => {
+    deps.updateTabData(data.id, { title: data.title });
+    if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
+    if (deps.currentSidebarTab.value === 'chapters') deps.loadEntityList('chapters');
   };
 
-  const deleteVolume = async (volume: { id: string; title?: string; [key: string]: unknown }, chaptersInVol: Array<{ id: string }> = [], silent = false) => {
-    const { appConfirm } = await import('@worldwiki/components');
-    if (!silent && !await appConfirm(`Удалить том "${volume.title}" и все его главы?`)) return;
+  const deleteVolume = async (volume: { id: string; title?: string }) => {
     try {
-      closeEditorsFor(e =>
-        e.tabType === 'chapter' && (
-          compareIds(e.data.volume_id, volume.id) ||
-          chaptersInVol.some(c => String(c.id) === e.id)
+      const hierarchy = await api.getChapterHierarchy(deps.projectName.value);
+      const chaptersInVol = (hierarchy.chapters || []).filter(
+        c => c.volume_id && (
+          String(c.volume_id) === String(volume.id) ||
+          String(c.volume_id).split(':').pop() === String(volume.id).split(':').pop()
         )
       );
       for (const ch of chaptersInVol) {
+        if (!ch.id) continue;
         try { await api.deleteChapter(ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
         deps.closeEditor(String(ch.id), true);
         if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && deps.activeTreeNode.value.node.id === ch.id) {
@@ -217,6 +211,11 @@ export function useShellManuscript(deps: ManuscriptDeps) {
   return {
     loadChapters,
     createChapterIn,
+    openCreateChapterModal,
+    closeCreateChapterModal,
+    confirmCreateChapter,
+    isCreateChapterModalOpen,
+    createChapterTargetVolumeId,
     deleteChapter,
     renameChapter,
     onChapterRenamed,

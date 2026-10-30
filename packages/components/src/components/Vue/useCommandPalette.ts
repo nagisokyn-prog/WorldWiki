@@ -48,82 +48,117 @@ export function useCommandPalette(
 
   const builtinCommands = computed<PaletteCommand[]>(() => [
     {
-      id: 'save',
-      title: 'Save All',
-      desc: 'Save all unsaved tabs',
-      icon: '💾', hotkey: 'Ctrl+S',
-      keywords: ['save', 'write'],
-      action: () => { close(); emit('save'); }
+      id: 'save-all',
+      title: 'Сохранить всё',
+      desc: 'Сохранить все несохраненные вкладки',
+      icon: '💾',
+      hotkey: 'Ctrl+S',
+      keywords: ['сохранить', 'save', 'все', 'вкладки', 'write'],
+      action: () => { close(); emit('save-all'); }
+    },
+    {
+      id: 'new-chapter',
+      title: 'Новая глава',
+      desc: 'Создать новую главу рукописи',
+      icon: '📝',
+      hotkey: 'Ctrl+Shift+N',
+      keywords: ['новая', 'глава', 'рукопись', 'chapter', 'new'],
+      action: () => { close(); emit('new-chapter'); }
+    },
+    {
+      id: 'new-entity',
+      title: 'Создать сущность',
+      desc: 'Создать новую запись в энциклопедии лора',
+      icon: '✨',
+      hotkey: 'Ctrl+N',
+      keywords: ['создать', 'сущность', 'персонаж', 'локация', 'лор', 'entity', 'new'],
+      action: () => { close(); emit('new-entity'); }
+    },
+    {
+      id: 'open-tags',
+      title: 'Теги проекта',
+      desc: 'Управление тегами и метками произведения',
+      icon: '🏷️',
+      hotkey: 'Ctrl+Shift+T',
+      keywords: ['теги', 'метки', 'tags'],
+      action: () => { close(); emit('open-tags'); }
+    },
+    {
+      id: 'quick-open',
+      title: 'Быстрый переход',
+      desc: 'Найти и открыть любой элемент проекта',
+      icon: '🔎',
+      hotkey: 'Ctrl+P',
+      keywords: ['переход', 'поиск', 'открыть', 'quick', 'open', 'find'],
+      action: () => { close(); emit('open-quick'); }
     },
     {
       id: 'open-settings',
-      title: 'Open Settings',
-      desc: 'Themes, fonts, layout',
-      icon: '⚙️', hotkey: 'Ctrl+,',
-      keywords: ['settings', 'preferences', 'theme'],
+      title: 'Настройки приложения',
+      desc: 'Темы оформления, шрифты, параметры',
+      icon: '⚙️',
+      hotkey: 'Ctrl+,',
+      keywords: ['настройки', 'параметры', 'тема', 'шрифт', 'settings', 'preferences'],
       action: () => { close(); emit('open-settings'); }
     },
     {
       id: 'toggle-sidebar',
-      title: 'Toggle Sidebar',
-      desc: 'Show / hide navigation panel',
-      icon: '🗂️', hotkey: 'Ctrl+B',
-      keywords: ['sidebar', 'panel', 'navigation'],
+      title: 'Показать / скрыть боковую панель',
+      desc: 'Дерево проекта и навигация',
+      icon: '🗂️',
+      hotkey: 'Ctrl+B',
+      keywords: ['боковая', 'панель', 'сайдбар', 'проводник', 'sidebar'],
       action: () => { close(); emit('toggle-sidebar'); }
     },
     {
       id: 'toggle-panel',
-      title: 'Toggle Terminal',
-      desc: 'Show / hide bottom panel',
-      icon: '💻', hotkey: 'Ctrl+`',
-      keywords: ['terminal', 'console', 'log', 'panel'],
+      title: 'Показать / скрыть терминал',
+      desc: 'Нижняя консоль, логи и инструменты',
+      icon: '💻',
+      hotkey: 'Ctrl+`',
+      keywords: ['терминал', 'консоль', 'лог', 'панель', 'terminal', 'console'],
       action: () => { close(); emit('toggle-panel'); }
     },
     {
       id: 'close-all-tabs',
-      title: 'Close All Tabs',
-      desc: 'Close all open editors',
+      title: 'Закрыть все вкладки',
+      desc: 'Закрыть все открытые редакторы',
       icon: '✖️',
-      keywords: ['close', 'tabs'],
+      keywords: ['закрыть', 'все', 'вкладки', 'редакторы', 'close'],
       action: () => { close(); emit('close-all-tabs'); }
     },
     {
-      id: 'quick-open',
-      title: 'Quick Open',
-      desc: 'Find and open any item',
-      icon: '🔎', hotkey: 'Ctrl+P',
-      keywords: ['open', 'search', 'find', 'quick'],
-      action: () => { close(); emit('open-quick'); }
-    },
-    {
       id: 'zoom-in',
-      title: 'Zoom In',
-      desc: 'Increase UI scale',
-      icon: '🔍', hotkey: 'Ctrl+=',
-      keywords: ['zoom', 'scale', 'larger'],
+      title: 'Масштаб: Увеличить',
+      desc: 'Увеличить масштаб интерфейса',
+      icon: '🔍',
+      hotkey: 'Ctrl+=',
+      keywords: ['масштаб', 'увеличить', 'крупнее', 'zoom', 'in'],
       action: () => { close(); emit('zoom-in'); }
     },
     {
       id: 'zoom-out',
-      title: 'Zoom Out',
-      desc: 'Decrease UI scale',
-      icon: '🔎', hotkey: 'Ctrl+-',
-      keywords: ['zoom', 'scale', 'smaller'],
+      title: 'Масштаб: Уменьшить',
+      desc: 'Уменьшить масштаб интерфейса',
+      icon: '🔎',
+      hotkey: 'Ctrl+-',
+      keywords: ['масштаб', 'уменьшить', 'мельче', 'zoom', 'out'],
       action: () => { close(); emit('zoom-out'); }
     },
     {
       id: 'zoom-reset',
-      title: 'Reset Zoom',
-      desc: 'Restore 100% scale',
-      icon: '⊙', hotkey: 'Ctrl+0',
-      keywords: ['zoom', 'reset', '100'],
+      title: 'Масштаб: 100%',
+      desc: 'Сбросить масштаб интерфейса к стандартному',
+      icon: '⊙',
+      hotkey: 'Ctrl+0',
+      keywords: ['масштаб', 'сброс', '100%', 'стандартный', 'zoom', 'reset'],
       action: () => { close(); emit('zoom-reset'); }
-    },
+    }
   ]);
 
   const allCommands = computed<PaletteCommand[]>(() => [
     ...(props.disableBuiltins ? [] : builtinCommands.value),
-    ...(props.commands ?? []),
+    ...(props.commands ?? [])
   ]);
 
   const filtered = computed(() => {
@@ -132,7 +167,7 @@ export function useCommandPalette(
     return allCommands.value.filter(c =>
       c.title.toLowerCase().includes(q) ||
       c.desc.toLowerCase().includes(q) ||
-      (c.keywords || []).some(k => k.includes(q))
+      (c.keywords || []).some(k => k.toLowerCase().includes(q))
     );
   });
 
@@ -151,12 +186,14 @@ export function useCommandPalette(
   };
 
   const moveDown = () => {
-    activeIdx.value = Math.min(activeIdx.value + 1, filtered.value.length - 1);
+    if (filtered.value.length === 0) return;
+    activeIdx.value = (activeIdx.value + 1) % filtered.value.length;
     scrollToActive();
   };
 
   const moveUp = () => {
-    activeIdx.value = Math.max(activeIdx.value - 1, 0);
+    if (filtered.value.length === 0) return;
+    activeIdx.value = (activeIdx.value - 1 + filtered.value.length) % filtered.value.length;
     scrollToActive();
   };
 

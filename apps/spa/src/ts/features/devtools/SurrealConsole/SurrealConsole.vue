@@ -75,19 +75,7 @@ const {
   selectPreset,
   navigateHistory,
   clearHistory,
+  handleKeyUp,
+  handleKeyDown,
 } = useSurrealConsole(props);
-
-const handleKeyUp = (e: KeyboardEvent) => {
-  if (queryInput.value === '' || (e.target as HTMLTextAreaElement).selectionStart === 0) {
-    e.preventDefault();
-    navigateHistory('up');
-  }
-};
-
-const handleKeyDown = (e: KeyboardEvent) => {
-  if (queryInput.value === '' || (e.target as HTMLTextAreaElement).selectionStart === queryInput.value.length) {
-    e.preventDefault();
-    navigateHistory('down');
-  }
-};
 </script>

@@ -97,6 +97,19 @@ export function useGlobalTimeViewer(projectNameInput?: string | Ref<string | und
     }
   };
 
+  const handlePrevMinute = () => {
+    stepMinute(-1000);
+  };
+
+  const handleNextMinute = () => {
+    stepMinute(1000);
+  };
+
+  const handleMinuteInput = (event: Event) => {
+    const val = (event.target as HTMLInputElement).valueAsNumber;
+    setMinute(val);
+  };
+
   return {
     isVisible,
     minute,
@@ -105,6 +118,9 @@ export function useGlobalTimeViewer(projectNameInput?: string | Ref<string | und
     open,
     close,
     stepMinute,
-    setMinute
+    setMinute,
+    handlePrevMinute,
+    handleNextMinute,
+    handleMinuteInput
   };
 }

@@ -185,9 +185,9 @@ export function buildTimelineItems(
       ? boundArcs.map((b) => b.arcTitle).join(' & ')
       : p.arc_title;
 
-    let computedMabs = p.m_abs;
-    if ((computedMabs === undefined || computedMabs === null) && p.date_fields && typeof p.date_fields === 'object') {
-      computedMabs = computeMabsFromDateFields(p.date_fields, activeCal);
+    let computedMabs: number | undefined = p.m_abs ?? undefined;
+    if (computedMabs === undefined && p.date_fields && typeof p.date_fields === 'object') {
+      computedMabs = computeMabsFromDateFields(p.date_fields, activeCal) ?? undefined;
     }
 
     const formattedDate = formatDiegeticDate(computedMabs, p.date_fields, activeCal);

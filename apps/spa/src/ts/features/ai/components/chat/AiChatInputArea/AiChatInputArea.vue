@@ -64,7 +64,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import AiActionButtons from '../../controls/AiActionButtons/AiActionButtons.vue';
 import AiContextSelector from '../../controls/AiContextSelector/AiContextSelector.vue';
 import AiModeSelector from '../../controls/AiModeSelector/AiModeSelector.vue';
@@ -72,14 +71,15 @@ import AiAutoApproveModal from '../../tools/AiAutoApproveModal/AiAutoApproveModa
 import AiQuoteReplyBanner from '../AiQuoteReplyBanner/AiQuoteReplyBanner.vue';
 import AiChatInput from '../AiChatInput/AiChatInput.vue';
 import type { AiChatInputAreaProps, AiChatInputAreaEmits } from './AiChatInputArea.model';
+import { useAiChatInputArea } from './useAiChatInputArea';
 
 defineProps<AiChatInputAreaProps>();
 defineEmits<AiChatInputAreaEmits>();
 
-const chatInputRef = ref<{ unlock: () => void; focus: () => void } | null>(null);
+const { chatInputRef, unlock, focus } = useAiChatInputArea();
 
 defineExpose({
-  unlock: () => chatInputRef.value?.unlock(),
-  focus: () => chatInputRef.value?.focus()
+  unlock,
+  focus
 });
 </script>

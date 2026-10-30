@@ -167,6 +167,13 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         }
     };
 
+    const isChapterField = (field: { class?: string; id?: string; type?: string; entityType?: string }): boolean => {
+        if (field.entityType === 'chapter') return true;
+        if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
+        const cls = (field.class || field.id || '').toLowerCase();
+        return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
+    };
+
     return {
         isDraggedOver,
         fullConfig,
@@ -182,6 +189,7 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         updateTitle,
         updateEmptyMessage,
         toggleHidden,
-        removeCustomField
+        removeCustomField,
+        isChapterField
     };
 }

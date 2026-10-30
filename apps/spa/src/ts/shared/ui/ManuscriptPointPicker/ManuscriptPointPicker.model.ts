@@ -13,3 +13,5 @@ export interface ManuscriptPointPickerProps {
   disabled?: boolean;
   project?: string;
 }
+
+export type ManuscriptPointPickerEmits = (event: 'change' | 'update:modelValue', value: ManuscriptPoint) => void;

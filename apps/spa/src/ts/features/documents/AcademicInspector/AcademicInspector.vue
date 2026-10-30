@@ -71,7 +71,7 @@
           section-title="Иллюстрации"
           empty-message="В документе нет рисунков"
           :items="figuresList"
-          :format-number="(num) => `Рис. ${num}`"
+          :format-number="(num?: string | number) => `Рис. ${num ?? ''}`"
           @jump="jumpToNode"
           @insert="insertReference"
         />
@@ -83,7 +83,7 @@
           section-title="Таблицы"
           empty-message="В документе нет таблиц"
           :items="tablesList"
-          :format-number="(num) => `Табл. ${num}`"
+          :format-number="(num?: string | number) => `Табл. ${num ?? ''}`"
           @jump="jumpToNode"
           @insert="insertReference"
         />
@@ -95,7 +95,7 @@
           section-title="Математические формулы"
           empty-message="В документе нет вынесенных формул"
           :items="equationsList"
-          :format-number="(num) => `(${num})`"
+          :format-number="(num?: string | number) => `(${num ?? ''})`"
           @jump="jumpToNode"
           @insert="insertReference"
         />

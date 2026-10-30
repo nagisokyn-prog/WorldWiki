@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
-import type { ManuscriptPointPickerProps, ManuscriptPoint } from './ManuscriptPointPicker.model';
+import type { ManuscriptPointPickerProps, ManuscriptPointPickerEmits } from './ManuscriptPointPicker.model';
 import { useManuscriptPointPicker } from './useManuscriptPointPicker';
 
 const props = withDefaults(defineProps<ManuscriptPointPickerProps>(), {
@@ -56,7 +56,7 @@ const props = withDefaults(defineProps<ManuscriptPointPickerProps>(), {
   project: ''
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits<ManuscriptPointPickerEmits>();
 
 const {
   internalPoint,
@@ -67,7 +67,7 @@ const {
   onVolumeChange,
   onChapterChange,
   toggleAutoExtend
-} = useManuscriptPointPicker(props, (event, value: ManuscriptPoint) => emit(event, value));
+} = useManuscriptPointPicker(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/schemas/ManuscriptPointPicker.css"></style>

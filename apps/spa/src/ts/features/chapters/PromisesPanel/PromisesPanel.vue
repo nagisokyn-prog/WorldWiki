@@ -89,7 +89,6 @@
 <script setup lang="ts">
 import type { PromisesPanelProps, PromisesPanelEmits } from './PromisesPanel.model';
 import { usePromisesPanel, PROMISE_STATUSES } from './usePromisesPanel';
-import type { PromisesPanelProps } from './usePromisesPanel';
 import PromiseFilterBar from './components/PromiseFilterBar.vue';
 import PromiseCard from './components/PromiseCard.vue';
 

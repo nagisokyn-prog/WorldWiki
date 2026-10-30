@@ -1,12 +1,7 @@
 import { computed } from 'vue';
-import type { InspectorItem } from '../AcademicInspector.model';
+import type { AcademicItemListProps } from './AcademicItemList.model';
 
-export interface AcademicItemListProps {
-  sectionTitle: string;
-  emptyMessage: string;
-  items: InspectorItem[];
-  formatNumber?: (num?: string | number) => string;
-}
+export type { AcademicItemListProps };
 
 export function useAcademicItemList(props: AcademicItemListProps) {
   const displayItems = computed(() => {

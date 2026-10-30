@@ -183,12 +183,9 @@ const {
   submitForm,
   closeModal,
   openCloudSync,
-  showToast
+  showToast,
+  toggleGlobalTime
 } = useProjectLauncher();
-
-const toggleGlobalTime = () => {
-  window.dispatchEvent(new CustomEvent('ww:toggle-global-time'));
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/shell/ProjectLauncher.css"></style>

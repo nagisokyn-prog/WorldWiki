@@ -41,7 +41,7 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
           if (itemArcs.length > 0) return false;
         } else {
           const cleanFilter = selectedArcFilter.value.replace(/^story_arcs:/, '');
-          const matches = itemArcs.some((id) => (id || '').replace(/^story_arcs:/, '') === cleanFilter);
+          const matches = itemArcs.some((id: string) => (id || '').replace(/^story_arcs:/, '') === cleanFilter);
           if (!matches) {
             return false;
           }
@@ -118,13 +118,13 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
       if (itemArcs.length === 0) {
         unassignedGroup.items.push(item);
       } else {
-        itemArcs.forEach((arcId) => {
+        itemArcs.forEach((arcId: string) => {
           const cleanArcKey = (arcId || '').replace(/^story_arcs:/, '');
           if (cleanArcKey && groupsMap.has(cleanArcKey)) {
             groupsMap.get(cleanArcKey)!.items.push(item);
           } else if (cleanArcKey) {
             const boundMatch = item.boundArcs?.find(
-              (b) => b.arcId.replace(/^story_arcs:/, '') === cleanArcKey
+              (b: { arcId: string; arcTitle: string }) => b.arcId.replace(/^story_arcs:/, '') === cleanArcKey
             );
             groupsMap.set(cleanArcKey, {
               arcId: boundMatch?.arcId || arcId,

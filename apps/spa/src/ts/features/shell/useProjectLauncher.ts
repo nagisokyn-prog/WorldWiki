@@ -101,6 +101,10 @@ export function useProjectLauncher() {
     });
   }
 
+  const toggleGlobalTime = () => {
+    window.dispatchEvent(new CustomEvent('ww:toggle-global-time'));
+  };
+
   return {
     projects,
     sortedProjects,
@@ -121,6 +125,7 @@ export function useProjectLauncher() {
     submitForm,
     closeModal,
     openCloudSync,
-    showToast
+    showToast,
+    toggleGlobalTime
   };
 }

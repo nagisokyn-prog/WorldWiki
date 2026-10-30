@@ -33,19 +33,10 @@ const emit = defineEmits<ParticipantsPanelEmits>();
 
 const {
   normalizedParticipants,
-  removeParticipant
+  removeParticipant,
+  isFaIcon,
+  formatFaIcon
 } = useParticipantsPanel(props, emit as (event: 'update:participants' | 'change', ...args: unknown[]) => void);
-
-const isFaIcon = (val?: string): boolean => {
-  if (!val) return false;
-  return val.startsWith('fa-') || val.startsWith('fas ') || val.startsWith('far ') || val.startsWith('fab ') || val.includes(' fa-');
-};
-
-const formatFaIcon = (val?: string): string => {
-  if (!val) return '';
-  if (val.startsWith('fa-')) return `fas ${val}`;
-  return val;
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/ParticipantsPanel.css"></style>

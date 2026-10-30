@@ -1,11 +1,12 @@
-import { ref, computed } from 'vue';
+import { ref, computed, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { AppSettings } from '../../../ts/types/settings.js';
 import { performanceManager } from '../../../ts/services/performance.service.js';
+import type { SettingsPerformanceEmits } from './SettingsPerformance.model';
 
 export function useSettingsPerformance(
-  getSettings: () => AppSettings,
-  save: () => Promise<void> | void
+  settings: Ref<AppSettings>,
+  emit: SettingsPerformanceEmits
 ) {
   const { t } = useI18n();
   const showAdvanced = ref(false);
@@ -13,7 +14,7 @@ export function useSettingsPerformance(
   const status = computed(() => performanceManager.status.value);
   const lastP95 = computed(() => performanceManager.lastP95.value);
   const batteryStatus = computed(() => performanceManager.batteryStatus.value);
-  const activeLevel = computed(() => getSettings().perf?.level ?? 'Balanced');
+  const activeLevel = computed(() => settings.value.perf?.level ?? 'Balanced');
 
   const statusColorClass = computed(() => {
     const s = status.value;
@@ -31,39 +32,39 @@ export function useSettingsPerformance(
   });
 
   const autoDowngrade = computed({
-    get: () => Boolean(getSettings().perf?.autoDowngrade),
+    get: () => Boolean(settings.value.perf?.autoDowngrade),
     set: (v: boolean) => {
-      const s = getSettings();
+      const s = settings.value;
       if (s.perf) s.perf.autoDowngrade = v;
-      void save();
+      emit('save');
     }
   });
 
   const limitAnimations = computed({
-    get: () => Boolean(getSettings().perf?.limitAnimations),
+    get: () => Boolean(settings.value.perf?.limitAnimations),
     set: (v: boolean) => {
-      const s = getSettings();
+      const s = settings.value;
       if (s.perf) s.perf.limitAnimations = v;
-      void save();
+      emit('save');
     }
   });
 
   const limitGlass = computed({
-    get: () => Boolean(getSettings().perf?.limitGlass),
+    get: () => Boolean(settings.value.perf?.limitGlass),
     set: (v: boolean) => {
-      const s = getSettings();
+      const s = settings.value;
       if (s.perf) s.perf.limitGlass = v;
-      void save();
+      emit('save');
     }
   });
 
   const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
     performanceManager.applyProfile(level);
-    const settings = getSettings();
-    if (settings.perf) {
-      settings.perf.level = level;
+    const s = settings.value;
+    if (s.perf) {
+      s.perf.level = level;
     }
-    void save();
+    emit('save');
   };
 
   return {

@@ -10,25 +10,11 @@ import {
 import { usePromiseActions } from './composables/usePromiseActions';
 import type { PromiseMilestone, RichPlotPromise } from './composables/PromiseActions.model';
 import { usePromiseResize } from './composables/usePromiseResize';
+import type { PromisesPanelProps } from './PromisesPanel.model';
 
 export type { ChapterMetaItem, PromiseMilestone, RichPlotPromise };
 export { PROMISE_KINDS, PROMISE_STATUSES, cleanId };
-
-export interface PromisesPanelProps {
-  project: string;
-  chapterId?: string | null;
-  chapterTitle?: string | null;
-  currentVolumeId?: string | null;
-  allChapters?: ChapterMetaItem[];
-  chapterData?: {
-    id?: string | null;
-    title?: string | null;
-    content?: string | null;
-    participants?: unknown;
-    timeline_events?: unknown;
-    [key: string]: unknown;
-  } | null;
-}
+export type { PromisesPanelProps };
 
 export function usePromisesPanel(
   props: PromisesPanelProps,

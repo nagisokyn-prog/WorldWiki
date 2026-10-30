@@ -2,9 +2,9 @@ import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
 import { invalidateCache } from '../../../utils/requestCache';
 import type { EntitySchema } from '../../../types/generated/EntitySchema';
-import { computeSimilarity } from './utils/entityMatch.utils';
+import { computeCleanSearchQuery, filterMatchingEntities } from './utils/entitySelectorFiltering';
 import { mapRawEntityToSelectorItem } from './utils/entitySelectorHelpers';
-import { executeQuickCreate, buildUpdatedEntityTags } from './utils/entitySelectorOps';
+import { executeQuickCreate, handleEntityTaggingOnSelect } from './utils/entitySelectorOps';
 import type {
   EntityTypeItem,
   EntitySelectorItem,
@@ -48,9 +48,7 @@ export function useEntityLinkSelector(
     return rawEntities.value.map(r => mapRawEntityToSelectorItem(r, schemaMap.value));
   });
 
-  const cleanSearchQuery = computed(() => {
-    return searchQuery.value.trim().replace(/^#/, '').replace(/^\(\(/, '').replace(/\)\)$/, '').trim();
-  });
+  const cleanSearchQuery = computed(() => computeCleanSearchQuery(searchQuery.value));
 
   const availableCreationTypes = computed<EntityTypeItem[]>(() => {
     if (entityTypes.value.length > 0) return entityTypes.value;
@@ -63,33 +61,12 @@ export function useEntityLinkSelector(
   });
 
   const matchingEntities = computed(() => {
-    let list = allEntities.value;
-    if (activeTypeFilter.value !== 'all') {
-      list = list.filter(e => e.entity_type === activeTypeFilter.value);
-    }
-    const q = searchQuery.value.trim().toLowerCase();
-    if (!q) return list;
-
-    const isTagSearch = q.startsWith('#');
-    const cleanQ = cleanSearchQuery.value.toLowerCase();
-
-    return list.filter((e) => {
-      const matchesTag = e.cleanTags?.some(t => {
-        const lower = t.toLowerCase();
-        return lower === cleanQ || lower.includes(cleanQ) || cleanQ.includes(lower) || computeSimilarity(lower, cleanQ) >= 0.5;
-      });
-      const matchesAlias = e.aliases?.some((a: string) => {
-        const lower = a.toLowerCase();
-        return lower === cleanQ || lower.includes(cleanQ) || cleanQ.includes(lower) || computeSimilarity(lower, cleanQ) >= 0.5;
-      });
-      if (isTagSearch) return matchesTag;
-
-      const lowerName = e.name.toLowerCase();
-      const matchesName = lowerName === cleanQ || lowerName.includes(cleanQ) || cleanQ.includes(lowerName) || computeSimilarity(lowerName, cleanQ) >= 0.5;
-      const matchesId = e.id.toLowerCase().includes(cleanQ) || (e.shortId && e.shortId.toLowerCase().includes(cleanQ));
-      const matchesType = e.type_name?.toLowerCase().includes(cleanQ);
-      return matchesName || matchesId || matchesType || matchesTag || matchesAlias;
-    });
+    return filterMatchingEntities(
+      allEntities.value,
+      searchQuery.value,
+      cleanSearchQuery.value,
+      activeTypeFilter.value
+    );
   });
 
   const isFallbackList = computed(() => {
@@ -212,37 +189,7 @@ export function useEntityLinkSelector(
     if (!entity) return;
     const targetTag = saveAsTag.value ? (sourceMention.value || cleanSearchQuery.value) : '';
     if (targetTag && props.project) {
-      const tagLower = targetTag.toLowerCase();
-      const existingTags = Array.isArray(entity.cleanTags) && entity.cleanTags.length > 0
-        ? entity.cleanTags
-        : Array.isArray(entity.tags) && entity.tags.length > 0
-          ? entity.tags
-          : Array.isArray((entity as Record<string, unknown>)['теги'])
-            ? ((entity as Record<string, unknown>)['теги'] as string[])
-            : [];
-      const isExactMatch = entity.name.toLowerCase() === tagLower ||
-        existingTags.some(t => t.toLowerCase() === tagLower) ||
-        (entity.aliases || []).some((a: string) => a.toLowerCase() === tagLower);
-
-      if (!isExactMatch) {
-        const { nextTags, nextAliases, nextAttrs } = buildUpdatedEntityTags(entity as Record<string, unknown>, targetTag);
-        void api.saveEntity(props.project, {
-          ...entity,
-          tags: nextTags,
-          'теги': nextTags,
-          attributes: nextAttrs
-        } as never).then(() => {
-          invalidateCache('entities:');
-          invalidateCache('tags:');
-          document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: { project: props.project, entityId: entity.id, tags: nextTags } }));
-        }).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
-
-        entity.cleanTags = nextTags;
-        entity.tags = nextTags;
-        (entity as Record<string, unknown>)['теги'] = nextTags;
-        entity.aliases = nextAliases;
-        (entity as Record<string, unknown>)['псевдонимы'] = nextAliases;
-      }
+      handleEntityTaggingOnSelect(entity as Record<string, unknown>, targetTag, props.project);
     }
     emit('insert', { type: entity.entity_type, id: entity.id, name: entity.name });
     close();

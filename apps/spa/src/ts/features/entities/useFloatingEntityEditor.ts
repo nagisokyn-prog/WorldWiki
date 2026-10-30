@@ -1,7 +1,10 @@
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, getCurrentInstance } from 'vue';
 import * as api from '../../services/api.client';
 import { entityApi } from '@/services/Entity/entity.api';
 import type { EntitySchema } from '../../types/generated/EntitySchema';
+
+let activeFloatingEditorTagsHandler: ((e: Event) => void) | null = null;
+let activeFloatingEditorSavedHandler: ((e: Event) => void) | null = null;
 
 export interface FloatingEntityEditorProps {
   project: string;
@@ -64,16 +67,32 @@ export function useFloatingEntityEditor(
     }
   };
 
-  onMounted(async () => {
-    await loadData();
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      await loadData();
+      document.addEventListener('ww:tags-updated', handleEntityUpdated);
+      document.addEventListener('ww:entity-saved', handleEntityUpdated);
+    });
+
+    onUnmounted(() => {
+      document.removeEventListener('ww:tags-updated', handleEntityUpdated);
+      document.removeEventListener('ww:entity-saved', handleEntityUpdated);
+    });
+  } else {
+    if (props.isOpen) {
+      void loadData();
+    }
+    if (activeFloatingEditorTagsHandler) {
+      document.removeEventListener('ww:tags-updated', activeFloatingEditorTagsHandler);
+    }
+    if (activeFloatingEditorSavedHandler) {
+      document.removeEventListener('ww:entity-saved', activeFloatingEditorSavedHandler);
+    }
+    activeFloatingEditorTagsHandler = handleEntityUpdated;
+    activeFloatingEditorSavedHandler = handleEntityUpdated;
     document.addEventListener('ww:tags-updated', handleEntityUpdated);
     document.addEventListener('ww:entity-saved', handleEntityUpdated);
-  });
-
-  onUnmounted(() => {
-    document.removeEventListener('ww:tags-updated', handleEntityUpdated);
-    document.removeEventListener('ww:entity-saved', handleEntityUpdated);
-  });
+  }
 
   watch(
     () => [props.entityId, props.entityType, props.isOpen] as const,

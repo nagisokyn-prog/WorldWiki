@@ -208,6 +208,10 @@ export function useAiSettingsSkillsTab(
     }
   };
 
+  const onUpdateSkillField = <K extends keyof AiSkillItem>(field: K, val: unknown) => {
+    editingSkill.value[field] = val as AiSkillItem[K];
+  };
+
   onMounted(() => {
     void loadSkills();
   });
@@ -227,6 +231,7 @@ export function useAiSettingsSkillsTab(
     addTrigger,
     removeTrigger,
     saveSkill,
-    deleteSkill
+    deleteSkill,
+    onUpdateSkillField
   };
 }

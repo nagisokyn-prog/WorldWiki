@@ -1,3 +1,5 @@
+import type { Editor } from '@tiptap/vue-3';
+
 export interface EditorSplitViewProps {
   markdownContent: string;
     editor?: Editor;

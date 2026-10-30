@@ -178,6 +178,20 @@ export function useSurrealConsole(props?: SurrealConsoleProps) {
     return JSON.stringify(activeResult.value.result, null, 2);
   });
 
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (queryInput.value === '' || (e.target as HTMLTextAreaElement).selectionStart === 0) {
+      e.preventDefault();
+      navigateHistory('up');
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (queryInput.value === '' || (e.target as HTMLTextAreaElement).selectionStart === queryInput.value.length) {
+      e.preventDefault();
+      navigateHistory('down');
+    }
+  };
+
   onMounted(() => {
     loadHistory();
   });
@@ -195,5 +209,7 @@ export function useSurrealConsole(props?: SurrealConsoleProps) {
     selectHistoryItem,
     navigateHistory,
     clearHistory,
+    handleKeyUp,
+    handleKeyDown,
   };
 }

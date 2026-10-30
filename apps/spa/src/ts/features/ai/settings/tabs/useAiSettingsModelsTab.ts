@@ -90,6 +90,12 @@ export function useAiSettingsModelsTab(
     }));
   });
 
+  const onUpdateSetting = <K extends keyof AiProfileSettings>(key: K, val: unknown) => {
+    if (localSettings.value) {
+      localSettings.value[key] = val as AiProfileSettings[K];
+    }
+  };
+
   return {
     localSettings,
     installedModels,
@@ -97,6 +103,7 @@ export function useAiSettingsModelsTab(
     isCustomEmbedPath,
     availableModelOptions,
     onCustomEmbedInput,
-    handleSave
+    handleSave,
+    onUpdateSetting
   };
 }

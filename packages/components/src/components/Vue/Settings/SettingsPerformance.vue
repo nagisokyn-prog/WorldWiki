@@ -124,7 +124,7 @@ const {
   limitAnimations,
   limitGlass,
   setProfile
-} = useSettingsPerformance(() => settings.value, () => emit('save'));
+} = useSettingsPerformance(settings, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsPerformance.css"></style>

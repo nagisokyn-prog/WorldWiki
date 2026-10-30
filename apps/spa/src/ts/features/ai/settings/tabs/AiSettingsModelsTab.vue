@@ -65,14 +65,9 @@ const {
   isCustomEmbedPath,
   customEmbedInput,
   onCustomEmbedInput,
-  handleSave
+  handleSave,
+  onUpdateSetting
 } = useAiSettingsModelsTab(props, emit);
-
-const onUpdateSetting = <K extends keyof AiProfileSettings>(key: K, val: unknown) => {
-  if (localSettings.value) {
-    localSettings.value[key] = val as AiProfileSettings[K];
-  }
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsModelsTab.css"></style>

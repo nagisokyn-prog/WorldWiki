@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import type { AcademicItemListProps, AcademicItemListEmits } from './AcademicItemList.model';
-import { useAcademicItemList, type AcademicItemListProps } from './useAcademicItemList';
+import { useAcademicItemList } from './useAcademicItemList';
 import type { InspectorItem } from '../AcademicInspector.model';
 
 export type AcademicItem = InspectorItem;

@@ -89,5 +89,5 @@ const props = defineProps<Tab3SeasonsSectionProps>();
 
 const emit = defineEmits<Tab3SeasonsSectionEmits>();
 
-const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, (e, list) => emit(e, list));
+const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, emit);
 </script>

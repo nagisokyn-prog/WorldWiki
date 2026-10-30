@@ -3,6 +3,7 @@ import type { PlotPromise } from '@/types/generated/PlotPromise'
 import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel'
 import type { PromiseTypeOption } from '../usePromiseContextMenu'
 import type { InsertEntityPayload } from '../EntityLinkSelector.model'
+import type { ParagraphFormatData } from '@worldwiki/word-vibe'
 
 export interface EditorModalsProps {
   project: string;

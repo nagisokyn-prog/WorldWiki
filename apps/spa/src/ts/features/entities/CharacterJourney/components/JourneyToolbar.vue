@@ -97,20 +97,14 @@
 
 <script setup lang="ts">
 import type { JourneyToolbarProps, JourneyToolbarEmits } from './JourneyToolbar.model';
-import type { Entity } from '@/types/generated/Entity';
-import type { StoryArc } from '@/stores/story_arcs.store';
-import type { CharacterJourneyViewMode, JourneyFilterMode } from '../CharacterJourney.model';
 import JourneyMultiSelector from './JourneyMultiSelector.vue';
 import JourneyModeToggle from './JourneyModeToggle.vue';
+import { useJourneyToolbar } from './useJourneyToolbar';
 
 defineProps<JourneyToolbarProps>();
-
 const emit = defineEmits<JourneyToolbarEmits>();
 
-const onFilterModeUpdate = (val: JourneyFilterMode) => {
-  emit('update:filterMode', val);
-  emit('update:filter-mode', val);
-};
+const { onFilterModeUpdate } = useJourneyToolbar(emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

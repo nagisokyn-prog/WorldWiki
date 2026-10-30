@@ -54,7 +54,7 @@ export function buildMultiJourneyTimelineItems(
       : undefined;
 
     const partCount = scene.present_entities.length;
-    const partNames = scene.present_entities.map((p) => p.entity_name).join(', ');
+    const partNames = scene.present_entities.map((p: { entity_name: string }) => p.entity_name).join(', ');
     const sceneQuote = scene.chapter_title
       ? `Совместная сцена в главе «${scene.chapter_title}» (${partNames})`
       : `Совместная сцена с участием: ${partNames}`;

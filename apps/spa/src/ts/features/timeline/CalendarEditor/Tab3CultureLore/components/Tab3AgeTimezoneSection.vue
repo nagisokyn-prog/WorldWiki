@@ -146,7 +146,5 @@ defineProps<Tab3AgeTimezoneSectionProps>();
 
 const emit = defineEmits<Tab3AgeTimezoneSectionEmits>();
 
-const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(
-  name => emit('add-region', name),
-);
+const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(emit);
 </script>

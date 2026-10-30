@@ -97,21 +97,10 @@
 
 <script setup lang="ts">
 import type { BridgeMappingCardProps, BridgeMappingCardEmits } from './BridgeMappingCard.model';
-import { computed } from 'vue';
-import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../../services/Calendars/calendar.types';
+import { useBridgeMappingCard } from './useBridgeMappingCard';
 
 const props = defineProps<BridgeMappingCardProps>();
-
-const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
-  return props.localDate || {
-    era_index: 0,
-    year: 1,
-    month: 0,
-    day: 1,
-    hour: 0,
-    minute: 0
-  };
-});
-
 defineEmits<BridgeMappingCardEmits>();
+
+const { safeDate } = useBridgeMappingCard(props);
 </script>

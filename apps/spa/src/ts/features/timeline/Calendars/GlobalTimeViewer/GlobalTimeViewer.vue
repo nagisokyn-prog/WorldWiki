@@ -47,21 +47,11 @@ const {
   loading,
   close,
   stepMinute,
-  setMinute
+  setMinute,
+  handlePrevMinute,
+  handleNextMinute,
+  handleMinuteInput
 } = useGlobalTimeViewer(() => props.projectName);
-
-const handlePrevMinute = () => {
-  stepMinute(-1000);
-};
-
-const handleNextMinute = () => {
-  stepMinute(1000);
-};
-
-const handleMinuteInput = (event: Event) => {
-  const val = (event.target as HTMLInputElement).valueAsNumber;
-  setMinute(val);
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/GlobalTimeViewer.css"></style>

@@ -101,12 +101,9 @@ const {
   addTrigger,
   removeTrigger,
   saveSkill,
-  deleteSkill
+  deleteSkill,
+  onUpdateSkillField
 } = useAiSettingsSkillsTab(props, emit);
-
-const onUpdateSkillField = <K extends keyof AiSkillItem>(field: K, val: unknown) => {
-  editingSkill.value[field] = val as AiSkillItem[K];
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsSkillsTab.css"></style>

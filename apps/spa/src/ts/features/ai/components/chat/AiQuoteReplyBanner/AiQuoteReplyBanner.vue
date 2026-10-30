@@ -7,7 +7,7 @@
       <div class="banner-title">Ответ по выделенному фрагменту:</div>
       <div class="banner-text">«{{ quotedText }}»</div>
     </div>
-    <button class="banner-close-btn" title="Открепить фрагмент" @click="emit('clear')">
+    <button class="banner-close-btn" title="Открепить фрагмент" @click="onClear">
       ✕
     </button>
   </div>
@@ -15,9 +15,12 @@
 
 <script setup lang="ts">
 import type { AiQuoteReplyBannerProps, AiQuoteReplyBannerEmits } from './AiQuoteReplyBanner.model';
+import { useAiQuoteReplyBanner } from './useAiQuoteReplyBanner';
 
 defineProps<AiQuoteReplyBannerProps>();
 const emit = defineEmits<AiQuoteReplyBannerEmits>();
+
+const { onClear } = useAiQuoteReplyBanner(emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiQuoteReplyBanner.css"></style>

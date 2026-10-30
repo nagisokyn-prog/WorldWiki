@@ -41,7 +41,7 @@ export function useConsistencyChecker(projectId: string) {
 
     if (selectedEntityId.value) {
       list = list.filter((a) =>
-        a.entity_ids?.some((eid) => eid.includes(selectedEntityId.value))
+        a.entity_ids?.some((eid: string) => eid.includes(selectedEntityId.value))
       );
     }
 

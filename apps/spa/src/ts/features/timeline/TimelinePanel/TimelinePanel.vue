@@ -108,7 +108,7 @@ const props = withDefaults(defineProps<TimelinePanelProps>(), {
   events: () => []
 });
 
-const emit = defineEmits(['update:events', 'change']);
+const emit = defineEmits<TimelinePanelEmits>();
 
 const {
   availableCalendars,

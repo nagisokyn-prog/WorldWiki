@@ -87,3 +87,43 @@ export function buildUpdatedEntityTags(
   return { nextTags, nextAliases, nextAttrs };
 }
 
+export function handleEntityTaggingOnSelect(
+  entity: Record<string, unknown>,
+  targetTag: string,
+  project: string
+): void {
+  if (!targetTag || !project) return;
+  const tagLower = targetTag.toLowerCase();
+  const existingTags = Array.isArray(entity.cleanTags) && entity.cleanTags.length > 0
+    ? (entity.cleanTags as string[])
+    : Array.isArray(entity.tags) && (entity.tags as string[]).length > 0
+      ? (entity.tags as string[])
+      : Array.isArray(entity['теги'])
+        ? (entity['теги'] as string[])
+        : [];
+  const aliases = (entity.aliases || []) as string[];
+  const isExactMatch = String(entity.name).toLowerCase() === tagLower ||
+    existingTags.some(t => t.toLowerCase() === tagLower) ||
+    aliases.some((a: string) => a.toLowerCase() === tagLower);
+
+  if (!isExactMatch) {
+    const { nextTags, nextAliases, nextAttrs } = buildUpdatedEntityTags(entity, targetTag);
+    void api.saveEntity(project, {
+      ...entity,
+      tags: nextTags,
+      'теги': nextTags,
+      attributes: nextAttrs
+    } as never).then(() => {
+      invalidateCache('entities:');
+      invalidateCache('tags:');
+      document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: { project, entityId: String(entity.id), tags: nextTags } }));
+    }).catch((e: unknown) => console.warn('[useEntityLinkSelector] Auto-tagging warning:', e));
+
+    entity.cleanTags = nextTags;
+    entity.tags = nextTags;
+    entity['теги'] = nextTags;
+    entity.aliases = nextAliases;
+    entity['псевдонимы'] = nextAliases;
+  }
+}
+

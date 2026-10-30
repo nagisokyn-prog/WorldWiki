@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 import type { AiCitationBadgeProps, AiCitationBadgeEmits } from './AiCitationBadge.model';
-import type { AiCitationBadgeProps, CitationItem } from '../AiCitation.model';
 import { useAiCitationBadge } from './useAiCitationBadge';
 import AiCitationPopover from '../AiCitationPopover/AiCitationPopover.vue';
 

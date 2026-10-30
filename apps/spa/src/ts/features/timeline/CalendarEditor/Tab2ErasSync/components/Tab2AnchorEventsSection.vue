@@ -86,7 +86,5 @@ defineProps<Tab2AnchorEventsSectionProps>();
 
 const emit = defineEmits<Tab2AnchorEventsSectionEmits>();
 
-const { showAddRow, newEventName, newEventYear, submitNewEvent } = useTab2AnchorEventsSection(
-  (e, event) => emit(e, event),
-);
+const { showAddRow, newEventName, newEventYear, submitNewEvent } = useTab2AnchorEventsSection(emit);
 </script>

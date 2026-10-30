@@ -1,6 +1,8 @@
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke, processIds } from '../../ts/services/api.service';
+
+let activeTagsFieldHandler: ((e: Event) => void) | null = null;
 
 export interface TagItem {
   id?: string;
@@ -146,23 +148,31 @@ export function useTagsField(
         }
       }
     }
-    void loadAllTags();
   };
 
-  onMounted(async () => {
-    await loadAllTags();
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('ww:tags-updated', handleTagsUpdated);
-    window.addEventListener('resize', updateDropdownPosition);
-    window.addEventListener('scroll', updateDropdownPosition, { passive: true, capture: true });
-  });
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      await loadAllTags();
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('ww:tags-updated', handleTagsUpdated);
+      window.addEventListener('resize', updateDropdownPosition);
+      window.addEventListener('scroll', updateDropdownPosition, { passive: true, capture: true });
+    });
 
-  onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-    document.removeEventListener('ww:tags-updated', handleTagsUpdated);
-    window.removeEventListener('resize', updateDropdownPosition);
-    window.removeEventListener('scroll', updateDropdownPosition, true);
-  });
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('ww:tags-updated', handleTagsUpdated);
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    });
+  } else {
+    void loadAllTags();
+    if (activeTagsFieldHandler) {
+      document.removeEventListener('ww:tags-updated', activeTagsFieldHandler);
+    }
+    activeTagsFieldHandler = handleTagsUpdated;
+    document.addEventListener('ww:tags-updated', handleTagsUpdated);
+  }
 
   const getTagColor = (name: string) => {
     const tag = allTags.value.find(t => t.name === name);

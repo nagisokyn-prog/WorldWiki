@@ -49,9 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import type { CharacterJourneyProps, CharacterJourneyEmits } from './CharacterJourney.model';
+import type { CharacterJourneyProps, CharacterJourneyEmits, JourneyTimelineItem } from './CharacterJourney.model';
 import { useCharacterJourney } from './useCharacterJourney';
-import type { JourneyTimelineItem } from './CharacterJourney.model';
 import JourneyToolbar from './components/JourneyToolbar.vue';
 import JourneyArcGroups from './components/JourneyArcGroups.vue';
 import JourneyTimelineList from './components/JourneyTimelineList.vue';

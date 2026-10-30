@@ -156,7 +156,7 @@ import AiMermaidDiagram from '../../visuals/AiMermaidDiagram/AiMermaidDiagram.vu
 import AiCitationBadge from '../../citations/AiCitationBadge/AiCitationBadge.vue';
 import AiMessageActionsBar from './AiMessageActionsBar.vue';
 import type { AiMessageItemProps, AiMessageItemEmits } from './AiMessageItem.model';
-import { useAiMessageList } from '../AiMessageList/useAiMessageList';
+import { useAiMessageItem } from './useAiMessageItem';
 
 defineProps<AiMessageItemProps>();
 defineEmits<AiMessageItemEmits>();
@@ -168,5 +168,5 @@ const {
   getExtractedQuote,
   getCleanedContent,
   parseMessageContent
-} = useAiMessageList();
+} = useAiMessageItem();
 </script>

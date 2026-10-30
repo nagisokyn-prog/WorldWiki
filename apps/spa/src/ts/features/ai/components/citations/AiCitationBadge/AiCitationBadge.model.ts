@@ -1,6 +1,10 @@
-import type { AiCitationBadgeProps, CitationItem } from '../AiCitation.model'
+import type { CitationItem } from '../AiCitation.model';
 
-export interface AiCitationBadgeProps {}
+export type { CitationItem };
+
+export interface AiCitationBadgeProps {
+  citation: CitationItem;
+}
 
 export type AiCitationBadgeEmits = {
   (e: 'ask-source', citation: CitationItem): void;

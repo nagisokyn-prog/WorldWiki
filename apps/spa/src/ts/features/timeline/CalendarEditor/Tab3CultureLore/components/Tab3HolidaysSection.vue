@@ -124,5 +124,5 @@ const props = defineProps<Tab3HolidaysSectionProps>();
 
 const emit = defineEmits<Tab3HolidaysSectionEmits>();
 
-const { toggleRange } = useTab3HolidaysSection(props, (e, list) => emit(e, list));
+const { toggleRange } = useTab3HolidaysSection(props, emit);
 </script>

@@ -82,14 +82,10 @@
 <script setup lang="ts">
 import type { PromiseCardParticipantsProps, PromiseCardParticipantsEmits } from './PromiseCardParticipants.model';
 import type { ProjectEntityOption } from './PromiseCardMeta.model';
+import { usePromiseCardParticipants } from './usePromiseCardParticipants';
 
 defineProps<PromiseCardParticipantsProps>();
-
 const emit = defineEmits<PromiseCardParticipantsEmits>();
 
-const handleRemove = (pid: string, event: Event) => {
-  event.stopPropagation();
-  console.log('[PromiseCardParticipants] Removing participant:', pid);
-  emit('remove-participant', pid);
-};
+const { handleRemove } = usePromiseCardParticipants(emit);
 </script>

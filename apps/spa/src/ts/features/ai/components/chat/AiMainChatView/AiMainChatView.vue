@@ -4,7 +4,7 @@
       :active-profile="activeProfile"
       @close="closePanel" 
       @detach="detachWindow" 
-      @open-settings="emit('open-settings')" 
+      @open-settings="$emit('open-settings')" 
     />
 
     <div class="wowilon-body">
@@ -99,34 +99,27 @@ import {
   AiChatTopBar,
   AiMessageList,
   AiChatInputArea,
-  AiResearchProgress,
-  type ContextItem
+  AiResearchProgress
 } from '../../index';
 import type { AiMainChatViewProps, AiMainChatViewEmits } from './AiMainChatView.model';
+import { useAiMainChatView } from './useAiMainChatView';
 
 const props = defineProps<AiMainChatViewProps>();
-const emit = defineEmits<AiMainChatViewEmits>();
-
-const handleMessagesListRef = (el: unknown) => {
-  props.panel.setMessagesListRef(el);
-};
-
-const handleChatInputRef = (el: unknown) => {
-  props.panel.setChatInputRef(el);
-};
-
-const onChangeMode = (mode: string) => props.panel.handleModeChange(mode);
-const onToggleSidebar = () => props.panel.toggleSidebar();
-const onToggleWebSearch = () => props.panel.toggleWebSearch();
-const onClearQuote = () => props.panel.handleClearQuote();
-const onSendMessage = (text: string) => props.panel.sendMessage(text);
-const onCancelGeneration = () => props.panel.cancelGeneration();
-const onRetryLastMessage = () => props.panel.retryLastMessage();
-const onUnloadModels = () => props.panel.unloadModels();
-const onContextSelected = (ctx: ContextItem[]) => props.panel.handleContextSelected(ctx);
-const onRemoveContext = (ctx: ContextItem) => props.panel.removeContext(ctx);
+defineEmits<AiMainChatViewEmits>();
 
 const {
+  handleMessagesListRef,
+  handleChatInputRef,
+  onChangeMode,
+  onToggleSidebar,
+  onToggleWebSearch,
+  onClearQuote,
+  onSendMessage,
+  onCancelGeneration,
+  onRetryLastMessage,
+  onUnloadModels,
+  onContextSelected,
+  onRemoveContext,
   showSidebar,
   selectedContext,
   activeProfile,
@@ -168,5 +161,5 @@ const {
   handleToolRejection,
   closePanel,
   detachWindow
-} = props.panel;
+} = useAiMainChatView(props);
 </script>

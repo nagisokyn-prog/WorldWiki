@@ -256,7 +256,10 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.15s) ease;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease,
+              border-color var(--anim-speed-fast, 0.15s) ease,
+              color var(--anim-speed-fast, 0.15s) ease,
+              transform var(--anim-speed-fast, 0.15s) ease;
 }
 
 .quick-type-btn:hover {

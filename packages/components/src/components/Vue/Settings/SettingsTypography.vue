@@ -39,12 +39,11 @@
 <script setup lang="ts">
 import type { AppSettings } from '../../../ts/types/settings.js';
 import { useSettingsTypography } from './useSettingsTypography';
+import type { SettingsTypographyProps } from './SettingsTypography.model';
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-defineProps<{
-  save: () => Promise<void>;
-}>();
+defineProps<SettingsTypographyProps>();
 
 const { t, fontOptions } = useSettingsTypography();
 </script>

@@ -23,9 +23,10 @@
 
 <script setup lang="ts">
 import { useEquationInsertDialog } from './useEquationInsertDialog';
+import type { EquationInsertDialogProps, EquationInsertDialogEmits } from './EquationInsertDialog.model';
 
-const props = defineProps<{ isOpen: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { latex: string }): void }>();
+const props = defineProps<EquationInsertDialogProps>();
+const emit = defineEmits<EquationInsertDialogEmits>();
 const { latex, handleInsert } = useEquationInsertDialog(props, emit);
 </script>
 

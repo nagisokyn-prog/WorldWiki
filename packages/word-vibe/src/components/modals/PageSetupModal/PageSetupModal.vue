@@ -56,15 +56,10 @@
 
 <script setup lang="ts">
 import { usePageSetupModal } from './usePageSetupModal';
-import type { PageSize, Orientation, MarginsMm } from '../../../types/dto';
+import type { PageSetupModalProps, PageSetupModalEmits } from './PageSetupModal.model';
 
-const props = defineProps<{
-  isOpen: boolean;
-  margins?: MarginsMm;
-  pageSize?: PageSize;
-  orientation?: Orientation;
-}>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: MarginsMm; pageSize: PageSize; orientation: Orientation }): void }>();
+const props = defineProps<PageSetupModalProps>();
+const emit = defineEmits<PageSetupModalEmits>();
 const { activeTab, topMm, bottomMm, leftMm, rightMm, size, orient, applyGost, handleApply, SIZES } =
   usePageSetupModal(props, emit);
 </script>

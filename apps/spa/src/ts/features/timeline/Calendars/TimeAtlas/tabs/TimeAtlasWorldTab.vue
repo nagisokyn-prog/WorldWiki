@@ -89,29 +89,10 @@
 </template>
 
 <script setup lang="ts">
+import type { TimeAtlasWorldTabProps, TimeAtlasWorldTabEmits } from './TimeAtlasWorldTab.model';
 import type { WorldRegion, WorldTimezone, RegionSunStatus } from '../../../../../services/Calendars/calendar.types';
 
-defineProps<{
-  worldTimeSnapshot: Array<{
-    region: WorldRegion;
-    timezone?: WorldTimezone;
-    offsetHours: number;
-    localTimeStr: string;
-    localDateFormatted: string;
-    sunStatus: RegionSunStatus;
-  }>;
-  worldTimeSnippet: string;
-  isWorldTimeCopied: boolean;
-  worldHour?: number;
-  worldMinute?: number;
-  masterCalendarName?: string;
-  maxHours?: number;
-  maxMinutes?: number;
-  copyWorldTimeSnippet: () => Promise<void>;
-}>();
+defineProps<TimeAtlasWorldTabProps>>();
 
-defineEmits<{
-  (e: 'update:worldHour', val: number): void;
-  (e: 'update:worldMinute', val: number): void;
-}>();
+defineEmits<TimeAtlasWorldTabEmits>>();
 </script>

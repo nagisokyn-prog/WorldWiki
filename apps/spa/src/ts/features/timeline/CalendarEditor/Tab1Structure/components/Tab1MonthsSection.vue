@@ -72,20 +72,13 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab1MonthsSectionProps, Tab1MonthsSectionEmits } from './Tab1MonthsSection.model';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import { useTab1MonthsSection } from './useTab1MonthsSection';
 
-const props = defineProps<{
-  months: CalendarMonth[];
-  totalYearDays: number;
-  isReadOnly?: boolean;
-}>();
+const props = defineProps<Tab1MonthsSectionProps>>();
 
-defineEmits<{
-  (e: 'balance-months'): void;
-  (e: 'add-month'): void;
-  (e: 'update-months', months: CalendarMonth[]): void;
-}>();
+defineEmits<Tab1MonthsSectionEmits>>();
 
 const { seasonLabels } = useTab1MonthsSection(props);
 </script>

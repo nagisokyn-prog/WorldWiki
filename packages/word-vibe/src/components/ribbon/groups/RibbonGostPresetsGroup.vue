@@ -49,14 +49,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  openDropdown: string | null;
-  dropdownPos: { top: number; left: number };
-}>();
+import type { RibbonGostPresetsGroupProps, RibbonGostPresetsGroupEmits } from './RibbonGostPresetsGroup.model';
 
-defineEmits<{
-  (e: 'toggleDropdown', event: MouseEvent, name: string): void;
-  (e: 'applyGostPreset', preset: string): void;
-  (e: 'applyCiteStyle', style: string): void;
-}>();
+defineProps<RibbonGostPresetsGroupProps>();
+defineEmits<RibbonGostPresetsGroupEmits>();
 </script>

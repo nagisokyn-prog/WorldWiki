@@ -51,15 +51,10 @@
 </template>
 
 <script setup lang="ts">
+import type { LocalAiRecommendedProps, LocalAiRecommendedEmits } from './LocalAiRecommended.model';
 import type { RecommendedModelCard } from '../../../types/ai.types';
 
-defineProps<{
-  recommendedModels: RecommendedModelCard[];
-  downloadProgress: Record<string, { percent: number }>;
-  isModelInstalled: (filename: string) => boolean;
-}>();
+defineProps<LocalAiRecommendedProps>>();
 
-defineEmits<{
-  (e: 'download', repoId: string, filename: string): void;
-}>();
+defineEmits<LocalAiRecommendedEmits>>();
 </script>

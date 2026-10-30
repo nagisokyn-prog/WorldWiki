@@ -39,8 +39,8 @@ export function useTagsField(
         if (res && Array.isArray(res) && res.length > 0) {
           return processIds(res);
         }
-      } catch {
-        // Fallback if get_tags IPC is not implemented
+      } catch (err: unknown) {
+        console.debug('[useTagsField] get_tags failed or unhandled, falling back to get_entities:', err);
       }
       try {
         const entities = await invoke<Array<{ tags?: string[] }>>('get_entities', { project, entity_type: null });

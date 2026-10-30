@@ -110,35 +110,11 @@
 </template>
 
 <script setup lang="ts">
+import type { TimeAtlasMatrixTabProps, TimeAtlasMatrixTabEmits } from './TimeAtlasMatrixTab.model';
 import type { CalendarRecord } from '../../../../../stores/calendar.store';
 import type { CalendarData } from '../../../../../services/Calendars/calendar.types';
 
-defineProps<{
-  allCalendars: CalendarRecord[];
-  matrixBaseCalId: string;
-  matrixCompareCalId: string;
-  matrixEra?: number;
-  matrixYear: number;
-  matrixMonth: number;
-  matrixBaseCal: CalendarData | null;
-  matrixGridDays: Array<{
-    day: number;
-    baseMin: number;
-    isCurrent: boolean;
-    compDateStr?: string;
-    baseMeta: { holiday?: string | null; moons: Array<{ emoji: string; moon: { name: string }; name: string }> };
-    compHoliday?: string | null;
-  }>;
-}>();
+defineProps<TimeAtlasMatrixTabProps>>();
 
-defineEmits<{
-  (e: 'update:matrixBaseCalId', value: string): void;
-  (e: 'update:matrixCompareCalId', value: string): void;
-  (e: 'update:matrixEra', value: number): void;
-  (e: 'update:matrixYear', value: number): void;
-  (e: 'update:matrixMonth', value: number): void;
-  (e: 'prevMonth'): void;
-  (e: 'nextMonth'): void;
-  (e: 'selectDay', baseMin: number): void;
-}>();
+defineEmits<TimeAtlasMatrixTabEmits>>();
 </script>

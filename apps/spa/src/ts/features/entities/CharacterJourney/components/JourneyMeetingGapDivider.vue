@@ -9,11 +9,10 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyMeetingGapDividerProps, JourneyMeetingGapDividerEmits } from './JourneyMeetingGapDivider.model';
 import type { JourneyMeetingGap } from '../CharacterJourney.model';
 
-defineProps<{
-  gap: JourneyMeetingGap;
-}>();
+defineProps<JourneyMeetingGapDividerProps>>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

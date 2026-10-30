@@ -5,12 +5,10 @@
 </template>
 
 <script setup lang="ts">
+import type { ChaptersViewProps, ChaptersViewEmits } from './ChaptersView.model';
 import ChaptersMain from './ChaptersMain/ChaptersMain.vue';
 
-withDefaults(defineProps<{
-  project: string;
-  controlledChapterId?: string | null;
-}>(), {
+withDefaults(defineProps<ChaptersViewProps>>(), {
   controlledChapterId: null
 });
 </script>

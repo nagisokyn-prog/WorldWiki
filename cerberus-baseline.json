@@ -1,5 +1,13 @@
 [
   {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEntityLinkSelector.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (274) exceeds recommended limit (265)",
+    "fingerprint": "3673ffe2aca189ddd6b773e03dee4b6b78238ec3eb4cbd959d7f8797be0854ba"
+  },
+  {
     "rule": "VUE-001",
     "file": "./apps/spa/src/ts/features/ai/components/chat/AiMainChatView/AiMainChatView.vue",
     "line": 95,
@@ -113,6 +121,14 @@
   },
   {
     "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/BridgeMappingCard.vue",
+    "line": 98,
+    "symbol": "BridgeMappingCard",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\Calendars\\TimeAtlas\\tabs\\BridgeMappingCard.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "df814cde6f44e9a15a361f0b64906c3ea98da8ef85e2763d7fef17319b717dfe"
+  },
+  {
+    "rule": "VUE-001",
     "file": "./apps/spa/src/ts/shared/ui/ManuscriptPointPicker/ManuscriptPointPicker.vue",
     "line": 46,
     "symbol": "ManuscriptPointPicker",
@@ -121,35 +137,11 @@
   },
   {
     "rule": "VUE-001",
-    "file": "./packages/components/src/components/Vue/AppDialog.vue",
-    "line": 32,
-    "symbol": "AppDialog",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\AppDialog.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "bd19cd494cba98426a71b915068f2885dc84593a82af1627d2ae5c79a69e4b75"
-  },
-  {
-    "rule": "VUE-001",
     "file": "./packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
     "line": 105,
     "symbol": "SettingsPerformance",
     "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\Settings\\SettingsPerformance.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
     "fingerprint": "154c1938a4c4ec0cca3bbd9dd30735ac7623cb2cebefa9698ceeb5cd3e22fcc9"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./packages/components/src/components/Vue/TreeNodes.vue",
-    "line": 86,
-    "symbol": "TreeNodes",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\TreeNodes.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "9d5980eff3ed349c532a567bda88c7fff1d0aea90c83b2a2f324243e6d581c91"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
-    "line": 103,
-    "symbol": "WordRibbonBar",
-    "message": "Vue component '.\\packages\\word-vibe\\src\\components\\ribbon\\WordRibbonBar.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "ae6b248db9c3cdf70c23a3686f15f7e8438d66fea37126bdf5db3c1e4cae2ab4"
   },
   {
     "rule": "VUE-002",
@@ -209,19 +201,11 @@
   },
   {
     "rule": "VUE-002",
-    "file": "./packages/components/src/components/Vue/AppDialog.vue",
-    "line": 32,
-    "symbol": "AppDialog",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\AppDialog.vue' is missing required companion hook useAppDialog.ts",
-    "fingerprint": "6148a7f59131ed772f7c2e75916052aa39e9bd2569f1b255c59dde31a295cdbc"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./packages/components/src/components/Vue/TreeNodes.vue",
-    "line": 86,
-    "symbol": "TreeNodes",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\TreeNodes.vue' is missing required companion hook useTreeNodes.ts",
-    "fingerprint": "7f1e49831a69901ef64651f71bf5b76b9e7839130c20acdddde70731c3907704"
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/BridgeMappingCard.vue",
+    "line": 98,
+    "symbol": "BridgeMappingCard",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\Calendars\\TimeAtlas\\tabs\\BridgeMappingCard.vue' is missing required companion hook useBridgeMappingCard.ts",
+    "fingerprint": "2651a4ee9cbaa743a63b5af544aa6bad75cca9c4c0bf131f0d32a782f0388b7f"
   },
   {
     "rule": "VUE-003",
@@ -642,7 +626,7 @@
   {
     "rule": "VUE-003",
     "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/PromisesPanel.vue",
-    "line": 103,
+    "line": 97,
     "symbol": "interface",
     "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
     "fingerprint": "9f56ec27cf6e2aec5e1da4d1e2c1121b04ae699663515bcd7234609273b3f6c4"
@@ -1401,30 +1385,6 @@
   },
   {
     "rule": "VUE-003",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/CalendarExplainerCard.vue",
-    "line": 60,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "fa1063e1bdbbbdc3ffaa81e28b9569a1b0d0f3424f149e676fd7bc87de9414d6"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/CalendarExplainerCard.vue",
-    "line": 65,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "e01285adc37b8a8c689a80425828acaef641088eb660a233af2ebcbb3e2eda9c"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
-    "line": 135,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "70829296260d5378eccd8e359183bd934e6b90d03f9f116cf1d1107b65eff5ae"
-  },
-  {
-    "rule": "VUE-003",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue",
     "line": 40,
     "symbol": "interface",
@@ -1450,15 +1410,15 @@
   {
     "rule": "VUE-003",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/BridgeMappingCard.vue",
-    "line": 101,
+    "line": 102,
     "symbol": "interface",
     "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "fe3a7108b812fd89bf2a3ba3618a1a982da3b9e02677637d773e680f484ec131"
+    "fingerprint": "ca890d2086319de6104bd7518458b052c4db62fea92df4609258f9be044b8396"
   },
   {
     "rule": "VUE-003",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/BridgeMappingCard.vue",
-    "line": 112,
+    "line": 124,
     "symbol": "interface",
     "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
     "fingerprint": "8312265a0db6a899e54ad42f19012bc5a8efafebd64a80ae6ba3cda6cf9ab3ca"
@@ -1576,358 +1536,6 @@
     "fingerprint": "74245c0ccee80f47e5e94d57158afc3d048c42e6ea29bce7a2bde31029348262"
   },
   {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsAppearance.vue",
-    "line": 94,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "877d3b3f7b10baf01fadbdad22a0b17d04c20bbcfab4805089839f5ca5c2312e"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsAppearance.vue",
-    "line": 98,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "dad0b9c423952e97ac7207fb81b6fa4f6f8b861e53908e8c4f2429b8e0725f35"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsEditor.vue",
-    "line": 44,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "dd79366fe489455740236b5d4a6140ee25eefe86b8edb366c24b2b8936586ac1"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsInterface.vue",
-    "line": 160,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "d5e225d26b9ecb4f06d02f314019240270d6166ceae6c6208b7ea761c34fc37c"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-    "line": 36,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "4b50f20057b82dc93c3cd30b7a5e6eef17e9c51720caf8cd266c4a4bdbed9ba3"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsMotion.vue",
-    "line": 70,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "2bed0cb603ff6a9df4da328e70dfeb78db9092e7e9325c257af73edade9ac276"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-    "line": 111,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "bf6f1e7a49d1af19e9189fe71c3e5f4614aecfc06436aa84b9cf03b1ba3a5a59"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsTypography.vue",
-    "line": 45,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "3a04f4b844b70d1850e8f0dcd22abddc71bf649f84aed081b701e3b3a3a1b6b5"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/components/src/components/Vue/TreeNodes.vue",
-    "line": 89,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "9e261e7e6a0b6ba7b2885ff8e8e21a7f24f0b08d93fd6873d05505300aa119ed"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/EquationInsertDialog/EquationInsertDialog.vue",
-    "line": 27,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "2877fd2a3198173a734b955d53edde89e7a4bf761da1ffc80086ecd6035e3a30"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/EquationInsertDialog/EquationInsertDialog.vue",
-    "line": 28,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "27d3951d0b401d194c07a2bd2de6b058c496190f35cc5d1c50b3a5863c986181"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/HeaderFooterDialog/HeaderFooterDialog.vue",
-    "line": 41,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "4311e53b4da001479a38aff6ff95fcb6d5ba74da34d2821eb3f7a5612c726a05"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/HeaderFooterDialog/HeaderFooterDialog.vue",
-    "line": 47,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "2660fbc2e44582ad539b7840330010e7b6f0d08638bf5f52682f10756d323223"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/ImageInsertDialog/ImageInsertDialog.vue",
-    "line": 40,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "83f83bd283abc73d4371e69aaa7491e7868861406aa7295900ff2f1aaf42b813"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/ImageInsertDialog/ImageInsertDialog.vue",
-    "line": 41,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "c22ec72bb9e15d2c61f357fb21fe2b5f64eccb8aa6567204a10e2b46dd24a3f6"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/LinkInsertDialog/LinkInsertDialog.vue",
-    "line": 25,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "eb76b36c5cfb8eafd9c7e56df8224ad8b3298881af53ed70fb26ce1e1dbeeec6"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/LinkInsertDialog/LinkInsertDialog.vue",
-    "line": 26,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "586d795ba1cd9d0d594a6209cc3459d1e677cdfab74c0d6340b45fef022e5e7f"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/PageSetupModal/PageSetupModal.vue",
-    "line": 61,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "e33d86e30493e3dbb12259f2af85f2341e54cc1d47163a3cc0beea60e1a0e189"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/PageSetupModal/PageSetupModal.vue",
-    "line": 67,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "9e5067840cc77f437f5ddd04bbbe54ba9f132167c7ee80cd6551093200ff6945"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/TablePickerPopup/TablePickerPopup.vue",
-    "line": 31,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "ea20f6d14da85b0df632bc7f708accc56f0fe809b69e64d49485c6e4d53106ca"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/modals/TablePickerPopup/TablePickerPopup.vue",
-    "line": 32,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "b75f24377faab9895e6cc2f8e656d8b6682226c8a7a7dc366227c6094acdce7e"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
-    "line": 120,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "3cb49bbd3b9e7ea707c66e8feae202397f66a05aacee03ec7f06e18cd6f7e0f2"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonFontGroup.vue",
-    "line": 161,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "3c4fad78f5b73a2a4b13b8c1189bb588ac4176a073c572fd7a6f6e6810f3e9e9"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonFontGroup.vue",
-    "line": 168,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "b644101784177173e0ace4d839c4ec92b17631004a50e34b77405a43eb3a7c14"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonGostPresetsGroup.vue",
-    "line": 52,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "19875bd677775caf06449f1af66a594756ba05f54cf1f1109edd16122e0e0fb6"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonGostPresetsGroup.vue",
-    "line": 57,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "91092e9b78c8ec3fe04c4db4628f4778c04ee8586061244ccd65fc6842f01f71"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonHeaderFooterGroup.vue",
-    "line": 69,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "702d03ab3ad254e0a25e65839fba3c841606073678671e5902216e44f406f2d6"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonHeaderFooterGroup.vue",
-    "line": 75,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "3a1f24cf8390d54f8744763c95db289cc2ccff7ea26dadfa7c8ccceaa8056a30"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonPageSetupGroup.vue",
-    "line": 80,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "67b1f3655440be1ef611569d76734add3b7faa1dc8fbf0306be96f31a1702528"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonPageSetupGroup.vue",
-    "line": 86,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "3bd4ec3e0d37979746b07e7c89e0dc127aa7d229845edf274b7679e391bff7ce"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonParagraphGroup.vue",
-    "line": 132,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "4fadf404ddb80fc8494df15abbe8c003600008726e3c884f971a5eecd8db9bf8"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonParagraphGroup.vue",
-    "line": 139,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "7405f224a39bfb6becb3b311506f09a63c443464df48b49ff4bff0d7a225196c"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/groups/RibbonTrackingGroup.vue",
-    "line": 64,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "0447687a91809315513ddc2b13bdf0c04691a3cd35a0e0419ec10190dccf78cb"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonAcademicTab.vue",
-    "line": 90,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "5434410faa23f76da1eebb2ec0f64334655a3c231fa9d341a15fe7e09d007a17"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonAcademicTab.vue",
-    "line": 96,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "a1b5933d39643e7e0f8eb1eff5831b0c6d5b6293fa4d2a905118f45fbed16a9e"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonHomeTab.vue",
-    "line": 68,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "68d7e65345f3f41fce363c2b2918253ad61a9ea5ffdcbd0037428205eafa21b9"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonHomeTab.vue",
-    "line": 77,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "19fa23b5fdd6b529bf65cd9de36d996996aac08b0fe8f5263b3d6be872e11195"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonInsertTab.vue",
-    "line": 137,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "d1d6d1d74c30f30db89af24c811c444a56bfb592cfcd938772b212c693922ab8"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonInsertTab.vue",
-    "line": 143,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "61a30cbd32ea72fa1f14f20e705806a5cfb25c8fd8eb3d1fc7a1ead0301b33df"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonLayoutTab.vue",
-    "line": 88,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "0be023856f44458ff112d9f33063ffaf31dbdcecbfab68a96a81d485b7981f30"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonLayoutTab.vue",
-    "line": 99,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "9b599d01307662702c050d16e46af3cd092da1086dd187b969c08e231a1c0319"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonReviewTab.vue",
-    "line": 98,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "984dd663c257f6c8e4c923a09f0bdb9191be56ea818040d119bef6a662c42941"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ribbon/tabs/RibbonTableDesignTab.vue",
-    "line": 49,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "0a99a4782f2965c03b6d7ca347873c3ef53064ae333f7521e9ad4247e1d65f50"
-  },
-  {
-    "rule": "VUE-003",
-    "file": "./packages/word-vibe/src/components/ruler/WordRuler.vue",
-    "line": 146,
-    "symbol": "interface",
-    "message": "Declaring TypeScript interfaces or inline type literals in defineProps/defineEmits inside .vue SFC is forbidden",
-    "fingerprint": "55cca21f506abfd697a42c00c1ddd2709a850af6d56b43a5caf50088331df98e"
-  },
-  {
     "rule": "VUE-004",
     "file": "./apps/spa/src/ts/features/ai/WowilonPanel.vue",
     "line": 34,
@@ -2042,7 +1650,7 @@
   {
     "rule": "VUE-004",
     "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/PromisesPanel.vue",
-    "line": 95,
+    "line": 89,
     "symbol": "PromisesPanel",
     "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\chapters\\PromisesPanel\\PromisesPanel.vue' is missing required companion contract 'PromisesPanel.model.ts' defining Props, Emits, and DTO contracts",
     "fingerprint": "ff12e2039729082a05248ab1666a5deb1df25caed3060427aa42303dbfd4efae"
@@ -2150,14 +1758,6 @@
     "symbol": "CalendarExplainerCard",
     "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalCalendarWidget\\CalendarExplainerCard.vue' is missing required companion contract 'CalendarExplainerCard.model.ts' defining Props, Emits, and DTO contracts",
     "fingerprint": "8b13cb06ac7f097f59edf65524173783841995ca1d4a7e850b1eb8f1d5b93d19"
-  },
-  {
-    "rule": "VUE-004",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
-    "line": 130,
-    "symbol": "GlobalCalendarWidget",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalCalendarWidget\\GlobalCalendarWidget.vue' is missing required companion contract 'GlobalCalendarWidget.model.ts' defining Props, Emits, and DTO contracts",
-    "fingerprint": "aa32e87f5e1e2c74f3bace74180f057b156579241240e0d2f27183a281de770f"
   },
   {
     "rule": "VUE-004",

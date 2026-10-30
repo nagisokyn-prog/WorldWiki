@@ -58,20 +58,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab2SyncEraFormProps, Tab2SyncEraFormEmits } from './Tab2SyncEraForm.model';
 import type { CalendarEra } from '@/services/Calendars/calendar.types';
 import type { SyncDirection } from '../Tab2ErasSync.model';
 
-defineProps<{
-  selectedMasterEraIndex: number;
-  masterEras: CalendarEra[];
-  offsetDirection: SyncDirection;
-  offsetYears: number;
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab2SyncEraFormProps>>();
 
-defineEmits<{
-  (e: 'update-master-era', eraIdx: number): void;
-  (e: 'update-offset-direction', dir: SyncDirection): void;
-  (e: 'update-offset-years', years: number): void;
-}>();
+defineEmits<Tab2SyncEraFormEmits>>();
 </script>

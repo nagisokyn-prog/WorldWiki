@@ -44,9 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonTableDesignTabProps } from './RibbonTableDesignTab.model';
 
-defineProps<{
-  commands: Partial<RibbonCommands>;
-}>();
+defineProps<RibbonTableDesignTabProps>();
 </script>

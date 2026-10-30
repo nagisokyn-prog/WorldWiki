@@ -60,19 +60,10 @@
 </template>
 
 <script setup lang="ts">
+import type { LocalAiLibraryProps, LocalAiLibraryEmits } from './LocalAiLibrary.model';
 import type { InstalledModelInfo, AiProfileSettings, ModelLifecycleState } from '../../../types/ai.types';
 
-defineProps<{
-  installedModels: InstalledModelInfo[];
-  localSettings: AiProfileSettings | null;
-  getStateIcon: (state: ModelLifecycleState) => string;
-  getStateLabel: (state: ModelLifecycleState) => string;
-}>();
+defineProps<LocalAiLibraryProps>>();
 
-defineEmits<{
-  (e: 'switch-tab', tab: 'recommended'): void;
-  (e: 'load', filename: string, kind?: string): void;
-  (e: 'unload', filename: string): void;
-  (e: 'delete', filename: string): void;
-}>();
+defineEmits<LocalAiLibraryEmits>>();
 </script>

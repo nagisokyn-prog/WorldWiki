@@ -43,20 +43,12 @@
 </template>
 
 <script setup lang="ts">
+import type { SchemaHistoryDrawerProps, SchemaHistoryDrawerEmits } from './SchemaHistoryDrawer.model';
 import type { SchemaHistoryRecord } from '../hooks/useSchemaHistory';
 
 export type SchemaHistoryItem = SchemaHistoryRecord;
 
-defineProps<{
-  maxSaves: number;
-  history: SchemaHistoryRecord[];
-  previewId: string | null;
-}>();
+defineProps<SchemaHistoryDrawerProps>>();
 
-defineEmits<{
-  (e: 'close'): void;
-  (e: 'update:maxSaves', val: number): void;
-  (e: 'preview', item: SchemaHistoryRecord): void;
-  (e: 'toggle-pin', item: SchemaHistoryRecord): void;
-}>();
+defineEmits<SchemaHistoryDrawerEmits>>();
 </script>

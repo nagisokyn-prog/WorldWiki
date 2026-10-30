@@ -27,14 +27,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  isOpen: boolean;
-  hideForever: boolean;
-}>();
+import type { QuickLinkHintProps, QuickLinkHintEmits } from './QuickLinkHint.model';
+defineProps<QuickLinkHintProps>>();
 
-defineEmits<{
-  (e: 'close'): void;
-  (e: 'open'): void;
-  (e: 'dismissForever'): void;
-}>();
+defineEmits<QuickLinkHintEmits>>();
 </script>

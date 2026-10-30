@@ -87,14 +87,10 @@
 </template>
 
 <script setup lang="ts">
+import type { ModuleHelpDynamicCardProps, ModuleHelpDynamicCardEmits } from './ModuleHelpDynamicCard.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
 import type { SchemaFieldDef, ModuleExample } from '../schemaReference.types';
 
-defineProps<{
-  example: ModuleExample;
-  isChapterField: (field: SchemaFieldDef) => boolean;
-  isEntityOrChapterSelect: (field: SchemaFieldDef) => boolean;
-  getSelectOptions: (field: SchemaFieldDef) => Array<{ value: string; label: string }>;
-}>();
+defineProps<ModuleHelpDynamicCardProps>>();
 </script>

@@ -100,25 +100,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab1ExtraDaysTapeProps, Tab1ExtraDaysTapeEmits } from './Tab1ExtraDaysTape.model';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { YearTapeItem } from '../tab1Leap.utils';
 
-defineProps<{
-  extraDaysCount: number;
-  extraDaysName: string;
-  placement: 'end_of_year' | 'mid_year' | 'start_of_year' | 'after_month';
-  afterMonthIndex: number;
-  pauseWeekdays: boolean;
-  months: CalendarMonth[];
-  yearTape: YearTapeItem[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab1ExtraDaysTapeProps>>();
 
-defineEmits<{
-  (e: 'update-extra-days', val: number): void;
-  (e: 'update-extra-name', val: string): void;
-  (e: 'update-placement', val: 'end_of_year' | 'mid_year' | 'start_of_year' | 'after_month'): void;
-  (e: 'update-after-month', val: number): void;
-  (e: 'update-pause-weekdays', val: boolean): void;
-}>();
+defineEmits<Tab1ExtraDaysTapeEmits>>();
 </script>

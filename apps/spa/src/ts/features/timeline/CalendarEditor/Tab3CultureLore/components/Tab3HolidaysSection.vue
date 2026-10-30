@@ -115,21 +115,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab3HolidaysSectionProps, Tab3HolidaysSectionEmits } from './Tab3HolidaysSection.model';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { CultureHolidayDto } from '../Tab3CultureLore.model';
 import { useTab3HolidaysSection } from './useTab3HolidaysSection';
 
-const props = defineProps<{
-  holidays: CultureHolidayDto[];
-  months: CalendarMonth[];
-  isReadOnly?: boolean;
-}>();
+const props = defineProps<Tab3HolidaysSectionProps>>();
 
-const emit = defineEmits<{
-  (e: 'add-holiday'): void;
-  (e: 'update-holidays', list: CultureHolidayDto[]): void;
-  (e: 'remove-holiday', idx: number): void;
-}>();
+const emit = defineEmits<Tab3HolidaysSectionEmits>>();
 
 const { toggleRange } = useTab3HolidaysSection(props, (e, list) => emit(e, list));
 </script>

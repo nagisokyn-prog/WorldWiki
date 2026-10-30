@@ -92,11 +92,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
 import RibbonTrackingGroup from '../groups/RibbonTrackingGroup.vue';
+import type { RibbonReviewTabProps } from './RibbonReviewTab.model';
 
-defineProps<{
-  isTrackingChanges: boolean;
-  commands: Partial<RibbonCommands>;
-}>();
+defineProps<RibbonReviewTabProps>();
 </script>

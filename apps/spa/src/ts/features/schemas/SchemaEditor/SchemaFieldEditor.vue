@@ -99,18 +99,14 @@
 </template>
 
 <script setup lang="ts">
+import type { SchemaFieldEditorProps, SchemaFieldEditorEmits } from './SchemaFieldEditor.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useSchemaFieldEditor } from './useSchemaFiledEditor';
 import type { SchemaFieldItem } from './useSchemaFiledEditor';
 
-const props = defineProps<{
-  item: SchemaFieldItem;
-  isFirst: boolean;
-}>();
+const props = defineProps<SchemaFieldEditorProps>>();
 
-defineEmits<{
-  remove: [];
-}>();
+defineEmits<SchemaFieldEditorEmits>>();
 
 const {
   typeOptions,

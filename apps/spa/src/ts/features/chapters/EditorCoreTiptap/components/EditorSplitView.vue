@@ -74,30 +74,13 @@
 </template>
 
 <script setup lang="ts">
+import type { EditorSplitViewProps, EditorSplitViewEmits } from './EditorSplitView.model';
 import { ref } from 'vue';
 import { EditorContent, type Editor } from '@tiptap/vue-3';
 
-defineProps<{
-  markdownContent: string;
-  editor?: Editor;
-  leftPanelWidth: number;
-  rightPanelWidth: number;
-  showStructure: boolean;
-  selectedBlockIdx: number | null;
-  documentStructure: Array<{ type: string; text: string; semanticTag?: string; pIndex?: number }>;
-}>();
+defineProps<EditorSplitViewProps>>();
 
-const emit = defineEmits<{
-  (e: 'update:markdownContent', val: string): void;
-  (e: 'input', event: Event): void;
-  (e: 'keydown', event: KeyboardEvent): void;
-  (e: 'contextmenu', event: MouseEvent): void;
-  (e: 'open-entity-selector'): void;
-  (e: 'start-resize-left', event: MouseEvent): void;
-  (e: 'start-resize-right', event: MouseEvent): void;
-  (e: 'scroll-to-block', idx: number): void;
-  (e: 'cycle-tag', pIndex: number): void;
-}>();
+const emit = defineEmits<EditorSplitViewEmits>>();
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 

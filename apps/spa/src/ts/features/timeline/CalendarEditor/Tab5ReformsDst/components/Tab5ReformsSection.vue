@@ -141,6 +141,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab5ReformsSectionProps, Tab5ReformsSectionEmits } from './Tab5ReformsSection.model';
 import type {
   DualDatingInput,
   DualDatingResult,
@@ -152,32 +153,9 @@ import type {
 } from '../Tab5ReformsDst.model';
 import Tab5DualDatingCard from './Tab5DualDatingCard.vue';
 
-defineProps<{
-  mode: ReformMode;
-  modeBadgeText: string;
-  activePreset: ReformPresetKey | null;
-  presets: Array<{ key: ReformPresetKey; label: string }>;
-  monthNames: string[];
-  gapParams: GapReformParams;
-  transParams: TransitionalReformParams;
-  resetParams: ResetReformParams;
-  newStyleFirstDayStr: string;
-  visualTapeStart: string;
-  visualTapeMiddle: string;
-  visualTapeEnd: string;
-  dualDatingInput: DualDatingInput;
-  dualDatingResult: DualDatingResult;
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab5ReformsSectionProps>>();
 
-defineEmits<{
-  (e: 'select-preset', key: ReformPresetKey): void;
-  (e: 'update-mode', mode: ReformMode): void;
-  (e: 'update-gap', patch: Partial<GapReformParams>): void;
-  (e: 'update-trans', patch: Partial<TransitionalReformParams>): void;
-  (e: 'update-reset', patch: Partial<ResetReformParams>): void;
-  (e: 'update-dual-input', patch: Partial<DualDatingInput>): void;
-}>();
+defineEmits<Tab5ReformsSectionEmits>>();
 
 const modeCards = [
   { mode: 'gap' as ReformMode, icon: '🕳️', title: 'Выброшенные дни (Gap)', desc: 'Скачок дат без разрыва дней недели. Например, после четверга 4 октября сразу пятница 15 октября.' },

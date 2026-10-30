@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+import type { EditorBodyProps, EditorBodyEmits } from './EditorBody.model';
 import { EditorContent } from '@tiptap/vue-3';
 import type { Editor } from '@tiptap/vue-3';
 import EditorSplitView from './EditorSplitView.vue';
@@ -71,37 +72,7 @@ import type { PageSize, WordDocumentDTO } from '@worldwiki/word-vibe';
 import type { SemanticDocument } from '@/services/document/ast/types';
 import type { DocumentBlock } from '../hooks/useTiptapSplitView';
 
-defineProps<{
-  editor?: Editor | null;
-  editorMode: 'wysiwyg' | 'markdown' | 'split' | 'word';
-  markdownContent: string;
-  changedFields: string[];
-  leftPanelWidth: number;
-  rightPanelWidth: number;
-  showStructure: boolean;
-  selectedBlockIdx: number;
-  documentStructure: DocumentBlock[];
-  currentSemanticDocument: SemanticDocument;
-  content: string;
-  title: string;
-  isCurrentPageLandscape: boolean;
-  currentPageSize: PageSize;
-}>();
+defineProps<EditorBodyProps>>();
 
-defineEmits<{
-  (e: 'update:markdownContent', val: string): void;
-  (e: 'textarea-mounted', el: HTMLTextAreaElement | null): void;
-  (e: 'scroll', ev: Event): void;
-  (e: 'markdown-input', ev: Event): void;
-  (e: 'markdown-keydown', ev: KeyboardEvent): void;
-  (e: 'contextmenu', ev: MouseEvent): void;
-  (e: 'start-resize-left', ev: MouseEvent): void;
-  (e: 'start-resize-right', ev: MouseEvent): void;
-  (e: 'scroll-to-block', idx: number): void;
-  (e: 'cycle-tag', idx: number): void;
-  (e: 'open-entity-selector'): void;
-  (e: 'word-content-update', val: string): void;
-  (e: 'word-document-update', doc: WordDocumentDTO): void;
-  (e: 'word-change'): void;
-}>();
+defineEmits<EditorBodyEmits>>();
 </script>

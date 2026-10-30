@@ -25,13 +25,12 @@
 </template>
 
 <script setup lang="ts">
+import type { HardwareMonitorChartProps, HardwareMonitorChartEmits } from './HardwareMonitorChart.model';
 import 'uplot/dist/uPlot.min.css';
 import type { HardwareInfo } from '../../types/ai.types';
 import { useHardwareMonitorChart } from './useHardwareMonitorChart';
 
-const props = defineProps<{
-  hardware: HardwareInfo | null;
-}>();
+const props = defineProps<HardwareMonitorChartProps>>();
 
 const {
   chartContainer,

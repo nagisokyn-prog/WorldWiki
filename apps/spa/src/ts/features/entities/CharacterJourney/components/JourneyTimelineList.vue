@@ -138,16 +138,13 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyTimelineListProps, JourneyTimelineListEmits } from './JourneyTimelineList.model';
 import type { JourneyTimelineItem } from '../CharacterJourney.model';
 import JourneyMeetingGapDivider from './JourneyMeetingGapDivider.vue';
 
-defineProps<{
-  timelineItems: JourneyTimelineItem[];
-}>();
+defineProps<JourneyTimelineListProps>>();
 
-defineEmits<{
-  (e: 'select-scene', item: JourneyTimelineItem): void;
-}>();
+defineEmits<JourneyTimelineListEmits>>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

@@ -84,37 +84,13 @@
 </template>
 
 <script setup lang="ts">
-import type { TreeNodeData } from './ExplorerTree.vue';
+import type { TreeNodesProps, TreeNodesEmits } from './TreeNodes.model';
+import { useTreeNodes, vFocus } from './useTreeNodes';
 
-defineProps<{
-  nodes: TreeNodeData[];
-  expanded: Set<string>;
-  activeId?: string;
-  selectedIds: Set<string>;
-  renamingId?: string;
-  renamingValue?: string;
-}>();
+defineProps<TreeNodesProps>();
+defineEmits<TreeNodesEmits>();
 
-defineEmits([
-  'toggle-expand', 'click-node', 'dblclick-node', 'ctx-node', 
-  'create-in', 'update:renaming-value', 'commit-rename', 'cancel-rename',
-  'drag-start', 'drag-enter', 'drag-over', 'drag-leave', 'drop-node'
-]);
-
-const vFocus = {
-  mounted: (el: HTMLInputElement) => el.focus()
-};
-
-const isFaIcon = (val?: string) => {
-  if (!val) return false;
-  return val.startsWith('fa-') || val.startsWith('fas ') || val.startsWith('far ') || val.startsWith('fab ') || val.includes(' fa-');
-};
-
-const formatFaIcon = (val?: string) => {
-  if (!val) return '';
-  if (val.startsWith('fa-')) return `fas ${val}`;
-  return val;
-};
+const { isFaIcon, formatFaIcon } = useTreeNodes();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/TreeNodes.css"></style>

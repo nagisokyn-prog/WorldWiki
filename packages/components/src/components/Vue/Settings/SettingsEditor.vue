@@ -36,12 +36,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import type { AppSettings } from '../../../ts/types/settings.js';
+import type { SettingsEditorProps } from './SettingsEditor.model';
 
 const { t } = useI18n();
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-defineProps<{
-  save: () => Promise<void>;
-}>();
+defineProps<SettingsEditorProps>();
 </script>

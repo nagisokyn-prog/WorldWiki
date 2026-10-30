@@ -52,18 +52,11 @@
 </template>
 
 <script setup lang="ts">
+import type { SchemaCatalogSidebarProps, SchemaCatalogSidebarEmits } from './SchemaCatalogSidebar.model';
 import ModuleHelpPreview from '../ModuleHelpPreview.vue';
 import type { SchemaTemplateItem } from '../hooks/useSchemaTemplates';
 
-defineProps<{
-  catalogWidth: number;
-  atomicBricks: Array<{ val: string; label: string; icon: string }>;
-  timelineTemplates: Record<string, SchemaTemplateItem>;
-  dynamicTemplates: Record<string, SchemaTemplateItem>;
-}>();
+defineProps<SchemaCatalogSidebarProps>>();
 
-defineEmits<{
-  (e: 'start-resize', ev: MouseEvent): void;
-  (e: 'drag-start-palette', ev: DragEvent, type: 'atomic' | 'module', val: string, label: string): void;
-}>();
+defineEmits<SchemaCatalogSidebarEmits>>();
 </script>

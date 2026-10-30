@@ -107,22 +107,17 @@
 </template>
 
 <script setup lang="ts">
+import type { UniversalDatePickerProps, UniversalDatePickerEmits } from './UniversalDatePicker.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
 import type { DatePickerModelValue } from './useUniversalDatePicker';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  modelValue?: DatePickerModelValue | string | null;
-  showTime?: boolean;
-}>(), {
+const props = withDefaults(defineProps<UniversalDatePickerProps>>(), {
   modelValue: null,
   showTime: false
 });
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', val: unknown): void;
-}>();
+const emit = defineEmits<UniversalDatePickerEmits>>();
 
 const {
   allCalendars,

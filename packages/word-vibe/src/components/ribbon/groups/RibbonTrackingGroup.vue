@@ -59,10 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonTrackingGroupProps } from './RibbonTrackingGroup.model';
 
-defineProps<{
-  isTrackingChanges: boolean;
-  commands: Partial<RibbonCommands>;
-}>();
+defineProps<RibbonTrackingGroupProps>();
 </script>

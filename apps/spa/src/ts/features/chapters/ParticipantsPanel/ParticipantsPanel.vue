@@ -21,20 +21,15 @@
 </template>
 
 <script setup lang="ts">
+import type { ParticipantsPanelProps, ParticipantsPanelEmits } from './ParticipantsPanel.model';
 import { useParticipantsPanel } from './useParticipantsPanel';
 import type { ParticipantItem } from './useParticipantsPanel';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  participants?: (ParticipantItem | string)[] | null;
-}>(), {
+const props = withDefaults(defineProps<ParticipantsPanelProps>>(), {
   participants: () => []
 });
 
-const emit = defineEmits<{
-  (e: 'update:participants', val: ParticipantItem[]): void;
-  (e: 'change'): void;
-}>();
+const emit = defineEmits<ParticipantsPanelEmits>>();
 
 const {
   normalizedParticipants,

@@ -56,21 +56,12 @@
 </template>
 
 <script setup lang="ts">
+import type { AuditFilterToolbarProps, AuditFilterToolbarEmits } from './AuditFilterToolbar.model';
 import { useAuditFilterToolbar } from './useAuditFilterToolbar';
 
-defineProps<{
-  searchQuery: string;
-  selectedSeverity: string;
-  selectedRule: string;
-  hasActiveFilters: boolean;
-}>();
+defineProps<AuditFilterToolbarProps>>();
 
-defineEmits<{
-  (e: 'update:searchQuery', val: string): void;
-  (e: 'update:selectedSeverity', val: string): void;
-  (e: 'update:selectedRule', val: string): void;
-  (e: 'resetFilters'): void;
-}>();
+defineEmits<AuditFilterToolbarEmits>>();
 
 useAuditFilterToolbar();
 </script>

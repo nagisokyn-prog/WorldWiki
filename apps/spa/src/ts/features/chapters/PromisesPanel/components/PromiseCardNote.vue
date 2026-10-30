@@ -30,17 +30,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  editingNoteId: string | null;
-  itemId?: string | null;
-  note?: string | null;
-  noteDraft: string;
-}>();
+import type { PromiseCardNoteProps, PromiseCardNoteEmits } from './PromiseCardNote.model';
+defineProps<PromiseCardNoteProps>>();
 
-defineEmits<{
-  (e: 'update:noteDraft', val: string): void;
-  (e: 'startEdit'): void;
-  (e: 'cancelEdit'): void;
-  (e: 'save'): void;
-}>();
+defineEmits<PromiseCardNoteEmits>>();
 </script>

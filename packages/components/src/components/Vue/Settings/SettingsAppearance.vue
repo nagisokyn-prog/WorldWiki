@@ -86,18 +86,15 @@ import type { AppSettings } from '../../../ts/types/settings.js';
 import ThemeSwitcher from '../ThemeSwitcher.vue';
 import SettingsLivePreview from './SettingsLivePreview.vue';
 import { useSettingsAppearance } from './useSettingsAppearance';
+import type { SettingsAppearanceProps, SettingsAppearanceEmits } from './SettingsAppearance.model';
 
 const { t } = useI18n();
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-const props = defineProps<{
-  save: () => Promise<void>;
-}>();
+const props = defineProps<SettingsAppearanceProps>();
 
-defineEmits<{
-  (e: 'pick-background-file'): void;
-}>();
+defineEmits<SettingsAppearanceEmits>();
 
 const {
   toHex,

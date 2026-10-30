@@ -21,9 +21,10 @@
 
 <script setup lang="ts">
 import { useLinkInsertDialog } from './useLinkInsertDialog';
+import type { LinkInsertDialogProps, LinkInsertDialogEmits } from './LinkInsertDialog.model';
 
-const props = defineProps<{ isOpen: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { url: string; text: string }): void }>();
+const props = defineProps<LinkInsertDialogProps>();
+const emit = defineEmits<LinkInsertDialogEmits>();
 const { url, text, handleInsert } = useLinkInsertDialog(props, emit);
 </script>
 

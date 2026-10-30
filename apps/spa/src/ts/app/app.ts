@@ -40,6 +40,7 @@ import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
 import TagsManagerModalVue from '../features/entities/TagsManagerModal.vue';
 import SchemaEditorMainVue from '../features/schemas/SchemaEditor/SchemaEditorMain.vue';
 import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
+import GlobalCalendarWidgetVue from '../features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 
 // TagsField can stay async if it's not statically imported elsewhere
 const TagsField = defineAsyncComponent(() => import('@worldwiki/components').then(m => m.TagsField));
@@ -89,6 +90,7 @@ async function init() {
   app.component('EditorTabBarVue', EditorTabBarVue);
   app.component('EditorGroupPaneVue', EditorGroupPaneVue);
   app.component('CloudSyncModalVue', CloudSyncModalVue);
+  app.component('GlobalCalendarWidget', GlobalCalendarWidgetVue);
 
   app.use(autoAnimatePlugin as unknown as Plugin);
   app.use(MotionPlugin as unknown as Plugin);

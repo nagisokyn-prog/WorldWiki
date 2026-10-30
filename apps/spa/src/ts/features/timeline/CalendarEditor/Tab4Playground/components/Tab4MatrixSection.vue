@@ -106,17 +106,10 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab4MatrixSectionProps, Tab4MatrixSectionEmits } from './Tab4MatrixSection.model';
 import type { MonthMatrixDayDto } from '../Tab4Playground.model';
 
-defineProps<{
-  currentMonthTitle: string;
-  weekdayHeaders: string[];
-  monthMatrixDays: MonthMatrixDayDto[];
-}>();
+defineProps<Tab4MatrixSectionProps>>();
 
-defineEmits<{
-  (e: 'prev-month'): void;
-  (e: 'next-month'): void;
-  (e: 'select-day', day: number): void;
-}>();
+defineEmits<Tab4MatrixSectionEmits>>();
 </script>

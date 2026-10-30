@@ -84,18 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
 import RibbonGostPresetsGroup from '../groups/RibbonGostPresetsGroup.vue';
+import type { RibbonAcademicTabProps, RibbonAcademicTabEmits } from './RibbonAcademicTab.model';
 
-defineProps<{
-  openDropdown: string | null;
-  dropdownPos: { top: number; left: number };
-  commands: Partial<RibbonCommands>;
-}>();
-
-defineEmits<{
-  (e: 'toggleDropdown', event: MouseEvent, name: string): void;
-  (e: 'applyGostPreset', preset: string): void;
-  (e: 'applyCiteStyle', style: string): void;
-}>();
+defineProps<RibbonAcademicTabProps>();
+defineEmits<RibbonAcademicTabEmits>();
 </script>

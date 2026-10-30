@@ -100,13 +100,11 @@
   </div>
 </template>
 <script setup lang="ts">
+import type { TimelinePanelProps, TimelinePanelEmits } from './TimelinePanel.model';
 import { UniversalDatePicker } from '@/shared/ui';
 import { useTimelinePanel, type TimelineEvent } from './useTimelinePanel';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  events?: TimelineEvent[];
-}>(), {
+const props = withDefaults(defineProps<TimelinePanelProps>>(), {
   events: () => []
 });
 

@@ -133,18 +133,10 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanetTimezonesTabProps, PlanetTimezonesTabEmits } from './PlanetTimezonesTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<{
-  planet: PlanetDto;
-  isReadOnly?: boolean;
-}>();
+defineProps<PlanetTimezonesTabProps>>();
 
-defineEmits<{
-  (e: 'apply-preset', preset: 'earth24' | 'single'): void;
-  (e: 'add-timezone'): void;
-  (e: 'remove-timezone', idx: number): void;
-  (e: 'add-region'): void;
-  (e: 'remove-region', idx: number): void;
-}>();
+defineEmits<PlanetTimezonesTabEmits>>();
 </script>

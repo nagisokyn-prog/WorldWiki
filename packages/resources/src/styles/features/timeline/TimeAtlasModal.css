@@ -132,10 +132,10 @@
   color: var(--text-main);
 }
 
-.atlas-tab-pane,
-.atlas-body .tab-pane,
-.tab-pane {
-  display: flex !important;
+.time-atlas-modal .atlas-tab-pane,
+.time-atlas-modal .atlas-body .tab-pane,
+.time-atlas-modal .tab-pane {
+  display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
@@ -568,7 +568,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform var(--anim-speed-fast, 0.15s) ease, 0.15s) ease;
+  transition: transform var(--anim-speed-fast, 0.15s) ease;
 }
 
 .region-card:hover {

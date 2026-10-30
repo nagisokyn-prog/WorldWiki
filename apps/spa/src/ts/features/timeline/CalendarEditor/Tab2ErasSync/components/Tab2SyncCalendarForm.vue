@@ -30,14 +30,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  targetCalendarId: string;
-  targetCalendarYear: number;
-  isReadOnly?: boolean;
-}>();
+import type { Tab2SyncCalendarFormProps, Tab2SyncCalendarFormEmits } from './Tab2SyncCalendarForm.model';
+defineProps<Tab2SyncCalendarFormProps>>();
 
-defineEmits<{
-  (e: 'update-target-calendar', calId: string): void;
-  (e: 'update-target-calendar-year', year: number): void;
-}>();
+defineEmits<Tab2SyncCalendarFormEmits>>();
 </script>

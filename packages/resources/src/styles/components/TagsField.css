@@ -19,7 +19,7 @@
   min-height: 42px;
   cursor: text;
   transform: none;
-  transition: opacity 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transition: opacity 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
 .tags-input-container:hover {

@@ -79,17 +79,13 @@
 </template>
 
 <script setup lang="ts">
+import type { AuditAnomalyCardProps, AuditAnomalyCardEmits } from './AuditAnomalyCard.model';
 import type { ContradictionAnomalyDto } from '../ConsistencyChecker.model';
 import { useAuditAnomalyCard } from './useAuditAnomalyCard';
 
-const props = defineProps<{
-  anomaly: ContradictionAnomalyDto;
-}>();
+const props = defineProps<AuditAnomalyCardProps>>();
 
-defineEmits<{
-  (e: 'jumpToChapter', chapterId: string): void;
-  (e: 'openEntity', entityId: string): void;
-}>();
+defineEmits<AuditAnomalyCardEmits>>();
 
 const { ruleEmoji, ruleTooltip, cleanId } = useAuditAnomalyCard(() => props.anomaly);
 </script>

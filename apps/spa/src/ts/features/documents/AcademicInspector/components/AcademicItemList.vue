@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import type { AcademicItemListProps, AcademicItemListEmits } from './AcademicItemList.model';
 import { useAcademicItemList, type AcademicItemListProps } from './useAcademicItemList';
 import type { InspectorItem } from '../AcademicInspector.model';
 
@@ -40,10 +41,7 @@ export type AcademicItem = InspectorItem;
 
 const props = defineProps<AcademicItemListProps>();
 
-defineEmits<{
-  (e: 'jump', id: string): void;
-  (e: 'insert', item: InspectorItem): void;
-}>();
+defineEmits<AcademicItemListEmits>>();
 
 const { displayItems } = useAcademicItemList(props);
 </script>

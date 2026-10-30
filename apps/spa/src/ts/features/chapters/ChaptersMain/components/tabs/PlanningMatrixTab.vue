@@ -83,27 +83,16 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanningMatrixTabProps, PlanningMatrixTabEmits } from './PlanningMatrixTab.model';
 import { ref } from 'vue';
 import PlanningPanel from '../../../PlanningPanel/PlanningPanel.vue';
 import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store';
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { PlanScopeType } from '../ChapterRightSidebar.model';
 
-defineProps<{
-  project: string;
-  activePlanScope: PlanScopeType;
-  selectedArcId: string | null;
-  arcsList: StoryArc[];
-  currentArcTitle: string;
-  currentVolume?: HierarchyVolume | null;
-  currentChapter?: ChapterWithHierarchy | null;
-  currentChapterId?: string | null;
-}>();
+defineProps<PlanningMatrixTabProps>>();
 
-defineEmits<{
-  (e: 'update:plan-scope', val: PlanScopeType): void;
-  (e: 'select-arc', val: string | null): void;
-}>();
+defineEmits<PlanningMatrixTabEmits>>();
 
 const volumePlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);
 const arcPlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);

@@ -51,17 +51,10 @@
 </template>
 
 <script setup lang="ts">
+import type { ArcCreateModalProps, ArcCreateModalEmits } from './ArcCreateModal.model';
 import type { ArcType } from '../StoryArcs.model';
 
-defineProps<{
-  title: string;
-  arcType: ArcType;
-}>();
+defineProps<ArcCreateModalProps>>();
 
-defineEmits<{
-  (e: 'update:title', val: string): void;
-  (e: 'update:arcType', val: ArcType): void;
-  (e: 'close'): void;
-  (e: 'create'): void;
-}>();
+defineEmits<ArcCreateModalEmits>>();
 </script>

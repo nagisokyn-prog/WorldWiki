@@ -76,17 +76,10 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab5DstTransitionRulesProps, Tab5DstTransitionRulesEmits } from './Tab5DstTransitionRules.model';
 import type { DstPolicyConfig, DstTransitionRule, WeekdayOccurrence } from '../Tab5ReformsDst.model';
 
-defineProps<{
-  policyConfig: DstPolicyConfig;
-  monthNames: string[];
-  weekdayNames: string[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab5DstTransitionRulesProps>>();
 
-defineEmits<{
-  (e: 'update-spring-rule', patch: Partial<DstTransitionRule>): void;
-  (e: 'update-autumn-rule', patch: Partial<DstTransitionRule>): void;
-}>();
+defineEmits<Tab5DstTransitionRulesEmits>>();
 </script>

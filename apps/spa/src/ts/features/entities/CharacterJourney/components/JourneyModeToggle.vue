@@ -22,15 +22,12 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyModeToggleProps, JourneyModeToggleEmits } from './JourneyModeToggle.model';
 import type { JourneyFilterMode } from '../CharacterJourney.model';
 
-defineProps<{
-  modelValue: JourneyFilterMode;
-}>();
+defineProps<JourneyModeToggleProps>>();
 
-defineEmits<{
-  (e: 'update:modelValue', val: JourneyFilterMode): void;
-}>();
+defineEmits<JourneyModeToggleEmits>>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

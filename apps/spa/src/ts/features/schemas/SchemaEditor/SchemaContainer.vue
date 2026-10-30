@@ -240,6 +240,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SchemaContainerProps, SchemaContainerEmits } from './SchemaContainer.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
 import { useSchemaContainer } from './useSchemaContainer';
@@ -252,14 +253,9 @@ const isChapterField = (field: { class?: string; id?: string; type?: string; ent
   return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
 };
 
-const props = defineProps<{
-  item: SchemaContainerItem;
-}>();
+const props = defineProps<SchemaContainerProps>>();
 
-defineEmits<{
-  remove: [];
-  'drop-custom': [];
-}>();
+defineEmits<SchemaContainerEmits>>();
 
 const {
   isDraggedOver,

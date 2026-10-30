@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import type { CharacterJourneyProps, CharacterJourneyEmits } from './CharacterJourney.model';
 import { useCharacterJourney } from './useCharacterJourney';
 import type { JourneyTimelineItem } from './CharacterJourney.model';
 import JourneyToolbar from './components/JourneyToolbar.vue';
@@ -56,19 +57,14 @@ import JourneyArcGroups from './components/JourneyArcGroups.vue';
 import JourneyTimelineList from './components/JourneyTimelineList.vue';
 
 const props = withDefaults(
-  defineProps<{
-    projectId?: string;
-    entityId?: string;
-  }>(),
+  defineProps<CharacterJourneyProps>>(),
   {
     projectId: '',
     entityId: '',
   }
 );
 
-defineEmits<{
-  (e: 'select-scene', item: JourneyTimelineItem): void;
-}>();
+defineEmits<CharacterJourneyEmits>>();
 
 const {
   selectedEntities,

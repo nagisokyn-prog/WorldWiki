@@ -145,12 +145,11 @@
 </template>
 
 <script setup lang="ts">
+import type { CrossReferenceMatrixProps, CrossReferenceMatrixEmits } from './CrossReferenceMatrix.model';
 import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
 
 const props = withDefaults(
-  defineProps<{
-    project?: string;
-  }>(),
+  defineProps<CrossReferenceMatrixProps>>(),
   {
     project: '',
   }

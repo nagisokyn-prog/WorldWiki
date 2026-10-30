@@ -138,23 +138,13 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab3AgeTimezoneSectionProps, Tab3AgeTimezoneSectionEmits } from './Tab3AgeTimezoneSection.model';
 import type { CharacterAgeRuleDto } from '../Tab3CultureLore.model';
 import { useTab3AgeTimezoneSection } from './useTab3AgeTimezoneSection';
 
-defineProps<{
-  ageRule: CharacterAgeRuleDto;
-  calendarTimezone: string;
-  regionsList: { id: string; name: string }[];
-  selectedRegions: string[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab3AgeTimezoneSectionProps>>();
 
-const emit = defineEmits<{
-  (e: 'update-age-rule', patch: Partial<CharacterAgeRuleDto>): void;
-  (e: 'set-calendar-timezone', tz: string): void;
-  (e: 'toggle-region', id: string): void;
-  (e: 'add-region', name: string): void;
-}>();
+const emit = defineEmits<Tab3AgeTimezoneSectionEmits>>();
 
 const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(
   name => emit('add-region', name),

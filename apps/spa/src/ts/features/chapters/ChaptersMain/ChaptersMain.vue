@@ -139,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ChaptersMainProps, ChaptersMainEmits } from './ChaptersMain.model';
 import { FloatingWindow } from '@worldwiki/components';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import ExportModal from '../Export/ExportModal.vue';
@@ -151,22 +152,12 @@ import { useChaptersMain } from './useChaptersMain';
 import type { ActiveTreeNode, ChapterTreeNode } from './useChaptersMain';
 
 
-const props = withDefaults(defineProps<{
-  project: string;
-  controlledChapterId?: string | null;
-  activeTreeNode?: ActiveTreeNode | null;
-}>(), {
+const props = withDefaults(defineProps<ChaptersMainProps>>(), {
   controlledChapterId: null,
   activeTreeNode: null
 });
 
-const emit = defineEmits<{
-  'open-chapter-as-tab': [chapter: ChapterTreeNode];
-  'chapter-unsaved': [];
-  'chapter-saved': [];
-  'chapter-renamed': [payload: { id: string; title: string }];
-  'scroll-change': [scroll: number];
-}>();
+const emit = defineEmits<ChaptersMainEmits>>();
 
 const {
   chapters, currentChapterId, currentChapter,

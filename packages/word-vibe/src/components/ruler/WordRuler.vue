@@ -136,18 +136,14 @@
 
 <script setup lang="ts">
 import { useWordRuler } from './useWordRuler';
-import type { WordRulerProps } from './useWordRuler';
+import type { WordRulerProps, WordRulerEmits } from './WordRuler.model';
 
 const props = withDefaults(defineProps<WordRulerProps>(), {
   pageSize: 'A4',
   isLandscape: false,
 });
 
-const emit = defineEmits<{
-  'update:firstLineIndent': [cm: number];
-  'update:leftIndent': [cm: number];
-  'update:rightIndent': [cm: number];
-}>();
+const emit = defineEmits<WordRulerEmits>();
 
 const {
   rulerRef, pxPerCm,

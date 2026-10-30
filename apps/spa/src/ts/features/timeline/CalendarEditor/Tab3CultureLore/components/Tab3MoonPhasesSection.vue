@@ -66,15 +66,10 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab3MoonPhasesSectionProps, Tab3MoonPhasesSectionEmits } from './Tab3MoonPhasesSection.model';
 import type { MoonPhaseNames } from '@/services/Calendars/calendar.types';
 
-defineProps<{
-  phaseNames: MoonPhaseNames;
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab3MoonPhasesSectionProps>>();
 
-defineEmits<{
-  (e: 'update-phase-names', names: MoonPhaseNames): void;
-  (e: 'find-double-full-moon'): void;
-}>();
+defineEmits<Tab3MoonPhasesSectionEmits>>();
 </script>

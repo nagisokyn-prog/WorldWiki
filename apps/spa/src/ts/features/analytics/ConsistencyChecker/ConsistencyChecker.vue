@@ -73,24 +73,20 @@
 </template>
 
 <script setup lang="ts">
+import type { ConsistencyCheckerProps, ConsistencyCheckerEmits } from './ConsistencyChecker.model';
 import { useConsistencyChecker } from './useConsistencyChecker';
 import AuditSummaryHeader from './components/AuditSummaryHeader.vue';
 import AuditFilterToolbar from './components/AuditFilterToolbar.vue';
 import AuditAnomalyCard from './components/AuditAnomalyCard.vue';
 
 const props = withDefaults(
-  defineProps<{
-    projectId?: string;
-  }>(),
+  defineProps<ConsistencyCheckerProps>>(),
   {
     projectId: '',
   }
 );
 
-defineEmits<{
-  (e: 'jumpToChapter', chapterId: string): void;
-  (e: 'openEntity', entityId: string): void;
-}>();
+defineEmits<ConsistencyCheckerEmits>>();
 
 const {
   anomalies,

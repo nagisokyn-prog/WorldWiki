@@ -75,19 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonPageSetupGroupProps, RibbonPageSetupGroupEmits } from './RibbonPageSetupGroup.model';
 
-defineProps<{
-  openDropdown: string | null;
-  dropdownPos: { top: number; left: number };
-  commands: Partial<RibbonCommands>;
-}>();
-
-defineEmits<{
-  (e: 'toggleDropdown', event: MouseEvent, name: string): void;
-  (e: 'closeDropdown'): void;
-  (e: 'applyMarginPreset', preset: 'gost' | 'narrow' | 'moderate' | 'wide'): void;
-  (e: 'applyOrientation', orient: 'portrait' | 'landscape'): void;
-  (e: 'applyColumns', count: number): void;
-}>();
+defineProps<RibbonPageSetupGroupProps>();
+defineEmits<RibbonPageSetupGroupEmits>();
 </script>

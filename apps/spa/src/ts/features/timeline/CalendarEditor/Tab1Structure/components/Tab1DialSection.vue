@@ -101,17 +101,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab1DialSectionProps, Tab1DialSectionEmits } from './Tab1DialSection.model';
 import type { DialUnit } from '@/services/Calendars/calendar.types';
 import type { DialPreset, DayStartMode } from '../Tab1Structure.model';
 
-defineProps<{
-  dialUnits: DialUnit[];
-  dayStartOffset: string;
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab1DialSectionProps>>();
 
-defineEmits<{
-  (e: 'apply-preset', preset: DialPreset): void;
-  (e: 'set-day-start-offset', mode: DayStartMode): void;
-}>();
+defineEmits<Tab1DialSectionEmits>>();
 </script>

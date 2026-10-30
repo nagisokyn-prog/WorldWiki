@@ -30,15 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import { useAppDialog } from '../../ts/composables/useAppDialog';
+import { useAppDialog } from './useAppDialog';
 
-const { state, confirm, cancel } = useAppDialog();
-
-const handleOverlayClick = () => {
-  // alerts can be dismissed by clicking outside, confirms usually shouldn't, 
-  // but to be safe we'll treat overlay click as cancel
-  cancel();
-};
+const { state, confirm, cancel, handleOverlayClick } = useAppDialog();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/AppDialog.css"></style>

@@ -87,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+import type { PromisesPanelProps, PromisesPanelEmits } from './PromisesPanel.model';
 import { usePromisesPanel, PROMISE_STATUSES } from './usePromisesPanel';
 import type { PromisesPanelProps } from './usePromisesPanel';
 import PromiseFilterBar from './components/PromiseFilterBar.vue';
@@ -94,11 +95,7 @@ import PromiseCard from './components/PromiseCard.vue';
 
 const props = defineProps<PromisesPanelProps>();
 
-const emit = defineEmits<{
-  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
-  (e: 'change'): void;
-  (e: 'open-journey'): void;
-}>();
+const emit = defineEmits<PromisesPanelEmits>>();
 
 const {
   isCollapsed,

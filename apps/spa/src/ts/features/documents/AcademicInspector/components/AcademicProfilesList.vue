@@ -18,16 +18,12 @@
 </template>
 
 <script setup lang="ts">
+import type { AcademicProfilesListProps, AcademicProfilesListEmits } from './AcademicProfilesList.model';
 import type { DocumentProfile } from '../../../../services/document/profiles/types';
 
 export type AcademicProfile = DocumentProfile;
 
-defineProps<{
-  profiles: DocumentProfile[];
-  activeProfileId: string;
-}>();
+defineProps<AcademicProfilesListProps>>();
 
-defineEmits<{
-  (e: 'switch-profile', id: string): void;
-}>();
+defineEmits<AcademicProfilesListEmits>>();
 </script>

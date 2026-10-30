@@ -71,38 +71,12 @@
 </template>
 
 <script setup lang="ts">
+import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from './PromiseCardTimeline.model';
 import PromiseCardDateTimeWheels from './PromiseCardDateTimeWheels.vue';
 import type { DiegeticDateBadgeInfo } from './PromiseCardMeta.model';
 import type { CalendarRecord } from '@/stores/calendar.store';
 
-defineProps<{
-  isDatePickerOpen: boolean;
-  diegeticInfo: DiegeticDateBadgeInfo | null;
-  calendars?: CalendarRecord[];
-  currentCalendarId?: string;
-  currentEraIdx: number;
-  currentYear: number;
-  currentMonthIdx: number;
-  currentDay: number;
-  currentHour: number;
-  currentMinute: number;
-  eraWheelOptions: Array<{ value: number; label: string }>;
-  yearWheelOptions: Array<{ value: number; label: string }>;
-  monthWheelOptions: Array<{ value: number; label: string }>;
-  dayWheelOptions: Array<{ value: number; label: string }>;
-  hourWheelOptions: Array<{ value: number; label: string }>;
-  minuteWheelOptions: Array<{ value: number; label: string }>;
-}>();
+defineProps<PromiseCardTimelineProps>>();
 
-defineEmits<{
-  (e: 'toggle-picker'): void;
-  (e: 'update:currentCalendarId', val: string): void;
-  (e: 'update:currentEraIdx', val: number): void;
-  (e: 'update:currentYear', val: number): void;
-  (e: 'update:currentMonthIdx', val: number): void;
-  (e: 'update:currentDay', val: number): void;
-  (e: 'update:currentHour', val: number): void;
-  (e: 'update:currentMinute', val: number): void;
-  (e: 'change'): void;
-}>();
+defineEmits<PromiseCardTimelineEmits>>();
 </script>

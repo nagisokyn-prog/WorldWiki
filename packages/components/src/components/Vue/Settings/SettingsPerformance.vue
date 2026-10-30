@@ -105,12 +105,11 @@
 <script setup lang="ts">
 import type { AppSettings } from '../../../ts/types/settings.js';
 import { useSettingsPerformance } from './useSettingsPerformance';
+import type { SettingsPerformanceEmits } from './SettingsPerformance.model';
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-const emit = defineEmits<{
-  (e: 'save'): void;
-}>();
+const emit = defineEmits<SettingsPerformanceEmits>();
 
 const {
   t,

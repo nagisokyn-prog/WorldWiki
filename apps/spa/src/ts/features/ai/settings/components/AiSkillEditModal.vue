@@ -96,20 +96,10 @@
 </template>
 
 <script setup lang="ts">
+import type { AiSkillEditModalProps, AiSkillEditModalEmits } from './AiSkillEditModal.model';
 import type { AiSkillItem } from '../../skills/aiSkills.model';
 
-defineProps<{
-  isEditing: boolean;
-  editingSkill: Partial<AiSkillItem>;
-  newTriggerInput: string;
-}>();
+defineProps<AiSkillEditModalProps>>();
 
-defineEmits<{
-  (e: 'update:newTriggerInput', value: string): void;
-  (e: 'update-field', field: keyof AiSkillItem, value: unknown): void;
-  (e: 'close'): void;
-  (e: 'add-trigger'): void;
-  (e: 'remove-trigger', trig: string): void;
-  (e: 'save'): void;
-}>();
+defineEmits<AiSkillEditModalEmits>>();
 </script>

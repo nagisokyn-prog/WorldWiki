@@ -127,18 +127,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonParagraphGroupProps, RibbonParagraphGroupEmits } from './RibbonParagraphGroup.model';
 
-defineProps<{
-  currentLineHeight: string;
-  showInvisibles: boolean;
-  commands: Partial<RibbonCommands>;
-  call: (name: string, fn?: () => void) => void;
-}>();
-
-defineEmits<{
-  (e: 'update:lineHeight', val: string): void;
-  (e: 'toggleInvisibles'): void;
-  (e: 'open-paragraph-dialog'): void;
-}>();
+defineProps<RibbonParagraphGroupProps>();
+defineEmits<RibbonParagraphGroupEmits>();
 </script>

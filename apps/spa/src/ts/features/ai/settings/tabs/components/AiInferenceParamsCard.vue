@@ -109,13 +109,10 @@
 </template>
 
 <script setup lang="ts">
+import type { AiInferenceParamsCardProps, AiInferenceParamsCardEmits } from './AiInferenceParamsCard.model';
 import type { AiProfileSettings } from '../../../types/ai.types';
 
-defineProps<{
-  localSettings: AiProfileSettings;
-}>();
+defineProps<AiInferenceParamsCardProps>>();
 
-defineEmits<{
-  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
-}>();
+defineEmits<AiInferenceParamsCardEmits>>();
 </script>

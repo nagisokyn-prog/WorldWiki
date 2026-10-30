@@ -25,18 +25,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  localEntityType: string;
-  isHistoryPreviewMode: boolean;
-}>();
+import type { SchemaEditorToolbarProps, SchemaEditorToolbarEmits } from './SchemaEditorToolbar.model';
+defineProps<SchemaEditorToolbarProps>>();
 
-defineEmits<{
-  (e: 'update:localEntityType', value: string): void;
-  (e: 'exit-preview'): void;
-  (e: 'reset-changes'): void;
-  (e: 'open-preview'): void;
-  (e: 'open-json'): void;
-  (e: 'save'): void;
-  (e: 'toggle-history'): void;
-}>();
+defineEmits<SchemaEditorToolbarEmits>>();
 </script>

@@ -78,18 +78,13 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab2AnchorEventsSectionProps, Tab2AnchorEventsSectionEmits } from './Tab2AnchorEventsSection.model';
 import type { AnchorEventDto } from '../Tab2ErasSync.model';
 import { useTab2AnchorEventsSection } from './useTab2AnchorEventsSection';
 
-defineProps<{
-  anchorEvents: AnchorEventDto[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab2AnchorEventsSectionProps>>();
 
-const emit = defineEmits<{
-  (e: 'add-anchor-event', event: AnchorEventDto): void;
-  (e: 'remove-anchor-event', idx: number): void;
-}>();
+const emit = defineEmits<Tab2AnchorEventsSectionEmits>>();
 
 const { showAddRow, newEventName, newEventYear, submitNewEvent } = useTab2AnchorEventsSection(
   (e, event) => emit(e, event),

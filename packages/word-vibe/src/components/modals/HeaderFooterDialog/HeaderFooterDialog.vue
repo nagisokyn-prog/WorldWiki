@@ -37,14 +37,10 @@
 
 <script setup lang="ts">
 import { useHeaderFooterDialog } from './useHeaderFooterDialog';
+import type { HeaderFooterDialogProps, HeaderFooterDialogEmits } from './HeaderFooterDialog.model';
 
-const props = defineProps<{
-  isOpen: boolean;
-  initialTab?: 'header' | 'footer';
-  header?: { left: string; center: string; right: string };
-  footer?: { left: string; center: string; right: string };
-}>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { header: { left: string; center: string; right: string }; footer: { left: string; center: string; right: string } }): void }>();
+const props = defineProps<HeaderFooterDialogProps>();
+const emit = defineEmits<HeaderFooterDialogEmits>();
 const { activeTab, headerLeft, headerCenter, headerRight, footerLeft, footerCenter, footerRight, handleApply } =
   useHeaderFooterDialog(props, emit);
 </script>

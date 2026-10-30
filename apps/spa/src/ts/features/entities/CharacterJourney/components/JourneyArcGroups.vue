@@ -201,20 +201,15 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyArcGroupsProps, JourneyArcGroupsEmits } from './JourneyArcGroups.model';
 import type { Entity } from '@/types/generated/Entity';
 import type { ArcGroup, JourneyTimelineItem } from '../CharacterJourney.model';
 import JourneyMeetingGapDivider from './JourneyMeetingGapDivider.vue';
 import { useJourneyArcGroups } from './useJourneyArcGroups';
 
-const props = defineProps<{
-  arcGroups: ArcGroup[];
-  currentEntity?: Entity | null;
-  selectedEntities?: Entity[];
-}>();
+const props = defineProps<JourneyArcGroupsProps>>();
 
-defineEmits<{
-  (e: 'select-scene', item: JourneyTimelineItem): void;
-}>();
+defineEmits<JourneyArcGroupsEmits>>();
 
 const { isArcCollapsed, toggleArc, totalScenesCount } = useJourneyArcGroups(() => props.arcGroups);
 </script>

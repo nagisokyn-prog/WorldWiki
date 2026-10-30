@@ -90,19 +90,11 @@
 </template>
 
 <script setup lang="ts">
+import type { AiPrimaryModelCardProps, AiPrimaryModelCardEmits } from './AiPrimaryModelCard.model';
 import { AiSelect } from '../../../components';
 import type { AiProfile, AiProfileSettings } from '../../../types/ai.types';
 
-defineProps<{
-  localSettings: AiProfileSettings;
-  availableModelOptions: Array<{ value: string; label: string; description?: string }>;
-  isFetchingModels?: boolean;
-  fetchError?: string | null;
-  activeProfile?: AiProfile | null;
-}>();
+defineProps<AiPrimaryModelCardProps>>();
 
-defineEmits<{
-  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
-  (e: 'fetch-models', force: boolean): void;
-}>();
+defineEmits<AiPrimaryModelCardEmits>>();
 </script>

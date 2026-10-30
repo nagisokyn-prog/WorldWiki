@@ -28,9 +28,6 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  snippetFormats: Array<{ title: string; text: string }>;
-  copiedIdx: number | null;
-  copySnippet: (text: string, idx: number) => Promise<void>;
-}>();
+import type { TimeAtlasSnippetsTabProps, TimeAtlasSnippetsTabEmits } from './TimeAtlasSnippetsTab.model';
+defineProps<TimeAtlasSnippetsTabProps>>();
 </script>

@@ -94,22 +94,19 @@
 </template>
 
 <script setup lang="ts">
+import type { ArcBoardProps, ArcBoardEmits } from './ArcBoard.model';
 import ArcCard from './components/ArcCard.vue';
 import ArcCreateModal from './components/ArcCreateModal.vue';
 import { useArcBoard } from './useArcBoard';
 
 const props = withDefaults(
-  defineProps<{
-    projectId?: string;
-  }>(),
+  defineProps<ArcBoardProps>>(),
   {
     projectId: '',
   }
 );
 
-defineEmits<{
-  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
-}>();
+defineEmits<ArcBoardEmits>>();
 
 const {
   filters,

@@ -128,6 +128,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SchemaEditorMainProps, SchemaEditorMainEmits } from './SchemaEditorMain.model';
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
 import SchemaEditorToolbar from './components/SchemaEditorToolbar.vue';
@@ -135,12 +136,7 @@ import SchemaCatalogSidebar from './components/SchemaCatalogSidebar.vue';
 import SchemaHistoryDrawer from './components/SchemaHistoryDrawer.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
 
-const props = withDefaults(defineProps<{
-  entityType: string;
-  project: string;
-  initialScrollPos?: number;
-  initialSection?: string;
-}>(), {
+const props = withDefaults(defineProps<SchemaEditorMainProps>>(), {
   initialScrollPos: 0,
   initialSection: ''
 });

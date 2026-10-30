@@ -98,22 +98,16 @@
 </template>
 
 <script setup lang="ts">
+import type { ExportModalProps, ExportModalEmits } from './ExportModal.model';
 import { useExportModal } from './useExportModal';
 import type { ExportChapterItem, ExportPayload } from './useExportModal';
 
-const props = withDefaults(defineProps<{
-  isOpen: boolean;
-  allChapters?: ExportChapterItem[];
-  currentChapterId?: string | null;
-}>(), {
+const props = withDefaults(defineProps<ExportModalProps>>(), {
   allChapters: () => [],
   currentChapterId: null
 });
 
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'export', payload: ExportPayload): void;
-}>();
+const emit = defineEmits<ExportModalEmits>>();
 
 const {
   format,

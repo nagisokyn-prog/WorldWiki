@@ -61,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SceneInspectorTabProps, SceneInspectorTabEmits } from './SceneInspectorTab.model';
 import TimelinePanel from '../../../../timeline/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../../../ParticipantsPanel/ParticipantsPanel.vue';
 import type { ChapterWithHierarchy } from '@/stores/chapter.store';
@@ -68,24 +69,9 @@ import type { TimelineEvent } from '../../../../timeline/TimelinePanel/useTimeli
 import type { ParticipantItem } from '../../../ParticipantsPanel/useParticipantsPanel';
 import type { PanelResizeType } from '../ChapterRightSidebar.model';
 
-defineProps<{
-  project: string;
-  currentChapter?: ChapterWithHierarchy | null;
-  isTimelineOpen?: boolean;
-  isParticipantsOpen?: boolean;
-  timelineHeight: number;
-  participantsHeight: number;
-  activeResizing?: PanelResizeType | null;
-}>();
+defineProps<SceneInspectorTabProps>>();
 
-defineEmits<{
-  (e: 'toggle-timeline'): void;
-  (e: 'toggle-participants'): void;
-  (e: 'update:timeline-events', val: TimelineEvent[]): void;
-  (e: 'update:participants', val: ParticipantItem[]): void;
-  (e: 'mark-unsaved'): void;
-  (e: 'start-resize', event: MouseEvent, panel: PanelResizeType): void;
-}>();
+defineEmits<SceneInspectorTabEmits>>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css"></style>

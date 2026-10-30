@@ -80,24 +80,12 @@
 </template>
 
 <script setup lang="ts">
+import type { PromiseCardParticipantsProps, PromiseCardParticipantsEmits } from './PromiseCardParticipants.model';
 import type { ProjectEntityOption } from './PromiseCardMeta.model';
 
-defineProps<{
-  currentParticipants: string[];
-  participantInputQuery: string;
-  isParticipantDropdownOpen: boolean;
-  availableCharacters: ProjectEntityOption[];
-  getParticipantDisplayName: (idOrName: string) => string;
-}>();
+defineProps<PromiseCardParticipantsProps>>();
 
-const emit = defineEmits<{
-  (e: 'update:participantInputQuery', val: string): void;
-  (e: 'open-dropdown'): void;
-  (e: 'close-dropdown'): void;
-  (e: 'add-participant', name: string): void;
-  (e: 'remove-participant', name: string): void;
-  (e: 'backspace'): void;
-}>();
+const emit = defineEmits<PromiseCardParticipantsEmits>>();
 
 const handleRemove = (pid: string, event: Event) => {
   event.stopPropagation();

@@ -96,33 +96,16 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyToolbarProps, JourneyToolbarEmits } from './JourneyToolbar.model';
 import type { Entity } from '@/types/generated/Entity';
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { CharacterJourneyViewMode, JourneyFilterMode } from '../CharacterJourney.model';
 import JourneyMultiSelector from './JourneyMultiSelector.vue';
 import JourneyModeToggle from './JourneyModeToggle.vue';
 
-defineProps<{
-  selectedEntities: Entity[];
-  entitiesList: Entity[];
-  viewMode: CharacterJourneyViewMode;
-  selectedArcFilter: string;
-  filterType: string;
-  filterMode: JourneyFilterMode;
-  storyArcs: StoryArc[];
-  isLoading: boolean;
-}>();
+defineProps<JourneyToolbarProps>>();
 
-const emit = defineEmits<{
-  (e: 'add-entity', val: string): void;
-  (e: 'remove-entity', val: string): void;
-  (e: 'update:filterMode', val: JourneyFilterMode): void;
-  (e: 'update:filter-mode', val: JourneyFilterMode): void;
-  (e: 'update:viewMode', val: CharacterJourneyViewMode): void;
-  (e: 'update:selectedArcFilter', val: string): void;
-  (e: 'update:filterType', val: string): void;
-  (e: 'refresh'): void;
-}>();
+const emit = defineEmits<JourneyToolbarEmits>>();
 
 const onFilterModeUpdate = (val: JourneyFilterMode) => {
   emit('update:filterMode', val);

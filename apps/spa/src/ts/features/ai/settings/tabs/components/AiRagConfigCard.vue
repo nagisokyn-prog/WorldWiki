@@ -39,20 +39,13 @@
 </template>
 
 <script setup lang="ts">
+import type { AiRagConfigCardProps, AiRagConfigCardEmits } from './AiRagConfigCard.model';
 import type { 
   AiProfileSettings, 
   InstalledModelInfo 
 } from '../../../types/ai.types';
 
-defineProps<{
-  localSettings: AiProfileSettings;
-  installedModels?: InstalledModelInfo[];
-  isCustomEmbedPath?: boolean;
-  customEmbedInput?: string;
-}>();
+defineProps<AiRagConfigCardProps>>();
 
-defineEmits<{
-  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
-  (e: 'custom-embed-input', val: string): void;
-}>();
+defineEmits<AiRagConfigCardEmits>>();
 </script>

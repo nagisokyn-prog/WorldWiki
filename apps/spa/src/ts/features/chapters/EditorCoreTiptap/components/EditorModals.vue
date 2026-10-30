@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+import type { EditorModalsProps, EditorModalsEmits } from './EditorModals.model';
 import EntityLinkSelector from '../EntityLinkSelector.vue';
 import PromiseContextMenu from '../PromiseContextMenu.vue';
 import { DocumentExportModal } from '../../../documents';
@@ -48,26 +49,7 @@ import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromi
 import type { PromiseTypeOption } from '../usePromiseContextMenu';
 import type { InsertEntityPayload } from '../EntityLinkSelector.model';
 
-defineProps<{
-  project: string;
-  isEntitySelectorOpen: boolean;
-  entitySelectorQuery?: string;
-  isPromiseMenuOpen: boolean;
-  promiseMenuPos: { x: number; y: number };
-  existingPromises?: (PlotPromise | RichPlotPromise)[];
-  isExportModalOpen: boolean;
-  currentSemanticDocument: SemanticDocument;
-  isParagraphModalOpen: boolean;
-}>();
+defineProps<EditorModalsProps>>();
 
-defineEmits<{
-  (e: 'close-entity-selector'): void;
-  (e: 'insert-entity', entity: InsertEntityPayload): void;
-  (e: 'close-promise-menu'): void;
-  (e: 'select-promise', option: PromiseTypeOption): void;
-  (e: 'link-milestone', payload: { promise: PlotPromise | RichPlotPromise; stage: 'progression' | 'resolution' }): void;
-  (e: 'close-export-modal'): void;
-  (e: 'close-paragraph-modal'): void;
-  (e: 'apply-paragraph-format', format: ParagraphFormatData): void;
-}>();
+defineEmits<EditorModalsEmits>>();
 </script>

@@ -46,15 +46,10 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanetMoonsTabProps, PlanetMoonsTabEmits } from './PlanetMoonsTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<{
-  planet: PlanetDto;
-  isReadOnly?: boolean;
-}>();
+defineProps<PlanetMoonsTabProps>>();
 
-defineEmits<{
-  (e: 'add-moon'): void;
-  (e: 'remove-moon', idx: number): void;
-}>();
+defineEmits<PlanetMoonsTabEmits>>();
 </script>

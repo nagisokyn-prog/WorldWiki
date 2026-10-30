@@ -47,16 +47,10 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab5DualDatingCardProps, Tab5DualDatingCardEmits } from './Tab5DualDatingCard.model';
 import type { DualDatingInput, DualDatingResult } from '../Tab5ReformsDst.model';
 
-defineProps<{
-  monthNames: string[];
-  dualDatingInput: DualDatingInput;
-  dualDatingResult: DualDatingResult;
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab5DualDatingCardProps>>();
 
-defineEmits<{
-  (e: 'update-dual-input', patch: Partial<DualDatingInput>): void;
-}>();
+defineEmits<Tab5DualDatingCardEmits>>();
 </script>

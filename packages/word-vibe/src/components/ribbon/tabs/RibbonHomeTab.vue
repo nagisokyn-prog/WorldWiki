@@ -61,26 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
 import RibbonFontGroup from '../groups/RibbonFontGroup.vue';
 import RibbonParagraphGroup from '../groups/RibbonParagraphGroup.vue';
+import type { RibbonHomeTabProps, RibbonHomeTabEmits } from './RibbonHomeTab.model';
 
-defineProps<{
-  currentFontFamily: string;
-  currentFontSize: string;
-  currentLineHeight: string;
-  showInvisibles: boolean;
-  commands: Partial<RibbonCommands>;
-  call: (name: string, fn?: () => void) => void;
-}>();
-
-defineEmits<{
-  (e: 'update:fontFamily', val: string): void;
-  (e: 'update:fontSize', val: string): void;
-  (e: 'update:lineHeight', val: string): void;
-  (e: 'stepFontSize', step: number): void;
-  (e: 'toggleInvisibles'): void;
-  (e: 'open-font-dialog'): void;
-  (e: 'open-paragraph-dialog'): void;
-}>();
+defineProps<RibbonHomeTabProps>();
+defineEmits<RibbonHomeTabEmits>();
 </script>

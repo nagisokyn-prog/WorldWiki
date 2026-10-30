@@ -14,14 +14,11 @@
 </template>
 
 <script setup lang="ts">
+import type { SurrealConsolePresetsProps, SurrealConsolePresetsEmits } from './SurrealConsolePresets.model';
 import './SurrealConsolePresets.css';
 import type { PresetQuery } from '../SurrealConsole.model';
 
-defineProps<{
-  presets: PresetQuery[];
-}>();
+defineProps<SurrealConsolePresetsProps>>();
 
-defineEmits<{
-  (e: 'select', preset: PresetQuery): void;
-}>();
+defineEmits<SurrealConsolePresetsEmits>>();
 </script>

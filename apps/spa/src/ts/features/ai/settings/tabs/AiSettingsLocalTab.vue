@@ -109,6 +109,7 @@
 </template>
 
 <script setup lang="ts">
+import type { AiSettingsLocalTabProps, AiSettingsLocalTabEmits } from './AiSettingsLocalTab.model';
 import HardwareMonitorChart from './HardwareMonitorChart.vue';
 import LocalAiRecommended from './local/LocalAiRecommended.vue';
 import LocalAiLibrary from './local/LocalAiLibrary.vue';
@@ -117,13 +118,9 @@ import LocalAiRuntime from './local/LocalAiRuntime.vue';
 import { useLocalAiTab } from './local/useLocalAiTab';
 import type { AiProfile, AiProfileSettings } from '../../types/ai.types';
 
-const props = defineProps<{
-  activeProfile: AiProfile | null;
-}>();
+const props = defineProps<AiSettingsLocalTabProps>>();
 
-const emit = defineEmits<{
-  (e: 'save-profile', payload: { settings: AiProfileSettings }): void;
-}>();
+const emit = defineEmits<AiSettingsLocalTabEmits>>();
 
 const {
   subTab,

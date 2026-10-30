@@ -39,18 +39,13 @@
 </template>
 
 <script setup lang="ts">
+import type { JourneyMultiSelectorProps, JourneyMultiSelectorEmits } from './JourneyMultiSelector.model';
 import type { Entity } from '@/types/generated/Entity';
 import { useJourneyMultiSelector } from './useJourneyMultiSelector';
 
-const props = defineProps<{
-  selectedEntities: Entity[];
-  entitiesList: Entity[];
-}>();
+const props = defineProps<JourneyMultiSelectorProps>>();
 
-const emit = defineEmits<{
-  (e: 'add', id: string): void;
-  (e: 'remove', id: string): void;
-}>();
+const emit = defineEmits<JourneyMultiSelectorEmits>>();
 
 const { availableEntities, handleAddChange, handleRemove } = useJourneyMultiSelector(props, emit);
 </script>

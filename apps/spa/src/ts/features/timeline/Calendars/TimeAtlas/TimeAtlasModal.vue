@@ -117,20 +117,16 @@
 </template>
 
 <script setup lang="ts">
+import type { TimeAtlasModalProps, TimeAtlasModalEmits } from './TimeAtlasModal.model';
 import { useTimeAtlasModal } from './useTimeAtlasModal';
 import TimeAtlasBridgeTab from './tabs/TimeAtlasBridgeTab.vue';
 import TimeAtlasMatrixTab from './tabs/TimeAtlasMatrixTab.vue';
 import TimeAtlasWorldTab from './tabs/TimeAtlasWorldTab.vue';
 import TimeAtlasSnippetsTab from './tabs/TimeAtlasSnippetsTab.vue';
 
-const props = defineProps<{
-  project: string;
-  isOpen: boolean;
-}>();
+const props = defineProps<TimeAtlasModalProps>>();
 
-defineEmits<{
-  (e: 'close'): void;
-}>();
+defineEmits<TimeAtlasModalEmits>>();
 
 const {
   activeTab,

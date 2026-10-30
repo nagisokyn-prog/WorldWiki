@@ -65,18 +65,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  scopeFilter: 'all' | 'current';
-  statusFilter: string;
-  categoryFilter: 'all' | 'scenes' | 'promises';
-  totalCount: number;
-  chapterCount: number;
-  statuses: Array<{ id: string; label: string; icon: string }>;
-}>();
+import type { PromiseFilterBarProps, PromiseFilterBarEmits } from './PromiseFilterBar.model';
+defineProps<PromiseFilterBarProps>>();
 
-defineEmits<{
-  (e: 'update:scopeFilter', val: 'all' | 'current'): void;
-  (e: 'update:statusFilter', val: string): void;
-  (e: 'update:categoryFilter', val: 'all' | 'scenes' | 'promises'): void;
-}>();
+defineEmits<PromiseFilterBarEmits>>();
 </script>

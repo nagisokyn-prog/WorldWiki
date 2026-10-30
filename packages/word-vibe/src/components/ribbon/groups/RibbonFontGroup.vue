@@ -156,19 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonFontGroupProps, RibbonFontGroupEmits } from './RibbonFontGroup.model';
 
-defineProps<{
-  currentFontFamily: string;
-  currentFontSize: string;
-  commands: Partial<RibbonCommands>;
-  call: (name: string, fn?: () => void) => void;
-}>();
-
-defineEmits<{
-  (e: 'update:fontFamily', val: string): void;
-  (e: 'update:fontSize', val: string): void;
-  (e: 'stepFontSize', step: number): void;
-  (e: 'open-font-dialog'): void;
-}>();
+defineProps<RibbonFontGroupProps>();
+defineEmits<RibbonFontGroupEmits>();
 </script>

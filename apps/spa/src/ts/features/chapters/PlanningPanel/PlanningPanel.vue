@@ -69,14 +69,10 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanningPanelProps, PlanningPanelEmits } from './PlanningPanel.model';
 import { usePlanningPanel } from './usePlanningPanel';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  parentType?: string;
-  parentId?: string;
-  parentTitle?: string;
-}>(), {
+const props = withDefaults(defineProps<PlanningPanelProps>>(), {
   parentType: undefined,
   parentId: undefined,
   parentTitle: ''

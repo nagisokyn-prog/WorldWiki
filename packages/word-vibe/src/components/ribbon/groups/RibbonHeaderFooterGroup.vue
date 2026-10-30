@@ -64,19 +64,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RibbonCommands } from '../../../ribbon/commands';
+import type { RibbonHeaderFooterGroupProps, RibbonHeaderFooterGroupEmits } from './RibbonHeaderFooterGroup.model';
 
-defineProps<{
-  openDropdown: string | null;
-  dropdownPos: { top: number; left: number };
-  commands: Partial<RibbonCommands>;
-}>();
-
-defineEmits<{
-  (e: 'toggleDropdown', event: MouseEvent, name: string): void;
-  (e: 'closeDropdown'): void;
-  (e: 'applyHeaderPreset', preset: 'empty' | 'chapter-left' | 'chapter-center'): void;
-  (e: 'applyFooterPreset', preset: 'empty' | 'page-right' | 'page-center' | 'page-only-right'): void;
-  (e: 'applyPageNumberPosition', pos: 'header-left' | 'header-center' | 'header-right' | 'footer-left' | 'footer-center' | 'footer-right'): void;
-}>();
+defineProps<RibbonHeaderFooterGroupProps>();
+defineEmits<RibbonHeaderFooterGroupEmits>();
 </script>

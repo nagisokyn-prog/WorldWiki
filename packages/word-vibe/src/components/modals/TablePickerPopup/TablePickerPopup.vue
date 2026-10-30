@@ -27,9 +27,10 @@
 
 <script setup lang="ts">
 import { useTablePickerPopup } from './useTablePickerPopup';
+import type { TablePickerPopupProps, TablePickerPopupEmits } from './TablePickerPopup.model';
 
-const props = defineProps<{ isOpen: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { rows: number; cols: number }): void }>();
+const props = defineProps<TablePickerPopupProps>();
+const emit = defineEmits<TablePickerPopupEmits>();
 const { hover, rows, cols, label, insert } = useTablePickerPopup(props, emit);
 </script>
 

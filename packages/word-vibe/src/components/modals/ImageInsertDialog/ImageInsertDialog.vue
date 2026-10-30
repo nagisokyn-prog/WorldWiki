@@ -36,9 +36,10 @@
 
 <script setup lang="ts">
 import { useImageInsertDialog } from './useImageInsertDialog';
+import type { ImageInsertDialogProps, ImageInsertDialogEmits } from './ImageInsertDialog.model';
 
-const props = defineProps<{ isOpen: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { src: string; caption: string; align: 'block' | 'left' | 'right' }): void }>();
+const props = defineProps<ImageInsertDialogProps>();
+const emit = defineEmits<ImageInsertDialogEmits>();
 const { url, caption, align, fileInput, pickFile, onFileChange, handleInsert } =
   useImageInsertDialog(props, emit);
 </script>

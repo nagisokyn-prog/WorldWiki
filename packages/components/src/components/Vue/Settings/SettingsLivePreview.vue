@@ -30,12 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import type { AppSettings } from '../../../ts/types/settings.js';
 import { useSettingsLivePreview } from './useSettingsLivePreview';
+import type { SettingsLivePreviewProps } from './SettingsLivePreview.model';
 
-const props = defineProps<{
-  settings: AppSettings;
-}>();
+const props = defineProps<SettingsLivePreviewProps>();
 
 const { t, previewStyles } = useSettingsLivePreview(() => props.settings);
 </script>

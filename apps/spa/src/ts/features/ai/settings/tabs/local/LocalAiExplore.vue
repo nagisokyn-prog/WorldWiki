@@ -78,23 +78,10 @@
 </template>
 
 <script setup lang="ts">
+import type { LocalAiExploreProps, LocalAiExploreEmits } from './LocalAiExplore.model';
 import type { HfModelItem } from './useLocalAiTab';
 
-defineProps<{
-  searchQuery: string;
-  hfToken: string;
-  isSearching: boolean;
-  hfModels: HfModelItem[];
-  downloadProgress: Record<string, { percent: number }>;
-  isModelInstalled: (filename: string) => boolean;
-  formatNumber: (num: number) => string;
-}>();
+defineProps<LocalAiExploreProps>>();
 
-defineEmits<{
-  (e: 'update:searchQuery', val: string): void;
-  (e: 'update:hfToken', val: string): void;
-  (e: 'search-input'): void;
-  (e: 'save-hf-token'): void;
-  (e: 'download', repoId: string, filename: string): void;
-}>();
+defineEmits<LocalAiExploreEmits>>();
 </script>

@@ -142,19 +142,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab2ErasSectionProps, Tab2ErasSectionEmits } from './Tab2ErasSection.model';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { ExtendedEraDto } from '../Tab2ErasSync.model';
 
-defineProps<{
-  eras: ExtendedEraDto[];
-  months: CalendarMonth[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab2ErasSectionProps>>();
 
-defineEmits<{
-  (e: 'add-era'): void;
-  (e: 'update-eras', eras: ExtendedEraDto[]): void;
-  (e: 'remove-era', idx: number): void;
-  (e: 'reorder-era', idx: number, dir: -1 | 1): void;
-}>();
+defineEmits<Tab2ErasSectionEmits>>();
 </script>

@@ -96,19 +96,11 @@
 </template>
 
 <script setup lang="ts">
+import type { BridgeMappingCardProps, BridgeMappingCardEmits } from './BridgeMappingCard.model';
 import { computed } from 'vue';
 import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../../services/Calendars/calendar.types';
 
-const props = defineProps<{
-  calData?: CalendarData | null;
-  localDate?: CalendarDate['original_input'] | null;
-  dateMeta?: {
-    season: string;
-    holiday: string | null;
-    moons: MoonPhaseResult[];
-  } | null;
-  isMaster?: boolean;
-}>();
+const props = defineProps<BridgeMappingCardProps>>();
 
 const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
   return props.localDate || {
@@ -121,10 +113,5 @@ const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
   };
 });
 
-defineEmits<{
-  (e: 'era-change', cal: CalendarData, ev: Event): void;
-  (e: 'year-change', cal: CalendarData, ev: Event): void;
-  (e: 'month-change', cal: CalendarData, ev: Event): void;
-  (e: 'day-change', cal: CalendarData, ev: Event): void;
-}>();
+defineEmits<BridgeMappingCardEmits>>();
 </script>

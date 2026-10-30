@@ -126,25 +126,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab1LeapPresetsProps, Tab1LeapPresetsEmits } from './Tab1LeapPresets.model';
 import type {
   LeapRuleType,
   SystemPresetType,
   LeapSuggestionDto,
 } from '../Tab1Structure.model';
 
-defineProps<{
-  activeSystemPreset: SystemPresetType;
-  ruleType: LeapRuleType;
-  orbitDays: number;
-  showSuggestions: boolean;
-  suggestions: LeapSuggestionDto[];
-  isReadOnly?: boolean;
-}>();
+defineProps<Tab1LeapPresetsProps>>();
 
-defineEmits<{
-  (e: 'select-system-preset', preset: SystemPresetType): void;
-  (e: 'select-rule-type', rule: LeapRuleType): void;
-  (e: 'toggle-suggestions'): void;
-  (e: 'apply-suggestion', key: string): void;
-}>();
+defineEmits<Tab1LeapPresetsEmits>>();
 </script>

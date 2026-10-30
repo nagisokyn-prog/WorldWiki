@@ -117,6 +117,13 @@ export function useWordRibbonBar(props: RibbonProps, _emit: RibbonEmit) {
 
   const call = (_name: string, fn: (() => unknown) | undefined) => fn?.();
 
+  const onRibbonMousedown = (e: MouseEvent): void => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.closest('select, input, textarea')) return;
+    e.preventDefault();
+  };
+
   return {
     activeTab, currentPageSize, currentFontFamily, currentFontSize, currentLineHeight,
     showInvisibles, openDropdown, dropdownPos, indentLeftCm, indentRightCm,
@@ -124,5 +131,6 @@ export function useWordRibbonBar(props: RibbonProps, _emit: RibbonEmit) {
     applyLeftIndent, applyRightIndent, applySpacing, applyHeaderPreset,
     applyFooterPreset, applyPageNumberPosition, applyFontFamily, applyFontSize,
     applyLineHeight, stepFontSize, toggleInvisibles, call, commands,
+    onRibbonMousedown,
   };
 }

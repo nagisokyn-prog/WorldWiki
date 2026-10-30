@@ -19,10 +19,6 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  wordCount: number;
-  charCount: number;
-  blockCount: number;
-  editorMode: string;
-}>();
+import type { EditorStatusBarProps, EditorStatusBarEmits } from './EditorStatusBar.model';
+defineProps<EditorStatusBarProps>>();
 </script>

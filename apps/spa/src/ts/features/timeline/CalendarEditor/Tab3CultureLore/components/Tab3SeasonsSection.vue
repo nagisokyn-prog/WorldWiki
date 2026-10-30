@@ -80,21 +80,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Tab3SeasonsSectionProps, Tab3SeasonsSectionEmits } from './Tab3SeasonsSection.model';
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { CultureSeasonDto } from '../Tab3CultureLore.model';
 import { useTab3SeasonsSection } from './useTab3SeasonsSection';
 
-const props = defineProps<{
-  seasons: CultureSeasonDto[];
-  months: CalendarMonth[];
-  isReadOnly?: boolean;
-}>();
+const props = defineProps<Tab3SeasonsSectionProps>>();
 
-const emit = defineEmits<{
-  (e: 'add-season'): void;
-  (e: 'update-seasons', list: CultureSeasonDto[]): void;
-  (e: 'remove-season', idx: number): void;
-}>();
+const emit = defineEmits<Tab3SeasonsSectionEmits>>();
 
 const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, (e, list) => emit(e, list));
 </script>

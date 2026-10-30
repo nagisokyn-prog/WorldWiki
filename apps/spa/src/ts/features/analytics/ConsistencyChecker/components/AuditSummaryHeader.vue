@@ -64,17 +64,13 @@
 </template>
 
 <script setup lang="ts">
+import type { AuditSummaryHeaderProps, AuditSummaryHeaderEmits } from './AuditSummaryHeader.model';
 import type { AuditSummaryStats } from '../ConsistencyChecker.model';
 import { useAuditSummaryHeader } from './useAuditSummaryHeader';
 
-const props = defineProps<{
-  summary: AuditSummaryStats;
-  isAuditing: boolean;
-}>();
+const props = defineProps<AuditSummaryHeaderProps>>();
 
-defineEmits<{
-  (e: 'refresh'): void;
-}>();
+defineEmits<AuditSummaryHeaderEmits>>();
 
 const { healthIcon, healthScoreClass } = useAuditSummaryHeader(() => props.summary);
 </script>

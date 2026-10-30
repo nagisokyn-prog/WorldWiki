@@ -36,15 +36,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  role: 'user' | 'assistant' | 'system';
-}>();
+import type { AiMessageActionsBarProps, AiMessageActionsBarEmits } from './AiMessageActionsBar.model';
+defineProps<AiMessageActionsBarProps>>();
 
-defineEmits<{
-  (e: 'copy'): void;
-  (e: 'start-edit'): void;
-  (e: 'regenerate'): void;
-  (e: 'branch'): void;
-  (e: 'delete'): void;
-}>();
+defineEmits<AiMessageActionsBarEmits>>();
 </script>

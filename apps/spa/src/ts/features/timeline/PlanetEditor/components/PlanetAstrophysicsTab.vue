@@ -124,21 +124,10 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanetAstrophysicsTabProps, PlanetAstrophysicsTabEmits } from './PlanetAstrophysicsTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<{
-  planet: PlanetDto;
-  decimalAxialTilt: number;
-  isReadOnly?: boolean;
-}>();
+defineProps<PlanetAstrophysicsTabProps>>();
 
-defineEmits<{
-  (e: 'update:day-hours', val: number): void;
-  (e: 'update:day-minutes', val: number): void;
-  (e: 'update:day-seconds', val: number): void;
-  (e: 'update:orbit-days', val: number): void;
-  (e: 'update:axial-tilt', val: number): void;
-  (e: 'update:rotation-direction', val: 'direct' | 'retrograde'): void;
-  (e: 'recalculate-astro-points'): void;
-}>();
+defineEmits<PlanetAstrophysicsTabEmits>>();
 </script>

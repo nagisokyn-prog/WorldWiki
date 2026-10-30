@@ -102,27 +102,14 @@
 
 <script setup lang="ts">
 import { useWordRibbonBar } from './useWordRibbonBar';
-import type { RibbonProps as WordRibbonProps } from './useWordRibbonBar';
+import type { WordRibbonBarProps, WordRibbonBarEmits } from './WordRibbonBar.model';
 import RibbonHomeTab from './tabs/RibbonHomeTab.vue';
 import RibbonInsertTab from './tabs/RibbonInsertTab.vue';
 import RibbonLayoutTab from './tabs/RibbonLayoutTab.vue';
 import RibbonTableDesignTab from './tabs/RibbonTableDesignTab.vue';
 
-const onRibbonMousedown = (e: MouseEvent): void => {
-  const target = e.target;
-  if (!(target instanceof HTMLElement)) return;
-  if (target.closest('select, input, textarea')) return;
-  e.preventDefault();
-};
-
-const props = defineProps<WordRibbonProps>();
-
-const emit = defineEmits<{
-  (e: 'open-paragraph-dialog'): void;
-  (e: 'open-font-dialog'): void;
-  (e: 'open-page-setup'): void;
-  (e: 'open-header-footer-dialog', tab?: 'header' | 'footer'): void;
-}>();
+const props = defineProps<WordRibbonBarProps>();
+const emit = defineEmits<WordRibbonBarEmits>();
 
 const {
   activeTab, currentPageSize, currentFontFamily, currentFontSize, currentLineHeight,
@@ -131,6 +118,7 @@ const {
   applyLeftIndent, applyRightIndent, applySpacing, applyHeaderPreset,
   applyFooterPreset, applyPageNumberPosition, applyFontFamily, applyFontSize,
   applyLineHeight, stepFontSize, toggleInvisibles, call, commands,
+  onRibbonMousedown,
 } = useWordRibbonBar(props, emit);
 </script>
 

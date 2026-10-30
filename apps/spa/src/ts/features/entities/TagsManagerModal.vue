@@ -58,11 +58,10 @@
 </template>
 
 <script setup lang="ts">
+import type { TagsManagerModalProps, TagsManagerModalEmits } from './TagsManagerModal.model';
 import { useTagsManagerModal } from './useTagsManagerModal';
 
-const props = defineProps<{
-  project: string;
-}>();
+const props = defineProps<TagsManagerModalProps>>();
 
 const {
   isOpen,

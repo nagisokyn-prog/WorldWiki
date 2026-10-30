@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import type { EditorSplitViewProps, EditorSplitViewEmits } from './EditorSplitView.model';
 import { ref } from 'vue';
-import { EditorContent, type Editor } from '@tiptap/vue-3';
+import { EditorContent } from '@tiptap/vue-3';
 
 defineProps<EditorSplitViewProps>();
 

@@ -150,9 +150,6 @@
 
 <script setup lang="ts">
 import type { Tab1LeapRulesInspectorProps, Tab1LeapRulesInspectorEmits } from './Tab1LeapRulesInspector.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
-import type { HarmonicRule, LeapRuleType } from '../Tab1Structure.model';
-import type { UpcomingYearDto } from '../tab1Leap.utils';
 
 defineProps<Tab1LeapRulesInspectorProps>();
 

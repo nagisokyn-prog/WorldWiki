@@ -40,7 +40,6 @@
 
 <script setup lang="ts">
 import type { JourneyMultiSelectorProps, JourneyMultiSelectorEmits } from './JourneyMultiSelector.model';
-import type { Entity } from '@/types/generated/Entity';
 import { useJourneyMultiSelector } from './useJourneyMultiSelector';
 
 const props = defineProps<JourneyMultiSelectorProps>();

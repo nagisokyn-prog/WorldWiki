@@ -67,7 +67,6 @@
 
 <script setup lang="ts">
 import type { Tab3MoonPhasesSectionProps, Tab3MoonPhasesSectionEmits } from './Tab3MoonPhasesSection.model';
-import type { MoonPhaseNames } from '@/services/Calendars/calendar.types';
 
 defineProps<Tab3MoonPhasesSectionProps>();
 

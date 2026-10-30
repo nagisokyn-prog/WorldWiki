@@ -73,7 +73,6 @@
 
 <script setup lang="ts">
 import type { Tab1MonthsSectionProps, Tab1MonthsSectionEmits } from './Tab1MonthsSection.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import { useTab1MonthsSection } from './useTab1MonthsSection';
 
 const props = defineProps<Tab1MonthsSectionProps>();

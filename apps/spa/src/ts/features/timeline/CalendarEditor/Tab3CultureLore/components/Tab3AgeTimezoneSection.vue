@@ -139,7 +139,6 @@
 
 <script setup lang="ts">
 import type { Tab3AgeTimezoneSectionProps, Tab3AgeTimezoneSectionEmits } from './Tab3AgeTimezoneSection.model';
-import type { CharacterAgeRuleDto } from '../Tab3CultureLore.model';
 import { useTab3AgeTimezoneSection } from './useTab3AgeTimezoneSection';
 
 defineProps<Tab3AgeTimezoneSectionProps>();

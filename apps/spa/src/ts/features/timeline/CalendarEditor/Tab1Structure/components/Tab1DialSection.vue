@@ -102,8 +102,7 @@
 
 <script setup lang="ts">
 import type { Tab1DialSectionProps, Tab1DialSectionEmits } from './Tab1DialSection.model';
-import type { DialUnit } from '@/services/Calendars/calendar.types';
-import type { DialPreset, DayStartMode } from '../Tab1Structure.model';
+import type { DayStartMode } from '../Tab1Structure.model';
 
 defineProps<Tab1DialSectionProps>();
 

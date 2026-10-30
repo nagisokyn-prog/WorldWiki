@@ -96,7 +96,6 @@
 
 <script setup lang="ts">
 import type { Tab2SyncEventFormProps, Tab2SyncEventFormEmits } from './Tab2SyncEventForm.model';
-import type { AnchorEventDto, SyncDirection } from '../Tab2ErasSync.model';
 
 defineProps<Tab2SyncEventFormProps>();
 

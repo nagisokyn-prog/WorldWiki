@@ -23,7 +23,6 @@
 
 <script setup lang="ts">
 import type { JourneyModeToggleProps, JourneyModeToggleEmits } from './JourneyModeToggle.model';
-import type { JourneyFilterMode } from '../CharacterJourney.model';
 
 defineProps<JourneyModeToggleProps>();
 

@@ -101,8 +101,6 @@
 
 <script setup lang="ts">
 import type { Tab1ExtraDaysTapeProps, Tab1ExtraDaysTapeEmits } from './Tab1ExtraDaysTape.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
-import type { YearTapeItem } from '../tab1Leap.utils';
 
 defineProps<Tab1ExtraDaysTapeProps>();
 

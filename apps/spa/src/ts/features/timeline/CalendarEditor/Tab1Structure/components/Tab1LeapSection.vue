@@ -100,14 +100,6 @@
 
 <script setup lang="ts">
 import type { Tab1LeapSectionProps, Tab1LeapSectionEmits } from './Tab1LeapSection.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
-import type {
-  HarmonicRule,
-  LeapRuleType,
-  LeapSuggestionDto,
-  SystemPresetType,
-} from '../Tab1Structure.model';
-import type { UpcomingYearDto, YearTapeItem } from '../tab1Leap.utils';
 import Tab1LeapPresets from './Tab1LeapPresets.vue';
 import Tab1ExtraDaysTape from './Tab1ExtraDaysTape.vue';
 import Tab1LeapRulesInspector from './Tab1LeapRulesInspector.vue';

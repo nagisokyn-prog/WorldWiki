@@ -125,10 +125,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ModuleHelpBidiCardProps, ModuleHelpBidiCardEmits } from './ModuleHelpBidiCard.model';
+import type { ModuleHelpBidiCardProps } from './ModuleHelpBidiCard.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
-import type { SchemaFieldDef, ModuleExample } from '../schemaReference.types';
 
 defineProps<ModuleHelpBidiCardProps>();
 </script>

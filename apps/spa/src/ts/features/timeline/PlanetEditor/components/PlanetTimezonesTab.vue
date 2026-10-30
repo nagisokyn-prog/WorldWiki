@@ -134,7 +134,6 @@
 
 <script setup lang="ts">
 import type { PlanetTimezonesTabProps, PlanetTimezonesTabEmits } from './PlanetTimezonesTab.model';
-import type { PlanetDto } from '../PlanetEditor.model';
 
 defineProps<PlanetTimezonesTabProps>();
 

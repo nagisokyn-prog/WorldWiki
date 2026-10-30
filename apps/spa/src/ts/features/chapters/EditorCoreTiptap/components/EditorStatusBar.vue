@@ -19,6 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import type { EditorStatusBarProps, EditorStatusBarEmits } from './EditorStatusBar.model';
+import type { EditorStatusBarProps } from './EditorStatusBar.model';
 defineProps<EditorStatusBarProps>();
 </script>

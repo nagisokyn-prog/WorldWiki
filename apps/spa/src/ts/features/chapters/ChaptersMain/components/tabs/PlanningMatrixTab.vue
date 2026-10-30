@@ -86,9 +86,6 @@
 import type { PlanningMatrixTabProps, PlanningMatrixTabEmits } from './PlanningMatrixTab.model';
 import { ref } from 'vue';
 import PlanningPanel from '../../../PlanningPanel/PlanningPanel.vue';
-import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store';
-import type { StoryArc } from '@/stores/story_arcs.store';
-import type { PlanScopeType } from '../ChapterRightSidebar.model';
 
 defineProps<PlanningMatrixTabProps>();
 

@@ -127,11 +127,6 @@
 
 <script setup lang="ts">
 import type { Tab1LeapPresetsProps, Tab1LeapPresetsEmits } from './Tab1LeapPresets.model';
-import type {
-  LeapRuleType,
-  SystemPresetType,
-  LeapSuggestionDto,
-} from '../Tab1Structure.model';
 
 defineProps<Tab1LeapPresetsProps>();
 

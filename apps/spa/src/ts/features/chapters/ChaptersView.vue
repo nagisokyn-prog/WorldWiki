@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ChaptersViewProps, ChaptersViewEmits } from './ChaptersView.model';
+import type { ChaptersViewProps } from './ChaptersView.model';
 import ChaptersMain from './ChaptersMain/ChaptersMain.vue';
 
 withDefaults(defineProps<ChaptersViewProps>(), {

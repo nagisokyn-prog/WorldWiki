@@ -115,12 +115,6 @@
 
 <script setup lang="ts">
 import type { Tab5DstSectionProps, Tab5DstSectionEmits } from './Tab5DstSection.model';
-import type {
-  DstPolicyConfig,
-  DstPolicyType,
-  DstPresetKey,
-  DstTransitionRule,
-} from '../Tab5ReformsDst.model';
 import Tab5DstSimulatorCard from './Tab5DstSimulatorCard.vue';
 import Tab5DstTransitionRules from './Tab5DstTransitionRules.vue';
 

@@ -81,7 +81,6 @@
 
 <script setup lang="ts">
 import type { PromiseCardParticipantsProps, PromiseCardParticipantsEmits } from './PromiseCardParticipants.model';
-import type { ProjectEntityOption } from './PromiseCardMeta.model';
 import { usePromiseCardParticipants } from './usePromiseCardParticipants';
 
 defineProps<PromiseCardParticipantsProps>();

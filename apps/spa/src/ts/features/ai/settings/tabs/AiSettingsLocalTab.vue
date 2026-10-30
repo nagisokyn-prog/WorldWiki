@@ -116,7 +116,6 @@ import LocalAiLibrary from './local/LocalAiLibrary.vue';
 import LocalAiExplore from './local/LocalAiExplore.vue';
 import LocalAiRuntime from './local/LocalAiRuntime.vue';
 import { useLocalAiTab } from './local/useLocalAiTab';
-import type { AiProfile, AiProfileSettings } from '../../types/ai.types';
 
 const props = defineProps<AiSettingsLocalTabProps>();
 

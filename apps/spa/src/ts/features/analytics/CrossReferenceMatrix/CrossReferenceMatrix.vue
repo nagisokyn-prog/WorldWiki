@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CrossReferenceMatrixProps, CrossReferenceMatrixEmits } from './CrossReferenceMatrix.model';
+import type { CrossReferenceMatrixProps } from './CrossReferenceMatrix.model';
 import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
 
 const props = withDefaults(

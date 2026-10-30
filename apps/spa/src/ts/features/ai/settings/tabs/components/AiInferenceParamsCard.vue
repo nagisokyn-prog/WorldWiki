@@ -110,7 +110,6 @@
 
 <script setup lang="ts">
 import type { AiInferenceParamsCardProps, AiInferenceParamsCardEmits } from './AiInferenceParamsCard.model';
-import type { AiProfileSettings } from '../../../types/ai.types';
 
 defineProps<AiInferenceParamsCardProps>();
 

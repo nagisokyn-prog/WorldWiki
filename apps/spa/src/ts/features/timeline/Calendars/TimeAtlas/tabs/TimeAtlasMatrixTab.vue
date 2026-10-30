@@ -111,8 +111,6 @@
 
 <script setup lang="ts">
 import type { TimeAtlasMatrixTabProps, TimeAtlasMatrixTabEmits } from './TimeAtlasMatrixTab.model';
-import type { CalendarRecord } from '../../../../../stores/calendar.store';
-import type { CalendarData } from '../../../../../services/Calendars/calendar.types';
 
 defineProps<TimeAtlasMatrixTabProps>();
 

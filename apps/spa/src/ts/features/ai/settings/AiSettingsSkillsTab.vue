@@ -81,7 +81,6 @@
 
 <script setup lang="ts">
 import AiSkillEditModal from './components/AiSkillEditModal.vue';
-import type { AiSkillItem } from '../skills/aiSkills.model';
 import type { AiSettingsSkillsTabProps, AiSettingsSkillsTabEmits } from './AiSettingsSkillsTab.model';
 import { useAiSettingsSkillsTab } from './useAiSettingsSkillsTab';
 

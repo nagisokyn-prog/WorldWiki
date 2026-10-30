@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GraphWebViewProps, GraphWebViewEmits } from './GraphWebView.model';
+import type { GraphWebViewProps } from './GraphWebView.model';
 import { useGraphWebView } from './useGraphWebView';
 
 const props = withDefaults(

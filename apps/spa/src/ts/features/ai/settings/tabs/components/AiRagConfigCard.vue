@@ -40,10 +40,6 @@
 
 <script setup lang="ts">
 import type { AiRagConfigCardProps, AiRagConfigCardEmits } from './AiRagConfigCard.model';
-import type { 
-  AiProfileSettings, 
-  InstalledModelInfo 
-} from '../../../types/ai.types';
 
 defineProps<AiRagConfigCardProps>();
 

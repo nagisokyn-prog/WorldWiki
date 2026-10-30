@@ -61,7 +61,6 @@
 
 <script setup lang="ts">
 import type { LocalAiLibraryProps, LocalAiLibraryEmits } from './LocalAiLibrary.model';
-import type { InstalledModelInfo, AiProfileSettings, ModelLifecycleState } from '../../../types/ai.types';
 
 defineProps<LocalAiLibraryProps>();
 

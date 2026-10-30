@@ -143,14 +143,8 @@
 <script setup lang="ts">
 import type { Tab5ReformsSectionProps, Tab5ReformsSectionEmits } from './Tab5ReformsSection.model';
 import type {
-  DualDatingInput,
-  DualDatingResult,
-  GapReformParams,
   ReformMode,
-  ReformPresetKey,
-  ResetReformParams,
-  TransitionalReformParams,
-} from '../Tab5ReformsDst.model';
+  } from '../Tab5ReformsDst.model';
 import Tab5DualDatingCard from './Tab5DualDatingCard.vue';
 
 defineProps<Tab5ReformsSectionProps>();

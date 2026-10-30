@@ -1,6 +1,5 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
-import { invalidateCache } from '../../../utils/requestCache';
 import type { EntitySchema } from '../../../types/generated/EntitySchema';
 import { computeCleanSearchQuery, filterMatchingEntities } from './utils/entitySelectorFiltering';
 import { mapRawEntityToSelectorItem } from './utils/entitySelectorHelpers';

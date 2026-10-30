@@ -100,7 +100,6 @@
 <script setup lang="ts">
 import type { ExportModalProps, ExportModalEmits } from './ExportModal.model';
 import { useExportModal } from './useExportModal';
-import type { ExportChapterItem, ExportPayload } from './useExportModal';
 
 const props = withDefaults(defineProps<ExportModalProps>(), {
   allChapters: () => [],

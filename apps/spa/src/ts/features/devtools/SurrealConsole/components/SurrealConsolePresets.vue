@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import type { SurrealConsolePresetsProps, SurrealConsolePresetsEmits } from './SurrealConsolePresets.model';
 import './SurrealConsolePresets.css';
-import type { PresetQuery } from '../SurrealConsole.model';
 
 defineProps<SurrealConsolePresetsProps>();
 

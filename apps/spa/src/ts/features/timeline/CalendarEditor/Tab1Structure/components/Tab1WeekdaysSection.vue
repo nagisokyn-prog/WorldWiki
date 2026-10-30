@@ -145,7 +145,6 @@
 
 <script setup lang="ts">
 import type { Tab1WeekdaysSectionProps, Tab1WeekdaysSectionEmits } from './Tab1WeekdaysSection.model';
-import type { CalendarWeekday, WeekPreset } from '../Tab1Structure.model';
 
 defineProps<Tab1WeekdaysSectionProps>();
 

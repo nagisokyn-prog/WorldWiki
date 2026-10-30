@@ -80,7 +80,6 @@
 
 <script setup lang="ts">
 import type { AuditAnomalyCardProps, AuditAnomalyCardEmits } from './AuditAnomalyCard.model';
-import type { ContradictionAnomalyDto } from '../ConsistencyChecker.model';
 import { useAuditAnomalyCard } from './useAuditAnomalyCard';
 
 const props = defineProps<AuditAnomalyCardProps>();

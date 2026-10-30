@@ -59,8 +59,6 @@
 
 <script setup lang="ts">
 import type { Tab2SyncEraFormProps, Tab2SyncEraFormEmits } from './Tab2SyncEraForm.model';
-import type { CalendarEra } from '@/services/Calendars/calendar.types';
-import type { SyncDirection } from '../Tab2ErasSync.model';
 
 defineProps<Tab2SyncEraFormProps>();
 

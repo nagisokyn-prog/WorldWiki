@@ -102,7 +102,6 @@
 import type { SchemaFieldEditorProps, SchemaFieldEditorEmits } from './SchemaFieldEditor.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useSchemaFieldEditor } from './useSchemaFieldEditor';
-import type { SchemaFieldItem } from './useSchemaFieldEditor';
 
 const props = defineProps<SchemaFieldEditorProps>();
 

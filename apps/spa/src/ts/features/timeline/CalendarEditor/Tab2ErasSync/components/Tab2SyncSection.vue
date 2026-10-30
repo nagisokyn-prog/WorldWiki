@@ -146,8 +146,6 @@
 
 <script setup lang="ts">
 import type { Tab2SyncSectionProps, Tab2SyncSectionEmits } from './Tab2SyncSection.model';
-import type { CalendarEra, CalendarMonth } from '@/services/Calendars/calendar.types';
-import type { AnchorEventDto, SyncDirection, SyncTargetType } from '../Tab2ErasSync.model';
 import Tab2SyncEventForm from './Tab2SyncEventForm.vue';
 import Tab2SyncCalendarForm from './Tab2SyncCalendarForm.vue';
 import Tab2SyncEraForm from './Tab2SyncEraForm.vue';

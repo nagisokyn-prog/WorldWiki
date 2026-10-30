@@ -1,4 +1,4 @@
-import type { DstPolicyConfig, DstTransitionRule, WeekdayOccurrence } from '../Tab5ReformsDst.model'
+import type { DstPolicyConfig, DstTransitionRule } from '../Tab5ReformsDst.model'
 
 export interface Tab5DstTransitionRulesProps {
   policyConfig: DstPolicyConfig;

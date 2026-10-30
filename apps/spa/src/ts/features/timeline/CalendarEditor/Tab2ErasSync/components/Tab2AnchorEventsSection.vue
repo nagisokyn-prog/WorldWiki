@@ -79,7 +79,6 @@
 
 <script setup lang="ts">
 import type { Tab2AnchorEventsSectionProps, Tab2AnchorEventsSectionEmits } from './Tab2AnchorEventsSection.model';
-import type { AnchorEventDto } from '../Tab2ErasSync.model';
 import { useTab2AnchorEventsSection } from './useTab2AnchorEventsSection';
 
 defineProps<Tab2AnchorEventsSectionProps>();

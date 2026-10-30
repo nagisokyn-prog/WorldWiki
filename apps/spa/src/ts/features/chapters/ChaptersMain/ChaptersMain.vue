@@ -149,7 +149,6 @@ import ChapterRightSidebar from './components/ChapterRightSidebar.vue';
 import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer.vue';
 import QuickLinkHint from './components/QuickLinkHint.vue';
 import { useChaptersMain } from './useChaptersMain';
-import type { ActiveTreeNode, ChapterTreeNode } from './useChaptersMain';
 
 
 const props = withDefaults(defineProps<ChaptersMainProps>(), {

@@ -52,7 +52,6 @@
 
 <script setup lang="ts">
 import type { LocalAiRecommendedProps, LocalAiRecommendedEmits } from './LocalAiRecommended.model';
-import type { RecommendedModelCard } from '../../../types/ai.types';
 
 defineProps<LocalAiRecommendedProps>();
 

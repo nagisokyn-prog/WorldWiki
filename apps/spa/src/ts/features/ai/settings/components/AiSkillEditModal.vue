@@ -97,7 +97,6 @@
 
 <script setup lang="ts">
 import type { AiSkillEditModalProps, AiSkillEditModalEmits } from './AiSkillEditModal.model';
-import type { AiSkillItem } from '../../skills/aiSkills.model';
 
 defineProps<AiSkillEditModalProps>();
 

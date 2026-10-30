@@ -116,8 +116,6 @@
 
 <script setup lang="ts">
 import type { Tab3HolidaysSectionProps, Tab3HolidaysSectionEmits } from './Tab3HolidaysSection.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
-import type { CultureHolidayDto } from '../Tab3CultureLore.model';
 import { useTab3HolidaysSection } from './useTab3HolidaysSection';
 
 const props = defineProps<Tab3HolidaysSectionProps>();

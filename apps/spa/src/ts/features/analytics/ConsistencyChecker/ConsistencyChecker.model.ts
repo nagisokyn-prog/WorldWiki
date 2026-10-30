@@ -1,4 +1,4 @@
-import type { ConsistencyViolation, ConsistencyAuditSummaryData } from '@/stores/analytics.store';
+import type { ConsistencyViolation } from '@/stores/analytics.store';
 
 export type AnomalySeverity = 'critical' | 'warning' | 'notice' | 'info';
 export type ContradictionAnomalyDto = ConsistencyViolation;

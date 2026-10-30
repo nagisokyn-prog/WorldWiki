@@ -54,7 +54,6 @@
 <script setup lang="ts">
 import type { SchemaCatalogSidebarProps, SchemaCatalogSidebarEmits } from './SchemaCatalogSidebar.model';
 import ModuleHelpPreview from '../ModuleHelpPreview.vue';
-import type { SchemaTemplateItem } from '../hooks/useSchemaTemplates';
 
 defineProps<SchemaCatalogSidebarProps>();
 

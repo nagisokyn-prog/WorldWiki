@@ -42,12 +42,7 @@ import type { EditorModalsProps, EditorModalsEmits } from './EditorModals.model'
 import EntityLinkSelector from '../EntityLinkSelector.vue';
 import PromiseContextMenu from '../PromiseContextMenu.vue';
 import { DocumentExportModal } from '../../../documents';
-import { ParagraphFormatModal, type ParagraphFormatData } from '@worldwiki/word-vibe';
-import type { SemanticDocument } from '@/services/document/ast/types';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel';
-import type { PromiseTypeOption } from '../usePromiseContextMenu';
-import type { InsertEntityPayload } from '../EntityLinkSelector.model';
+import { ParagraphFormatModal } from '@worldwiki/word-vibe';
 
 defineProps<EditorModalsProps>();
 

@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TagsManagerModalProps, TagsManagerModalEmits } from './TagsManagerModal.model';
+import type { TagsManagerModalProps } from './TagsManagerModal.model';
 import { useTagsManagerModal } from './useTagsManagerModal';
 
 const props = defineProps<TagsManagerModalProps>();

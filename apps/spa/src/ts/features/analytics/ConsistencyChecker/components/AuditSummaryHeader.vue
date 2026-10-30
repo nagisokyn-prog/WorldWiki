@@ -65,7 +65,6 @@
 
 <script setup lang="ts">
 import type { AuditSummaryHeaderProps, AuditSummaryHeaderEmits } from './AuditSummaryHeader.model';
-import type { AuditSummaryStats } from '../ConsistencyChecker.model';
 import { useAuditSummaryHeader } from './useAuditSummaryHeader';
 
 const props = defineProps<AuditSummaryHeaderProps>();

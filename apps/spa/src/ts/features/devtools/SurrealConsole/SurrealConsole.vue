@@ -73,7 +73,6 @@ const {
   formattedOutput,
   executeQuery,
   selectPreset,
-  navigateHistory,
   clearHistory,
   handleKeyUp,
   handleKeyDown,

@@ -244,7 +244,6 @@ import type { SchemaContainerProps, SchemaContainerEmits } from './SchemaContain
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
 import { useSchemaContainer } from './useSchemaContainer';
-import type { SchemaContainerItem } from './useSchemaContainer';
 
 const props = defineProps<SchemaContainerProps>();
 defineEmits<SchemaContainerEmits>();

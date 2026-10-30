@@ -73,8 +73,6 @@
 <script setup lang="ts">
 import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from './PromiseCardTimeline.model';
 import PromiseCardDateTimeWheels from './PromiseCardDateTimeWheels.vue';
-import type { DiegeticDateBadgeInfo } from './PromiseCardMeta.model';
-import type { CalendarRecord } from '@/stores/calendar.store';
 
 defineProps<PromiseCardTimelineProps>();
 

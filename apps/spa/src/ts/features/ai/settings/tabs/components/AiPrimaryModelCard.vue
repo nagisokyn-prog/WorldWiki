@@ -92,7 +92,6 @@
 <script setup lang="ts">
 import type { AiPrimaryModelCardProps, AiPrimaryModelCardEmits } from './AiPrimaryModelCard.model';
 import { AiSelect } from '../../../components';
-import type { AiProfile, AiProfileSettings } from '../../../types/ai.types';
 
 defineProps<AiPrimaryModelCardProps>();
 

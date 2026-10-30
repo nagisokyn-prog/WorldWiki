@@ -40,9 +40,8 @@
 </template>
 
 <script setup lang="ts">
-import type { SurrealConsoleOutputProps, SurrealConsoleOutputEmits } from './SurrealConsoleOutput.model';
+import type { SurrealConsoleOutputProps } from './SurrealConsoleOutput.model';
 import './SurrealConsoleOutput.css';
-import type { QueryHistoryItem } from '../SurrealConsole.model';
 import { useSurrealConsoleOutput } from './useSurrealConsoleOutput';
 
 const props = defineProps<SurrealConsoleOutputProps>();

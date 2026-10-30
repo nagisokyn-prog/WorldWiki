@@ -48,7 +48,6 @@
 import AiPrimaryModelCard from './components/AiPrimaryModelCard.vue';
 import AiRagConfigCard from './components/AiRagConfigCard.vue';
 import AiInferenceParamsCard from './components/AiInferenceParamsCard.vue';
-import type { AiProfileSettings } from '../../types/ai.types';
 import { 
   useAiSettingsModelsTab, 
   type AiSettingsModelsTabProps, 

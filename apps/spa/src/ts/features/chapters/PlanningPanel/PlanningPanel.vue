@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PlanningPanelProps, PlanningPanelEmits } from './PlanningPanel.model';
+import type { PlanningPanelProps } from './PlanningPanel.model';
 import { usePlanningPanel } from './usePlanningPanel';
 
 const props = withDefaults(defineProps<PlanningPanelProps>(), {

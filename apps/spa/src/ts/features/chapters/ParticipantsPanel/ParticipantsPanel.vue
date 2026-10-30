@@ -23,7 +23,6 @@
 <script setup lang="ts">
 import type { ParticipantsPanelProps, ParticipantsPanelEmits } from './ParticipantsPanel.model';
 import { useParticipantsPanel } from './useParticipantsPanel';
-import type { ParticipantItem } from './useParticipantsPanel';
 
 const props = withDefaults(defineProps<ParticipantsPanelProps>(), {
   participants: () => []

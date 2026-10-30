@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GlobalTimeViewerProps, GlobalTimeViewerEmits } from './GlobalTimeViewer.model';
+import type { GlobalTimeViewerProps } from './GlobalTimeViewer.model';
 import { useGlobalTimeViewer } from './useGlobalTimeViewer';
 
 const props = defineProps<GlobalTimeViewerProps>();
@@ -46,8 +46,6 @@ const {
   localDates,
   loading,
   close,
-  stepMinute,
-  setMinute,
   handlePrevMinute,
   handleNextMinute,
   handleMinuteInput

@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 import type { Tab5DualDatingCardProps, Tab5DualDatingCardEmits } from './Tab5DualDatingCard.model';
-import type { DualDatingInput, DualDatingResult } from '../Tab5ReformsDst.model';
 
 defineProps<Tab5DualDatingCardProps>();
 

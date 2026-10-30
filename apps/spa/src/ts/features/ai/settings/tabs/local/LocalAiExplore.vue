@@ -79,7 +79,6 @@
 
 <script setup lang="ts">
 import type { LocalAiExploreProps, LocalAiExploreEmits } from './LocalAiExplore.model';
-import type { HfModelItem } from './useLocalAiTab';
 
 defineProps<LocalAiExploreProps>();
 

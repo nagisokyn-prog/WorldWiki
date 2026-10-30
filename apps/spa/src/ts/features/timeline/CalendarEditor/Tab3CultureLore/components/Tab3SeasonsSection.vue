@@ -81,8 +81,6 @@
 
 <script setup lang="ts">
 import type { Tab3SeasonsSectionProps, Tab3SeasonsSectionEmits } from './Tab3SeasonsSection.model';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
-import type { CultureSeasonDto } from '../Tab3CultureLore.model';
 import { useTab3SeasonsSection } from './useTab3SeasonsSection';
 
 const props = defineProps<Tab3SeasonsSectionProps>();

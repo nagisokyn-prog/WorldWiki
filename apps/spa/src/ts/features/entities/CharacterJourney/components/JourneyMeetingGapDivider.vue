@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import type { JourneyMeetingGapDividerProps, JourneyMeetingGapDividerEmits } from './JourneyMeetingGapDivider.model';
-import type { JourneyMeetingGap } from '../CharacterJourney.model';
+import type { JourneyMeetingGapDividerProps } from './JourneyMeetingGapDivider.model';
 
 defineProps<JourneyMeetingGapDividerProps>();
 </script>

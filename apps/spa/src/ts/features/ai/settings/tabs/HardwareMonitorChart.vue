@@ -25,9 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import type { HardwareMonitorChartProps, HardwareMonitorChartEmits } from './HardwareMonitorChart.model';
+import type { HardwareMonitorChartProps } from './HardwareMonitorChart.model';
 import 'uplot/dist/uPlot.min.css';
-import type { HardwareInfo } from '../../types/ai.types';
 import { useHardwareMonitorChart } from './useHardwareMonitorChart';
 
 const props = defineProps<HardwareMonitorChartProps>();

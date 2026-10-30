@@ -107,7 +107,6 @@
 
 <script setup lang="ts">
 import type { Tab4MatrixSectionProps, Tab4MatrixSectionEmits } from './Tab4MatrixSection.model';
-import type { MonthMatrixDayDto } from '../Tab4Playground.model';
 
 defineProps<Tab4MatrixSectionProps>();
 

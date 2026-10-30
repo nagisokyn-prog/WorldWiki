@@ -110,7 +110,6 @@
 import type { UniversalDatePickerProps, UniversalDatePickerEmits } from './UniversalDatePicker.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
-import type { DatePickerModelValue } from './useUniversalDatePicker';
 
 const props = withDefaults(defineProps<UniversalDatePickerProps>(), {
   modelValue: null,

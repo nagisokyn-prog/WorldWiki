@@ -202,8 +202,6 @@
 
 <script setup lang="ts">
 import type { JourneyArcGroupsProps, JourneyArcGroupsEmits } from './JourneyArcGroups.model';
-import type { Entity } from '@/types/generated/Entity';
-import type { ArcGroup, JourneyTimelineItem } from '../CharacterJourney.model';
 import JourneyMeetingGapDivider from './JourneyMeetingGapDivider.vue';
 import { useJourneyArcGroups } from './useJourneyArcGroups';
 

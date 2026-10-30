@@ -87,10 +87,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ModuleHelpDynamicCardProps, ModuleHelpDynamicCardEmits } from './ModuleHelpDynamicCard.model';
+import type { ModuleHelpDynamicCardProps } from './ModuleHelpDynamicCard.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
-import type { SchemaFieldDef, ModuleExample } from '../schemaReference.types';
 
 defineProps<ModuleHelpDynamicCardProps>();
 </script>

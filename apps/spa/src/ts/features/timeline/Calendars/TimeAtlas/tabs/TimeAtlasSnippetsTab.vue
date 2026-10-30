@@ -28,6 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import type { TimeAtlasSnippetsTabProps, TimeAtlasSnippetsTabEmits } from './TimeAtlasSnippetsTab.model';
+import type { TimeAtlasSnippetsTabProps } from './TimeAtlasSnippetsTab.model';
 defineProps<TimeAtlasSnippetsTabProps>();
 </script>

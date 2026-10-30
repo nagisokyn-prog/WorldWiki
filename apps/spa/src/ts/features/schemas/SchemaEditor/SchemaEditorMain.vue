@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SchemaEditorMainProps, SchemaEditorMainEmits } from './SchemaEditorMain.model';
+import type { SchemaEditorMainProps } from './SchemaEditorMain.model';
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
 import SchemaEditorToolbar from './components/SchemaEditorToolbar.vue';

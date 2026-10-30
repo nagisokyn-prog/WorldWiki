@@ -125,7 +125,6 @@
 
 <script setup lang="ts">
 import type { PlanetAstrophysicsTabProps, PlanetAstrophysicsTabEmits } from './PlanetAstrophysicsTab.model';
-import type { PlanetDto } from '../PlanetEditor.model';
 
 defineProps<PlanetAstrophysicsTabProps>();
 

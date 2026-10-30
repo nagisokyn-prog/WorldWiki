@@ -42,7 +42,6 @@
 <script setup lang="ts">
 import type { ChaptersHistoryDrawerProps, ChaptersHistoryDrawerEmits } from './ChaptersHistoryDrawer.model';
 import { SafeHtml } from '@worldwiki/components';
-import type { ChapterRevision } from '../hooks/useChapterHistory';
 
 defineProps<ChaptersHistoryDrawerProps>();
 

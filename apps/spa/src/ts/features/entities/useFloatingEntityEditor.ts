@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import * as api from '../../services/api.client';
 import { entityApi } from '@/services/Entity/entity.api';
 import type { EntitySchema } from '../../types/generated/EntitySchema';
@@ -52,19 +52,40 @@ export function useFloatingEntityEditor(
     }
   };
 
+  const handleEntityUpdated = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (!detail) return;
+    const targetId = String(detail.entityId || detail.id || '');
+    const myId = String(props.entityId || '');
+    const cleanTarget = targetId.split(':').pop();
+    const cleanMy = myId.split(':').pop();
+    if (cleanTarget && cleanMy && cleanTarget === cleanMy) {
+      void loadData();
+    }
+  };
+
   onMounted(async () => {
     await loadData();
+    document.addEventListener('ww:tags-updated', handleEntityUpdated);
+    document.addEventListener('ww:entity-saved', handleEntityUpdated);
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener('ww:tags-updated', handleEntityUpdated);
+    document.removeEventListener('ww:entity-saved', handleEntityUpdated);
   });
 
   watch(
     () => [props.entityId, props.entityType, props.isOpen] as const,
     async (
       newVals: readonly [string, string, boolean],
-      oldVals: readonly [string, string, boolean]
+      oldVals?: readonly [string, string, boolean]
     ) => {
       const [newId, newType, newOpen] = newVals;
-      const [oldId, oldType] = oldVals;
-      if (newOpen && (newId !== oldId || newType !== oldType)) {
+      const oldId = oldVals?.[0];
+      const oldType = oldVals?.[1];
+      const oldOpen = oldVals?.[2];
+      if (newOpen && (!oldOpen || newId !== oldId || newType !== oldType)) {
         await loadData();
       }
     },

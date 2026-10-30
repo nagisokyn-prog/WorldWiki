@@ -108,17 +108,37 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     }
   };
 
+  const onTagsUpdated = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (!detail) return;
+    const targetId = String(detail.entityId || detail.id || '');
+    const myId = String(props.entityId || '');
+    const cleanTarget = targetId.split(':').pop();
+    const cleanMy = myId.split(':').pop();
+    if (cleanTarget && cleanMy && cleanTarget === cleanMy && Array.isArray(detail.tags)) {
+      const cleanTags = detail.tags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean);
+      formData.value['теги'] = cleanTags;
+      formData.value.tags = cleanTags;
+      if (formData.value.attributes && typeof formData.value.attributes === 'object') {
+        (formData.value.attributes as Record<string, unknown>)['теги'] = cleanTags;
+        (formData.value.attributes as Record<string, unknown>).tags = cleanTags;
+      }
+    }
+  };
+
   onMounted(() => {
     loadConfigAndData();
     window.addEventListener('ww:schema-updated', onSchemaUpdated);
     window.addEventListener('ww:global-save-triggered', historyHook.loadHistory);
     document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
+    document.addEventListener('ww:tags-updated', onTagsUpdated);
   });
 
   onUnmounted(() => {
     window.removeEventListener('ww:schema-updated', onSchemaUpdated);
     window.removeEventListener('ww:global-save-triggered', historyHook.loadHistory);
     document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
+    document.removeEventListener('ww:tags-updated', onTagsUpdated);
   });
 
   watch(() => config.value, (newConfig) => {

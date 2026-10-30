@@ -36,11 +36,29 @@ export function useTagsField(
     getTags: async (project: string): Promise<TagItem[]> => {
       try {
         const res = await invoke<TagItem[]>('get_tags', { project });
-        return res ? processIds(res) : [];
-      } catch (e) {
-        console.error(e);
-        return [];
+        if (res && Array.isArray(res) && res.length > 0) {
+          return processIds(res);
+        }
+      } catch {
+        // Fallback if get_tags IPC is not implemented
       }
+      try {
+        const entities = await invoke<Array<{ tags?: string[] }>>('get_entities', { project, entity_type: null });
+        if (entities && Array.isArray(entities)) {
+          const tagSet = new Set<string>();
+          for (const ent of entities) {
+            if (ent.tags && Array.isArray(ent.tags)) {
+              for (const t of ent.tags) {
+                if (t && typeof t === 'string') tagSet.add(t.trim().replace(/^#/, ''));
+              }
+            }
+          }
+          return Array.from(tagSet).map(name => ({ name, color: 'var(--accent)' }));
+        }
+      } catch (e2) {
+        console.warn('[TagsField] Failed to load tags via get_entities fallback:', e2);
+      }
+      return [];
     },
     saveTag: async (project: string, tagData: Partial<TagItem>) => {
       try {
@@ -117,7 +135,17 @@ export function useTagsField(
     }
   };
 
-  const handleTagsUpdated = () => {
+  const handleTagsUpdated = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail?.tags && Array.isArray(detail.tags)) {
+      const currentNames = new Set(allTags.value.map(t => t.name.toLowerCase()));
+      for (const t of detail.tags) {
+        const clean = String(t).trim().replace(/^#/, '');
+        if (clean && !currentNames.has(clean.toLowerCase())) {
+          allTags.value.push({ name: clean, color: 'var(--accent)' });
+        }
+      }
+    }
     void loadAllTags();
   };
 

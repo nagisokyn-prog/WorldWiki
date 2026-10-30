@@ -13,7 +13,7 @@
           <span class="mention-badge" :title="sourceMention">#{{ sourceMention }}</span>
         </div>
         <label class="mention-tag-toggle">
-          <input type="checkbox" v-model="saveAsTag" class="checkbox-accent" />
+          <input v-model="saveAsTag" type="checkbox" class="checkbox-accent" />
           <span>Сохранить в теги</span>
         </label>
       </div>

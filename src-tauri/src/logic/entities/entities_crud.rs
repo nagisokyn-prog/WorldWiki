@@ -30,18 +30,20 @@ pub async fn get_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<Option<Entity>, EntityError> {
-    let clean = id
-        .split_once(':')
-        .map(|(_, rest)| rest)
-        .unwrap_or(id)
-        .trim_matches('⟨')
-        .trim_matches('⟩')
-        .trim_matches('`');
+    let clean_str = id.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
+    let actual_id = if let Some((_, rest)) = clean_str.rsplit_once("entities:") {
+        rest
+    } else if let Some((_, rest)) = clean_str.rsplit_once(':') {
+        rest
+    } else {
+        clean_str
+    };
+    let actual_id = actual_id.trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
 
     let query = "RETURN fn::get_entity(type::record('entities', $id));";
     let mut res = db
         .query(query)
-        .bind(("id", clean.to_string()))
+        .bind(("id", actual_id.to_string()))
         .await?;
 
     let val: Option<Value> = res.take(0)?;
@@ -55,7 +57,7 @@ pub async fn get_entity_inner(
             Err(e) => {
                 eprintln!(
                     "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}\nRaw JSON: {:?}",
-                    clean, e, val
+                    actual_id, e, val
                 );
                 return Err(EntityError::Serialization(e));
             }
@@ -72,7 +74,14 @@ pub async fn save_entity_inner(
     let clean_pid = project.trim().replace("projects:", "");
 
     let id_opt = entity.id.map(|id_str| {
-        let raw = id_str.split_once(':').map(|(_, rest)| rest).unwrap_or(&id_str);
+        let clean = id_str.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
+        let raw = if let Some((_, rest)) = clean.rsplit_once("entities:") {
+            rest
+        } else if let Some((_, rest)) = clean.rsplit_once(':') {
+            rest
+        } else {
+            clean
+        };
         raw.trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string()
     });
 

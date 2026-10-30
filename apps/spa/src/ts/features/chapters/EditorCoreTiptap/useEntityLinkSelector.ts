@@ -338,11 +338,18 @@ function extractAliases(raw: unknown, rawAttrs?: Record<string, unknown>): strin
       : '';
     if (targetTag && props.project) {
       const tagLower = targetTag.toLowerCase();
+      const existingTags = Array.isArray(entity.cleanTags) && entity.cleanTags.length > 0
+        ? entity.cleanTags
+        : Array.isArray(entity.tags) && entity.tags.length > 0
+          ? entity.tags
+          : Array.isArray((entity as Record<string, unknown>)['теги'])
+            ? ((entity as Record<string, unknown>)['теги'] as string[])
+            : [];
       const isExactMatch = entity.name.toLowerCase() === tagLower ||
-        (entity.cleanTags || []).some(t => t.toLowerCase() === tagLower) ||
+        existingTags.some(t => t.toLowerCase() === tagLower) ||
         (entity.aliases || []).some((a: string) => a.toLowerCase() === tagLower);
       if (!isExactMatch) {
-        const nextTags = Array.from(new Set([...(entity.cleanTags || []), targetTag]));
+        const nextTags = Array.from(new Set([...existingTags, targetTag]));
         const currentAttrs = (entity as { attributes?: Record<string, unknown> }).attributes || {};
         const currentAliases = Array.isArray(currentAttrs.aliases)
           ? (currentAttrs.aliases as string[])

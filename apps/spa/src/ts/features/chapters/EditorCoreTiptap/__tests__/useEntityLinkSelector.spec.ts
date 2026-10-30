@@ -245,7 +245,7 @@ describe('useEntityLinkSelector', () => {
       selector.searchQuery.value = '';
       expect(selector.cleanSearchQuery.value).toBe('');
 
-      selector.selectEntity(katya);
+      selector.selectEntity(selector.filteredEntities.value[0]);
 
       expect(api.saveEntity).toHaveBeenCalledWith('test_prj', expect.objectContaining({
         id: 'entities:katya',

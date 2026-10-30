@@ -57,14 +57,14 @@ import JourneyArcGroups from './components/JourneyArcGroups.vue';
 import JourneyTimelineList from './components/JourneyTimelineList.vue';
 
 const props = withDefaults(
-  defineProps<CharacterJourneyProps>>(),
+  defineProps<CharacterJourneyProps>(),
   {
     projectId: '',
     entityId: '',
   }
 );
 
-defineEmits<CharacterJourneyEmits>>();
+defineEmits<CharacterJourneyEmits>();
 
 const {
   selectedEntities,

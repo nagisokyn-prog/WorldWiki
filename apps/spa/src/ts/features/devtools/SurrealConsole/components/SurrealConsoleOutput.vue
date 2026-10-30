@@ -45,7 +45,7 @@ import './SurrealConsoleOutput.css';
 import type { QueryHistoryItem } from '../SurrealConsole.model';
 import { useSurrealConsoleOutput } from './useSurrealConsoleOutput';
 
-const props = defineProps<SurrealConsoleOutputProps>>();
+const props = defineProps<SurrealConsoleOutputProps>();
 
 const { copied, copyToClipboard } = useSurrealConsoleOutput(props);
 </script>

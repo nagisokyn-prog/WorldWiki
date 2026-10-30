@@ -118,9 +118,9 @@ import LocalAiRuntime from './local/LocalAiRuntime.vue';
 import { useLocalAiTab } from './local/useLocalAiTab';
 import type { AiProfile, AiProfileSettings } from '../../types/ai.types';
 
-const props = defineProps<AiSettingsLocalTabProps>>();
+const props = defineProps<AiSettingsLocalTabProps>();
 
-const emit = defineEmits<AiSettingsLocalTabEmits>>();
+const emit = defineEmits<AiSettingsLocalTabEmits>();
 
 const {
   subTab,

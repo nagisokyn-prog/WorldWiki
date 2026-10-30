@@ -113,9 +113,9 @@ import Tab1ExtraDaysTape from './Tab1ExtraDaysTape.vue';
 import Tab1LeapRulesInspector from './Tab1LeapRulesInspector.vue';
 import { useTab1LeapSection } from './useTab1LeapSection';
 
-defineProps<Tab1LeapSectionProps>>();
+defineProps<Tab1LeapSectionProps>();
 
-defineEmits<Tab1LeapSectionEmits>>();
+defineEmits<Tab1LeapSectionEmits>();
 
 const { isCollapsed, showSuggestions } = useTab1LeapSection();
 </script>

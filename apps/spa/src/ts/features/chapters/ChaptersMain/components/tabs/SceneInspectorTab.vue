@@ -69,9 +69,9 @@ import type { TimelineEvent } from '../../../../timeline/TimelinePanel/useTimeli
 import type { ParticipantItem } from '../../../ParticipantsPanel/useParticipantsPanel';
 import type { PanelResizeType } from '../ChapterRightSidebar.model';
 
-defineProps<SceneInspectorTabProps>>();
+defineProps<SceneInspectorTabProps>();
 
-defineEmits<SceneInspectorTabEmits>>();
+defineEmits<SceneInspectorTabEmits>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css"></style>

@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import type { PromiseFilterBarProps, PromiseFilterBarEmits } from './PromiseFilterBar.model';
-defineProps<PromiseFilterBarProps>>();
+defineProps<PromiseFilterBarProps>();
 
-defineEmits<PromiseFilterBarEmits>>();
+defineEmits<PromiseFilterBarEmits>();
 </script>

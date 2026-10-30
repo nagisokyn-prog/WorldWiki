@@ -120,9 +120,9 @@ import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { CultureHolidayDto } from '../Tab3CultureLore.model';
 import { useTab3HolidaysSection } from './useTab3HolidaysSection';
 
-const props = defineProps<Tab3HolidaysSectionProps>>();
+const props = defineProps<Tab3HolidaysSectionProps>();
 
-const emit = defineEmits<Tab3HolidaysSectionEmits>>();
+const emit = defineEmits<Tab3HolidaysSectionEmits>();
 
 const { toggleRange } = useTab3HolidaysSection(props, (e, list) => emit(e, list));
 </script>

@@ -104,9 +104,9 @@ import { XboxWheel } from '@worldwiki/components';
 import { useSchemaFieldEditor } from './useSchemaFiledEditor';
 import type { SchemaFieldItem } from './useSchemaFiledEditor';
 
-const props = defineProps<SchemaFieldEditorProps>>();
+const props = defineProps<SchemaFieldEditorProps>();
 
-defineEmits<SchemaFieldEditorEmits>>();
+defineEmits<SchemaFieldEditorEmits>();
 
 const {
   typeOptions,

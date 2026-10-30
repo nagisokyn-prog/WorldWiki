@@ -90,9 +90,9 @@ import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.sto
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { PlanScopeType } from '../ChapterRightSidebar.model';
 
-defineProps<PlanningMatrixTabProps>>();
+defineProps<PlanningMatrixTabProps>();
 
-defineEmits<PlanningMatrixTabEmits>>();
+defineEmits<PlanningMatrixTabEmits>();
 
 const volumePlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);
 const arcPlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);

@@ -43,9 +43,9 @@ import type { JourneyMultiSelectorProps, JourneyMultiSelectorEmits } from './Jou
 import type { Entity } from '@/types/generated/Entity';
 import { useJourneyMultiSelector } from './useJourneyMultiSelector';
 
-const props = defineProps<JourneyMultiSelectorProps>>();
+const props = defineProps<JourneyMultiSelectorProps>();
 
-const emit = defineEmits<JourneyMultiSelectorEmits>>();
+const emit = defineEmits<JourneyMultiSelectorEmits>();
 
 const { availableEntities, handleAddChange, handleRemove } = useJourneyMultiSelector(props, emit);
 </script>

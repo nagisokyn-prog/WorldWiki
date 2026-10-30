@@ -112,12 +112,12 @@ import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
 import type { DatePickerModelValue } from './useUniversalDatePicker';
 
-const props = withDefaults(defineProps<UniversalDatePickerProps>>(), {
+const props = withDefaults(defineProps<UniversalDatePickerProps>(), {
   modelValue: null,
   showTime: false
 });
 
-const emit = defineEmits<UniversalDatePickerEmits>>();
+const emit = defineEmits<UniversalDatePickerEmits>();
 
 const {
   allCalendars,

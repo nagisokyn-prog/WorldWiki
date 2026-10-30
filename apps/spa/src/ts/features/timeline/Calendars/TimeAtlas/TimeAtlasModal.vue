@@ -124,9 +124,9 @@ import TimeAtlasMatrixTab from './tabs/TimeAtlasMatrixTab.vue';
 import TimeAtlasWorldTab from './tabs/TimeAtlasWorldTab.vue';
 import TimeAtlasSnippetsTab from './tabs/TimeAtlasSnippetsTab.vue';
 
-const props = defineProps<TimeAtlasModalProps>>();
+const props = defineProps<TimeAtlasModalProps>();
 
-defineEmits<TimeAtlasModalEmits>>();
+defineEmits<TimeAtlasModalEmits>();
 
 const {
   activeTab,

@@ -29,5 +29,5 @@
 
 <script setup lang="ts">
 import type { TimeAtlasSnippetsTabProps, TimeAtlasSnippetsTabEmits } from './TimeAtlasSnippetsTab.model';
-defineProps<TimeAtlasSnippetsTabProps>>();
+defineProps<TimeAtlasSnippetsTabProps>();
 </script>

@@ -100,13 +100,13 @@ import ArcCreateModal from './components/ArcCreateModal.vue';
 import { useArcBoard } from './useArcBoard';
 
 const props = withDefaults(
-  defineProps<ArcBoardProps>>(),
+  defineProps<ArcBoardProps>(),
   {
     projectId: '',
   }
 );
 
-defineEmits<ArcBoardEmits>>();
+defineEmits<ArcBoardEmits>();
 
 const {
   filters,

@@ -153,9 +153,9 @@ import type {
 } from '../Tab5ReformsDst.model';
 import Tab5DualDatingCard from './Tab5DualDatingCard.vue';
 
-defineProps<Tab5ReformsSectionProps>>();
+defineProps<Tab5ReformsSectionProps>();
 
-defineEmits<Tab5ReformsSectionEmits>>();
+defineEmits<Tab5ReformsSectionEmits>();
 
 const modeCards = [
   { mode: 'gap' as ReformMode, icon: '🕳️', title: 'Выброшенные дни (Gap)', desc: 'Скачок дат без разрыва дней недели. Например, после четверга 4 октября сразу пятница 15 октября.' },

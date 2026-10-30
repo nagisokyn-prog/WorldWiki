@@ -25,9 +25,9 @@
 import type { JourneyModeToggleProps, JourneyModeToggleEmits } from './JourneyModeToggle.model';
 import type { JourneyFilterMode } from '../CharacterJourney.model';
 
-defineProps<JourneyModeToggleProps>>();
+defineProps<JourneyModeToggleProps>();
 
-defineEmits<JourneyModeToggleEmits>>();
+defineEmits<JourneyModeToggleEmits>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

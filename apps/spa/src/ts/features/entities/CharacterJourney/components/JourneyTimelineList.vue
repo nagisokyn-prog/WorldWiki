@@ -142,9 +142,9 @@ import type { JourneyTimelineListProps, JourneyTimelineListEmits } from './Journ
 import type { JourneyTimelineItem } from '../CharacterJourney.model';
 import JourneyMeetingGapDivider from './JourneyMeetingGapDivider.vue';
 
-defineProps<JourneyTimelineListProps>>();
+defineProps<JourneyTimelineListProps>();
 
-defineEmits<JourneyTimelineListEmits>>();
+defineEmits<JourneyTimelineListEmits>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

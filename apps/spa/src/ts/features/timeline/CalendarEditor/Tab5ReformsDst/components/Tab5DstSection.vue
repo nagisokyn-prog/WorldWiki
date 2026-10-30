@@ -124,7 +124,7 @@ import type {
 import Tab5DstSimulatorCard from './Tab5DstSimulatorCard.vue';
 import Tab5DstTransitionRules from './Tab5DstTransitionRules.vue';
 
-defineProps<Tab5DstSectionProps>>();
+defineProps<Tab5DstSectionProps>();
 
-defineEmits<Tab5DstSectionEmits>>();
+defineEmits<Tab5DstSectionEmits>();
 </script>

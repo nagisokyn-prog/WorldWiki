@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import type { AiMessageActionsBarProps, AiMessageActionsBarEmits } from './AiMessageActionsBar.model';
-defineProps<AiMessageActionsBarProps>>();
+defineProps<AiMessageActionsBarProps>();
 
-defineEmits<AiMessageActionsBarEmits>>();
+defineEmits<AiMessageActionsBarEmits>();
 </script>

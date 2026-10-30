@@ -94,7 +94,7 @@ import type { AiPrimaryModelCardProps, AiPrimaryModelCardEmits } from './AiPrima
 import { AiSelect } from '../../../components';
 import type { AiProfile, AiProfileSettings } from '../../../types/ai.types';
 
-defineProps<AiPrimaryModelCardProps>>();
+defineProps<AiPrimaryModelCardProps>();
 
-defineEmits<AiPrimaryModelCardEmits>>();
+defineEmits<AiPrimaryModelCardEmits>();
 </script>

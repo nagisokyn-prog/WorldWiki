@@ -12,7 +12,7 @@
 import type { JourneyMeetingGapDividerProps, JourneyMeetingGapDividerEmits } from './JourneyMeetingGapDivider.model';
 import type { JourneyMeetingGap } from '../CharacterJourney.model';
 
-defineProps<JourneyMeetingGapDividerProps>>();
+defineProps<JourneyMeetingGapDividerProps>();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

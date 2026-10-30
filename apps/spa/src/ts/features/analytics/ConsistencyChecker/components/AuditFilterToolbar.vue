@@ -59,9 +59,9 @@
 import type { AuditFilterToolbarProps, AuditFilterToolbarEmits } from './AuditFilterToolbar.model';
 import { useAuditFilterToolbar } from './useAuditFilterToolbar';
 
-defineProps<AuditFilterToolbarProps>>();
+defineProps<AuditFilterToolbarProps>();
 
-defineEmits<AuditFilterToolbarEmits>>();
+defineEmits<AuditFilterToolbarEmits>();
 
 useAuditFilterToolbar();
 </script>

@@ -76,7 +76,7 @@ import PromiseCardDateTimeWheels from './PromiseCardDateTimeWheels.vue';
 import type { DiegeticDateBadgeInfo } from './PromiseCardMeta.model';
 import type { CalendarRecord } from '@/stores/calendar.store';
 
-defineProps<PromiseCardTimelineProps>>();
+defineProps<PromiseCardTimelineProps>();
 
-defineEmits<PromiseCardTimelineEmits>>();
+defineEmits<PromiseCardTimelineEmits>();
 </script>

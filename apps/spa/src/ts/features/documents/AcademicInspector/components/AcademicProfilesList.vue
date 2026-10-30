@@ -23,7 +23,7 @@ import type { DocumentProfile } from '../../../../services/document/profiles/typ
 
 export type AcademicProfile = DocumentProfile;
 
-defineProps<AcademicProfilesListProps>>();
+defineProps<AcademicProfilesListProps>();
 
-defineEmits<AcademicProfilesListEmits>>();
+defineEmits<AcademicProfilesListEmits>();
 </script>

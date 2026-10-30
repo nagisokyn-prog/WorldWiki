@@ -250,8 +250,8 @@ for (const [filePath, violations] of vue003ByFile.entries()) {
     const closeBraceIdx = findMatchingDelimiter(newScript, openBraceIdx, '{', '}');
     if (closeBraceIdx !== -1) {
       propsTypeBody = newScript.slice(openBraceIdx + 1, closeBraceIdx).trim();
-      // Заменяем в скрипте defineProps<{ ... }>() на defineProps<FooProps>()
-      const fullCall = newScript.slice(definePropsIdx, closeBraceIdx + 1);
+      const endCallIdx = newScript.indexOf('>', closeBraceIdx);
+      const fullCall = newScript.slice(definePropsIdx, endCallIdx !== -1 ? endCallIdx + 1 : closeBraceIdx + 1);
       newScript = newScript.replace(fullCall, `defineProps<${compName}Props>`);
     }
   }
@@ -263,7 +263,8 @@ for (const [filePath, violations] of vue003ByFile.entries()) {
     const closeBraceIdx = findMatchingDelimiter(newScript, openBraceIdx, '{', '}');
     if (closeBraceIdx !== -1) {
       emitsTypeBody = newScript.slice(openBraceIdx + 1, closeBraceIdx).trim();
-      const fullCall = newScript.slice(defineEmitsIdx, closeBraceIdx + 1);
+      const endCallIdx = newScript.indexOf('>', closeBraceIdx);
+      const fullCall = newScript.slice(defineEmitsIdx, endCallIdx !== -1 ? endCallIdx + 1 : closeBraceIdx + 1);
       newScript = newScript.replace(fullCall, `defineEmits<${compName}Emits>`);
     }
   }

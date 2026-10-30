@@ -49,7 +49,7 @@
 import type { PlanetMoonsTabProps, PlanetMoonsTabEmits } from './PlanetMoonsTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<PlanetMoonsTabProps>>();
+defineProps<PlanetMoonsTabProps>();
 
-defineEmits<PlanetMoonsTabEmits>>();
+defineEmits<PlanetMoonsTabEmits>();
 </script>

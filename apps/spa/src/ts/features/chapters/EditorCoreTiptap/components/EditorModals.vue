@@ -49,7 +49,7 @@ import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromi
 import type { PromiseTypeOption } from '../usePromiseContextMenu';
 import type { InsertEntityPayload } from '../EntityLinkSelector.model';
 
-defineProps<EditorModalsProps>>();
+defineProps<EditorModalsProps>();
 
-defineEmits<EditorModalsEmits>>();
+defineEmits<EditorModalsEmits>();
 </script>

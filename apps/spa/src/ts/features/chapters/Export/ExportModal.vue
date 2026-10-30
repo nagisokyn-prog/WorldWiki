@@ -102,12 +102,12 @@ import type { ExportModalProps, ExportModalEmits } from './ExportModal.model';
 import { useExportModal } from './useExportModal';
 import type { ExportChapterItem, ExportPayload } from './useExportModal';
 
-const props = withDefaults(defineProps<ExportModalProps>>(), {
+const props = withDefaults(defineProps<ExportModalProps>(), {
   allChapters: () => [],
   currentChapterId: null
 });
 
-const emit = defineEmits<ExportModalEmits>>();
+const emit = defineEmits<ExportModalEmits>();
 
 const {
   format,

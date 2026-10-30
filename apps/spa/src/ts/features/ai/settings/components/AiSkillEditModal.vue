@@ -99,7 +99,7 @@
 import type { AiSkillEditModalProps, AiSkillEditModalEmits } from './AiSkillEditModal.model';
 import type { AiSkillItem } from '../../skills/aiSkills.model';
 
-defineProps<AiSkillEditModalProps>>();
+defineProps<AiSkillEditModalProps>();
 
-defineEmits<AiSkillEditModalEmits>>();
+defineEmits<AiSkillEditModalEmits>();
 </script>

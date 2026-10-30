@@ -83,9 +83,9 @@
 import type { PromiseCardParticipantsProps, PromiseCardParticipantsEmits } from './PromiseCardParticipants.model';
 import type { ProjectEntityOption } from './PromiseCardMeta.model';
 
-defineProps<PromiseCardParticipantsProps>>();
+defineProps<PromiseCardParticipantsProps>();
 
-const emit = defineEmits<PromiseCardParticipantsEmits>>();
+const emit = defineEmits<PromiseCardParticipantsEmits>();
 
 const handleRemove = (pid: string, event: Event) => {
   event.stopPropagation();

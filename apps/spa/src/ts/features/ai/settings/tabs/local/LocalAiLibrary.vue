@@ -63,7 +63,7 @@
 import type { LocalAiLibraryProps, LocalAiLibraryEmits } from './LocalAiLibrary.model';
 import type { InstalledModelInfo, AiProfileSettings, ModelLifecycleState } from '../../../types/ai.types';
 
-defineProps<LocalAiLibraryProps>>();
+defineProps<LocalAiLibraryProps>();
 
-defineEmits<LocalAiLibraryEmits>>();
+defineEmits<LocalAiLibraryEmits>();
 </script>

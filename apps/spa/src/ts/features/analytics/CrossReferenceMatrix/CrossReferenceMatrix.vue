@@ -149,7 +149,7 @@ import type { CrossReferenceMatrixProps, CrossReferenceMatrixEmits } from './Cro
 import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
 
 const props = withDefaults(
-  defineProps<CrossReferenceMatrixProps>>(),
+  defineProps<CrossReferenceMatrixProps>(),
   {
     project: '',
   }

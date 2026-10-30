@@ -153,9 +153,9 @@ import Tab2SyncCalendarForm from './Tab2SyncCalendarForm.vue';
 import Tab2SyncEraForm from './Tab2SyncEraForm.vue';
 import { useTab2SyncSection } from './useTab2SyncSection';
 
-defineProps<Tab2SyncSectionProps>>();
+defineProps<Tab2SyncSectionProps>();
 
-defineEmits<Tab2SyncSectionEmits>>();
+defineEmits<Tab2SyncSectionEmits>();
 
 const { isCollapsed } = useTab2SyncSection();
 </script>

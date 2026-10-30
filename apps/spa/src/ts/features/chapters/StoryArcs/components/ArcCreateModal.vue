@@ -54,7 +54,7 @@
 import type { ArcCreateModalProps, ArcCreateModalEmits } from './ArcCreateModal.model';
 import type { ArcType } from '../StoryArcs.model';
 
-defineProps<ArcCreateModalProps>>();
+defineProps<ArcCreateModalProps>();
 
-defineEmits<ArcCreateModalEmits>>();
+defineEmits<ArcCreateModalEmits>();
 </script>

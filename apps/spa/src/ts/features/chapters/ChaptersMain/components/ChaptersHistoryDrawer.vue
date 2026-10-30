@@ -44,7 +44,7 @@ import type { ChaptersHistoryDrawerProps, ChaptersHistoryDrawerEmits } from './C
 import { SafeHtml } from '@worldwiki/components';
 import type { ChapterRevision } from '../hooks/useChapterHistory';
 
-defineProps<ChaptersHistoryDrawerProps>>();
+defineProps<ChaptersHistoryDrawerProps>();
 
-defineEmits<ChaptersHistoryDrawerEmits>>();
+defineEmits<ChaptersHistoryDrawerEmits>();
 </script>

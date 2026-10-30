@@ -142,9 +142,9 @@ import type { Tab3AgeTimezoneSectionProps, Tab3AgeTimezoneSectionEmits } from '.
 import type { CharacterAgeRuleDto } from '../Tab3CultureLore.model';
 import { useTab3AgeTimezoneSection } from './useTab3AgeTimezoneSection';
 
-defineProps<Tab3AgeTimezoneSectionProps>>();
+defineProps<Tab3AgeTimezoneSectionProps>();
 
-const emit = defineEmits<Tab3AgeTimezoneSectionEmits>>();
+const emit = defineEmits<Tab3AgeTimezoneSectionEmits>();
 
 const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(
   name => emit('add-region', name),

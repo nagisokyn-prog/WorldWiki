@@ -25,7 +25,7 @@ import { useAiCitationBadge } from './useAiCitationBadge';
 import AiCitationPopover from '../AiCitationPopover/AiCitationPopover.vue';
 
 defineProps<AiCitationBadgeProps>();
-const emit = defineEmits<AiCitationBadgeEmits>>();
+const emit = defineEmits<AiCitationBadgeEmits>();
 
 const { badgeRef, isPopoverOpen, togglePopover, onAskSource, closePopover } = useAiCitationBadge(emit);
 </script>

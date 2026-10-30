@@ -95,7 +95,7 @@ import PromiseCard from './components/PromiseCard.vue';
 
 const props = defineProps<PromisesPanelProps>();
 
-const emit = defineEmits<PromisesPanelEmits>>();
+const emit = defineEmits<PromisesPanelEmits>();
 
 const {
   isCollapsed,

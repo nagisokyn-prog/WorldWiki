@@ -105,7 +105,7 @@ import type { Tab1DialSectionProps, Tab1DialSectionEmits } from './Tab1DialSecti
 import type { DialUnit } from '@/services/Calendars/calendar.types';
 import type { DialPreset, DayStartMode } from '../Tab1Structure.model';
 
-defineProps<Tab1DialSectionProps>>();
+defineProps<Tab1DialSectionProps>();
 
-defineEmits<Tab1DialSectionEmits>>();
+defineEmits<Tab1DialSectionEmits>();
 </script>

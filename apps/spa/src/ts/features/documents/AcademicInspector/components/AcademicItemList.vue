@@ -41,7 +41,7 @@ export type AcademicItem = InspectorItem;
 
 const props = defineProps<AcademicItemListProps>();
 
-defineEmits<AcademicItemListEmits>>();
+defineEmits<AcademicItemListEmits>();
 
 const { displayItems } = useAcademicItemList(props);
 </script>

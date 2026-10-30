@@ -69,7 +69,7 @@
 import type { Tab3MoonPhasesSectionProps, Tab3MoonPhasesSectionEmits } from './Tab3MoonPhasesSection.model';
 import type { MoonPhaseNames } from '@/services/Calendars/calendar.types';
 
-defineProps<Tab3MoonPhasesSectionProps>>();
+defineProps<Tab3MoonPhasesSectionProps>();
 
-defineEmits<Tab3MoonPhasesSectionEmits>>();
+defineEmits<Tab3MoonPhasesSectionEmits>();
 </script>

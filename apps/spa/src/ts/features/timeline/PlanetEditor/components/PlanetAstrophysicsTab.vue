@@ -127,7 +127,7 @@
 import type { PlanetAstrophysicsTabProps, PlanetAstrophysicsTabEmits } from './PlanetAstrophysicsTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<PlanetAstrophysicsTabProps>>();
+defineProps<PlanetAstrophysicsTabProps>();
 
-defineEmits<PlanetAstrophysicsTabEmits>>();
+defineEmits<PlanetAstrophysicsTabEmits>();
 </script>

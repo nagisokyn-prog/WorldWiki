@@ -136,7 +136,7 @@
 import type { PlanetTimezonesTabProps, PlanetTimezonesTabEmits } from './PlanetTimezonesTab.model';
 import type { PlanetDto } from '../PlanetEditor.model';
 
-defineProps<PlanetTimezonesTabProps>>();
+defineProps<PlanetTimezonesTabProps>();
 
-defineEmits<PlanetTimezonesTabEmits>>();
+defineEmits<PlanetTimezonesTabEmits>();
 </script>

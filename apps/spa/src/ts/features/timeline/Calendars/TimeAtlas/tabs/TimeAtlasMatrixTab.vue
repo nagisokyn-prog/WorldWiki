@@ -114,7 +114,7 @@ import type { TimeAtlasMatrixTabProps, TimeAtlasMatrixTabEmits } from './TimeAtl
 import type { CalendarRecord } from '../../../../../stores/calendar.store';
 import type { CalendarData } from '../../../../../services/Calendars/calendar.types';
 
-defineProps<TimeAtlasMatrixTabProps>>();
+defineProps<TimeAtlasMatrixTabProps>();
 
-defineEmits<TimeAtlasMatrixTabEmits>>();
+defineEmits<TimeAtlasMatrixTabEmits>();
 </script>

@@ -68,9 +68,9 @@ import type { AuditSummaryHeaderProps, AuditSummaryHeaderEmits } from './AuditSu
 import type { AuditSummaryStats } from '../ConsistencyChecker.model';
 import { useAuditSummaryHeader } from './useAuditSummaryHeader';
 
-const props = defineProps<AuditSummaryHeaderProps>>();
+const props = defineProps<AuditSummaryHeaderProps>();
 
-defineEmits<AuditSummaryHeaderEmits>>();
+defineEmits<AuditSummaryHeaderEmits>();
 
 const { healthIcon, healthScoreClass } = useAuditSummaryHeader(() => props.summary);
 </script>

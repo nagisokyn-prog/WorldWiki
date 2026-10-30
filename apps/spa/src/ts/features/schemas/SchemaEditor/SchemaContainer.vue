@@ -253,9 +253,9 @@ const isChapterField = (field: { class?: string; id?: string; type?: string; ent
   return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
 };
 
-const props = defineProps<SchemaContainerProps>>();
+const props = defineProps<SchemaContainerProps>();
 
-defineEmits<SchemaContainerEmits>>();
+defineEmits<SchemaContainerEmits>();
 
 const {
   isDraggedOver,

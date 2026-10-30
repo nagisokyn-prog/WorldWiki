@@ -117,7 +117,7 @@
 
 <script setup lang="ts">
 import type { Tab5DstSimulatorCardProps, Tab5DstSimulatorCardEmits } from './Tab5DstSimulatorCard.model';
-defineProps<Tab5DstSimulatorCardProps>>();
+defineProps<Tab5DstSimulatorCardProps>();
 
-defineEmits<Tab5DstSimulatorCardEmits>>();
+defineEmits<Tab5DstSimulatorCardEmits>();
 </script>

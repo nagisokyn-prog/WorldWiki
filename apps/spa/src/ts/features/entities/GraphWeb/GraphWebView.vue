@@ -65,7 +65,7 @@ import type { GraphWebViewProps, GraphWebViewEmits } from './GraphWebView.model'
 import { useGraphWebView } from './useGraphWebView';
 
 const props = withDefaults(
-  defineProps<GraphWebViewProps>>(),
+  defineProps<GraphWebViewProps>(),
   {
     projectId: '',
   }

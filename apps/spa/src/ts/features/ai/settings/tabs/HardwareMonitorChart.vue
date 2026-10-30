@@ -30,7 +30,7 @@ import 'uplot/dist/uPlot.min.css';
 import type { HardwareInfo } from '../../types/ai.types';
 import { useHardwareMonitorChart } from './useHardwareMonitorChart';
 
-const props = defineProps<HardwareMonitorChartProps>>();
+const props = defineProps<HardwareMonitorChartProps>();
 
 const {
   chartContainer,

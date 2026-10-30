@@ -83,9 +83,9 @@ import type { AuditAnomalyCardProps, AuditAnomalyCardEmits } from './AuditAnomal
 import type { ContradictionAnomalyDto } from '../ConsistencyChecker.model';
 import { useAuditAnomalyCard } from './useAuditAnomalyCard';
 
-const props = defineProps<AuditAnomalyCardProps>>();
+const props = defineProps<AuditAnomalyCardProps>();
 
-defineEmits<AuditAnomalyCardEmits>>();
+defineEmits<AuditAnomalyCardEmits>();
 
 const { ruleEmoji, ruleTooltip, cleanId } = useAuditAnomalyCard(() => props.anomaly);
 </script>

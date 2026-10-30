@@ -78,9 +78,9 @@ import type { EditorSplitViewProps, EditorSplitViewEmits } from './EditorSplitVi
 import { ref } from 'vue';
 import { EditorContent, type Editor } from '@tiptap/vue-3';
 
-defineProps<EditorSplitViewProps>>();
+defineProps<EditorSplitViewProps>();
 
-const emit = defineEmits<EditorSplitViewEmits>>();
+const emit = defineEmits<EditorSplitViewEmits>();
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 

@@ -104,7 +104,7 @@ import type { Tab1ExtraDaysTapeProps, Tab1ExtraDaysTapeEmits } from './Tab1Extra
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { YearTapeItem } from '../tab1Leap.utils';
 
-defineProps<Tab1ExtraDaysTapeProps>>();
+defineProps<Tab1ExtraDaysTapeProps>();
 
-defineEmits<Tab1ExtraDaysTapeEmits>>();
+defineEmits<Tab1ExtraDaysTapeEmits>();
 </script>

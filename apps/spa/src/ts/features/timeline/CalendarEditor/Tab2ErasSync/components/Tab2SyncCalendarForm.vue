@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import type { Tab2SyncCalendarFormProps, Tab2SyncCalendarFormEmits } from './Tab2SyncCalendarForm.model';
-defineProps<Tab2SyncCalendarFormProps>>();
+defineProps<Tab2SyncCalendarFormProps>();
 
-defineEmits<Tab2SyncCalendarFormEmits>>();
+defineEmits<Tab2SyncCalendarFormEmits>();
 </script>

@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import type { PromiseCardNoteProps, PromiseCardNoteEmits } from './PromiseCardNote.model';
-defineProps<PromiseCardNoteProps>>();
+defineProps<PromiseCardNoteProps>();
 
-defineEmits<PromiseCardNoteEmits>>();
+defineEmits<PromiseCardNoteEmits>();
 </script>

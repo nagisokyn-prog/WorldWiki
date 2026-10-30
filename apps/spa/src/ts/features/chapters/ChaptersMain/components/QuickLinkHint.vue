@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import type { QuickLinkHintProps, QuickLinkHintEmits } from './QuickLinkHint.model';
-defineProps<QuickLinkHintProps>>();
+defineProps<QuickLinkHintProps>();
 
-defineEmits<QuickLinkHintEmits>>();
+defineEmits<QuickLinkHintEmits>();
 </script>

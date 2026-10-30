@@ -207,9 +207,9 @@ import type { ArcGroup, JourneyTimelineItem } from '../CharacterJourney.model';
 import JourneyMeetingGapDivider from './JourneyMeetingGapDivider.vue';
 import { useJourneyArcGroups } from './useJourneyArcGroups';
 
-const props = defineProps<JourneyArcGroupsProps>>();
+const props = defineProps<JourneyArcGroupsProps>();
 
-defineEmits<JourneyArcGroupsEmits>>();
+defineEmits<JourneyArcGroupsEmits>();
 
 const { isArcCollapsed, toggleArc, totalScenesCount } = useJourneyArcGroups(() => props.arcGroups);
 </script>

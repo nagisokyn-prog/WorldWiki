@@ -80,13 +80,13 @@ import AuditFilterToolbar from './components/AuditFilterToolbar.vue';
 import AuditAnomalyCard from './components/AuditAnomalyCard.vue';
 
 const props = withDefaults(
-  defineProps<ConsistencyCheckerProps>>(),
+  defineProps<ConsistencyCheckerProps>(),
   {
     projectId: '',
   }
 );
 
-defineEmits<ConsistencyCheckerEmits>>();
+defineEmits<ConsistencyCheckerEmits>();
 
 const {
   anomalies,

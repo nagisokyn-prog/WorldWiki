@@ -72,7 +72,7 @@
 import type { PlanningPanelProps, PlanningPanelEmits } from './PlanningPanel.model';
 import { usePlanningPanel } from './usePlanningPanel';
 
-const props = withDefaults(defineProps<PlanningPanelProps>>(), {
+const props = withDefaults(defineProps<PlanningPanelProps>(), {
   parentType: undefined,
   parentId: undefined,
   parentTitle: ''

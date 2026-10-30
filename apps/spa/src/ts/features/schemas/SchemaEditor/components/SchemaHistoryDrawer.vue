@@ -48,7 +48,7 @@ import type { SchemaHistoryRecord } from '../hooks/useSchemaHistory';
 
 export type SchemaHistoryItem = SchemaHistoryRecord;
 
-defineProps<SchemaHistoryDrawerProps>>();
+defineProps<SchemaHistoryDrawerProps>();
 
-defineEmits<SchemaHistoryDrawerEmits>>();
+defineEmits<SchemaHistoryDrawerEmits>();
 </script>

@@ -133,7 +133,7 @@ import type {
   LeapSuggestionDto,
 } from '../Tab1Structure.model';
 
-defineProps<Tab1LeapPresetsProps>>();
+defineProps<Tab1LeapPresetsProps>();
 
-defineEmits<Tab1LeapPresetsEmits>>();
+defineEmits<Tab1LeapPresetsEmits>();
 </script>

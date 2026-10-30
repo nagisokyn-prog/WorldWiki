@@ -72,7 +72,7 @@ import type { PageSize, WordDocumentDTO } from '@worldwiki/word-vibe';
 import type { SemanticDocument } from '@/services/document/ast/types';
 import type { DocumentBlock } from '../hooks/useTiptapSplitView';
 
-defineProps<EditorBodyProps>>();
+defineProps<EditorBodyProps>();
 
-defineEmits<EditorBodyEmits>>();
+defineEmits<EditorBodyEmits>();
 </script>

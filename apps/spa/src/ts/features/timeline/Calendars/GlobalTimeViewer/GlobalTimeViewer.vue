@@ -38,7 +38,7 @@
 import type { GlobalTimeViewerProps, GlobalTimeViewerEmits } from './GlobalTimeViewer.model';
 import { useGlobalTimeViewer } from './useGlobalTimeViewer';
 
-const props = defineProps<GlobalTimeViewerProps>>();
+const props = defineProps<GlobalTimeViewerProps>();
 
 const {
   isVisible,

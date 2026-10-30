@@ -85,9 +85,9 @@ import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { CultureSeasonDto } from '../Tab3CultureLore.model';
 import { useTab3SeasonsSection } from './useTab3SeasonsSection';
 
-const props = defineProps<Tab3SeasonsSectionProps>>();
+const props = defineProps<Tab3SeasonsSectionProps>();
 
-const emit = defineEmits<Tab3SeasonsSectionEmits>>();
+const emit = defineEmits<Tab3SeasonsSectionEmits>();
 
 const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, (e, list) => emit(e, list));
 </script>

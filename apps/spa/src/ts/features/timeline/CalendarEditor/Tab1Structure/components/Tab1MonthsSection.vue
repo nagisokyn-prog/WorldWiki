@@ -76,9 +76,9 @@ import type { Tab1MonthsSectionProps, Tab1MonthsSectionEmits } from './Tab1Month
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import { useTab1MonthsSection } from './useTab1MonthsSection';
 
-const props = defineProps<Tab1MonthsSectionProps>>();
+const props = defineProps<Tab1MonthsSectionProps>();
 
-defineEmits<Tab1MonthsSectionEmits>>();
+defineEmits<Tab1MonthsSectionEmits>();
 
 const { seasonLabels } = useTab1MonthsSection(props);
 </script>

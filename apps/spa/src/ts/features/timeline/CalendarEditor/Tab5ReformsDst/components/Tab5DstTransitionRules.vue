@@ -79,7 +79,7 @@
 import type { Tab5DstTransitionRulesProps, Tab5DstTransitionRulesEmits } from './Tab5DstTransitionRules.model';
 import type { DstPolicyConfig, DstTransitionRule, WeekdayOccurrence } from '../Tab5ReformsDst.model';
 
-defineProps<Tab5DstTransitionRulesProps>>();
+defineProps<Tab5DstTransitionRulesProps>();
 
-defineEmits<Tab5DstTransitionRulesEmits>>();
+defineEmits<Tab5DstTransitionRulesEmits>();
 </script>

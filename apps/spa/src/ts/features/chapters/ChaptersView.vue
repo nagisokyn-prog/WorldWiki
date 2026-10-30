@@ -8,7 +8,7 @@
 import type { ChaptersViewProps, ChaptersViewEmits } from './ChaptersView.model';
 import ChaptersMain from './ChaptersMain/ChaptersMain.vue';
 
-withDefaults(defineProps<ChaptersViewProps>>(), {
+withDefaults(defineProps<ChaptersViewProps>(), {
   controlledChapterId: null
 });
 </script>

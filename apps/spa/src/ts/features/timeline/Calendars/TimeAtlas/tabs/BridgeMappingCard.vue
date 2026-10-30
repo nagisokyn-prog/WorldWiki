@@ -100,7 +100,7 @@ import type { BridgeMappingCardProps, BridgeMappingCardEmits } from './BridgeMap
 import { computed } from 'vue';
 import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../../services/Calendars/calendar.types';
 
-const props = defineProps<BridgeMappingCardProps>>();
+const props = defineProps<BridgeMappingCardProps>();
 
 const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
   return props.localDate || {
@@ -113,5 +113,5 @@ const safeDate = computed<NonNullable<CalendarDate['original_input']>>(() => {
   };
 });
 
-defineEmits<BridgeMappingCardEmits>>();
+defineEmits<BridgeMappingCardEmits>();
 </script>

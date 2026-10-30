@@ -20,5 +20,5 @@
 
 <script setup lang="ts">
 import type { EditorStatusBarProps, EditorStatusBarEmits } from './EditorStatusBar.model';
-defineProps<EditorStatusBarProps>>();
+defineProps<EditorStatusBarProps>();
 </script>

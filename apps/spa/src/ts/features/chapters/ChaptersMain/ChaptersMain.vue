@@ -152,12 +152,12 @@ import { useChaptersMain } from './useChaptersMain';
 import type { ActiveTreeNode, ChapterTreeNode } from './useChaptersMain';
 
 
-const props = withDefaults(defineProps<ChaptersMainProps>>(), {
+const props = withDefaults(defineProps<ChaptersMainProps>(), {
   controlledChapterId: null,
   activeTreeNode: null
 });
 
-const emit = defineEmits<ChaptersMainEmits>>();
+const emit = defineEmits<ChaptersMainEmits>();
 
 const {
   chapters, currentChapterId, currentChapter,

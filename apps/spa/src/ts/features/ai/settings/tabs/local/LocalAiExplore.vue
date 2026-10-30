@@ -81,7 +81,7 @@
 import type { LocalAiExploreProps, LocalAiExploreEmits } from './LocalAiExplore.model';
 import type { HfModelItem } from './useLocalAiTab';
 
-defineProps<LocalAiExploreProps>>();
+defineProps<LocalAiExploreProps>();
 
-defineEmits<LocalAiExploreEmits>>();
+defineEmits<LocalAiExploreEmits>();
 </script>

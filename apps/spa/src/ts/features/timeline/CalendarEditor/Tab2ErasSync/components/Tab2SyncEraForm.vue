@@ -62,7 +62,7 @@ import type { Tab2SyncEraFormProps, Tab2SyncEraFormEmits } from './Tab2SyncEraFo
 import type { CalendarEra } from '@/services/Calendars/calendar.types';
 import type { SyncDirection } from '../Tab2ErasSync.model';
 
-defineProps<Tab2SyncEraFormProps>>();
+defineProps<Tab2SyncEraFormProps>();
 
-defineEmits<Tab2SyncEraFormEmits>>();
+defineEmits<Tab2SyncEraFormEmits>();
 </script>

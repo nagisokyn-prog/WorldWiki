@@ -25,11 +25,11 @@ import type { ParticipantsPanelProps, ParticipantsPanelEmits } from './Participa
 import { useParticipantsPanel } from './useParticipantsPanel';
 import type { ParticipantItem } from './useParticipantsPanel';
 
-const props = withDefaults(defineProps<ParticipantsPanelProps>>(), {
+const props = withDefaults(defineProps<ParticipantsPanelProps>(), {
   participants: () => []
 });
 
-const emit = defineEmits<ParticipantsPanelEmits>>();
+const emit = defineEmits<ParticipantsPanelEmits>();
 
 const {
   normalizedParticipants,

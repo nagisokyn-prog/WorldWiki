@@ -82,7 +82,7 @@
 import type { PromiseCardDateTimeWheelsProps, PromiseCardDateTimeWheelsEmits } from './PromiseCardDateTimeWheels.model';
 import { XboxWheel } from '@worldwiki/components';
 
-defineProps<PromiseCardDateTimeWheelsProps>>();
+defineProps<PromiseCardDateTimeWheelsProps>();
 
-defineEmits<PromiseCardDateTimeWheelsEmits>>();
+defineEmits<PromiseCardDateTimeWheelsEmits>();
 </script>

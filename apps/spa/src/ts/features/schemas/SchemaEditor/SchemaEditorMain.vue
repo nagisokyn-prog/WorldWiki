@@ -136,7 +136,7 @@ import SchemaCatalogSidebar from './components/SchemaCatalogSidebar.vue';
 import SchemaHistoryDrawer from './components/SchemaHistoryDrawer.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
 
-const props = withDefaults(defineProps<SchemaEditorMainProps>>(), {
+const props = withDefaults(defineProps<SchemaEditorMainProps>(), {
   initialScrollPos: 0,
   initialSection: ''
 });

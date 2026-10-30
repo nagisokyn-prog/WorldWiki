@@ -61,7 +61,7 @@
 import type { TagsManagerModalProps, TagsManagerModalEmits } from './TagsManagerModal.model';
 import { useTagsManagerModal } from './useTagsManagerModal';
 
-const props = defineProps<TagsManagerModalProps>>();
+const props = defineProps<TagsManagerModalProps>();
 
 const {
   isOpen,

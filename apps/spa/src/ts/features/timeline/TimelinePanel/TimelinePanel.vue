@@ -104,7 +104,7 @@ import type { TimelinePanelProps, TimelinePanelEmits } from './TimelinePanel.mod
 import { UniversalDatePicker } from '@/shared/ui';
 import { useTimelinePanel, type TimelineEvent } from './useTimelinePanel';
 
-const props = withDefaults(defineProps<TimelinePanelProps>>(), {
+const props = withDefaults(defineProps<TimelinePanelProps>(), {
   events: () => []
 });
 

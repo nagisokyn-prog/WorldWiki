@@ -92,7 +92,7 @@
 import type { TimeAtlasWorldTabProps, TimeAtlasWorldTabEmits } from './TimeAtlasWorldTab.model';
 import type { WorldRegion, WorldTimezone, RegionSunStatus } from '../../../../../services/Calendars/calendar.types';
 
-defineProps<TimeAtlasWorldTabProps>>();
+defineProps<TimeAtlasWorldTabProps>();
 
-defineEmits<TimeAtlasWorldTabEmits>>();
+defineEmits<TimeAtlasWorldTabEmits>();
 </script>

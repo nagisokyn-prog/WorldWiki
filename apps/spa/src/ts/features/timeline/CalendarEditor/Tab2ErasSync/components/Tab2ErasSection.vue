@@ -146,7 +146,7 @@ import type { Tab2ErasSectionProps, Tab2ErasSectionEmits } from './Tab2ErasSecti
 import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { ExtendedEraDto } from '../Tab2ErasSync.model';
 
-defineProps<Tab2ErasSectionProps>>();
+defineProps<Tab2ErasSectionProps>();
 
-defineEmits<Tab2ErasSectionEmits>>();
+defineEmits<Tab2ErasSectionEmits>();
 </script>

@@ -103,9 +103,9 @@ import type { CharacterJourneyViewMode, JourneyFilterMode } from '../CharacterJo
 import JourneyMultiSelector from './JourneyMultiSelector.vue';
 import JourneyModeToggle from './JourneyModeToggle.vue';
 
-defineProps<JourneyToolbarProps>>();
+defineProps<JourneyToolbarProps>();
 
-const emit = defineEmits<JourneyToolbarEmits>>();
+const emit = defineEmits<JourneyToolbarEmits>();
 
 const onFilterModeUpdate = (val: JourneyFilterMode) => {
   emit('update:filterMode', val);

@@ -45,7 +45,7 @@ import type {
   InstalledModelInfo 
 } from '../../../types/ai.types';
 
-defineProps<AiRagConfigCardProps>>();
+defineProps<AiRagConfigCardProps>();
 
-defineEmits<AiRagConfigCardEmits>>();
+defineEmits<AiRagConfigCardEmits>();
 </script>

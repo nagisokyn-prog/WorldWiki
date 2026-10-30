@@ -130,5 +130,5 @@ import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
 import type { SchemaFieldDef, ModuleExample } from '../schemaReference.types';
 
-defineProps<ModuleHelpBidiCardProps>>();
+defineProps<ModuleHelpBidiCardProps>();
 </script>

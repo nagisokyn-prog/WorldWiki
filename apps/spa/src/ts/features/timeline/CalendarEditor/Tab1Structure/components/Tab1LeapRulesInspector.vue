@@ -154,7 +154,7 @@ import type { CalendarMonth } from '@/services/Calendars/calendar.types';
 import type { HarmonicRule, LeapRuleType } from '../Tab1Structure.model';
 import type { UpcomingYearDto } from '../tab1Leap.utils';
 
-defineProps<Tab1LeapRulesInspectorProps>>();
+defineProps<Tab1LeapRulesInspectorProps>();
 
-defineEmits<Tab1LeapRulesInspectorEmits>>();
+defineEmits<Tab1LeapRulesInspectorEmits>();
 </script>

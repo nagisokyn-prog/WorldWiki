@@ -215,15 +215,6 @@
                 </div>
               </template>
 
-              <template #graph-web="{ tab, groupId }">
-                <div class="chapter-editor flex-1 flex-col overflow-hidden">
-                  <graph-web-view-vue
-                    :key="tab.id + '-' + groupId"
-                    :project-id="projectName || 'default'"
-                  ></graph-web-view-vue>
-                </div>
-              </template>
-
               <template #matrix="{ tab, groupId }">
                 <div class="chapter-editor flex-1 flex-col overflow-hidden">
                   <cross-reference-matrix-vue
@@ -295,13 +286,6 @@
           </div>
           <div
             class="panel-tab-new interactive-el"
-            :class="{ active: activePanelTab === 'graph-web' }"
-            @click.stop="setActivePanelTab('graph-web')"
-          >
-            🕸️ Паутина Связей
-          </div>
-          <div
-            class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'timeline-inspector' }"
             @click.stop="setActivePanelTab('timeline-inspector')"
           >
@@ -350,9 +334,6 @@
         <div v-else-if="activePanelTab === 'chekhov-guns'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <chekhov-gun-tracker-vue :project-id="projectName || 'default'" />
         </div>
-        <div v-else-if="activePanelTab === 'graph-web'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-          <graph-web-view-vue :project-id="projectName || 'default'" />
-        </div>
         <div v-else-if="activePanelTab === 'timeline-inspector'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <timeline-inspector-vue :project-id="projectName || 'default'" @open-chapter="openChapterTab" />
         </div>
@@ -393,6 +374,14 @@
       @close="closeCreateChapterModal"
       @create="confirmCreateChapter"
     ></create-chapter-modal-vue>
+
+    <create-entity-modal-vue
+      :is-open="isCreateEntityModalOpen"
+      :project-name="projectName"
+      :initial-entity-type="createEntityTargetType"
+      @close="closeCreateEntityModal"
+      @create="confirmCreateEntity"
+    ></create-entity-modal-vue>
 
     <div
       v-if="showSettings"

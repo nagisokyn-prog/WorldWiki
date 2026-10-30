@@ -43,6 +43,31 @@ export const europePreset: CalendarPreset = {
       { название: 'Наша эра (н.э.)', год_начала: 1, год_конца: 9999 },
       { название: 'До нашей эры (до н.э.)', год_начала: 1, год_конца: 9999, обратный_отсчет: true }
     ],
+    anchor_events: [
+      { id: 'gregorian_papal_bull', name: 'Булла папы Григория XIII Inter gravissimas (1582 г.)', year: 1582, month: 9, day: 4, description: 'Введение григорианского календаря и пропуск 10 дней' },
+      { id: 'christ_birth', name: 'Рождество Христово (1 г. н.э.)', year: 1, month: 11, day: 25, description: 'Точка отсчета европейской христианской эры' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'gregorian_papal_bull',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'gregorian_1582',
+    reforms: {
+      mode: 'gap',
+      oldDay: 4,
+      oldMonth: 10,
+      oldYear: 1582,
+      droppedDays: 10
+    },
+    dst_preset: 'eu_standard',
+    dst_policy: {
+      is_enabled: true,
+      policy: 'relative',
+      shiftMinutes: 60
+    },
     правило_високосного_года: 'григорианское',
     пользовательское_високосное_правило: { месяц: 1, день_смещения: 1 },
     точка_отсчета: { эпоха: 0, год: 2026, месяц: 0, день: 1, день_недели: 3 },

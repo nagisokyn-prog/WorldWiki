@@ -17,13 +17,13 @@ import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMai
 import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue, Settings as SettingsVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 import CreateChapterModalVue from '@/features/chapters/CreateChapterModal/CreateChapterModal.vue';
+import CreateEntityModalVue from '@/features/entities/CreateEntityModal/CreateEntityModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
 import ConsistencyCheckerVue from '@/features/analytics/ConsistencyChecker/ConsistencyChecker.vue';
 import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue';
 import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
-import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
 import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
 import CalendarEditorVue from '@/features/timeline/CalendarEditor/CalendarEditor.vue';
 import PlanetEditorVue from '@/features/timeline/PlanetEditor/PlanetEditor.vue';
@@ -44,12 +44,12 @@ export default defineComponent({
     ChekhovGunTrackerVue,
     ArcBoardVue,
     TimelineInspectorVue,
-    GraphWebViewVue,
     SurrealConsoleVue,
     QuickOpenVue,
     CommandPaletteVue,
     TagsManagerModalVue,
     CreateChapterModalVue,
+    CreateEntityModalVue,
     SettingsVue,
     WowilonPanelVue,
     AppDialog,
@@ -279,6 +279,10 @@ export default defineComponent({
       createChapterTargetVolumeId: computed(() => shell.createChapterTargetVolumeId),
       closeCreateChapterModal: shell.closeCreateChapterModal,
       confirmCreateChapter: shell.confirmCreateChapter,
+      isCreateEntityModalOpen: computed(() => shell.isCreateEntityModalOpen),
+      createEntityTargetType: computed(() => shell.createEntityTargetType),
+      closeCreateEntityModal: shell.closeCreateEntityModal,
+      confirmCreateEntity: shell.confirmCreateEntity,
       deleteChapter,
       renameChapter,
       renameEntity,

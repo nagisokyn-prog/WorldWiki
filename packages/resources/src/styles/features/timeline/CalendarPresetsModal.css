@@ -223,28 +223,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
-  backdrop-filter: blur(var(--glass-blur, 4px));
-  padding: 20px;
+  z-index: 100;
+  backdrop-filter: blur(14px);
+  padding: 24px;
 }
 
 .preset-confirm-dialog {
-  max-width: 440px;
-  background: var(--bg-card);
+  max-width: 460px;
+  width: 100%;
+  background: var(--bg-secondary);
   padding: 24px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-modal);
+  position: relative;
+  z-index: 101;
 }
 
 .preset-confirm-dialog h4 {
   margin: 0 0 12px 0;
   color: var(--text-heading);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .preset-confirm-dialog p {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-main);
   line-height: 1.5;
   margin: 0 0 20px 0;
 }
@@ -252,5 +257,5 @@
 .preset-confirm-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
 }

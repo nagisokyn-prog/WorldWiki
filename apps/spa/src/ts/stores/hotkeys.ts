@@ -80,12 +80,15 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           return;
         }
         case 'Equal':
+        case 'NumpadAdd':
           shell.applyZoom(zoom.zoomLevel + 0.1);
           return;
         case 'Minus':
+        case 'NumpadSubtract':
           shell.applyZoom(zoom.zoomLevel - 0.1);
           return;
         case 'Digit0':
+        case 'Numpad0':
           shell.applyZoom(1);
           return;
         case 'Backquote':

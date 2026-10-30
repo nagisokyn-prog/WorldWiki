@@ -43,6 +43,24 @@ export const japanPreset: CalendarPreset = {
       { название: 'Эпоха Императорского правления (Коки)', год_начала: 1, год_конца: 9999 },
       { название: 'Эпоха Цветущего Мира (Рэйва)', год_начала: 1, год_конца: 99 }
     ],
+    anchor_events: [
+      { id: 'jinmu_emperor', name: 'Восшествие Императора Дзимму на трон (660 г. до н.э., Коки)', year: -660, month: 1, day: 11, description: 'Традиционная дата основания Японского государства' },
+      { id: 'reiwa_era', name: 'Начало эпохи Рэйва (2019 г.)', year: 2019, month: 4, day: 1, description: 'Восшествие императора Нарухито' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'jinmu_emperor',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'none',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'лунно-солнечный',
     пользовательское_високосное_правило: { месяц: 4, день_смещения: 29, период: 3 },
     точка_отсчета: { эпоха: 0, год: 2686, месяц: 0, день: 1, день_недели: 3 },

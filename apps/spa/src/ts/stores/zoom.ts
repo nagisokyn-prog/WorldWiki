@@ -1,70 +1,102 @@
 /**
  * @file zoom.ts
- * @description Pinia store для управления зумом приложения
+ * @description Pinia store для глобального управления зумом приложения
  */
 import { defineStore } from 'pinia';
 import { ref, onUnmounted, onScopeDispose } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 
 export const useZoomStore = defineStore('zoom', () => {
-  const zoomLevel = ref(parseFloat(localStorage.getItem('app-zoom') || '1'));
+  const initialZoom = parseFloat(localStorage.getItem('app-zoom') || '1');
+  const zoomLevel = ref(isNaN(initialZoom) ? 1 : initialZoom);
+  let lastApplied = -1;
 
   const applyZoom = async (level: number) => {
     const clamped = Math.max(0.5, Math.min(2, Math.round(level * 100) / 100));
+    if (Math.abs(clamped - lastApplied) < 0.005) {
+      return;
+    }
+    lastApplied = clamped;
     zoomLevel.value = clamped;
-    localStorage.setItem('app-zoom', String(clamped));
 
-    // Native Webview Zoom in Tauri (scales entire application rendering)
-    if (typeof window !== 'undefined' && ((window as unknown as { __TAURI__?: unknown }).__TAURI__ || (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__)) {
-      try {
-        await getCurrentWebview().setZoom(clamped);
-        // Clear HTML/body style zoom to avoid dual-scaling/layout distortions
-        (document.documentElement.style as unknown as Record<string, string>).zoom = '';
-        (document.body.style as unknown as Record<string, string>).zoom = '';
-        document.documentElement.style.removeProperty('--app-zoom');
-        return;
-      } catch (err) {
-        console.warn('[zoomStore] Failed to set native webview zoom, falling back to CSS:', err);
+    try {
+      if (localStorage.getItem('app-zoom') !== String(clamped)) {
+        localStorage.setItem('app-zoom', String(clamped));
       }
+    } catch (err: unknown) {
+      console.debug('[zoomStore] Failed to write to localStorage:', err);
     }
 
-    // Web / Browser Fallback - apply strictly once to documentElement, not body
+    // Direct CSS Zoom on documentElement
     document.documentElement.style.setProperty('--app-zoom', String(clamped));
     (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
     (document.body.style as unknown as Record<string, string>).zoom = '';
+
+    // Native Webview Zoom in Tauri
+    if (typeof window !== 'undefined' && ((window as unknown as { __TAURI__?: unknown }).__TAURI__ || (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__)) {
+      try {
+        await getCurrentWebview().setZoom(clamped);
+      } catch (err: unknown) {
+        console.debug('[zoomStore] Native webview zoom set:', err);
+      }
+    }
   };
 
   const handleStorage = (e: StorageEvent) => {
     if (e.key === 'app-zoom' && e.newValue) {
       const val = parseFloat(e.newValue);
-      if (!isNaN(val) && val !== zoomLevel.value) {
+      if (!isNaN(val) && Math.abs(val - zoomLevel.value) >= 0.01) {
         applyZoom(val);
       }
     }
   };
 
-  // Sync zoom changes across tabs/windows with symmetric cleanup
+  const handleZoomKeydown = (e: KeyboardEvent) => {
+    if (!e.ctrlKey || e.altKey) return;
+
+    // Zoom In: Ctrl + "=" or Ctrl + "+"
+    if (e.code === 'Equal' || e.code === 'NumpadAdd' || e.key === '=' || e.key === '+') {
+      e.preventDefault();
+      applyZoom(zoomLevel.value + 0.1);
+      return;
+    }
+
+    // Zoom Out: Ctrl + "-"
+    if (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-' || e.key === '_') {
+      e.preventDefault();
+      applyZoom(zoomLevel.value - 0.1);
+      return;
+    }
+
+    // Zoom Reset: Ctrl + "0"
+    if (e.code === 'Digit0' || e.code === 'Numpad0' || e.key === '0') {
+      e.preventDefault();
+      applyZoom(1);
+      return;
+    }
+  };
+
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', handleStorage);
+    window.addEventListener('keydown', handleZoomKeydown, { passive: false });
   }
 
+  const cleanup = () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('keydown', handleZoomKeydown);
+    }
+  };
+
   try {
-    onUnmounted(() => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('storage', handleStorage);
-      }
-    });
+    onUnmounted(cleanup);
   } catch (err: unknown) {
     console.debug('[zoomStore] onUnmounted hook registration skipped:', err);
   }
 
   try {
     if (typeof onScopeDispose === 'function') {
-      onScopeDispose(() => {
-        if (typeof window !== 'undefined') {
-          window.removeEventListener('storage', handleStorage);
-        }
-      });
+      onScopeDispose(cleanup);
     }
   } catch (err: unknown) {
     console.debug('[zoomStore] onScopeDispose hook registration skipped:', err);

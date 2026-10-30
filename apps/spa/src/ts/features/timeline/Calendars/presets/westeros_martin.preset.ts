@@ -44,6 +44,25 @@ export const westerosMartinPreset: CalendarPreset = {
       { название: 'До Завоевания Эйгона (Д.З.)', год_начала: 1, год_конца: 9999, обратный_отсчет: true },
       { название: 'Век Героев (Древний Вестерос)', год_начала: 1, год_конца: 10000, обратный_отсчет: true }
     ],
+    anchor_events: [
+      { id: 'aegons_conquest', name: 'Коронация Эйгона I Таргариена в Староместе (0 AC / От З.Э.)', year: 0, month: 0, day: 1, description: 'Высадка Таргариенов и объединение Семи Королевств' },
+      { id: 'dance_of_dragons', name: 'Танец Драконов (129 AC)', year: 129, month: 2, day: 3, description: 'Гражданская война между Черными и Зелеными' },
+      { id: 'roberts_rebellion', name: 'Восстание Роберта Баратеона (282 AC)', year: 282, month: 4, day: 10, description: 'Свержение безумного короля Эйриса II' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'aegons_conquest',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'none',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'нет',
     точка_отсчета: { эпоха: 0, год: 298, месяц: 0, день: 1, день_недели: 0 },
     сезоны: [

@@ -35,25 +35,30 @@
 
         <div class="form-group">
           <label for="chapter-volume-select" class="form-label">
-            Привязка к тому
+            Привязка к тому <span class="required">*</span>
           </label>
+          <div v-if="volumes.length === 0" class="no-volumes-warning">
+            ⚠️ В проекте нет томов. Сначала создайте том в структуре произведения.
+          </div>
           <select
+            v-else
             id="chapter-volume-select"
             :value="selectedVolumeId"
             class="form-select"
             :disabled="isLoading"
-            @change="onVolumeChange(($event.target as HTMLSelectElement).value || null)"
+            required
+            @change="onVolumeChange(($event.target as HTMLSelectElement).value)"
           >
             <option
               v-for="vol in volumes"
-              :key="vol.id ?? 'root'"
-              :value="vol.id ?? ''"
+              :key="vol.id || 'vol'"
+              :value="vol.id"
             >
               {{ vol.title }}
             </option>
           </select>
-          <p class="form-hint">
-            Выберите том произведения или оставьте в корневом дереве.
+          <p v-if="volumes.length > 0" class="form-hint">
+            Выберите том произведения, в который войдет новая глава.
           </p>
         </div>
 

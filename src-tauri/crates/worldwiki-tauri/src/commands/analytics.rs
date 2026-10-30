@@ -2,7 +2,7 @@ use tauri::State;
 use worldwiki_application::analytics::ManuscriptStatisticsDto;
 use worldwiki_domain::analytics::{
     CharacterJourneyDto, ConsistencyAuditReportDto, CrossRefMatrixDto,
-    GraphTimeSliceDto, ItemJourneyDto, ItemTrackerDto, JourneyFilterMode,
+    ItemJourneyDto, ItemTrackerDto, JourneyFilterMode,
     MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use crate::error::IpcError;
@@ -48,20 +48,6 @@ pub async fn get_timeline_inspector_data(
         .map_err(IpcError::from)
 }
 
-#[tauri::command]
-pub async fn get_graph_time_slice(
-    project_id: String,
-    reader_chapter_order: Option<i32>,
-    m_abs_limit: Option<i64>,
-    state: State<'_, AppState>,
-) -> Result<GraphTimeSliceDto, IpcError> {
-    state
-        .services
-        .graph_web_slice_service
-        .get_time_slice(&project_id, reader_chapter_order, m_abs_limit)
-        .await
-        .map_err(IpcError::from)
-}
 
 #[tauri::command]
 pub async fn get_character_journey(

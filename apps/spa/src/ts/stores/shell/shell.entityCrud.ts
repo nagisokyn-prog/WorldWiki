@@ -3,10 +3,9 @@
  * @description CRUD операции над сущностями и главами для shell store
  */
 
-import { type Ref, triggerRef } from 'vue';
+import { ref, type Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
 import * as api from '../../services/api.client';
-import { projectRecordId } from '../../services/api/project.api';
 import { entityApi } from '../../services/Entity/entity.api';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { useSchemaStore } from '../schema';
@@ -90,65 +89,48 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
     }
   };
 
-  const addNewEntity = async (entityType: string, preDefinedName?: string) => {
-    let resolvedType = entityType;
-    if (!resolvedType) {
-      if (deps.currentSidebarTab.value && deps.currentSidebarTab.value !== 'chapters') {
-        resolvedType = deps.currentSidebarTab.value;
-      } else {
-        const chosen = prompt('Создание новой сущности. Введите тип (например: character, location, item, event, organization):', 'character');
-        if (!chosen) return;
-        resolvedType = chosen.trim().toLowerCase();
-      }
+  const isCreateEntityModalOpen = ref(false);
+  const createEntityTargetType = ref<string | null>(null);
+
+  const openCreateEntityModal = (entityType?: string | null) => {
+    let initialType = entityType || null;
+    if (!initialType && deps.currentSidebarTab.value && deps.currentSidebarTab.value !== 'chapters') {
+      initialType = deps.currentSidebarTab.value;
     }
-    if (!resolvedType || isCreatingEntity.value) return;
+    createEntityTargetType.value = initialType;
+    isCreateEntityModalOpen.value = true;
+  };
+
+  const closeCreateEntityModal = () => {
+    isCreateEntityModalOpen.value = false;
+    createEntityTargetType.value = null;
+  };
+
+  const confirmCreateEntity = async ({ entityType, name }: { entityType: string; name: string }) => {
+    closeCreateEntityModal();
+    const resolvedType = entityType.trim();
+    const nameToSet = name.trim();
+    if (!resolvedType || !nameToSet || isCreatingEntity.value) return;
+
     isCreatingEntity.value = true;
     try {
-      if (resolvedType === 'chapters') {
-        const newChapterTitle = preDefinedName || prompt('Введите название новой главы:', 'Новая глава');
-        if (newChapterTitle === null) return;
-        const newChapter: Chapter = {
-          id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          project_id: projectRecordId(deps.projectName.value),
-          title: newChapterTitle || 'Новая глава',
-          content: '# Начните писать\n\n',
-          summary: undefined,
-          word_count: 0 as unknown as bigint,
-          embeddings: {},
-          footnotes: {},
-          timeline_events: [],
-          participants: [],
-          volume_id: null,
-        } as unknown as Chapter;
-        await api.saveChapter(newChapter);
-        deps.addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
-        deps.addToast(`Глава "${newChapter.title}" создана`, 'success');
-        deps.chapters.value.push(newChapter);
-        triggerRef(deps.chapters);
-        if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-        deps.openChapterTab(newChapter);
-        return;
-      }
-
       const sch = await deps.schema.loadSchema(resolvedType);
       const titleFieldPath: string = sch?.titleField || sch?.sections?.[0]?.fields?.[0]?.path || 'name';
       const initialData: Record<string, unknown> = {};
-      const nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
-      if (nameToSet === null) return;
-      if (nameToSet) {
-        const parts = titleFieldPath.split('.');
-        let current = initialData;
-        for (let i = 0; i < parts.length - 1; i++) {
-          current[parts[i]] = {};
-          current = current[parts[i]] as Record<string, unknown>;
-        }
-        current[parts[parts.length - 1]] = nameToSet;
+
+      const parts = titleFieldPath.split('.');
+      let current = initialData;
+      for (let i = 0; i < parts.length - 1; i++) {
+        current[parts[i]] = {};
+        current = current[parts[i]] as Record<string, unknown>;
       }
+      current[parts[parts.length - 1]] = nameToSet;
 
       const saveResult = await entityApi.saveEntity(deps.projectName.value, resolvedType, initialData, undefined, nameToSet);
       const newEntityId = saveResult.id;
       if (!newEntityId) {
         deps.addLog(`Entity -> Error: не удалось сохранить сущность`, 'error');
+        deps.addToast('Ошибка при создании сущности', 'error');
         return;
       }
 
@@ -158,22 +140,38 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
         return;
       }
 
-      deps.addLog(`Entity -> Created`, 'success');
+      deps.addLog(`Entity -> Created [${nameToSet}] (${resolvedType})`, 'success');
+      deps.addToast(`Сущность "${nameToSet}" создана`, 'success');
       await deps.loadEntityList(resolvedType);
       if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
 
       const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType: resolvedType };
       deps.openEntity(entityToOpen);
     } catch (e) {
+      console.error('[confirmCreateEntity] Error:', e);
       deps.addLog(`Entity -> Error: ${e}`, 'error');
+      deps.addToast(`Ошибка создания: ${e}`, 'error');
     } finally {
       isCreatingEntity.value = false;
     }
   };
 
+  const addNewEntity = async (entityType: string, preDefinedName?: string) => {
+    if (!preDefinedName) {
+      openCreateEntityModal(entityType);
+      return;
+    }
+    await confirmCreateEntity({ entityType, name: preDefinedName });
+  };
+
   return {
     deleteEntity,
     renameEntity,
-    addNewEntity
+    addNewEntity,
+    isCreateEntityModalOpen,
+    createEntityTargetType,
+    openCreateEntityModal,
+    closeCreateEntityModal,
+    confirmCreateEntity,
   };
 }

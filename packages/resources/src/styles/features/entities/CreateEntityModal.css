@@ -1,0 +1,151 @@
+/**
+ * @file CreateEntityModal.css
+ * @description Стили модального окна создания новой сущности
+ */
+
+.create-entity-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 20px;
+}
+
+.create-entity-dialog {
+  max-width: 540px;
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1001;
+}
+
+.create-entity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.create-entity-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-heading);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.create-entity-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.entity-types-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entity-types-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.entity-types-search {
+  flex: 1;
+  max-width: 220px;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.entity-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.entity-type-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--anim-speed) var(--anim-ease), background var(--anim-speed) var(--anim-ease);
+}
+
+.entity-type-card:hover {
+  background: var(--bg-active);
+  border-color: var(--border-hover);
+}
+
+.entity-type-card.active {
+  background: var(--bg-selected);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.entity-type-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.entity-type-name {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-types-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.create-entity-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.error-banner {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--text-error);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+

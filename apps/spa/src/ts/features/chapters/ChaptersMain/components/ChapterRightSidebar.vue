@@ -4,18 +4,8 @@
     class="chapter-right-panel flex-shrink-0"
     :style="{ '--panel-w': width + 'px' }"
   >
-    <!-- Том или Арка выбрана: показываем только план -->
-    <div v-if="activeTreeNode?.node && activeTreeNode?.type !== 'chapter'" class="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <PlanningPanel
-        :project="project"
-        :parent-type="activeTreeNode.type || 'volume'"
-        :parent-id="activeTreeNode.node?.id || ''"
-        :parent-title="activeTreeNode.node?.title || ''"
-      />
-    </div>
-
     <!-- Глава открыта: Единый Сценарный Хаб с табами -->
-    <div v-else-if="currentChapter" class="flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div v-if="currentChapter" class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <!-- 1. Верхний переключатель режимов (Segmented Control) -->
       <div class="sidebar-tab-bar flex-shrink-0 flex p-1.5 gap-1 border-b border-border bg-card">
         <button
@@ -79,14 +69,13 @@
     <!-- Ничего не выбрано -->
     <div v-else class="flex-1 flex-col flex-center text-muted text-sm p-4 text-center gap-2">
       <i class="fas fa-hand-pointer text-2xl icon-dim"></i>
-      Выберите главу, арку или том
+      Выберите главу для работы со сценами и планом
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import PromisesPanel from '../../PromisesPanel/PromisesPanel.vue';
-import PlanningPanel from '../../PlanningPanel/PlanningPanel.vue';
 import PlanningMatrixTab from './tabs/PlanningMatrixTab.vue';
 import type { ChapterRightSidebarProps, ChapterRightSidebarEmits } from './ChapterRightSidebar.model';
 import { useChapterRightSidebar } from './useChapterRightSidebar';

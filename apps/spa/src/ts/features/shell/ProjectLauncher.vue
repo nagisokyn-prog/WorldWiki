@@ -109,7 +109,7 @@ class="glass-btn outline" title="Удалить"
         </main>
 
         <!-- Модальное окно создания/редактирования проекта -->
-        <div id="createProjectModal" class="glass-modal-overlay" :class="{ visible: modalVisible }" :aria-hidden="!modalVisible">
+        <div v-if="modalVisible" id="createProjectModal" class="glass-modal-overlay visible">
             <div class="glass-modal large-modal">
                 <div class="modal-header">
                     <h2 class="glass-title">{{ modalTitle }}</h2>

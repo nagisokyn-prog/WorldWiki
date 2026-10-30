@@ -69,6 +69,24 @@ export const shireTolkienPreset: CalendarPreset = {
       { название: 'Летосчисление Шира (Л.Ш.)', год_начала: 1, год_конца: 9999 },
       { название: 'Четвёртая Эпоха (Эпоха Людей)', год_начала: 1, год_конца: 9999 }
     ],
+    anchor_events: [
+      { id: 'founding_shire', name: 'Основание Шира братьями Марчо и Бланко (1 г. Л.Ш. / 1601 г. Т.Э.)', year: 1, month: 0, day: 1, description: 'Переход через реку Барандуин и основание Хоббитона' },
+      { id: 'war_of_the_ring', name: 'Падение Саурона и уничтожение Кольца Всевластья (1419 г. Л.Ш.)', year: 1419, month: 2, day: 25, description: 'Победа в Войне Кольца' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'founding_shire',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'fantasy_magic',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'толкиновское',
     пользовательское_високосное_правило: { месяц: 5, день_смещения: 1, период: 4 },
     точка_отсчета: { эпоха: 1, год: 1419, месяц: 0, день: 1, день_недели: 0 },

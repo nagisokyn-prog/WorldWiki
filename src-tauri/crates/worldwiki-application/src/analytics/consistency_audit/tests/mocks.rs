@@ -30,12 +30,6 @@ impl AnalyticsRepositoryPort for MockAnalyticsRepo {
     ) -> Result<TimelineInspectorDto, DomainError> {
         Ok(self.timeline.clone())
     }
-    async fn get_graph_time_slice(&self, _proj: &str) -> Result<GraphTimeSliceDto, DomainError> {
-        Ok(GraphTimeSliceDto {
-            nodes: vec![],
-            edges: vec![],
-        })
-    }
     async fn get_character_journey(
         &self,
         _proj: &str,

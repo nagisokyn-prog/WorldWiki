@@ -101,7 +101,7 @@
 
         <!-- Подтверждение применения -->
         <div v-if="confirmApplyVisible" class="preset-confirm-overlay">
-          <div class="preset-confirm-dialog glass-panel">
+          <div class="preset-confirm-dialog">
             <h4>⚠️ Применить пресет «{{ selectedPreset?.name }}»?</h4>
             <p>
               Все текущие месяцы, дни недели, праздники и сезоны будут заменены настройками выбранного пресета.

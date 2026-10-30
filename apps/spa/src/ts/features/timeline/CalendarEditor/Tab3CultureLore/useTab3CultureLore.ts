@@ -1,4 +1,5 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useCalendarStore } from '@/stores/calendar.store';
 import type {
   Tab3CultureLoreProps,
   Tab3CultureLoreEmits,
@@ -12,6 +13,8 @@ export function useTab3CultureLore(
   props: Tab3CultureLoreProps,
   emit: Tab3CultureLoreEmits
 ) {
+  const calendarStore = useCalendarStore();
+
   const months = computed<CalendarMonth[]>(() => {
     return props.calendarData?.месяцы || [];
   });
@@ -50,11 +53,23 @@ export function useTab3CultureLore(
   });
 
   const phaseNames = ref<MoonPhaseNames>({
-    new: 'Темная Ночь / Ночь Воров',
-    waxing: 'Серп Охотника',
-    full: 'Око Саурона / Кровавая Луна',
-    waning: 'Ущерб / Тающий Лик',
+    new: 'Новолуние (Рождение Месяца)',
+    waxing: 'Молодик (Растущий Серп)',
+    full: 'Полнолуние (Круглая Луна)',
+    waning: 'Ущерб (Стареющий Месяц)',
   });
+
+  function syncMoonPhaseNames() {
+    const fromMoon = props.calendarData?.moons?.[0]?.phase_names;
+    const fromCal = (props.calendarData as Record<string, unknown>)?.moon_phase_names as MoonPhaseNames | undefined;
+    const names = fromMoon || fromCal;
+    if (names) {
+      phaseNames.value = { ...names };
+    }
+  }
+
+  syncMoonPhaseNames();
+  watch(() => props.calendarData, syncMoonPhaseNames, { deep: true });
 
   const ageRule = computed<CharacterAgeRuleDto>(() => {
     const raw = props.calendarData?.character_age_rules as unknown as CharacterAgeRuleDto | undefined;
@@ -72,18 +87,37 @@ export function useTab3CultureLore(
     };
   });
 
-  const regionsList = ref<{ id: string; name: string }[]>([
-    { id: 'capital', name: '🏛️ Столица Империи' },
-    { id: 'south_harbor', name: '⚓ Южная Гавань' },
-    { id: 'north_lands', name: '🌲 Северные Земли' },
-    { id: 'archipelago', name: '🏝️ Дальний Архипелаг' },
-    { id: 'desert', name: '🏜️ Пустыня Забвения' },
-  ]);
+  const regionsList = computed<{ id: string; name: string }[]>(() => {
+    const projId = (props.calendarData as Record<string, unknown>)?.project_id as string | undefined;
+    const planets = calendarStore.getPlanets(projId || 'default');
+    const activePlanet = planets[0];
+    if (activePlanet && Array.isArray(activePlanet.regions) && activePlanet.regions.length > 0) {
+      return activePlanet.regions.map((r, i) => ({
+        id: (r as { id?: string }).id || `reg_${i}`,
+        name: r.name || `Регион ${i + 1}`
+      }));
+    }
+    return [
+      { id: 'capital', name: '🏛️ Центральный округ' },
+      { id: 'south_harbor', name: '⚓ Южный порт' },
+      { id: 'north_lands', name: '🌲 Северные пределы' },
+    ];
+  });
 
   const selectedRegions = ref<string[]>(['capital', 'south_harbor', 'north_lands']);
 
   const calendarTimezone = computed<string>(() => {
-    return (props.calendarData?.calendar_timezone as string) || 'UTC+0';
+    const rawTz = (props.calendarData as Record<string, unknown> | null)?.calendar_timezone;
+    if (typeof rawTz === 'string' && rawTz.length > 0) {
+      return rawTz;
+    }
+    const projId = (props.calendarData as Record<string, unknown> | null)?.project_id as string | undefined;
+    const planets = calendarStore.getPlanets(projId || 'default');
+    const activePlanet = planets[0];
+    if (activePlanet?.timezones && activePlanet.timezones.length > 0) {
+      return activePlanet.timezones[0].code || 'UTC+3';
+    }
+    return 'UTC+3';
   });
 
   function updateSeasons(list: CultureSeasonDto[]) {

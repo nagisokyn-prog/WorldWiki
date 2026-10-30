@@ -43,6 +43,24 @@ export const chinaPreset: CalendarPreset = {
       { название: 'Летоисчисление Жёлтого Императора (Хуанди)', год_начала: 1, год_конца: 9999 },
       { название: 'Эра Республики', год_начала: 1, год_конца: 999 }
     ],
+    anchor_events: [
+      { id: 'huangdi_era', name: 'Восшествие Жёлтого Императора Хуан-ди (2698 г. до н.э.)', year: -2698, month: 0, day: 1, description: 'Традиционное начало 60-летнего циклического календаря' },
+      { id: 'prc_founding', name: 'Провозглашение КНР (1949 г.)', year: 1949, month: 9, day: 1, description: 'Основание Китайской Народной Республики' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'huangdi_era',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'none',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'лунно-солнечный',
     пользовательское_високосное_правило: { месяц: 4, день_смещения: 30, период: 3 },
     точка_отсчета: { эпоха: 0, год: 4724, месяц: 0, день: 1, день_недели: 1 },

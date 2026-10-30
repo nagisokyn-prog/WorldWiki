@@ -4,7 +4,6 @@ pub mod character_journey;
 pub mod item_tracker;
 pub mod matrix;
 pub mod multi_journey;
-pub mod time_slice;
 pub mod timeline_inspector;
 
 use async_trait::async_trait;
@@ -12,7 +11,7 @@ use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::analytics::{
-    CharacterJourneyDto, CrossRefMatrixDto, GraphTimeSliceDto, ItemJourneyDto, ItemTrackerDto,
+    CharacterJourneyDto, CrossRefMatrixDto, ItemJourneyDto, ItemTrackerDto,
     JourneyFilterMode, MultiJourneyResponseDto, TimelineInspectorDto,
 };
 use worldwiki_domain::errors::DomainError;
@@ -42,13 +41,6 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         project_id: &str,
     ) -> Result<TimelineInspectorDto, DomainError> {
         timeline_inspector::get_timeline_inspector_data_impl(&self.db, project_id).await
-    }
-
-    async fn get_graph_time_slice(
-        &self,
-        project_id: &str,
-    ) -> Result<GraphTimeSliceDto, DomainError> {
-        time_slice::get_graph_time_slice_impl(&self.db, project_id).await
     }
 
     async fn get_character_journey(

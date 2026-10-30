@@ -168,7 +168,7 @@ pub fn run() {
             worldwiki_tauri::commands::get_cross_reference_matrix,
             worldwiki_tauri::commands::audit_manuscript_consistency,
             worldwiki_tauri::commands::get_timeline_inspector_data,
-            worldwiki_tauri::commands::get_graph_time_slice,
+
             worldwiki_tauri::commands::get_character_journey,
             worldwiki_tauri::commands::get_multi_character_journey,
             worldwiki_tauri::commands::get_item_tracker,

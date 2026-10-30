@@ -288,6 +288,11 @@ export const useShellStore = defineStore('shell', () => {
     deleteEntity: entityOps.deleteEntity,
     renameEntity: entityOps.renameEntity,
     addNewEntity: entityOps.addNewEntity,
+    isCreateEntityModalOpen: entityOps.isCreateEntityModalOpen,
+    createEntityTargetType: entityOps.createEntityTargetType,
+    openCreateEntityModal: entityOps.openCreateEntityModal,
+    closeCreateEntityModal: entityOps.closeCreateEntityModal,
+    confirmCreateEntity: entityOps.confirmCreateEntity,
     toggleEntityHistory: entityOps.toggleEntityHistory,
     saveAll: entityOps.saveAll,
 

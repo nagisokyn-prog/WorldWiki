@@ -43,6 +43,26 @@ export const russiaJulianPreset: CalendarPreset = {
       { название: 'От Рождества Христова (Р.Х.)', год_начала: 1, год_конца: 9999 },
       { название: 'От Сотворения Мира (С.М.)', год_начала: 1, год_конца: 99999 }
     ],
+    anchor_events: [
+      { id: 'creation_of_world', name: 'Сотворение Мира (Византийская эра, 5508 г. до н.э.)', year: -5508, month: 8, day: 1, description: 'Константинопольская эра летоисчисления от сотворения Адама' },
+      { id: 'christ_birth_julian', name: 'Рождество Христово (1 г. н.э.)', year: 1, month: 0, day: 7, description: 'Начало юлианской эры от Рождества Христова' },
+      { id: 'peter_great_reform', name: 'Указ Петра I о праздновании Нового года 1 января (1700 г.)', year: 1700, month: 0, day: 1, description: 'Перенос новолетия с 1 сентября на 1 января' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'creation_of_world',
+      offset_direction: 'after',
+      offset_years: 0,
+      local_anchor_date: { era_index: 1, year: 5508, month: 8, day: 1 }
+    },
+    reform_key: 'none',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'юлианское',
     пользовательское_високосное_правило: { месяц: 1, день_смещения: 1, период: 4 },
     точка_отсчета: { эпоха: 0, год: 1917, месяц: 0, день: 1, день_недели: 6 },

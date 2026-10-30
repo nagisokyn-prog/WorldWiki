@@ -71,6 +71,25 @@ export const harptosFaerunPreset: CalendarPreset = {
       { название: 'Летосчисление Долин (Л.Д.)', год_начала: 1, год_конца: 9999 },
       { название: 'Эра Долин (до Л.Д.)', год_начала: 1, год_конца: 9999, обратный_отсчет: true }
     ],
+    anchor_events: [
+      { id: 'standing_stone', name: 'Установка Стоячего Камня / Договор Долин (0 DR)', year: 0, month: 0, day: 1, description: 'Договор людей с эльфами Кормантора о заселении Долин' },
+      { id: 'time_of_troubles', name: 'Смутное Время / Кризис Аватаров (1358 DR)', year: 1358, month: 6, day: 15, description: 'Падение богов в смертных телах на Торил' },
+      { id: 'spellplague', name: 'Магическая Чума (1385 DR)', year: 1385, month: 3, day: 29, description: 'Гибель Мистры и разрушение Плетения магии' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'standing_stone',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'fantasy_magic',
+    dst_preset: 'fantasy_harvest',
+    dst_policy: {
+      is_enabled: true,
+      policy: 'fixed',
+      shiftMinutes: 120
+    },
     правило_високосного_года: 'харптосское',
     пользовательское_високосное_правило: { месяц: 6, день_смещения: 1, период: 4 },
     точка_отсчета: { эпоха: 0, год: 1492, месяц: 0, день: 1, день_недели: 0 },

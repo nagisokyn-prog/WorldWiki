@@ -10,13 +10,13 @@ export interface CalendarLocalState {
   timestamp?: number;
 }
 
-export function getCalendarStateKey(projectId?: string, calendarId?: string): string {
+export function getCalendarStateKey(projectId?: string | null, calendarId?: string | null): string {
   const proj = (projectId || 'default').replace(/^projects:/, '');
   const calId = calendarId || 'cal_default';
   return `calendar-state-${proj}-${calId}`;
 }
 
-export function getCalendarScrollKey(projectId?: string, calendarId?: string): string {
+export function getCalendarScrollKey(projectId?: string | null, calendarId?: string | null): string {
   const proj = (projectId || 'default').replace(/^projects:/, '');
   const calId = calendarId || 'cal_default';
   return `calendar-scroll-${proj}-${calId}`;

@@ -5,9 +5,9 @@ export const russiaModernPreset: CalendarPreset = {
   name: 'Россия (Григорианский стиль)',
   category: 'real_world',
   categoryLabel: 'Реальный мир',
-  description: 'Современный государственный календарь Российской Федерации: 12 месяцев, 7-дневная неделя, официальные государственные праздники, многодневные каникулы, астрономические точки солнцестояний и равноденствий.',
+  description: 'Современный государственный календарь Российской Федерации: 12 месяцев, 7-дневная неделя, официальные государственные праздники, многодневные каникулы, астрономические точки солнцестояний и равноденствий, историческая реформа 1918 года (выброшено 13 дней) и отмена сезонного перевода часов.',
   icon: '🇷🇺',
-  authorOrLore: 'Григорианский стиль (Россия, с 1918 года)',
+  authorOrLore: 'Григорианский стиль (Россия, декрет Совнаркома от 1918 года)',
   totalDays: 365,
   monthsCount: 12,
   weekDaysCount: 7,
@@ -43,6 +43,32 @@ export const russiaModernPreset: CalendarPreset = {
       { название: 'Наша эра (н.э.)', год_начала: 1, год_конца: 9999 },
       { название: 'До нашей эры (до н.э.)', год_начала: 1, год_конца: 9999, обратный_отсчет: true }
     ],
+    anchor_events: [
+      { id: 'christ_birth', name: 'Рождество Христово (Точка отсчёта нашей эры)', year: 1, month: 0, day: 7, description: 'Исторический ориентир летоисчисления христианского мира' },
+      { id: 'russia_soviet_reform', name: 'Декрет СНК РСФСР о реформе календаря (1918 г.)', year: 1918, month: 0, day: 31, description: 'Переход Советской России с юлианского на григорианский стиль: после 31 января сразу наступило 14 февраля' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'christ_birth',
+      offset_direction: 'after',
+      offset_years: 0,
+      local_anchor_date: { era_index: 0, year: 1, month: 0, day: 7 }
+    },
+    reform_key: 'russia_1918',
+    reforms: {
+      mode: 'gap',
+      oldDay: 31,
+      oldMonth: 1,
+      oldYear: 1918,
+      droppedDays: 13
+    },
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'григорианское',
     пользовательское_високосное_правило: { месяц: 1, день_смещения: 1 },
     точка_отсчета: { эпоха: 0, год: 2026, месяц: 0, день: 1, день_недели: 3 },
@@ -79,6 +105,12 @@ export const russiaModernPreset: CalendarPreset = {
         }
       }
     ],
+    moon_phase_names: {
+      new: 'Новолуние (Рождение Месяца)',
+      waxing: 'Молодик (Растущий Серп)',
+      full: 'Полнолуние (Круглая Луна)',
+      waning: 'Ущерб (Стареющий Месяц)'
+    },
     character_age_rules: {
       age_at_birth: 0,
       step_on_new_year: false,

@@ -12,7 +12,7 @@ export function useCreateChapterModal(
 ) {
   const title = ref('');
   const selectedVolumeId = ref<string | null>(null);
-  const volumes = ref<VolumeOption[]>([{ id: null, title: 'Без тома (корень рукописи)' }]);
+  const volumes = ref<VolumeOption[]>([]);
   const isLoading = ref(false);
   const errorMessage = ref<string | null>(null);
 
@@ -44,9 +44,7 @@ export function useCreateChapterModal(
 
     try {
       const hierarchy = await api.getChapterHierarchy(props.projectName || 'default');
-      const loadedVolumes: VolumeOption[] = [
-        { id: null, title: 'Без тома (корень рукописи)' },
-      ];
+      const loadedVolumes: VolumeOption[] = [];
 
       if (Array.isArray(hierarchy.volumes)) {
         for (const v of hierarchy.volumes) {
@@ -58,10 +56,16 @@ export function useCreateChapterModal(
       }
       volumes.value = loadedVolumes;
 
-      // Устанавливаем выбранный том
+      // Устанавливаем выбранный том (обязательно существующий том)
       const initialVol = props.initialVolumeId ? String(props.initialVolumeId) : null;
-      const matched = loadedVolumes.some((v) => v.id === initialVol);
-      selectedVolumeId.value = matched ? initialVol : null;
+      const matched = loadedVolumes.find((v) => v.id === initialVol);
+      if (matched && matched.id) {
+        selectedVolumeId.value = matched.id;
+      } else if (loadedVolumes.length > 0 && loadedVolumes[0].id) {
+        selectedVolumeId.value = loadedVolumes[0].id;
+      } else {
+        selectedVolumeId.value = null;
+      }
 
       // Рассчитываем название главы по умолчанию, если не передано явно
       if (props.initialTitle && props.initialTitle.trim().length > 0) {
@@ -115,6 +119,10 @@ export function useCreateChapterModal(
     const trimmed = title.value.trim();
     if (!trimmed) {
       errorMessage.value = 'Название главы не может быть пустым';
+      return;
+    }
+    if (volumes.value.length > 0 && !selectedVolumeId.value) {
+      errorMessage.value = 'Необходимо выбрать том для создания главы';
       return;
     }
     errorMessage.value = null;

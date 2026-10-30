@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type {
   Tab2ErasSyncProps,
   Tab2ErasSyncEmits,
@@ -90,6 +90,26 @@ export function useTab2ErasSync(
     const eraName = selectedMasterEraIndex.value === -1 ? 'начала Календаря Мира' : masterEras.value[selectedMasterEraIndex.value]?.название || 'эпохи';
     return `Год 1 соответствует ${anchorDay.value} ${mName} от ${eraName} (смещение ${offsetYears.value} лет).`;
   });
+
+  function syncFromCalendarData() {
+    const anchor = props.calendarData?.sync_anchor;
+    if (anchor) {
+      if (anchor.target_event_id) selectedEventId.value = anchor.target_event_id;
+      if (anchor.offset_direction) offsetDirection.value = anchor.offset_direction as SyncDirection;
+      if (typeof anchor.offset_years === 'number') offsetYears.value = anchor.offset_years;
+      if (anchor.target_calendar_id) targetCalendarId.value = anchor.target_calendar_id;
+      if (typeof anchor.target_calendar_year === 'number') targetCalendarYear.value = anchor.target_calendar_year;
+      if (anchor.local_anchor_date) {
+        if (typeof anchor.local_anchor_date.month === 'number') anchorMonth.value = anchor.local_anchor_date.month;
+        if (typeof anchor.local_anchor_date.day === 'number') anchorDay.value = anchor.local_anchor_date.day;
+      }
+    } else if (anchorEvents.value.length > 0) {
+      selectedEventId.value = anchorEvents.value[0].id || 'ev_default_1';
+    }
+  }
+
+  syncFromCalendarData();
+  watch(() => props.calendarData, syncFromCalendarData, { deep: true });
 
   function updateSyncAnchorPatch(patch: Partial<SyncAnchor>) {
     const current = syncAnchor.value || {

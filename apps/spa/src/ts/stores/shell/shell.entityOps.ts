@@ -124,6 +124,11 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
     deleteEntity: crud.deleteEntity,
     renameEntity: crud.renameEntity,
     addNewEntity: crud.addNewEntity,
+    isCreateEntityModalOpen: crud.isCreateEntityModalOpen,
+    createEntityTargetType: crud.createEntityTargetType,
+    openCreateEntityModal: crud.openCreateEntityModal,
+    closeCreateEntityModal: crud.closeCreateEntityModal,
+    confirmCreateEntity: crud.confirmCreateEntity,
     setIsLiveSyncing
   };
 }

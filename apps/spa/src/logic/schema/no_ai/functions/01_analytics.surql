@@ -148,46 +148,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
     };
 };
 
--- 3. ВЫБОРКА ВРЕМЕННОГО СРЕЗА ГРАФА СВЯЗЕЙ («ПАУТИНА»)
-DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
-    LET $p_rec = fn::normalize_project_id($proj);
-
-    LET $nodes = (
-        SELECT id, name, schema_id.type_key AS entity_type, (->tagged_with.out.name) AS tags, attributes 
-        FROM entities 
-        WHERE project_id = $p_rec
-        LIMIT 2000
-    );
-
-    LET $edges = (
-        SELECT 
-            id,
-            in AS source_id,
-            out AS target_id,
-            rel_type,
-            description,
-            strength,
-            is_auto_extend,
-            start_chapter,
-            start_chapter.sort_order AS start_order,
-            end_chapter,
-            IF attributes.start_m_abs != NONE {
-                attributes.start_m_abs
-            } ELSE {
-                NONE
-            } AS inferred_start_m_abs
-        FROM entity_rel 
-        WHERE project_id = $p_rec
-        LIMIT 5000
-    );
-
-    RETURN {
-        nodes: $nodes,
-        edges: $edges
-    };
-};
-
--- 4. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
+-- 3. СБОР ПОЛНОГО ПУТИ ПЕРСОНАЖА (CHARACTER JOURNEY & ARC NAVIGATOR)
 DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $entity: record<entities>) {
     LET $info = (SELECT id, name, schema_id.type_key AS entity_type, attributes FROM ONLY $entity LIMIT 1);
     LET $ent_clean = type::string($entity).replace('entities:', '');

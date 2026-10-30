@@ -43,6 +43,24 @@ export const koreaPreset: CalendarPreset = {
       { название: 'Эра Тангуна (Данги)', год_начала: 1, год_конца: 9999 },
       { название: 'Эра Республики Корея', год_начала: 1, год_конца: 999 }
     ],
+    anchor_events: [
+      { id: 'dangun_wanggeom', name: 'Основание Древнего Чосона Тангуном (2333 г. до н.э., Данги)', year: -2333, month: 9, day: 3, description: 'Легендарное основание корейского государства Тангуном Вангомом' },
+      { id: 'hangul_day', name: 'Провозглашение корейского алфавита Хангыль королём Седжоном (1446 г.)', year: 1446, month: 9, day: 9, description: 'Издание документа Хунмин чоным' }
+    ],
+    sync_anchor: {
+      linked_to_master: true,
+      sync_type: 'event',
+      target_event_id: 'dangun_wanggeom',
+      offset_direction: 'after',
+      offset_years: 0
+    },
+    reform_key: 'none',
+    dst_preset: 'none',
+    dst_policy: {
+      is_enabled: false,
+      policy: 'none',
+      shiftMinutes: 0
+    },
     правило_високосного_года: 'лунно-солнечный',
     пользовательское_високосное_правило: { месяц: 4, день_смещения: 29, период: 3 },
     точка_отсчета: { эпоха: 0, год: 4359, месяц: 0, день: 1, день_недели: 1 },

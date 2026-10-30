@@ -5,7 +5,7 @@ use surrealdb::engine::local::Db;
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::analytics::{
     CharacterJourneyService, ConsistencyAuditWorkflow, CrossReferenceMatrixService,
-    GraphWebSliceService, ItemTrackerService, ManuscriptAnalyticsService, TimelineInspectorService,
+    ItemTrackerService, ManuscriptAnalyticsService, TimelineInspectorService,
 };
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::common::JobManager;
@@ -47,7 +47,6 @@ struct CoreDomainServices {
     consistency_workflow: Arc<ConsistencyAuditWorkflow>,
     cross_ref_service: Arc<CrossReferenceMatrixService>,
     timeline_inspector_service: Arc<TimelineInspectorService>,
-    graph_web_slice_service: Arc<GraphWebSliceService>,
     character_journey_service: Arc<CharacterJourneyService>,
     item_tracker_service: Arc<ItemTrackerService>,
     manuscript_stats_service: Arc<ManuscriptAnalyticsService>,
@@ -90,7 +89,6 @@ fn build_core_domain(
     )));
     let timeline_inspector_service =
         Arc::new(TimelineInspectorService::new(Arc::clone(&repos.analytics)));
-    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(Arc::clone(&repos.analytics)));
     let character_journey_service =
         Arc::new(CharacterJourneyService::new(Arc::clone(&repos.analytics)));
     let item_tracker_service = Arc::new(ItemTrackerService::new(Arc::clone(&repos.analytics)));
@@ -111,7 +109,6 @@ fn build_core_domain(
         consistency_workflow,
         cross_ref_service,
         timeline_inspector_service,
-        graph_web_slice_service,
         character_journey_service,
         item_tracker_service,
         manuscript_stats_service,
@@ -233,7 +230,6 @@ pub fn build_surreal_app_services(
         consistency_workflow: core.consistency_workflow,
         cross_ref_service: core.cross_ref_service,
         timeline_inspector_service: core.timeline_inspector_service,
-        graph_web_slice_service: core.graph_web_slice_service,
         character_journey_service: core.character_journey_service,
         item_tracker_service: core.item_tracker_service,
         manuscript_stats_service: core.manuscript_stats_service,

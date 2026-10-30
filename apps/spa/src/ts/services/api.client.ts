@@ -565,10 +565,6 @@ export async function getTimelineInspectorData(projectId: string, readerChapterO
     return await invoke('get_timeline_inspector_data', { projectId, readerChapterOrderLimit });
 }
 
-export async function getGraphTimeSlice(projectId: string, readerChapterOrder: number | null, mAbsLimit: number | null): Promise<unknown> {
-    return await invoke('get_graph_time_slice', { projectId, readerChapterOrder, mAbsLimit });
-}
-
 export async function getCharacterJourney(projectId: string, entityId: string): Promise<unknown> {
     return await invoke('get_character_journey', { projectId, entityId });
 }

@@ -23,7 +23,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 
 function isTest(file) {
   const norm = file.replace(/\\/g, '/');
-  return norm.includes('/tests/') || norm.includes('/__tests__/') || 
+  return norm.includes('/tests/') || norm.includes('/__tests__/') || norm.includes('/tests/') ||
          norm.endsWith('.spec.ts') || norm.endsWith('.test.ts') || 
          norm.endsWith('_test.rs') || norm.endsWith('.spec.js');
 }

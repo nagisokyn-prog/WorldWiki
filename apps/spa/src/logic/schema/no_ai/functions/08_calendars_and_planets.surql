@@ -27,30 +27,38 @@ DEFINE FUNCTION OVERWRITE fn::get_planet_calendar_bundle($proj: any) {
 
 -- 2. СОХРАНЕНИЕ / ИБПЕРТ ПЛАНЕТЫ (С ВАЛИДАЦИЕЙ ФИЗИЧЕСКИХ ПАРАМЕТРОВ)
 DEFINE FUNCTION OVERWRITE fn::save_planet(
-    $id: option<record<planets> | null>,
-    $proj: record<projects> | string,
+    $id: any,
+    $proj: any,
     $name: string,
-    $ticks_per_day: int,
-    $axial_tilt_mdeg: option<int>,
-    $orbit_days_num: option<int>,
-    $orbit_days_den: option<int>,
-    $moons: option<array<object>>
+    $ticks_per_day: any,
+    $axial_tilt_mdeg: any,
+    $orbit_days_num: any,
+    $orbit_days_den: any,
+    $moons: any
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
-    IF $ticks_per_day <= 0 {
-        THROW "Ticks per day must be strictly positive";
-    };
+    LET $clean_ticks = IF $ticks_per_day != NONE AND $ticks_per_day != NULL AND type::int($ticks_per_day) > 0 { type::int($ticks_per_day) } ELSE { 86400 };
     
-    IF $id != NONE AND $id != NULL {
+    LET $clean_moons = IF $moons != NONE AND $moons != NULL { $moons } ELSE { [] };
+
+    LET $str_pl = IF $id != NONE AND $id != NULL {
+        string::replace(string::replace(string::replace(string::replace(type::string($id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '')
+    } ELSE {
+        NONE
+    };
+    LET $has_id = $str_pl != NONE AND $str_pl != '' AND $str_pl != 'NONE' AND $str_pl != 'null';
+    LET $pl_rec = IF $has_id { type::record('planets', $str_pl) } ELSE { NONE };
+    
+    IF $has_id {
         LET $res = (
-            UPSERT $id SET
+            UPSERT $pl_rec SET
                 project_id = $p_rec,
                 name = $name,
-                ticks_per_day = $ticks_per_day,
+                ticks_per_day = $clean_ticks,
                 axial_tilt_mdeg = $axial_tilt_mdeg,
                 orbit_days_num = $orbit_days_num,
                 orbit_days_den = $orbit_days_den,
-                moons = IF $moons != NONE { $moons } ELSE { [] },
+                moons = $clean_moons,
                 updated_at = time::now()
         );
         RETURN $res[0];
@@ -59,11 +67,11 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
             CREATE planets SET
                 project_id = $p_rec,
                 name = $name,
-                ticks_per_day = $ticks_per_day,
+                ticks_per_day = $clean_ticks,
                 axial_tilt_mdeg = $axial_tilt_mdeg,
                 orbit_days_num = $orbit_days_num,
                 orbit_days_den = $orbit_days_den,
-                moons = IF $moons != NONE { $moons } ELSE { [] },
+                moons = $clean_moons,
                 created_at = time::now(),
                 updated_at = time::now()
         );
@@ -172,7 +180,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_calendar($cal_id: any) {
 -- 7. ПОЛУЧЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_timeline_event($id: any) {
     LET $rec = IF string::starts_with(type::string($id), 'timeline_events:') { type::record($id) } ELSE { type::record('timeline_events', $id) };
-    LET $res = (SELECT * FROM $rec LIMIT 1);
+    LET $res = (SELECT id, project_id, calendar_id, title, description, m_abs, duration_minutes, importance, color, location_id, created_at, updated_at FROM $rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -235,7 +243,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_timeline_event($id: any) {
 -- 10. СПИСОК СОБЫТИЙ ТАЙМЛАЙНА ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::list_timeline_events_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT * FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC);
+    RETURN (SELECT id, project_id, calendar_id, title, description, m_abs, duration_minutes, importance, color, location_id, created_at, updated_at FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC LIMIT 1000);
 };
 
 -- 11. ПРИВЯЗКА РАСКРЫТИЯ СОБЫТИЯ В ГЛАВЕ (REVEAL)

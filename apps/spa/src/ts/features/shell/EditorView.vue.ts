@@ -153,22 +153,10 @@ export default defineComponent({
     const addLog = shell.addLog;
     const handleUpdateData = shell.handleUpdateData;
     const handleUpdatePlanetName = (tabId: string, newName: string) => {
-      for (const group of shell.editorGroups) {
-        for (const tab of group.tabs) {
-          if (tab.id === tabId) {
-            tab.title = newName;
-          }
-        }
-      }
+      shell.updateTabTitle(tabId, newName);
     };
     const handleUpdateCalendarName = (tabId: string, newName: string) => {
-      for (const group of shell.editorGroups) {
-        for (const tab of group.tabs) {
-          if (tab.id === tabId) {
-            tab.title = newName;
-          }
-        }
-      }
+      shell.updateTabTitle(tabId, newName);
     };
     const handleUpdatePlanet = (tabId: string, planetData: PlanetDto | Record<string, unknown>) => {
       handleUpdateData(tabId, planetData as unknown as Record<string, unknown>);

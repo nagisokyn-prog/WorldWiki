@@ -47,7 +47,8 @@ export function useShellNavigation(deps: ShellNavigationDeps) {
       deps.addLog(`Editor -> Error: попытка открыть сущность без ID (${entityType})`, 'error');
       return;
     }
-    const rawId = String(entity.id);
+    const cleanId = String(entity.id).replace(new RegExp(`^(entity:)?(${entityType}s?):`), '');
+    const rawId = cleanId;
     const tabId = `entity:${entityType}:${rawId}`;
 
     if (entityType === 'planet' || entityType === 'calendar') {

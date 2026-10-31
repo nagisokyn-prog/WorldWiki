@@ -69,7 +69,7 @@
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
           </div>
-          <div class="ctx-item" @click="handleCreate({ sectionId: 'calendars', parentId: node.id, name: 'Новый календарь' }); close()">
+          <div class="ctx-item" @click="handleCreate({ sectionId: 'calendars', parentId: node.id }); close()">
             <span class="ctx-label"><i class="fas fa-calendar-plus ctx-icon"></i> Добавить календарь</span>
           </div>
           <div class="ctx-item" @click="handleOpen(node); close()">

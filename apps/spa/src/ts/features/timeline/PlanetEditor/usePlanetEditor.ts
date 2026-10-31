@@ -200,7 +200,7 @@ export function usePlanetEditor(
         solstices: planet.value.solstices,
       };
 
-      calendarStore.savePlanet(props.projectId, toPlanetEntity(planet.value, props.projectId));
+      calendarStore.savePlanetToStorage(props.projectId, toPlanetEntity(planet.value, props.projectId));
       await calendarApi.savePlanetDirect(
         props.projectId,
         planet.value.id || null,
@@ -231,7 +231,7 @@ export function usePlanetEditor(
     }
 
     try {
-      calendarStore.deletePlanet(props.projectId, String(planet.value.id || props.planetId));
+      calendarStore.deletePlanetFromStorage(props.projectId, String(planet.value.id || props.planetId));
       await calendarApi.deletePlanetDirect(props.projectId, planet.value.id);
       document.dispatchEvent(new CustomEvent('ww:planet-deleted', {
         detail: { id: props.planetId || planet.value.id },

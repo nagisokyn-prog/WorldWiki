@@ -81,8 +81,15 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.emit('open-entity', { ...newPlanet, entityType: 'planet', id: newId, name: newName, title: newName });
             } else {
                 // Создание календаря на планете
-                const planetId = parentId.replace(/^planet:/, '');
-                const calName = name?.trim() || 'Новый календарь';
+                const planetId = parentId.replace(/^(entity:)?planets?:/, '');
+                let calName = name?.trim();
+                if (!calName || calName === 'Новый календарь') {
+                    const promptTitle = 'Введите название нового календаря:';
+                    const promptFn = typeof window !== 'undefined' && window.prompt ? window.prompt.bind(window) : null;
+                    const res = promptFn ? promptFn(promptTitle, 'Григорианский') : null;
+                    if (!res || !res.trim()) return;
+                    calName = res.trim();
+                }
                 const defaultCalData = CalendarMath.getDefaultCalendar();
                 defaultCalData.planet_id = planetId;
                 defaultCalData.название = calName;
@@ -100,13 +107,14 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 }
                 await options.load();
                 if (options.explorerTreeRef.value) {
-                    options.explorerTreeRef.value.expandNode(`planet:${planetId}`);
+                    options.explorerTreeRef.value.expandNode(`entity:planet:${planetId}`);
                 }
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 const cals = await calendarStore.getCalendars(options.project);
                 const created = cals.find(c => c.name === calName) || cals[cals.length - 1];
                 if (created) {
-                    options.emit('open-entity', { ...created, entityType: 'calendar', id: created.id, name: created.name, title: created.name });
+                    const cleanCalId = String(created.id ?? '').replace(/^(entity:)?calendars?:/, '');
+                    options.emit('open-entity', { ...created, entityType: 'calendar', id: cleanCalId, name: created.name, title: created.name });
                 }
             }
         } else if (name) {
@@ -123,7 +131,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
             }
         } else if (sectionId === 'calendars') {
             if (parentId) {
-                await handleCreate({ sectionId: 'calendars', parentId, name: 'Новый календарь' });
+                await handleCreate({ sectionId: 'calendars', parentId });
             } else {
                 options.explorerTreeRef.value?.startCreate(sectionId);
             }

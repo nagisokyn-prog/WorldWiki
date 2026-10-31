@@ -129,18 +129,28 @@ pub async fn save_planet_inner(
         "RETURN fn::save_planet({}, type::record('projects', $p), $name, $ticks, $tilt, $num, $den, $moons);",
         id_clause
     );
-    let mut res = db
-        .query(&query_str)
-        .bind(("p", clean_pid))
-        .bind(("name", params.name))
-        .bind(("ticks", params.ticks_per_day))
-        .bind(("tilt", params.axial_tilt_mdeg))
-        .bind(("num", params.orbit_days_num))
-        .bind(("den", params.orbit_days_den))
-        .bind(("moons", params.moons))
-        .await?;
-    let val: Option<Value> = res.take(0)?;
-    Ok(val.unwrap_or(json!({ "success": true })))
+
+    crate::with_occ_retry!(4, 50, async {
+        let mut res = db
+            .query(&query_str)
+            .bind(("p", clean_pid.clone()))
+            .bind(("name", params.name.clone()))
+            .bind(("ticks", params.ticks_per_day))
+            .bind(("tilt", params.axial_tilt_mdeg))
+            .bind(("num", params.orbit_days_num))
+            .bind(("den", params.orbit_days_den))
+            .bind(("moons", params.moons.clone()))
+            .await?;
+
+        let errs = res.take_errors();
+        if !errs.is_empty() {
+            let err_msg = errs.into_values().next().map(|e| e.to_string()).unwrap_or_default();
+            return Err(ChapterError::Transaction(err_msg));
+        }
+
+        let val: Option<Value> = res.take(0)?;
+        Ok(val.unwrap_or(json!({ "success": true })))
+    })
 }
 
 /// Сохранить календарь через хранимую функцию SurrealDB
@@ -169,16 +179,26 @@ pub async fn save_calendar_inner(
         "RETURN fn::save_calendar({}, type::record('projects', $p), type::record('planets', $plid), $name, $is_master, $data);",
         id_clause
     );
-    let mut res = db
-        .query(&query_str)
-        .bind(("p", clean_pid))
-        .bind(("plid", clean_plid))
-        .bind(("name", name.to_string()))
-        .bind(("is_master", is_master))
-        .bind(("data", data))
-        .await?;
-    let val: Option<Value> = res.take(0)?;
-    Ok(val.unwrap_or(json!({ "success": true })))
+
+    crate::with_occ_retry!(4, 50, async {
+        let mut res = db
+            .query(&query_str)
+            .bind(("p", clean_pid.clone()))
+            .bind(("plid", clean_plid.clone()))
+            .bind(("name", name.to_string()))
+            .bind(("is_master", is_master))
+            .bind(("data", data.clone()))
+            .await?;
+
+        let errs = res.take_errors();
+        if !errs.is_empty() {
+            let err_msg = errs.into_values().next().map(|e| e.to_string()).unwrap_or_default();
+            return Err(ChapterError::Transaction(err_msg));
+        }
+
+        let val: Option<Value> = res.take(0)?;
+        Ok(val.unwrap_or(json!({ "success": true })))
+    })
 }
 
 /// Назначить мастер-календарь проекта через хранимую функцию SurrealDB

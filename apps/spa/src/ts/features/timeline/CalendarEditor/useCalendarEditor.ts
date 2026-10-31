@@ -90,7 +90,8 @@ export function useCalendarEditor(
     error.value = null;
     try {
       const list = await calendarStore.getCalendars(props.projectId);
-      const found = list.find((c) => c.id === props.calendarId) || list[0] || null;
+      const cleanTarget = String(props.calendarId || '').replace(/^calendars?:/, '');
+      const found = list.find((c) => String(c.id || '').replace(/^calendars?:/, '') === cleanTarget) || null;
       masterCalendarRecord.value = list.find((c) => c.is_master) || null;
 
       if (found) {

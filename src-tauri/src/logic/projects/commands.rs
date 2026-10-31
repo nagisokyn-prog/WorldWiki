@@ -2,53 +2,35 @@
 //! All business logic lives in mod.rs (*_inner).
 
 use super::*;
+use crate::forward_ipc;
 use serde_json::Value;
 
-#[tauri::command]
-pub async fn get_projects(
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Value>, ProjectError> {
-    get_projects_inner(&state.db).await
-}
+forward_ipc!(
+    get_projects() -> Result<Vec<Value>, ProjectError>
+        => get_projects_inner()
+);
 
-#[tauri::command]
-pub async fn create_project(
-    project_data: Value,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<String, ProjectError> {
-    create_project_inner(&state.db, project_data).await
-}
+forward_ipc!(
+    create_project(project_data: Value) -> Result<String, ProjectError>
+        => create_project_inner(project_data)
+);
 
-#[tauri::command]
-pub async fn get_project_config(
-    name: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, ProjectError> {
-    get_project_config_inner(&state.db, &name).await
-}
+forward_ipc!(
+    get_project_config(name: String) -> Result<Value, ProjectError>
+        => get_project_config_inner(&name)
+);
 
-#[tauri::command]
-pub async fn save_project_config(
-    name: String,
-    config: Value,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, ProjectError> {
-    save_project_config_inner(&state.db, &name, config).await
-}
+forward_ipc!(
+    save_project_config(name: String, config: Value) -> Result<Value, ProjectError>
+        => save_project_config_inner(&name, config)
+);
 
-#[tauri::command]
-pub async fn delete_project(
-    name: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<String, ProjectError> {
-    delete_project_inner(&state.db, &name).await
-}
+forward_ipc!(
+    delete_project(name: String) -> Result<String, ProjectError>
+        => delete_project_inner(&name)
+);
 
-#[tauri::command]
-pub async fn execute_raw_surql(
-    query: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, ProjectError> {
-    execute_raw_surql_inner(&state.db, &query).await
-}
-
+forward_ipc!(
+    execute_raw_surql(query: String) -> Result<Value, ProjectError>
+        => execute_raw_surql_inner(&query)
+);

@@ -294,6 +294,7 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_by_type_full($proj: any, $type_key: 
         WHERE schema_id.project_id = $p_rec 
           AND schema_id.type_key = $type_key 
         ORDER BY name ASC
+        LIMIT 1000
     );
 };
 
@@ -314,6 +315,7 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_by_project_full($proj: any) {
         FROM entities 
         WHERE schema_id.project_id = $p_rec 
         ORDER BY name ASC
+        LIMIT 1000
     );
 };
 
@@ -625,6 +627,7 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_by_type_full($proj: any, $type_key: 
         WHERE schema_id.project_id = $p_rec 
           AND schema_id.type_key = $type_key 
         ORDER BY name ASC
+        LIMIT 1000
     );
 };
 
@@ -645,5 +648,6 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_by_project_full($proj: any) {
         FROM entities 
         WHERE schema_id.project_id = $p_rec 
         ORDER BY name ASC
+        LIMIT 1000
     );
 };

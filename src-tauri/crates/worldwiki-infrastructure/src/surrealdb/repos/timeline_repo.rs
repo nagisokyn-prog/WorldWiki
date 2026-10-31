@@ -7,7 +7,6 @@ use surrealdb::Surreal;
 use worldwiki_domain::calendar::{EventReveal, TimelineEvent};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::repositories::TimelineEventRepository;
-use super::helpers::{take_list, take_one};
 
 pub struct SurrealTimelineRepository {
     db: Arc<Surreal<Db>>,
@@ -22,82 +21,51 @@ impl SurrealTimelineRepository {
 #[async_trait]
 impl TimelineEventRepository for SurrealTimelineRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<TimelineEvent>, DomainError> {
-        let clean = id.trim_start_matches("timeline_events:");
+        let clean = clean_raw_id!(id, "timeline_events");
         let sql = "SELECT * FROM type::record('timeline_events', $id);";
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("id", clean.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_one(&mut res, 0)
+        surreal_take_one!(self.db, sql, ("id", clean))
     }
 
     async fn save(&self, event: &TimelineEvent) -> Result<String, DomainError> {
         let clean_id = if event.id.is_empty() {
             None
         } else {
-            Some(event.id.trim_start_matches("timeline_events:").to_string())
+            Some(clean_raw_id!(&event.id, "timeline_events"))
         };
-        let proj_clean = event.project_id.trim_start_matches("projects:").to_string();
+        let proj_clean = clean_raw_id!(&event.project_id, "projects");
 
-        let sql = "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs, $duration_minutes, $importance, $color, $location_id);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("id", clean_id))
-            .bind(("p_id", proj_clean))
-            .bind(("cal_id", event.calendar_id.clone()))
-            .bind(("title", event.title.clone()))
-            .bind(("description", event.description.clone()))
-            .bind(("m_abs", event.m_abs))
-            .bind(("duration_minutes", event.duration_minutes))
-            .bind(("importance", event.importance as i64))
-            .bind(("color", event.color.clone()))
-            .bind(("location_id", event.location_id.clone()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let created: Option<TimelineEvent> = take_one(&mut res, 0)?;
+        let created: Option<TimelineEvent> = surreal_take_one!(
+            self.db,
+            "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs, $duration_minutes, $importance, $color, $location_id);",
+            ("id", clean_id),
+            ("p_id", proj_clean),
+            ("cal_id", event.calendar_id.clone()),
+            ("title", event.title.clone()),
+            ("description", event.description.clone()),
+            ("m_abs", event.m_abs),
+            ("duration_minutes", event.duration_minutes),
+            ("importance", event.importance as i64),
+            ("color", event.color.clone()),
+            ("location_id", event.location_id.clone()),
+        )?;
         Ok(created.map(|a| a.id).unwrap_or_else(|| event.id.clone()))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
-        let clean = id.trim_start_matches("timeline_events:").to_string();
-        let sql = "RETURN fn::delete_timeline_event($id);";
-        let res = self.db
-            .query(sql)
-            .bind(("id", clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        let clean = clean_raw_id!(id, "timeline_events");
+        surreal_exec!(self.db, "RETURN fn::delete_timeline_event($id);", ("id", clean))
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<TimelineEvent>, DomainError> {
         let p_raw = project_id.to_string();
-        let p_clean = project_id
-            .strip_prefix("projects:")
-            .unwrap_or(project_id)
-            .trim_matches('`')
-            .trim_matches('⟨')
-            .trim_matches('⟩')
-            .trim()
-            .to_string();
+        let p_clean = clean_raw_id!(project_id, "projects");
         let sql = "SELECT id, project_id, title, description, m_abs, calendar_id, block_id, created_at FROM timeline_events WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY m_abs ASC;";
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("p_raw", p_raw))
-            .bind(("p_clean", p_clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        surreal_take_list!(self.db, sql, ("p_raw", p_raw), ("p_clean", p_clean))
     }
 
     async fn add_reveal(&self, reveal: &EventReveal) -> Result<(), DomainError> {
-        let ev_clean = reveal.event_id.trim_start_matches("timeline_events:");
-        let ch_clean = reveal.chapter_id.trim_start_matches("chapters:");
+        let ev_clean = clean_raw_id!(&reveal.event_id, "timeline_events");
+        let ch_clean = clean_raw_id!(&reveal.chapter_id, "chapters");
         let sql = r#"
             RELATE (type::record('timeline_events', $ev))->revealed_in->(type::record('chapters', $ch)) CONTENT {
                 pov_id: $pov_id,
@@ -106,28 +74,21 @@ impl TimelineEventRepository for SurrealTimelineRepository {
                 created_at: time::now()
             };
         "#;
-        self.db
-            .query(sql)
-            .bind(("ev", ev_clean.to_string()))
-            .bind(("ch", ch_clean.to_string()))
-            .bind(("pov_id", reveal.pov_id.clone()))
-            .bind(("kind", reveal.kind.clone()))
-            .bind(("block_id", reveal.block_id.clone()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        surreal_exec!(
+            self.db,
+            sql,
+            ("ev", ev_clean),
+            ("ch", ch_clean),
+            ("pov_id", reveal.pov_id.clone()),
+            ("kind", reveal.kind.clone()),
+            ("block_id", reveal.block_id.clone()),
+        )
     }
 
     async fn remove_reveal(&self, event_id: &str, chapter_id: &str) -> Result<(), DomainError> {
-        let ev_clean = event_id.trim_start_matches("timeline_events:");
-        let ch_clean = chapter_id.trim_start_matches("chapters:");
+        let ev_clean = clean_raw_id!(event_id, "timeline_events");
+        let ch_clean = clean_raw_id!(chapter_id, "chapters");
         let sql = "DELETE revealed_in WHERE in = type::record('timeline_events', $ev) AND out = type::record('chapters', $ch);";
-        self.db
-            .query(sql)
-            .bind(("ev", ev_clean.to_string()))
-            .bind(("ch", ch_clean.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        surreal_exec!(self.db, sql, ("ev", ev_clean), ("ch", ch_clean))
     }
 }

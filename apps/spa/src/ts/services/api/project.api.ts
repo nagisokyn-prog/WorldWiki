@@ -23,6 +23,10 @@ export const projectApi = {
     return (await api.getProjects()) as unknown[];
   },
   createProject: async (data: Record<string, unknown>): Promise<{ success: boolean }> => {
+    const name = (data.name as string) || (data.id as string);
+    if (name) {
+      purgeProjectStorage(name);
+    }
     await api.createProject(data);
     return { success: true };
   },

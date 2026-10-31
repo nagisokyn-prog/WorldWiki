@@ -467,6 +467,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
             } AS arcs
         FROM plot_promises 
         WHERE project_id = $p_rec
+        LIMIT 500
     );
 };
 
@@ -504,13 +505,14 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
             } AS arcs
         FROM plot_promises 
         WHERE chapter_id = $ch_rec OR ->promise_milestones.out.chapter_id CONTAINS $ch_rec
+        LIMIT 200
     );
 };
 
 -- 48. СПИСОК НЕРАЗРЕШЕННЫХ ОБЕЩАНИЙ ТОМА
 DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
     LET $vol_rec = IF string::starts_with(type::string($vol), 'volumes:') { type::record($vol) } ELSE { type::record('volumes', $vol) };
-    LET $chapters = (SELECT VALUE out FROM contains WHERE in = $vol_rec);
+    LET $chapters = (SELECT VALUE out FROM contains WHERE in = $vol_rec LIMIT 100);
     RETURN (
         SELECT 
             id,
@@ -543,6 +545,7 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
         FROM plot_promises
         WHERE (chapter_id IN $chapters OR ->promise_milestones.out.chapter_id CONTAINSANY $chapters)
           AND status != 'resolved'
+        LIMIT 500
     );
 };
 
@@ -577,7 +580,7 @@ DEFINE FUNCTION OVERWRITE fn::save_todo(
 -- 51. ПОЛУЧЕНИЕ ЗАДАЧИ ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_todo($id: any) {
     LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
-    LET $res = (SELECT * FROM $t_rec LIMIT 1);
+    LET $res = (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM $t_rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -590,18 +593,18 @@ DEFINE FUNCTION OVERWRITE fn::delete_todo($id: any) {
 -- 53. СПИСОК ЗАДАЧ ПО ВЛАДЕЛЬЦУ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owner($owner_table: string, $owner_id: string) {
     LET $o_rec = type::record($owner_table, $owner_id);
-    RETURN (SELECT * FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC);
+    RETURN (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC LIMIT 200);
 };
 
 -- 54. СПИСОК ЗАДАЧ ПО СПИСКУ ВЛАДЕЛЬЦЕВ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owners($owners: array<any>) {
-    RETURN (SELECT * FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC);
+    RETURN (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC LIMIT 500);
 };
 
 -- 55. ПОЛУЧЕНИЕ СЮЖЕТНОЙ АРКИ ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_story_arc($id: any) {
     LET $a_rec = IF string::starts_with(type::string($id), 'story_arcs:') { type::record($id) } ELSE { type::record('story_arcs', $id) };
-    LET $res = (SELECT * FROM $a_rec LIMIT 1);
+    LET $res = (SELECT id, project_id, title, status, created_at, updated_at FROM $a_rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -642,7 +645,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_story_arc($id: any) {
 -- 58. СПИСОК СЮЖЕТНЫХ АРОК ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::list_story_arcs_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = $p_rec ORDER BY created_at ASC);
+    RETURN (SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = $p_rec ORDER BY created_at ASC LIMIT 100);
 };
 
 -- 59. СПИСОК ГЛАВ ДЛЯ СЮЖЕТНОЙ АРКИ
@@ -657,14 +660,15 @@ DEFINE FUNCTION OVERWRITE fn::list_chapters_for_arc($arc_id: any) {
         FROM advances_arc 
         WHERE out = $arc_rec
         ORDER BY sort_order ASC
+        LIMIT 200
     );
 };
 
 -- 60. СПИСОК СУЩНОСТЕЙ ДЛЯ СЮЖЕТНОЙ АРКИ
 DEFINE FUNCTION OVERWRITE fn::list_entities_for_arc($arc_id: any) {
     LET $arc_rec = IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) };
-    LET $promises = (SELECT VALUE in FROM advances_arc WHERE out = $arc_rec);
-    LET $entities = (SELECT VALUE <-participant_of.in.id FROM $promises);
+    LET $promises = (SELECT VALUE in FROM advances_arc WHERE out = $arc_rec LIMIT 200);
+    LET $entities = (SELECT VALUE <-participant_of.in.id FROM $promises LIMIT 500);
     LET $flat = array::distinct(array::flatten($entities));
     RETURN (
         FOR $e IN $flat {

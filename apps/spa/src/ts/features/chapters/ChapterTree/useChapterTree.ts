@@ -153,14 +153,15 @@ export function useChapterTree(
 
         if (data?.type === 'planet') {
             const planetObj = (data.original as Record<string, unknown>) || {};
-            emit('open-planet-viewer', planetObj);
-            emit('open-entity', { ...planetObj, entityType: 'planet', id: planetObj.id, name: planetObj.name, title: planetObj.name });
+            const cleanId = String(planetObj.id ?? '').replace(/^planets?:/, '');
+            emit('open-entity', { ...planetObj, entityType: 'planet', id: cleanId, name: planetObj.name, title: planetObj.name });
             return;
         }
 
         if (data?.type === 'calendar') {
             const calObj = (data.original as Record<string, unknown>) || {};
-            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id, name: calObj.name, title: calObj.name });
+            const cleanId = String(calObj.id ?? '').replace(/^calendars?:/, '');
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: cleanId, name: calObj.name, title: calObj.name });
             return;
         }
 
@@ -183,11 +184,12 @@ export function useChapterTree(
         const data = node.data as ExplorerNodeData | undefined;
         if (data?.type === 'planet') {
             const planetObj = (data.original as Record<string, unknown>) || {};
-            emit('open-planet-viewer', planetObj);
-            emit('open-entity', { ...planetObj, entityType: 'planet', id: planetObj.id, name: planetObj.name, title: planetObj.name });
+            const cleanId = String(planetObj.id ?? '').replace(/^planets?:/, '');
+            emit('open-entity', { ...planetObj, entityType: 'planet', id: cleanId, name: planetObj.name, title: planetObj.name });
         } else if (data?.type === 'calendar') {
             const calObj = (data.original as Record<string, unknown>) || {};
-            emit('open-entity', { ...calObj, entityType: 'calendar', id: calObj.id, name: calObj.name, title: calObj.name });
+            const cleanId = String(calObj.id ?? '').replace(/^calendars?:/, '');
+            emit('open-entity', { ...calObj, entityType: 'calendar', id: cleanId, name: calObj.name, title: calObj.name });
         } else if (data?.isEntity) {
             emit('open-entity', { ...data.original, entityType: data.type });
         } else if (data?.type === 'chapter') {

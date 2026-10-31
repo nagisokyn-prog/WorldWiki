@@ -110,14 +110,25 @@ function scanLogicFiles() {
         for (const filePath of files) {
             const content = fs.readFileSync(filePath, 'utf-8');
             
-            // Ищем функции #[tauri::command]
+            const rawCommands = [];
+
+            // 1. Ищем функции #[tauri::command]
             const regex = /#\[tauri::command\]\s*(?:#\[.*?\]\s*)*pub\s+(?:async\s+)?fn\s+([a-zA-Z0-9_]+)(?:<.*?>)?\s*\((.*?)\)(?:\s*->\s*(.*?))?\s*\{/gs;
-            
             let match;
             while ((match = regex.exec(content)) !== null) {
-                const name = match[1];
-                let argsStr = match[2];
-                const retStr = match[3];
+                rawCommands.push({ name: match[1], argsStr: match[2], retStr: match[3] });
+            }
+
+            // 2. Ищем макросы forward_ipc!
+            const macroRegex = /forward_ipc!\s*\(\s*([a-zA-Z0-9_]+)\s*\((.*?)\)\s*->\s*(.*?)\s*=>/gs;
+            while ((match = macroRegex.exec(content)) !== null) {
+                rawCommands.push({ name: match[1], argsStr: match[2], retStr: match[3] });
+            }
+
+            for (const item of rawCommands) {
+                const name = item.name;
+                let argsStr = item.argsStr;
+                const retStr = item.retStr;
                 
                 // Удаляем комментарии из аргументов
                 argsStr = argsStr.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');

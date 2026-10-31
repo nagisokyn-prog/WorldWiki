@@ -197,17 +197,15 @@ pub(crate) async fn get_character_journey_impl(
     project_id: &str,
     entity_id: &str,
 ) -> Result<CharacterJourneyDto, DomainError> {
-    let proj_clean = project_id.trim_start_matches("projects:");
-    let ent_clean = entity_id.trim_start_matches("entities:");
+    let proj_clean = clean_raw_id!(project_id, "projects");
+    let ent_clean = clean_raw_id!(entity_id, "entities");
     let sql = "RETURN fn::get_character_journey(type::record('projects', $p), type::record('entities', $e));";
-    let mut res = db
-        .query(sql)
-        .bind(("p", proj_clean.to_string()))
-        .bind(("e", ent_clean.to_string()))
-        .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-    let raw: Option<JourneyRaw> = crate::surrealdb::repos::helpers::take_one(&mut res, 0)?;
+    let raw: Option<JourneyRaw> = surreal_take_one!(
+        db,
+        sql,
+        ("p", proj_clean),
+        ("e", ent_clean),
+    )?;
 
     let raw = raw.unwrap_or(JourneyRaw {
         entity: None,

@@ -63,14 +63,36 @@ export function useShellPersistence(deps: PersistenceDeps) {
       const rawTabs = state.openTabs as EditorTab[] | undefined;
       const tabSources: EditorTab[] = rawGroups ? rawGroups.flatMap((g) => g.tabs) : (rawTabs || []);
 
+      let planetCalendarBundle: {
+        planets?: Array<{ id?: string; name?: string }>;
+        calendars?: Array<{ id?: string; name?: string }>;
+      } | null = null;
+
       const loadedTabs = new Map<string, EditorTab>();
       for (const tab of tabSources) {
         if (loadedTabs.has(tab.id)) continue;
         try {
           if (tab.tabType === 'entity') {
-            await deps.schema.loadSchema(tab.entityType);
-            const detail = await entityApi.getEntity(deps.projectName.value, tab.entityType, tab.rawId);
-            loadedTabs.set(tab.id, { ...tab, data: (detail || {}) as Record<string, unknown>, unsaved: false });
+            if (tab.entityType === 'planet' || tab.entityType === 'calendar') {
+              if (!planetCalendarBundle) {
+                planetCalendarBundle = (await api.getPlanetCalendarBundle(deps.projectName.value).catch(() => null)) as {
+                  planets?: Array<{ id?: string; name?: string }>;
+                  calendars?: Array<{ id?: string; name?: string }>;
+                } | null;
+              }
+              const exists = tab.entityType === 'planet'
+                ? planetCalendarBundle?.planets?.some(p => p.id === tab.rawId || p.id === `planets:${tab.rawId}` || p.name === tab.title)
+                : planetCalendarBundle?.calendars?.some(c => c.id === tab.rawId || c.id === `calendars:${tab.rawId}` || c.name === tab.title);
+              if (exists) {
+                loadedTabs.set(tab.id, { ...tab, unsaved: false });
+              }
+            } else {
+              await deps.schema.loadSchema(tab.entityType);
+              const detail = await entityApi.getEntity(deps.projectName.value, tab.entityType, tab.rawId);
+              if (detail && Object.keys(detail).length > 0 && detail.id) {
+                loadedTabs.set(tab.id, { ...tab, data: detail as Record<string, unknown>, unsaved: false });
+              }
+            }
           } else if (tab.tabType === 'chapter') {
             const chapter = await api.getChapter(tab.rawId);
             if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter as unknown as Record<string, unknown>, unsaved: false });
@@ -107,6 +129,6 @@ export function useShellPersistence(deps: PersistenceDeps) {
     getStateKey,
     saveState,
     debouncedSaveState,
-    restoreState
+    restoreState,
   };
 }

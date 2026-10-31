@@ -90,9 +90,6 @@ split-debuginfo = "unpacked"
 [profile.dev.package.surrealdb]
 opt-level = 2
 
-[profile.dev.package.surrealql]
-opt-level = 2
-
 [profile.dev.package.serde]
 opt-level = 2
 

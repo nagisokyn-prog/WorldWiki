@@ -11,8 +11,8 @@ use serde_json::json;
 use crate::logic::batch::{get_entities_batch_inner, save_entity_with_relations_inner, upsert_connections_batch_inner};
 use crate::logic::connections::{get_connections_inner, remove_connections_by_source_inner, save_connections_inner};
 use crate::logic::entities::save_entity_inner;
-use crate::logic::models::{Entity, EntityRel};
-use super::common::{create_test_db, seed_project};
+use crate::logic::models::EntityRel;
+use super::common::{create_test_db, fixture_entity, seed_project};
 
 #[tokio::test]
 async fn test_get_entities_batch_by_types() {
@@ -20,47 +20,9 @@ async fn test_get_entities_batch_by_types() {
     seed_project(&db, "p_batch", "Batch Project").await;
 
     // Создаём 2 персонажа и 1 локацию
-    save_entity_inner(&db, "p_batch", Entity {
-        id: None,
-        project_id: Some("projects:p_batch".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Герой 1".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
-
-    save_entity_inner(&db, "p_batch", Entity {
-        id: None,
-        project_id: Some("projects:p_batch".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Герой 2".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
-
-    save_entity_inner(&db, "p_batch", Entity {
-        id: None,
-        project_id: Some("projects:p_batch".into()),
-        schema_id: None,
-        entity_type: "location".into(),
-        name: "Замок Ветров".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    save_entity_inner(&db, "p_batch", fixture_entity!("p_batch", "Герой 1")).await.unwrap();
+    save_entity_inner(&db, "p_batch", fixture_entity!("p_batch", "Герой 2")).await.unwrap();
+    save_entity_inner(&db, "p_batch", fixture_entity!("p_batch", "location", "Замок Ветров")).await.unwrap();
 
     let res = get_entities_batch_inner(&db, "p_batch", vec!["character".into(), "location".into(), "item".into()])
         .await
@@ -81,37 +43,24 @@ async fn test_save_entity_with_relations_transactional() {
     seed_project(&db, "p_batch2", "Batch Project 2").await;
 
     // Создаём зависимую сущность
-    let foreign = save_entity_inner(&db, "p_batch2", Entity {
-        id: None,
-        project_id: Some("projects:p_batch2".into()),
-        schema_id: None,
-        entity_type: "item".into(),
-        name: "Старый Меч".into(),
-        description: None,
-        attributes: json!({ "durability": 10 }),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    let foreign = save_entity_inner(
+        &db,
+        "p_batch2",
+        fixture_entity!("p_batch2", "item", "Старый Меч", json!({ "durability": 10 })),
+    ).await.unwrap();
 
     let mut foreign_updated = foreign.clone();
     foreign_updated.name = "Зачарованный Меч".into();
     foreign_updated.attributes = json!({ "durability": 100 });
 
-    let main_entity = Entity {
-        id: None,
-        project_id: Some("projects:p_batch2".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Кузнец Артур".into(),
-        description: Some("Мастер зачарований".into()),
-        attributes: json!({}),
-        tags: vec!["blacksmith".into()],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    };
+    let main_entity = fixture_entity!(
+        "p_batch2",
+        "character",
+        "Кузнец Артур",
+        json!({}),
+        vec!["blacksmith".into()],
+        Some("Мастер зачарований".into())
+    );
 
     let saved_main = save_entity_with_relations_inner(
         &db,
@@ -137,34 +86,10 @@ async fn test_upsert_connections_batch_and_get_connections() {
     let db = create_test_db().await;
     seed_project(&db, "p_conn", "Connections Project").await;
 
-    let e1 = save_entity_inner(&db, "p_conn", Entity {
-        id: None,
-        project_id: Some("projects:p_conn".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Алиса".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    let e1 = save_entity_inner(&db, "p_conn", fixture_entity!("p_conn", "Алиса")).await.unwrap();
     let e1_id = e1.id.unwrap();
 
-    let e2 = save_entity_inner(&db, "p_conn", Entity {
-        id: None,
-        project_id: Some("projects:p_conn".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Боб".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    let e2 = save_entity_inner(&db, "p_conn", fixture_entity!("p_conn", "Боб")).await.unwrap();
     let e2_id = e2.id.unwrap();
 
     // 1. Создаём связь через upsert_connections_batch
@@ -216,34 +141,10 @@ async fn test_save_connections_creates_and_replaces_edges() {
     let db = create_test_db().await;
     seed_project(&db, "p_saveconn", "SaveConn Project").await;
 
-    let e1 = save_entity_inner(&db, "p_saveconn", Entity {
-        id: None,
-        project_id: Some("projects:p_saveconn".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Алиса".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    let e1 = save_entity_inner(&db, "p_saveconn", fixture_entity!("p_saveconn", "Алиса")).await.unwrap();
     let e1_id = e1.id.unwrap();
 
-    let e2 = save_entity_inner(&db, "p_saveconn", Entity {
-        id: None,
-        project_id: Some("projects:p_saveconn".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Боб".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    let e2 = save_entity_inner(&db, "p_saveconn", fixture_entity!("p_saveconn", "Боб")).await.unwrap();
     let e2_id = e2.id.unwrap();
 
     // Фронтовый контракт save_connections: source/target с entityId

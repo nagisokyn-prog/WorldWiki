@@ -150,15 +150,9 @@ pub(crate) async fn get_cross_reference_matrix_impl(
     db: &Surreal<Db>,
     project_id: &str,
 ) -> Result<CrossRefMatrixDto, DomainError> {
-    let proj_clean = project_id.trim_start_matches("projects:");
+    let proj_clean = clean_raw_id!(project_id, "projects");
     let sql = "RETURN fn::get_cross_reference_matrix(type::record('projects', $p));";
-    let mut res = db
-        .query(sql)
-        .bind(("p", proj_clean.to_string()))
-        .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-    let raw: Option<CrossRefRaw> = crate::surrealdb::repos::helpers::take_one(&mut res, 0)?;
+    let raw: Option<CrossRefRaw> = surreal_take_one!(db, sql, ("p", proj_clean))?;
     let raw = raw.unwrap_or(CrossRefRaw {
         chapters: vec![],
         entities: vec![],

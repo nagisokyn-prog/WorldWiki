@@ -317,5 +317,6 @@ export const useShellStore = defineStore('shell', () => {
       if (g) { g.activeTabId = tid; eg.activeGroupId.value = gid; }
     },
     focusGroup: (gid: string) => { eg.activeGroupId.value = gid; },
+    updateTabTitle: (tabId: string, title: string) => eg.updateTabData(tabId, { title }),
   };
 });

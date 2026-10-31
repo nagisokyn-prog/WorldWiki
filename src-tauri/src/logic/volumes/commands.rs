@@ -2,34 +2,28 @@
 //! All business logic lives in mod.rs (*_inner).
 
 use super::*;
+use crate::forward_ipc;
 use tauri::{AppHandle, Emitter};
 
-#[tauri::command]
-pub async fn get_chapter_hierarchy(
-    project: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<serde_json::Value, VolumeError> {
-    get_chapter_hierarchy_inner(&state.db, &project).await
-}
+forward_ipc!(
+    get_chapter_hierarchy(project: String) -> Result<serde_json::Value, VolumeError>
+        => get_chapter_hierarchy_inner(&project)
+);
 
-#[tauri::command]
-pub async fn create_volume(
-    project: String,
-    title: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<serde_json::Value, VolumeError> {
-    create_volume_inner(&state.db, &project, &title).await
-}
+forward_ipc!(
+    create_volume(project: String, title: String) -> Result<serde_json::Value, VolumeError>
+        => create_volume_inner(&project, &title)
+);
 
-#[tauri::command]
-pub async fn update_volume(
-    _project: String,
-    id: String,
-    title: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), VolumeError> {
-    update_volume_inner(&state.db, &id, &title).await
-}
+forward_ipc!(
+    update_volume(_project: String, id: String, title: String) -> Result<(), VolumeError>
+        => update_volume_inner(&id, &title)
+);
+
+forward_ipc!(
+    reorder_node(project: String, node_type: String, id: String, sort_order: i64) -> Result<(), VolumeError>
+        => reorder_node_inner(&project, &node_type, &id, sort_order)
+);
 
 #[tauri::command]
 pub async fn assign_chapter(
@@ -44,17 +38,6 @@ pub async fn assign_chapter(
         eprintln!("[VOLUMES IPC ERROR] Failed to emit 'ww:timeline-auto-extended': {e:?}, payload: {res:?}");
     }
     Ok(res)
-}
-
-#[tauri::command]
-pub async fn reorder_node(
-    project: String,
-    node_type: String,
-    id: String,
-    sort_order: i64,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), VolumeError> {
-    reorder_node_inner(&state.db, &project, &node_type, &id, sort_order).await
 }
 
 #[tauri::command]

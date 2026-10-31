@@ -289,21 +289,19 @@ pub(crate) async fn get_multi_character_journey_impl(
     entity_ids: &[String],
     mode: JourneyFilterMode,
 ) -> Result<MultiJourneyResponseDto, DomainError> {
-    let proj_clean = project_id.trim_start_matches("projects:");
+    let proj_clean = clean_raw_id!(project_id, "projects");
     let entity_records: Vec<String> = entity_ids
         .iter()
-        .map(|id| format!("entities:{}", id.trim_start_matches("entities:")))
+        .map(|id| format!("entities:{}", clean_raw_id!(id, "entities")))
         .collect();
 
     let sql = "RETURN fn::get_multi_character_journey(type::record('projects', $p), $ents);";
-    let mut res = db
-        .query(sql)
-        .bind(("p", proj_clean.to_string()))
-        .bind(("ents", entity_records))
-        .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-    let raw: Option<MultiJourneyRawData> = crate::surrealdb::repos::helpers::take_one(&mut res, 0)?;
+    let raw: Option<MultiJourneyRawData> = surreal_take_one!(
+        db,
+        sql,
+        ("p", proj_clean),
+        ("ents", entity_records),
+    )?;
     let raw = raw.unwrap_or(MultiJourneyRawData {
         entities: Vec::new(),
         appearances: Vec::new(),

@@ -63,7 +63,7 @@ export function useChapterTreeSections(options: UseChapterTreeSectionsOptions) {
         // --- 1. CALENDARS & PLANETS SECTION (Pinned at top) ---
         if (options.planets && options.calendars) {
             const planetNodes: ExplorerNode[] = options.planets.value.map(planet => {
-                const planetIdStr = String(planet.id);
+                const cleanPlanetId = String(planet.id).replace(/^(entity:)?planets?:/, '');
                 const childCals = (options.calendars?.value || []).filter(c => {
                     const cPlanet = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
                     if (!cPlanet) return String(planet.id) === 'earth' || planet.name === 'Земля';
@@ -71,19 +71,22 @@ export function useChapterTreeSections(options: UseChapterTreeSectionsOptions) {
                 });
 
                 return {
-                    id: `planet:${planetIdStr}`,
+                    id: `entity:planet:${cleanPlanetId}`,
                     label: planet.name || 'Планета',
                     emoji: '🪐',
                     isGroup: true,
                     canAdd: true,
                     addLabel: 'Календарь',
                     data: { type: 'planet', original: planet },
-                    children: childCals.map(cal => ({
-                        id: `calendar:${cal.id}`,
-                        label: (cal.name || (cal.data as Record<string, unknown> | undefined)?.название || 'Календарь') + (cal.is_master ? ' (Master)' : ''),
-                        emoji: '📜',
-                        data: { type: 'calendar', original: cal, planet_id: planet.id }
-                    }))
+                    children: childCals.map(cal => {
+                        const cleanCalId = String(cal.id ?? '').replace(/^(entity:)?calendars?:/, '');
+                        return {
+                            id: `entity:calendar:${cleanCalId}`,
+                            label: (cal.name || (cal.data as Record<string, unknown> | undefined)?.название || 'Календарь') + (cal.is_master ? ' (Master)' : ''),
+                            emoji: '📜',
+                            data: { type: 'calendar', original: cal, planet_id: planet.id }
+                        };
+                    })
                 };
             });
 

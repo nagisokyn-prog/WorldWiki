@@ -19,16 +19,16 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     targetId: string
   ): boolean => {
     if (tab.entityType !== entityType) return false;
-    const cleanTarget = String(targetId).replace(new RegExp(`^${entityType}:`), '');
-    const tabCleanRaw = String(tab.rawId || '').replace(new RegExp(`^${entityType}:`), '');
-    const tabCleanId = String(tab.id).replace(new RegExp(`^(entity:)?${entityType}:`), '');
+    const cleanTarget = String(targetId).replace(new RegExp(`^(entity:)?(${entityType}s?):`), '');
+    const tabCleanRaw = String(tab.rawId || '').replace(new RegExp(`^(entity:)?(${entityType}s?):`), '');
+    const tabCleanId = String(tab.id).replace(new RegExp(`^(entity:)?(${entityType}s?):`), '');
     return (
       tabCleanRaw === cleanTarget ||
       tabCleanId === cleanTarget ||
       tab.rawId === targetId ||
       tab.id === targetId ||
       tab.id.endsWith(cleanTarget) ||
-      tab.id === `entity:${entityType}:${targetId}`
+      tab.id === `entity:${entityType}:${cleanTarget}`
     );
   };
 
@@ -41,7 +41,7 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     for (const group of shell.editorGroups) {
       for (const tab of group.tabs) {
         if (matchesEntityId(tab, 'planet', id)) {
-          tab.title = name;
+          shell.updateTabTitle(tab.id, name);
         }
       }
     }
@@ -52,7 +52,7 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     for (const group of shell.editorGroups) {
       for (const tab of group.tabs) {
         if (matchesEntityId(tab, 'calendar', id)) {
-          tab.title = name;
+          shell.updateTabTitle(tab.id, name);
         }
       }
     }

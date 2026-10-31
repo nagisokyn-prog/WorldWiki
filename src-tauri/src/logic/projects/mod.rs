@@ -47,7 +47,13 @@ mod tests {
         db.use_ns("test").use_db("test").await.expect("use ns/db");
 
         db.query(r#"
-            DEFINE TABLE projects SCHEMALESS;
+            DEFINE TABLE OVERWRITE projects SCHEMAFULL;
+            DEFINE FIELD OVERWRITE name        ON projects TYPE string;
+            DEFINE FIELD OVERWRITE type        ON projects TYPE option<string | null>;
+            DEFINE FIELD OVERWRITE genres      ON projects TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
+            DEFINE FIELD OVERWRITE cover_image ON projects TYPE option<string | null>;
+            DEFINE FIELD OVERWRITE created_at  ON projects TYPE option<datetime | null> DEFAULT time::now();
+
             DEFINE FUNCTION OVERWRITE fn::normalize_project_id($p: any) {
                 LET $str = type::string($p);
                 LET $clean = string::replace(string::replace(string::replace(string::replace(string::replace($str, 'projects:', ''), '⟨', ''), '⟩', ''), '`', ''), '\\', '');
@@ -77,7 +83,7 @@ mod tests {
         })).await.expect("rename 2");
 
         // Verify that the record now has name "Rename 2" and all genres
-        let mut check_res = db.query("SELECT * FROM projects LIMIT 1;").await.expect("query");
+        let mut check_res = db.query("SELECT id, name, type, genres, cover_image, created_at FROM projects LIMIT 1;").await.expect("query");
         let project_val: Option<serde_json::Value> = check_res.take(0).expect("take");
         assert!(project_val.is_some());
         let p = project_val.unwrap();

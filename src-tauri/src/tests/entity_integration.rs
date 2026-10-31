@@ -9,26 +9,21 @@
 use crate::logic::entities::*;
 use crate::logic::models::{Entity, EntityRel, EntitySchema};
 use serde_json::json;
-use super::common::{create_test_db, seed_project};
+use super::common::{create_test_db, fixture_entity, seed_project};
 
 #[tokio::test]
 async fn save_entity_create_and_get() {
     let db = create_test_db().await;
     seed_project(&db, "p1", "Project 1").await;
 
-    let new_entity = Entity {
-        id: None,
-        project_id: Some("projects:p1".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Алиса".into(),
-        description: Some("Главная героиня".into()),
-        attributes: json!({ "age": 20, "role": "протагонист" }),
-        tags: vec!["маг".into(), "человек".into()],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    };
+    let new_entity = fixture_entity!(
+        "p1",
+        "character",
+        "Алиса",
+        json!({ "age": 20, "role": "протагонист" }),
+        vec!["маг".into(), "человек".into()],
+        Some("Главная героиня".into())
+    );
 
     let saved = save_entity_inner(&db, "p1", new_entity)
         .await
@@ -56,37 +51,28 @@ async fn save_entity_upsert_existing() {
     let db = create_test_db().await;
     seed_project(&db, "p1", "Project 1").await;
 
-    let e = Entity {
-        id: None,
-        project_id: Some("projects:p1".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Боб".into(),
-        description: Some("Первое описание".into()),
-        attributes: json!({ "level": 1 }),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    };
+    let e = fixture_entity!(
+        "p1",
+        "character",
+        "Боб",
+        json!({ "level": 1 }),
+        vec![],
+        Some("Первое описание".into())
+    );
 
     let created = save_entity_inner(&db, "p1", e).await.unwrap();
     let id = created.id.unwrap();
 
     // Обновляем сущность через тот же ID
-    let updated_entity = Entity {
-        id: Some(id.clone()),
-        project_id: Some("projects:p1".into()),
-        schema_id: None,
-        entity_type: "character".into(),
-        name: "Боб Мудрый".into(),
-        description: Some("Обновленное описание".into()),
-        attributes: json!({ "level": 10 }),
-        tags: vec!["ветеран".into()],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    };
+    let updated_entity = fixture_entity!(
+        "p1",
+        "character",
+        "Боб Мудрый",
+        json!({ "level": 10 }),
+        vec!["ветеран".into()],
+        Some("Обновленное описание".into()),
+        Some(id.clone())
+    );
 
     let updated = save_entity_inner(&db, "p1", updated_entity)
         .await

@@ -7,7 +7,6 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::knowledge::EntityRelation;
 use worldwiki_ports::repositories::RelationRepository;
-use super::helpers::{clean_id, prepare_data_for_upsert, take_list, take_one};
 
 pub struct SurrealRelationRepository {
     db: Arc<Surreal<Db>>,
@@ -22,55 +21,57 @@ impl SurrealRelationRepository {
 #[async_trait]
 impl RelationRepository for SurrealRelationRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<EntityRelation>, DomainError> {
-        let sql = "SELECT * FROM type::record('entity_rel', $id);";
-        let clean = id.trim_start_matches("entity_rel:");
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("id", clean.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_one(&mut res, 0)
+        let clean = clean_raw_id!(id, "entity_rel");
+        surreal_take_one!(self.db, "RETURN fn::get_entity_relation($id);", ("id", clean))
     }
 
     async fn save(&self, rel: &EntityRelation) -> Result<(), DomainError> {
-        let clean = rel.id.trim_start_matches("entity_rel:").to_string();
-        let data = prepare_data_for_upsert(
-            serde_json::to_value(rel).map_err(|e| DomainError::Validation(e.to_string()))?,
-        );
-        let sql = "UPSERT type::record('entity_rel', $id) CONTENT $data;";
-        self.db
-            .query(sql)
-            .bind(("id", clean))
-            .bind(("data", data))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        let clean = if rel.id.trim().is_empty() {
+            None
+        } else {
+            Some(clean_raw_id!(&rel.id, "entity_rel"))
+        };
+        let from_clean = clean_raw_id!(&rel.from_entity_id, "entities");
+        let to_clean = clean_raw_id!(&rel.to_entity_id, "entities");
+        let p_clean = clean_raw_id!(&rel.project_id, "projects");
+        let start_chap = rel.start_chapter_id.as_deref().map(|s| clean_raw_id!(s, "chapters"));
+        let end_chap = rel.end_chapter_id.as_deref().map(|s| clean_raw_id!(s, "chapters"));
+        let attrs = if rel.attributes.is_object() {
+            rel.attributes.clone()
+        } else {
+            serde_json::json!({})
+        };
+
+        surreal_exec!(
+            self.db,
+            "RETURN fn::save_entity_relation($id, $p, $from, $to, $rel_type, $desc, $strength, $attrs, $start, $end);",
+            ("id", clean),
+            ("p", p_clean),
+            ("from", from_clean),
+            ("to", to_clean),
+            ("rel_type", rel.rel_type.clone()),
+            ("desc", None::<String>),
+            ("strength", rel.strength),
+            ("attrs", attrs),
+            ("start", start_chap),
+            ("end", end_chap),
+        )
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
-        let clean = id.trim_start_matches("entity_rel:").to_string();
-        let sql = "DELETE type::record('entity_rel', $id);";
-        self.db
-            .query(sql)
-            .bind(("id", clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        let clean = clean_raw_id!(id, "entity_rel");
+        surreal_exec!(self.db, "RETURN fn::delete_entity_relation($id);", ("id", clean))
     }
 
     async fn get_entity_relations(
         &self,
         entity_id: &str,
     ) -> Result<Vec<EntityRelation>, DomainError> {
-        let clean_target = clean_id("entities", entity_id);
-        let sql = "SELECT * FROM entity_rel WHERE in = type::record($target) OR out = type::record($target);";
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("target", clean_target))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        let clean_target = clean_raw_id!(entity_id, "entities");
+        surreal_take_list!(
+            self.db,
+            "RETURN fn::get_entity_relations(projects:default, type::record('entities', $target));",
+            ("target", clean_target),
+        )
     }
 }

@@ -85,15 +85,9 @@ pub(crate) async fn get_timeline_inspector_data_impl(
     db: &Surreal<Db>,
     project_id: &str,
 ) -> Result<TimelineInspectorDto, DomainError> {
-    let proj_clean = project_id.trim_start_matches("projects:");
+    let proj_clean = clean_raw_id!(project_id, "projects");
     let sql = "RETURN fn::get_timeline_inspector_data(type::record('projects', $p));";
-    let mut res = db
-        .query(sql)
-        .bind(("p", proj_clean.to_string()))
-        .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-    let raw: Option<TimelineRaw> = crate::surrealdb::repos::helpers::take_one(&mut res, 0)?;
+    let raw: Option<TimelineRaw> = surreal_take_one!(db, sql, ("p", proj_clean))?;
     let raw = raw.unwrap_or(TimelineRaw {
         events: vec![],
         chapters: vec![],

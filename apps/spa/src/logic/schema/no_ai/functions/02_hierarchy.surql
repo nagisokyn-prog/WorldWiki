@@ -58,7 +58,7 @@ DEFINE FUNCTION OVERWRITE fn::reorder_node($node: record<chapters> | record<volu
 -- 21. ПОЛУЧЕНИЕ ГЛАВЫ ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_chapter($id: any) {
     LET $c_rec = IF string::starts_with(type::string($id), 'chapters:') { type::record($id) } ELSE { type::record('chapters', $id) };
-    LET $res = (SELECT * FROM $c_rec LIMIT 1);
+    LET $res = (SELECT id, volume_id, title, content, sort_order, word_count FROM $c_rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -94,19 +94,19 @@ DEFINE FUNCTION OVERWRITE fn::delete_chapter($id: any) {
 -- 24. СПИСОК ГЛАВ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::list_chapters_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT * FROM chapters WHERE volume_id.project_id = $p_rec ORDER BY sort_order ASC);
+    RETURN (SELECT id, volume_id, title, sort_order, word_count FROM chapters WHERE volume_id.project_id = $p_rec ORDER BY sort_order ASC LIMIT 1000);
 };
 
 -- 25. СПИСОК ГЛАВ ТОМА
 DEFINE FUNCTION OVERWRITE fn::list_chapters_by_volume($vol: any) {
     LET $v_rec = IF string::starts_with(type::string($vol), 'volumes:') { type::record($vol) } ELSE { type::record('volumes', $vol) };
-    RETURN (SELECT * FROM chapters WHERE volume_id = $v_rec ORDER BY sort_order ASC);
+    RETURN (SELECT id, volume_id, title, sort_order, word_count FROM chapters WHERE volume_id = $v_rec ORDER BY sort_order ASC LIMIT 500);
 };
 
 -- 26. ПОЛУЧЕНИЕ ТОМА ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_volume($id: any) {
     LET $v_rec = IF string::starts_with(type::string($id), 'volumes:') { type::record($id) } ELSE { type::record('volumes', $id) };
-    LET $res = (SELECT * FROM $v_rec LIMIT 1);
+    LET $res = (SELECT id, project_id, title FROM $v_rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -131,5 +131,5 @@ DEFINE FUNCTION OVERWRITE fn::delete_volume($id: any) {
 -- 29. СПИСОК ТОМОВ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::list_volumes_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT id, project_id, title FROM volumes WHERE project_id = $p_rec);
+    RETURN (SELECT id, project_id, title FROM volumes WHERE project_id = $p_rec LIMIT 100);
 };

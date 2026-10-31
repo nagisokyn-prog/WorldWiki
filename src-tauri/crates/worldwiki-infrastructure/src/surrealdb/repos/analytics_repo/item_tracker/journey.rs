@@ -9,20 +9,16 @@ pub(crate) async fn get_item_journey_impl(
     project_id: &str,
     item_id: &str,
 ) -> Result<ItemJourneyDto, DomainError> {
-    let proj_clean = project_id.trim_start_matches("projects:");
+    let proj_clean = clean_raw_id!(project_id, "projects");
     let item_clean = clean_id(item_id);
 
     let sql = "RETURN fn::get_item_journey(type::record('projects', $p), type::record('entities', $e));";
-
-    let mut res = db
-        .query(sql)
-        .bind(("p", proj_clean.to_string()))
-        .bind(("e", item_clean.to_string()))
-        .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-
-    let bundle: Option<RawItemJourneyBundle> =
-        crate::surrealdb::repos::helpers::take_one(&mut res, 0)?;
+    let bundle: Option<RawItemJourneyBundle> = surreal_take_one!(
+        db,
+        sql,
+        ("p", proj_clean),
+        ("e", item_clean.to_string()),
+    )?;
     let bundle = bundle.unwrap_or_default();
 
     let target_item = bundle

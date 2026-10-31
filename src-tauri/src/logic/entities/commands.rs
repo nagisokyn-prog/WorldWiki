@@ -1,7 +1,7 @@
 //! IPC-слой сущностей: только `#[tauri::command]`-обёртки.
 //! Вся бизнес-логика живёт в `mod.rs` (функции `*_inner`).
-//! Архитектурное соглашение: этот файл не содержит логики —
-//! каждая команда распаковывает `State` и вызывает ядро.
+//! Архитектурное соглашение: типовые команды генерируются через `forward_ipc!`,
+//! команды с кастомным логированием или сайд-эффектами остаются явными.
 
 use super::{
     create_entity_relation_inner, delete_entity_inner, delete_entity_relation_inner,
@@ -12,35 +12,26 @@ use super::{
     toggle_entity_history_pin_inner, toggle_schema_history_pin_inner, EntityError,
     SchemaHistoryEntry,
 };
+use crate::forward_ipc;
 use crate::logic::models::{Entity, EntityRel, EntitySchema, RelationSchema};
 use serde_json::Value;
 
-#[tauri::command]
-pub async fn get_entities(
-    project: String,
-    entity_type: Option<String>,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Entity>, EntityError> {
-    get_entities_inner(&state.db, &project, entity_type).await
-}
+forward_ipc!(
+    get_entities(project: String, entity_type: Option<String>) -> Result<Vec<Entity>, EntityError>
+        => get_entities_inner(&project, entity_type)
+);
 
-#[tauri::command]
-pub async fn get_entity(
-    id: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Option<Entity>, EntityError> {
-    get_entity_inner(&state.db, &id).await
-}
+forward_ipc!(
+    get_entity(id: String) -> Result<Option<Entity>, EntityError>
+        => get_entity_inner(&id)
+);
 
-#[tauri::command]
-pub async fn save_entity(
-    project: String,
-    entity: Entity,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Entity, EntityError> {
-    save_entity_inner(&state.db, &project, entity).await
-}
+forward_ipc!(
+    save_entity(project: String, entity: Entity) -> Result<Entity, EntityError>
+        => save_entity_inner(&project, entity)
+);
 
+/// Удаление сущности сохраняется в явном виде из-за подробного диагностического трейсинга.
 #[tauri::command]
 pub async fn delete_entity(
     id: String,
@@ -59,129 +50,72 @@ pub async fn delete_entity(
     }
 }
 
-#[tauri::command]
-pub async fn search_entities(
-    project: String,
-    query: String,
-    entity_type: Option<String>,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Entity>, EntityError> {
-    search_entities_inner(&state.db, &project, &query, entity_type).await
-}
+forward_ipc!(
+    search_entities(project: String, query: String, entity_type: Option<String>) -> Result<Vec<Entity>, EntityError>
+        => search_entities_inner(&project, &query, entity_type)
+);
 
-#[tauri::command]
-pub async fn get_entity_schemas(
-    project: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<EntitySchema>, EntityError> {
-    get_entity_schemas_inner(&state.db, &project).await
-}
+forward_ipc!(
+    get_entity_schemas(project: String) -> Result<Vec<EntitySchema>, EntityError>
+        => get_entity_schemas_inner(&project)
+);
 
-#[tauri::command]
-pub async fn save_entity_schema(
-    project: String,
-    schema: EntitySchema,
-    max_saves: Option<usize>,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<EntitySchema, EntityError> {
-    save_entity_schema_inner(&state.db, &project, schema, max_saves).await
-}
+forward_ipc!(
+    save_entity_schema(project: String, schema: EntitySchema, max_saves: Option<usize>) -> Result<EntitySchema, EntityError>
+        => save_entity_schema_inner(&project, schema, max_saves)
+);
 
-#[tauri::command]
-pub async fn delete_entity_schema(
-    project: String,
-    type_key: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), EntityError> {
-    delete_entity_schema_inner(&state.db, &project, &type_key).await
-}
+forward_ipc!(
+    delete_entity_schema(project: String, type_key: String) -> Result<(), EntityError>
+        => delete_entity_schema_inner(&project, &type_key)
+);
 
-#[tauri::command]
-pub async fn get_schema_history(
-    project: String,
-    type_key: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<SchemaHistoryEntry>, EntityError> {
-    get_schema_history_inner(&state.db, &project, &type_key).await
-}
+forward_ipc!(
+    get_schema_history(project: String, type_key: String) -> Result<Vec<SchemaHistoryEntry>, EntityError>
+        => get_schema_history_inner(&project, &type_key)
+);
 
-#[tauri::command]
-pub async fn toggle_schema_history_pin(
-    history_id: String,
-    is_pinned: bool,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), EntityError> {
-    toggle_schema_history_pin_inner(&state.db, &history_id, is_pinned).await
-}
+forward_ipc!(
+    toggle_schema_history_pin(history_id: String, is_pinned: bool) -> Result<(), EntityError>
+        => toggle_schema_history_pin_inner(&history_id, is_pinned)
+);
 
-#[tauri::command]
-pub async fn get_entity_relations(
-    project: String,
-    entity_id: Option<String>,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<EntityRel>, EntityError> {
-    get_entity_relations_inner(&state.db, &project, entity_id).await
-}
+forward_ipc!(
+    get_entity_relations(project: String, entity_id: Option<String>) -> Result<Vec<EntityRel>, EntityError>
+        => get_entity_relations_inner(&project, entity_id)
+);
 
-#[tauri::command]
-pub async fn create_entity_relation(
-    project: String,
-    from_id: String,
-    to_id: String,
-    rel: EntityRel,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<EntityRel, EntityError> {
-    create_entity_relation_inner(&state.db, &project, &from_id, &to_id, rel).await
-}
+forward_ipc!(
+    create_entity_relation(project: String, from_id: String, to_id: String, rel: EntityRel) -> Result<EntityRel, EntityError>
+        => create_entity_relation_inner(&project, &from_id, &to_id, rel)
+);
 
-#[tauri::command]
-pub async fn delete_entity_relation(
-    id: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), EntityError> {
-    delete_entity_relation_inner(&state.db, &id).await
-}
+forward_ipc!(
+    delete_entity_relation(id: String) -> Result<(), EntityError>
+        => delete_entity_relation_inner(&id)
+);
 
-#[tauri::command]
-pub async fn get_relation_schemas(
-    project: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<RelationSchema>, EntityError> {
-    get_relation_schemas_inner(&state.db, &project).await
-}
+forward_ipc!(
+    get_relation_schemas(project: String) -> Result<Vec<RelationSchema>, EntityError>
+        => get_relation_schemas_inner(&project)
+);
 
-#[tauri::command]
-pub async fn save_relation_schema(
-    project: String,
-    schema: RelationSchema,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<RelationSchema, EntityError> {
-    save_relation_schema_inner(&state.db, &project, schema).await
-}
+forward_ipc!(
+    save_relation_schema(project: String, schema: RelationSchema) -> Result<RelationSchema, EntityError>
+        => save_relation_schema_inner(&project, schema)
+);
 
-#[tauri::command]
-pub async fn delete_relation_schema(
-    project: String,
-    rel_key: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), EntityError> {
-    delete_relation_schema_inner(&state.db, &project, &rel_key).await
-}
+forward_ipc!(
+    delete_relation_schema(project: String, rel_key: String) -> Result<(), EntityError>
+        => delete_relation_schema_inner(&project, &rel_key)
+);
 
-#[tauri::command]
-pub async fn get_entity_revisions(
-    _project: String,
-    entity_id: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Value>, EntityError> {
-    get_entity_revisions_inner(&state.db, &entity_id).await
-}
+forward_ipc!(
+    get_entity_revisions(_project: String, entity_id: String) -> Result<Vec<Value>, EntityError>
+        => get_entity_revisions_inner(&entity_id)
+);
 
-#[tauri::command]
-pub async fn toggle_entity_history_pin(
-    history_id: String,
-    is_pinned: bool,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), EntityError> {
-    toggle_entity_history_pin_inner(&state.db, &history_id, is_pinned).await
-}
+forward_ipc!(
+    toggle_entity_history_pin(history_id: String, is_pinned: bool) -> Result<(), EntityError>
+        => toggle_entity_history_pin_inner(&history_id, is_pinned)
+);

@@ -11,39 +11,20 @@ import type { Calendar } from '../types/generated/Calendar';
 
 export function getDefaultPlanet(projectName: string): PlanetEntity {
   return {
-    id: 'earth',
-    project_id: projectName,
-    name: 'Земля',
-    ticks_per_day: 86400,
-    orbit_days: 365.2422,
-    axial_tilt: 23.44,
-    is_retrograde: false,
-    solstice_world_day: 355,
+    id: 'earth', project_id: projectName, name: 'Земля', ticks_per_day: 86400,
+    orbit_days: 365.2422, axial_tilt: 23.44, is_retrograde: false, solstice_world_day: 355,
     timezones: [
       { id: 'tz_utc', name: 'Гринвич (UTC)', code: 'UTC', base_offset_hours: 0 },
       { id: 'tz_msk', name: 'Москва (MSK)', code: 'MSK', base_offset_hours: 3 },
     ],
-    regions: [
-      {
-        id: 'reg_default',
-        name: 'Умеренные широты',
-        timezone_id: 'tz_utc',
-        latitude: 55.75,
-        longitude: 37.61,
-        summer_day_hours: 17.5,
-        winter_day_hours: 7.0,
-      },
-    ],
-    moons: [
-      {
-        name: 'Луна',
-        period_days: 29.53,
-        period_days_num: 2953,
-        period_days_den: 100,
-        initial_phase: 0,
-        initial_phase_bp: 0
-      }
-    ]
+    regions: [{
+      id: 'reg_default', name: 'Умеренные широты', timezone_id: 'tz_utc',
+      latitude: 55.75, longitude: 37.61, summer_day_hours: 17.5, winter_day_hours: 7.0,
+    }],
+    moons: [{
+      name: 'Луна', period_days: 29.53, period_days_num: 2953, period_days_den: 100,
+      initial_phase: 0, initial_phase_bp: 0,
+    }],
   };
 }
 
@@ -59,26 +40,18 @@ export interface CalendarRecord {
 export function normalizeCalendarId(id: unknown): string {
   if (!id) return '';
   if (typeof id === 'string') {
-    let s = id;
-    if (s.includes('{String:')) {
-      s = s.replace(/.*String:"?([^"]+)"?.*/, '$1');
-    }
+    const s = id.includes('{String:') ? id.replace(/.*String:"?([^"]+)"?.*/, '$1') : id;
     return s.replace(/["'⟨⟩]/g, '').trim();
   }
   if (typeof id === 'object') {
     const obj = id as Record<string, unknown>;
     if (obj.tb && obj.id) {
-      const tb = String(obj.tb);
-      let inner = obj.id;
-      if (typeof inner === 'object' && inner !== null) {
-        const innerObj = inner as Record<string, unknown>;
-        inner = innerObj.String ?? innerObj.Int ?? innerObj.Uuid ?? JSON.stringify(inner);
-      }
-      return `${tb}:${String(inner).replace(/["'⟨⟩]/g, '')}`.trim();
+      const inner = typeof obj.id === 'object' && obj.id !== null
+        ? ((obj.id as Record<string, unknown>).String ?? (obj.id as Record<string, unknown>).Int ?? JSON.stringify(obj.id))
+        : obj.id;
+      return `${obj.tb}:${String(inner).replace(/["'⟨⟩]/g, '')}`.trim();
     }
-    if (obj.String) {
-      return String(obj.String).replace(/["'⟨⟩]/g, '').trim();
-    }
+    if (obj.String) return String(obj.String).replace(/["'⟨⟩]/g, '').trim();
   }
   return String(id).replace(/["'⟨⟩]/g, '').trim();
 }
@@ -99,7 +72,9 @@ export const useCalendarStore = defineStore('calendar', () => {
           if (bundle?.calendars && bundle.calendars.length > 0) {
             rawList = bundle.calendars;
           }
-        } catch (_) {}
+        } catch (err: unknown) {
+          console.warn('[CalendarStore] Failed to load planet-calendar bundle fallback:', err);
+        }
       }
       const list = (rawList || []).map((c) => ({
         ...c,
@@ -270,7 +245,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     return [defaultPlanet];
   }
 
-  async function savePlanet(projectName: string, planet: PlanetEntity): Promise<void> {
+  function savePlanetToStorage(projectName: string, planet: PlanetEntity): void {
     const key = `worldwiki:planets:${projectName}`;
     const list = readPlanetsFromStorage(projectName) || [getDefaultPlanet(projectName)];
     const idx = list.findIndex(p => p.id === planet.id);
@@ -282,8 +257,12 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       localStorage.setItem(key, JSON.stringify(list));
     } catch (e) {
-      console.error('Failed to save planet:', e);
+      console.error('Failed to save planet to storage:', e);
     }
+  }
+
+  async function savePlanet(projectName: string, planet: PlanetEntity): Promise<void> {
+    savePlanetToStorage(projectName, planet);
 
     try {
       await calendarApi.savePlanetDirect(projectName, planet.id || null, planet.name, {
@@ -306,14 +285,18 @@ export const useCalendarStore = defineStore('calendar', () => {
     return Array.isArray(months) && months.length > 0 && Array.isArray(eras) && eras.length > 0;
   }
 
-  async function deletePlanet(projectName: string, planetId: string): Promise<void> {
+  function deletePlanetFromStorage(projectName: string, planetId: string): void {
     const key = `worldwiki:planets:${projectName}`;
     const list = (readPlanetsFromStorage(projectName) || []).filter(p => p.id !== planetId);
     try {
       localStorage.setItem(key, JSON.stringify(list));
     } catch (e) {
-      console.error('Failed to delete planet:', e);
+      console.error('Failed to delete planet from storage:', e);
     }
+  }
+
+  async function deletePlanet(projectName: string, planetId: string): Promise<void> {
+    deletePlanetFromStorage(projectName, planetId);
 
     try {
       await calendarApi.deletePlanetDirect(projectName, planetId, true);
@@ -331,6 +314,8 @@ export const useCalendarStore = defineStore('calendar', () => {
     isValidCalendar,
     getPlanets,
     savePlanet,
-    deletePlanet
+    savePlanetToStorage,
+    deletePlanet,
+    deletePlanetFromStorage,
   };
 });

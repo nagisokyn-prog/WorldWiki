@@ -7,7 +7,7 @@ use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::knowledge::Entity;
 use worldwiki_ports::repositories::EntityRepository;
-use super::helpers::{clean_id, fuzzy_match_name, take_list, take_one};
+use super::helpers::{clean_id, fuzzy_match_name};
 
 pub struct SurrealEntityRepository {
     db: Arc<Surreal<Db>>,
@@ -23,48 +23,28 @@ impl SurrealEntityRepository {
 impl EntityRepository for SurrealEntityRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Entity>, DomainError> {
         let clean = clean_id("entities", id);
-        let sql = "RETURN fn::get_entity_full($id);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("id", clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_one(&mut res, 0)
+        surreal_take_one!(self.db, "RETURN fn::get_entity_full($id);", ("id", clean))
     }
 
     async fn save(&self, entity: &Entity) -> Result<(), DomainError> {
         let clean = clean_id("entities", &entity.id);
         let p_clean = clean_id("projects", &entity.project_id);
-
-        let sql = "RETURN fn::save_entity_full($e_id, $p_id, $entity_type, $name, $description, $attributes, $tags);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("e_id", clean))
-            .bind(("p_id", p_clean))
-            .bind(("entity_type", entity.type_key.clone()))
-            .bind(("name", entity.name.clone()))
-            .bind(("description", entity.description.clone()))
-            .bind(("attributes", entity.attributes.clone()))
-            .bind(("tags", entity.tags.clone()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        surreal_exec!(
+            self.db,
+            "RETURN fn::save_entity_full($e_id, $p_id, $entity_type, $name, $description, $attributes, $tags);",
+            ("e_id", clean),
+            ("p_id", p_clean),
+            ("entity_type", entity.type_key.clone()),
+            ("name", entity.name.clone()),
+            ("description", entity.description.clone()),
+            ("attributes", entity.attributes.clone()),
+            ("tags", entity.tags.clone()),
+        )
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("entities", id);
-        let sql = "RETURN fn::delete_entity_full($id);";
-        let res = self.db
-            .query(sql)
-            .bind(("id", clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        surreal_exec!(self.db, "RETURN fn::delete_entity_full($id);", ("id", clean))
     }
 
     async fn search(
@@ -74,15 +54,11 @@ impl EntityRepository for SurrealEntityRepository {
         top_k: usize,
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("p_clean", p_clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let all_entities: Vec<Entity> = take_list(&mut res, 0)?;
+        let all_entities: Vec<Entity> = surreal_take_list!(
+            self.db,
+            "RETURN fn::list_entities_by_project_full($p_clean);",
+            ("p_clean", p_clean),
+        )?;
 
         let q_trimmed = query.trim();
         if q_trimmed.is_empty() {
@@ -116,28 +92,20 @@ impl EntityRepository for SurrealEntityRepository {
         type_key: &str,
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "RETURN fn::list_entities_by_type_full($p_clean, $type_key);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("p_clean", p_clean))
-            .bind(("type_key", type_key.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        surreal_take_list!(
+            self.db,
+            "RETURN fn::list_entities_by_type_full($p_clean, $type_key);",
+            ("p_clean", p_clean),
+            ("type_key", type_key.to_string()),
+        )
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
-        let res = self
-            .db
-            .query(sql)
-            .bind(("p_clean", p_clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        surreal_take_list!(
+            self.db,
+            "RETURN fn::list_entities_by_project_full($p_clean);",
+            ("p_clean", p_clean),
+        )
     }
 }

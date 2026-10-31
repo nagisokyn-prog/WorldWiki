@@ -97,3 +97,76 @@ pub fn create_test_services(db: std::sync::Arc<Surreal<Db>>) -> worldwiki_tauri:
     let events = std::sync::Arc::new(worldwiki_infrastructure::events::InMemoryEventPublisher);
     crate::bootstrap::services::build_surreal_app_services(db, events)
 }
+
+/// Макрос для создания тестовых сущностей с дефолтными системными полями.
+#[macro_export]
+macro_rules! fixture_entity {
+    // 1. Минимальный персонаж: ($proj, $name)
+    ($proj:expr, $name:expr) => {
+        $crate::fixture_entity!($proj, "character", $name, serde_json::json!({}))
+    };
+    // 2. Сущность с типом: ($proj, $type, $name)
+    ($proj:expr, $type:expr, $name:expr) => {
+        $crate::fixture_entity!($proj, $type, $name, serde_json::json!({}))
+    };
+    // 3. Сущность с атрибутами: ($proj, $type, $name, $attrs)
+    ($proj:expr, $type:expr, $name:expr, $attrs:expr) => {
+        $crate::fixture_entity!($proj, $type, $name, $attrs, vec![])
+    };
+    // 4. Сущность с тегами: ($proj, $type, $name, $attrs, $tags)
+    ($proj:expr, $type:expr, $name:expr, $attrs:expr, $tags:expr) => {
+        $crate::fixture_entity!($proj, $type, $name, $attrs, $tags, None)
+    };
+    // 5. Полная сущность: ($proj, $type, $name, $attrs, $tags, $desc)
+    ($proj:expr, $type:expr, $name:expr, $attrs:expr, $tags:expr, $desc:expr) => {
+        $crate::fixture_entity!($proj, $type, $name, $attrs, $tags, $desc, None)
+    };
+    // 6. С явным ID: ($proj, $type, $name, $attrs, $tags, $desc, $id)
+    ($proj:expr, $type:expr, $name:expr, $attrs:expr, $tags:expr, $desc:expr, $id:expr) => {
+        $crate::logic::models::Entity {
+            id: $id,
+            project_id: Some(format!("projects:{}", $proj.trim_start_matches("projects:"))),
+            schema_id: None,
+            entity_type: $type.into(),
+            name: $name.into(),
+            description: $desc,
+            attributes: $attrs,
+            tags: $tags,
+            embeddings: None,
+            created_at: None,
+            updated_at: None,
+        }
+    };
+}
+pub use fixture_entity;
+
+/// Макрос для создания тестовых связей между сущностями.
+#[macro_export]
+macro_rules! fixture_rel {
+    ($in:expr, $out:expr, $rel_type:expr) => {
+        $crate::fixture_rel!($in, $out, $rel_type, None, None, serde_json::json!({}))
+    };
+    ($in:expr, $out:expr, $rel_type:expr, $desc:expr) => {
+        $crate::fixture_rel!($in, $out, $rel_type, $desc, None, serde_json::json!({}))
+    };
+    ($in:expr, $out:expr, $rel_type:expr, $desc:expr, $strength:expr) => {
+        $crate::fixture_rel!($in, $out, $rel_type, $desc, $strength, serde_json::json!({}))
+    };
+    ($in:expr, $out:expr, $rel_type:expr, $desc:expr, $strength:expr, $attrs:expr) => {
+        $crate::logic::models::EntityRel {
+            id: None,
+            r#in: Some($in.into()),
+            out: Some($out.into()),
+            project_id: None,
+            rel_type: $rel_type.into(),
+            description: $desc,
+            strength: $strength,
+            attributes: $attrs,
+            start_chapter: None,
+            end_chapter: None,
+            created_at: None,
+        }
+    };
+}
+#[allow(unused_imports)]
+pub use fixture_rel;

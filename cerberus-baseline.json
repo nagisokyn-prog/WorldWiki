@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 178,
+    "symbol": "fn::get_timeline_event",
+    "message": "Stored function 'fn::get_timeline_event' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "728af6916fc75368fc78b3f5b112e8208bdbf0e375fd507d0cb36b688890c540"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 241,
+    "symbol": "fn::list_timeline_events_by_project",
+    "message": "Stored function 'fn::list_timeline_events_by_project' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "c0cddd80020907cdacca42e6e29b2c94672b23515a0112945d9dae7b33a60ea8"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 247,
+    "symbol": "fn::add_event_reveal",
+    "message": "Stored function 'fn::add_event_reveal' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "c9b3ceed1d396a212e9ae1a454432dcd9df12a99367c2c48549f36b8c047771a"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
+    "line": 265,
+    "symbol": "fn::remove_event_reveal",
+    "message": "Stored function 'fn::remove_event_reveal' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "32e574e92043ebdd1ea2c5639d490b62cb517f1c08e99c555d4cd9bacc413da8"
+  }
+]

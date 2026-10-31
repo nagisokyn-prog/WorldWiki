@@ -25,12 +25,12 @@ pub fn parse_record_id_ref(s: &str) -> Option<(&str, &str)> {
 pub fn extract_target_id<'a>(table: &str, id: &'a str) -> Option<&'a str> {
     if let Some((tb, raw_id)) = id.split_once(':') {
         if tb == table {
-            Some(raw_id.trim_matches('`'))
+            Some(raw_id.trim_matches(|c| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\''))
         } else {
             None
         }
     } else {
-        Some(id.trim_matches('`'))
+        Some(id.trim_matches(|c| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\''))
     }
 }
 
@@ -53,6 +53,19 @@ pub fn normalize_embedded_things(val: &mut Value) {
                 {
                     *v = Value::String(format!("{}:{}", tb, id_str));
                 }
+            }
+        }
+    }
+}
+
+/// Normalize project_id inside entity map to SurrealDB backtick/bracket format.
+pub fn normalize_map_record_ids(map: &mut serde_json::Map<String, Value>) {
+    if let Some(pid_val) = map.get_mut("project_id") {
+        if let Some(pid_str) = pid_val.as_str() {
+            let clean = pid_str.replace(['⟨', '⟩', '`'], "");
+            let actual = clean.strip_prefix("projects:").unwrap_or(&clean);
+            if !actual.is_empty() {
+                *pid_val = Value::String(format!("projects:⟨{}⟩", actual));
             }
         }
     }

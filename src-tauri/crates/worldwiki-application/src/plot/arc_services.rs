@@ -67,7 +67,6 @@ mod tests {
     use async_trait::async_trait;
     use tokio::sync::Mutex;
     use worldwiki_domain::errors::DomainError;
-    use worldwiki_domain::plot::ArcType;
 
     struct MockStoryArcRepo {
         arcs: Mutex<Vec<StoryArc>>,
@@ -124,7 +123,7 @@ mod tests {
         });
         let services = StoryArcServices::new(repo);
 
-        let arc = StoryArc::new("proj_1", "Война Кольца", ArcType::Event);
+        let arc = StoryArc::new("proj_1", "Война Кольца");
         let id = services.save_arc(&arc).await.unwrap();
         assert_eq!(id, "story_arcs:arc_1");
 

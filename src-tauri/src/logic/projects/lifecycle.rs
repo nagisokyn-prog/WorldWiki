@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::Value;
 use surrealdb::{engine::local::Db, Surreal};
 use crate::logic::projects::errors::ProjectError;
 
@@ -22,9 +22,8 @@ pub async fn create_project_inner(
     let mut data = project_data.clone();
     if let Some(obj) = data.as_object_mut() {
         obj.remove("id");
-        if !obj.contains_key("data") {
-            obj.insert("data".to_string(), json!({}));
-        }
+        obj.remove("data");
+        obj.remove("perfLevel");
     }
     db.upsert::<Option<Value>>(("projects", name.clone()))
         .content(data)

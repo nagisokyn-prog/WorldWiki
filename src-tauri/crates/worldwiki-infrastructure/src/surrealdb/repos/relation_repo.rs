@@ -64,7 +64,7 @@ impl RelationRepository for SurrealRelationRepository {
         entity_id: &str,
     ) -> Result<Vec<EntityRelation>, DomainError> {
         let clean_target = clean_id("entities", entity_id);
-        let sql = "SELECT * FROM entity_rel WHERE in = $target OR out = $target;";
+        let sql = "SELECT * FROM entity_rel WHERE in = type::record($target) OR out = type::record($target);";
         let mut res = self
             .db
             .query(sql)

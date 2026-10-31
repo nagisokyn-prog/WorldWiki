@@ -23,7 +23,7 @@ impl SurrealStoryArcRepository {
 impl StoryArcRepository for SurrealStoryArcRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<StoryArc>, DomainError> {
         let clean = clean_id("story_arcs", id);
-        let sql = "SELECT * FROM type::record('story_arcs', $id);";
+        let sql = "SELECT * FROM type::record($id);";
         let mut res = self
             .db
             .query(sql)
@@ -46,10 +46,10 @@ impl StoryArcRepository for SurrealStoryArcRepository {
 
         let sql = if let Some(id) = clean_id_opt {
             let s = r#"
-                UPSERT type::record('story_arcs', $id) MERGE {
+                UPSERT type::record($id) MERGE {
                     title: $title,
                     status: $status,
-                    project_id: type::record('projects', $p_id),
+                    project_id: type::record($p_id),
                     updated_at: time::now()
                 };
             "#;
@@ -72,7 +72,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
                 CREATE story_arcs CONTENT {
                     title: $title,
                     status: $status,
-                    project_id: type::record('projects', $p_id),
+                    project_id: type::record($p_id),
                     created_at: time::now(),
                     updated_at: time::now()
                 };
@@ -94,7 +94,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("story_arcs", id);
-        let sql = "DELETE type::record('story_arcs', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -105,7 +105,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<StoryArc>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = type::record('projects', $p_clean) ORDER BY created_at ASC;";
+        let sql = "SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = type::record($p_clean) ORDER BY created_at ASC;";
         let mut res = self
             .db
             .query(sql)
@@ -134,7 +134,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
     async fn list_chapters_for_arc(&self, arc_id: &str) -> Result<Vec<ArcChapterRelation>, DomainError> {
         let clean_arc = clean_id("story_arcs", arc_id);
         let sql = r#"
-            LET $arc_rec = type::record('story_arcs', $arc_id);
+            LET $arc_rec = type::record($arc_id);
             SELECT 
                 $arc_id AS arc_id,
                 type::string(in.chapter_id) AS chapter_id,
@@ -156,7 +156,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
     async fn list_entities_for_arc(&self, arc_id: &str) -> Result<Vec<ArcEntityRelation>, DomainError> {
         let clean_arc = clean_id("story_arcs", arc_id);
         let sql = r#"
-            LET $arc_rec = type::record('story_arcs', $arc_id);
+            LET $arc_rec = type::record($arc_id);
             SELECT DISTINCT
                 $arc_id AS arc_id,
                 type::string(<-participant_of.in.id) AS entity_id

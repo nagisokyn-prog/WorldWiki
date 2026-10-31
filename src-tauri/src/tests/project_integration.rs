@@ -20,13 +20,13 @@ async fn create_and_get_projects() {
     create_project_inner(&db, json!({
         "name": "project_alpha",
         "type": "book",
-        "data": { "title": "Альфа Мир" }
+        "genres": ["фэнтези"]
     })).await.expect("create alpha");
 
     create_project_inner(&db, json!({
         "name": "project_beta",
         "type": "game",
-        "data": { "title": "Бета Мир" }
+        "genres": ["scifi"]
     })).await.expect("create beta");
 
     let projects = get_projects_inner(&db).await.expect("get projects");
@@ -42,21 +42,19 @@ async fn project_config_get_and_save() {
     let db = create_test_db().await;
     seed_project(&db, "cfg_proj", "Config Test").await;
 
-    // Сохраняем кастомный конфиг внутри data (FLEXIBLE)
+    // Сохраняем канонические метаданные книги (type, genres, cover_image)
     let cfg = json!({
-        "data": {
-            "theme": "dark",
-            "default_font": "Inter",
-            "author": "Архитектор Миров"
-        }
+        "type": "novel",
+        "genres": ["фэнтези", "детектив"],
+        "cover_image": "covers/test.png"
     });
     save_project_config_inner(&db, "cfg_proj", cfg).await.expect("save config");
 
     // Получаем конфиг
     let fetched = get_project_config_inner(&db, "cfg_proj").await.expect("get config");
-    assert_eq!(fetched["data"]["theme"], "dark");
-    assert_eq!(fetched["data"]["default_font"], "Inter");
-    assert_eq!(fetched["data"]["author"], "Архитектор Миров");
+    assert_eq!(fetched["type"], "novel");
+    assert_eq!(fetched["genres"], json!(["фэнтези", "детектив"]));
+    assert_eq!(fetched["cover_image"], "covers/test.png");
 }
 
 #[tokio::test]

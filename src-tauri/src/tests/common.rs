@@ -35,7 +35,7 @@ pub async fn create_test_db() -> Surreal<Db> {
 #[allow(dead_code)]
 pub async fn seed_project(db: &Surreal<Db>, key: &str, name: &str) {
     db.upsert::<Option<serde_json::Value>>(("projects", key))
-        .content(serde_json::json!({ "name": name, "data": {} }))
+        .content(serde_json::json!({ "name": name }))
         .await
         .expect("upsert project should run");
 }
@@ -51,11 +51,19 @@ pub async fn seed_chapter(
 ) -> String {
     let proj_raw = project_key.strip_prefix("projects:").unwrap_or(project_key).trim_matches('`');
     let chap_raw = chapter_key.strip_prefix("chapters:").unwrap_or(chapter_key).trim_matches('`');
+    let vid = format!("vol_{}", proj_raw);
 
-    let sql = "UPSERT type::record('chapters', $cid) SET project_id = type::record('projects', $pid), title = $title, content = $content, word_count = 0";
+    let vol_sql = "UPSERT type::record('volumes', $vid) SET project_id = type::record('projects', $pid), title = 'Volume 1';";
+    db.query(vol_sql)
+        .bind(("vid", vid.clone()))
+        .bind(("pid", proj_raw))
+        .await
+        .expect("create volume for seed_chapter should run");
+
+    let sql = "UPSERT type::record('chapters', $cid) SET volume_id = type::record('volumes', $vid), title = $title, content = $content, word_count = 0;";
     let mut res = db.query(sql)
         .bind(("cid", chap_raw))
-        .bind(("pid", proj_raw))
+        .bind(("vid", vid))
         .bind(("title", title))
         .bind(("content", content))
         .await
@@ -67,7 +75,7 @@ pub async fn seed_chapter(
         panic!("seed_chapter schema error for '{chapter_key}': {e}");
     }
 
-    let records: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+    let records: Vec<serde_json::Value> = res.take(0).expect("take chapter record");
     if records.is_empty() {
         panic!("seed_chapter failed to create record: result is empty");
     }

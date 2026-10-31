@@ -6,10 +6,15 @@ use worldwiki_domain::errors::DomainError;
 
 /// Helper to sanitize record IDs (ensures table prefix handling)
 pub fn clean_id(table: &str, raw_id: &str) -> String {
-    if raw_id.contains(':') {
-        raw_id.to_string()
+    let trimmed = raw_id.trim().trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
+    if trimmed.is_empty() {
+        return format!("{table}:default");
+    }
+    if let Some((tbl, id_part)) = trimmed.split_once(':') {
+        let clean_id = id_part.trim().trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
+        format!("{}:{}", tbl.trim(), clean_id)
     } else {
-        format!("{table}:{raw_id}")
+        format!("{}:{}", table, trimmed)
     }
 }
 

@@ -23,7 +23,7 @@ impl SurrealChapterRepository {
 impl ChapterRepository for SurrealChapterRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Chapter>, DomainError> {
         let clean = clean_id("chapters", id);
-        let sql = "SELECT * FROM type::record('chapters', $id);";
+        let sql = "SELECT * FROM type::record($id);";
         let mut res = self
             .db
             .query(sql)
@@ -38,10 +38,10 @@ impl ChapterRepository for SurrealChapterRepository {
         let vol_clean = clean_id("volumes", &chapter.volume_id);
 
         let sql = r#"
-            UPSERT type::record('chapters', $c_id) MERGE {
+            UPSERT type::record($c_id) MERGE {
                 title: $title,
                 content: $content,
-                volume_id: type::record('volumes', $v_id),
+                volume_id: type::record($v_id),
                 sort_order: $sort_order,
                 word_count: $word_count,
                 updated_at: time::now()
@@ -67,7 +67,7 @@ impl ChapterRepository for SurrealChapterRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("chapters", id);
-        let sql = "DELETE type::record('chapters', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -78,7 +78,7 @@ impl ChapterRepository for SurrealChapterRepository {
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "SELECT * FROM chapters WHERE volume_id.project_id = type::record('projects', $p_clean) ORDER BY sort_order ASC;";
+        let sql = "SELECT * FROM chapters WHERE volume_id.project_id = type::record($p_clean) ORDER BY sort_order ASC;";
         let mut res = self
             .db
             .query(sql)
@@ -90,7 +90,7 @@ impl ChapterRepository for SurrealChapterRepository {
 
     async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let v_clean = clean_id("volumes", volume_id);
-        let sql = "SELECT * FROM chapters WHERE volume_id = type::record('volumes', $v_id) ORDER BY sort_order ASC;";
+        let sql = "SELECT * FROM chapters WHERE volume_id = type::record($v_id) ORDER BY sort_order ASC;";
         let mut res = self
             .db
             .query(sql)
@@ -109,7 +109,7 @@ impl ChapterRepository for SurrealChapterRepository {
 
         let mut res = self
             .db
-            .query("RETURN fn::sync_chapter_mentions(type::record('chapters', $c_id), $names);")
+            .query("RETURN fn::sync_chapter_mentions(type::record($c_id), $names);")
             .bind(("c_id", clean_ch))
             .bind(("names", entity_names.to_vec()))
             .await

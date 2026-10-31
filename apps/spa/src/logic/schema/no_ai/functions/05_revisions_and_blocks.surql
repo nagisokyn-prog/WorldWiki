@@ -28,13 +28,11 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
     $chap: record<chapters>,
     $blocks: array<object>
 ) {
-    LET $p_rec = fn::normalize_project_id($proj);
-    DELETE text_blocks WHERE chapter_id = $chap AND project_id = $p_rec;
+    DELETE text_blocks WHERE chapter_id = $chap;
 
     IF array::len($blocks) > 0 {
         INSERT INTO text_blocks (
             SELECT 
-                $p_rec AS project_id, 
                 $chap AS chapter_id, 
                 block_type, 
                 order_index, 
@@ -49,15 +47,11 @@ DEFINE FUNCTION OVERWRITE fn::save_global_timeline(
     $proj: record<projects>,
     $items: array<object>
 ) {
-    LET $p_rec = fn::normalize_project_id($proj);
     FOR $item IN $items {
         IF $item.chapter_id != NONE {
             LET $cid = type::record('chapters', $item.chapter_id);
             UPDATE $cid SET 
-                project_id = $p_rec,
-                title = IF $item.title != NONE { $item.title } ELSE { title },
-                timeline_events = IF $item.events != NONE { $item.events } ELSE { [] },
-                participants = IF $item.participants != NONE { $item.participants } ELSE { [] };
+                title = IF $item.title != NONE { $item.title } ELSE { title };
         };
     };
 };

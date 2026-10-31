@@ -23,7 +23,7 @@ impl SurrealVolumeRepository {
 impl VolumeRepository for SurrealVolumeRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Volume>, DomainError> {
         let clean = clean_id("volumes", id);
-        let sql = "SELECT * FROM type::record('volumes', $id);";
+        let sql = "SELECT * FROM type::record($id);";
         let mut res = self
             .db
             .query(sql)
@@ -37,9 +37,9 @@ impl VolumeRepository for SurrealVolumeRepository {
         let clean = clean_id("volumes", &volume.id);
         let proj_clean = clean_id("projects", &volume.project_id);
         let sql = r#"
-            UPSERT type::record('volumes', $id) SET
+            UPSERT type::record($id) SET
                 title = $title,
-                project_id = type::record('projects', $p_id);
+                project_id = type::record($p_id);
         "#;
         self.db
             .query(sql)
@@ -53,7 +53,7 @@ impl VolumeRepository for SurrealVolumeRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("volumes", id);
-        let sql = "DELETE type::record('volumes', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -64,7 +64,7 @@ impl VolumeRepository for SurrealVolumeRepository {
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Volume>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "SELECT id, project_id, title FROM volumes WHERE project_id = type::record('projects', $p_clean);";
+        let sql = "SELECT id, project_id, title FROM volumes WHERE project_id = type::record($p_clean);";
         let mut res = self
             .db
             .query(sql)

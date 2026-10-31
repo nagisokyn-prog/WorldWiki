@@ -9,7 +9,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $data: object
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $rec_id = type::record('plot_promises', $id);
+    LET $rec_id = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
     LET $milestones = IF $data.milestones != NONE { $data.milestones } ELSE { [] };
     
     LET $target_chap = IF $chap != NONE AND $chap != NULL AND type::string($chap) != '' {
@@ -45,10 +45,6 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             location_id: IF $data.location_id != NONE { $data.location_id } ELSE { NONE },
             timeline_event_id: IF $data.timeline_event_id != NONE { 
                 IF $data.timeline_event_id != NULL { type::record('timeline_events', type::string($data.timeline_event_id).replace('timeline_events:', '')) } ELSE { NONE }
-            } ELSE { NONE },
-            m_abs: IF $data.m_abs != NONE { $data.m_abs } ELSE { NONE },
-            calendar_id: IF $data.calendar_id != NONE {
-                IF $data.calendar_id != NULL { type::record('calendars', type::string($data.calendar_id).replace('calendars:', '')) } ELSE { NONE }
             } ELSE { NONE },
             updated_at: time::now()
         }

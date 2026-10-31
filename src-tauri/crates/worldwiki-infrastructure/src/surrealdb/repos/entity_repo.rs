@@ -34,7 +34,7 @@ impl EntityRepository for SurrealEntityRepository {
                 tags, 
                 created_at, 
                 updated_at 
-            FROM type::record('entities', $id);
+            FROM type::record($id);
         "#;
         let mut res = self
             .db
@@ -50,7 +50,7 @@ impl EntityRepository for SurrealEntityRepository {
         let p_clean = clean_id("projects", &entity.project_id);
 
         let sql = r#"
-            LET $p_rec = type::record('projects', $p_id);
+            LET $p_rec = type::record($p_id);
             LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1);
             LET $schema_id = IF array::len($schema_res) > 0 {
                 $schema_res[0]
@@ -61,7 +61,7 @@ impl EntityRepository for SurrealEntityRepository {
                     type_name = $entity_type
                 )[0].id
             };
-            LET $e_rec = type::record('entities', $e_id);
+            LET $e_rec = type::record($e_id);
             UPSERT $e_rec SET
                 schema_id = $schema_id,
                 name = $name,
@@ -91,7 +91,7 @@ impl EntityRepository for SurrealEntityRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("entities", id);
-        let sql = "DELETE type::record('entities', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -119,7 +119,7 @@ impl EntityRepository for SurrealEntityRepository {
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE schema_id.project_id = type::record('projects', $p_clean)
+            WHERE schema_id.project_id = type::record($p_clean)
             ORDER BY name ASC;
         "#;
         let mut res = self
@@ -174,7 +174,7 @@ impl EntityRepository for SurrealEntityRepository {
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE schema_id.project_id = type::record('projects', $p_clean) 
+            WHERE schema_id.project_id = type::record($p_clean) 
               AND schema_id.type_key = $type_key 
             ORDER BY name ASC;
         "#;
@@ -202,7 +202,7 @@ impl EntityRepository for SurrealEntityRepository {
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE schema_id.project_id = type::record('projects', $p_clean) 
+            WHERE schema_id.project_id = type::record($p_clean) 
             ORDER BY name ASC;
         "#;
         let mut res = self

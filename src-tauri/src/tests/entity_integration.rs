@@ -331,8 +331,6 @@ async fn save_entity_schema_and_history_snapshot() {
         project_id: Some("projects:p1".into()),
         type_key: "hero".into(),
         type_name: "Герой".into(),
-        icon: "user".into(),
-        color: "#ff0000".into(),
         fields_schema: vec![],
         full_schema: None,
         created_at: None,
@@ -350,8 +348,6 @@ async fn save_entity_schema_and_history_snapshot() {
         project_id: Some("projects:p1".into()),
         type_key: "hero".into(),
         type_name: "Великий Герой".into(),
-        icon: "star".into(),
-        color: "#ffff00".into(),
         fields_schema: vec![],
         full_schema: None,
         created_at: None,
@@ -592,7 +588,7 @@ async fn relation_schemas_get_roundtrip_from_raw_rows() {
     db.query(
         "CREATE relation_schemas SET \
          project_id = type::record('projects', 'p1'), rel_key = 'mentor', rel_name = 'Наставник', \
-         icon = 'graduation', color = '#00ff00', directed = true, \
+         icon = 'graduation', color = '#00ff00', \
          from_types = ['character'], to_types = ['character']",
     ).await.expect("insert raw relation schema");
 
@@ -600,7 +596,6 @@ async fn relation_schemas_get_roundtrip_from_raw_rows() {
     assert_eq!(schemas.len(), 1);
     assert_eq!(schemas[0].rel_key, "mentor");
     assert_eq!(schemas[0].rel_name, "Наставник");
-    assert!(schemas[0].directed);
     assert_eq!(schemas[0].from_types, vec!["character".to_string()]);
 }
 
@@ -614,8 +609,6 @@ async fn delete_entity_schema_cascades_entities_of_type() {
         project_id: Some("projects:p1".into()),
         type_key: "creature".into(),
         type_name: "Существо".into(),
-        icon: "paw".into(),
-        color: "#00aa00".into(),
         fields_schema: vec![],
         full_schema: None,
         created_at: None,

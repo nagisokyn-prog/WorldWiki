@@ -4,7 +4,7 @@
 -- 27. ПОЛУЧЕНИЕ СХЕМ СВЯЗЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT id, project_id, rel_key, rel_name, icon, color, directed, from_types, to_types FROM relation_schemas WHERE project_id = $p_rec LIMIT 1000);
+    RETURN (SELECT id, project_id, rel_key, rel_name, icon, color, from_types, to_types FROM relation_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 28. УДАЛЕНИЕ СХЕМЫ СВЯЗИ И СВЯЗАННЫХ РЕБЕР
@@ -17,7 +17,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: record<projects>, $r
 -- 29. ПОЛУЧЕНИЕ СХЕМ СУЩНОСТЕЙ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT id, project_id, type_key, type_name, icon, color, fields_schema, full_schema, created_at FROM entity_schemas WHERE project_id = $p_rec LIMIT 1000);
+    RETURN (SELECT id, project_id, type_key, type_name, fields_schema, full_schema, created_at FROM entity_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 30. ПОИСК ID СХЕМЫ СУЩНОСТИ ПО TYPE_KEY
@@ -33,8 +33,6 @@ DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
     $proj: record<projects>,
     $type_key: string,
     $type_name: string,
-    $icon: option<string | null>,
-    $color: option<string | null>,
     $fields_schema: array,
     $full_schema: option<object | null>
 ) {
@@ -44,8 +42,6 @@ DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
             project_id = $p_rec,
             type_key = $type_key,
             type_name = $type_name,
-            icon = $icon,
-            color = $color,
             fields_schema = $fields_schema,
             full_schema = $full_schema
     );

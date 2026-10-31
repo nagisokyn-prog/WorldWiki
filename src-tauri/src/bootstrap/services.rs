@@ -23,8 +23,8 @@ use worldwiki_infrastructure::surrealdb::chat_repo::SurrealChatRepository;
 use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
 use worldwiki_infrastructure::surrealdb::repos::{
     SurrealAnalyticsRepository, SurrealChapterRepository, SurrealEntityRepository,
-    SurrealPlanRepository, SurrealPlotPromiseRepository, SurrealRAGAdapter,
-    SurrealRelationRepository, SurrealStoryArcRepository, SurrealTimelineRepository,
+    SurrealPlotPromiseRepository, SurrealRAGAdapter, SurrealRelationRepository,
+    SurrealStoryArcRepository, SurrealTimelineRepository, SurrealTodoRepository,
 };
 use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
 use worldwiki_ports::ai::{
@@ -32,8 +32,9 @@ use worldwiki_ports::ai::{
 };
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_ports::repositories::{
-    AnalyticsRepositoryPort, ChapterRepository, EntityRepository, PlanRepository,
+    AnalyticsRepositoryPort, ChapterRepository, EntityRepository,
     PlotPromiseRepository, RelationRepository, StoryArcRepository, TimelineEventRepository,
+    TodoRepository,
 };
 use worldwiki_tauri::state::AppServices;
 
@@ -73,7 +74,7 @@ fn build_core_domain(
     let calendar = Arc::new(CalendarServices::new());
     let plot = Arc::new(PlotServices::new(
         Arc::clone(&repos.promise),
-        Arc::clone(&repos.plan),
+        Arc::clone(&repos.todo),
         Arc::clone(&events),
     ));
     let story_arcs = Arc::new(StoryArcServices::new(Arc::clone(&repos.story_arc)));
@@ -161,7 +162,7 @@ struct SurrealRepos {
     entity: Arc<dyn EntityRepository>,
     relation: Arc<dyn RelationRepository>,
     promise: Arc<dyn PlotPromiseRepository>,
-    plan: Arc<dyn PlanRepository>,
+    todo: Arc<dyn TodoRepository>,
     story_arc: Arc<dyn StoryArcRepository>,
     timeline: Arc<dyn TimelineEventRepository>,
     analytics: Arc<dyn AnalyticsRepositoryPort>,
@@ -178,7 +179,7 @@ impl SurrealRepos {
             entity: Arc::new(SurrealEntityRepository::new(Arc::clone(db))),
             relation: Arc::new(SurrealRelationRepository::new(Arc::clone(db))),
             promise: Arc::new(SurrealPlotPromiseRepository::new(Arc::clone(db))),
-            plan: Arc::new(SurrealPlanRepository::new(Arc::clone(db))),
+            todo: Arc::new(SurrealTodoRepository::new(Arc::clone(db))),
             story_arc: Arc::new(SurrealStoryArcRepository::new(Arc::clone(db))),
             timeline: Arc::new(SurrealTimelineRepository::new(Arc::clone(db))),
             analytics: Arc::new(SurrealAnalyticsRepository::new(Arc::clone(db))),

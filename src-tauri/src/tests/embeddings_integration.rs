@@ -132,7 +132,7 @@ async fn vector_search_cosine_knn_retrieval() {
     let mut res = db
         .query(
             "SELECT name, vector::similarity::cosine(embeddings.openai, $q) AS sim \
-             FROM entities WHERE project_id = type::record('projects:p_vec2') \
+             FROM entities WHERE schema_id.project_id = type::record('projects:p_vec2') \
              ORDER BY sim DESC LIMIT 1"
         )
         .bind(("q", query_vector))
@@ -153,25 +153,34 @@ async fn test_high_performance_lore_reindexing() {
     let db = create_test_db().await;
     seed_project(&db, "p_lore", "High Performance Lore Indexing Project").await;
 
-    // 1. Создаем главу на ~15 000 символов (3000+ слов)
+    // 1. Создаем том и главу на ~15 000 символов (3000+ слов)
     let long_chapter_text = (0..50)
         .map(|i| format!("Параграф {i}: Древний замок возвышался на скале над бушующим морем. Ветер завывал в бойницах, разнося запах соли и грозы. Герои обсуждали план штурма цитадели."))
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    db.query("CREATE chapters SET project_id = type::record('projects:p_lore'), title = 'Глава 1. Цитадель Ветров', content = $content, word_count = 3040;")
-        .bind(("content", long_chapter_text))
+    db.query("UPSERT type::record('volumes', 'vol_lore') SET project_id = type::record('projects:p_lore'), title = 'Volume 1';")
         .await
         .unwrap();
 
+    let mut res_ch = db.query("CREATE chapters SET volume_id = type::record('volumes:vol_lore'), title = 'Глава 1. Цитадель Ветров', content = $content, word_count = 3040;")
+        .bind(("content", long_chapter_text))
+        .await
+        .unwrap();
+    res_ch.check().expect("chapter creation must succeed");
+
     // 2. Создаем несколько сущностей энциклопедии
-    db.query("UPSERT type::record('entity_schemas', 'char_lore') SET project_id = type::record('projects', 'p_lore'), type_key = 'character', type_name = 'Персонаж', icon = 'user', color = '#fff';").await.unwrap();
+    db.query("UPSERT type::record('entity_schemas', 'char_lore') SET project_id = type::record('projects:p_lore'), type_key = 'character', type_name = 'Персонаж';")
+        .await
+        .unwrap();
+
     for i in 0..10 {
-        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), schema_id = type::record('entity_schemas', 'char_lore'), name = $name, attributes = $fields;")
+        let mut res_ent = db.query("CREATE entities SET schema_id = type::record('entity_schemas:char_lore'), name = $name, attributes = $fields, tags = [];")
             .bind(("name", format!("Герой {i}")))
             .bind(("fields", json!({ "role": "рыцарь", "ability": "магия ветра" })))
             .await
             .unwrap();
+        res_ent.check().expect("entity creation must succeed");
     }
 
     // 3. Запускаем высокопроизводительную переиндексацию

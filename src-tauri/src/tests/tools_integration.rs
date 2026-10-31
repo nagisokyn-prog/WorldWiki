@@ -105,6 +105,7 @@ async fn test_facade_read_and_edit_manuscript() {
     let edit_req = EditManuscriptRequest {
         chapter_id: chap_id.clone(),
         content_patch: "Обновленный текст главы соавтором.".to_string(),
+        project_id: Some("p_ms".to_string()),
         planted_promises: vec![],
         resolved_promise_ids: vec![],
         completed_plan_ids: vec![],

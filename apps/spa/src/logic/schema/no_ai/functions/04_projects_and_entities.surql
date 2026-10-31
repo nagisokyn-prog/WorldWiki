@@ -3,7 +3,7 @@
 
 -- 13. СПИСОК ВСЕХ ПРОЕКТОВ
 DEFINE FUNCTION OVERWRITE fn::get_projects_list() {
-    RETURN (SELECT id, name, created_at, data, type, genres, perfLevel, cover_image, type::string(id) AS id FROM projects ORDER BY created_at DESC LIMIT 1000);
+    RETURN (SELECT id, name, created_at, type, genres, cover_image, type::string(id) AS id FROM projects ORDER BY created_at DESC LIMIT 1000);
 };
 
 -- 14. ПОЛУЧЕНИЕ КОНФИГУРАЦИИ ПРОЕКТА
@@ -13,7 +13,7 @@ DEFINE FUNCTION OVERWRITE fn::get_project_config($name: any) {
     };
     LET $p_rec = fn::normalize_project_id($name);
     LET $res = (
-        SELECT id, name, created_at, data, type, genres, perfLevel, cover_image, type::string(id) AS id FROM projects 
+        SELECT id, name, created_at, type, genres, cover_image, type::string(id) AS id FROM projects 
         WHERE id = $p_rec OR name = type::string($name)
         LIMIT 1
     );
@@ -25,14 +25,14 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
         SELECT id, attributes FROM entities 
-        WHERE project_id = $p_rec
+        WHERE schema_id.project_id = $p_rec
         LIMIT 10000
     );
 };
 
 -- 16. ОБНОВЛЕНИЕ АТРИБУТОВ СУЩНОСТИ
 DEFINE FUNCTION OVERWRITE fn::update_entity_attributes($entity: record<entities>, $attrs: object) {
-    UPDATE $entity SET attributes = $attrs;
+    UPDATE $entity SET attributes = $attrs, updated_at = time::now();
 };
 
 -- 34. ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПРОЕКТА С ФИЛЬТРАЦИЕЙ ПО ТИПУ
@@ -42,18 +42,18 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
         RETURN (
             SELECT 
                 id, 
-                project_id, 
+                schema_id.project_id AS project_id, 
                 schema_id, 
                 schema_id.type_key AS entity_type, 
                 name, 
                 description, 
                 attributes, 
-                (->tagged_with.out.name) AS tags, 
+                tags, 
                 embeddings, 
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE project_id = $p_rec
+            WHERE schema_id.project_id = $p_rec
               AND schema_id.type_key = $et
             ORDER BY name ASC
             LIMIT 10000
@@ -62,18 +62,18 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
         RETURN (
             SELECT 
                 id, 
-                project_id, 
+                schema_id.project_id AS project_id, 
                 schema_id, 
                 schema_id.type_key AS entity_type, 
                 name, 
                 description, 
                 attributes, 
-                (->tagged_with.out.name) AS tags, 
+                tags, 
                 embeddings, 
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE project_id = $p_rec
+            WHERE schema_id.project_id = $p_rec
             ORDER BY name ASC
             LIMIT 10000
         );
@@ -82,24 +82,22 @@ DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<
 
 -- 34.1. ПОЛУЧЕНИЕ ЕДИНИЧНОЙ СУЩНОСТИ ПО ID С КАНОНИЧЕСКОЙ ПРОЕКЦИЕЙ
 DEFINE FUNCTION OVERWRITE fn::get_entity($id: record<entities>) {
-    LET $tags = (SELECT VALUE out.name FROM tagged_with WHERE in = $id ORDER BY out.name ASC LIMIT 100);
-    LET $res = (
+    RETURN (
         SELECT 
             id, 
-            project_id, 
+            schema_id.project_id AS project_id, 
             schema_id, 
             schema_id.type_key AS entity_type, 
             name, 
             description, 
             attributes, 
-            $tags AS tags, 
+            tags, 
             embeddings, 
             created_at, 
             updated_at 
         FROM ONLY $id
         LIMIT 1
     );
-    RETURN $res;
 };
 
 -- 35. СОХРАНЕНИЕ СУЩНОСТИ (UPSERT ИЛИ CREATE)
@@ -124,66 +122,47 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
             project_id = $p_rec,
             type_key = $entity_type,
             type_name = $entity_type,
-            icon = 'box',
-            color = 'var(--text-accent)'
+            fields_schema = []
         )[0].id
     };
 
-    -- 2. Сохраняем чистую сущность (только schema_id, без дублирующих колонок entity_type и tags)
+    -- 2. Сохраняем сущность (чистая 3NF модель)
+    LET $clean_tags = IF $tags != NONE AND $tags != NULL { $tags } ELSE { [] };
     LET $rec_id = IF $id != NONE AND $id != NULL {
-        LET $existing = (SELECT id, project_id, schema_id, name, description, attributes, embeddings, created_at, updated_at FROM ONLY $id);
+        LET $existing = (SELECT id, schema_id, name, description, attributes, tags, embeddings, created_at, updated_at FROM ONLY $id);
         (UPSERT $id SET
-            project_id = $p_rec,
             schema_id = $schema_id,
             name = $name,
             description = IF $desc != NONE AND $desc != NULL { $desc } ELSE IF $existing != NONE { $existing.description } ELSE { NONE },
             attributes = IF $attrs != NONE AND $attrs != NULL AND array::len(object::keys($attrs)) > 0 { $attrs } ELSE IF $existing != NONE { $existing.attributes } ELSE { {} },
-            embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE IF $existing != NONE { $existing.embeddings } ELSE { {} }
+            tags = $clean_tags,
+            embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE IF $existing != NONE { $existing.embeddings } ELSE { {} },
+            updated_at = time::now()
         )[0].id
     } ELSE {
         (CREATE entities SET
-            project_id = $p_rec,
             schema_id = $schema_id,
             name = $name,
             description = $desc,
             attributes = IF $attrs != NONE AND $attrs != NULL { $attrs } ELSE { {} },
-            embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE { {} }
+            tags = $clean_tags,
+            embeddings = IF $embeds != NONE AND $embeds != NULL { $embeds } ELSE { {} },
+            created_at = time::now(),
+            updated_at = time::now()
         )[0].id
     };
 
-    -- 3. Синхронизируем теги через ребро tagged_with
-    IF $tags != NONE AND $tags != NULL {
-        DELETE tagged_with WHERE in = $rec_id;
-        FOR $tag_name IN $tags {
-            IF string::len(string::trim($tag_name)) > 0 {
-                LET $clean_tag = string::trim($tag_name);
-                LET $existing_tag = (SELECT VALUE id FROM tags WHERE project_id = $p_rec AND name = $clean_tag LIMIT 1);
-                LET $tag_id = IF array::len($existing_tag) > 0 {
-                    $existing_tag[0]
-                } ELSE {
-                    (CREATE tags SET
-                        project_id = $p_rec,
-                        name = $clean_tag,
-                        color = 'var(--text-accent)'
-                    )[0].id
-                };
-                RELATE $rec_id -> tagged_with -> $tag_id SET project_id = $p_rec;
-            };
-        };
-    };
-
-    -- 4. Возвращаем каноническую проекцию с entity_type и tags
-    LET $tags_res = (SELECT VALUE out.name FROM tagged_with WHERE in = $rec_id ORDER BY out.name ASC LIMIT 100);
+    -- 3. Возвращаем каноническую проекцию с entity_type и tags
     RETURN (
         SELECT 
             id,
-            project_id,
+            schema_id.project_id AS project_id,
             schema_id,
             schema_id.type_key AS entity_type,
             name,
             description,
             attributes,
-            $tags_res AS tags,
+            tags,
             embeddings,
             created_at,
             updated_at
@@ -199,18 +178,18 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
         RETURN (
             SELECT 
                 id, 
-                project_id, 
+                schema_id.project_id AS project_id, 
                 schema_id, 
                 schema_id.type_key AS entity_type, 
                 name, 
                 description, 
                 attributes, 
-                (->tagged_with.out.name) AS tags, 
+                tags, 
                 embeddings, 
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE project_id = $p_rec
+            WHERE schema_id.project_id = $p_rec
               AND (name @1@ $q OR description @1@ $q)
               AND schema_id.type_key = $et
             LIMIT 50
@@ -219,18 +198,18 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
         RETURN (
             SELECT 
                 id, 
-                project_id, 
+                schema_id.project_id AS project_id, 
                 schema_id, 
                 schema_id.type_key AS entity_type, 
                 name, 
                 description, 
                 attributes, 
-                (->tagged_with.out.name) AS tags, 
+                tags, 
                 embeddings, 
                 created_at, 
                 updated_at 
             FROM entities 
-            WHERE project_id = $p_rec
+            WHERE schema_id.project_id = $p_rec
               AND (name @1@ $q OR description @1@ $q)
             LIMIT 50
         );
@@ -243,18 +222,18 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types
     RETURN (
         SELECT 
             id, 
-            project_id, 
+            schema_id.project_id AS project_id, 
             schema_id, 
             schema_id.type_key AS entity_type, 
             name, 
             description, 
             attributes, 
-            (->tagged_with.out.name) AS tags, 
+            tags, 
             embeddings, 
             created_at, 
             updated_at 
         FROM entities 
-        WHERE project_id = $p_rec
+        WHERE schema_id.project_id = $p_rec
           AND schema_id.type_key IN $types
         ORDER BY name ASC
         LIMIT 5000
@@ -276,28 +255,19 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
     LET $main_schema_id = IF array::len($main_schema_res) > 0 {
         $main_schema_res[0]
     } ELSE {
-        (CREATE entity_schemas SET project_id = $p_rec, type_key = $main_tk, type_name = $main_tk, icon = 'box', color = 'var(--text-accent)')[0].id
+        (CREATE entity_schemas SET project_id = $p_rec, type_key = $main_tk, type_name = $main_tk, fields_schema = [])[0].id
     };
 
+    LET $main_tags = IF $main_entity.tags != NONE AND $main_entity.tags != NULL { $main_entity.tags } ELSE { [] };
+
     UPSERT $main_id SET
-        project_id = $p_rec,
         schema_id = $main_schema_id,
         name = $main_entity.name,
         description = $main_entity.description,
         attributes = IF $main_entity.attributes != NONE { $main_entity.attributes } ELSE { {} },
-        embeddings = IF $main_entity.embeddings != NONE AND $main_entity.embeddings != NULL { $main_entity.embeddings } ELSE { {} };
-
-    IF $main_entity.tags != NONE {
-        DELETE tagged_with WHERE in = $main_id;
-        FOR $tag_name IN $main_entity.tags {
-            IF string::len(string::trim($tag_name)) > 0 {
-                LET $clean_tag = string::trim($tag_name);
-                LET $existing_tag = (SELECT VALUE id FROM tags WHERE project_id = $p_rec AND name = $clean_tag LIMIT 1);
-                LET $tag_id = IF array::len($existing_tag) > 0 { $existing_tag[0] } ELSE { (CREATE tags SET project_id = $p_rec, name = $clean_tag, color = 'var(--text-accent)')[0].id };
-                RELATE $main_id -> tagged_with -> $tag_id SET project_id = $p_rec;
-            };
-        };
-    };
+        tags = $main_tags,
+        embeddings = IF $main_entity.embeddings != NONE AND $main_entity.embeddings != NULL { $main_entity.embeddings } ELSE { {} },
+        updated_at = time::now();
 
     -- 2. Связанные сущности
     FOR $f IN $foreign_updates {
@@ -308,41 +278,32 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
             LET $f_schema_id = IF array::len($f_schema_res) > 0 {
                 $f_schema_res[0]
             } ELSE {
-                (CREATE entity_schemas SET project_id = $p_rec, type_key = $f_tk, type_name = $f_tk, icon = 'box', color = 'var(--text-accent)')[0].id
+                (CREATE entity_schemas SET project_id = $p_rec, type_key = $f_tk, type_name = $f_tk, fields_schema = [])[0].id
             };
 
+            LET $f_tags = IF $f.tags != NONE AND $f.tags != NULL { $f.tags } ELSE { [] };
+
             UPSERT $fid SET
-                project_id = $p_rec,
                 schema_id = $f_schema_id,
                 name = $f.name,
                 description = $f.description,
                 attributes = IF $f.attributes != NONE { $f.attributes } ELSE { {} },
-                embeddings = IF $f.embeddings != NONE AND $f.embeddings != NULL { $f.embeddings } ELSE { {} };
-
-            IF $f.tags != NONE {
-                DELETE tagged_with WHERE in = $fid;
-                FOR $ftag IN $f.tags {
-                    IF string::len(string::trim($ftag)) > 0 {
-                        LET $clean_ftag = string::trim($ftag);
-                        LET $existing_ftag = (SELECT VALUE id FROM tags WHERE project_id = $p_rec AND name = $clean_ftag LIMIT 1);
-                        LET $ftag_id = IF array::len($existing_ftag) > 0 { $existing_ftag[0] } ELSE { (CREATE tags SET project_id = $p_rec, name = $clean_ftag, color = 'var(--text-accent)')[0].id };
-                        RELATE $fid -> tagged_with -> $ftag_id SET project_id = $p_rec;
-                    };
-                };
-            };
+                tags = $f_tags,
+                embeddings = IF $f.embeddings != NONE AND $f.embeddings != NULL { $f.embeddings } ELSE { {} },
+                updated_at = time::now();
         };
     };
 
     RETURN (
         SELECT 
             id,
-            project_id,
+            schema_id.project_id AS project_id,
             schema_id,
             schema_id.type_key AS entity_type,
             name,
             description,
             attributes,
-            (->tagged_with.out.name) AS tags,
+            tags,
             embeddings,
             created_at,
             updated_at
@@ -355,7 +316,7 @@ DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
 DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
     LET $p_rec = fn::normalize_project_id($name);
     
-    -- 1. Иерархия, связи и участие
+    -- 1. Связи и участия
     DELETE contains WHERE in = $p_rec OR out = $p_rec;
     DELETE entity_rel WHERE project_id = $p_rec;
     DELETE appears_in WHERE project_id = $p_rec;
@@ -364,28 +325,29 @@ DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
     DELETE advances_arc WHERE project_id = $p_rec;
     DELETE occurs_at WHERE project_id = $p_rec;
     DELETE story_arcs WHERE project_id = $p_rec;
-    DELETE entity_revisions WHERE project_id = $p_rec;
+    DELETE entity_revisions WHERE target_id.schema_id.project_id = $p_rec;
     DELETE entity_rel_revisions WHERE project_id = $p_rec;
-    DELETE tagged_with WHERE project_id = $p_rec;
-    DELETE tags WHERE project_id = $p_rec;
 
-    -- 2. Сущности лора
-    DELETE entities WHERE project_id = $p_rec;
+    -- 2. Сущности лора и схемы
+    DELETE entities WHERE schema_id.project_id = $p_rec;
+    DELETE entity_schemas WHERE project_id = $p_rec;
+    DELETE relation_schemas WHERE project_id = $p_rec;
 
     -- 3. Блоки текста, ревизии, главы и тома рукописи
     DELETE promise_milestones WHERE project_id = $p_rec;
-    DELETE text_blocks WHERE project_id = $p_rec;
-    DELETE chapter_revisions WHERE project_id = $p_rec;
-    DELETE chapters WHERE project_id = $p_rec;
+    DELETE text_blocks WHERE chapter_id.volume_id.project_id = $p_rec;
+    DELETE chapter_revisions WHERE target_id.volume_id.project_id = $p_rec;
+    DELETE chapters WHERE volume_id.project_id = $p_rec;
     DELETE volumes WHERE project_id = $p_rec;
 
     -- 4. Планирование, таймлайн и сюжетные обещания
-    DELETE plans_for WHERE project_id = $p_rec;
-    DELETE plans WHERE project_id = $p_rec;
+    DELETE todos WHERE owner_id.project_id = $p_rec OR owner_id.volume_id.project_id = $p_rec;
     DELETE plot_promises WHERE project_id = $p_rec;
     DELETE timeline_events WHERE project_id = $p_rec;
+    DELETE calendars WHERE project_id = $p_rec;
+    DELETE planets WHERE project_id = $p_rec;
 
-    -- 5. Сам проект (триггерит cascade_project_delete и cascade_project_ai_delete если Ultra включена)
+    -- 5. Сам проект
     DELETE projects WHERE id = $p_rec;
     
     RETURN true;
@@ -403,41 +365,83 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_cursor(
     
     IF $et != NONE AND $cursor_id != NONE AND $cursor_id != NULL {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            SELECT 
+                id, 
+                schema_id.project_id AS project_id, 
+                schema_id, 
+                schema_id.type_key AS entity_type, 
+                name, 
+                description, 
+                attributes, 
+                tags, 
+                embeddings, 
+                created_at, 
+                updated_at 
             FROM entities 
-            WHERE project_id = $p_rec 
-              AND entity_type = $et 
+            WHERE schema_id.project_id = $p_rec 
+              AND schema_id.type_key = $et 
               AND id > $cursor_id 
             ORDER BY id ASC 
             LIMIT $lim
         );
     } ELSE IF $et != NONE {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            SELECT 
+                id, 
+                schema_id.project_id AS project_id, 
+                schema_id, 
+                schema_id.type_key AS entity_type, 
+                name, 
+                description, 
+                attributes, 
+                tags, 
+                embeddings, 
+                created_at, 
+                updated_at 
             FROM entities 
-            WHERE project_id = $p_rec 
-              AND entity_type = $et 
+            WHERE schema_id.project_id = $p_rec 
+              AND schema_id.type_key = $et 
             ORDER BY id ASC 
             LIMIT $lim
         );
     } ELSE IF $cursor_id != NONE AND $cursor_id != NULL {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            SELECT 
+                id, 
+                schema_id.project_id AS project_id, 
+                schema_id, 
+                schema_id.type_key AS entity_type, 
+                name, 
+                description, 
+                attributes, 
+                tags, 
+                embeddings, 
+                created_at, 
+                updated_at 
             FROM entities 
-            WHERE project_id = $p_rec 
+            WHERE schema_id.project_id = $p_rec 
               AND id > $cursor_id 
             ORDER BY id ASC 
             LIMIT $lim
         );
     } ELSE {
         RETURN (
-            SELECT id, project_id, entity_type, name, description, attributes, tags, embeddings, created_at, updated_at 
+            SELECT 
+                id, 
+                schema_id.project_id AS project_id, 
+                schema_id, 
+                schema_id.type_key AS entity_type, 
+                name, 
+                description, 
+                attributes, 
+                tags, 
+                embeddings, 
+                created_at, 
+                updated_at 
             FROM entities 
-            WHERE project_id = $p_rec 
+            WHERE schema_id.project_id = $p_rec 
             ORDER BY id ASC 
             LIMIT $lim
         );
     };
 };
-
-

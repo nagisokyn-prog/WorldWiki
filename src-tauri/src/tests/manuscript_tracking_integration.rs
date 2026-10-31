@@ -33,7 +33,7 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 use super::common::{create_test_db, create_test_services, seed_project};
-use worldwiki_domain::plot::{ArcStatus, ArcType, StoryArc};
+use worldwiki_domain::plot::{ArcStatus, StoryArc};
 
 /// Структура сцены для проверки двухосевого порядка и детекции флэшбеков
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -59,12 +59,19 @@ async fn create_test_chapter(
 ) -> String {
     let proj_raw = project_key.strip_prefix("projects:").unwrap_or(project_key);
     let chap_raw = chapter_id.strip_prefix("chapters:").unwrap_or(chapter_id);
+    let vid = format!("vol_{}", proj_raw);
 
-    let sql = "UPSERT type::record('chapters', $cid) SET project_id = type::record('projects', $pid), title = $title, content = '', sort_order = $order, word_count = 1500";
+    let vol_sql = "UPSERT type::record('volumes', $vid) SET project_id = type::record('projects', $pid), title = 'Volume 1';";
+    let _ = db.query(vol_sql)
+        .bind(("vid", vid.clone()))
+        .bind(("pid", proj_raw))
+        .await;
+
+    let sql = "UPSERT type::record('chapters', $cid) SET volume_id = type::record('volumes', $vid), title = $title, content = '', sort_order = $order, word_count = 1500";
     let mut res = db
         .query(sql)
         .bind(("cid", chap_raw))
-        .bind(("pid", proj_raw))
+        .bind(("vid", vid))
         .bind(("title", title))
         .bind(("order", sort_order))
         .await
@@ -108,15 +115,14 @@ async fn create_test_entity_with_attrs(
                 project_id = $p_rec,
                 type_key = $etype,
                 type_name = $etype,
-                icon = 'box',
-                color = 'var(--text-accent)'
+                fields_schema = []
             )[0].id
         };
         UPSERT type::record('entities', $eid) SET 
-            project_id = $p_rec, 
             schema_id = $schema_id, 
             name = $name, 
-            attributes = $attrs;
+            attributes = $attrs,
+            tags = [];
     "#;
     let mut res = db
         .query(sql)
@@ -195,11 +201,9 @@ async fn create_scene_promise(
             kind = 'scene',
             title = $quote,
             status = 'planted',
-            timeline_event_id = IF $tid != NONE { type::record('timeline_events', $tid) } ELSE { NONE },
-            m_abs = IF $tid != NONE { (SELECT VALUE m_abs FROM ONLY type::record('timeline_events', $tid)) } ELSE { NONE };
+            timeline_event_id = IF $tid != NONE { type::record('timeline_events', $tid) } ELSE { NONE };
 
         UPSERT $tb_rec SET
-            project_id = $p_rec,
             chapter_id = $c_rec,
             order_index = $p_idx,
             content = $quote;
@@ -305,11 +309,9 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
     let mut arc_sin = StoryArc::new(
         format!("projects:{proj_key}"),
         "Грех и падение",
-        ArcType::Theme,
     );
     arc_sin.id = "story_arcs:sin_and_fall".to_string();
     arc_sin.status = ArcStatus::InProgress;
-    arc_sin.color = Some("#ff4444".to_string());
     services
         .story_arcs
         .repo
@@ -320,11 +322,9 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
     let mut arc_redemption = StoryArc::new(
         format!("projects:{proj_key}"),
         "Искупление",
-        ArcType::Character,
     );
     arc_redemption.id = "story_arcs:redemption".to_string();
     arc_redemption.status = ArcStatus::Planned;
-    arc_redemption.color = Some("#44ff44".to_string());
     services
         .story_arcs
         .repo
@@ -1112,7 +1112,7 @@ async fn test_negative_validation_and_schema_constraints() {
     let services = create_test_services(Arc::new(db.clone()));
 
     // 1. Попытка создать арку с пустым заголовком через сервис -> DomainError::Validation
-    let invalid_arc = StoryArc::new(proj_key, "   ", ArcType::Character);
+    let invalid_arc = StoryArc::new(proj_key, "   ");
     let save_res = services.story_arcs.save_arc(&invalid_arc).await;
     assert!(save_res.is_err(), "Создание арки с пустым заголовком должно возвращать ошибку");
 
@@ -1127,7 +1127,7 @@ async fn test_negative_validation_and_schema_constraints() {
             project_id = type::record('projects', $p),
             chapter_id = type::record('chapters', 'ch_neg'),
             kind = 'scene',
-            quote = 'Невалидная фаза',
+            title = 'Невалидная фаза',
             arc_phase = 'invalid_phase_name'
     "#;
     let mut res = db.query(invalid_phase_sql).bind(("p", proj_key)).await.expect("query runs");

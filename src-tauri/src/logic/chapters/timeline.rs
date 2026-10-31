@@ -1,15 +1,13 @@
 use super::errors::ChapterError;
 use crate::logic::models::Chapter;
 use serde_json::{json, Value};
-use surreal_domain::SurrealRepository;
 use surrealdb::{engine::local::Db, Surreal};
 
 pub async fn get_global_timeline_inner(
     db: &Surreal<Db>,
     project: &str,
 ) -> Result<Value, ChapterError> {
-    let proj_id = format!("projects:{}", project);
-    let chapters = Chapter::find_all(db, &proj_id).await?;
+    let chapters = super::crud::get_chapters_inner(db, project).await?;
     Ok(json!(chapters))
 }
 

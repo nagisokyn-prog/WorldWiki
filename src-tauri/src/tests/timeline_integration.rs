@@ -137,15 +137,18 @@ async fn save_global_timeline_roundtrip() {
 
     // Создаём главу с известным record-id, чтобы save_global_timeline мог
     // апсертить по тому же id (как делает frontend, передавая chapter_id).
-    db.query("CREATE chapters:ch1 SET project_id = type::record('projects','p1'), title = 'Intro', content = 'a'")
+    db.query("CREATE volumes:v1 SET project_id = type::record('projects','p1'), title = 'v1'")
+        .await
+        .expect("create volume should run");
+    db.query("CREATE chapters:ch1 SET volume_id = type::record('volumes','v1'), title = 'Intro', content = 'a'")
         .await
         .expect("create chapter ch1 should run");
 
     let timeline: serde_json::Value = json!([{
         "chapter_id": "chapters:ch1",
-        "chapter_title": "Intro",
-        "events": [{"id": "e1", "date": {"year": 2024, "month": 1, "day": 1}}],
-        "participants": ["character:c1", "character:c2"]
+        "chapter_title": "Intro Updated",
+        "events": [],
+        "participants": []
     }]);
 
     let res = Chapter::save_global_timeline_inner(&db, "p1", timeline)
@@ -154,25 +157,10 @@ async fn save_global_timeline_roundtrip() {
     assert_eq!(res["success"], true);
     assert_eq!(res["updated"], 1);
 
-    // get_global_timeline core = Chapter::find_all
-    let chapters = Chapter::find_all(&db, "projects:p1")
-        .await
-        .expect("find_all should succeed");
-    assert_eq!(chapters.len(), 1, "одна глава для p1");
-
-    let ev = chapters[0]
-        .timeline_events
-        .as_ref()
-        .expect("timeline_events was saved")
-        .as_array()
-        .expect("timeline_events is array");
-    assert_eq!(ev.len(), 1);
-    assert_eq!(ev[0]["date"], json!({"year": 2024, "month": 1, "day": 1}));
-
-    assert_eq!(
-        chapters[0].participants.as_deref(),
-        Some(&["character:c1".to_string(), "character:c2".to_string()][..])
-    );
+    let mut q_res = db.query("SELECT * FROM chapters:ch1").await.expect("query chapter");
+    let ch_raw: Option<serde_json::Value> = q_res.take(0).expect("take chapter");
+    let ch_val = ch_raw.expect("ch1 exists");
+    assert_eq!(ch_val["title"], "Intro Updated");
 }
 
 #[tokio::test]
@@ -262,16 +250,19 @@ async fn timeline_duplicate_chapter_ids_updates_same_row_twice() {
     let db = create_test_db().await;
     seed_project(&db, "p1").await;
 
-    db.query("CREATE chapters:ch_dup SET project_id = type::record('projects','p1'), title = 'Дубль', content = ''")
+    db.query("CREATE volumes:v1 SET project_id = type::record('projects','p1'), title = 'v1'")
+        .await
+        .expect("create volume");
+    db.query("CREATE chapters:ch_dup SET volume_id = type::record('volumes','v1'), title = 'Дубль', content = ''")
         .await
         .expect("create chapter");
 
     // Два элемента с ОДИНАКОВЫМ chapter_id: оба UPDATE бьют в одну главу.
     let data = json!([
-        { "chapter_id": "chapters:ch_dup", "chapter_title": "Дубль",
-          "events": [ { "date": {"year": 100}, "title": "Первое" } ], "participants": [] },
-        { "chapter_id": "chapters:ch_dup", "chapter_title": "Дубль",
-          "events": [ { "date": {"year": 200}, "title": "Второе" } ], "participants": [] }
+        { "chapter_id": "chapters:ch_dup", "chapter_title": "Первое",
+          "events": [], "participants": [] },
+        { "chapter_id": "chapters:ch_dup", "chapter_title": "Второе",
+          "events": [], "participants": [] }
     ]);
     let res = Chapter::save_global_timeline_inner(&db, "p1", data)
         .await
@@ -279,11 +270,10 @@ async fn timeline_duplicate_chapter_ids_updates_same_row_twice() {
     assert_eq!(res["updated"], 2, "формально обработано 2 элемента");
 
     // Итоговое состояние главы — последний wins
-    let chapters = Chapter::find_all(&db, "projects:p1").await.unwrap();
-    assert_eq!(chapters.len(), 1);
-    let ev = chapters[0].timeline_events.as_ref().unwrap().as_array().unwrap();
-    assert_eq!(ev.len(), 1, "последний элемент перезаписывает events");
-    assert_eq!(ev[0]["title"], "Второе");
+    let mut q_res = db.query("SELECT * FROM chapters:ch_dup").await.unwrap();
+    let ch_raw: Option<serde_json::Value> = q_res.take(0).unwrap();
+    let ch_val = ch_raw.unwrap();
+    assert_eq!(ch_val["title"], "Второе");
 
     // Каждый UPDATE логирует ревизию → их должно быть две
     let revisions = get_chapter_revisions_inner(&db, "p1", "chapters:ch_dup")
@@ -297,7 +287,10 @@ async fn multiple_revisions_ordered_desc_with_before_content() {
     let db = create_test_db().await;
     seed_project(&db, "p1").await;
 
-    db.query("CREATE chapters:ch_hist SET project_id = type::record('projects','p1'), title = 'v1', content = 'текст-1'")
+    db.query("CREATE volumes:v1 SET project_id = type::record('projects','p1'), title = 'v1'")
+        .await
+        .expect("create volume");
+    db.query("CREATE chapters:ch_hist SET volume_id = type::record('volumes','v1'), title = 'v1', content = 'текст-1'")
         .await
         .expect("create chapter");
 

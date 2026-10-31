@@ -43,7 +43,7 @@ pub async fn reindex_project_lore_inner(
         .to_string();
 
     // 1. Clear existing chunks for this project
-    let del_query = "DELETE entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
+    let del_query = "DELETE entity_chunks WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = type::record($p_raw))";
     if let Err(e) = db
         .query(del_query)
         .bind(("p_raw", p_raw.clone()))
@@ -59,7 +59,7 @@ pub async fn reindex_project_lore_inner(
     let mut pending_chunks: Vec<PendingChunk> = Vec::new();
 
     // 2. Collect and chunk all chapters
-    let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
+    let chap_query = "SELECT id, title, content FROM chapters WHERE (volume_id.project_id = type::record('projects', $p_clean) OR volume_id.project_id = $p_raw OR volume_id.project_id = type::record($p_raw))";
     if let Ok(mut resp) = db
         .query(chap_query)
         .bind(("p_raw", p_raw.clone()))
@@ -102,7 +102,7 @@ pub async fn reindex_project_lore_inner(
         }
 
     // 3. Collect and chunk all entities
-    let ent_query = "SELECT id, name, schema_id.type_key AS entity_type, attributes FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw)";
+    let ent_query = "SELECT id, name, schema_id.type_key AS entity_type, attributes FROM entities WHERE (schema_id.project_id = type::record('projects', $p_clean) OR schema_id.project_id = $p_raw OR schema_id.project_id = type::record($p_raw))";
     if let Ok(mut resp) = db
         .query(ent_query)
         .bind(("p_raw", p_raw.clone()))

@@ -14,7 +14,11 @@ pub async fn get_chapters_inner(
         .bind(("p", clean))
         .await
         .map_err(ChapterError::Database)?;
-    let chapters: Vec<Chapter> = res.take(0).map_err(ChapterError::Database)?;
+    let raw: Vec<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
+    let chapters: Vec<Chapter> = raw
+        .into_iter()
+        .filter_map(|v| serde_json::from_value(v).ok())
+        .collect();
     Ok(chapters)
 }
 

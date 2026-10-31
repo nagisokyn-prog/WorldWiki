@@ -82,6 +82,7 @@ mod tests {
         let req = EditManuscriptRequest {
             chapter_id: ch_id.clone(),
             content_patch: "В комнате на стене висел странный меч ((Экскалибур)).".to_string(),
+            project_id: Some("proj_1".to_string()),
             planted_promises: vec![PlantedPromiseDto {
                 kind: "gun".to_string(),
                 quote: "странный меч ((Экскалибур))".to_string(),

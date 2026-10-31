@@ -51,7 +51,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                     arc_id: out.id,
                     arc_phase: phase
                 } AS arcs
-            FROM type::record('plot_promises', $id)
+            FROM type::record($id)
             LIMIT 1;
         "#;
         let clean = clean_id("plot_promises", id);
@@ -84,7 +84,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
         );
         let sql = r#"
             LET $c_rec = IF $c_id != "" { type::record('chapters', $c_id) } ELSE { NONE };
-            RETURN fn::upsert_plot_promise($id, type::record('projects', $p_id), $c_rec, $data);
+            RETURN fn::upsert_plot_promise($id, type::record($p_id), $c_rec, $data);
         "#;
         let res = self
             .db
@@ -102,7 +102,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("plot_promises", id);
-        let sql = "DELETE type::record('plot_promises', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -114,7 +114,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
         let clean = clean_id("chapters", chapter_id);
         let sql = r#"
-            LET $ch_rec = type::record('chapters', $chapter_id);
+            LET $ch_rec = type::record($chapter_id);
             SELECT 
                 id,
                 project_id,
@@ -161,7 +161,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     ) -> Result<Vec<PlotPromise>, DomainError> {
         let clean_vol = clean_id("volumes", volume_id);
         let sql = r#"
-            LET $vol_rec = type::record('volumes', $volume);
+            LET $vol_rec = type::record($volume);
             LET $chapters = (SELECT VALUE out FROM contains WHERE in = $vol_rec);
             SELECT 
                 id,
@@ -218,7 +218,7 @@ impl SurrealTodoRepository {
 impl TodoRepository for SurrealTodoRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, DomainError> {
         let clean = clean_id("todos", id);
-        let sql = "SELECT * FROM type::record('todos', $id);";
+        let sql = "SELECT * FROM type::record($id);";
         let mut res = self
             .db
             .query(sql)
@@ -240,7 +240,7 @@ impl TodoRepository for SurrealTodoRepository {
             format!("chapters:{}", todo.owner_id)
         };
         let sql = r#"
-            UPSERT type::record('todos', $id) SET
+            UPSERT type::record($id) SET
                 owner_id = type::record($owner),
                 text = $text,
                 is_done = $is_done,
@@ -263,7 +263,7 @@ impl TodoRepository for SurrealTodoRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("todos", id);
-        let sql = "DELETE type::record('todos', $id);";
+        let sql = "DELETE type::record($id);";
         self.db
             .query(sql)
             .bind(("id", clean))

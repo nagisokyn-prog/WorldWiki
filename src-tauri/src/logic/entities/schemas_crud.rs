@@ -87,8 +87,6 @@ pub async fn save_entity_schema_inner(
     let EntitySchema {
         type_key,
         type_name,
-        icon,
-        color,
         fields_schema,
         full_schema,
         ..
@@ -97,13 +95,11 @@ pub async fn save_entity_schema_inner(
     let fields_val = serde_json::to_value(&fields_schema).unwrap_or(Value::Array(vec![]));
 
     let q = db
-        .query("RETURN fn::save_entity_schema(type::record('entity_schemas', $id), type::record('projects', $p), $tk, $tname, $icon, $color, $fields, $full);")
+        .query("RETURN fn::save_entity_schema(type::record('entity_schemas', $id), type::record('projects', $p), $tk, $tname, $fields, $full);")
         .bind(("id", target_raw))
         .bind(("p", clean_pid))
         .bind(("tk", type_key))
         .bind(("tname", type_name))
-        .bind(("icon", icon))
-        .bind(("color", color))
         .bind(("fields", fields_val))
         .bind(("full", full_schema));
 

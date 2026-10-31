@@ -13,7 +13,7 @@ type Db = surrealdb::Surreal<surrealdb::engine::local::Db>;
 
 /// Хелпер: проект + чат с сообщениями (корень и потомок).
 async fn seed_chat(db: &Db) {
-    db.query("CREATE projects:p_chop SET name = 'ChatOps', data = {}")
+    db.query("CREATE projects:p_chop SET name = 'ChatOps'")
         .await
         .unwrap();
     db.query(

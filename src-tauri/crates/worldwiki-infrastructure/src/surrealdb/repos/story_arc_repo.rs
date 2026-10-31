@@ -137,12 +137,12 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             LET $arc_rec = type::record($arc_id);
             SELECT 
                 $arc_id AS arc_id,
-                type::string(in.chapter_id) AS chapter_id,
-                in.chapter_id.sort_order AS sort_order,
+                type::string(IF in.chapter_id != NONE { in.chapter_id } ELSE { array::first(in->promise_milestones.out.chapter_id) }) AS chapter_id,
+                IF in.chapter_id.sort_order != NONE { in.chapter_id.sort_order } ELSE IF array::first(in->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(in->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS sort_order,
                 phase
             FROM advances_arc 
             WHERE out = $arc_rec
-            ORDER BY in.chapter_id.sort_order ASC;
+            ORDER BY sort_order ASC;
         "#;
         let mut res = self
             .db

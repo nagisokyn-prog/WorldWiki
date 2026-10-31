@@ -29,14 +29,13 @@ impl Todo {
             text: text.into(),
             is_done: false,
             sort_order,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: default_epoch(),
+            updated_at: default_epoch(),
         }
     }
 
     pub fn toggle(&mut self) {
         self.is_done = !self.is_done;
-        self.updated_at = Utc::now();
     }
 }
 

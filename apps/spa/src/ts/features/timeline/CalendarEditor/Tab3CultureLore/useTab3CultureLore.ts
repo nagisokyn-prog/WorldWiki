@@ -69,7 +69,10 @@ export function useTab3CultureLore(
   }
 
   syncMoonPhaseNames();
-  watch(() => props.calendarData, syncMoonPhaseNames, { deep: true });
+  watch(
+    () => [props.calendarData?.moons?.[0]?.phase_names, (props.calendarData as Record<string, unknown>)?.moon_phase_names],
+    syncMoonPhaseNames
+  );
 
   const ageRule = computed<CharacterAgeRuleDto>(() => {
     const raw = props.calendarData?.character_age_rules as unknown as CharacterAgeRuleDto | undefined;

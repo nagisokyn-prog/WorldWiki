@@ -13,7 +13,7 @@ use super::common::create_test_db;
 /// Хелпер: создаёт проект и возвращает проектный id `projects:<key>`.
 async fn seed_project(db: &surrealdb::Surreal<surrealdb::engine::local::Db>, key: &str) {
     db.upsert::<Option<serde_json::Value>>(("projects", key))
-        .content(json!({ "name": format!("Project {key}"), "data": {} }))
+        .content(json!({ "name": format!("Project {key}") }))
         .await
         .expect("upsert project should run");
 }
@@ -25,8 +25,12 @@ async fn create_chapter(
     title: &str,
     content: &str,
 ) {
+    let vol_id = format!("vol_{project_key}");
+    let _ = db.query(format!(
+        "UPSERT type::record('volumes', '{vol_id}') SET project_id = type::record('projects', '{project_key}'), title = 'Том 1'"
+    )).await;
     let sql = format!(
-        "CREATE chapters SET project_id = type::record('projects','{project_key}'), title = '{title}', content = '{content}'"
+        "CREATE chapters SET volume_id = type::record('volumes', '{vol_id}'), title = '{title}', content = '{content}'"
     );
     let mut res = db.query(sql).await.expect("create chapter should run");
     let errs = res.take_errors();
@@ -39,7 +43,7 @@ async fn in_memory_db_ready() {
 
     // Вставляем тем же способом, что и продовый create_project: upsert по key.
     db.upsert::<Option<serde_json::Value>>(("projects", "proj1"))
-        .content(json!({ "name": "Test Project", "data": {} }))
+        .content(json!({ "name": "Test Project" }))
         .await
         .expect("upsert should run");
 
@@ -201,7 +205,8 @@ async fn get_chapter_revisions_returns_snapshot_after_update() {
     let db = create_test_db().await;
     seed_project(&db, "p1").await;
 
-    db.query("CREATE chapters:ch_rev SET project_id = type::record('projects','p1'), title = 'Начало', content = 'v1'")
+    db.query("CREATE volumes:v_rev SET project_id = type::record('projects','p1'), title = 'Том 1'").await.unwrap();
+    db.query("CREATE chapters:ch_rev SET volume_id = volumes:v_rev, title = 'Начало', content = 'v1'")
         .await
         .expect("create chapter");
 

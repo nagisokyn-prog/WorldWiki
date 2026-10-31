@@ -1,4 +1,4 @@
-//! SurrealDB implementation of PlotPromiseRepository and TodoRepository.
+//! SurrealDB implementation of plot promise and task repositories.
 
 use super::helpers::{clean_id, prepare_data_for_upsert, take_list, take_one};
 use async_trait::async_trait;

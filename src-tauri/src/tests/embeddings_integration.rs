@@ -163,7 +163,7 @@ async fn test_high_performance_lore_reindexing() {
         .await
         .unwrap();
 
-    let mut res_ch = db.query("CREATE chapters SET volume_id = type::record('volumes:vol_lore'), title = 'Глава 1. Цитадель Ветров', content = $content, word_count = 3040;")
+    let res_ch = db.query("CREATE chapters SET volume_id = type::record('volumes:vol_lore'), title = 'Глава 1. Цитадель Ветров', content = $content, word_count = 3040;")
         .bind(("content", long_chapter_text))
         .await
         .unwrap();
@@ -175,7 +175,7 @@ async fn test_high_performance_lore_reindexing() {
         .unwrap();
 
     for i in 0..10 {
-        let mut res_ent = db.query("CREATE entities SET schema_id = type::record('entity_schemas:char_lore'), name = $name, attributes = $fields, tags = [];")
+        let res_ent = db.query("CREATE entities SET schema_id = type::record('entity_schemas:char_lore'), name = $name, attributes = $fields, tags = [];")
             .bind(("name", format!("Герой {i}")))
             .bind(("fields", json!({ "role": "рыцарь", "ability": "магия ветра" })))
             .await

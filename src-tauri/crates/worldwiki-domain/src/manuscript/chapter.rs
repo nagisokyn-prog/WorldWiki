@@ -37,14 +37,13 @@ impl Chapter {
             word_count: 0,
             sort_order,
             blocks: Vec::new(),
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: default_epoch(),
+            updated_at: default_epoch(),
         }
     }
 
     pub fn update_content(&mut self, new_content: String) {
         self.content = new_content;
         self.word_count = self.content.split_whitespace().count();
-        self.updated_at = Utc::now();
     }
 }

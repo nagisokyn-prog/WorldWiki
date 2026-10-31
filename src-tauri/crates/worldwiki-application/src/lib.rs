@@ -108,7 +108,7 @@ mod tests {
     async fn test_volume_audit_consistency_detects_blockers() {
         let facades = setup_test_services();
 
-        // 1. Add uncompleted todo to volume
+        // 1. Add uncompleted task item to volume
         let todo = Todo::new("vol_1", "Завершить финальную битву", 1);
         let id = facades.plot.todo_repo.save(&todo).await.unwrap();
 
@@ -117,7 +117,7 @@ mod tests {
         assert!(report.has_blockers);
         assert_eq!(report.pending_todos_count, 1);
 
-        // 3. Complete todo and re-audit
+        // 3. Complete task item and re-audit
         facades.plot.toggle_todo(&id).await.unwrap();
         let report_after = facades.plot.audit_volume("vol_1").await.unwrap();
         assert!(!report_after.has_blockers);

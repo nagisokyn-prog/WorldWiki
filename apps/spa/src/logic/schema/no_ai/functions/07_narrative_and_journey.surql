@@ -250,7 +250,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.title) } ELSE { NONE } AS arc_title,
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.phase) } ELSE { NONE } AS arc_phase,
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.color) } ELSE { NONE } AS arc_color,
-            m_abs,
+            IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } ELSE IF m_abs != NONE { m_abs } ELSE { NONE } AS m_abs,
             IF array::len(<-participant_of) > 0 { (SELECT VALUE type::string(id) FROM <-participant_of<-entities) } ELSE { [] } AS participant_ids
         FROM plot_promises 
         WHERE project_id = $p_rec

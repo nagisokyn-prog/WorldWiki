@@ -148,7 +148,7 @@ DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
 -- 14. СИНТАКСИЧЕСКОЕ УЧАСТИЕ СУЩНОСТЕЙ В БЛОКАХ ТЕКСТА
-DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT text_blocks SCHEMAFULL;
+DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters | text_blocks SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'
   ASSERT $value IN ['mention', 'manual', 'scene'];

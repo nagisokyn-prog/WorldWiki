@@ -198,6 +198,7 @@ async fn create_scene_promise(
 
         UPSERT $prom_rec SET
             project_id = $p_rec,
+            chapter_id = $c_rec,
             kind = 'scene',
             title = $quote,
             status = 'planted',
@@ -428,7 +429,7 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
             type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id,
             array::first(->promise_milestones.out.chapter_id.title) AS chapter_title,
             array::first(->promise_milestones.out.chapter_id.sort_order) AS chapter_order,
-            m_abs,
+            IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } ELSE IF m_abs != NONE { m_abs } ELSE { 0 } AS m_abs,
             type::string(array::first(->advances_arc.out.id)) AS arc_id,
             array::first(->advances_arc.out.title) AS arc_title
         FROM plot_promises
@@ -953,7 +954,6 @@ async fn test_granular_scenes_and_promise_lifecycle() {
             timeline_event_id = type::record('timeline_events', 'ev_duel');
 
         UPSERT $tb_rec SET
-            project_id = $p_rec,
             chapter_id = $c_rec,
             order_index = 42,
             content = 'Герой обнажил клинок перед троном';
@@ -982,7 +982,6 @@ async fn test_granular_scenes_and_promise_lifecycle() {
         LET $tb_rec = type::record('text_blocks', 'para_100');
 
         UPSERT $tb_rec SET
-            project_id = $p_rec,
             chapter_id = $c_rec,
             order_index = 100,
             content = 'Победа над тираном';
@@ -1054,8 +1053,9 @@ async fn test_cascade_delete_integrity_for_arcs_and_chapters() {
     let _ent = create_test_entity(&db, proj_key, "ent_del", "Персонаж", "character").await;
 
     // Создаем арку, обещание и ребра advances_arc / participant_of
-    let arc_sql = "UPSERT type::record('story_arcs', 'arc_del') SET project_id = type::record('projects', $p), title = 'Арка на удаление', arc_type = 'character', status = 'planned'";
-    let _ = db.query(arc_sql).bind(("p", proj_key)).await.expect("create arc");
+    let arc_sql = "UPSERT type::record('story_arcs', 'arc_del') SET project_id = type::record('projects', $p), title = 'Арка на удаление', status = 'planned'";
+    let mut res_arc = db.query(arc_sql).bind(("p", proj_key)).await.expect("create arc");
+    assert!(res_arc.take_errors().is_empty());
 
     let prom_sql = "UPSERT type::record('plot_promises', 'prom_del') SET project_id = type::record('projects', $p), title = 'Обещание', kind = 'gun', status = 'planted'";
     let _ = db.query(prom_sql).bind(("p", proj_key)).await.expect("create promise");

@@ -13,9 +13,9 @@ DEFINE FUNCTION OVERWRITE fn::get_planet_calendar_bundle($proj: record<projects>
         LIMIT 200
     );
     LET $calendars = (
-        SELECT id, project_id, planet_id, name, is_master, is_default, data, created_at, updated_at 
+        SELECT id, planet_id, name, is_master, is_default, data, created_at, updated_at 
         FROM calendars 
-        WHERE project_id = $p_rec 
+        WHERE planet_id.project_id = $p_rec 
         ORDER BY created_at ASC 
         LIMIT 500
     );
@@ -85,7 +85,6 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
     
     LET $cal_res = IF $id != NONE AND $id != NULL {
         (UPSERT $id SET
-            project_id = $p_rec,
             planet_id = $pl_rec,
             name = $name,
             is_master = $is_master,
@@ -94,7 +93,6 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
         )[0]
     } ELSE {
         (CREATE calendars SET
-            project_id = $p_rec,
             planet_id = $pl_rec,
             name = $name,
             is_master = $is_master,
@@ -107,7 +105,7 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
     -- Инвариант: ровно один master на планету
     IF $is_master == true {
         UPDATE calendars SET is_master = false 
-        WHERE project_id = $p_rec AND planet_id = $pl_rec AND id != $cal_res.id;
+        WHERE planet_id = $pl_rec AND id != $cal_res.id;
     };
     
     RETURN $cal_res;
@@ -122,7 +120,7 @@ DEFINE FUNCTION OVERWRITE fn::set_master_calendar(
     LET $p_rec = fn::normalize_project_id($proj);
     LET $pl_rec = type::record('planets', string::split(type::string($planet_id), ':')[-1]);
     
-    UPDATE calendars SET is_master = false WHERE project_id = $p_rec AND planet_id = $pl_rec;
+    UPDATE calendars SET is_master = false WHERE planet_id = $pl_rec;
     UPDATE $cal_id SET is_master = true;
 };
 
@@ -133,14 +131,14 @@ DEFINE FUNCTION OVERWRITE fn::delete_planet(
     $cascade: bool
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $child_cals = (SELECT VALUE id FROM calendars WHERE project_id = $p_rec AND planet_id = $planet_id LIMIT 100);
+    LET $child_cals = (SELECT VALUE id FROM calendars WHERE planet_id = $planet_id LIMIT 100);
     
     IF array::len($child_cals) > 0 AND $cascade == false {
         THROW "Cannot delete planet with existing calendars without cascade flag";
     };
     
     IF $cascade == true {
-        DELETE calendars WHERE project_id = $p_rec AND planet_id = $planet_id;
+        DELETE calendars WHERE planet_id = $planet_id;
     };
     
     DELETE $planet_id;

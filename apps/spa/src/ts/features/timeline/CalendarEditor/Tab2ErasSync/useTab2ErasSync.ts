@@ -109,7 +109,7 @@ export function useTab2ErasSync(
   }
 
   syncFromCalendarData();
-  watch(() => props.calendarData, syncFromCalendarData, { deep: true });
+  watch(() => props.calendarData?.sync_anchor, syncFromCalendarData);
 
   function updateSyncAnchorPatch(patch: Partial<SyncAnchor>) {
     const current = syncAnchor.value || {

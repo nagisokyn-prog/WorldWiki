@@ -106,12 +106,12 @@ async fn negative_transaction_rollback_on_failure() {
     // Операция 1: Валидный CREATE
     // Операция 2: НЕВАЛИДНЫЙ CREATE (нарушение SCHEMAFULL схемы через illegal_root_field)
     // Весь батч должен откатиться!
-    db.query("UPSERT type::record('entity_schemas', 'item_trans') SET project_id = type::record('projects', 'p_trans'), type_key = 'item', type_name = 'Предмет', icon = 'box', color = '#fff';").await.unwrap();
+    db.query("UPSERT type::record('entity_schemas', 'item_trans') SET project_id = type::record('projects', 'p_trans'), type_key = 'item', type_name = 'Предмет';").await.unwrap();
 
     let sql = r#"
         BEGIN TRANSACTION;
-        CREATE entities SET project_id = type::record('projects:p_trans'), schema_id = type::record('entity_schemas', 'item_trans'), name = 'Предмет Транзакции';
-        CREATE entities SET project_id = type::record('projects:p_trans'), schema_id = type::record('entity_schemas', 'item_trans'), illegal_root_field = 123;
+        CREATE entities SET schema_id = type::record('entity_schemas', 'item_trans'), name = 'Предмет Транзакции';
+        CREATE entities SET schema_id = type::record('entity_schemas', 'item_trans'), illegal_root_field = 123;
         COMMIT TRANSACTION;
     "#;
 
@@ -121,7 +121,7 @@ async fn negative_transaction_rollback_on_failure() {
 
     // Проверяем, что 'Предмет Транзакции' НЕ сохранился (откат сработал)
     let mut check_res = db
-        .query("SELECT * FROM entities WHERE project_id = type::record('projects:p_trans') AND name = 'Предмет Транзакции'")
+        .query("SELECT * FROM entities WHERE schema_id.project_id = type::record('projects:p_trans') AND name = 'Предмет Транзакции'")
         .await
         .unwrap();
     let entities: Vec<serde_json::Value> = check_res.take(0).unwrap();

@@ -341,7 +341,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_project_cascade($name: string) {
     DELETE volumes WHERE project_id = $p_rec;
 
     -- 4. Планирование, таймлайн и сюжетные обещания
-    DELETE todos WHERE owner_id.project_id = $p_rec OR owner_id.volume_id.project_id = $p_rec;
+    DELETE todos WHERE owner_id = $p_rec OR owner_id.project_id = $p_rec OR owner_id.volume_id.project_id = $p_rec;
     DELETE plot_promises WHERE project_id = $p_rec;
     DELETE timeline_events WHERE project_id = $p_rec;
     DELETE calendars WHERE project_id = $p_rec;

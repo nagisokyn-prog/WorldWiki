@@ -101,7 +101,7 @@ impl EditManuscriptAtomicWorkflow {
             }
         }
 
-        // 4. Complete plans / todos
+        // 4. Complete checklist tasks
         let mut plans_completed = 0;
         for plan_id in req.completed_plan_ids {
             if self.plot_services.complete_todo(&plan_id).await.is_ok() {

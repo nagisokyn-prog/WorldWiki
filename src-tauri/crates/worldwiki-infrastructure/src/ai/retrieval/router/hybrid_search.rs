@@ -20,7 +20,7 @@ pub(crate) async fn fetch_bm25_candidates(
     entity_ids: &mut HashSet<String>,
 ) {
     // 1. Entities BM25
-    let ent_query = "SELECT id, name, description FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (name @1@ $q OR description @2@ $q) LIMIT 6";
+    let ent_query = "SELECT id, name, description FROM entities WHERE (schema_id.project_id = type::record('projects', $p_clean) OR schema_id.project_id = $p_raw OR schema_id.project_id = type::record($p_raw)) AND (name @1@ $q OR description @2@ $q) LIMIT 6";
     if let Ok(mut resp) = scope
         .db
         .query(ent_query)
@@ -85,7 +85,7 @@ pub(crate) async fn fetch_bm25_candidates(
         }
 
     // 3. Chapters BM25
-    let chap_query = "SELECT id, title, content FROM chapters WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND (title @1@ $q OR content @2@ $q) LIMIT 4";
+    let chap_query = "SELECT id, title, content FROM chapters WHERE (volume_id.project_id = type::record('projects', $p_clean) OR volume_id.project_id = $p_raw OR volume_id.project_id = type::record($p_raw)) AND (title @1@ $q OR content @2@ $q) LIMIT 4";
     if let Ok(mut resp) = scope
         .db
         .query(chap_query)
@@ -156,7 +156,7 @@ pub(crate) async fn fetch_semantic_candidates(
             }
 
         // Vector search on entities
-        let vec_ent_sql = "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim FROM entities WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw) AND embeddings.nemotron != NONE ORDER BY sim DESC LIMIT 5";
+        let vec_ent_sql = "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim FROM entities WHERE (schema_id.project_id = type::record('projects', $p_clean) OR schema_id.project_id = $p_raw OR schema_id.project_id = type::record($p_raw)) AND embeddings.nemotron != NONE ORDER BY sim DESC LIMIT 5";
         if let Ok(mut resp) = scope
             .db
             .query(vec_ent_sql)

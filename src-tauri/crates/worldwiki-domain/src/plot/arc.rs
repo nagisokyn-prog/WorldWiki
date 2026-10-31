@@ -46,8 +46,8 @@ impl StoryArc {
             project_id: project_id.into(),
             title: title.into(),
             status: ArcStatus::InProgress,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: default_datetime(),
+            updated_at: default_datetime(),
         }
     }
 }

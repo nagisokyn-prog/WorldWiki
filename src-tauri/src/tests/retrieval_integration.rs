@@ -125,16 +125,14 @@ async fn seed_entity(
             (CREATE entity_schemas SET
                 project_id = $p_rec,
                 type_key = 'character',
-                type_name = 'character',
-                icon = 'box',
-                color = 'var(--text-accent)'
+                type_name = 'character'
             )[0].id
         };
         CREATE type::record('entities', $eid) SET 
-            project_id = $p_rec, 
             schema_id = $schema_id, 
             name = $name, 
-            description = $desc;
+            description = $desc,
+            tags = [];
     "#;
     let mut resp = db
         .query(sql)

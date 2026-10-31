@@ -98,17 +98,17 @@ async fn delete_project_cascades_ddl_events() {
     assert!(volumes.is_empty(), "все тома проекта должны удалиться");
 
     // Проверяем, что главы удалены
-    let mut c_res = db.query("SELECT * FROM chapters WHERE project_id = type::record('projects:cascade_proj')").await.unwrap();
+    let mut c_res = db.query("SELECT * FROM chapters WHERE volume_id.project_id = type::record('projects:cascade_proj')").await.unwrap();
     let chapters: Vec<serde_json::Value> = c_res.take(0).unwrap();
     assert!(chapters.is_empty(), "все главы проекта должны удалиться");
 
     // Проверяем, что сущности удалены
-    let mut e_res = db.query("SELECT * FROM entities WHERE project_id = type::record('projects:cascade_proj')").await.unwrap();
+    let mut e_res = db.query("SELECT * FROM entities WHERE schema_id.project_id = type::record('projects:cascade_proj')").await.unwrap();
     let entities: Vec<serde_json::Value> = e_res.take(0).unwrap();
     assert!(entities.is_empty(), "все сущности проекта должны удалиться");
 
     // Проверяем, что текстовые блоки удалены
-    let mut tb_res = db.query("SELECT * FROM text_blocks WHERE project_id = type::record('projects:cascade_proj')").await.unwrap();
+    let mut tb_res = db.query("SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = type::record('projects:cascade_proj')").await.unwrap();
     let t_blocks: Vec<serde_json::Value> = tb_res.take(0).unwrap();
     assert!(t_blocks.is_empty(), "все текстовые блоки проекта должны удалиться");
 }
@@ -117,13 +117,13 @@ async fn delete_project_cascades_ddl_events() {
 async fn create_project_inserts_default_data_when_missing() {
     let db = create_test_db().await;
 
-    // create_project без поля data должен добавить пустой объект data: {}
     create_project_inner(&db, json!({ "name": "no_default_proj" }))
         .await
         .expect("create project without data");
 
     let cfg = get_project_config_inner(&db, "no_default_proj").await.expect("get config");
-    assert_eq!(cfg["data"], json!({}), "без поля data должен подставиться пустой объект");
+    assert_eq!(cfg["name"], "no_default_proj");
+    assert_eq!(cfg["genres"], json!([]), "по умолчанию genres пустой массив");
 }
 
 #[tokio::test]
@@ -172,7 +172,7 @@ async fn project_name_with_special_chars_roundtrip() {
     let db = create_test_db().await;
 
     let name = "Мой Проект №5 — «Эпоха Драконов»";
-    create_project_inner(&db, json!({ "name": name, "data": {} }))
+    create_project_inner(&db, json!({ "name": name }))
         .await
         .expect("create with special chars");
 
@@ -190,18 +190,18 @@ async fn project_name_with_special_chars_roundtrip() {
 async fn duplicate_project_name_upserts_not_duplicates() {
     let db = create_test_db().await;
 
-    create_project_inner(&db, json!({ "name": "same_name", "data": { "v": 1 } }))
+    create_project_inner(&db, json!({ "name": "same_name", "type": "novel" }))
         .await
         .expect("create first");
     // Повторное создание с тем же именем — это UPSERT по ключу имени
-    create_project_inner(&db, json!({ "name": "same_name", "data": { "v": 2 } }))
+    create_project_inner(&db, json!({ "name": "same_name", "type": "anthology" }))
         .await
         .expect("create second (upsert)");
 
     let projects = get_projects_inner(&db).await.unwrap();
     let same: Vec<_> = projects.iter().filter(|p| p["name"] == "same_name").collect();
     assert_eq!(same.len(), 1, "дубликат имени не должен создавать вторую запись");
-    assert_eq!(same[0]["data"]["v"], 2, "последний upsert побеждает");
+    assert_eq!(same[0]["type"], "anthology", "последний upsert побеждает");
 }
 
 #[tokio::test]
@@ -209,19 +209,18 @@ async fn save_project_config_merges_without_losing_fields() {
     let db = create_test_db().await;
     seed_project(&db, "merge_proj", "Merge").await;
 
-    save_project_config_inner(&db, "merge_proj", json!({ "data": { "theme": "dark" } }))
+    save_project_config_inner(&db, "merge_proj", json!({ "type": "novel" }))
         .await
         .expect("save first field");
 
     // Второй save с другим полем — merge не должен стереть первое
-    save_project_config_inner(&db, "merge_proj", json!({ "data": { "font": "Inter" } }))
+    save_project_config_inner(&db, "merge_proj", json!({ "genres": ["fantasy"] }))
         .await
         .expect("save second field");
 
     let cfg = get_project_config_inner(&db, "merge_proj").await.unwrap();
-    // merge поверх data заменяет data целиком (это объект) — документируем:
-    // верхнеуровневые поля мержатся, вложенный `data` перезаписывается последним save.
-    assert_eq!(cfg["data"]["font"], "Inter");
+    assert_eq!(cfg["type"], "novel");
+    assert_eq!(cfg["genres"], json!(["fantasy"]));
 }
 
 #[tokio::test]
@@ -235,11 +234,12 @@ async fn delete_project_preserves_global_knowledge_base() {
         r#"
         CREATE web_pages:wp1 SET url = "https://example.com", canonical_url = "https://example.com", domain = "example.com", content_hash = "h1", content = "Web content";
         CREATE web_evidence:we1 SET page_id = web_pages:wp1, project_id = type::record('projects:proj_keep_global'), chunk_index = 0, text = "Важный исторический факт", start_offset = 0, end_offset = 20;
-        CREATE entity_schemas:es1 SET project_id = type::record('projects:proj_keep_global'), type_key = "magic", type_name = "Магия", icon = "✨", color = "blue";
+        CREATE entity_schemas:es1 SET project_id = type::record('projects:proj_keep_global'), type_key = "magic", type_name = "Магия";
         CREATE relation_schemas:rs1 SET project_id = type::record('projects:proj_keep_global'), rel_key = "mentor", rel_name = "Наставник", icon = "🎓", color = "gold";
         CREATE ai_profiles:prof1 SET project_id = type::record('projects:proj_keep_global'), name = "OpenAI Global", provider = "openai", is_global = true;
         CREATE ai_skills:sk1 SET project_id = type::record('projects:proj_keep_global'), name = "Конструктор лора", description = "Создание мира", prompt_text = "Тест", is_builtin = true;
-        CREATE calendars:cal1 SET project_id = type::record('projects:proj_keep_global'), name = "Григорианский", is_master = true;
+        CREATE planets:pl1 SET project_id = type::record('projects:proj_keep_global'), name = "Земля", ticks_per_day = 1440;
+        CREATE calendars:cal1 SET planet_id = planets:pl1, name = "Григорианский", is_master = true;
         CREATE artifacts:art1 SET project_id = type::record('projects:proj_keep_global'), type = "document", title = "Сводка фактов", content = "Текст документа";
         CREATE user_dictionary:ud1 SET project_id = type::record('projects:proj_keep_global'), word = "Мана", definition = "Энергия";
         "#
@@ -290,12 +290,13 @@ async fn delete_project_cascades_timeline_and_chats() {
     // 1. Создаем проектные данные: таймлайн, чаты, сообщения, сюжетные обещания, планы
     db.query(
         r#"
-        CREATE calendars:cal_p SET project_id = type::record('projects:proj_casc_full'), name = "Календарь", is_master = true;
+        CREATE planets:pl_p SET project_id = type::record('projects:proj_casc_full'), name = "Земля", ticks_per_day = 1440;
+        CREATE calendars:cal_p SET planet_id = planets:pl_p, name = "Календарь", is_master = true;
         CREATE timeline_events:te1 SET project_id = type::record('projects:proj_casc_full'), calendar_id = calendars:cal_p, title = "Битва у реки", m_abs = 1000;
         CREATE chats:c1 SET project_id = type::record('projects:proj_casc_full'), title = "Диалог 1";
         CREATE chat_messages:cm1 SET project_id = type::record('projects:proj_casc_full'), chat_id = chats:c1, role = "user", content = "Привет!";
-        CREATE plans:pl1 SET project_id = type::record('projects:proj_casc_full'), title = "План главы", parent_type = "chapter";
-        CREATE plot_promises:pp1 SET project_id = type::record('projects:proj_casc_full'), kind = "gun", quote = "Ружьё на стене";
+        CREATE todos:td1 SET owner_id = type::record('projects:proj_casc_full'), text = "План главы";
+        CREATE plot_promises:pp1 SET project_id = type::record('projects:proj_casc_full'), kind = "gun", title = "Ружьё на стене";
         CREATE agent_memory:am1 SET project_id = type::record('projects:proj_casc_full'), memory_type = "fact", content = "Герой левша";
         "#
     ).await.unwrap();
@@ -304,10 +305,15 @@ async fn delete_project_cascades_timeline_and_chats() {
     delete_project_inner(&db, "proj_casc_full").await.expect("delete project");
 
     // 3. Проверяем, что все проектные сущности каскадно очищены
-    for table in ["timeline_events", "chats", "chat_messages", "plans", "plot_promises", "agent_memory"] {
+    for table in ["timeline_events", "chats", "chat_messages", "plot_promises", "agent_memory"] {
         let mut res = db.query(format!("SELECT count() FROM {table} WHERE project_id = type::record('projects:proj_casc_full') GROUP ALL")).await.unwrap();
         let count: Option<serde_json::Value> = res.take(0).unwrap();
         let cnt = count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
         assert_eq!(cnt, 0, "Таблица {table} должна быть каскадно очищена для проекта");
     }
+
+    let mut res_td = db.query("SELECT count() FROM todos WHERE owner_id = type::record('projects:proj_casc_full') GROUP ALL").await.unwrap();
+    let count_td: Option<serde_json::Value> = res_td.take(0).unwrap();
+    let cnt_td = count_td.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
+    assert_eq!(cnt_td, 0, "Таблица todos должна быть каскадно очищена для проекта");
 }

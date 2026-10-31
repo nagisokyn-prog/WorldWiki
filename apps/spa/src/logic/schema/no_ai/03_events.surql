@@ -29,7 +29,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     LET $vols = (SELECT VALUE id FROM volumes WHERE project_id = $p_rec);
     LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id IN $vols);
     LET $arcs = (SELECT VALUE id FROM story_arcs WHERE project_id = $p_rec);
-    DELETE todos WHERE owner_id IN array::concat($vols, $chaps, $arcs);
+    DELETE todos WHERE owner_id IN array::concat($vols, $chaps, $arcs) OR owner_id = $p_rec;
 
     -- 3. Сюжетные арки
     DELETE story_arcs WHERE project_id = $p_rec;

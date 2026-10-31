@@ -51,14 +51,22 @@ pub async fn seed_chapter(
 ) -> String {
     let proj_raw = project_key.strip_prefix("projects:").unwrap_or(project_key).trim_matches('`');
     let chap_raw = chapter_key.strip_prefix("chapters:").unwrap_or(chapter_key).trim_matches('`');
-    let vid = format!("vol_{}", proj_raw);
 
-    let vol_sql = "UPSERT type::record('volumes', $vid) SET project_id = type::record('projects', $pid), title = 'Volume 1';";
-    db.query(vol_sql)
-        .bind(("vid", vid.clone()))
-        .bind(("pid", proj_raw))
-        .await
-        .expect("create volume for seed_chapter should run");
+    let check_vol_sql = "SELECT VALUE type::string(id) FROM volumes WHERE project_id = fn::normalize_project_id($pid) LIMIT 1;";
+    let mut vres = db.query(check_vol_sql).bind(("pid", proj_raw)).await.expect("query existing volume");
+    let existing_vids: Vec<String> = vres.take(0).expect("take existing volume id");
+    let vid = if let Some(first_vid) = existing_vids.into_iter().next() {
+        first_vid.strip_prefix("volumes:").unwrap_or(&first_vid).to_string()
+    } else {
+        let default_vid = format!("vol_{}", proj_raw);
+        let vol_sql = "UPSERT type::record('volumes', $vid) SET project_id = fn::normalize_project_id($pid), title = 'Volume 1';";
+        db.query(vol_sql)
+            .bind(("vid", default_vid.clone()))
+            .bind(("pid", proj_raw))
+            .await
+            .expect("create volume for seed_chapter should run");
+        default_vid
+    };
 
     let sql = "UPSERT type::record('chapters', $cid) SET volume_id = type::record('volumes', $vid), title = $title, content = $content, word_count = 0;";
     let mut res = db.query(sql)

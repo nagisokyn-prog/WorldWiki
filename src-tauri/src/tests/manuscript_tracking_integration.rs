@@ -13,8 +13,7 @@
 //!        └── сцена 2 [читатель: гл.1] [хронология: день 2]
 //! ```
 //! 2. Хронологическое окно (Timeline Inspector & Reveals / `fn::get_timeline_inspector_data`).
-//! 3. Временной срез графа связей («Паутина» / `fn::get_graph_time_slice` / `fn::get_entity_connections`).
-//! 4. Путь персонажа и матрица участий (`fn::get_character_journey` / `fn::get_cross_reference_matrix`).
+//! 3. Путь персонажа и матрица участий (`fn::get_character_journey` / `fn::get_cross_reference_matrix`).
 //! 5. Детектор противоречий (`ConsistencyAuditWorkflow` / смерть, анахронизм, билокация).
 //! 6. Авто-синхронизация упоминаний (`fn::sync_chapter_mentions` & изоляция источников).
 //! 7. Гранулярные сцены и жизненный цикл обещаний (`kind='scene'`, `block_id`, `status: planted -> resolved`).
@@ -614,67 +613,6 @@ async fn test_timeline_inspector_dual_axis_and_reveals() {
     assert_eq!(participants[0]["name"], "Главный Герой");
 }
 
-/// ТЕСТ 3: Временной срез графа связей («Паутина» / fn::get_graph_time_slice)
-#[tokio::test]
-async fn test_graph_time_slice_and_inferred_chronology() {
-    let db = create_test_db().await;
-    let proj_key = "proj_graph";
-    seed_project(&db, proj_key, "Графовый проект").await;
-
-    let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1: Знакомство", 1).await;
-    let _ch4 = create_test_chapter(&db, proj_key, "ch4", "Глава 4: Вражда", 4).await;
-
-    let _hero = create_test_entity(&db, proj_key, "hero_a", "Алекс", "character").await;
-    let _mentor = create_test_entity(&db, proj_key, "mentor_b", "Борис", "character").await;
-
-    // Создаем связь "mentor" с привязкой к начальной главе ch1
-    let rel_sql = r#"
-        RELATE (type::record('entities', $from)) -> entity_rel -> (type::record('entities', $to)) CONTENT {
-            project_id: type::record('projects', $p),
-            rel_type: 'mentor',
-            description: 'Обучает древней магии',
-            strength: 80,
-            start_chapter: type::record('chapters', $ch_start),
-            end_chapter: type::record('chapters', $ch_end),
-            attributes: { start_m_abs: 1440, end_m_abs: 5760 },
-            created_at: time::now()
-        }
-    "#;
-
-    let mut rel_res = db
-        .query(rel_sql)
-        .bind(("from", "hero_a"))
-        .bind(("to", "mentor_b"))
-        .bind(("p", proj_key))
-        .bind(("ch_start", "ch1"))
-        .bind(("ch_end", "ch4"))
-        .await
-        .expect("create entity_rel");
-    assert!(rel_res.take_errors().is_empty());
-
-    // Вызываем хранимую функцию fn::get_graph_time_slice
-    let mut func_res = db
-        .query("RETURN fn::get_graph_time_slice(type::record('projects', $p));")
-        .bind(("p", proj_key))
-        .await
-        .expect("call fn::get_graph_time_slice");
-
-    let slice_data: Option<Value> = func_res.take(0).expect("take slice data");
-    let slice = slice_data.expect("slice must not be null");
-
-    let nodes = slice["nodes"].as_array().expect("nodes array");
-    let edges = slice["edges"].as_array().expect("edges array");
-
-    assert_eq!(nodes.len(), 2, "Должно быть 2 узла персонажей");
-    assert_eq!(edges.len(), 1, "Должно быть 1 ребро связи");
-
-    let edge = &edges[0];
-    assert_eq!(edge["rel_type"], "mentor");
-    assert_eq!(edge["strength"], 80);
-    assert_eq!(edge["start_order"], 1);
-    assert_eq!(edge["inferred_start_m_abs"], 1440);
-}
-
 /// ТЕСТ 4: Путь персонажа и матрица участий (fn::get_character_journey & fn::get_cross_reference_matrix)
 #[tokio::test]
 async fn test_character_journey_and_cross_reference_matrix() {
@@ -1158,17 +1096,7 @@ async fn test_empty_project_and_unbound_edge_cases() {
     assert_eq!(data["events"].as_array().unwrap().len(), 0);
     assert_eq!(data["chapters"].as_array().unwrap().len(), 0);
 
-    // 2. Graph Time Slice для пустого проекта -> пустые nodes и edges
-    let mut graph_res = db.query("RETURN fn::get_graph_time_slice(type::record('projects', $p));")
-        .bind(("p", proj_empty))
-        .await
-        .expect("call empty graph slice");
-    let graph_data: Option<Value> = graph_res.take(0).expect("take empty graph");
-    let g = graph_data.expect("graph not null");
-    assert_eq!(g["nodes"].as_array().unwrap().len(), 0);
-    assert_eq!(g["edges"].as_array().unwrap().len(), 0);
-
-    // 3. Cross Reference Matrix для пустого проекта -> пустые chapters и entities
+    // 2. Cross Reference Matrix для пустого проекта -> пустые chapters и entities
     let mut mat_res = db.query("RETURN fn::get_cross_reference_matrix(type::record('projects', $p));")
         .bind(("p", proj_empty))
         .await
@@ -1177,22 +1105,6 @@ async fn test_empty_project_and_unbound_edge_cases() {
     let m = mat_data.expect("matrix not null");
     assert_eq!(m["chapters"].as_array().unwrap().len(), 0);
     assert_eq!(m["entities"].as_array().unwrap().len(), 0);
-
-    // 4. Ребро entity_rel БЕЗ дат и БЕЗ start_chapter -> inferred_start_m_abs = NONE (⚠️ случай)
-    let _e1 = create_test_entity(&db, proj_empty, "e_a", "Персонаж А", "character").await;
-    let _e2 = create_test_entity(&db, proj_empty, "e_b", "Персонаж Б", "character").await;
-    let rel_sql = "RELATE (type::record('entities', 'e_a')) -> entity_rel -> (type::record('entities', 'e_b')) SET project_id = type::record('projects', $p), rel_type = 'friend'";
-    let _ = db.query(rel_sql).bind(("p", proj_empty)).await.expect("create unbound rel");
-
-    let mut slice_res = db.query("RETURN fn::get_graph_time_slice(type::record('projects', $p));")
-        .bind(("p", proj_empty))
-        .await
-        .expect("query slice for unbound");
-    let slice_val: Option<Value> = slice_res.take(0).expect("take slice");
-    let slice = slice_val.expect("slice not null");
-    let edges = slice["edges"].as_array().expect("edges array");
-    assert_eq!(edges.len(), 1);
-    assert!(edges[0]["inferred_start_m_abs"].is_null(), "Связь без временных отметок должна иметь null в inferred_start_m_abs");
 }
 
 /// ТЕСТ 12: Межпроектная изоляция и безопасность синка упоминаний

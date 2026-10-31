@@ -22,10 +22,20 @@ export function useTagsManagerModal(props: { project: string }) {
     const loadTags = async () => {
         loading.value = true;
         try {
-            const rawTags = await api.getTags(props.project);
-            tags.value = (rawTags || []).map((t) => ({
-                ...t,
-                color: ensureHexColor(t.color)
+            const rawEntities = await api.getEntities(props.project, null);
+            const tagSet = new Set<string>();
+            for (const e of rawEntities || []) {
+                if (Array.isArray(e.tags)) {
+                    for (const t of e.tags) {
+                        if (t && typeof t === 'string') tagSet.add(t);
+                    }
+                }
+            }
+            tags.value = Array.from(tagSet).map((name) => ({
+                id: name,
+                project_id: props.project,
+                name,
+                color: DEFAULT_TAG_COLOR,
             }));
         } catch (e) {
             console.error('[TagsManager] Load error:', e);
@@ -35,39 +45,30 @@ export function useTagsManagerModal(props: { project: string }) {
     };
 
     const addTag = async () => {
-        if (!newTagName.value.trim()) return;
-        try {
-            await api.saveTag(props.project, {
-                project_id: projectRecordId(props.project),
-                name: newTagName.value.trim(),
+        const val = newTagName.value.trim();
+        if (!val) return;
+        if (!tags.value.some(t => t.name === val)) {
+            tags.value.push({
+                id: val,
+                project_id: props.project,
+                name: val,
                 color: newTagColor.value,
-                id: null
             });
-            newTagName.value = '';
-            await loadTags();
-        } catch (e) {
-            console.error('[TagsManager] Add error:', e);
         }
+        newTagName.value = '';
     };
 
     const updateTag = async (tag: Tag) => {
-        try {
-            if (!tag.project_id) tag.project_id = props.project;
-            await api.saveTag(props.project, tag);
-        } catch (e) {
-            console.error('[TagsManager] Update error:', e);
+        const idx = tags.value.findIndex(t => t.name === tag.name);
+        if (idx !== -1) {
+            tags.value[idx] = { ...tag };
         }
     };
 
     const deleteTag = async (id: string) => {
         const { appConfirm } = await import('@worldwiki/components');
-        if (!await appConfirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
-        try {
-            await api.deleteEntity(id);
-            await loadTags();
-        } catch (e) {
-            console.error('[TagsManager] Delete error:', e);
-        }
+        if (!await appConfirm('Удалить этот тег?')) return;
+        tags.value = tags.value.filter(t => t.id !== id && t.name !== id);
     };
 
     const open = () => {

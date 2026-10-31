@@ -18,9 +18,8 @@ import type { Chat } from '../types/generated/Chat';
 import type { ChatMessage } from '../types/generated/ChatMessage';
 import type { AiProfile } from '../types/generated/AiProfile';
 import type { PlotPromise } from '../types/generated/PlotPromise';
+import type { Todo } from '../types/generated/Todo';
 import type { StoryArc } from '../types/generated/StoryArc';
-import type { Plan } from '../types/generated/Plan';
-import type { Tag } from '../types/generated/Tag';
 import type { Calendar } from '../types/generated/Calendar';
 import type { AutoApprovalSetting } from '../types/generated/AutoApprovalSetting';
 import type { AiMode } from '../types/generated/AiMode';
@@ -513,6 +512,22 @@ export async function completePlan(planId: string): Promise<void> {
     return await invoke('complete_plan', { planId });
 }
 
+export async function getTodos(ownerId: string): Promise<Todo[]> {
+    return await invoke('get_todos', { ownerId });
+}
+
+export async function createTodo(ownerId: string, text: string, sortOrder: number | null): Promise<string> {
+    return await invoke('create_todo', { ownerId, text, sortOrder });
+}
+
+export async function toggleTodo(id: string): Promise<Todo> {
+    return await invoke('toggle_todo', { id });
+}
+
+export async function deleteTodo(id: string): Promise<void> {
+    return await invoke('delete_todo', { id });
+}
+
 export async function auditVolumeConsistency(volumeId: string): Promise<unknown> {
     return await invoke('audit_volume_consistency', { volumeId });
 }
@@ -642,40 +657,16 @@ export async function deleteVolume(id: string): Promise<void> {
     return await invoke('delete_volume', { id });
 }
 
-export async function getPlans(project: string): Promise<Plan[]> {
-    return await invoke('get_plans', { project });
+export async function getTodo(id: string): Promise<Todo | null> {
+    return await invoke('get_todo', { id });
 }
 
-export async function getPlan(id: string): Promise<Plan | null> {
-    return await invoke('get_plan', { id });
-}
-
-export async function savePlan(project: string, data: Plan): Promise<Plan> {
-    return await invoke('save_plan', { project, data });
-}
-
-export async function deletePlan(id: string): Promise<void> {
-    return await invoke('delete_plan', { id });
+export async function saveTodo(project: string, data: Todo): Promise<Todo> {
+    return await invoke('save_todo', { project, data });
 }
 
 export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
     return await invoke('get_plot_promise', { id });
-}
-
-export async function getTags(project: string): Promise<Tag[]> {
-    return await invoke('get_tags', { project });
-}
-
-export async function getTag(id: string): Promise<Tag | null> {
-    return await invoke('get_tag', { id });
-}
-
-export async function saveTag(project: string, data: Tag): Promise<Tag> {
-    return await invoke('save_tag', { project, data });
-}
-
-export async function deleteTag(id: string): Promise<void> {
-    return await invoke('delete_tag', { id });
 }
 
 export async function getCalendars(project: string): Promise<Calendar[]> {

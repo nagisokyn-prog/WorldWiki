@@ -1,10 +1,1 @@
-[
-  {
-    "rule": "SURQL-027",
-    "file": "./apps/spa/src/logic/schema/no_ai/functions/03_relations.surql",
-    "line": 158,
-    "symbol": "fn::get_graph_time_slice",
-    "message": "Stored function 'fn::get_graph_time_slice' is orphaned: 0 call sites found in codebase.",
-    "fingerprint": "bec4f774d09acff3826e1d4c0db1695e7710f776b24200d756ea7c91122aa949"
-  }
-]
+[]

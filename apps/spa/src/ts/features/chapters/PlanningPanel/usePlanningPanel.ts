@@ -43,28 +43,23 @@ export function usePlanningPanel(props: PlanningPanelProps) {
 
     // ─── Load ────────────────────────────────────────────────
     const load = async () => {
-        if (!props.project || !props.parentType || !props.parentId) {
+        if (!props.parentId) {
             items.value = [];
             return;
         }
         try {
-            const plans = (await api.getPlans(props.project)) || [];
-            const targetType = normalizedParentType.value;
-            items.value = plans
-                .filter(p => {
-                    const pType = p.parent_type === 'arc' ? 'story_arc' : p.parent_type;
-                    return pType === targetType && p.parent_ref === props.parentId;
-                })
-                .map(p => ({
-                    id: p.id || '',
-                    text: p.title || '',
-                    done: !!p.completed,
-                    sort_order: p.sort_order,
-                    indent: (p as { indent?: number }).indent || 0
+            const todos = await api.getTodos(props.parentId);
+            items.value = (todos || [])
+                .map(t => ({
+                    id: t.id || '',
+                    text: t.text || '',
+                    done: !!t.is_done,
+                    sort_order: Number(t.sort_order),
+                    indent: 0,
                 }))
                 .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
         } catch (e) {
-            console.error('Ошибка загрузки плана:', e);
+            console.error('Ошибка загрузки задач:', e);
             items.value = [];
         }
     };
@@ -74,20 +69,18 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     // ─── Save ────────────────────────────────────────────────
     const saveItem = async (item: PlanItem) => {
         if (!item.text.trim() && !item.id) return; // пропускаем совсем пустые несохранённые
+        if (!props.parentId) return;
         try {
-            const planToSave = {
-                id: item.id || null,
-                project_id: projectRecordId(props.project),
-                parent_type: normalizedParentType.value || '',
-                parent_ref: props.parentId || null,
-                title: item.text,
-                completed: item.done,
-                sort_order: item.sort_order ?? items.value.indexOf(item)
-            };
-            const savedPlan = await api.savePlan(props.project, planToSave);
-            if (!item.id && savedPlan.id) item.id = savedPlan.id;
+            if (!item.id) {
+                const createdId = await api.createTodo(
+                    props.parentId,
+                    item.text,
+                    item.sort_order ?? items.value.indexOf(item)
+                );
+                item.id = createdId;
+            }
         } catch (e) {
-            console.error('Ошибка сохранения пункта:', e);
+            console.error('Ошибка сохранения задачи:', e);
         }
     };
 
@@ -96,13 +89,13 @@ export function usePlanningPanel(props: PlanningPanelProps) {
         item.done = !item.done;
         try {
             if (item.id) {
-                await api.getPlans(props.project).then(async plans => { const p = plans.find(x => x.id === item.id); if (p) { p.completed = !p.completed; await api.savePlan(props.project, p); } });
+                await api.toggleTodo(item.id);
             } else {
                 await saveItem(item);
             }
         } catch (e) {
             item.done = !item.done; // откат
-            console.error('Ошибка переключения статуса:', e);
+            console.error('Ошибка переключения статуса задачи:', e);
         }
     };
 
@@ -150,9 +143,9 @@ export function usePlanningPanel(props: PlanningPanelProps) {
         items.value.splice(idx, 1);
         if (item.id) {
             try {
-                await api.deletePlan(item.id);
+                await api.deleteTodo(item.id);
             } catch (err) {
-                console.warn('[usePlanningPanel] Failed to delete plan item:', err);
+                console.warn('[usePlanningPanel] Failed to delete todo item:', err);
             }
         }
         items.value.forEach((it, i) => { it.sort_order = i; });

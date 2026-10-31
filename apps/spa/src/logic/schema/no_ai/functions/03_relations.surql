@@ -156,37 +156,3 @@ DEFINE FUNCTION OVERWRITE fn::batch_upsert_connections(
         };
     };
 };
-
--- 44. ВЫБОРКА СРЕЗА ГРАФА СВЯЗЕЙ СУЩНОСТЕЙ
-DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
-    LET $p_rec = fn::normalize_project_id($proj);
-    LET $nodes = (
-        SELECT id, name, schema_id.type_key AS entity_type, attributes 
-        FROM entities 
-        WHERE schema_id.project_id = $p_rec
-        LIMIT 2000
-    );
-    LET $edges = (
-        SELECT 
-            id,
-            in,
-            out,
-            rel_type,
-            strength,
-            description,
-            start_chapter,
-            end_chapter,
-            IF start_chapter.sort_order != NONE { start_chapter.sort_order } ELSE { 0 } AS start_order,
-            IF end_chapter.sort_order != NONE { end_chapter.sort_order } ELSE { NONE } AS end_order,
-            IF attributes.start_m_abs != NONE { attributes.start_m_abs }
-               ELSE IF start_chapter != NONE AND array::first(start_chapter<-promise_milestones.timeline_event_id.m_abs) != NONE { array::first(start_chapter<-promise_milestones.timeline_event_id.m_abs) }
-               ELSE { NONE } AS inferred_start_m_abs
-        FROM entity_rel 
-        WHERE project_id = $p_rec
-        LIMIT 5000
-    );
-    RETURN {
-        nodes: $nodes,
-        edges: $edges
-    };
-};

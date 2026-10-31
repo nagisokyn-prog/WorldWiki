@@ -110,18 +110,8 @@ export function useProjectLauncherModal(
           formData.value.type = rawType;
           customTypeInput.value = '';
         } else {
-          // Если это кастомный тип, убедимся что он есть в барабане
-          const inWheel = customStoredTypes.value.some(t => t.value === rawType);
-          if (!inWheel) {
-            customStoredTypes.value.push({ value: rawType, label: rawType });
-            try {
-              localStorage.setItem(CUSTOM_TYPES_KEY, JSON.stringify(customStoredTypes.value));
-            } catch (err) {
-              console.warn(err);
-            }
-          }
-          formData.value.type = rawType;
-          customTypeInput.value = '';
+          formData.value.type = 'custom';
+          customTypeInput.value = rawType;
         }
 
         const projectGenres = (config.genres as string[]) || [];
@@ -152,10 +142,9 @@ export function useProjectLauncherModal(
     const val = customGenreInput.value.trim();
     if (!val) return;
 
-    const alreadyInStandard = standardGenres.some(g => g.value.toLowerCase() === val.toLowerCase() || g.label.toLowerCase() === val.toLowerCase());
     const alreadyInCustom = customGenresList.value.some(g => g.value.toLowerCase() === val.toLowerCase());
 
-    if (!alreadyInStandard && !alreadyInCustom) {
+    if (!alreadyInCustom) {
       customGenresList.value.push({ value: val, label: val });
     }
 

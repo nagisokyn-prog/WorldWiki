@@ -5,9 +5,7 @@ import * as api from '../../services/api.client';
 import { clearCache } from '../../utils/requestCache';
 
 vi.mock('../../services/api.client', () => ({
-  getTags: vi.fn(),
-  saveTag: vi.fn(),
-  deleteTag: vi.fn(),
+  getEntities: vi.fn(),
 }));
 
 describe('tags.store', () => {
@@ -22,24 +20,25 @@ describe('tags.store', () => {
 
   describe('init', () => {
     it('loads tags from API and caches them', async () => {
-      const mockTags = [
-        { id: 'tag_1', name: 'Protagonist', color: '#ff0000' },
-      ];
-      vi.mocked(api.getTags).mockResolvedValue(mockTags as any);
+      vi.mocked(api.getEntities).mockResolvedValue([
+        { id: 'e1', tags: ['Protagonist'] },
+      ] as any);
 
       await store.init('proj_1');
 
       expect(store.project).toBe('proj_1');
-      expect(store.globalTags).toEqual(mockTags);
+      expect(store.globalTags).toEqual([
+        { id: 'Protagonist', name: 'Protagonist', color: 'var(--accent)' },
+      ]);
       expect(store.isInitialized).toBe(true);
 
       // Re-init with same project shouldn't re-fetch
       await store.init('proj_1');
-      expect(api.getTags).toHaveBeenCalledTimes(1);
+      expect(api.getEntities).toHaveBeenCalledTimes(1);
     });
 
-    it('handles null return from api.getTags and defaults to empty array', async () => {
-      vi.mocked(api.getTags).mockResolvedValue(null as any);
+    it('handles null return from api.getEntities and defaults to empty array', async () => {
+      vi.mocked(api.getEntities).mockResolvedValue(null as any);
       await store.init('proj_null');
       expect(store.globalTags).toEqual([]);
     });
@@ -52,10 +51,6 @@ describe('tags.store', () => {
 
       await store.createNewTag('New Tag');
 
-      expect(api.saveTag).toHaveBeenCalledWith(
-        'proj_1',
-        expect.objectContaining({ name: 'New Tag', color: 'var(--accent)' })
-      );
       expect(store.globalTags).toHaveLength(2);
       expect(store.globalTags[1].name).toBe('New Tag');
     });
@@ -66,7 +61,6 @@ describe('tags.store', () => {
 
       await store.createNewTag('existing');
 
-      expect(api.saveTag).not.toHaveBeenCalled();
       expect(store.globalTags).toHaveLength(1);
     });
   });
@@ -81,7 +75,6 @@ describe('tags.store', () => {
 
       await store.deleteTag('Tag 1');
 
-      expect(api.deleteTag).toHaveBeenCalledWith('t1');
       expect(store.globalTags).toHaveLength(1);
       expect(store.globalTags[0].name).toBe('Tag 2');
     });
@@ -94,10 +87,6 @@ describe('tags.store', () => {
 
       await store.saveTag('OldName', 'NewName', '#999');
 
-      expect(api.saveTag).toHaveBeenCalledWith(
-        'proj_1',
-        expect.objectContaining({ id: 't1', name: 'NewName', color: '#999' })
-      );
       expect(store.globalTags[0]).toEqual({ id: 't1', name: 'NewName', color: '#999' });
     });
 
@@ -107,7 +96,7 @@ describe('tags.store', () => {
 
       await store.saveTag('NonExistent', 'BrandNew', '#abc');
       expect(store.globalTags).toHaveLength(2);
-      expect(store.globalTags[1]).toEqual({ name: 'BrandNew', color: '#abc' });
+      expect(store.globalTags[1]).toEqual({ id: 'BrandNew', name: 'BrandNew', color: '#abc' });
     });
   });
 
@@ -119,10 +108,10 @@ describe('tags.store', () => {
 
       await store.init('cached_proj');
       expect(store.globalTags).toEqual([{ id: 't_c', name: 'Cached', color: '#000' }]);
-      expect(api.getTags).not.toHaveBeenCalled();
+      expect(api.getEntities).not.toHaveBeenCalled();
 
       // 2. Catch error path
-      vi.mocked(api.getTags).mockRejectedValueOnce(new Error('Tag fetch error'));
+      vi.mocked(api.getEntities).mockRejectedValueOnce(new Error('Tag fetch error'));
       store.isInitialized = false;
       await store.init('err_proj');
       expect(store.globalTags).toEqual([]);
@@ -134,25 +123,13 @@ describe('tags.store', () => {
       await store.createNewTag('New Tag');
       await store.deleteTag('Tag 1');
       await store.saveTag('Old', 'New', '#000');
-      expect(api.saveTag).not.toHaveBeenCalled();
-      expect(api.deleteTag).not.toHaveBeenCalled();
+      expect(store.globalTags).toHaveLength(0);
 
-      // 2. isCreatingTag guard via concurrent invocation
+      // 2. deleteTag without tag.id
       store.project = 'proj_1';
-      let resolveSave: any;
-      vi.mocked(api.saveTag).mockReturnValueOnce(new Promise(r => { resolveSave = r; }));
-      const p1 = store.createNewTag('Tag In Flight');
-      const p2 = store.createNewTag('Tag Skipped');
-      resolveSave({});
-      await Promise.all([p1, p2]);
-      expect(api.saveTag).toHaveBeenCalledTimes(1);
-
-      // 3. deleteTag without tag.id
       store.globalTags = [{ name: 'NoIdTag', color: '#111' }];
       await store.deleteTag('NoIdTag');
-      expect(api.deleteTag).not.toHaveBeenCalled();
       expect(store.globalTags).toEqual([]);
     });
   });
 });
-

@@ -31,7 +31,7 @@ export function buildMultiJourneyTimelineItems(
           const matchArc = storyArcs.find((arc) => (arc.id || '').replace(/^story_arcs:/, '') === cleanId);
           const resolvedId = matchArc?.id || a.arc_id;
           const resolvedTitle = matchArc?.title || a.arc_title || 'Сюжетная арка';
-          const resolvedColor = matchArc?.color || a.color || undefined;
+          const resolvedColor = (matchArc as { color?: string })?.color || a.color || undefined;
           const phase = a.arc_phase || 'setup';
 
           if (!allArcIds.includes(resolvedId)) {

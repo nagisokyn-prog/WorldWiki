@@ -28,18 +28,17 @@ class ChapterService {
     }
     data.project_id = projectRecordId(project);
 
-    // Rust бэкенд строго ожидает Option<Vec<String>> для participants
-    if (Array.isArray(data.participants)) {
-      data.participants = data.participants.map(p => {
+    if (data.participants && Array.isArray(data.participants)) {
+      data.participants = data.participants.map((p: any) => {
         if (typeof p === 'string') return p;
         if (p && typeof p === 'object') {
-          const item = p as { id?: string; type?: string };
-          if (item.id) {
-            return (item.type && !item.id.includes(':')) ? `${item.type}:${item.id}` : item.id;
+          if (p.id) {
+            return p.type && !p.id.includes(':') ? `${p.type}:${p.id}` : p.id;
           }
+          return String(p);
         }
         return String(p);
-      }).filter(Boolean);
+      });
     }
 
     await api.saveChapter(data as unknown as Chapter);
@@ -51,19 +50,19 @@ class ChapterService {
     return { success: true };
   }
 
-  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): Chapter {
+  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): ChapterWithHierarchy {
     return {
       id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       project_id: null,
+      volume_id: '',
       title: title || 'Новая глава',
       content,
-      summary: null,
       sort_order: 0 as unknown as bigint,
       word_count: 0 as unknown as bigint,
       embeddings: {},
+      timeline_events: [],
+      participants: [],
       footnotes: {},
-      timeline_events: [] as unknown as Record<string, unknown>,
-      participants: []
     };
   }
 

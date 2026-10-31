@@ -29,16 +29,18 @@ export const useZoomStore = defineStore('zoom', () => {
 
     // Direct CSS Zoom on documentElement
     document.documentElement.style.setProperty('--app-zoom', String(clamped));
-    (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
     (document.body.style as unknown as Record<string, string>).zoom = '';
 
     // Native Webview Zoom in Tauri
     if (typeof window !== 'undefined' && ((window as unknown as { __TAURI__?: unknown }).__TAURI__ || (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__)) {
+      (document.documentElement.style as unknown as Record<string, string>).zoom = '';
       try {
         await getCurrentWebview().setZoom(clamped);
       } catch (err: unknown) {
         console.debug('[zoomStore] Native webview zoom set:', err);
       }
+    } else {
+      (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
     }
   };
 
@@ -51,40 +53,13 @@ export const useZoomStore = defineStore('zoom', () => {
     }
   };
 
-  const handleZoomKeydown = (e: KeyboardEvent) => {
-    if (!e.ctrlKey || e.altKey) return;
-
-    // Zoom In: Ctrl + "=" or Ctrl + "+"
-    if (e.code === 'Equal' || e.code === 'NumpadAdd' || e.key === '=' || e.key === '+') {
-      e.preventDefault();
-      applyZoom(zoomLevel.value + 0.1);
-      return;
-    }
-
-    // Zoom Out: Ctrl + "-"
-    if (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-' || e.key === '_') {
-      e.preventDefault();
-      applyZoom(zoomLevel.value - 0.1);
-      return;
-    }
-
-    // Zoom Reset: Ctrl + "0"
-    if (e.code === 'Digit0' || e.code === 'Numpad0' || e.key === '0') {
-      e.preventDefault();
-      applyZoom(1);
-      return;
-    }
-  };
-
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', handleStorage);
-    window.addEventListener('keydown', handleZoomKeydown, { passive: false });
   }
 
   const cleanup = () => {
     if (typeof window !== 'undefined') {
       window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('keydown', handleZoomKeydown);
     }
   };
 

@@ -429,38 +429,38 @@ describe('api.client (Tauri invoke contract tests)', () => {
     });
 
 
-    it('Plans CRUD', async () => {
-      const plan: any = { id: 'p1' };
-      vi.mocked(invoke).mockResolvedValueOnce([plan]).mockResolvedValueOnce(plan).mockResolvedValueOnce(plan);
+    it('Todos CRUD', async () => {
+      const todo: any = { id: 'p1' };
+      vi.mocked(invoke).mockResolvedValueOnce([todo]).mockResolvedValueOnce(todo).mockResolvedValueOnce(todo);
 
-      expect(await api.getPlans('proj_1')).toEqual([plan]);
-      expect(invoke).toHaveBeenCalledWith('get_plans', { project: 'proj_1' });
+      expect(await api.getTodos('proj_1')).toEqual([todo]);
+      expect(invoke).toHaveBeenCalledWith('get_todos', { ownerId: 'proj_1' });
 
-      expect(await api.getPlan('p1')).toEqual(plan);
-      expect(invoke).toHaveBeenCalledWith('get_plan', { id: 'p1' });
+      expect(await api.getTodo('p1')).toEqual(todo);
+      expect(invoke).toHaveBeenCalledWith('get_todo', { id: 'p1' });
 
-      expect(await api.savePlan('proj_1', plan)).toEqual(plan);
-      expect(invoke).toHaveBeenCalledWith('save_plan', { project: 'proj_1', data: plan });
+      expect(await api.saveTodo('proj_1', todo)).toEqual(todo);
+      expect(invoke).toHaveBeenCalledWith('save_todo', { project: 'proj_1', data: todo });
 
-      await api.deletePlan('p1');
-      expect(invoke).toHaveBeenCalledWith('delete_plan', { id: 'p1' });
+      await api.deleteTodo('p1');
+      expect(invoke).toHaveBeenCalledWith('delete_todo', { id: 'p1' });
     });
 
-    it('Tags CRUD', async () => {
-      const tag: any = { id: 't1' };
-      vi.mocked(invoke).mockResolvedValueOnce([tag]).mockResolvedValueOnce(tag).mockResolvedValueOnce(tag);
+    it('DictionaryWords CRUD', async () => {
+      const word: any = { id: 't1' };
+      vi.mocked(invoke).mockResolvedValueOnce([word]).mockResolvedValueOnce(word).mockResolvedValueOnce(word);
 
-      expect(await api.getTags('proj_1')).toEqual([tag]);
-      expect(invoke).toHaveBeenCalledWith('get_tags', { project: 'proj_1' });
+      expect(await api.getDictionaryWords('proj_1')).toEqual([word]);
+      expect(invoke).toHaveBeenCalledWith('get_dictionary_words', { project: 'proj_1' });
 
-      expect(await api.getTag('t1')).toEqual(tag);
-      expect(invoke).toHaveBeenCalledWith('get_tag', { id: 't1' });
+      expect(await api.getDictionaryWord('t1')).toEqual(word);
+      expect(invoke).toHaveBeenCalledWith('get_dictionary_word', { id: 't1' });
 
-      expect(await api.saveTag('proj_1', tag)).toEqual(tag);
-      expect(invoke).toHaveBeenCalledWith('save_tag', { project: 'proj_1', data: tag });
+      expect(await api.saveDictionaryWord('proj_1', word)).toEqual(word);
+      expect(invoke).toHaveBeenCalledWith('save_dictionary_word', { project: 'proj_1', data: word });
 
-      await api.deleteTag('t1');
-      expect(invoke).toHaveBeenCalledWith('delete_tag', { id: 't1' });
+      await api.deleteDictionaryWord('t1');
+      expect(invoke).toHaveBeenCalledWith('delete_dictionary_word', { id: 't1' });
     });
 
     it('Calendars CRUD', async () => {

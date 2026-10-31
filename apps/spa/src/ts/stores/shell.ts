@@ -126,7 +126,8 @@ export const useShellStore = defineStore('shell', () => {
     closeEditor: navigation.closeEditor,
     markSaved: navigation.markSaved,
     openEntity: navigation.openEntity,
-    openChapterTab: navigation.openChapterTab
+    openChapterTab: navigation.openChapterTab,
+    confirmCreateChapter: (p: { title: string; volumeId: string | null }) => manuscript.confirmCreateChapter(p)
   });
 
   // ─── 5. Подсистема Manuscript ─────────────────────────

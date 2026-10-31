@@ -31,7 +31,7 @@ export function useEntityLinkSelector(
     return loadedSchemas.value.map((s) => ({
       id: s.type_key,
       name: s.type_name,
-      icon: s.icon || '📌'
+      icon: (s as { icon?: string }).icon || '📌'
     }));
   });
 

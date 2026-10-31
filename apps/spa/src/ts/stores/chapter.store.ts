@@ -123,11 +123,12 @@ export const useChapterStore = defineStore('chapter', () => {
         console.warn('⚠️ Глава не найдена или удалена:', id);
         return false;
       }
+      const rawObj = rawFull as Record<string, unknown>;
       const full: ChapterWithHierarchy = {
         ...rawFull,
-        timeline_events: Array.isArray(rawFull.timeline_events) ? (rawFull.timeline_events as unknown as TimelineEvent[]) : [],
-        participants: Array.isArray(rawFull.participants) ? rawFull.participants : [],
-        footnotes: (rawFull.footnotes as unknown as Record<string, { id: string; text: string }>) || {}
+        timeline_events: Array.isArray(rawObj.timeline_events) ? (rawObj.timeline_events as unknown as TimelineEvent[]) : [],
+        participants: Array.isArray(rawObj.participants) ? (rawObj.participants as (string | ParticipantItem)[]) : [],
+        footnotes: (rawObj.footnotes as unknown as Record<string, { id: string; text: string }>) || {}
       };
 
       const timelineStore = useTimelineStore();

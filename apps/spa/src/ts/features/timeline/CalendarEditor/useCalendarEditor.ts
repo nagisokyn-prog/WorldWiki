@@ -214,10 +214,11 @@ export function useCalendarEditor(
     }
   };
 
-  onMounted(async () => {
+  onMounted(() => {
     document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
-    await loadCalendar();
   });
+
+  void loadCalendar();
 
   onUnmounted(() => {
     if (debounceTimer) clearTimeout(debounceTimer);

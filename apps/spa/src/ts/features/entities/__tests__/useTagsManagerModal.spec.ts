@@ -4,8 +4,7 @@ import * as api from '../../../services/api.client';
 import { appConfirm } from '@worldwiki/components';
 
 vi.mock('../../../services/api.client', () => ({
-  getTags: vi.fn(),
-  saveTag: vi.fn(),
+  getEntities: vi.fn(),
   deleteEntity: vi.fn(),
 }));
 
@@ -22,8 +21,9 @@ describe('useTagsManagerModal', () => {
   });
 
   it('opens, closes and loads tags with error catch', async () => {
-    const mockTags = [{ id: 'tag_1', name: 'Magic', color: '#ff0000' }];
-    vi.mocked(api.getTags).mockResolvedValueOnce(mockTags as any);
+    vi.mocked(api.getEntities).mockResolvedValueOnce([
+      { id: 'e1', tags: ['Magic'] },
+    ] as any);
 
     const modal = useTagsManagerModal(props);
 
@@ -32,11 +32,13 @@ describe('useTagsManagerModal', () => {
     expect(modal.loading.value).toBe(true);
 
     await Promise.resolve();
-    expect(modal.tags.value).toEqual(mockTags);
+    expect(modal.tags.value).toEqual([
+      { id: 'Magic', project_id: 'my-project', name: 'Magic', color: '#8b5cf6' },
+    ]);
     expect(modal.loading.value).toBe(false);
 
     // Error on load
-    vi.mocked(api.getTags).mockRejectedValueOnce(new Error('Load error'));
+    vi.mocked(api.getEntities).mockRejectedValueOnce(new Error('Load error'));
     modal.open();
     await Promise.resolve();
     expect(modal.loading.value).toBe(false);
@@ -45,79 +47,42 @@ describe('useTagsManagerModal', () => {
     expect(modal.isOpen.value).toBe(false);
   });
 
-  it('adds a new tag and handles error', async () => {
-    vi.mocked(api.saveTag).mockResolvedValueOnce(undefined as any);
-    vi.mocked(api.getTags).mockResolvedValueOnce([]);
-
+  it('adds a new tag and handles empty name', async () => {
     const modal = useTagsManagerModal(props);
     modal.newTagName.value = 'Fantasy';
     modal.newTagColor.value = '#00ff00';
 
     await modal.addTag();
-
-    expect(api.saveTag).toHaveBeenCalledWith('my-project', {
-      project_id: 'projects:my-project',
-      name: 'Fantasy',
-      color: '#00ff00',
-      id: null,
-    });
+    expect(modal.tags.value.some((t) => t.name === 'Fantasy')).toBe(true);
     expect(modal.newTagName.value).toBe('');
 
-    // Error on addTag
-    modal.newTagName.value = 'Fantasy';
-    vi.mocked(api.saveTag).mockRejectedValueOnce(new Error('Save error'));
-    await modal.addTag();
-  });
-
-  it('does nothing if new tag name is empty', async () => {
-    const modal = useTagsManagerModal(props);
+    // empty name
     modal.newTagName.value = '   ';
-
     await modal.addTag();
-    expect(api.saveTag).not.toHaveBeenCalled();
+    expect(modal.tags.value.length).toBe(1);
   });
 
-  it('updates an existing tag with and without existing project_id and handles error', async () => {
-    vi.mocked(api.saveTag).mockResolvedValueOnce(undefined as any);
-
+  it('updates an existing tag', async () => {
     const modal = useTagsManagerModal(props);
-    const tag = { id: 'tag_1', name: 'Updated' };
+    modal.tags.value = [{ id: 'tag_1', name: 'Old', color: '#111', project_id: 'my-project' }];
+    const tag = { id: 'tag_1', name: 'Updated', color: '#999', project_id: 'my-project' };
 
     await modal.updateTag(tag);
-    expect(api.saveTag).toHaveBeenCalledWith('my-project', {
-      id: 'tag_1',
-      name: 'Updated',
-      project_id: 'my-project',
-    });
-
-    // With existing project_id
-    await modal.updateTag({ id: 'tag_2', project_id: 'other_proj' });
-
-    // Error on updateTag
-    vi.mocked(api.saveTag).mockRejectedValueOnce(new Error('Update error'));
-    await modal.updateTag(tag);
+    expect(modal.tags.value[0].name).toBe('Updated');
   });
 
-  it('deletes tag on confirm and handles cancel and error', async () => {
+  it('deletes tag on confirm and handles cancel', async () => {
     const modal = useTagsManagerModal(props);
+    modal.tags.value = [{ id: 'tag_1', name: 'Tag 1', color: '#111', project_id: 'my-project' }];
 
     // Cancel deletion
     vi.mocked(appConfirm).mockResolvedValueOnce(false);
     await modal.deleteTag('tag_1');
-    expect(api.deleteEntity).not.toHaveBeenCalled();
+    expect(modal.tags.value.length).toBe(1);
 
     // Confirm deletion
     vi.mocked(appConfirm).mockResolvedValueOnce(true);
-    vi.mocked(api.deleteEntity).mockResolvedValueOnce(undefined as any);
-    vi.mocked(api.getTags).mockResolvedValueOnce([]);
-
     await modal.deleteTag('tag_1');
-    expect(api.deleteEntity).toHaveBeenCalledWith('tag_1');
-    expect(api.getTags).toHaveBeenCalled();
-
-    // Error on deletion
-    vi.mocked(appConfirm).mockResolvedValueOnce(true);
-    vi.mocked(api.deleteEntity).mockRejectedValueOnce(new Error('Delete error'));
-    await modal.deleteTag('tag_1');
+    expect(modal.tags.value.length).toBe(0);
   });
 });

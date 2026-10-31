@@ -3,12 +3,17 @@
  * @description Unit-тесты для useTab3CultureLore (Сезоны, праздники, фазы луны, возраст, регионы)
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { useTab3CultureLore } from './useTab3CultureLore';
 import type { Tab3CultureLoreEmits } from './Tab3CultureLore.model';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 
 describe('useTab3CultureLore', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
   const mockCalendar: CalendarData = {
     название: 'Лор Календарь',
     дней_в_неделе: 7,

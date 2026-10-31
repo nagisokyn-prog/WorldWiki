@@ -97,7 +97,7 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
         groupsMap.set(cleanKey, {
           arcId: arc.id,
           arcTitle: arc.title,
-          arcColor: arc.color || undefined,
+          arcColor: (arc as { color?: string }).color || undefined,
           items: [],
         });
       }

@@ -1,0 +1,820 @@
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 43 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/spa/src/ts/services/__tests__/api.client.spec.ts > api.client (Tauri invoke contract tests) > Entities CRUD Operations > Plans CRUD
+TypeError: getPlans is not a function
+ ❯ apps/spa/src/ts/services/__tests__/api.client.spec.ts:436:24
+    434|       vi.mocked(invoke).mockResolvedValueOnce([plan]).mockResolvedValueOnce(plan).mock…    435|
+    436|       expect(await api.getPlans('proj_1')).toEqual([plan]);
+       |                        ^
+    437|       expect(invoke).toHaveBeenCalledWith('get_plans', { project: 'proj_1' });
+    438|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/43]⎯
+ FAIL  apps/spa/src/ts/services/__tests__/api.client.spec.ts > api.client (Tauri invoke contract tests) > Entities CRUD Operations > Tags CRUD
+TypeError: getTags is not a function
+ ❯ apps/spa/src/ts/services/__tests__/api.client.spec.ts:453:24
+    451|       vi.mocked(invoke).mockResolvedValueOnce([tag]).mockResolvedValueOnce(tag).mockRe…    452|
+    453|       expect(await api.getTags('proj_1')).toEqual([tag]);
+       |                        ^
+    454|       expect(invoke).toHaveBeenCalledWith('get_tags', { project: 'proj_1' });
+    455|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/43]⎯
+ FAIL  apps/spa/src/ts/services/__tests__/chapter.service.spec.ts > chapterService > save > formats participants with objects and strings
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   ObjectContaining {
++   {
++     "id": "chapters:ch_parts",
+      "participants": [
+        "direct_string",
+-       "character:hero",
+-       "loc:castle",
+-       "no_type",
+-       "[object Object]",
+-       "123",
++       {
++         "id": "hero",
++         "type": "character",
++       },
++       {
++         "id": "loc:castle",
++         "type": "location",
++       },
++       {
++         "id": "no_type",
++       },
++       {
++         "no_id_prop": "val",
++       },
++       123,
+      ],
++     "project_id": "projects:my_world",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ apps/spa/src/ts/services/__tests__/chapter.service.spec.ts:101:31
+     99|       await chapterService.save('my_world', data);
+    100|
+    101|       expect(api.saveChapter).toHaveBeenCalledWith(
+       |                               ^
+    102|         expect.objectContaining({
+    103|           participants: [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/43]⎯
+ FAIL  apps/spa/src/ts/services/__tests__/chapter.service.spec.ts > chapterService > createNew > creates initial chapter object with default values and fallback title
+AssertionError: expected undefined to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+undefined
+
+ ❯ apps/spa/src/ts/services/__tests__/chapter.service.spec.ts:133:34
+    131|       expect(ch.id).toMatch(/^chapter_\d+_/);
+    132|       expect(ch.word_count).toBe(0);
+    133|       expect(ch.timeline_events).toEqual([]);
+       |                                  ^
+    134|       expect(ch.participants).toEqual([]);
+    135|       expect(ch.footnotes).toEqual({});
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/hotkeys.spec.ts > hotkeys store > handles Ctrl+= and Ctrl+- zoom controls
+AssertionError: expected "wrappedAction" to be called with arguments: [ 1.1 ]
+
+Received:
+
+  1st wrappedAction call:
+
+  [
+-   1.1,
++   1.2000000000000002,
+  ]
+
+
+Number of calls: 1
+
+ ❯ apps/spa/src/ts/stores/__tests__/hotkeys.spec.ts:81:17
+     79|     zoom.zoomLevel = 1.0;
+     80|     triggerKey('Equal', { ctrlKey: true });
+     81|     expect(spy).toHaveBeenCalledWith(1.1);
+       |                 ^
+     82|
+     83|     triggerKey('Minus', { ctrlKey: true });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts > shell store additional coverage > covers addNewEntity for chapters (predefined and cancelled) and character (nested path)    
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts:483:77
+    481|       // 1. addNewEntity chapters with predefined name
+    482|       await store.addNewEntity('chapters', 'Preset Chapter');
+    483|       expect(store.chapters.some((c: any) => c.title === 'Preset Chapter')).toBe(true);       |                                                                             ^
+    484|
+    485|       // 2. addNewEntity chapters cancelled
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts > shell store additional coverage > covers createChapterIn with volumeId, and hierarchy numbering
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts:522:27
+    520|
+    521|     await store.createChapterIn({ volumeId: 'vol_1' });
+    522|     expect(assignChapter).toHaveBeenCalled();
+       |                           ^
+    523|
+    524|     // Root chapter numbering
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts > shell store additional coverage > covers deleteVolume with confirm and silent modes
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times    
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "vol_1",
+    ]
+
+
+Number of calls: 1
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts:536:30
+    534|     vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    535|     await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [], false);
+    536|     expect(deleteVolume).not.toHaveBeenCalled();
+       |                              ^
+    537|
+    538|     // 2. deleteVolume silent
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > Entity and Chapter CRUD Operations > addNewEntity for chapter creates chapter and opens it
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:310:31
+    308|
+    309|       await shell.addNewEntity('chapters', 'My Custom Chapter');
+    310|       expect(api.saveChapter).toHaveBeenCalled();
+       |                               ^
+    311|       expect(shell.openEditors.length).toBe(1);
+    312|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > Entity and Chapter CRUD Operations > createChapterIn increments chapter numbers correctly
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:353:31
+    351|
+    352|       await shell.createChapterIn();
+    353|       expect(api.saveChapter).toHaveBeenCalledWith(expect.objectContaining({
+       |                               ^
+    354|         title: 'Глава 3',
+    355|       }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > Entity and Chapter CRUD Operations > renameChapter updates local state and saves to backend
+AssertionError: expected 'Old' to be 'Renamed Title' // Object.is equality
+
+Expected: "Renamed Title"
+Received: "Old"
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:373:39
+    371|
+    372|       await shell.renameChapter({ id: 'ch_1' }, 'Renamed Title');
+    373|       expect(shell.chapters[0].title).toBe('Renamed Title');
+       |                                       ^
+    374|       expect(api.saveChapter).toHaveBeenCalledWith(expect.objectContaining({
+    375|         title: 'Renamed Title',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > Entity and Chapter CRUD Operations > deleteVolume deletes volume and associated chapters
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'c1' ]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:384:33
+    382|
+    383|       await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], true);    
+    384|       expect(api.deleteChapter).toHaveBeenCalledWith('c1');
+       |                                 ^
+    385|       expect(api.deleteVolume).toHaveBeenCalledWith('v1');
+    386|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > QuickOpen and Helpers > resets activeTreeNode during deleteVolume
+AssertionError: expected { type: 'chapter', …(1) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "node": {
+    "id": "ch_in_vol",
+  },
+  "type": "chapter",
+}
+
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:810:36
+    808|       shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_vol' } };
+    809|       await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [{ id: 'c…    810|       expect(shell.activeTreeNode).toBeNull();
+       |                                    ^
+    811|
+    812|       // 2. deleteVolume with matching activeTreeNode (volume itself)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/shell.spec.ts > shell store > QuickOpen and Helpers > covers addNewEntity branches
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ apps/spa/src/ts/stores/__tests__/shell.spec.ts:855:22
+    853|       vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_1' } as any);
+    854|       await shell.addNewEntity('chapters');
+    855|       expect(prompt).toHaveBeenCalled();
+       |                      ^
+    856|
+    857|       // chapter creation (cancel)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > init > loads tags from API and caches them
+AssertionError: expected [] to deeply equal [ { id: 'tag_1', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "color": "#ff0000",
+-     "id": "tag_1",
+-     "name": "Protagonist",
+-   },
+- ]
++ []
+
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:33:32
+     31|
+     32|       expect(store.project).toBe('proj_1');
+     33|       expect(store.globalTags).toEqual(mockTags);
+       |                                ^
+     34|       expect(store.isInitialized).toBe(true);
+     35|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > createNewTag > creates and appends new tag if not already existing
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'proj_1', ObjectContaining{…} 
+]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:55:27
+     53|       await store.createNewTag('New Tag');
+     54|
+     55|       expect(api.saveTag).toHaveBeenCalledWith(
+       |                           ^
+     56|         'proj_1',
+     57|         expect.objectContaining({ name: 'New Tag', color: 'var(--accent)' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > deleteTag > deletes tag by name via API and updates store
+AssertionError: expected "vi.fn()" to be called with arguments: [ 't1' ]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:84:29
+     82|       await store.deleteTag('Tag 1');
+     83|
+     84|       expect(api.deleteTag).toHaveBeenCalledWith('t1');
+       |                             ^
+     85|       expect(store.globalTags).toHaveLength(1);
+     86|       expect(store.globalTags[0].name).toBe('Tag 2');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > saveTag > updates existing tag details
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'proj_1', ObjectContaining{…} 
+]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:97:27
+     95|       await store.saveTag('OldName', 'NewName', '#999');
+     96|
+     97|       expect(api.saveTag).toHaveBeenCalledWith(
+       |                           ^
+     98|         'proj_1',
+     99|         expect.objectContaining({ id: 't1', name: 'NewName', color: '#999' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > saveTag > creates new 
+tag when oldName does not match any existing tag
+AssertionError: expected { id: 'BrandNew', …(2) } to deeply equal { name: 'BrandNew', color: '#abc' }
+
+- Expected
++ Received
+
+  {
+    "color": "#abc",
++   "id": "BrandNew",
+    "name": "BrandNew",
+  }
+
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:110:35
+    108|       await store.saveTag('NonExistent', 'BrandNew', '#abc');
+    109|       expect(store.globalTags).toHaveLength(2);
+    110|       expect(store.globalTags[1]).toEqual({ name: 'BrandNew', color: '#abc' });        
+       |                                   ^
+    111|     });
+    112|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/tags.store.spec.ts > tags.store > Additional branch edge cases for tags.store > handles null project and isCreatingTag guard across createNewTag, deleteTag and saveTag
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ apps/spa/src/ts/stores/__tests__/tags.store.spec.ts:148:27
+    146|       resolveSave({});
+    147|       await Promise.all([p1, p2]);
+    148|       expect(api.saveTag).toHaveBeenCalledTimes(1);
+       |                           ^
+    149|
+    150|       // 3. deleteTag without tag.id
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/43]⎯
+ FAIL  apps/spa/src/ts/stores/__tests__/zoom.spec.ts > zoom store > calls native webview setZoom when running in Tauri
+AssertionError: expected '1.3' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ 1.3
+
+ ❯ apps/spa/src/ts/stores/__tests__/zoom.spec.ts:49:88
+     47|
+     48|     expect(store.zoomLevel).toBe(1.3);
+     49|     expect((document.documentElement.style as unknown as Record<string, string>).zoom)…       |
+^
+     50|   });
+     51| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/43]⎯
+ FAIL  apps/spa/src/ts/features/chapters/CreateChapterModal/CreateChapterModal.spec.ts > useCreateChapterModal > loads volumes and sets next chapter number on open
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ apps/spa/src/ts/features/chapters/CreateChapterModal/CreateChapterModal.spec.ts:39:40        
+     37|     await modal.loadVolumesAndInit();
+     38|
+     39|     expect(modal.volumes.value.length).toBe(2);
+       |                                        ^
+     40|     expect(modal.volumes.value[0].id).toBeNull();
+     41|     expect(modal.volumes.value[1].id).toBe('volumes:vol_1');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/CreateEntityModal/CreateEntityModal.spec.ts > useCreateEntityModal > loads entity schemas dynamically when opened
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ apps/spa/src/ts/features/entities/CreateEntityModal/CreateEntityModal.spec.ts:63:47
+     61|     await modal.loadEntityTypes();
+     62|
+     63|     expect(modal.availableTypes.value.length).toBe(2);
+       |                                               ^
+     64|     expect(modal.availableTypes.value[0].type).toBe('custom_creature');
+     65|     expect(modal.availableTypes.value[0].icon).toBe('🐉');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/CreateEntityModal/CreateEntityModal.spec.ts > useCreateEntityModal > filters available types by search query
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ apps/spa/src/ts/features/entities/CreateEntityModal/CreateEntityModal.spec.ts:103:46
+    101|
+    102|     modal.searchTypeQuery.value = 'заклинание';
+    103|     expect(modal.filteredTypes.value.length).toBe(1);
+       |                                              ^
+    104|     expect(modal.filteredTypes.value[0].type).toBe('spell');
+    105|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts > useTagsManagerModal > opens, closes and loads tags with error catch
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts:32:33
+     30|     modal.open();
+     31|     expect(modal.isOpen.value).toBe(true);
+     32|     expect(modal.loading.value).toBe(true);
+       |                                 ^
+     33|
+     34|     await Promise.resolve();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts > useTagsManagerModal > adds a new tag and handles error
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'my-project', { …(4) } ]      
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts:58:25
+     56|     await modal.addTag();
+     57|
+     58|     expect(api.saveTag).toHaveBeenCalledWith('my-project', {
+       |                         ^
+     59|       project_id: 'projects:my-project',
+     60|       name: 'Fantasy',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts > useTagsManagerModal > updates an existing tag with and without existing project_id and handles error
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'my-project', { id: 'tag_1', …(2) } ]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts:87:25
+     85|
+     86|     await modal.updateTag(tag);
+     87|     expect(api.saveTag).toHaveBeenCalledWith('my-project', {
+       |                         ^
+     88|       id: 'tag_1',
+     89|       name: 'Updated',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/43]⎯
+ FAIL  apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts > useTagsManagerModal > deletes tag on confirm and handles cancel and error
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'tag_1' ]
+
+Number of calls: 0
+
+ ❯ apps/spa/src/ts/features/entities/__tests__/useTagsManagerModal.spec.ts:115:30
+    113|
+    114|     await modal.deleteTag('tag_1');
+    115|     expect(api.deleteEntity).toHaveBeenCalledWith('tag_1');
+       |                              ^
+    116|     expect(api.getTags).toHaveBeenCalled();
+    117|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/43]⎯
+ FAIL  apps/spa/src/ts/features/shell/__tests__/useProjectLauncherModal.spec.ts > useProjectLauncherModal > manages custom genres correctly and populates customGenresList
+AssertionError: expected [] to deeply equal [ { value: 'Киберпанк', …(1) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "label": "Киберпанк",
+-     "value": "Киберпанк",
+-   },
+- ]
++ []
+
+ ❯ apps/spa/src/ts/features/shell/__tests__/useProjectLauncherModal.spec.ts:34:42
+     32|     modal.addCustomGenre();
+     33|     expect(modal.formData.value.genres).toContain('Киберпанк');
+     34|     expect(modal.customGenresList.value).toEqual([{ value: 'Киберпанк', label: 'Киберп…       |                                          ^
+     35|     expect(modal.customGenreInput.value).toBe('');
+     36|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/43]⎯
+ FAIL  apps/spa/src/ts/features/shell/__tests__/useProjectLauncherModal.spec.ts > useProjectLauncherModal > loads existing project config including cover, custom type and custom genres on editAssertionError: expected 'Фанфик' to be 'custom' // Object.is equality
+
+Expected: "custom"
+Received: "Фанфик"
+
+ ❯ apps/spa/src/ts/features/shell/__tests__/useProjectLauncherModal.spec.ts:101:39
+     99|     expect(modal.isEditing.value).toBe(true);
+    100|     expect(modal.formData.value.name).toBe('Метро 2033');
+    101|     expect(modal.formData.value.type).toBe('custom');
+       |                                       ^
+    102|     expect(modal.customTypeInput.value).toBe('Фанфик');
+    103|     expect(modal.formData.value.genres).toEqual(['Постапокалипсис', 'Выживание']);     
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/43]⎯
+ FAIL  apps/spa/src/ts/features/chapters/PlanningPanel/__tests__/usePlanningPanel.spec.ts > usePlanningPanel > adds, indents, toggles, saves and deletes items with error rollbacks
+AssertionError: expected 2 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 2
+
+ ❯ apps/spa/src/ts/features/chapters/PlanningPanel/__tests__/usePlanningPanel.spec.ts:58:38     
+     56|     await panel.addItem();
+     57|     await panel.addItemAfter(0, 1);
+     58|     expect(panel.items.value.length).toBe(3);
+       |                                      ^
+     59|
+     60|     // Save empty item without id (early return)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/43]⎯
+ FAIL  apps/spa/src/ts/features/chapters/PlanningPanel/__tests__/usePlanningPanel.spec.ts > usePlanningPanel > covers progressPct, sort_order fallbacks, toggleItem success and DOM input focus 
+AssertionError: expected +0 to be 50 // Object.is equality
+
+- Expected
++ Received
+
+- 50
++ 0
+
+ ❯ apps/spa/src/ts/features/chapters/PlanningPanel/__tests__/usePlanningPanel.spec.ts:125:37    
+    123|     ] as any);
+    124|     await panel.load();
+    125|     expect(panel.progressPct.value).toBe(50);
+       |                                     ^
+    126|
+    127|     // Toggle item with id (success path)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/43]⎯
+ FAIL  apps/spa/src/ts/features/schemas/SchemaEditor/__tests__/useSchemaEditorMain.spec.ts > useSchemaEditorMain > saves schema with atomic and dynamic fields, handles history reload and errors
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'p1', ObjectContaining{…}, Anything ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "p1",
+-   ObjectContaining {
++   {
++     "created_at": null,
++     "fields_schema": [],
++     "full_schema": {
+        "color": "#ff0000",
++       "entityType": "character",
+        "icon": "🛡️",
++       "name": "Custom Character",
++       "sections": [
++         {
++           "dynamicContainers": [
++             {
++               "template": "timeline",
++             },
++           ],
++           "fields": [
++             {
++               "class": "name",
++               "type": "text",
++             },
++           ],
++           "icon": "📄",
++           "id": "sec_1",
++           "title": "Main",
++         },
++       ],
+        "type_key": "character",
+        "type_name": "Custom Character",
+      },
+-   Anything,
++     "id": null,
++     "project_id": "projects:p1",
++     "type_key": "character",
++     "type_name": "Custom Character",
++   },
++   30,
+  ]
+
+
+Number of calls: 1
+
+ ❯ apps/spa/src/ts/features/schemas/SchemaEditor/__tests__/useSchemaEditorMain.spec.ts:120:34   
+    118|     expect(appAlert).toHaveBeenCalledWith('Схема сохранена!');
+    119|     expect(main.isHistoryPreviewMode.value).toBe(false);
+    120|     expect(api.saveEntitySchema).toHaveBeenCalledWith(
+       |                                  ^
+    121|       'p1',
+    122|       expect.objectContaining({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/43]⎯
+ FAIL  apps/spa/src/ts/features/schemas/SchemaEditor/__tests__/useSchemaEditorMain.spec.ts > useSchemaEditorMain > covers fallback properties, empty project, section without items, and non-matching global save events
+AssertionError: expected "vi.fn()" to be called with arguments: [ '', ObjectContaining{…}, Anything ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "",
+-   ObjectContaining {
+-     "color": "var(--color-bg-tertiary)",
++   {
++     "created_at": null,
++     "fields_schema": [],
++     "full_schema": {
++       "entityType": "location",
++       "name": "location",
++       "sections": [
++         {
++           "dynamicContainers": [],
++           "fields": [],
+            "icon": "📄",
++           "id": "sec_empty",
++           "title": "Empty",
++         },
++       ],
++       "type_key": "location",
++       "type_name": "location",
++     },
++     "id": null,
+      "project_id": null,
++     "type_key": "location",
+      "type_name": "location",
+    },
+-   Anything,
++   30,
+  ]
+
+
+Number of calls: 1
+
+ ❯ apps/spa/src/ts/features/schemas/SchemaEditor/__tests__/useSchemaEditorMain.spec.ts:163:34   
+    161|     vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
+    162|     await mainNoSchemaType.saveSchema();
+    163|     expect(api.saveEntitySchema).toHaveBeenCalledWith(
+       |                                  ^
+    164|       '',
+    165|       expect.objectContaining({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts 
+> useTab3CultureLore > добавляет и удаляет сезоны
+Error: [🍍]: "getActivePinia()" was called but there was no active Pinia. Are you trying to use 
+a store before calling "app.use(pinia)"?
+See https://pinia.vuejs.org/core-concepts/outside-component-usage.html for help.
+This will fail in production.
+ ❯ useStore node_modules/.pnpm/pinia@4.0.3_@vue+devtools-api@8.1.5_typescript@6.0.3_vue@3.5.39_typescript@6.0.3_/node_modules/pinia/dist/pinia.js:1309:68
+ ❯ useTab3CultureLore apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts:16:25
+     14|   emit: Tab3CultureLoreEmits
+     15| ) {
+     16|   const calendarStore = useCalendarStore();
+       |                         ^
+     17|
+     18|   const months = computed<CalendarMonth[]>(() => {
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts:25:41
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts 
+> useTab3CultureLore > добавляет и удаляет праздники
+Error: [🍍]: "getActivePinia()" was called but there was no active Pinia. Are you trying to use 
+a store before calling "app.use(pinia)"?
+See https://pinia.vuejs.org/core-concepts/outside-component-usage.html for help.
+This will fail in production.
+ ❯ useStore node_modules/.pnpm/pinia@4.0.3_@vue+devtools-api@8.1.5_typescript@6.0.3_vue@3.5.39_typescript@6.0.3_/node_modules/pinia/dist/pinia.js:1309:68
+ ❯ useTab3CultureLore apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts:16:25
+     14|   emit: Tab3CultureLoreEmits
+     15| ) {
+     16|   const calendarStore = useCalendarStore();
+       |                         ^
+     17|
+     18|   const months = computed<CalendarMonth[]>(() => {
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts:38:43
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts 
+> useTab3CultureLore > обновляет правило возраста персонажей
+Error: [🍍]: "getActivePinia()" was called but there was no active Pinia. Are you trying to use 
+a store before calling "app.use(pinia)"?
+See https://pinia.vuejs.org/core-concepts/outside-component-usage.html for help.
+This will fail in production.
+ ❯ useStore node_modules/.pnpm/pinia@4.0.3_@vue+devtools-api@8.1.5_typescript@6.0.3_vue@3.5.39_typescript@6.0.3_/node_modules/pinia/dist/pinia.js:1309:68
+ ❯ useTab3CultureLore apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts:16:25
+     14|   emit: Tab3CultureLoreEmits
+     15| ) {
+     16|   const calendarStore = useCalendarStore();
+       |                         ^
+     17|
+     18|   const months = computed<CalendarMonth[]>(() => {
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts:51:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts 
+> useTab3CultureLore > управляет регионами распространения
+Error: [🍍]: "getActivePinia()" was called but there was no active Pinia. Are you trying to use 
+a store before calling "app.use(pinia)"?
+See https://pinia.vuejs.org/core-concepts/outside-component-usage.html for help.
+This will fail in production.
+ ❯ useStore node_modules/.pnpm/pinia@4.0.3_@vue+devtools-api@8.1.5_typescript@6.0.3_vue@3.5.39_typescript@6.0.3_/node_modules/pinia/dist/pinia.js:1309:68
+ ❯ useTab3CultureLore apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/useTab3CultureLore.ts:16:25
+     14|   emit: Tab3CultureLoreEmits
+     15| ) {
+     16|   const calendarStore = useCalendarStore();
+       |                         ^
+     17|
+     18|   const months = computed<CalendarMonth[]>(() => {
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/Tab3CultureLore.spec.ts:61:41
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts > useCalendarEditor > loads calendar and computes basic metrics
+AssertionError: expected null not to be null
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts:55:45   
+     53|     await flushPromises();
+     54|
+     55|     expect(editor.calendarRecord.value).not.toBeNull();
+       |                                             ^
+     56|     expect(editor.calendarRecord.value?.name).toBe('Земной календарь');
+     57|     expect(editor.totalDays.value).toBe(31);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts > useCalendarEditor > hydrates saved activeTab and unsaved draft from localStorage
+AssertionError: expected 'timeGrid' to be 'erasSync' // Object.is equality
+
+Expected: "erasSync"
+Received: "timeGrid"
+
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts:84:36   
+     82|     await flushPromises();
+     83|
+     84|     expect(editor.activeTab.value).toBe('erasSync');
+       |                                    ^
+     85|     expect(editor.calendarRecord.value?.name).toBe('Черновик календаря');
+     86|     expect(editor.hasUnsavedDraft.value).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts > useCalendarEditor > applies presets correctly and marks draft as unsaved
+AssertionError: expected undefined to be 'Летосчисление Шира' // Object.is equality
+
+- Expected:
+"Летосчисление Шира"
+
++ Received:
+undefined
+
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts:103:47  
+    101|     editor.applyPreset(shirePreset);
+    102|
+    103|     expect(editor.calendarRecord.value?.name).toBe(shirePreset.data.название);
+       |                                               ^
+    104|     expect(editor.hasUnsavedDraft.value).toBe(true);
+    105|     expect(emit).toHaveBeenCalledWith('update:name', shirePreset.data.название);       
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts > useCalendarEditor > cleans up localStorage draft on successful saveCalendar
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ apps/spa/src/ts/features/timeline/CalendarEditor/__tests__/useCalendarEditor.spec.ts:119:42  
+    117|
+    118|     editor.patchCalendarData({ название: 'Новое имя' });
+    119|     expect(editor.hasUnsavedDraft.value).toBe(true);
+       |                                          ^
+    120|
+    121|     await editor.saveCalendar();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/43]⎯
+ FAIL  apps/spa/src/ts/features/timeline/Calendars/CalendarPresetsModal/__tests__/useCalendarPresetsModal.spec.ts > useCalendarPresetsModal > handles apply preset flow and emits select-preset 
+AssertionError: expected { id: 'russia_modern', …(11) } to be { id: 'russia_modern', …(11) } // 
+Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { id: 'russia_modern', …(11) }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ apps/spa/src/ts/features/timeline/Calendars/CalendarPresetsModal/__tests__/useCalendarPresetsModal.spec.ts:46:40
+     44|
+     45|     expect(modal.confirmApplyVisible.value).toBe(true);
+     46|     expect(modal.selectedPreset.value).toBe(preset);
+       |                                        ^
+     47|
+     48|     modal.confirmApply();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/43]⎯
+
+ Test Files  16 failed | 182 passed (198)
+      Tests  43 failed | 1457 passed (1500)

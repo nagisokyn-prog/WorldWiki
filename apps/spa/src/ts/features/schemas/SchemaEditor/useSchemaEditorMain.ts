@@ -96,19 +96,19 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
                 }
             });
 
-            const dataToSave: EntitySchema = {
+            const dataToSave = {
                 id: (dataHook.schemaRecordId.value as string) || null,
                 project_id: props.project ? projectRecordId(props.project) : null,
                 type_key: targetTypeKey,
                 type_name: targetTypeName,
-                icon: schemaCopy.icon || '📄',
+                icon: schemaCopy.icon || (schemaCopy.sections?.[0]?.icon as string) || '📄',
                 color: schemaCopy.color || 'var(--color-bg-tertiary)',
                 fields_schema: [],
                 full_schema: schemaCopy,
                 created_at: null
             };
             
-            const saved = await api.saveEntitySchema(props.project, dataToSave, historyHook.maxSaves.value);
+            const saved = await api.saveEntitySchema(props.project, dataToSave as unknown as EntitySchema, historyHook.maxSaves.value);
             if (saved && saved.id) {
                 dataHook.schemaRecordId.value = saved.id;
             }

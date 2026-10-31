@@ -145,7 +145,7 @@ export function buildTimelineItems(
           const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanId);
           const resolvedId = arc?.id || entryArcId;
           const resolvedTitle = arc?.title || 'Сюжетная арка';
-          const resolvedColor = arc?.color || undefined;
+          const resolvedColor = (arc as { color?: string })?.color || undefined;
 
           if (!allArcIds.includes(resolvedId)) {
             allArcIds.push(resolvedId);
@@ -167,7 +167,7 @@ export function buildTimelineItems(
       const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanArcId);
       const resolvedId = arc?.id || p.arc_id;
       const resolvedTitle = arc?.title || p.arc_title || 'Сюжетная арка';
-      const resolvedColor = arc?.color || p.arc_color || undefined;
+      const resolvedColor = (arc as { color?: string })?.color || p.arc_color || undefined;
       const phase = p.arc_phase || 'setup';
 
       allArcIds.push(resolvedId);

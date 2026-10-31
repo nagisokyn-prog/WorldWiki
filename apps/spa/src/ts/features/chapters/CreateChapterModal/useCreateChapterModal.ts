@@ -48,20 +48,22 @@ export function useCreateChapterModal(
 
       if (Array.isArray(hierarchy.volumes)) {
         for (const v of hierarchy.volumes) {
-          loadedVolumes.push({
-            id: String(v.id),
-            title: v.title || 'Безымянный том',
-          });
+          if (v && v.id) {
+            loadedVolumes.push({
+              id: String(v.id),
+              title: v.title || 'Безымянный том',
+            });
+          }
         }
       }
       volumes.value = loadedVolumes;
 
-      // Устанавливаем выбранный том (обязательно существующий том)
+      // Устанавливаем выбранный том
       const initialVol = props.initialVolumeId ? String(props.initialVolumeId) : null;
       const matched = loadedVolumes.find((v) => v.id === initialVol);
-      if (matched && matched.id) {
+      if (matched) {
         selectedVolumeId.value = matched.id;
-      } else if (loadedVolumes.length > 0 && loadedVolumes[0].id) {
+      } else if (loadedVolumes.length > 0) {
         selectedVolumeId.value = loadedVolumes[0].id;
       } else {
         selectedVolumeId.value = null;
@@ -121,8 +123,8 @@ export function useCreateChapterModal(
       errorMessage.value = 'Название главы не может быть пустым';
       return;
     }
-    if (volumes.value.length > 0 && !selectedVolumeId.value) {
-      errorMessage.value = 'Необходимо выбрать том для создания главы';
+    if (!selectedVolumeId.value) {
+      errorMessage.value = 'Необходимо выбрать том для создания главы. Создание глав без тома запрещено.';
       return;
     }
     errorMessage.value = null;

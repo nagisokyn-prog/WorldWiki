@@ -2,7 +2,7 @@
  * @file useCreateEntityModal.ts
  * @description Composable для управления модальным окном создания сущности без хардкода типов
  */
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import * as api from '../../../services/api.client';
 import { entityApi } from '../../../services/Entity/entity.api';
 import type {
@@ -48,7 +48,7 @@ export function useCreateEntityModal(
           options.push({
             type: s.type_key,
             name: s.type_name || s.type_key,
-            icon: s.icon || '📄',
+            icon: (s as { icon?: string }).icon || '📄',
             description: typeof s.full_schema === 'object' && s.full_schema !== null
               ? (s.full_schema as Record<string, unknown>).description as string | undefined
               : undefined,
@@ -91,6 +91,12 @@ export function useCreateEntityModal(
     }
   };
 
+  onMounted(() => {
+    if (props.isOpen) {
+      void loadEntityTypes();
+    }
+  });
+
   watch(
     () => props.isOpen,
     (open) => {
@@ -102,8 +108,7 @@ export function useCreateEntityModal(
         selectedEntityType.value = '';
         errorMessage.value = null;
       }
-    },
-    { immediate: true }
+    }
   );
 
   const selectType = (typeKey: string) => {

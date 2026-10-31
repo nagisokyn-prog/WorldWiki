@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, shallowRef } from 'vue';
 import { CALENDAR_PRESETS, type CalendarPreset } from '../presets';
 import type { CalendarPresetsModalProps, CalendarPresetsModalEmits, CategoryFilter } from './CalendarPresetsModal.model';
 
@@ -8,7 +8,7 @@ export function useCalendarPresetsModal(
 ) {
   const searchQuery = ref('');
   const activeCategory = ref<CategoryFilter>('all');
-  const selectedPreset = ref<CalendarPreset | null>(null);
+  const selectedPreset = shallowRef<CalendarPreset | null>(null);
   const confirmApplyVisible = ref(false);
 
   const filteredPresets = computed(() => {

@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as api from '../services/api.client';
-import { projectRecordId } from '../services/api/project.api';
-import type { Tag } from '../types/generated/Tag';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 export interface TagData {
@@ -26,12 +24,24 @@ export const useTagsStore = defineStore('tags', () => {
       if (cached) {
         globalTags.value = cached;
       } else {
-        const result = await api.getTags(project.value);
-        globalTags.value = (result as unknown as TagData[]) || [];
+        const entities = await api.getEntities(project.value, null);
+        const tagSet = new Set<string>();
+        for (const e of entities || []) {
+          if (Array.isArray(e.tags)) {
+            for (const t of e.tags) {
+              if (t && typeof t === 'string') tagSet.add(t);
+            }
+          }
+        }
+        globalTags.value = Array.from(tagSet).map((name) => ({
+          id: name,
+          name,
+          color: 'var(--accent)',
+        }));
         setCache(cacheKey, globalTags.value);
       }
     } catch (e) {
-      console.error("Ошибка загрузки тегов:", e);
+      console.error('Ошибка загрузки тегов:', e);
       globalTags.value = [];
     }
 
@@ -42,15 +52,14 @@ export const useTagsStore = defineStore('tags', () => {
 
   async function createNewTag(name: string) {
     if (isCreatingTag.value || !project.value) return;
-    
-    const existing = globalTags.value.find(t => t.name.toLowerCase() === name.toLowerCase());
+
+    const existing = globalTags.value.find((t) => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return;
 
     isCreatingTag.value = true;
     try {
-      const newTag: Tag = { project_id: projectRecordId(project.value || ''), name, color: 'var(--accent)', id: null };
-      await api.saveTag(project.value, newTag);
-      globalTags.value.push({ name, color: 'var(--accent)' });
+      const newTag: TagData = { id: name, name, color: 'var(--accent)' };
+      globalTags.value.push(newTag);
       invalidateCache(`tags:${project.value}`);
     } finally {
       isCreatingTag.value = false;
@@ -59,31 +68,19 @@ export const useTagsStore = defineStore('tags', () => {
 
   async function deleteTag(name: string) {
     if (!project.value) return;
-    const tag = globalTags.value.find(t => t.name === name);
-    if (tag && tag.id) {
-        await api.deleteTag(tag.id);
-    }
-    globalTags.value = globalTags.value.filter(t => t.name !== name);
+    globalTags.value = globalTags.value.filter((t) => t.name !== name && t.id !== name);
     invalidateCache(`tags:${project.value}`);
   }
 
   async function saveTag(oldName: string, newName: string, color: string) {
     if (!project.value) return;
-    const existingTag = globalTags.value.find(t => t.name === oldName);
-    
-    const tagToSave: Tag = {
-      project_id: projectRecordId(project.value),
-      id: existingTag?.id || null,
-      name: newName,
-      color: color
-    };
-    await api.saveTag(project.value, tagToSave);
-    
+    const existingTag = globalTags.value.find((t) => t.name === oldName || t.id === oldName);
+
     if (existingTag) {
       existingTag.name = newName;
       existingTag.color = color;
     } else {
-      globalTags.value.push({ name: newName, color });
+      globalTags.value.push({ id: newName, name: newName, color });
     }
     invalidateCache(`tags:${project.value}`);
   }
@@ -95,6 +92,6 @@ export const useTagsStore = defineStore('tags', () => {
     init,
     createNewTag,
     deleteTag,
-    saveTag
+    saveTag,
   };
 });

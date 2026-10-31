@@ -29,6 +29,7 @@ export interface EntityOpsDeps {
   markSaved: (tabId?: string) => void;
   openEntity: (entity: Record<string, unknown>) => void;
   openChapterTab: (chapter: Chapter) => void;
+  confirmCreateChapter?: (payload: { title: string; volumeId: string | null }) => Promise<void>;
 }
 
 export function useShellEntityOps(deps: EntityOpsDeps) {
@@ -105,7 +106,8 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
       openEntity: deps.openEntity,
       openChapterTab: deps.openChapterTab,
       loadEntityList,
-      handleUpdateData
+      handleUpdateData,
+      confirmCreateChapter: deps.confirmCreateChapter
     },
     isCreatingEntity
   );

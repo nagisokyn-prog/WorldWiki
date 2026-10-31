@@ -36,9 +36,8 @@ describe('useCreateChapterModal', () => {
 
     await modal.loadVolumesAndInit();
 
-    expect(modal.volumes.value.length).toBe(2);
-    expect(modal.volumes.value[0].id).toBeNull();
-    expect(modal.volumes.value[1].id).toBe('volumes:vol_1');
+    expect(modal.volumes.value.length).toBe(1);
+    expect(modal.volumes.value[0].id).toBe('volumes:vol_1');
     expect(modal.selectedVolumeId.value).toBe('volumes:vol_1');
     expect(modal.title.value).toBe('Глава 3');
   });

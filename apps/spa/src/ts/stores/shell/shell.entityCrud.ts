@@ -25,6 +25,7 @@ export interface EntityCrudDeps {
   openChapterTab: (chapter: Chapter) => void;
   loadEntityList: (entityType: string) => Promise<void>;
   handleUpdateData: (tabId: string, newData: Record<string, unknown>, fromLiveSync?: boolean) => void;
+  confirmCreateChapter?: (payload: { title: string; volumeId: string | null }) => Promise<void>;
 }
 
 export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<boolean>) {
@@ -157,11 +158,25 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
   };
 
   const addNewEntity = async (entityType: string, preDefinedName?: string) => {
-    if (!preDefinedName) {
-      openCreateEntityModal(entityType);
+    if (!entityType) return;
+    const isChapter = entityType === 'chapters' || entityType === 'chapter';
+    let name = preDefinedName;
+    if (!name) {
+      const promptTitle = isChapter ? 'Введите название новой главы:' : `Введите имя для ${entityType}:`;
+      const promptFn = typeof window !== 'undefined' && window.prompt ? window.prompt.bind(window) : (typeof prompt === 'function' ? prompt : null);
+      const res = promptFn ? promptFn(promptTitle, isChapter ? 'Новая глава' : '') : null;
+      if (!res) return;
+      name = res;
+    }
+
+    if (isChapter) {
+      if (deps.confirmCreateChapter) {
+        await deps.confirmCreateChapter({ title: name, volumeId: null });
+      }
       return;
     }
-    await confirmCreateEntity({ entityType, name: preDefinedName });
+
+    await confirmCreateEntity({ entityType, name });
   };
 
   return {

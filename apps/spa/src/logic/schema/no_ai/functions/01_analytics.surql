@@ -12,7 +12,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order, 
             IF word_count != NONE { word_count } ELSE { 0 } AS word_count 
         FROM chapters 
-        WHERE project_id = $p_rec
+        WHERE volume_id.project_id = $p_rec
         ORDER BY sort_order ASC
         LIMIT 1000
     );
@@ -47,7 +47,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
                 })
             ) AS appearances
         FROM entities 
-        WHERE project_id = $p_rec
+        WHERE schema_id.project_id = $p_rec
         ORDER BY name ASC
         LIMIT 2000
     );
@@ -137,7 +137,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
     LET $chapters = (
         SELECT id, title, IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order 
         FROM chapters 
-        WHERE project_id = $p_rec
+        WHERE volume_id.project_id = $p_rec
         ORDER BY sort_order ASC
         LIMIT 1000
     );
@@ -289,14 +289,14 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
 
 -- 5. СИНХРОНИЗАЦИЯ УПОМИНАНИЙ СУЩНОСТЕЙ В ГЛАВЕ
 DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $names: array<string>) {
-    LET $p_rec = fn::normalize_project_id($chap.project_id);
+    LET $p_rec = fn::normalize_project_id($chap.volume_id.project_id);
     DELETE appears_in WHERE out = $chap AND source = 'mention';
 
     IF array::len($names) > 0 {
         LET $lower_names = (SELECT VALUE string::lowercase($this) FROM $names LIMIT 500);
         LET $targets = (
             SELECT VALUE id FROM entities 
-            WHERE project_id = $p_rec
+            WHERE schema_id.project_id = $p_rec
               AND (
                   type::string(id) IN $names
                   OR id.id IN $names

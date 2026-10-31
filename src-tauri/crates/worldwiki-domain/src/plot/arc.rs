@@ -31,10 +31,8 @@ pub struct StoryArc {
     pub id: String,
     pub project_id: String,
     pub title: String,
-    pub description: Option<String>,
-    pub arc_type: ArcType,
+    #[serde(default)]
     pub status: ArcStatus,
-    pub color: Option<String>,
     #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
     #[serde(default = "default_datetime")]
@@ -42,17 +40,14 @@ pub struct StoryArc {
 }
 
 impl StoryArc {
-    pub fn new(project_id: impl Into<String>, title: impl Into<String>, arc_type: ArcType) -> Self {
+    pub fn new(project_id: impl Into<String>, title: impl Into<String>) -> Self {
         Self {
             id: String::new(),
             project_id: project_id.into(),
             title: title.into(),
-            description: None,
-            arc_type,
-            status: ArcStatus::Planned,
-            color: None,
-            created_at: DateTime::UNIX_EPOCH,
-            updated_at: DateTime::UNIX_EPOCH,
+            status: ArcStatus::InProgress,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 }

@@ -4,8 +4,8 @@
 -- 6. СБОР ПОЛНОЙ ИЕРАРХИИ ГЛАВ И ТОМОВ ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::get_chapter_hierarchy($proj: record<projects>) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $volumes = (SELECT id, project_id, title, description, sort_order, created_at, updated_at FROM volumes WHERE project_id = $p_rec LIMIT 500);
-    LET $chapters = (SELECT id, project_id, title, order_index, description, content, word_count, is_pinned, created_at, updated_at FROM chapters WHERE project_id = $p_rec LIMIT 1000);
+    LET $volumes = (SELECT id, project_id, title FROM volumes WHERE project_id = $p_rec LIMIT 500);
+    LET $chapters = (SELECT id, volume_id, title, sort_order, content, word_count, created_at, updated_at FROM chapters WHERE volume_id.project_id = $p_rec LIMIT 1000);
     LET $vol_ids = (SELECT VALUE id FROM $volumes LIMIT 500);
     LET $chap_ids = (SELECT VALUE id FROM $chapters LIMIT 1000);
     LET $relations = (
@@ -33,6 +33,9 @@ DEFINE FUNCTION OVERWRITE fn::create_volume_node($proj: record<projects>, $title
 DEFINE FUNCTION OVERWRITE fn::assign_chapter_node($parent: record<projects> | record<volumes>, $chap: record<chapters>) {
     DELETE contains WHERE out = $chap;
     RELATE $parent -> contains -> $chap SET sort_order = 9999;
+    IF string::starts_with(type::string($parent), 'volumes') {
+        UPDATE $chap SET volume_id = $parent;
+    };
 };
 
 -- 17. МАКСИМАЛЬНЫЙ ПОРЯДОК СОРТИРОВКИ ТОМОВ

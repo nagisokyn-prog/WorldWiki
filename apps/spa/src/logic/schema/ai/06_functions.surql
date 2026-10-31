@@ -80,9 +80,9 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     LET $q_low = string::lowercase($q);
 
     LET $ents = (
-        SELECT id, name, entity_type AS type_key, description, tags, attributes 
+        SELECT id, name, schema_id.type_key AS type_key, description, tags, attributes 
         FROM entities 
-        WHERE project_id = $p_rec 
+        WHERE schema_id.project_id = $p_rec 
           AND (string::lowercase(name) CONTAINS $q_low OR (description != NONE AND string::lowercase(type::string(description)) CONTAINS $q_low))
         LIMIT $limit
     );
@@ -98,7 +98,7 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     LET $chaps = (
         SELECT id, title, content 
         FROM chapters 
-        WHERE project_id = $p_rec 
+        WHERE volume_id.project_id = $p_rec 
           AND (string::lowercase(title) CONTAINS $q_low OR (content != NONE AND string::lowercase(type::string(content)) CONTAINS $q_low))
         LIMIT $limit
     );
@@ -143,7 +143,10 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
         LIMIT 100
     );
     LET $promises = (
-        SELECT id, project_id, kind, title, note, status, location_id, timeline_event_id, m_abs, calendar_id, created_at,
+        SELECT id, project_id, kind, title, note, status, location_id, timeline_event_id,
+            timeline_event_id.m_abs AS m_abs,
+            timeline_event_id.calendar_id AS calendar_id,
+            created_at,
             ->promise_milestones.{
                 stage: stage,
                 quote: quote,
@@ -152,7 +155,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
             <-participant_of.in.id AS participant_ids,
             ->advances_arc.out.id AS arc_ids
         FROM plot_promises 
-        WHERE ->promise_milestones.out.chapter_id CONTAINS $chapter OR (project_id = $chapter.project_id AND status != 'resolved')
+        WHERE ->promise_milestones.out.chapter_id CONTAINS $chapter OR (project_id = $chapter.volume_id.project_id AND status != 'resolved')
         LIMIT 100
     );
     RETURN {

@@ -16,7 +16,7 @@ pub use analytics_repo::SurrealAnalyticsRepository;
 pub use chapter_repo::SurrealChapterRepository;
 pub use entity_repo::SurrealEntityRepository;
 pub use helpers::*;
-pub use plot_repo::{SurrealPlanRepository, SurrealPlotPromiseRepository};
+pub use plot_repo::{SurrealPlotPromiseRepository, SurrealTodoRepository};
 pub use rag_repo::{
     format_entity_dossier_value, format_entity_search_dto, ChapterSearchDto, EntityRelationSearchDto,
     EntitySearchDto, LoreChunkSearchDto, RagBundleDto, SurrealRAGAdapter,

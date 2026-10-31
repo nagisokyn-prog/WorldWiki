@@ -2,8 +2,8 @@ use async_trait::async_trait;
 use dashmap::DashMap;
 use std::sync::Arc;
 use worldwiki_domain::errors::DomainError;
-use worldwiki_domain::plot::{Plan, PlotPromise, PromiseStatus};
-use worldwiki_ports::repositories::{PlanRepository, PlotPromiseRepository};
+use worldwiki_domain::plot::{PlotPromise, PromiseStatus, Todo};
+use worldwiki_ports::repositories::{PlotPromiseRepository, TodoRepository};
 
 #[derive(Default, Clone)]
 pub struct InMemoryPlotPromiseRepository {
@@ -53,19 +53,26 @@ impl PlotPromiseRepository for InMemoryPlotPromiseRepository {
 }
 
 #[derive(Default, Clone)]
-pub struct InMemoryPlanRepository {
-    storage: Arc<DashMap<String, Plan>>,
+pub struct InMemoryTodoRepository {
+    storage: Arc<DashMap<String, Todo>>,
 }
 
 #[async_trait]
-impl PlanRepository for InMemoryPlanRepository {
-    async fn get_by_id(&self, id: &str) -> Result<Option<Plan>, DomainError> {
+impl TodoRepository for InMemoryTodoRepository {
+    async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, DomainError> {
         Ok(self.storage.get(id).map(|r| r.value().clone()))
     }
 
-    async fn save(&self, plan: &Plan) -> Result<(), DomainError> {
-        self.storage.insert(plan.id.clone(), plan.clone());
-        Ok(())
+    async fn save(&self, todo: &Todo) -> Result<String, DomainError> {
+        let id = if todo.id.is_empty() {
+            uuid::Uuid::new_v4().to_string()
+        } else {
+            todo.id.clone()
+        };
+        let mut t = todo.clone();
+        t.id = id.clone();
+        self.storage.insert(id.clone(), t);
+        Ok(id)
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
@@ -73,23 +80,25 @@ impl PlanRepository for InMemoryPlanRepository {
         Ok(())
     }
 
-    async fn list_by_parent(&self, parent_ref: &str) -> Result<Vec<Plan>, DomainError> {
-        let list = self
+    async fn list_by_owner(&self, owner_id: &str) -> Result<Vec<Todo>, DomainError> {
+        let mut list: Vec<Todo> = self
             .storage
             .iter()
-            .filter(|r| r.value().parent_ref.as_deref() == Some(parent_ref))
+            .filter(|r| r.value().owner_id == owner_id)
             .map(|r| r.value().clone())
             .collect();
+        list.sort_by_key(|t| t.sort_order);
         Ok(list)
     }
 
-    async fn list_pending_by_volume(&self, volume_id: &str) -> Result<Vec<Plan>, DomainError> {
-        let list = self
+    async fn list_by_owners(&self, owner_ids: &[&str]) -> Result<Vec<Todo>, DomainError> {
+        let mut list: Vec<Todo> = self
             .storage
             .iter()
-            .filter(|r| r.value().parent_ref.as_deref() == Some(volume_id) && !r.value().completed)
+            .filter(|r| owner_ids.contains(&r.value().owner_id.as_str()))
             .map(|r| r.value().clone())
             .collect();
+        list.sort_by_key(|t| t.sort_order);
         Ok(list)
     }
 }

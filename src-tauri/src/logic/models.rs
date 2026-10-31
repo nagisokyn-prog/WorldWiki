@@ -199,40 +199,24 @@ surreal_entity! {
 
 surreal_entity! {
     #[table = "chapters"]
-    #[project_scoped]
     pub struct Chapter {
+        pub volume_id: String,
         pub title: String,
         pub content: String,
-        pub summary: Option<String>,
         #[serde(default, alias = "sortOrder")] pub sort_order: i64,
         #[serde(default, alias = "wordCount")] pub word_count: i64,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub footnotes: Option<serde_json::Value>,
-        #[serde(alias = "timelineEvents", skip_serializing_if = "Option::is_none")] #[flexible] pub timeline_events: Option<serde_json::Value>,
-        #[serde(skip_serializing_if = "Option::is_none")] pub participants: Option<Vec<String>>,
     }
 }
 
 surreal_entity! {
-    #[table = "tags"]
-    #[project_scoped]
+    #[table = "todos"]
     #[tauri_commands]
-    pub struct Tag {
-        pub name: String,
-        pub color: String,
-    }
-}
-
-surreal_entity! {
-    #[table = "plans"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Plan {
-        pub title: String,
-        pub parent_ref: Option<String>,
-        pub parent_type: String,
+    pub struct Todo {
+        pub owner_id: String,
+        pub text: String,
+        pub is_done: bool,
         #[ts(type = "number")] pub sort_order: i64,
-        pub completed: bool,
     }
 }
 
@@ -274,10 +258,6 @@ surreal_entity! {
         #[serde(default)] pub milestones: Vec<PromiseMilestone>,
         #[serde(skip_serializing_if = "Option::is_none")] pub location_id: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")] pub timeline_event_id: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[ts(type = "number | null")]
-        pub m_abs: Option<i64>,
-        #[serde(skip_serializing_if = "Option::is_none")] pub calendar_id: Option<String>,
         #[serde(default)] pub participant_ids: Vec<String>,
         #[serde(default)] pub arcs: Vec<SceneArcItem>,
         #[serde(skip_serializing_if = "Option::is_none")] pub arc_id: Option<String>,
@@ -291,10 +271,7 @@ surreal_entity! {
     #[tauri_commands]
     pub struct StoryArc {
         pub title: String,
-        pub description: Option<String>,
-        pub arc_type: String,
         pub status: String,
-        pub color: Option<String>,
     }
 }
 
@@ -337,8 +314,6 @@ pub struct EntitySchema {
     pub project_id: Option<String>,
     pub type_key: String,
     pub type_name: String,
-    pub icon: String,
-    pub color: String,
     pub fields_schema: Vec<FieldDef>,
     #[ts(type = "Record<string, unknown> | null")]
     pub full_schema: Option<serde_json::Value>,
@@ -388,7 +363,6 @@ pub struct RelationSchema {
     pub rel_name: String,
     pub icon: String,
     pub color: String,
-    pub directed: bool,
     pub from_types: Vec<String>,
     pub to_types: Vec<String>,
 }
@@ -524,7 +498,7 @@ surreal_schema! {
     entities: [
         TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
         AutoApprovalSetting, AiProfile, Artifact, AiSkill,
-        Calendar, Volume, Chapter, Tag, Plan, PlotPromise, StoryArc
+        Calendar, Volume, Chapter, Todo, PlotPromise, StoryArc
     ],
     relations: [
         Cites, VolumeContainsChapter, ProjectContainsChapter, ProjectContainsVolume,
@@ -553,7 +527,7 @@ mod ts_export_tests {
         AiProfile::export(&cfg).expect(export_err_msg);
         Artifact::export(&cfg).expect(export_err_msg);
         AiSkill::export(&cfg).expect(export_err_msg);
-        Plan::export(&cfg).expect(export_err_msg);
+        Todo::export(&cfg).expect(export_err_msg);
         PlotPromise::export(&cfg).expect(export_err_msg);
         PromiseMilestone::export(&cfg).expect(export_err_msg);
         StoryArc::export(&cfg).expect(export_err_msg);
@@ -563,7 +537,6 @@ mod ts_export_tests {
         RevealedIn::export(&cfg).expect(export_err_msg);
         Volume::export(&cfg).expect(export_err_msg);
         Chapter::export(&cfg).expect(export_err_msg);
-        Tag::export(&cfg).expect(export_err_msg);
         Calendar::export(&cfg).expect(export_err_msg);
         Cites::export(&cfg).expect(export_err_msg);
         Chat::export(&cfg).expect(export_err_msg);

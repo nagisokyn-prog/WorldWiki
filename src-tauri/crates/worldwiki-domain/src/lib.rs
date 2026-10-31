@@ -15,8 +15,8 @@ mod tests {
     use crate::analytics::{ContradictionAnomaly, ContradictionRule, ContradictionSeverity};
     use crate::calendar::{EventReveal, TimelineEvent};
     use crate::knowledge::Entity;
-    use crate::manuscript::{AppearanceSource, Chapter, EntityAppearance, ManuscriptStatus, TextBlock};
-    use crate::plot::{ArcType, Plan, PlanParentType, PlotPromise, PromiseKind, PromiseStatus, StoryArc};
+    use crate::manuscript::{AppearanceSource, Chapter, EntityAppearance, TextBlock};
+    use crate::plot::{PlotPromise, PromiseKind, PromiseStatus, StoryArc, Todo};
 
     #[test]
     fn test_analytics_and_timeline_creation() {
@@ -46,20 +46,16 @@ mod tests {
 
     #[test]
     fn test_chapter_word_count_update() {
-        let mut chapter = Chapter::new("proj_1", "Глава 1", 1);
+        let mut chapter = Chapter::new("vol_1", "Глава 1", 1);
         assert_eq!(chapter.word_count, 0);
         chapter.update_content("Один два три четыре пять".to_string());
         assert_eq!(chapter.word_count, 5);
-        assert_eq!(chapter.status, ManuscriptStatus::Draft);
     }
 
     #[test]
     fn test_plot_promise_resolution() {
-        let mut promise = PlotPromise::new(
-            "proj_1",
-            PromiseKind::Gun,
-            "Старинный револьвер на стене",
-        );
+        let mut promise =
+            PlotPromise::new("proj_1", PromiseKind::Gun, "Старинный револьвер на стене");
         assert_eq!(promise.status, PromiseStatus::Planted);
         promise.resolve();
         assert_eq!(promise.status, PromiseStatus::Resolved);
@@ -67,10 +63,9 @@ mod tests {
 
     #[test]
     fn test_story_arc_creation() {
-        let arc = StoryArc::new("proj_1", "Поиск Грааля", ArcType::Theme);
+        let arc = StoryArc::new("proj_1", "Поиск Грааля");
         assert_eq!(arc.title, "Поиск Грааля");
-        assert_eq!(arc.arc_type, ArcType::Theme);
-        assert_eq!(arc.status, crate::plot::ArcStatus::Planned);
+        assert_eq!(arc.status, crate::plot::ArcStatus::InProgress);
     }
 
     #[test]
@@ -88,17 +83,11 @@ mod tests {
     }
 
     #[test]
-    fn test_plan_completion() {
-        let mut plan = Plan::new(
-            "proj_1",
-            "Побег из замка",
-            PlanParentType::Chapter,
-            Some("ch_1".to_string()),
-            1,
-        );
-        assert!(!plan.completed);
-        plan.complete();
-        assert!(plan.completed);
+    fn test_todo_toggle() {
+        let mut todo = Todo::new("chapters:ch_1", "Побег из замка", 1);
+        assert!(!todo.is_done);
+        todo.toggle();
+        assert!(todo.is_done);
     }
 
     #[test]
@@ -108,4 +97,3 @@ mod tests {
         assert_eq!(entity.type_key, "character");
     }
 }
-

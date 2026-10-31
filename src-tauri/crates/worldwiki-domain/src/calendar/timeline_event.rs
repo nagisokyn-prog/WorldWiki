@@ -13,7 +13,6 @@ pub struct TimelineEvent {
     pub importance: i32,
     pub color: Option<String>,
     pub location_id: Option<String>,
-    pub chapter_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -36,7 +35,6 @@ impl TimelineEvent {
             importance: 1,
             color: None,
             location_id: None,
-            chapter_id: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

@@ -1,13 +1,13 @@
-//! SurrealDB implementation of PlotPromiseRepository and PlanRepository.
+//! SurrealDB implementation of PlotPromiseRepository and TodoRepository.
 
+use super::helpers::{clean_id, prepare_data_for_upsert, take_list, take_one};
 use async_trait::async_trait;
 use std::sync::Arc;
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 use worldwiki_domain::errors::DomainError;
-use worldwiki_domain::plot::{Plan, PlotPromise};
-use worldwiki_ports::repositories::{PlanRepository, PlotPromiseRepository};
-use super::helpers::{clean_id, prepare_data_for_upsert, take_list, take_one};
+use worldwiki_domain::plot::{PlotPromise, Todo};
+use worldwiki_ports::repositories::{PlotPromiseRepository, TodoRepository};
 
 pub struct SurrealPlotPromiseRepository {
     db: Arc<Surreal<Db>>,
@@ -35,8 +35,6 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 status,
                 location_id,
                 timeline_event_id,
-                m_abs,
-                calendar_id,
                 created_at,
                 updated_at,
                 ->promise_milestones.{
@@ -56,23 +54,28 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             FROM type::record('plot_promises', $id)
             LIMIT 1;
         "#;
-        let clean = id.trim_start_matches("plot_promises:");
+        let clean = clean_id("plot_promises", id);
         let mut res = self
             .db
             .query(sql)
-            .bind(("id", clean.to_string()))
+            .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
-        let clean = promise.id.trim_start_matches("plot_promises:").to_string();
-        let proj_clean = promise.project_id.trim_start_matches("projects:").to_string();
+        let clean = clean_id("plot_promises", &promise.id);
+        let proj_clean = clean_id("projects", &promise.project_id);
         let ch_clean = promise
             .chapter_id
             .as_deref()
-            .or_else(|| promise.milestones.first().and_then(|m| m.chapter_id.as_deref()))
+            .or_else(|| {
+                promise
+                    .milestones
+                    .first()
+                    .and_then(|m| m.chapter_id.as_deref())
+            })
             .unwrap_or("")
             .trim_start_matches("chapters:")
             .to_string();
@@ -92,12 +95,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
             .bind(("data", data))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check()
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
-        let clean = id.trim_start_matches("plot_promises:").to_string();
+        let clean = clean_id("plot_promises", id);
         let sql = "DELETE type::record('plot_promises', $id);";
         self.db
             .query(sql)
@@ -110,6 +114,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
         let clean = clean_id("chapters", chapter_id);
         let sql = r#"
+            LET $ch_rec = type::record('chapters', $chapter_id);
             SELECT 
                 id,
                 project_id,
@@ -122,8 +127,6 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 status,
                 location_id,
                 timeline_event_id,
-                m_abs,
-                calendar_id,
                 created_at,
                 updated_at,
                 ->promise_milestones.{
@@ -141,8 +144,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                     arc_phase: phase
                 } AS arcs
             FROM plot_promises 
-            WHERE chapter_id = type::record('chapters', $chapter_id)
-               OR ->promise_milestones.out.chapter_id CONTAINS type::record('chapters', $chapter_id);
+            WHERE chapter_id = $ch_rec OR ->promise_milestones.out.chapter_id CONTAINS $ch_rec;
         "#;
         let mut res = self
             .db
@@ -173,8 +175,6 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
                 status,
                 location_id,
                 timeline_event_id,
-                m_abs,
-                calendar_id,
                 created_at,
                 updated_at,
                 ->promise_milestones.{
@@ -204,48 +204,66 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     }
 }
 
-pub struct SurrealPlanRepository {
+pub struct SurrealTodoRepository {
     db: Arc<Surreal<Db>>,
 }
 
-impl SurrealPlanRepository {
+impl SurrealTodoRepository {
     pub fn new(db: Arc<Surreal<Db>>) -> Self {
         Self { db }
     }
 }
 
 #[async_trait]
-impl PlanRepository for SurrealPlanRepository {
-    async fn get_by_id(&self, id: &str) -> Result<Option<Plan>, DomainError> {
-        let sql = "SELECT * FROM type::record('plans', $id);";
-        let clean = id.trim_start_matches("plans:");
+impl TodoRepository for SurrealTodoRepository {
+    async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, DomainError> {
+        let clean = clean_id("todos", id);
+        let sql = "SELECT * FROM type::record('todos', $id);";
         let mut res = self
             .db
             .query(sql)
-            .bind(("id", clean.to_string()))
+            .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
-    async fn save(&self, plan: &Plan) -> Result<(), DomainError> {
-        let clean = plan.id.trim_start_matches("plans:").to_string();
-        let data = prepare_data_for_upsert(
-            serde_json::to_value(plan).map_err(|e| DomainError::Validation(e.to_string()))?,
-        );
-        let sql = "UPSERT type::record('plans', $id) CONTENT $data;";
+    async fn save(&self, todo: &Todo) -> Result<String, DomainError> {
+        let clean = if todo.id.is_empty() {
+            uuid::Uuid::new_v4().to_string()
+        } else {
+            clean_id("todos", &todo.id)
+        };
+        let owner_record = if todo.owner_id.contains(':') {
+            todo.owner_id.clone()
+        } else {
+            format!("chapters:{}", todo.owner_id)
+        };
+        let sql = r#"
+            UPSERT type::record('todos', $id) SET
+                owner_id = type::record($owner),
+                text = $text,
+                is_done = $is_done,
+                sort_order = $sort_order,
+                created_at = $created_at,
+                updated_at = time::now();
+        "#;
         self.db
             .query(sql)
-            .bind(("id", clean))
-            .bind(("data", data))
+            .bind(("id", clean.clone()))
+            .bind(("owner", owner_record))
+            .bind(("text", todo.text.clone()))
+            .bind(("is_done", todo.is_done))
+            .bind(("sort_order", todo.sort_order))
+            .bind(("created_at", todo.created_at))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
+        Ok(format!("todos:{}", clean))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
-        let clean = id.trim_start_matches("plans:").to_string();
-        let sql = "DELETE type::record('plans', $id);";
+        let clean = clean_id("todos", id);
+        let sql = "DELETE type::record('todos', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -254,29 +272,26 @@ impl PlanRepository for SurrealPlanRepository {
         Ok(())
     }
 
-    async fn list_by_parent(&self, parent_ref: &str) -> Result<Vec<Plan>, DomainError> {
-        let sql = "SELECT * FROM plans WHERE parent_ref = $parent_ref ORDER BY sort_order ASC;";
+    async fn list_by_owner(&self, owner_id: &str) -> Result<Vec<Todo>, DomainError> {
+        let sql = "SELECT * FROM todos WHERE owner_id = type::record($owner) ORDER BY sort_order ASC, created_at ASC;";
         let mut res = self
             .db
             .query(sql)
-            .bind(("parent_ref", parent_ref.to_string()))
+            .bind(("owner", owner_id.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
-    async fn list_pending_by_volume(&self, volume_id: &str) -> Result<Vec<Plan>, DomainError> {
-        let clean_vol = clean_id("volumes", volume_id);
-        let sql = r#"
-            LET $chapters = SELECT VALUE out FROM $volume->contains;
-            SELECT * FROM plans WHERE completed = false AND (parent_ref = $volume OR parent_ref IN $chapters);
-        "#;
+    async fn list_by_owners(&self, owner_ids: &[&str]) -> Result<Vec<Todo>, DomainError> {
+        let sql = "SELECT * FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC;";
+        let owners: Vec<String> = owner_ids.iter().map(|s| s.to_string()).collect();
         let mut res = self
             .db
             .query(sql)
-            .bind(("volume", clean_vol))
+            .bind(("owners", owners))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 1)
+        take_list(&mut res, 0)
     }
 }

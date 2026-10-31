@@ -1,4 +1,3 @@
-use super::status::ManuscriptStatus;
 use super::text_block::TextBlock;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -11,20 +10,15 @@ fn default_epoch() -> DateTime<Utc> {
 pub struct Chapter {
     #[serde(default)]
     pub id: String,
-    pub project_id: String,
-    pub volume_id: Option<String>,
+    pub volume_id: String,
     #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub content: String,
-    pub summary: Option<String>,
     #[serde(default)]
     pub word_count: usize,
     #[serde(default)]
     pub sort_order: i32,
-    #[serde(default)]
-    pub status: ManuscriptStatus,
-    pub timeline_minute: Option<i64>,
     #[serde(default)]
     pub blocks: Vec<TextBlock>,
     #[serde(default = "default_epoch")]
@@ -34,26 +28,23 @@ pub struct Chapter {
 }
 
 impl Chapter {
-    pub fn new(project_id: impl Into<String>, title: impl Into<String>, sort_order: i32) -> Self {
+    pub fn new(volume_id: impl Into<String>, title: impl Into<String>, sort_order: i32) -> Self {
         Self {
             id: String::new(),
-            project_id: project_id.into(),
-            volume_id: None,
+            volume_id: volume_id.into(),
             title: title.into(),
             content: String::new(),
-            summary: None,
             word_count: 0,
             sort_order,
-            status: ManuscriptStatus::Draft,
-            timeline_minute: None,
             blocks: Vec::new(),
-            created_at: DateTime::UNIX_EPOCH,
-            updated_at: DateTime::UNIX_EPOCH,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 
     pub fn update_content(&mut self, new_content: String) {
         self.content = new_content;
         self.word_count = self.content.split_whitespace().count();
+        self.updated_at = Utc::now();
     }
 }

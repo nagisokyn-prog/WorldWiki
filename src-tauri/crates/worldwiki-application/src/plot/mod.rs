@@ -3,8 +3,8 @@ pub mod arc_services;
 pub use arc_services::StoryArcServices;
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
-use worldwiki_domain::plot::{PlotPromise, Plan};
-use worldwiki_ports::repositories::{PlotPromiseRepository, PlanRepository};
+use worldwiki_domain::plot::{PlotPromise, Todo};
+use worldwiki_ports::repositories::{PlotPromiseRepository, TodoRepository};
 use worldwiki_ports::events::{EventPublisherPort, EventPublisherExt, PlotPromiseUpdatedEvent};
 use crate::errors::ApplicationError;
 use chrono::Utc;
@@ -13,27 +13,27 @@ use chrono::Utc;
 pub struct VolumeAuditReport {
     pub volume_id: String,
     pub has_blockers: bool,
-    pub pending_plans_count: usize,
-    pub pending_plans: Vec<Plan>,
+    pub pending_todos_count: usize,
+    pub pending_todos: Vec<Todo>,
     pub unresolved_promises_count: usize,
     pub unresolved_promises: Vec<PlotPromise>,
 }
 
 pub struct PlotServices {
     pub promise_repo: Arc<dyn PlotPromiseRepository>,
-    pub plan_repo: Arc<dyn PlanRepository>,
+    pub todo_repo: Arc<dyn TodoRepository>,
     pub events: Arc<dyn EventPublisherPort>,
 }
 
 impl PlotServices {
     pub fn new(
         promise_repo: Arc<dyn PlotPromiseRepository>,
-        plan_repo: Arc<dyn PlanRepository>,
+        todo_repo: Arc<dyn TodoRepository>,
         events: Arc<dyn EventPublisherPort>,
     ) -> Self {
         Self {
             promise_repo,
-            plan_repo,
+            todo_repo,
             events,
         }
     }
@@ -74,27 +74,56 @@ impl PlotServices {
         Ok(())
     }
 
-    pub async fn complete_plan(&self, plan_id: &str) -> Result<(), ApplicationError> {
-        if let Some(mut plan) = self.plan_repo.get_by_id(plan_id).await? {
-            plan.complete();
-            self.plan_repo.save(&plan).await?;
+    pub async fn create_todo(&self, owner_id: &str, text: &str, sort_order: i32) -> Result<String, ApplicationError> {
+        let todo = Todo::new(owner_id, text, sort_order);
+        let id = self.todo_repo.save(&todo).await?;
+        Ok(id)
+    }
+
+    pub async fn complete_todo(&self, todo_id: &str) -> Result<(), ApplicationError> {
+        if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
+            if !todo.is_done {
+                todo.is_done = true;
+                self.todo_repo.save(&todo).await?;
+            }
             Ok(())
         } else {
-            Err(ApplicationError::NotFound(format!("Plan {plan_id} not found")))
+            Err(ApplicationError::NotFound(format!("Todo {todo_id} not found")))
         }
     }
 
+    pub async fn toggle_todo(&self, todo_id: &str) -> Result<Todo, ApplicationError> {
+        if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
+            todo.toggle();
+            self.todo_repo.save(&todo).await?;
+            Ok(todo)
+        } else {
+            Err(ApplicationError::NotFound(format!("Todo {todo_id} not found")))
+        }
+    }
+
+    pub async fn delete_todo(&self, todo_id: &str) -> Result<(), ApplicationError> {
+        self.todo_repo.delete(todo_id).await?;
+        Ok(())
+    }
+
+    pub async fn list_todos_by_owner(&self, owner_id: &str) -> Result<Vec<Todo>, ApplicationError> {
+        let list = self.todo_repo.list_by_owner(owner_id).await?;
+        Ok(list)
+    }
+
     pub async fn audit_volume(&self, volume_id: &str) -> Result<VolumeAuditReport, ApplicationError> {
-        let pending_plans = self.plan_repo.list_pending_by_volume(volume_id).await?;
+        let all_todos = self.todo_repo.list_by_owner(volume_id).await?;
+        let pending_todos: Vec<Todo> = all_todos.into_iter().filter(|t| !t.is_done).collect();
         let unresolved_promises = self.promise_repo.list_unresolved_by_volume(volume_id).await?;
 
-        let has_blockers = !pending_plans.is_empty() || !unresolved_promises.is_empty();
+        let has_blockers = !pending_todos.is_empty() || !unresolved_promises.is_empty();
 
         Ok(VolumeAuditReport {
             volume_id: volume_id.to_string(),
             has_blockers,
-            pending_plans_count: pending_plans.len(),
-            pending_plans,
+            pending_todos_count: pending_todos.len(),
+            pending_todos,
             unresolved_promises_count: unresolved_promises.len(),
             unresolved_promises,
         })

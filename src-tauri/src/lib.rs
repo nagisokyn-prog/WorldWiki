@@ -154,6 +154,10 @@ pub fn run() {
             worldwiki_tauri::commands::save_plot_promise,
             worldwiki_tauri::commands::delete_plot_promise,
             worldwiki_tauri::commands::complete_plan,
+            worldwiki_tauri::commands::get_todos,
+            worldwiki_tauri::commands::create_todo,
+            worldwiki_tauri::commands::toggle_todo,
+            worldwiki_tauri::commands::delete_todo,
             worldwiki_tauri::commands::audit_volume_consistency,
             // Сюжетные арки & Аналитика
             worldwiki_tauri::commands::get_story_arcs,
@@ -185,7 +189,7 @@ pub fn run() {
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [StoryArc, Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
+            @entities: [StoryArc, Volume, Todo, PlotPromise, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites, ParticipantOf, AdvancesArc, OccursAt, RevealedIn]
 ])

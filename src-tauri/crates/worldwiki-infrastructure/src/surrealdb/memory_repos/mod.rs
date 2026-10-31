@@ -4,4 +4,4 @@ pub mod plot;
 
 pub use chapter::InMemoryChapterRepository;
 pub use knowledge::{InMemoryEntityRepository, InMemoryRelationRepository};
-pub use plot::{InMemoryPlanRepository, InMemoryPlotPromiseRepository};
+pub use plot::{InMemoryPlotPromiseRepository, InMemoryTodoRepository};

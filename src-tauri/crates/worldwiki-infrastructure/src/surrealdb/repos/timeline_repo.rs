@@ -51,7 +51,6 @@ impl TimelineEventRepository for SurrealTimelineRepository {
                     importance: $importance,
                     color: $color,
                     location_id: $location_id,
-                    chapter_id: $chapter_id,
                     project_id: type::record('projects', $p_id),
                     updated_at: time::now()
                 };
@@ -68,7 +67,6 @@ impl TimelineEventRepository for SurrealTimelineRepository {
                 .bind(("importance", event.importance as i64))
                 .bind(("color", event.color.clone()))
                 .bind(("location_id", event.location_id.clone()))
-                .bind(("chapter_id", event.chapter_id.clone()))
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             let errors = res.take_errors();
@@ -86,7 +84,6 @@ impl TimelineEventRepository for SurrealTimelineRepository {
                     importance: $importance,
                     color: $color,
                     location_id: $location_id,
-                    chapter_id: $chapter_id,
                     project_id: type::record('projects', $p_id),
                     calendar_id: $cal_id,
                     created_at: time::now(),
@@ -105,7 +102,6 @@ impl TimelineEventRepository for SurrealTimelineRepository {
                 .bind(("importance", event.importance as i64))
                 .bind(("color", event.color.clone()))
                 .bind(("location_id", event.location_id.clone()))
-                .bind(("chapter_id", event.chapter_id.clone()))
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             let created: Option<TimelineEvent> = take_one(&mut res, 0)?;

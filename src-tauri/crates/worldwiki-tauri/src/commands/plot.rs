@@ -1,5 +1,5 @@
 use tauri::State;
-use worldwiki_domain::plot::PlotPromise;
+use worldwiki_domain::plot::{PlotPromise, Todo};
 use worldwiki_application::plot::VolumeAuditReport;
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -23,8 +23,6 @@ pub async fn get_plot_promises(
             status,
             location_id,
             timeline_event_id,
-            m_abs,
-            calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -111,7 +109,61 @@ pub async fn complete_plan(
     state
         .services
         .plot
-        .complete_plan(&plan_id)
+        .complete_todo(&plan_id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn get_todos(
+    owner_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<Todo>, IpcError> {
+    state
+        .services
+        .plot
+        .list_todos_by_owner(&owner_id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn create_todo(
+    owner_id: String,
+    text: String,
+    sort_order: Option<i32>,
+    state: State<'_, AppState>,
+) -> Result<String, IpcError> {
+    state
+        .services
+        .plot
+        .create_todo(&owner_id, &text, sort_order.unwrap_or(0))
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn toggle_todo(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Todo, IpcError> {
+    state
+        .services
+        .plot
+        .toggle_todo(&id)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn delete_todo(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .plot
+        .delete_todo(&id)
         .await
         .map_err(IpcError::from)
 }

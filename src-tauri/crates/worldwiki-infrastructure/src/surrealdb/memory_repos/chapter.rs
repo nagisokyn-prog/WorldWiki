@@ -26,11 +26,10 @@ impl ChapterRepository for InMemoryChapterRepository {
         Ok(())
     }
 
-    async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError> {
+    async fn list_by_project(&self, _project_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let list = self
             .storage
             .iter()
-            .filter(|r| r.value().project_id == project_id)
             .map(|r| r.value().clone())
             .collect();
         Ok(list)
@@ -40,7 +39,7 @@ impl ChapterRepository for InMemoryChapterRepository {
         let list = self
             .storage
             .iter()
-            .filter(|r| r.value().volume_id.as_deref() == Some(volume_id))
+            .filter(|r| r.value().volume_id == volume_id)
             .map(|r| r.value().clone())
             .collect();
         Ok(list)

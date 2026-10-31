@@ -86,10 +86,6 @@ pub struct PlotPromise {
     #[serde(default)]
     pub timeline_event_id: Option<String>,
     #[serde(default)]
-    pub m_abs: Option<i64>,
-    #[serde(default)]
-    pub calendar_id: Option<String>,
-    #[serde(default)]
     pub participant_ids: Vec<String>,
     #[serde(default)]
     pub arcs: Vec<SceneArcItem>,
@@ -122,8 +118,6 @@ impl PlotPromise {
             block_id: None,
             location_id: None,
             timeline_event_id: None,
-            m_abs: None,
-            calendar_id: None,
             participant_ids: Vec::new(),
             arcs: Vec::new(),
             arc_id: None,

@@ -17,6 +17,8 @@ pub struct EditManuscriptRequest {
     pub chapter_id: String,
     pub content_patch: String,
     #[serde(default)]
+    pub project_id: Option<String>,
+    #[serde(default)]
     pub planted_promises: Vec<PlantedPromiseDto>,
     #[serde(default)]
     pub resolved_promise_ids: Vec<String>,
@@ -57,6 +59,11 @@ impl EditManuscriptAtomicWorkflow {
         self.manuscript_services.save_chapter(&chapter).await?;
 
         // 2. Plant new plot promises
+        let project_id = req
+            .project_id
+            .clone()
+            .unwrap_or_else(|| chapter.volume_id.clone());
+
         let mut promises_planted = 0;
         for p in req.planted_promises {
             let kind = match p.kind.as_str() {
@@ -66,7 +73,7 @@ impl EditManuscriptAtomicWorkflow {
                 _ => PromiseKind::Gun,
             };
             let mut promise = PlotPromise::new(
-                chapter.project_id.clone(),
+                project_id.clone(),
                 kind,
                 p.quote.clone(),
             );
@@ -94,10 +101,10 @@ impl EditManuscriptAtomicWorkflow {
             }
         }
 
-        // 4. Complete plans
+        // 4. Complete plans / todos
         let mut plans_completed = 0;
         for plan_id in req.completed_plan_ids {
-            if self.plot_services.complete_plan(&plan_id).await.is_ok() {
+            if self.plot_services.complete_todo(&plan_id).await.is_ok() {
                 plans_completed += 1;
             }
         }

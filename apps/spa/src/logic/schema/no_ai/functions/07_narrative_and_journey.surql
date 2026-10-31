@@ -394,3 +394,253 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
         events: $events
     };
 };
+
+-- 45. ПОЛУЧЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
+    LET $rec = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
+    LET $res = (
+        SELECT 
+            id,
+            project_id,
+            chapter_id,
+            paragraph_index,
+            block_id,
+            kind,
+            title,
+            note,
+            status,
+            location_id,
+            timeline_event_id,
+            created_at,
+            updated_at,
+            ->promise_milestones.{
+                milestone_id: id,
+                stage: stage,
+                quote: quote,
+                note: note,
+                block_id: out.id,
+                chapter_id: out.chapter_id,
+                order_index: out.order_index
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs
+        FROM $rec
+        LIMIT 1
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 46. СПИСОК СЮЖЕТНЫХ ОБЕЩАНИЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (
+        SELECT 
+            id,
+            project_id,
+            chapter_id,
+            paragraph_index,
+            block_id,
+            kind,
+            title,
+            note,
+            status,
+            location_id,
+            timeline_event_id,
+            created_at,
+            updated_at,
+            ->promise_milestones.{
+                milestone_id: id,
+                stage: stage,
+                quote: quote,
+                note: note,
+                block_id: out.id,
+                chapter_id: out.chapter_id,
+                order_index: out.order_index
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs
+        FROM plot_promises 
+        WHERE project_id = $p_rec
+    );
+};
+
+-- 47. СПИСОК СЮЖЕТНЫХ ОБЕЩАНИЙ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
+    LET $ch_rec = IF string::starts_with(type::string($chap), 'chapters:') { type::record($chap) } ELSE { type::record('chapters', $chap) };
+    RETURN (
+        SELECT 
+            id,
+            project_id,
+            chapter_id,
+            paragraph_index,
+            block_id,
+            kind,
+            title,
+            note,
+            status,
+            location_id,
+            timeline_event_id,
+            created_at,
+            updated_at,
+            ->promise_milestones.{
+                milestone_id: id,
+                stage: stage,
+                quote: quote,
+                note: note,
+                block_id: out.id,
+                chapter_id: out.chapter_id,
+                order_index: out.order_index
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs
+        FROM plot_promises 
+        WHERE chapter_id = $ch_rec OR ->promise_milestones.out.chapter_id CONTAINS $ch_rec
+    );
+};
+
+-- 48. СПИСОК НЕРАЗРЕШЕННЫХ ОБЕЩАНИЙ ТОМА
+DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
+    LET $vol_rec = IF string::starts_with(type::string($vol), 'volumes:') { type::record($vol) } ELSE { type::record('volumes', $vol) };
+    LET $chapters = (SELECT VALUE out FROM contains WHERE in = $vol_rec);
+    RETURN (
+        SELECT 
+            id,
+            project_id,
+            chapter_id,
+            paragraph_index,
+            block_id,
+            kind,
+            title,
+            note,
+            status,
+            location_id,
+            timeline_event_id,
+            created_at,
+            updated_at,
+            ->promise_milestones.{
+                milestone_id: id,
+                stage: stage,
+                quote: quote,
+                note: note,
+                block_id: out.id,
+                chapter_id: out.chapter_id,
+                order_index: out.order_index
+            } AS milestones,
+            <-participant_of.in.id AS participant_ids,
+            ->advances_arc.{
+                arc_id: out.id,
+                arc_phase: phase
+            } AS arcs
+        FROM plot_promises
+        WHERE (chapter_id IN $chapters OR ->promise_milestones.out.chapter_id CONTAINSANY $chapters)
+          AND status != 'resolved'
+    );
+};
+
+-- 49. УДАЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ
+DEFINE FUNCTION OVERWRITE fn::delete_plot_promise($id: any) {
+    LET $rec = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
+    DELETE $rec;
+};
+
+-- 50. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ ЗАДАЧИ ПЛАНИРОВЩИКА (TODO)
+DEFINE FUNCTION OVERWRITE fn::save_todo(
+    $id: any,
+    $owner_table: string,
+    $owner_id: string,
+    $text: string,
+    $is_done: bool,
+    $sort_order: int
+) {
+    LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
+    LET $o_rec = type::record($owner_table, $owner_id);
+    LET $res = (
+        UPSERT $t_rec SET
+            owner_id = $o_rec,
+            text = $text,
+            is_done = $is_done,
+            sort_order = $sort_order,
+            updated_at = time::now()
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 51. ПОЛУЧЕНИЕ ЗАДАЧИ ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_todo($id: any) {
+    LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
+    LET $res = (SELECT * FROM $t_rec LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 52. УДАЛЕНИЕ ЗАДАЧИ
+DEFINE FUNCTION OVERWRITE fn::delete_todo($id: any) {
+    LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
+    DELETE $t_rec;
+};
+
+-- 53. СПИСОК ЗАДАЧ ПО ВЛАДЕЛЬЦУ
+DEFINE FUNCTION OVERWRITE fn::list_todos_by_owner($owner_table: string, $owner_id: string) {
+    LET $o_rec = type::record($owner_table, $owner_id);
+    RETURN (SELECT * FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC);
+};
+
+-- 54. СПИСОК ЗАДАЧ ПО СПИСКУ ВЛАДЕЛЬЦЕВ
+DEFINE FUNCTION OVERWRITE fn::list_todos_by_owners($owners: array<any>) {
+    RETURN (SELECT * FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC);
+};
+
+-- 55. ПОЛУЧЕНИЕ СЮЖЕТНОЙ АРКИ ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_story_arc($id: any) {
+    LET $a_rec = IF string::starts_with(type::string($id), 'story_arcs:') { type::record($id) } ELSE { type::record('story_arcs', $id) };
+    LET $res = (SELECT * FROM $a_rec LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 56. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОЙ АРКИ
+DEFINE FUNCTION OVERWRITE fn::save_story_arc(
+    $id: option<any>,
+    $proj: any,
+    $title: string,
+    $status: string
+) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $res = IF $id != NONE AND $id != NULL AND type::string($id) != '' {
+        LET $a_rec = IF string::starts_with(type::string($id), 'story_arcs:') { type::record($id) } ELSE { type::record('story_arcs', $id) };
+        (UPSERT $a_rec SET
+            title = $title,
+            status = $status,
+            project_id = $p_rec,
+            updated_at = time::now()
+        )
+    } ELSE {
+        (CREATE story_arcs SET
+            title = $title,
+            status = $status,
+            project_id = $p_rec,
+            created_at = time::now(),
+            updated_at = time::now()
+        )
+    };
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 57. УДАЛЕНИЕ СЮЖЕТНОЙ АРКИ
+DEFINE FUNCTION OVERWRITE fn::delete_story_arc($id: any) {
+    LET $a_rec = IF string::starts_with(type::string($id), 'story_arcs:') { type::record($id) } ELSE { type::record('story_arcs', $id) };
+    DELETE $a_rec;
+};
+
+-- 58. СПИСОК СЮЖЕТНЫХ АРОК ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_story_arcs_by_project($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = $p_rec ORDER BY created_at ASC);
+};

@@ -25,10 +25,11 @@ pub async fn create_project_inner(
         obj.remove("data");
         obj.remove("perfLevel");
     }
-    db.upsert::<Option<Value>>(("projects", name.clone()))
+    let clean_name = name.trim().trim_start_matches("projects:").trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
+    db.upsert::<Option<Value>>(("projects", clean_name))
         .content(data)
         .await?;
-    Ok(name)
+    Ok(clean_name.to_string())
 }
 
 pub async fn delete_project_inner(

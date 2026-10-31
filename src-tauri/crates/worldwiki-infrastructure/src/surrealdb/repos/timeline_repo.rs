@@ -41,74 +41,25 @@ impl TimelineEventRepository for SurrealTimelineRepository {
         };
         let proj_clean = event.project_id.trim_start_matches("projects:").to_string();
 
-        let sql = if let Some(id) = clean_id {
-            let s = r#"
-                UPSERT type::record('timeline_events', $id) MERGE {
-                    title: $title,
-                    description: $description,
-                    m_abs: $m_abs,
-                    duration_minutes: $duration_minutes,
-                    importance: $importance,
-                    color: $color,
-                    location_id: $location_id,
-                    project_id: type::record('projects', $p_id),
-                    updated_at: time::now()
-                };
-            "#;
-            let mut res = self
-                .db
-                .query(s)
-                .bind(("id", id.clone()))
-                .bind(("p_id", proj_clean))
-                .bind(("title", event.title.clone()))
-                .bind(("description", event.description.clone()))
-                .bind(("m_abs", event.m_abs))
-                .bind(("duration_minutes", event.duration_minutes))
-                .bind(("importance", event.importance as i64))
-                .bind(("color", event.color.clone()))
-                .bind(("location_id", event.location_id.clone()))
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-            let errors = res.take_errors();
-            if let Some((_, e)) = errors.into_iter().next() {
-                return Err(DomainError::ConstraintViolation(e.to_string()));
-            }
-            format!("timeline_events:{}", id)
-        } else {
-            let s = r#"
-                CREATE timeline_events CONTENT {
-                    title: $title,
-                    description: $description,
-                    m_abs: $m_abs,
-                    duration_minutes: $duration_minutes,
-                    importance: $importance,
-                    color: $color,
-                    location_id: $location_id,
-                    project_id: type::record('projects', $p_id),
-                    calendar_id: $cal_id,
-                    created_at: time::now(),
-                    updated_at: time::now()
-                };
-            "#;
-            let mut res = self
-                .db
-                .query(s)
-                .bind(("p_id", proj_clean))
-                .bind(("cal_id", event.calendar_id.clone()))
-                .bind(("title", event.title.clone()))
-                .bind(("description", event.description.clone()))
-                .bind(("m_abs", event.m_abs))
-                .bind(("duration_minutes", event.duration_minutes))
-                .bind(("importance", event.importance as i64))
-                .bind(("color", event.color.clone()))
-                .bind(("location_id", event.location_id.clone()))
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-            let created: Option<TimelineEvent> = take_one(&mut res, 0)?;
-            created.map(|a| a.id).unwrap_or_default()
-        };
-
-        Ok(sql)
+        let sql = "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs, $duration_minutes, $importance, $color, $location_id);";
+        let mut res = self
+            .db
+            .query(sql)
+            .bind(("id", clean_id))
+            .bind(("p_id", proj_clean))
+            .bind(("cal_id", event.calendar_id.clone()))
+            .bind(("title", event.title.clone()))
+            .bind(("description", event.description.clone()))
+            .bind(("m_abs", event.m_abs))
+            .bind(("duration_minutes", event.duration_minutes))
+            .bind(("importance", event.importance as i64))
+            .bind(("color", event.color.clone()))
+            .bind(("location_id", event.location_id.clone()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let created: Option<TimelineEvent> = take_one(&mut res, 0)?;
+        Ok(created.map(|a| a.id).unwrap_or_else(|| event.id.clone()))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {

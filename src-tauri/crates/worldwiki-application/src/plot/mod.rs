@@ -80,6 +80,16 @@ impl PlotServices {
         Ok(id)
     }
 
+    pub async fn update_todo(&self, todo_id: &str, text: &str) -> Result<(), ApplicationError> {
+        if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
+            todo.text = text.to_string();
+            self.todo_repo.save(&todo).await?;
+            Ok(())
+        } else {
+            Err(ApplicationError::NotFound(format!("Todo {todo_id} not found")))
+        }
+    }
+
     pub async fn complete_todo(&self, todo_id: &str) -> Result<(), ApplicationError> {
         if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
             if !todo.is_done {

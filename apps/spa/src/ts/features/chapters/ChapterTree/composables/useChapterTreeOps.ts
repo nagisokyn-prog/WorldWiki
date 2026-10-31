@@ -87,12 +87,16 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 defaultCalData.planet_id = planetId;
                 defaultCalData.название = calName;
                 defaultCalData.is_master = false;
-                await calendarStore.saveCalendar(options.project, {
+                const saved = await calendarStore.saveCalendar(options.project, {
                     ...defaultCalData,
                     name: calName,
                     is_master: false,
                     is_default: false,
                 } as unknown as CalendarData);
+                if (!saved) {
+                    await appAlert('Не удалось сохранить календарь на планете', 'Ошибка сохранения');
+                    return;
+                }
                 await options.load();
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 const cals = await calendarStore.getCalendars(options.project);

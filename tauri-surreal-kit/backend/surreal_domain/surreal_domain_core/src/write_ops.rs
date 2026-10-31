@@ -30,6 +30,33 @@ where
     map.retain(|_, v| !v.is_null());
     normalize_map_record_ids(&mut map);
 
+    if table == "calendars" {
+        let pl_str = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+        let name_str = map.get("name").and_then(|v| v.as_str()).unwrap_or("Календарь");
+        let is_m = map.get("is_master").and_then(|v| v.as_bool()).unwrap_or(false);
+        let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");
+        let data_val = map.get("data").cloned().unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+
+        let mut res = db
+            .query("RETURN fn::save_calendar(NONE, $pid, $plid, $name, $is_master, $data);")
+            .bind(("pid", pid_str.to_string()))
+            .bind(("plid", pl_str.to_string()))
+            .bind(("name", name_str.to_string()))
+            .bind(("is_master", is_m))
+            .bind(("data", data_val))
+            .await?;
+        let items: Vec<serde_json::Value> = res.take(0)?;
+        let res_val = items
+            .into_iter()
+            .next()
+            .ok_or_else(|| SurrealDomainError::constraint_violation("fn::save_calendar returned no records"))?;
+        let created: T = serde_json::from_value(res_val)?;
+        if let Some(id) = created.get_id() {
+            entity.set_id(id.to_string());
+        }
+        return Ok(created);
+    }
+
     let mut res = db
         .query("CREATE type::table($table) CONTENT $data")
         .bind(("table", table.to_string()))
@@ -71,6 +98,30 @@ where
         map.remove("id");
         normalize_map_record_ids(&mut map);
 
+        if table == "calendars" {
+            let pl_str = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+            let name_str = map.get("name").and_then(|v| v.as_str()).unwrap_or("Календарь");
+            let is_m = map.get("is_master").and_then(|v| v.as_bool()).unwrap_or(false);
+            let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");
+            let data_val = map.get("data").cloned().unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+
+            let mut res = db
+                .query("RETURN fn::save_calendar(type::record('calendars', $cal_id), $pid, $plid, $name, $is_master, $data);")
+                .bind(("cal_id", actual_id.to_string()))
+                .bind(("pid", pid_str.to_string()))
+                .bind(("plid", pl_str.to_string()))
+                .bind(("name", name_str.to_string()))
+                .bind(("is_master", is_m))
+                .bind(("data", data_val))
+                .await?;
+            let items: Vec<serde_json::Value> = res.take(0)?;
+            let saved_val = items
+                .into_iter()
+                .next()
+                .ok_or_else(|| SurrealDomainError::constraint_violation("fn::save_calendar returned no records"))?;
+            return Ok(serde_json::from_value(saved_val)?);
+        }
+
         let mut res = db
             .query("UPSERT $__record_id MERGE $data")
             .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)))
@@ -101,6 +152,14 @@ pub(crate) async fn repo_delete<Db: surrealdb::Connection>(
         }
         None => id.trim_matches('`'),
     };
+    if table == "calendars" {
+        let mut res = db
+            .query("RETURN fn::delete_calendar(type::record('calendars', $cal_id));")
+            .bind(("cal_id", actual_id.to_string()))
+            .await?;
+        let _ = res.take::<Option<bool>>(0)?;
+        return Ok(());
+    }
     let res: Result<Option<serde_json::Value>, surrealdb::Error> =
         db.delete((table, actual_id)).await;
     match res {

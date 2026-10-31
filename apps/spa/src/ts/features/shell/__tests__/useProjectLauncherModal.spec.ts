@@ -76,7 +76,6 @@ describe('useProjectLauncherModal', () => {
       name: 'Мой Комикс',
       type: 'Манга',
       genres: [],
-      perfLevel: 'auto',
       cover_image: null
     });
   });
@@ -86,7 +85,6 @@ describe('useProjectLauncherModal', () => {
       name: 'Метро 2033',
       type: 'Фанфик',
       genres: ['Постапокалипсис', 'Выживание'],
-      perfLevel: 'high',
       cover_image: 'C:/data/user_images/metro.png'
     });
 
@@ -113,7 +111,6 @@ describe('useProjectLauncherModal', () => {
       name: 'Старое имя',
       type: 'novel',
       genres: ['fantasy'],
-      perfLevel: 'auto',
       cover_image: null
     });
     vi.mocked(projectService.saveProjectConfig).mockResolvedValue({ success: true });
@@ -136,7 +133,6 @@ describe('useProjectLauncherModal', () => {
       name: 'Новое имя книги',
       type: 'novel',
       genres: ['fantasy', 'Тёмное фэнтези'],
-      perfLevel: 'auto',
       cover_image: 'C:/data/cover.webp'
     });
     expect(loadProjectsMock).toHaveBeenCalledTimes(1);

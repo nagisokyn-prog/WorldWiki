@@ -180,6 +180,7 @@ surreal_entity! {
     #[project_scoped]
     #[tauri_commands]
     pub struct Calendar {
+        #[serde(default)] pub planet_id: String,
         pub name: String,
         #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
         #[flexible] pub data: serde_json::Value,

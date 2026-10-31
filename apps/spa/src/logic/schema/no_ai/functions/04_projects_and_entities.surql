@@ -216,6 +216,107 @@ DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: strin
     };
 };
 
+-- 36. ПОЛУЧЕНИЕ СУЩНОСТИ ПО ID (С РАСКРЫТИЕМ ТИПА И ПРОЕКТА)
+DEFINE FUNCTION OVERWRITE fn::get_entity_full($id: any) {
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    LET $res = (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM $e_rec 
+        LIMIT 1
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 37. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::save_entity_full(
+    $id: any,
+    $proj: any,
+    $entity_type: string,
+    $name: string,
+    $description: option<string>,
+    $attributes: object,
+    $tags: array<string>
+) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1);
+    LET $schema_id = IF array::len($schema_res) > 0 {
+        $schema_res[0]
+    } ELSE {
+        (CREATE entity_schemas SET
+            project_id = $p_rec,
+            type_key = $entity_type,
+            type_name = $entity_type
+        )[0].id
+    };
+    LET $res = (
+        UPSERT $e_rec SET
+            schema_id = $schema_id,
+            name = $name,
+            description = $description,
+            tags = $tags,
+            attributes = $attributes,
+            updated_at = time::now()
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 38. УДАЛЕНИЕ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::delete_entity_full($id: any) {
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    DELETE $e_rec;
+};
+
+-- 39. ВЫБОРКА СУЩНОСТЕЙ ПО ТИПУ (С СОРТИРОВКОЙ)
+DEFINE FUNCTION OVERWRITE fn::list_entities_by_type_full($proj: any, $type_key: string) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM entities 
+        WHERE schema_id.project_id = $p_rec 
+          AND schema_id.type_key = $type_key 
+        ORDER BY name ASC
+    );
+};
+
+-- 40. ВЫБОРКА ВСЕХ СУЩНОСТЕЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_entities_by_project_full($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM entities 
+        WHERE schema_id.project_id = $p_rec 
+        ORDER BY name ASC
+    );
+};
+
 -- 37. ПАКЕТНОЕ ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПО ТИПАМ
 DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
     LET $p_rec = fn::normalize_project_id($proj);
@@ -444,4 +545,105 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_cursor(
             LIMIT $lim
         );
     };
+};
+
+-- 36. ПОЛУЧЕНИЕ СУЩНОСТИ ПО ID (С РАСКРЫТИЕМ ТИПА И ПРОЕКТА)
+DEFINE FUNCTION OVERWRITE fn::get_entity_full($id: any) {
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    LET $res = (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM $e_rec 
+        LIMIT 1
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 37. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::save_entity_full(
+    $id: any,
+    $proj: any,
+    $entity_type: string,
+    $name: string,
+    $description: option<string>,
+    $attributes: object,
+    $tags: array<string>
+) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1);
+    LET $schema_id = IF array::len($schema_res) > 0 {
+        $schema_res[0]
+    } ELSE {
+        (CREATE entity_schemas SET
+            project_id = $p_rec,
+            type_key = $entity_type,
+            type_name = $entity_type
+        )[0].id
+    };
+    LET $res = (
+        UPSERT $e_rec SET
+            schema_id = $schema_id,
+            name = $name,
+            description = $description,
+            tags = $tags,
+            attributes = $attributes,
+            updated_at = time::now()
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 38. УДАЛЕНИЕ СУЩНОСТИ
+DEFINE FUNCTION OVERWRITE fn::delete_entity_full($id: any) {
+    LET $e_rec = IF string::starts_with(type::string($id), 'entities:') { type::record($id) } ELSE { type::record('entities', $id) };
+    DELETE $e_rec;
+};
+
+-- 39. ВЫБОРКА СУЩНОСТЕЙ ПО ТИПУ (С СОРТИРОВКОЙ)
+DEFINE FUNCTION OVERWRITE fn::list_entities_by_type_full($proj: any, $type_key: string) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM entities 
+        WHERE schema_id.project_id = $p_rec 
+          AND schema_id.type_key = $type_key 
+        ORDER BY name ASC
+    );
+};
+
+-- 40. ВЫБОРКА ВСЕХ СУЩНОСТЕЙ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_entities_by_project_full($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (
+        SELECT 
+            id, 
+            schema_id.project_id AS project_id, 
+            schema_id.type_key AS type_key, 
+            name, 
+            description, 
+            attributes, 
+            tags, 
+            created_at, 
+            updated_at 
+        FROM entities 
+        WHERE schema_id.project_id = $p_rec 
+        ORDER BY name ASC
+    );
 };

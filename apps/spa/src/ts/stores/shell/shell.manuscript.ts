@@ -239,7 +239,8 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       // Close open editors related to volume or deleted chapters
       const openTabs = deps.openEditors.value || [];
       for (const tab of openTabs) {
-        if (compareIds(tab.volume_id, volume.id) || chaptersToDelete.some(ch => compareIds(ch.id, tab.id))) {
+        const tabVolumeId = tab.data?.volume_id || (tab as unknown as Record<string, unknown>).volume_id;
+        if (compareIds(tabVolumeId, volume.id) || chaptersToDelete.some(ch => compareIds(ch.id, tab.id))) {
           deps.closeEditor(tab.id, true);
         }
       }
@@ -251,7 +252,10 @@ export function useShellManuscript(deps: ManuscriptDeps) {
           deps.activeTreeNode.value = null;
         } else if (deps.activeTreeNode.value.type === 'chapter' && chaptersToDelete.some(ch => compareIds(ch.id, activeNodeId))) {
           deps.activeTreeNode.value = null;
-        } else if (openTabs.some(tab => compareIds(tab.id, activeNodeId) && (compareIds(tab.volume_id, volume.id) || chaptersToDelete.some(ch => compareIds(ch.id, tab.id))))) {
+        } else if (openTabs.some(tab => {
+          const tabVolumeId = tab.data?.volume_id || (tab as unknown as Record<string, unknown>).volume_id;
+          return compareIds(tab.id, activeNodeId) && (compareIds(tabVolumeId, volume.id) || chaptersToDelete.some(ch => compareIds(ch.id, tab.id)));
+        })) {
           deps.activeTreeNode.value = null;
         }
       }

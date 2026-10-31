@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue';
 import { open } from '@tauri-apps/plugin-dialog';
+import { appAlert } from '@worldwiki/components';
 import { projectService } from '../../services/project.service';
+import * as api from '../../services/api.client';
 import {
   projectTypes,
   genres as standardGenres,
@@ -43,7 +45,6 @@ export function useProjectLauncherModal(
     name: '',
     type: 'novel',
     genres: [],
-    perfLevel: 'auto',
     cover_image: null
   });
 
@@ -84,7 +85,6 @@ export function useProjectLauncherModal(
       name: '',
       type: 'novel',
       genres: [] as string[],
-      perfLevel: 'auto',
       cover_image: null
     };
     modalVisible.value = true;
@@ -105,13 +105,23 @@ export function useProjectLauncherModal(
         formData.value.name = (config.name as string) || name;
 
         const rawType = (config.type as string) || 'novel';
-        const isStandardType = projectTypes.some(t => t.value !== 'custom' && t.value === rawType);
-        if (isStandardType) {
+        const existsInAvailable = availableProjectTypes.value.some(
+          t => t.value !== 'custom' && (t.value.toLowerCase() === rawType.toLowerCase() || t.label.toLowerCase() === rawType.toLowerCase())
+        );
+        if (existsInAvailable) {
           formData.value.type = rawType;
           customTypeInput.value = '';
         } else {
-          formData.value.type = 'custom';
-          customTypeInput.value = rawType;
+          // Если кастомного типа ещё нет в барабане, добавляем его в customStoredTypes
+          const newEntry = { value: rawType, label: rawType };
+          customStoredTypes.value.push(newEntry);
+          try {
+            localStorage.setItem(CUSTOM_TYPES_KEY, JSON.stringify(customStoredTypes.value));
+          } catch (e) {
+            console.warn('Failed to save custom type:', e);
+          }
+          formData.value.type = rawType;
+          customTypeInput.value = '';
         }
 
         const projectGenres = (config.genres as string[]) || [];
@@ -122,7 +132,6 @@ export function useProjectLauncherModal(
         const extraGenres = projectGenres.filter(g => !standardValues.has(g));
         customGenresList.value = extraGenres.map(g => ({ value: g, label: g }));
 
-        formData.value.perfLevel = (config.perfLevel as string) || 'auto';
         formData.value.cover_image = (config.cover_image as string) || null;
       }
     } catch (e) {
@@ -174,16 +183,11 @@ export function useProjectLauncherModal(
       });
 
       if (selected && typeof selected === 'string') {
-        const invoke = window.__TAURI__?.core?.invoke;
-        if (invoke) {
-          try {
-            const savedPath = await invoke('copy_background_file', { sourcePath: selected });
-            formData.value.cover_image = savedPath as string;
-          } catch (err) {
-            console.error('Ошибка копирования обложки в ассеты проекта:', err);
-            formData.value.cover_image = selected;
-          }
-        } else {
+        try {
+          const savedPath = await api.copyBackgroundFile(selected);
+          formData.value.cover_image = savedPath || selected;
+        } catch (err) {
+          console.error('Ошибка копирования обложки в ассеты проекта:', err);
           formData.value.cover_image = selected;
         }
       }
@@ -211,6 +215,10 @@ export function useProjectLauncherModal(
   async function submitForm() {
     if (!formData.value.name.trim()) return;
 
+    if (customGenreInput.value.trim()) {
+      addCustomGenre();
+    }
+
     let finalType = formData.value.type;
     if (finalType === 'custom') {
       const customVal = customTypeInput.value.trim();
@@ -226,18 +234,22 @@ export function useProjectLauncherModal(
       name: formData.value.name.trim(),
       type: finalType,
       genres: [...formData.value.genres],
-      perfLevel: formData.value.perfLevel,
       cover_image: formData.value.cover_image
     };
 
-    if (isEditing.value) {
-      await projectService.saveProjectConfig(editingProjectName.value, payload);
-    } else {
-      await projectService.createProject(payload);
+    try {
+      if (isEditing.value) {
+        await projectService.saveProjectConfig(editingProjectName.value, payload);
+      } else {
+        await projectService.createProject(payload);
+      }
+      modalVisible.value = false;
+      await loadProjects();
+    } catch (e: unknown) {
+      console.error('Ошибка сохранения проекта:', e);
+      const msg = e instanceof Error ? e.message : String(e);
+      await appAlert(`Не удалось сохранить проект: ${msg}`, 'Ошибка сохранения');
     }
-
-    modalVisible.value = false;
-    await loadProjects();
   }
 
   return {

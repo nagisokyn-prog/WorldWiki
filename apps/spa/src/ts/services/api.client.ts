@@ -7,7 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 export interface SearchResult<T> { entity: T; score: number; kind: string; }
 export interface AutoExtendResult { chapter_id?: string | null; volume_id?: string | null; updated_count?: number; }
 export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }
-export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; perfLevel?: string; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }
+export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }
 import type { Volume } from '../types/generated/Volume';
 import type { Chapter } from '../types/generated/Chapter';
 import type { Entity } from '../types/generated/Entity';
@@ -518,6 +518,10 @@ export async function getTodos(ownerId: string): Promise<Todo[]> {
 
 export async function createTodo(ownerId: string, text: string, sortOrder: number | null): Promise<string> {
     return await invoke('create_todo', { ownerId, text, sortOrder });
+}
+
+export async function updateTodo(id: string, text: string): Promise<void> {
+    return await invoke('update_todo', { id, text });
 }
 
 export async function toggleTodo(id: string): Promise<Todo> {

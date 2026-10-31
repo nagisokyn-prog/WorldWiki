@@ -1,4 +1,5 @@
 import { ref, computed, watch, nextTick } from 'vue';
+import { appAlert } from '@worldwiki/components';
 import * as api from '@/services/api.client';
 
 export interface PlanItem {
@@ -74,9 +75,13 @@ export function usePlanningPanel(props: PlanningPanelProps) {
           item.sort_order ?? items.value.indexOf(item)
         );
         item.id = createdId;
+      } else {
+        await api.updateTodo(item.id, item.text);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Ошибка сохранения задачи:', e);
+      const msg = e instanceof Error ? e.message : String(e);
+      await appAlert(`Не удалось сохранить задачу: ${msg}`, 'Ошибка плана');
     }
   };
 
@@ -89,9 +94,11 @@ export function usePlanningPanel(props: PlanningPanelProps) {
       } else {
         await saveItem(item);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       item.done = !item.done; // откат
       console.error('Ошибка переключения статуса задачи:', e);
+      const msg = e instanceof Error ? e.message : String(e);
+      await appAlert(`Не удалось переключить задачу: ${msg}`, 'Ошибка плана');
     }
   };
 

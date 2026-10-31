@@ -23,13 +23,14 @@ impl SurrealStoryArcRepository {
 impl StoryArcRepository for SurrealStoryArcRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<StoryArc>, DomainError> {
         let clean = clean_id("story_arcs", id);
-        let sql = "SELECT * FROM type::record($id);";
-        let mut res = self
+        let sql = "RETURN fn::get_story_arc($id);";
+        let res = self
             .db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
@@ -43,75 +44,45 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             Some(clean_id("story_arcs", &arc.id))
         };
         let proj_clean = clean_id("projects", &arc.project_id);
+        let status_str = serde_json::to_string(&arc.status).unwrap_or_default().trim_matches('"').to_string();
 
-        let sql = if let Some(id) = clean_id_opt {
-            let s = r#"
-                UPSERT type::record($id) MERGE {
-                    title: $title,
-                    status: $status,
-                    project_id: type::record($p_id),
-                    updated_at: time::now()
-                };
-            "#;
-            let mut res = self
-                .db
-                .query(s)
-                .bind(("id", id.clone()))
-                .bind(("p_id", proj_clean))
-                .bind(("title", arc.title.clone()))
-                .bind(("status", serde_json::to_string(&arc.status).unwrap_or_default().trim_matches('"').to_string()))
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-            let errors = res.take_errors();
-            if let Some((_, e)) = errors.into_iter().next() {
-                return Err(DomainError::ConstraintViolation(e.to_string()));
-            }
-            format!("story_arcs:{}", id)
-        } else {
-            let s = r#"
-                CREATE story_arcs CONTENT {
-                    title: $title,
-                    status: $status,
-                    project_id: type::record($p_id),
-                    created_at: time::now(),
-                    updated_at: time::now()
-                };
-            "#;
-            let mut res = self
-                .db
-                .query(s)
-                .bind(("p_id", proj_clean))
-                .bind(("title", arc.title.clone()))
-                .bind(("status", serde_json::to_string(&arc.status).unwrap_or_default().trim_matches('"').to_string()))
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-            let created: Option<StoryArc> = take_one(&mut res, 0)?;
-            created.map(|a| a.id).unwrap_or_default()
-        };
-
-        Ok(sql)
+        let sql = "RETURN fn::save_story_arc($id, $p_id, $title, $status);";
+        let res = self
+            .db
+            .query(sql)
+            .bind(("id", clean_id_opt))
+            .bind(("p_id", proj_clean))
+            .bind(("title", arc.title.clone()))
+            .bind(("status", status_str))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let created: Option<StoryArc> = take_one(&mut res, 0)?;
+        Ok(created.map(|a| a.id).unwrap_or_else(|| arc.id.clone()))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("story_arcs", id);
-        let sql = "DELETE type::record($id);";
-        self.db
+        let sql = "RETURN fn::delete_story_arc($id);";
+        let res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<StoryArc>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = type::record($p_clean) ORDER BY created_at ASC;";
-        let mut res = self
+        let sql = "RETURN fn::list_story_arcs_by_project($p_clean);";
+        let res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
@@ -133,41 +104,25 @@ impl StoryArcRepository for SurrealStoryArcRepository {
 
     async fn list_chapters_for_arc(&self, arc_id: &str) -> Result<Vec<ArcChapterRelation>, DomainError> {
         let clean_arc = clean_id("story_arcs", arc_id);
-        let sql = r#"
-            LET $arc_rec = type::record($arc_id);
-            SELECT 
-                $arc_id AS arc_id,
-                type::string(IF in.chapter_id != NONE { in.chapter_id } ELSE { array::first(in->promise_milestones.out.chapter_id) }) AS chapter_id,
-                IF in.chapter_id.sort_order != NONE { in.chapter_id.sort_order } ELSE IF array::first(in->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(in->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS sort_order,
-                phase
-            FROM advances_arc 
-            WHERE out = $arc_rec
-            ORDER BY sort_order ASC;
-        "#;
+        let sql = "RETURN fn::list_chapters_for_arc($arc_id);";
         let mut res = self
             .db
             .query(sql)
             .bind(("arc_id", clean_arc))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 1)
+        take_list(&mut res, 0)
     }
 
     async fn list_entities_for_arc(&self, arc_id: &str) -> Result<Vec<ArcEntityRelation>, DomainError> {
         let clean_arc = clean_id("story_arcs", arc_id);
-        let sql = r#"
-            LET $arc_rec = type::record($arc_id);
-            SELECT DISTINCT
-                $arc_id AS arc_id,
-                type::string(<-participant_of.in.id) AS entity_id
-            FROM (SELECT VALUE in FROM advances_arc WHERE out = $arc_rec);
-        "#;
+        let sql = "RETURN fn::list_entities_for_arc($arc_id);";
         let mut res = self
             .db
             .query(sql)
             .bind(("arc_id", clean_arc))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 1)
+        take_list(&mut res, 0)
     }
 }

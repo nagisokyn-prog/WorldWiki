@@ -4,6 +4,10 @@ import { useCalendarStore } from '../calendar.store';
 import * as api from '../../services/api.client';
 import { clearCache } from '../../utils/requestCache';
 
+vi.mock('@worldwiki/components', () => ({
+  appAlert: vi.fn(),
+}));
+
 vi.mock('../../services/api.client', () => ({
   getCalendars: vi.fn(),
   saveCalendar: vi.fn(),

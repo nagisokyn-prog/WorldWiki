@@ -9,7 +9,6 @@ export interface ProjectFormData {
   name: string;
   type: string;
   genres: string[];
-  perfLevel: string;
   cover_image?: string | null;
 }
 

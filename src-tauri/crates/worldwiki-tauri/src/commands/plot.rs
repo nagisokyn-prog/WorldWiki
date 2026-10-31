@@ -10,38 +10,7 @@ pub async fn get_plot_promises(
     state: State<'_, AppState>,
 ) -> Result<Vec<serde_json::Value>, IpcError> {
     let clean = project.trim_start_matches("projects:").to_string();
-    let sql = r#"
-        SELECT 
-            id,
-            project_id,
-            chapter_id,
-            paragraph_index,
-            block_id,
-            kind,
-            title,
-            note,
-            status,
-            location_id,
-            timeline_event_id,
-            created_at,
-            updated_at,
-            ->promise_milestones.{
-                milestone_id: id,
-                stage: stage,
-                quote: quote,
-                note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
-            } AS milestones,
-            <-participant_of.in.id AS participant_ids,
-            ->advances_arc.{
-                arc_id: out.id,
-                arc_phase: phase
-            } AS arcs
-        FROM plot_promises 
-        WHERE project_id = fn::normalize_project_id($p);
-    "#;
+    let sql = "RETURN fn::list_plot_promises_by_project($p);";
     let mut res = state
         .services
         .db
@@ -124,7 +93,10 @@ pub async fn get_todos(
         .plot
         .list_todos_by_owner(&owner_id)
         .await
-        .map_err(IpcError::from)
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][get_todos] owner_id={}: {}", owner_id, e);
+            IpcError::from(e)
+        })
 }
 
 #[tauri::command]
@@ -139,7 +111,27 @@ pub async fn create_todo(
         .plot
         .create_todo(&owner_id, &text, sort_order.unwrap_or(0))
         .await
-        .map_err(IpcError::from)
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][create_todo] owner_id={}, text={}: {}", owner_id, text, e);
+            IpcError::from(e)
+        })
+}
+
+#[tauri::command]
+pub async fn update_todo(
+    id: String,
+    text: String,
+    state: State<'_, AppState>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .plot
+        .update_todo(&id, &text)
+        .await
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][update_todo] id={}, text={}: {}", id, text, e);
+            IpcError::from(e)
+        })
 }
 
 #[tauri::command]
@@ -152,7 +144,10 @@ pub async fn toggle_todo(
         .plot
         .toggle_todo(&id)
         .await
-        .map_err(IpcError::from)
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][toggle_todo] id={}: {}", id, e);
+            IpcError::from(e)
+        })
 }
 
 #[tauri::command]
@@ -165,7 +160,10 @@ pub async fn delete_todo(
         .plot
         .delete_todo(&id)
         .await
-        .map_err(IpcError::from)
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][delete_todo] id={}: {}", id, e);
+            IpcError::from(e)
+        })
 }
 
 #[tauri::command]

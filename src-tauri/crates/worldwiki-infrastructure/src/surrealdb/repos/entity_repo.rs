@@ -23,25 +23,14 @@ impl SurrealEntityRepository {
 impl EntityRepository for SurrealEntityRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Entity>, DomainError> {
         let clean = clean_id("entities", id);
-        let sql = r#"
-            SELECT 
-                id, 
-                schema_id.project_id AS project_id, 
-                schema_id.type_key AS type_key, 
-                name, 
-                description, 
-                attributes, 
-                tags, 
-                created_at, 
-                updated_at 
-            FROM type::record($id);
-        "#;
+        let sql = "RETURN fn::get_entity_full($id);";
         let mut res = self
             .db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
@@ -49,27 +38,7 @@ impl EntityRepository for SurrealEntityRepository {
         let clean = clean_id("entities", &entity.id);
         let p_clean = clean_id("projects", &entity.project_id);
 
-        let sql = r#"
-            LET $p_rec = type::record($p_id);
-            LET $schema_res = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $entity_type LIMIT 1);
-            LET $schema_id = IF array::len($schema_res) > 0 {
-                $schema_res[0]
-            } ELSE {
-                (CREATE entity_schemas SET
-                    project_id = $p_rec,
-                    type_key = $entity_type,
-                    type_name = $entity_type
-                )[0].id
-            };
-            LET $e_rec = type::record($e_id);
-            UPSERT $e_rec SET
-                schema_id = $schema_id,
-                name = $name,
-                description = $description,
-                tags = $tags,
-                attributes = $attributes,
-                updated_at = time::now();
-        "#;
+        let sql = "RETURN fn::save_entity_full($e_id, $p_id, $entity_type, $name, $description, $attributes, $tags);";
         let mut res = self
             .db
             .query(sql)
@@ -82,21 +51,19 @@ impl EntityRepository for SurrealEntityRepository {
             .bind(("tags", entity.tags.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let errors = res.take_errors();
-        if let Some((_, e)) = errors.into_iter().next() {
-            return Err(DomainError::ConstraintViolation(e.to_string()));
-        }
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("entities", id);
-        let sql = "DELETE type::record($id);";
-        self.db
+        let sql = "RETURN fn::delete_entity_full($id);";
+        let mut res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
@@ -107,27 +74,14 @@ impl EntityRepository for SurrealEntityRepository {
         top_k: usize,
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = r#"
-            SELECT 
-                id, 
-                schema_id.project_id AS project_id, 
-                schema_id.type_key AS type_key, 
-                name, 
-                description, 
-                attributes, 
-                tags, 
-                created_at, 
-                updated_at 
-            FROM entities 
-            WHERE schema_id.project_id = type::record($p_clean)
-            ORDER BY name ASC;
-        "#;
+        let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
         let mut res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let all_entities: Vec<Entity> = take_list(&mut res, 0)?;
 
         let q_trimmed = query.trim();
@@ -162,22 +116,7 @@ impl EntityRepository for SurrealEntityRepository {
         type_key: &str,
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = r#"
-            SELECT 
-                id, 
-                schema_id.project_id AS project_id, 
-                schema_id.type_key AS type_key, 
-                name, 
-                description, 
-                attributes, 
-                tags, 
-                created_at, 
-                updated_at 
-            FROM entities 
-            WHERE schema_id.project_id = type::record($p_clean) 
-              AND schema_id.type_key = $type_key 
-            ORDER BY name ASC;
-        "#;
+        let sql = "RETURN fn::list_entities_by_type_full($p_clean, $type_key);";
         let mut res = self
             .db
             .query(sql)
@@ -185,32 +124,20 @@ impl EntityRepository for SurrealEntityRepository {
             .bind(("type_key", type_key.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = r#"
-            SELECT 
-                id, 
-                schema_id.project_id AS project_id, 
-                schema_id.type_key AS type_key, 
-                name, 
-                description, 
-                attributes, 
-                tags, 
-                created_at, 
-                updated_at 
-            FROM entities 
-            WHERE schema_id.project_id = type::record($p_clean) 
-            ORDER BY name ASC;
-        "#;
+        let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
         let mut res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 }

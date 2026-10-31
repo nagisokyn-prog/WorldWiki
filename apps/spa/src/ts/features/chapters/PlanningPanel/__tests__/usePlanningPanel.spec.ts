@@ -2,9 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { usePlanningPanel } from '../usePlanningPanel';
 import * as api from '../../../../services/api.client';
 
+vi.mock('@worldwiki/components', () => ({
+  appAlert: vi.fn(),
+  appConfirm: vi.fn(),
+}));
+
 vi.mock('../../../../services/api.client', () => ({
   getTodos: vi.fn(),
   createTodo: vi.fn(),
+  updateTodo: vi.fn(),
   toggleTodo: vi.fn(),
   deleteTodo: vi.fn(),
 }));
@@ -63,7 +69,7 @@ describe('usePlanningPanel', () => {
     await panel.saveItem(emptyItem);
 
     // Save error catch
-    vi.mocked(api.createTodo).mockRejectedValueOnce(new Error('Save error'));
+    vi.mocked(api.updateTodo).mockRejectedValueOnce(new Error('Save error'));
     await panel.saveItem(panel.items.value[0]);
 
     // Toggle item with id error rollback

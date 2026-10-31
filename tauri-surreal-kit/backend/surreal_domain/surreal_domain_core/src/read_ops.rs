@@ -41,11 +41,11 @@ where
     let pid_backticked = format!("projects:`{}`", pid_raw);
 
     let query_str = match table {
-        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_backticked",
-        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_backticked",
-        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_backticked",
-        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_backticked",
-        _ => "SELECT * FROM type::table($table) WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_backticked",
+        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = fn::normalize_project_id($pid_str) OR volume_id.project_id = $pid",
+        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = fn::normalize_project_id($pid_str) OR schema_id.project_id = $pid",
+        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = fn::normalize_project_id($pid_str) OR planet_id.project_id = $pid",
+        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = fn::normalize_project_id($pid_str) OR chapter_id.volume_id.project_id = $pid",
+        _ => "SELECT * FROM type::table($table) WHERE project_id = fn::normalize_project_id($pid_str) OR project_id = $pid",
     };
 
     let mut res = db

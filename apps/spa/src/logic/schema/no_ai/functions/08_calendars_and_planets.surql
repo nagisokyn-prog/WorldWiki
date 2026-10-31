@@ -158,3 +158,72 @@ DEFINE FUNCTION OVERWRITE fn::delete_calendar($cal_id: record<calendars>) {
     DELETE $cal_id;
     RETURN true;
 };
+
+-- 7. ПОЛУЧЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_timeline_event($id: any) {
+    LET $rec = IF string::starts_with(type::string($id), 'timeline_events:') { type::record($id) } ELSE { type::record('timeline_events', $id) };
+    LET $res = (SELECT * FROM $rec LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 8. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА
+DEFINE FUNCTION OVERWRITE fn::save_timeline_event(
+    $id: option<any>,
+    $proj: any,
+    $cal_id: any,
+    $title: string,
+    $description: option<string>,
+    $m_abs: int,
+    $duration_minutes: option<int>,
+    $importance: int,
+    $color: option<string>,
+    $location_id: option<string>
+) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $c_rec = IF $cal_id != NONE AND $cal_id != NULL AND type::string($cal_id) != '' {
+        IF string::starts_with(type::string($cal_id), 'calendars:') { type::record($cal_id) } ELSE { type::record('calendars', $cal_id) }
+    } ELSE { NONE };
+    
+    LET $res = IF $id != NONE AND $id != NULL AND type::string($id) != '' {
+        LET $rec = IF string::starts_with(type::string($id), 'timeline_events:') { type::record($id) } ELSE { type::record('timeline_events', $id) };
+        (UPSERT $rec SET
+            title = $title,
+            description = $description,
+            m_abs = $m_abs,
+            duration_minutes = $duration_minutes,
+            importance = $importance,
+            color = $color,
+            location_id = $location_id,
+            project_id = $p_rec,
+            calendar_id = $c_rec,
+            updated_at = time::now()
+        )
+    } ELSE {
+        (CREATE timeline_events SET
+            title = $title,
+            description = $description,
+            m_abs = $m_abs,
+            duration_minutes = $duration_minutes,
+            importance = $importance,
+            color = $color,
+            location_id = $location_id,
+            project_id = $p_rec,
+            calendar_id = $c_rec,
+            created_at = time::now(),
+            updated_at = time::now()
+        )
+    };
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 9. УДАЛЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА
+DEFINE FUNCTION OVERWRITE fn::delete_timeline_event($id: any) {
+    LET $rec = IF string::starts_with(type::string($id), 'timeline_events:') { type::record($id) } ELSE { type::record('timeline_events', $id) };
+    DELETE $rec;
+};
+
+-- 10. СПИСОК СОБЫТИЙ ТАЙМЛАЙНА ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_timeline_events_by_project($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (SELECT * FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC);
+};

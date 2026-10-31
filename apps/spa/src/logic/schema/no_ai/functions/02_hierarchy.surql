@@ -54,3 +54,82 @@ DEFINE FUNCTION OVERWRITE fn::update_volume_title($vol: record<volumes>, $title:
 DEFINE FUNCTION OVERWRITE fn::reorder_node($node: record<chapters> | record<volumes>, $order: number) {
     UPDATE contains SET sort_order = $order WHERE out = $node;
 };
+
+-- 21. ПОЛУЧЕНИЕ ГЛАВЫ ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_chapter($id: any) {
+    LET $c_rec = IF string::starts_with(type::string($id), 'chapters:') { type::record($id) } ELSE { type::record('chapters', $id) };
+    LET $res = (SELECT * FROM $c_rec LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 22. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::save_chapter(
+    $id: any,
+    $vol_id: any,
+    $title: string,
+    $content: string,
+    $sort_order: int,
+    $word_count: int
+) {
+    LET $c_rec = IF string::starts_with(type::string($id), 'chapters:') { type::record($id) } ELSE { type::record('chapters', $id) };
+    LET $v_rec = IF string::starts_with(type::string($vol_id), 'volumes:') { type::record($vol_id) } ELSE { type::record('volumes', $vol_id) };
+    LET $res = (
+        UPSERT $c_rec SET
+            title = $title,
+            content = $content,
+            volume_id = $v_rec,
+            sort_order = $sort_order,
+            word_count = $word_count,
+            updated_at = time::now()
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 23. УДАЛЕНИЕ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::delete_chapter($id: any) {
+    LET $c_rec = IF string::starts_with(type::string($id), 'chapters:') { type::record($id) } ELSE { type::record('chapters', $id) };
+    DELETE $c_rec;
+};
+
+-- 24. СПИСОК ГЛАВ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_chapters_by_project($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (SELECT * FROM chapters WHERE volume_id.project_id = $p_rec ORDER BY sort_order ASC);
+};
+
+-- 25. СПИСОК ГЛАВ ТОМА
+DEFINE FUNCTION OVERWRITE fn::list_chapters_by_volume($vol: any) {
+    LET $v_rec = IF string::starts_with(type::string($vol), 'volumes:') { type::record($vol) } ELSE { type::record('volumes', $vol) };
+    RETURN (SELECT * FROM chapters WHERE volume_id = $v_rec ORDER BY sort_order ASC);
+};
+
+-- 26. ПОЛУЧЕНИЕ ТОМА ПО ID
+DEFINE FUNCTION OVERWRITE fn::get_volume($id: any) {
+    LET $v_rec = IF string::starts_with(type::string($id), 'volumes:') { type::record($id) } ELSE { type::record('volumes', $id) };
+    LET $res = (SELECT * FROM $v_rec LIMIT 1);
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 27. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ ТОМА
+DEFINE FUNCTION OVERWRITE fn::save_volume($id: any, $proj: any, $title: string) {
+    LET $v_rec = IF string::starts_with(type::string($id), 'volumes:') { type::record($id) } ELSE { type::record('volumes', $id) };
+    LET $p_rec = fn::normalize_project_id($proj);
+    LET $res = (
+        UPSERT $v_rec SET
+            title = $title,
+            project_id = $p_rec
+    );
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 28. УДАЛЕНИЕ ТОМА
+DEFINE FUNCTION OVERWRITE fn::delete_volume($id: any) {
+    LET $v_rec = IF string::starts_with(type::string($id), 'volumes:') { type::record($id) } ELSE { type::record('volumes', $id) };
+    DELETE $v_rec;
+};
+
+-- 29. СПИСОК ТОМОВ ПРОЕКТА
+DEFINE FUNCTION OVERWRITE fn::list_volumes_by_project($proj: any) {
+    LET $p_rec = fn::normalize_project_id($proj);
+    RETURN (SELECT id, project_id, title FROM volumes WHERE project_id = $p_rec);
+};

@@ -156,6 +156,7 @@ pub fn run() {
             worldwiki_tauri::commands::complete_plan,
             worldwiki_tauri::commands::get_todos,
             worldwiki_tauri::commands::create_todo,
+            worldwiki_tauri::commands::update_todo,
             worldwiki_tauri::commands::toggle_todo,
             worldwiki_tauri::commands::delete_todo,
             worldwiki_tauri::commands::audit_volume_consistency,

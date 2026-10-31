@@ -8,7 +8,7 @@ pub async fn get_chapters_inner(
     project: &str,
 ) -> Result<Vec<Chapter>, ChapterError> {
     let clean = project.trim_start_matches("projects:").to_string();
-    let sql = "SELECT * FROM chapters WHERE volume_id.project_id = type::record('projects', $p) ORDER BY sort_order ASC;";
+    let sql = "RETURN fn::list_chapters_by_project($p);";
     let mut res = db
         .query(sql)
         .bind(("p", clean))
@@ -17,7 +17,10 @@ pub async fn get_chapters_inner(
     let raw: Vec<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
     let chapters: Vec<Chapter> = raw
         .into_iter()
-        .filter_map(|v| serde_json::from_value(v).ok())
+        .filter_map(|mut v| {
+            surreal_domain::normalize_embedded_things(&mut v);
+            serde_json::from_value(v).ok()
+        })
         .collect();
     Ok(chapters)
 }
@@ -35,7 +38,22 @@ pub async fn create_chapter_inner(
     _project: &str,
     chapter: Chapter,
 ) -> Result<Chapter, ChapterError> {
-    let created = Chapter::create(db, chapter).await?;
+    let clean_vol = chapter.volume_id.trim_start_matches("volumes:").to_string();
+    let sql = "RETURN fn::save_chapter('', $v_id, $title, $content, $sort_order, $word_count);";
+    let mut res = db
+        .query(sql)
+        .bind(("v_id", clean_vol))
+        .bind(("title", chapter.title.clone()))
+        .bind(("content", chapter.content.clone()))
+        .bind(("sort_order", chapter.sort_order))
+        .bind(("word_count", chapter.word_count))
+        .await
+        .map_err(ChapterError::Database)?;
+    let raw: Option<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
+    let created = raw.and_then(|mut v| {
+        surreal_domain::normalize_embedded_things(&mut v);
+        serde_json::from_value(v).ok()
+    }).ok_or_else(|| ChapterError::InvalidData("save_chapter returned no records".to_string()))?;
     Ok(created)
 }
 
@@ -47,7 +65,29 @@ pub async fn save_chapter_inner(
         "[SAVE_CHAPTER] Saving chapter: id={:?}, title={:?}, volume_id={:?}",
         chapter.id, chapter.title, chapter.volume_id
     );
-    let saved = Chapter::save(db, &chapter).await?;
+    let clean_vol = chapter.volume_id.trim_start_matches("volumes:").to_string();
+
+    let saved: Chapter = if let Some(ref ch_id) = chapter.id {
+        let clean_ch = ch_id.trim_start_matches("chapters:").to_string();
+        let sql = "RETURN fn::save_chapter($c_id, $v_id, $title, $content, $sort_order, $word_count);";
+        let mut res = db
+            .query(sql)
+            .bind(("c_id", clean_ch))
+            .bind(("v_id", clean_vol))
+            .bind(("title", chapter.title.clone()))
+            .bind(("content", chapter.content.clone()))
+            .bind(("sort_order", chapter.sort_order))
+            .bind(("word_count", chapter.word_count))
+            .await
+            .map_err(ChapterError::Database)?;
+        let raw: Option<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
+        raw.and_then(|mut v| {
+            surreal_domain::normalize_embedded_things(&mut v);
+            serde_json::from_value(v).ok()
+        }).ok_or_else(|| ChapterError::InvalidData("save_chapter returned no records".to_string()))?
+    } else {
+        create_chapter_inner(db, "", chapter.clone()).await?
+    };
     eprintln!(
         "[SAVE_CHAPTER] Chapter saved successfully: id={:?}",
         saved.id
@@ -99,6 +139,11 @@ pub async fn save_chapter_inner(
 }
 
 pub async fn delete_chapter_inner(db: &Surreal<Db>, id: &str) -> Result<(), ChapterError> {
-    Chapter::delete(db, id).await?;
+    let clean = id.trim_start_matches("chapters:");
+    let sql = "RETURN fn::delete_chapter($id);";
+    db.query(sql)
+        .bind(("id", clean.to_string()))
+        .await
+        .map_err(ChapterError::Database)?;
     Ok(())
 }

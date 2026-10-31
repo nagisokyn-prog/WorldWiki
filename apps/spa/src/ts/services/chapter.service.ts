@@ -29,11 +29,14 @@ class ChapterService {
     data.project_id = projectRecordId(project);
 
     if (data.participants && Array.isArray(data.participants)) {
-      data.participants = data.participants.map((p: any) => {
+      data.participants = data.participants.map((p: unknown) => {
         if (typeof p === 'string') return p;
         if (p && typeof p === 'object') {
-          if (p.id) {
-            return p.type && !p.id.includes(':') ? `${p.type}:${p.id}` : p.id;
+          const obj = p as Record<string, unknown>;
+          if (obj.id) {
+            const idStr = String(obj.id);
+            const typeStr = obj.type ? String(obj.type) : '';
+            return typeStr && !idStr.includes(':') ? `${typeStr}:${idStr}` : idStr;
           }
           return String(p);
         }

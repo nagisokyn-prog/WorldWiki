@@ -23,13 +23,14 @@ impl SurrealChapterRepository {
 impl ChapterRepository for SurrealChapterRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Chapter>, DomainError> {
         let clean = clean_id("chapters", id);
-        let sql = "SELECT * FROM type::record($id);";
+        let sql = "RETURN fn::get_chapter($id);";
         let mut res = self
             .db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
@@ -37,16 +38,7 @@ impl ChapterRepository for SurrealChapterRepository {
         let clean = clean_id("chapters", &chapter.id);
         let vol_clean = clean_id("volumes", &chapter.volume_id);
 
-        let sql = r#"
-            UPSERT type::record($c_id) MERGE {
-                title: $title,
-                content: $content,
-                volume_id: type::record($v_id),
-                sort_order: $sort_order,
-                word_count: $word_count,
-                updated_at: time::now()
-            };
-        "#;
+        let sql = "RETURN fn::save_chapter($c_id, $v_id, $title, $content, $sort_order, $word_count);";
         let mut res = self
             .db
             .query(sql)
@@ -58,45 +50,45 @@ impl ChapterRepository for SurrealChapterRepository {
             .bind(("word_count", chapter.word_count as i64))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let errors = res.take_errors();
-        if let Some((_, e)) = errors.into_iter().next() {
-            return Err(DomainError::ConstraintViolation(e.to_string()));
-        }
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("chapters", id);
-        let sql = "DELETE type::record($id);";
-        self.db
+        let sql = "RETURN fn::delete_chapter($id);";
+        let mut res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let p_clean = clean_id("projects", project_id);
-        let sql = "SELECT * FROM chapters WHERE volume_id.project_id = type::record($p_clean) ORDER BY sort_order ASC;";
+        let sql = "RETURN fn::list_chapters_by_project($p_clean);";
         let mut res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
     async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let v_clean = clean_id("volumes", volume_id);
-        let sql = "SELECT * FROM chapters WHERE volume_id = type::record($v_id) ORDER BY sort_order ASC;";
+        let sql = "RETURN fn::list_chapters_by_volume($v_id);";
         let mut res = self
             .db
             .query(sql)
             .bind(("v_id", v_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 

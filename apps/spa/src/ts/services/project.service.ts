@@ -110,6 +110,7 @@ export const projectService = {
    */
   async saveProjectConfig(projectName: string, config: ProjectConfig): Promise<{ success: boolean }> {
     const result = await api.saveProjectConfig(projectName, config);
+    invalidateCache('projects:all');
     invalidateCache(`project:config:${projectName}`);
     return (result as { success: boolean }) || { success: true };
   },

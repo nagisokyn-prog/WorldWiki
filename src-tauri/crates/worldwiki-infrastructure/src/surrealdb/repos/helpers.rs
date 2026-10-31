@@ -4,17 +4,22 @@ use serde_json::Value;
 use surrealdb::IndexedResults;
 use worldwiki_domain::errors::DomainError;
 
-/// Helper to sanitize record IDs (ensures table prefix handling)
+/// Helper to sanitize record IDs (ensures table prefix handling and bracket escaping for non-alphanumeric IDs)
 pub fn clean_id(table: &str, raw_id: &str) -> String {
     let trimmed = raw_id.trim().trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
     if trimmed.is_empty() {
         return format!("{table}:default");
     }
-    if let Some((tbl, id_part)) = trimmed.split_once(':') {
-        let clean_id = id_part.trim().trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
-        format!("{}:{}", tbl.trim(), clean_id)
+    let (tbl, id_part) = if let Some((tbl, id_part)) = trimmed.split_once(':') {
+        (tbl.trim(), id_part.trim().trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\''))
     } else {
-        format!("{}:{}", table, trimmed)
+        (table, trimmed)
+    };
+    let needs_brackets = id_part.chars().any(|c| c.is_whitespace() || (!c.is_alphanumeric() && c != '_' && c != '-'));
+    if needs_brackets {
+        format!("{}:⟨{}⟩", tbl, id_part)
+    } else {
+        format!("{}:{}", tbl, id_part)
     }
 }
 

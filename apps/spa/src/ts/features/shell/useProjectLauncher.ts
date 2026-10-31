@@ -27,8 +27,10 @@ export function useProjectLauncher() {
   async function loadProjects() {
     try {
       const list = await projectService.getProjects();
-      projects.value = list.map((p: { name: string; icon?: unknown; stats?: unknown; cover_image?: unknown }) => ({
+      projects.value = list.map((p: { name: string; type?: unknown; genres?: unknown; icon?: unknown; stats?: unknown; cover_image?: unknown }) => ({
         name: p.name,
+        type: typeof p.type === 'string' ? p.type : 'novel',
+        genres: Array.isArray(p.genres) ? (p.genres as string[]) : [],
         icon: String(p.icon || '📁'),
         cover_image: typeof p.cover_image === 'string' ? p.cover_image : null,
         stats: (p.stats as unknown as Record<string, number>) || {}

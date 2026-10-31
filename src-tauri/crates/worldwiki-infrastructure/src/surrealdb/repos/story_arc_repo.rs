@@ -63,12 +63,28 @@ impl StoryArcRepository for SurrealStoryArcRepository {
         )
     }
 
-    async fn assign_chapter(&self, _relation: &ArcChapterRelation) -> Result<(), DomainError> {
-        Ok(())
+    async fn assign_chapter(&self, relation: &ArcChapterRelation) -> Result<(), DomainError> {
+        let clean_arc = clean_id("story_arcs", &relation.arc_id);
+        let clean_chap = clean_id("chapters", &relation.chapter_id);
+        let phase = relation.phase.clone().unwrap_or_else(|| "setup".to_string());
+        surreal_exec!(
+            self.db,
+            "RETURN fn::link_chapter_to_arc($chap_id, $arc_id, $phase);",
+            ("chap_id", clean_chap),
+            ("arc_id", clean_arc),
+            ("phase", phase),
+        )
     }
 
-    async fn remove_chapter(&self, _arc_id: &str, _chapter_id: &str) -> Result<(), DomainError> {
-        Ok(())
+    async fn remove_chapter(&self, arc_id: &str, chapter_id: &str) -> Result<(), DomainError> {
+        let clean_arc = clean_id("story_arcs", arc_id);
+        let clean_chap = clean_id("chapters", chapter_id);
+        surreal_exec!(
+            self.db,
+            "RETURN fn::unlink_chapter_from_arc($chap_id, $arc_id);",
+            ("chap_id", clean_chap),
+            ("arc_id", clean_arc),
+        )
     }
 
     async fn assign_entity(&self, _relation: &ArcEntityRelation) -> Result<(), DomainError> {

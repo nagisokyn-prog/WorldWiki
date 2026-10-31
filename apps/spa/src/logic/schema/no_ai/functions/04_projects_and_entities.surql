@@ -21,7 +21,7 @@ DEFINE FUNCTION OVERWRITE fn::get_project_config($name: any) {
 };
 
 -- 15. ВЫБОРКА АТРИБУТОВ СУЩНОСТЕЙ ПРОЕКТА
-DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: record<projects>) {
+DEFINE FUNCTION OVERWRITE fn::get_entities_attributes($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
         SELECT id, attributes FROM entities 
@@ -36,7 +36,7 @@ DEFINE FUNCTION OVERWRITE fn::update_entity_attributes($entity: record<entities>
 };
 
 -- 34. ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПРОЕКТА С ФИЛЬТРАЦИЕЙ ПО ТИПУ
-DEFINE FUNCTION OVERWRITE fn::get_entities($proj: record<projects>, $et: option<string>) {
+DEFINE FUNCTION OVERWRITE fn::get_entities($proj: any, $et: option<string>) {
     LET $p_rec = fn::normalize_project_id($proj);
     IF $et != NONE {
         RETURN (
@@ -103,7 +103,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entity($id: record<entities>) {
 -- 35. СОХРАНЕНИЕ СУЩНОСТИ (UPSERT ИЛИ CREATE)
 DEFINE FUNCTION OVERWRITE fn::save_entity(
     $id: option<record<entities> | null>,
-    $proj: record<projects>,
+    $proj: any,
     $entity_type: string,
     $name: string,
     $desc: option<string | null>,
@@ -172,7 +172,7 @@ DEFINE FUNCTION OVERWRITE fn::save_entity(
 };
 
 -- 36. ПОЛНОТЕКСТОВЫЙ ПОИСК СУЩНОСТЕЙ ПО BM25 С РАНЖИРОВАНИЕМ
-DEFINE FUNCTION OVERWRITE fn::search_entities($proj: record<projects>, $q: string, $et: option<string>) {
+DEFINE FUNCTION OVERWRITE fn::search_entities($proj: any, $q: string, $et: option<string>) {
     LET $p_rec = fn::normalize_project_id($proj);
     IF $et != NONE {
         RETURN (
@@ -320,7 +320,7 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_by_project_full($proj: any) {
 };
 
 -- 37. ПАКЕТНОЕ ПОЛУЧЕНИЕ СУЩНОСТЕЙ ПО ТИПАМ
-DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types: array<string>) {
+DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: any, $types: array<string>) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (
         SELECT 
@@ -345,7 +345,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entities_batch($proj: record<projects>, $types
 
 -- 38. ПАКЕТНОЕ СОХРАНЕНИЕ СУЩНОСТИ И ЕЕ СВЯЗАННЫХ СУЩНОСТЕЙ
 DEFINE FUNCTION OVERWRITE fn::batch_save_entity_with_relations(
-    $proj: record<projects>,
+    $proj: any,
     $main_id: record<entities>,
     $main_entity: object,
     $foreign_updates: array<object>

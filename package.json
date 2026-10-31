@@ -26,7 +26,9 @@
     "test:e2e": "pnpm test:e2e:rust && pnpm test:e2e:ui",
 
     "generate:api": "node scripts/codegen.js",
-    "audit:god-files": "node detect_god_files.js"
+    "audit:god-files": "node detect_god_files.js",
+    "audit:macro-commands": "node scripts/find_macroable_commands.mjs",
+    "migrate:macro-commands": "node scripts/migrate_to_bridge_macros.mjs --write"
 
   },
   "dependencies": {

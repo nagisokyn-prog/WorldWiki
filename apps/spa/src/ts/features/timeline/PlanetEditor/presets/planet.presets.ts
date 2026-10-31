@@ -33,7 +33,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Земля (Терра)',
       icon: '🌍',
-      ticks_per_day: 1440,
+      ticks_per_day: 86400,
       day_hours: 24,
       day_minutes: 0,
       day_seconds: 0,
@@ -87,7 +87,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Марс (Арес)',
       icon: '🔴',
-      ticks_per_day: 1477,
+      ticks_per_day: 88642,
       day_hours: 24,
       day_minutes: 37,
       day_seconds: 22,
@@ -128,7 +128,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Венера (Афродита)',
       icon: '🟡',
-      ticks_per_day: 168120,
+      ticks_per_day: 10087200,
       day_hours: 2802,
       day_minutes: 0,
       day_seconds: 0,
@@ -162,7 +162,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Аустралис (Южный Мир)',
       icon: '❄️',
-      ticks_per_day: 1440,
+      ticks_per_day: 86400,
       day_hours: 24,
       day_minutes: 0,
       day_seconds: 0,
@@ -199,7 +199,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Синхронный Мир (Вечные Сумерки)',
       icon: '🌓',
-      ticks_per_day: 525600,
+      ticks_per_day: 31536000,
       day_hours: 8760,
       day_minutes: 0,
       day_seconds: 0,
@@ -234,7 +234,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Трилуние (Мир Трёх Спутников)',
       icon: '✨',
-      ticks_per_day: 1440,
+      ticks_per_day: 86400,
       day_hours: 24,
       day_minutes: 0,
       day_seconds: 0,
@@ -273,7 +273,7 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     data: {
       name: 'Урания (Лежащий Мир)',
       icon: '🪐',
-      ticks_per_day: 1080,
+      ticks_per_day: 64800,
       day_hours: 18,
       day_minutes: 0,
       day_seconds: 0,

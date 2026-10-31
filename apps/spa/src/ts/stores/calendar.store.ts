@@ -65,17 +65,44 @@ export const useCalendarStore = defineStore('calendar', () => {
     if (cached) return cached;
 
     try {
-      let rawList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
-      if (!rawList || rawList.length === 0) {
-        try {
-          const bundle = (await calendarApi.getPlanetCalendarBundle(projectName)) as { calendars?: CalendarRecord[] } | null;
-          if (bundle?.calendars && bundle.calendars.length > 0) {
-            rawList = bundle.calendars;
+      let rawList: CalendarRecord[] = [];
+      try {
+        const bundle = (await calendarApi.getPlanetCalendarBundle(projectName)) as {
+          calendars?: CalendarRecord[];
+          planets?: Array<Record<string, unknown>>;
+        } | null;
+        if (bundle?.calendars && bundle.calendars.length > 0) {
+          rawList = bundle.calendars;
+        }
+        if (bundle && Array.isArray(bundle.planets)) {
+          if (bundle.planets.length === 0) {
+            localStorage.removeItem(`worldwiki:planets:${projectName}`);
+          } else {
+            const mappedPlanets: PlanetEntity[] = bundle.planets.map((p) => ({
+              id: normalizeCalendarId(p.id).replace(/^planets:/, ''),
+              project_id: projectName,
+              name: (p.name as string) || 'Планета',
+              ticks_per_day: Number(p.ticks_per_day) || 86400,
+              orbit_days: Number(p.orbit_days_num && p.orbit_days_den ? (Number(p.orbit_days_num) / Number(p.orbit_days_den)) : (Number(p.orbit_days) || 365.2422)),
+              axial_tilt: Number(p.axial_tilt_mdeg ? (Number(p.axial_tilt_mdeg) / 1000) : (Number(p.axial_tilt) || 0)),
+              moons: Array.isArray(p.moons) ? p.moons : [],
+              timezones: Array.isArray(p.timezones) ? p.timezones : [],
+              regions: Array.isArray(p.regions) ? p.regions : [],
+            }));
+            localStorage.setItem(`worldwiki:planets:${projectName}`, JSON.stringify(mappedPlanets));
           }
-        } catch (err: unknown) {
-          console.warn('[CalendarStore] Failed to load planet-calendar bundle fallback:', err);
+        }
+      } catch (err: unknown) {
+        console.warn('[CalendarStore] Failed to load planet-calendar bundle fallback:', err);
+      }
+
+      if (rawList.length === 0) {
+        const directList = (await api.getCalendars(projectName).catch(() => [])) as unknown as CalendarRecord[];
+        if (directList && directList.length > 0) {
+          rawList = directList;
         }
       }
+
       const list = (rawList || []).map((c) => ({
         ...c,
         id: normalizeCalendarId(c.id),
@@ -300,6 +327,7 @@ export const useCalendarStore = defineStore('calendar', () => {
 
     try {
       await calendarApi.deletePlanetDirect(projectName, planetId, true);
+      invalidateCache(`calendars:${projectName}`);
     } catch (e) {
       console.error('Failed to delete planet from DB:', e);
     }

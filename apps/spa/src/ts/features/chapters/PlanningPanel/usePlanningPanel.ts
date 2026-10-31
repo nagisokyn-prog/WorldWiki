@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { appAlert } from '@worldwiki/components';
 import * as api from '@/services/api.client';
 
@@ -36,14 +36,24 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     items.value.length ? Math.round((doneCount.value / items.value.length) * 100) : 0
   );
 
+  function getQualifiedOwnerId(): string {
+    const raw = (props.parentId || '').trim();
+    if (!raw) return '';
+    if (raw.includes(':')) return raw;
+    if (props.parentType === 'volume') return `volumes:${raw}`;
+    if (props.parentType === 'arc' || props.parentType === 'story_arc') return `story_arcs:${raw}`;
+    return `chapters:${raw}`;
+  }
+
   // ─── Load ────────────────────────────────────────────────
   const load = async () => {
-    if (!props.parentId) {
+    const ownerId = getQualifiedOwnerId();
+    if (!ownerId) {
       items.value = [];
       return;
     }
     try {
-      const todos = await api.getTodos(props.parentId);
+      const todos = await api.getTodos(ownerId);
       items.value = (todos || [])
         .map(t => ({
           id: t.id || '',
@@ -59,18 +69,27 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     }
   };
 
-  watch(() => [props.project, props.parentType, props.parentId], () => {
+  onMounted(() => {
     void load();
   });
+
+  watch(
+    () => [props.project, props.parentType, props.parentId],
+    () => {
+      void load();
+    },
+    { immediate: true }
+  );
 
   // ─── Save ────────────────────────────────────────────────
   const saveItem = async (item: PlanItem) => {
     if (!item.text.trim() && !item.id) return;
-    if (!props.parentId) return;
+    const ownerId = getQualifiedOwnerId();
+    if (!ownerId) return;
     try {
       if (!item.id) {
         const createdId = await api.createTodo(
-          props.parentId,
+          ownerId,
           item.text,
           item.sort_order ?? items.value.indexOf(item)
         );

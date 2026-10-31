@@ -4,7 +4,7 @@
 -- 40. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ (PLOT PROMISE / NARRATIVE HUB)
 DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $id: string,
-    $proj: record<projects>,
+    $proj: any,
     $chap: option<record<chapters> | string | null>,
     $data: object
 ) {
@@ -654,8 +654,13 @@ DEFINE FUNCTION OVERWRITE fn::list_chapters_for_arc($arc_id: any) {
     RETURN (
         SELECT 
             out AS arc_id,
-            IF in.chapter_id != NONE { in.chapter_id } ELSE { array::first(in->promise_milestones.out.chapter_id) } AS chapter_id,
-            IF in.chapter_id.sort_order != NONE { in.chapter_id.sort_order } ELSE IF array::first(in->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(in->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS sort_order,
+            IF string::starts_with(type::string(in), 'chapters:') THEN in
+            ELSE IF in.chapter_id != NONE THEN in.chapter_id 
+            ELSE array::first(in->promise_milestones.out.chapter_id) END AS chapter_id,
+            IF in.sort_order != NONE THEN in.sort_order
+            ELSE IF in.chapter_id.sort_order != NONE THEN in.chapter_id.sort_order
+            ELSE IF array::first(in->promise_milestones.out.chapter_id.sort_order) != NONE THEN array::first(in->promise_milestones.out.chapter_id.sort_order)
+            ELSE 0 END AS sort_order,
             phase
         FROM advances_arc 
         WHERE out = $arc_rec
@@ -670,6 +675,9 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_for_arc($arc_id: any) {
     LET $promises = (SELECT VALUE in FROM advances_arc WHERE out = $arc_rec LIMIT 200);
     LET $entities = (SELECT VALUE <-participant_of.in.id FROM $promises LIMIT 500);
     LET $flat = array::distinct(array::flatten($entities));
+    IF array::len($flat) == 0 {
+        RETURN [];
+    };
     RETURN (
         FOR $e IN $flat {
             {
@@ -677,5 +685,38 @@ DEFINE FUNCTION OVERWRITE fn::list_entities_for_arc($arc_id: any) {
                 entity_id: type::string($e)
             }
         }
+    );
+};
+
+-- 61. ПРИВЯЗКА ГЛАВЫ К СЮЖЕТНОЙ АРКЕ (M:N)
+DEFINE FUNCTION OVERWRITE fn::link_chapter_to_arc($chapter_id: any, $arc_id: any, $phase: string) {
+    LET $c_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    LET $a_rec = IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) };
+    LET $valid_phase = IF $phase != NONE AND $phase != NULL AND $phase != '' THEN $phase ELSE 'setup' END;
+    DELETE advances_arc WHERE in = $c_rec AND out = $a_rec;
+    RELATE $c_rec -> advances_arc -> $a_rec SET
+        phase = $valid_phase,
+        project_id = $a_rec.project_id;
+};
+
+-- 62. ОТВЯЗКА ГЛАВЫ ОТ СЮЖЕТНОЙ АРКИ
+DEFINE FUNCTION OVERWRITE fn::unlink_chapter_from_arc($chapter_id: any, $arc_id: any) {
+    LET $c_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    LET $a_rec = IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) };
+    DELETE advances_arc WHERE in = $c_rec AND out = $a_rec;
+};
+
+-- 63. ПОЛУЧЕНИЕ ВСЕХ СЮЖЕТНЫХ АРОК ДЛЯ ГЛАВЫ
+DEFINE FUNCTION OVERWRITE fn::list_arcs_for_chapter($chapter_id: any) {
+    LET $c_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    RETURN (
+        SELECT 
+            out.id AS arc_id,
+            out.title AS title,
+            out.status AS status,
+            phase
+        FROM advances_arc 
+        WHERE in = $c_rec
+        LIMIT 100
     );
 };

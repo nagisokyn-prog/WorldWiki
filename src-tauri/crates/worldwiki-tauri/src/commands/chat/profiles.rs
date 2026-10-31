@@ -1,58 +1,29 @@
-use tauri::State;
 use worldwiki_domain::ai::{AiModelInfo, AiProfile};
 use crate::error::IpcError;
-use crate::state::AppState;
+use crate::bridge_command;
 
-#[tauri::command]
-pub async fn fetch_ai_models(
-    state: State<'_, AppState>,
-    provider: String,
-    api_key: Option<String>,
-) -> Result<Vec<AiModelInfo>, IpcError> {
-    state
-        .services
-        .chat
-        .fetch_models(&provider, api_key.as_deref())
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    fetch_ai_models(
+        provider: String,
+        api_key: Option<String>,
+    ) -> Result<Vec<AiModelInfo>, IpcError>
+        => chat.fetch_models(&provider, api_key.as_deref())
+);
 
-#[tauri::command]
-pub async fn get_aiprofiles(
-    state: State<'_, AppState>,
-    project: String,
-) -> Result<Vec<AiProfile>, IpcError> {
-    state
-        .services
-        .chat
-        .get_profiles(&project)
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    get_aiprofiles(project: String) -> Result<Vec<AiProfile>, IpcError>
+        => chat.get_profiles(&project)
+);
 
-#[tauri::command]
-pub async fn save_aiprofile(
-    state: State<'_, AppState>,
-    data: AiProfile,
-) -> Result<AiProfile, IpcError> {
-    state
-        .services
-        .chat
-        .save_profile(&data)
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    save_aiprofile(data: AiProfile) -> Result<AiProfile, IpcError>
+        => chat.save_profile(&data)
+);
 
-#[tauri::command]
-pub async fn delete_aiprofile(
-    state: State<'_, AppState>,
-    _project: String,
-    id: String,
-) -> Result<(), IpcError> {
-    state
-        .services
-        .chat
-        .delete_profile(&id)
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    delete_aiprofile(
+        _project: String,
+        id: String,
+    ) -> Result<(), IpcError>
+        => chat.delete_profile(&id)
+);

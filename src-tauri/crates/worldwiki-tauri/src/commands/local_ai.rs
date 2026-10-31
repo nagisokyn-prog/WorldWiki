@@ -3,6 +3,7 @@ use worldwiki_domain::ai::{
     HardwareInfo, MemoryEstimation, RecommendedModelCard, InstalledModelInfo, ToolPermissionConfig,
 };
 use crate::error::IpcError;
+use crate::bridge_command;
 use crate::state::AppState;
 
 #[tauri::command]
@@ -27,91 +28,48 @@ pub fn get_recommended_local_models(state: State<'_, AppState>) -> Vec<Recommend
     state.services.local_ai.get_recommended_local_models()
 }
 
-#[tauri::command]
-pub fn list_installed_models(
-    state: State<'_, AppState>,
-) -> Result<Vec<InstalledModelInfo>, IpcError> {
-    state
-        .services
-        .local_ai
-        .list_installed_models()
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync list_installed_models() -> Result<Vec<InstalledModelInfo>, IpcError>
+        => local_ai.list_installed_models()
+);
 
-#[tauri::command]
-pub fn load_local_model(
-    state: State<'_, AppState>,
-    filename: String,
-) -> Result<String, IpcError> {
-    state
-        .services
-        .local_ai
-        .load_local_model(&filename)
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync load_local_model(filename: String) -> Result<String, IpcError>
+        => local_ai.load_local_model(&filename)
+);
 
-#[tauri::command]
-pub fn unload_local_model(
-    state: State<'_, AppState>,
-    filename: String,
-) -> Result<String, IpcError> {
-    state
-        .services
-        .local_ai
-        .unload_local_model(&filename)
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync unload_local_model(filename: String) -> Result<String, IpcError>
+        => local_ai.unload_local_model(&filename)
+);
 
-#[tauri::command]
-pub fn unload_all_local_models(state: State<'_, AppState>) -> Result<String, IpcError> {
-    state
-        .services
-        .local_ai
-        .unload_all_local_models()
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync unload_all_local_models() -> Result<String, IpcError>
+        => local_ai.unload_all_local_models()
+);
 
-#[tauri::command]
-pub fn delete_local_model(
-    state: State<'_, AppState>,
-    filename: String,
-) -> Result<String, IpcError> {
-    state
-        .services
-        .local_ai
-        .delete_local_model(&filename)
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync delete_local_model(filename: String) -> Result<String, IpcError>
+        => local_ai.delete_local_model(&filename)
+);
 
 #[tauri::command]
 pub fn get_tool_permissions_catalog(state: State<'_, AppState>) -> Vec<ToolPermissionConfig> {
     state.services.local_ai.get_tool_permissions_catalog()
 }
 
-#[tauri::command]
-pub fn save_tool_permission(
-    state: State<'_, AppState>,
-    tool_id: String,
-    level: String,
-) -> Result<(), IpcError> {
-    state
-        .services
-        .local_ai
-        .save_tool_permission(&tool_id, &level)
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync save_tool_permission(
+        tool_id: String,
+        level: String,
+    ) -> Result<(), IpcError>
+        => local_ai.save_tool_permission(&tool_id, &level)
+);
 
-#[tauri::command]
-pub fn save_all_tool_permissions(
-    state: State<'_, AppState>,
-    permissions: std::collections::HashMap<String, String>,
-) -> Result<(), IpcError> {
-    state
-        .services
-        .local_ai
-        .save_all_tool_permissions(&permissions)
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    sync save_all_tool_permissions(permissions: std::collections::HashMap<String, String>) -> Result<(), IpcError>
+        => local_ai.save_all_tool_permissions(&permissions)
+);
 
 #[tauri::command]
 pub async fn get_ai_completion(

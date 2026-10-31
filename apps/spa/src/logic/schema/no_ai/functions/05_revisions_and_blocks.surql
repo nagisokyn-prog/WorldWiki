@@ -12,7 +12,7 @@ DEFINE FUNCTION OVERWRITE fn::toggle_pin($target: record, $is_pinned: bool) {
 };
 
 -- 23. ПОЛУЧЕНИЕ ИСТОРИИ СХЕМЫ СУЩНОСТЕЙ
-DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: record<projects>, $tk: string) {
+DEFINE FUNCTION OVERWRITE fn::get_schema_history($proj: any, $tk: string) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT id, schema_id, project_id, type_key, snapshot, saved_at, is_pinned FROM schema_history WHERE project_id = $p_rec AND type_key = $tk ORDER BY saved_at DESC LIMIT 100);
 };
@@ -24,7 +24,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_revisions($target: record<entities>) {
 
 -- 25. СОХРАНЕНИЕ СЕМАНТИЧЕСКИХ ТЕКСТОВЫХ БЛОКОВ ГЛАВЫ
 DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
-    $proj: record<projects>,
+    $proj: any,
     $chap: record<chapters>,
     $blocks: array<object>
 ) {
@@ -44,7 +44,7 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
 
 -- 26. ПАКЕТНОЕ СОХРАНЕНИЕ ГЛОБАЛЬНОГО ТАЙМЛАЙНА ГЛАВ
 DEFINE FUNCTION OVERWRITE fn::save_global_timeline(
-    $proj: record<projects>,
+    $proj: any,
     $items: array<object>
 ) {
     FOR $item IN $items {

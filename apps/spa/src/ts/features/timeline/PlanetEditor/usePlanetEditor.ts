@@ -254,10 +254,14 @@ export function usePlanetEditor(
     const p = preset.data;
     if (p.name) planet.value.name = p.name;
     if (p.icon) planet.value.icon = p.icon;
-    if (p.ticks_per_day !== undefined) planet.value.ticks_per_day = p.ticks_per_day;
     if (p.day_hours !== undefined) planet.value.day_hours = p.day_hours;
     if (p.day_minutes !== undefined) planet.value.day_minutes = p.day_minutes;
     if (p.day_seconds !== undefined) planet.value.day_seconds = p.day_seconds;
+    if (p.ticks_per_day !== undefined) {
+      planet.value.ticks_per_day = p.ticks_per_day;
+    } else {
+      updateDayTicks();
+    }
     if (p.orbit_days !== undefined) planet.value.orbit_days = p.orbit_days;
     if (p.orbit_days_num !== undefined) planet.value.orbit_days_num = p.orbit_days_num;
     if (p.orbit_days_den !== undefined) planet.value.orbit_days_den = p.orbit_days_den;

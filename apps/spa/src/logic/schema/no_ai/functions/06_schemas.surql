@@ -2,26 +2,26 @@
 
 
 -- 27. ПОЛУЧЕНИЕ СХЕМ СВЯЗЕЙ ПРОЕКТА
-DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: record<projects>) {
+DEFINE FUNCTION OVERWRITE fn::get_relation_schemas($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT id, project_id, rel_key, rel_name, icon, color, from_types, to_types FROM relation_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 28. УДАЛЕНИЕ СХЕМЫ СВЯЗИ И СВЯЗАННЫХ РЕБЕР
-DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: record<projects>, $rel_key: string) {
+DEFINE FUNCTION OVERWRITE fn::delete_relation_schema($proj: any, $rel_key: string) {
     LET $p_rec = fn::normalize_project_id($proj);
     DELETE entity_rel WHERE project_id = $p_rec AND rel_type = $rel_key;
     DELETE relation_schemas WHERE project_id = $p_rec AND rel_key = $rel_key;
 };
 
 -- 29. ПОЛУЧЕНИЕ СХЕМ СУЩНОСТЕЙ ПРОЕКТА
-DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: record<projects>) {
+DEFINE FUNCTION OVERWRITE fn::get_entity_schemas($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT id, project_id, type_key, type_name, fields_schema, full_schema, created_at FROM entity_schemas WHERE project_id = $p_rec LIMIT 1000);
 };
 
 -- 30. ПОИСК ID СХЕМЫ СУЩНОСТИ ПО TYPE_KEY
-DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: record<projects>, $tk: string) {
+DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: any, $tk: string) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $res = (SELECT id FROM entity_schemas WHERE project_id = $p_rec AND type_key = $tk LIMIT 1);
     RETURN IF array::len($res) > 0 { type::string($res[0].id) } ELSE { NONE };
@@ -30,7 +30,7 @@ DEFINE FUNCTION OVERWRITE fn::find_entity_schema_id($proj: record<projects>, $tk
 -- 32. СОХРАНЕНИЕ СХЕМЫ СУЩНОСТИ (UPSERT)
 DEFINE FUNCTION OVERWRITE fn::save_entity_schema(
     $id: record<entity_schemas>,
-    $proj: record<projects>,
+    $proj: any,
     $type_key: string,
     $type_name: string,
     $fields_schema: array,

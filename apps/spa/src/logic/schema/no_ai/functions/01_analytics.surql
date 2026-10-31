@@ -2,7 +2,7 @@
 
 
 -- 1. СБОР МАТРИЦЫ УЧАСТИЙ (CROSS-REFERENCE MATRIX & HEATMAP)
-DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>) {
+DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
 
     LET $chapters = (

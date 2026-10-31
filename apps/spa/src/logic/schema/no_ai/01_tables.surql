@@ -17,7 +17,7 @@
 --    - contains: projects | volumes -> volumes | chapters
 --    - appears_in: entities -> text_blocks (синтаксический уровень ((Сущность)))
 --    - participant_of: entities -> plot_promises (драматургические действующие лица)
---    - advances_arc: plot_promises -> story_arcs (продвижение фаз арок)
+--    - advances_arc: chapters | plot_promises -> story_arcs (продвижение фаз арок в главах и сценах)
 --    - occurs_at: plot_promises -> timeline_events (темпоральная фиксация сцен)
 --    - promise_milestones: plot_promises -> text_blocks (вехи жизненного цикла ружья)
 --    - entity_rel: entities -> entities (межсущностные семантические связи)
@@ -243,8 +243,8 @@ DEFINE FIELD OVERWRITE project_id ON participant_of TYPE record<projects> | stri
 DEFINE FIELD OVERWRITE role       ON participant_of TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON participant_of TYPE datetime DEFAULT time::now();
 
--- 21.3. ДИНАМИКА СЮЖЕТНЫХ АРОК В РАМКАХ НАРРАТИВНОГО УЗЛА
-DEFINE TABLE OVERWRITE advances_arc TYPE RELATION IN plot_promises OUT story_arcs SCHEMAFULL;
+-- 21.3. ДИНАМИКА СЮЖЕТНЫХ АРОК В РАМКАХ НАРРАТИВНОГО УЗЛА И ГЛАВ
+DEFINE TABLE OVERWRITE advances_arc TYPE RELATION IN chapters | plot_promises OUT story_arcs SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON advances_arc TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE phase      ON advances_arc TYPE string ASSERT $value IN ['setup', 'escalation', 'climax', 'resolution'];
 DEFINE FIELD OVERWRITE transition ON advances_arc TYPE option<string | null>;

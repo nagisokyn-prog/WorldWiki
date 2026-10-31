@@ -3,7 +3,7 @@
 
 -- 9. СОЗДАНИЕ ГРАФОВОЙ СВЯЗИ МЕЖДУ СУЩНОСТЯМИ
 DEFINE FUNCTION OVERWRITE fn::create_entity_relation(
-    $proj: record<projects>,
+    $proj: any,
     $from: record<entities>,
     $to: record<entities>,
     $rel_type: string,
@@ -49,7 +49,7 @@ DEFINE FUNCTION OVERWRITE fn::create_entity_relation(
 };
 
 -- 10. ПОЛУЧЕНИЕ СВЯЗЕЙ СУЩНОСТЕЙ ДЛЯ ГРАФА
-DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: record<projects>, $chap: option<record<chapters>>) {
+DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: any, $chap: option<record<chapters>>) {
     LET $p_rec = fn::normalize_project_id($proj);
     IF $chap != NONE {
         RETURN (
@@ -71,7 +71,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_connections($proj: record<projects>, $c
 
 -- 11. ПАКЕТНОЕ СОХРАНЕНИЕ СВЯЗЕЙ СУЩНОСТИ
 DEFINE FUNCTION OVERWRITE fn::save_entity_connections(
-    $proj: record<projects>,
+    $proj: any,
     $src: record<entities>,
     $connections: array<object>
 ) {
@@ -104,7 +104,7 @@ DEFINE FUNCTION OVERWRITE fn::remove_entity_connections($src: record<entities>) 
 };
 
 -- 19. ПОЛУЧЕНИЕ СПИСКА СВЯЗЕЙ СУЩНОСТЕЙ
-DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: record<projects>, $eid: option<record<entities>>) {
+DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: any, $eid: option<record<entities>>) {
     LET $p_rec = fn::normalize_project_id($proj);
     IF $eid != NONE {
         RETURN (
@@ -125,7 +125,7 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_relations($proj: record<projects>, $eid
 
 -- 39. ПАКЕТНОЕ ОБНОВЛЕНИЕ РЕБЕР СВЯЗЕЙ СУЩНОСТИ
 DEFINE FUNCTION OVERWRITE fn::batch_upsert_connections(
-    $proj: record<projects>,
+    $proj: any,
     $src: record<entities>,
     $connections: array<object>
 ) {

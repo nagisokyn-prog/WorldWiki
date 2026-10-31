@@ -132,8 +132,14 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
   async function loadBindings(arcId: string) {
     try {
       const [chData, entData] = await Promise.all([
-        getArcChapters(arcId),
-        getArcEntities(arcId)
+        getArcChapters(arcId).catch((err) => {
+          console.warn('[StoryArcsStore] getArcChapters fallback:', err);
+          return [];
+        }),
+        getArcEntities(arcId).catch((err) => {
+          console.warn('[StoryArcsStore] getArcEntities fallback:', err);
+          return [];
+        })
       ]);
       arcChapters.value.set(arcId, Array.isArray(chData) ? (chData as unknown as ArcChapterRelation[]) : []);
       arcEntities.value.set(arcId, Array.isArray(entData) ? (entData as unknown as ArcEntityRelation[]) : []);

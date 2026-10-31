@@ -16,7 +16,7 @@ pub async fn get_connections_inner(
     let proj_clean = project.trim().trim_start_matches("projects:");
     let chap_clean = chapter.as_ref().map(|c| c.trim().trim_start_matches("chapters:").to_string());
 
-    let sql = "RETURN fn::get_entity_connections(type::record('projects', $proj), IF $ch != NONE { type::record('chapters', $ch) } ELSE { NONE });";
+    let sql = "RETURN fn::get_entity_connections(fn::normalize_project_id($proj), IF $ch != NONE { type::record('chapters', $ch) } ELSE { NONE });";
 
     let mut res = db
         .query(sql)

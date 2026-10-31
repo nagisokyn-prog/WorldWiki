@@ -91,6 +91,9 @@ pub fn take_list<T: serde::de::DeserializeOwned>(
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     let mut list = Vec::with_capacity(raw.len());
     for mut val in raw {
+        if val.is_null() {
+            continue;
+        }
         normalize_surreal_value(&mut val);
         let item: T =
             serde_json::from_value(val).map_err(|e| DomainError::Validation(e.to_string()))?;

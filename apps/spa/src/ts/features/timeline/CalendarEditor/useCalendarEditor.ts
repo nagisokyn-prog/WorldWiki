@@ -81,7 +81,6 @@ export function useCalendarEditor(
       calendarRecord.value.data = saved.unsavedData as unknown as CalendarData;
       if (saved.unsavedName) calendarRecord.value.name = saved.unsavedName;
       hasUnsavedDraft.value = true;
-      emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);
     }
   }
 
@@ -226,7 +225,11 @@ export function useCalendarEditor(
     document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
   });
 
-  watch(() => props.calendarId, async () => { await loadCalendar(); });
+  watch(() => props.calendarId, async (newVal, oldVal) => {
+    if (newVal && newVal !== oldVal) {
+      await loadCalendar();
+    }
+  });
 
   return {
     activeTab,

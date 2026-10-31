@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use crate::error::IpcError;
+use crate::bridge_command;
 use crate::state::AppState;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -51,31 +52,15 @@ pub async fn cancel_generation(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn delete_chat_message(
-    state: State<'_, AppState>,
-    msg_id: String,
-) -> Result<(), IpcError> {
-    state
-        .services
-        .chat
-        .delete_message(&msg_id)
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    delete_chat_message(msg_id: String) -> Result<(), IpcError>
+        => chat.delete_message(&msg_id)
+);
 
-#[tauri::command]
-pub async fn switch_message_variant(
-    state: State<'_, AppState>,
-    msg_id: String,
-) -> Result<(), IpcError> {
-    state
-        .services
-        .chat
-        .switch_variant(&msg_id)
-        .await
-        .map_err(IpcError::from)
-}
+bridge_command!(
+    switch_message_variant(msg_id: String) -> Result<(), IpcError>
+        => chat.switch_variant(&msg_id)
+);
 
 #[tauri::command]
 pub async fn edit_chat_message(

@@ -28,7 +28,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
 
         let mut res = self
             .db
-            .query("SELECT id, project_id, name, provider, base_url, api_key, settings, is_active, is_global FROM ai_profiles WHERE project_id = type::record($proj) OR is_global = true")
+            .query("SELECT id, project_id, name, provider, base_url, api_key, settings, is_active, is_global FROM ai_profiles WHERE project_id = fn::normalize_project_id($proj) OR is_global = true")
             .bind(("proj", proj_id))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
@@ -103,7 +103,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
 
         self.db
             .query(
-                "UPSERT type::record($id) SET name = $name, provider = $provider, base_url = $base_url, api_key = $api_key, settings = $settings, is_active = $is_active, is_global = $is_global, project_id = type::record($proj)"
+                "UPSERT type::record($id) SET name = $name, provider = $provider, base_url = $base_url, api_key = $api_key, settings = $settings, is_active = $is_active, is_global = $is_global, project_id = fn::normalize_project_id($proj)"
             )
             .bind(("id", id_val.clone()))
             .bind(("name", profile.name.clone()))

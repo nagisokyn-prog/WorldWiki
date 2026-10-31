@@ -173,7 +173,7 @@ function scanCommands() {
         }
 
         // 2. Поиск уже используемых bridge_command!
-        const bridgeCmdRegex = /bridge_command!\s*\(\s*([a-zA-Z0-9_]+)\s*,/g;
+        const bridgeCmdRegex = /bridge_command!\s*\(\s*(?:sync\s+)?([a-zA-Z0-9_]+)\s*\(/g;
         while ((matchMacro = bridgeCmdRegex.exec(content)) !== null) {
             const line = content.slice(0, matchMacro.index).split('\n').length;
             results.alreadyMacros.push({

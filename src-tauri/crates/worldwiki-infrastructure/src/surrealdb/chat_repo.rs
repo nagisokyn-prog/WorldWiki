@@ -33,7 +33,7 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = self
             .db
-            .query("SELECT id, title, project_id, tag, parent_chat_id, session_context, created_at FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
+            .query("SELECT id, title, project_id, tag, parent_chat_id, session_context, created_at FROM chats WHERE project_id = fn::normalize_project_id($p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
             .bind(("p_clean", proj_clean.to_string()))
             .bind(("proj_id", proj_id))
             .await
@@ -77,7 +77,7 @@ impl ChatRepository for SurrealChatRepository {
         let c_id = format!("chats:{chat_clean}");
         let proj_clean = clean_id_str(&chat.project_id, "projects:");
 
-        let sql = "UPSERT type::record('chats', $c_clean) SET title = $title, project_id = type::record('projects', $p_clean), session_context = [], created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }";
+        let sql = "UPSERT type::record('chats', $c_clean) SET title = $title, project_id = fn::normalize_project_id($p_clean), session_context = [], created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }";
 
         let mut res = self
             .db
@@ -120,7 +120,7 @@ impl ChatRepository for SurrealChatRepository {
         let mut q = String::from(
             "UPSERT type::record('chat_messages', $m_clean) SET \
              chat_id = type::record('chats', $c_clean), \
-             project_id = type::record('projects', $p_clean), \
+             project_id = fn::normalize_project_id($p_clean), \
              role = $role, content = $content, \
              reasoning = $reasoning, tool_logs = $tool_logs, \
              version = $version, \

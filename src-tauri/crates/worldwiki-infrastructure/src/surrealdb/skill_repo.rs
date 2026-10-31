@@ -69,7 +69,7 @@ impl SkillRepositoryPort for SurrealSkillRepository {
         
         let q_sql = r#"
             SELECT id, name, description, prompt_text, file_path, priority, triggers FROM ai_skills
-            WHERE (project_id = type::record('projects', $p_clean) OR project_id = NONE OR project_id = null)
+            WHERE (($p_clean != NONE AND $p_clean != NULL AND project_id = fn::normalize_project_id($p_clean)) OR project_id = NONE OR project_id = null)
               AND is_auto_trigger != false
               AND is_unlocked != false
         "#;

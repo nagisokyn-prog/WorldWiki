@@ -6,9 +6,10 @@
 import type { EditorTab } from './shell.types';
 
 export function deepMergeData(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  if (!target || typeof target !== 'object' || !source || typeof source !== 'object') return;
   for (const key in source) {
     if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-      if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+      if (!target[key] || typeof target[key] !== 'object' || Array.isArray(target[key])) target[key] = {};
       deepMergeData(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
     } else if (Array.isArray(source[key])) {
       if (!Array.isArray(target[key])) target[key] = [];
@@ -17,6 +18,9 @@ export function deepMergeData(target: Record<string, unknown>, source: Record<st
       for (let i = 0; i < sourceArr.length; i++) {
         if (i < targetArr.length) {
           if (typeof sourceArr[i] === 'object' && sourceArr[i] !== null) {
+            if (!targetArr[i] || typeof targetArr[i] !== 'object') {
+              targetArr[i] = Array.isArray(sourceArr[i]) ? [] : {};
+            }
             deepMergeData(targetArr[i] as Record<string, unknown>, sourceArr[i] as Record<string, unknown>);
           } else {
             targetArr[i] = sourceArr[i];
@@ -59,7 +63,8 @@ export function performUpdateData(params: UpdateDataParams): void {
   for (const tab of tabsToUpdate) {
     const { __foreignUpdates, ...dataToMerge } = newData as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };
     const oldTitle = tab.title;
-    deepMergeData(tab.data, dataToMerge);
+    if (!tab.data || typeof tab.data !== 'object') tab.data = {};
+    deepMergeData(tab.data as Record<string, unknown>, dataToMerge);
     tab.data = { ...(tab.data as Record<string, unknown>) };
     if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) {
       tab._foreignUpdates = __foreignUpdates;

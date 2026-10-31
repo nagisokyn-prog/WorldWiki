@@ -285,12 +285,16 @@ mod tests {
         let db = Surreal::new::<Mem>(()).await.expect("mem db");
         db.use_ns("test").use_db("test").await.expect("use ns/db");
 
-        // Set up minimal schema for todos
+        // Set up minimal schema and functions for todos
         db.query("DEFINE TABLE todos SCHEMALESS;")
             .await
             .expect("schema")
             .check()
             .expect("check");
+        let analyzers_schema = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
+        let ddl_funcs = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql");
+        let _ = db.query(analyzers_schema).await;
+        let _ = db.query(ddl_funcs).await;
 
         let repo = SurrealTodoRepository::new(Arc::new(db));
         let mut todo = Todo::new("chapters:ch_1", "Test todo text", 1);

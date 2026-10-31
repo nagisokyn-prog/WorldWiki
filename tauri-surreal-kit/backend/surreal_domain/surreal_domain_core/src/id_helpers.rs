@@ -34,19 +34,25 @@ pub fn extract_target_id<'a>(table: &str, id: &'a str) -> Option<&'a str> {
     }
 }
 
-/// Normalize Thing objects (e.g. `{ tb: "...", id: "..." }`) into string ID format in-place.
+/// Normalize Thing objects (e.g. `{ tb: "...", id: "..." }` or `{ tb: "...", id: { String: "..." } }`) into string ID format in-place.
 pub fn normalize_embedded_things(val: &mut Value) {
     if let Some(obj) = val.as_object_mut() {
         for (_k, v) in obj.iter_mut() {
-            if v.is_object()
-                && let (Some(tb), Some(id_str)) = (
-                    v.get("tb").and_then(|t| t.as_str()),
-                    v.get("id").and_then(|i| i.as_str()),
-                )
-                && !tb.is_empty()
-                && !id_str.is_empty()
-            {
-                *v = Value::String(format!("{}:{}", tb, id_str));
+            if v.is_object() {
+                let tb_opt = v.get("tb").and_then(|t| t.as_str()).map(|s| s.to_string());
+                let id_opt = v.get("id").and_then(|id_field| {
+                    id_field
+                        .get("String")
+                        .and_then(|s| s.as_str())
+                        .or_else(|| id_field.as_str())
+                        .map(|s| s.to_string())
+                });
+                if let (Some(tb), Some(id_str)) = (tb_opt, id_opt)
+                    && !tb.is_empty()
+                    && !id_str.is_empty()
+                {
+                    *v = Value::String(format!("{}:{}", tb, id_str));
+                }
             }
         }
     }

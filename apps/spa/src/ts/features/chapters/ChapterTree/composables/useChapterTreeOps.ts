@@ -89,6 +89,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 defaultCalData.is_master = false;
                 const saved = await calendarStore.saveCalendar(options.project, {
                     ...defaultCalData,
+                    planet_id: planetId,
                     name: calName,
                     is_master: false,
                     is_default: false,
@@ -98,6 +99,9 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                     return;
                 }
                 await options.load();
+                if (options.explorerTreeRef.value) {
+                    options.explorerTreeRef.value.expandNode(`planet:${planetId}`);
+                }
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 const cals = await calendarStore.getCalendars(options.project);
                 const created = cals.find(c => c.name === calName) || cals[cals.length - 1];

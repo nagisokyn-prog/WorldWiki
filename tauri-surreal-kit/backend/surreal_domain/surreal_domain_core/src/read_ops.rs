@@ -66,7 +66,13 @@ where
         .into_iter()
         .filter_map(|mut v| {
             normalize_embedded_things(&mut v);
-            serde_json::from_value::<T>(v).ok()
+            match serde_json::from_value::<T>(v.clone()) {
+                Ok(item) => Some(item),
+                Err(err) => {
+                    eprintln!("[SURREAL DESERIALIZE ERROR] Table '{}' item failed: {}\nItem JSON: {:?}", table, err, v);
+                    None
+                }
+            }
         })
         .collect();
     Ok(mapped)

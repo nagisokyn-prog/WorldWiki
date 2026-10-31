@@ -25,6 +25,7 @@ export const calendarApi = {
 
     const rustCalendar = {
       id: id || null,
+      planet_id: (plainData.planet_id as string) || (actualData.planet_id as string) || 'planets:earth',
       project_id: projectRecordId(project),
       name: (actualData.название as string) || (plainData.name as string) || 'Новый календарь',
       is_default: is_default || false,

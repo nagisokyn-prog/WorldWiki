@@ -3,19 +3,19 @@
 -- ==============================================================================
 
 -- 1. СБОР ПОЛНОГО ДЕРЕВА ПЛАНЕТ И КАЛЕНДАРЕЙ ПРОЕКТА В ОДИН ROUNDTRIP
-DEFINE FUNCTION OVERWRITE fn::get_planet_calendar_bundle($proj: record<projects> | string) {
+DEFINE FUNCTION OVERWRITE fn::get_planet_calendar_bundle($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $planets = (
         SELECT id, project_id, name, ticks_per_day, axial_tilt_mdeg, orbit_days_num, orbit_days_den, moons, created_at, updated_at 
         FROM planets 
-        WHERE project_id = $p_rec 
+        WHERE fn::normalize_project_id(project_id) = $p_rec 
         ORDER BY created_at ASC 
         LIMIT 200
     );
     LET $calendars = (
         SELECT id, planet_id, name, is_master, is_default, data, created_at, updated_at 
         FROM calendars 
-        WHERE planet_id.project_id = $p_rec 
+        WHERE fn::normalize_project_id(planet_id.project_id) = $p_rec 
         ORDER BY created_at ASC 
         LIMIT 500
     );
@@ -73,18 +73,23 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
 
 -- 3. СОХРАНЕНИЕ КАЛЕНДАРЯ С АТОМАРНОЙ ЗАЩИТОЙ MASTER-КАЛЕНДАРЯ
 DEFINE FUNCTION OVERWRITE fn::save_calendar(
-    $id: option<record<calendars> | null>,
-    $proj: record<projects> | string,
-    $planet_id: record<planets> | string,
+    $id: any,
+    $proj: any,
+    $planet_id: any,
     $name: string,
     $is_master: bool,
     $data: object
 ) {
-    LET $p_rec = fn::normalize_project_id($proj);
-    LET $pl_rec = type::record('planets', string::split(type::string($planet_id), ':')[-1]);
+    LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $clean_pl = IF $str_pl == NONE OR $str_pl == NULL OR $str_pl == '' OR $str_pl == 'NONE' { 'earth' } ELSE { $str_pl };
+    LET $pl_rec = type::record('planets', $clean_pl);
     
-    LET $cal_res = IF $id != NONE AND $id != NULL {
-        (UPSERT $id SET
+    LET $str_id = string::replace(string::replace(string::replace(string::replace(type::string($id), 'calendars:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $has_id = $id != NONE AND $id != NULL AND $str_id != '' AND $str_id != 'NONE' AND $str_id != 'null';
+    LET $cal_rec = IF $has_id { type::record('calendars', $str_id) } ELSE { NONE };
+    
+    LET $cal_res = IF $has_id {
+        (UPSERT $cal_rec SET
             planet_id = $pl_rec,
             name = $name,
             is_master = $is_master,
@@ -113,15 +118,19 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
 
 -- 4. АТОМАРНАЯ СМЕНА MASTER-КАЛЕНДАРЯ ПЛАНЕТЫ
 DEFINE FUNCTION OVERWRITE fn::set_master_calendar(
-    $proj: record<projects> | string,
-    $planet_id: record<planets> | string,
-    $cal_id: record<calendars>
+    $proj: any,
+    $planet_id: any,
+    $cal_id: any
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $pl_rec = type::record('planets', string::split(type::string($planet_id), ':')[-1]);
+    LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $clean_pl = IF $str_pl == NONE OR $str_pl == NULL OR $str_pl == '' OR $str_pl == 'NONE' { 'earth' } ELSE { $str_pl };
+    LET $pl_rec = type::record('planets', $clean_pl);
+    LET $str_cal = string::replace(string::replace(string::replace(string::replace(type::string($cal_id), 'calendars:', ''), '⟨', ''), '⟩', ''), '`', '');
+    LET $c_rec = type::record('calendars', $str_cal);
     
     UPDATE calendars SET is_master = false WHERE planet_id = $pl_rec;
-    UPDATE $cal_id SET is_master = true;
+    UPDATE $c_rec SET is_master = true;
 };
 
 -- 5. БЕЗОПАСНОЕ УДАЛЕНИЕ ПЛАНЕТЫ С КАСКАДНОЙ ЗАЩИТОЙ
@@ -146,16 +155,17 @@ DEFINE FUNCTION OVERWRITE fn::delete_planet(
 };
 
 -- 6. БЕЗОПАСНОЕ УДАЛЕНИЕ КАЛЕНДАРЯ (ПРОВЕРКА СВЯЗЕЙ SYNC_ANCHOR)
-DEFINE FUNCTION OVERWRITE fn::delete_calendar($cal_id: record<calendars>) {
+DEFINE FUNCTION OVERWRITE fn::delete_calendar($cal_id: any) {
+    LET $rec = IF string::starts_with(type::string($cal_id), 'calendars:') { type::record($cal_id) } ELSE { type::record('calendars', $cal_id) };
     LET $dep_cals = (
         SELECT id, name FROM calendars 
-        WHERE data.sync_anchor.master_calendar_id = type::string($cal_id)
+        WHERE data.sync_anchor.master_calendar_id = type::string($rec)
         LIMIT 5
     );
     IF array::len($dep_cals) > 0 {
         THROW "Cannot delete calendar: other calendars depend on it via sync_anchor";
     };
-    DELETE $cal_id;
+    DELETE $rec;
     RETURN true;
 };
 
@@ -168,7 +178,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_event($id: any) {
 
 -- 8. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА
 DEFINE FUNCTION OVERWRITE fn::save_timeline_event(
-    $id: option<any>,
+    $id: any,
     $proj: any,
     $cal_id: any,
     $title: string,
@@ -226,4 +236,29 @@ DEFINE FUNCTION OVERWRITE fn::delete_timeline_event($id: any) {
 DEFINE FUNCTION OVERWRITE fn::list_timeline_events_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT * FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC);
+};
+
+-- 11. ПРИВЯЗКА РАСКРЫТИЯ СОБЫТИЯ В ГЛАВЕ (REVEAL)
+DEFINE FUNCTION OVERWRITE fn::add_event_reveal(
+    $event_id: any,
+    $chapter_id: any,
+    $pov_id: any,
+    $kind: option<string>,
+    $block_id: option<string>
+) {
+    LET $ev_rec = IF string::starts_with(type::string($event_id), 'timeline_events:') { type::record($event_id) } ELSE { type::record('timeline_events', $event_id) };
+    LET $ch_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    RELATE $ev_rec->revealed_in->$ch_rec CONTENT {
+        pov_id: $pov_id,
+        kind: $kind,
+        block_id: $block_id,
+        created_at: time::now()
+    };
+};
+
+-- 12. УДАЛЕНИЕ РАСКРЫТИЯ СОБЫТИЯ
+DEFINE FUNCTION OVERWRITE fn::remove_event_reveal($event_id: any, $chapter_id: any) {
+    LET $ev_rec = IF string::starts_with(type::string($event_id), 'timeline_events:') { type::record($event_id) } ELSE { type::record('timeline_events', $event_id) };
+    LET $ch_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    DELETE revealed_in WHERE in = $ev_rec AND out = $ch_rec;
 };

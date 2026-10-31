@@ -46,10 +46,12 @@ pub const ALL_DDL_MODULES: &[(&str, &str)] = &[
         include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/06_schemas.surql"),
     ),
     (
+        // Module 07: Narrative & Journey functions (v3)
         "no_ai/functions/07_narrative_and_journey",
         include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql"),
     ),
     (
+        // Module 08: Calendars & Planets functions (updated)
         "no_ai/functions/08_calendars_and_planets",
         include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql"),
     ),

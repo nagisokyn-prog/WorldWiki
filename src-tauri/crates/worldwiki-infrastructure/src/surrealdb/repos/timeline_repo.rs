@@ -42,7 +42,7 @@ impl TimelineEventRepository for SurrealTimelineRepository {
         let proj_clean = event.project_id.trim_start_matches("projects:").to_string();
 
         let sql = "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs, $duration_minutes, $importance, $color, $location_id);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("id", clean_id))
@@ -57,19 +57,20 @@ impl TimelineEventRepository for SurrealTimelineRepository {
             .bind(("location_id", event.location_id.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let created: Option<TimelineEvent> = take_one(&mut res, 0)?;
         Ok(created.map(|a| a.id).unwrap_or_else(|| event.id.clone()))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("timeline_events:").to_string();
-        let sql = "DELETE type::record('timeline_events', $id);";
-        self.db
+        let sql = "RETURN fn::delete_timeline_event($id);";
+        let res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         Ok(())
     }
 

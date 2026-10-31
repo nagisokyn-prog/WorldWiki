@@ -607,7 +607,7 @@ DEFINE FUNCTION OVERWRITE fn::get_story_arc($id: any) {
 
 -- 56. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОЙ АРКИ
 DEFINE FUNCTION OVERWRITE fn::save_story_arc(
-    $id: option<any>,
+    $id: any,
     $proj: any,
     $title: string,
     $status: string
@@ -643,4 +643,35 @@ DEFINE FUNCTION OVERWRITE fn::delete_story_arc($id: any) {
 DEFINE FUNCTION OVERWRITE fn::list_story_arcs_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     RETURN (SELECT id, project_id, title, status, created_at, updated_at FROM story_arcs WHERE project_id = $p_rec ORDER BY created_at ASC);
+};
+
+-- 59. СПИСОК ГЛАВ ДЛЯ СЮЖЕТНОЙ АРКИ
+DEFINE FUNCTION OVERWRITE fn::list_chapters_for_arc($arc_id: any) {
+    LET $arc_rec = IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) };
+    RETURN (
+        SELECT 
+            out AS arc_id,
+            IF in.chapter_id != NONE { in.chapter_id } ELSE { array::first(in->promise_milestones.out.chapter_id) } AS chapter_id,
+            IF in.chapter_id.sort_order != NONE { in.chapter_id.sort_order } ELSE IF array::first(in->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(in->promise_milestones.out.chapter_id.sort_order) } ELSE { 0 } AS sort_order,
+            phase
+        FROM advances_arc 
+        WHERE out = $arc_rec
+        ORDER BY sort_order ASC
+    );
+};
+
+-- 60. СПИСОК СУЩНОСТЕЙ ДЛЯ СЮЖЕТНОЙ АРКИ
+DEFINE FUNCTION OVERWRITE fn::list_entities_for_arc($arc_id: any) {
+    LET $arc_rec = IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) };
+    LET $promises = (SELECT VALUE in FROM advances_arc WHERE out = $arc_rec);
+    LET $entities = (SELECT VALUE <-participant_of.in.id FROM $promises);
+    LET $flat = array::distinct(array::flatten($entities));
+    RETURN (
+        FOR $e IN $flat {
+            {
+                arc_id: type::string($arc_rec),
+                entity_id: type::string($e)
+            }
+        }
+    );
 };

@@ -24,13 +24,13 @@ impl EntityRepository for SurrealEntityRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Entity>, DomainError> {
         let clean = clean_id("entities", id);
         let sql = "RETURN fn::get_entity_full($id);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
@@ -39,7 +39,7 @@ impl EntityRepository for SurrealEntityRepository {
         let p_clean = clean_id("projects", &entity.project_id);
 
         let sql = "RETURN fn::save_entity_full($e_id, $p_id, $entity_type, $name, $description, $attributes, $tags);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("e_id", clean))
@@ -58,7 +58,7 @@ impl EntityRepository for SurrealEntityRepository {
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("entities", id);
         let sql = "RETURN fn::delete_entity_full($id);";
-        let mut res = self.db
+        let res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
@@ -75,13 +75,13 @@ impl EntityRepository for SurrealEntityRepository {
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
         let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         let all_entities: Vec<Entity> = take_list(&mut res, 0)?;
 
         let q_trimmed = query.trim();
@@ -117,27 +117,27 @@ impl EntityRepository for SurrealEntityRepository {
     ) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
         let sql = "RETURN fn::list_entities_by_type_full($p_clean, $type_key);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .bind(("type_key", type_key.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Entity>, DomainError> {
         let p_clean = clean_id("projects", project_id);
         let sql = "RETURN fn::list_entities_by_project_full($p_clean);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 }

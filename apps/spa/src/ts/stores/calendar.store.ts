@@ -92,10 +92,19 @@ export const useCalendarStore = defineStore('calendar', () => {
     if (cached) return cached;
 
     try {
-      const rawList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
+      let rawList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
+      if (!rawList || rawList.length === 0) {
+        try {
+          const bundle = (await calendarApi.getPlanetCalendarBundle(projectName)) as { calendars?: CalendarRecord[] } | null;
+          if (bundle?.calendars && bundle.calendars.length > 0) {
+            rawList = bundle.calendars;
+          }
+        } catch (_) {}
+      }
       const list = (rawList || []).map((c) => ({
         ...c,
         id: normalizeCalendarId(c.id),
+        planet_id: normalizeCalendarId(c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id || 'planets:earth'),
       }));
 
       if (list && list.length > 0) {
@@ -133,6 +142,7 @@ export const useCalendarStore = defineStore('calendar', () => {
           const newList = (rawNewList || []).map((c) => ({
             ...c,
             id: normalizeCalendarId(c.id),
+            planet_id: normalizeCalendarId(c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id || 'planets:earth'),
           }));
           setCache(cacheKey, newList || []);
           return newList || [];

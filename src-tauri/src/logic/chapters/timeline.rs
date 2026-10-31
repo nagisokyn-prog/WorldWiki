@@ -154,7 +154,12 @@ pub async fn save_calendar_inner(
     data: Value,
 ) -> Result<Value, ChapterError> {
     let clean_pid = project.trim().replace("projects:", "");
-    let clean_plid = planet_id.trim().replace("planets:", "");
+    let raw_plid = planet_id.trim().replace("planets:", "");
+    let clean_plid = if raw_plid.is_empty() || raw_plid == "NONE" {
+        "earth".to_string()
+    } else {
+        raw_plid
+    };
     let id_clause = if let Some(ref cid) = calendar_id {
         format!("type::record('calendars', '{}')", cid.trim().replace("calendars:", ""))
     } else {
@@ -184,7 +189,12 @@ pub async fn set_master_calendar_inner(
     calendar_id: &str,
 ) -> Result<Value, ChapterError> {
     let clean_pid = project.trim().replace("projects:", "");
-    let clean_plid = planet_id.trim().replace("planets:", "");
+    let raw_plid = planet_id.trim().replace("planets:", "");
+    let clean_plid = if raw_plid.is_empty() || raw_plid == "NONE" {
+        "earth".to_string()
+    } else {
+        raw_plid
+    };
     let clean_cid = calendar_id.trim().replace("calendars:", "");
     let mut res = db
         .query("RETURN fn::set_master_calendar(type::record('projects', $p), type::record('planets', $plid), type::record('calendars', $cid));")
@@ -204,7 +214,12 @@ pub async fn delete_planet_inner(
     cascade: bool,
 ) -> Result<Value, ChapterError> {
     let clean_pid = project.trim().replace("projects:", "");
-    let clean_plid = planet_id.trim().replace("planets:", "");
+    let raw_plid = planet_id.trim().replace("planets:", "");
+    let clean_plid = if raw_plid.is_empty() || raw_plid == "NONE" {
+        "earth".to_string()
+    } else {
+        raw_plid
+    };
     let mut res = db
         .query("RETURN fn::delete_planet(type::record('projects', $p), type::record('planets', $plid), $cascade);")
         .bind(("p", clean_pid))

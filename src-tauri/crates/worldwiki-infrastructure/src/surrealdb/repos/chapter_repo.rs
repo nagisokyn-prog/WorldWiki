@@ -24,13 +24,13 @@ impl ChapterRepository for SurrealChapterRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Chapter>, DomainError> {
         let clean = clean_id("chapters", id);
         let sql = "RETURN fn::get_chapter($id);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("id", clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_one(&mut res, 0)
     }
 
@@ -39,7 +39,7 @@ impl ChapterRepository for SurrealChapterRepository {
         let vol_clean = clean_id("volumes", &chapter.volume_id);
 
         let sql = "RETURN fn::save_chapter($c_id, $v_id, $title, $content, $sort_order, $word_count);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("c_id", clean))
@@ -57,7 +57,7 @@ impl ChapterRepository for SurrealChapterRepository {
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_id("chapters", id);
         let sql = "RETURN fn::delete_chapter($id);";
-        let mut res = self.db
+        let res = self.db
             .query(sql)
             .bind(("id", clean))
             .await
@@ -69,26 +69,26 @@ impl ChapterRepository for SurrealChapterRepository {
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let p_clean = clean_id("projects", project_id);
         let sql = "RETURN fn::list_chapters_by_project($p_clean);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 
     async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<Chapter>, DomainError> {
         let v_clean = clean_id("volumes", volume_id);
         let sql = "RETURN fn::list_chapters_by_volume($v_id);";
-        let mut res = self
+        let res = self
             .db
             .query(sql)
             .bind(("v_id", v_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let mut res = res.check().map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
 

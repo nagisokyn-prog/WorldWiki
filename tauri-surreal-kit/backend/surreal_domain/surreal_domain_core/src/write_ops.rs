@@ -31,7 +31,8 @@ where
     normalize_map_record_ids(&mut map);
 
     if table == "calendars" {
-        let pl_str = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+        let pl_raw = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+        let pl_str = if pl_raw.is_empty() || pl_raw == "NONE" || pl_raw == "planets:NONE" { "earth" } else { pl_raw.trim_start_matches("planets:") };
         let name_str = map.get("name").and_then(|v| v.as_str()).unwrap_or("Календарь");
         let is_m = map.get("is_master").and_then(|v| v.as_bool()).unwrap_or(false);
         let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");
@@ -99,7 +100,8 @@ where
         normalize_map_record_ids(&mut map);
 
         if table == "calendars" {
-            let pl_str = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+            let pl_raw = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
+        let pl_str = if pl_raw.is_empty() || pl_raw == "NONE" || pl_raw == "planets:NONE" { "earth" } else { pl_raw.trim_start_matches("planets:") };
             let name_str = map.get("name").and_then(|v| v.as_str()).unwrap_or("Календарь");
             let is_m = map.get("is_master").and_then(|v| v.as_bool()).unwrap_or(false);
             let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");

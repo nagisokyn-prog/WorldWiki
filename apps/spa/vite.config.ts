@@ -96,7 +96,8 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
+    isolate: false,
     server: {
       deps: {
         // tiptap-pagination-plus — ESM-код в .js без "type": "module",

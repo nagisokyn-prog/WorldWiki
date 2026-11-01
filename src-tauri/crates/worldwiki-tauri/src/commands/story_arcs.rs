@@ -1,4 +1,4 @@
-use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, StoryArc};
+use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, ChapterArcRelation, StoryArc};
 use crate::error::IpcError;
 use crate::bridge_command;
 
@@ -51,4 +51,9 @@ bridge_command!(
 bridge_command!(
     get_arc_entities(arc_id: String) -> Result<Vec<ArcEntityRelation>, IpcError>
         => story_arcs.list_entities_for_arc(&arc_id)
+);
+
+bridge_command!(
+    get_arcs_for_chapter(chapter_id: String) -> Result<Vec<ChapterArcRelation>, IpcError>
+        => story_arcs.list_arcs_for_chapter(&chapter_id)
 );

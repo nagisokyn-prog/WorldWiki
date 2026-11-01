@@ -169,6 +169,7 @@ pub fn run() {
             worldwiki_tauri::commands::assign_arc_entity,
             worldwiki_tauri::commands::remove_arc_entity,
             worldwiki_tauri::commands::get_arc_chapters,
+            worldwiki_tauri::commands::get_arcs_for_chapter,
             worldwiki_tauri::commands::get_arc_entities,
             worldwiki_tauri::commands::get_cross_reference_matrix,
             worldwiki_tauri::commands::audit_manuscript_consistency,

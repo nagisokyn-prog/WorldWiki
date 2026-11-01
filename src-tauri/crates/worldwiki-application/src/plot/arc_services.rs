@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, StoryArc};
+use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, ChapterArcRelation, StoryArc};
 use worldwiki_ports::repositories::StoryArcRepository;
 use crate::errors::ApplicationError;
 
@@ -59,6 +59,10 @@ impl StoryArcServices {
     pub async fn list_entities_for_arc(&self, arc_id: &str) -> Result<Vec<ArcEntityRelation>, ApplicationError> {
         Ok(self.repo.list_entities_for_arc(arc_id).await?)
     }
+
+    pub async fn list_arcs_for_chapter(&self, chapter_id: &str) -> Result<Vec<ChapterArcRelation>, ApplicationError> {
+        Ok(self.repo.list_arcs_for_chapter(chapter_id).await?)
+    }
 }
 
 #[cfg(test)]
@@ -112,6 +116,9 @@ mod tests {
             Ok(vec![])
         }
         async fn list_entities_for_arc(&self, _arc_id: &str) -> Result<Vec<ArcEntityRelation>, DomainError> {
+            Ok(vec![])
+        }
+        async fn list_arcs_for_chapter(&self, _chapter_id: &str) -> Result<Vec<ChapterArcRelation>, DomainError> {
             Ok(vec![])
         }
     }

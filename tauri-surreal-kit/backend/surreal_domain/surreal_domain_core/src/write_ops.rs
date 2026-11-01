@@ -1,55 +1,6 @@
+use crate::calendar_ops::{delete_calendar_record, save_calendar_record};
 use crate::error::SurrealDomainError;
 use crate::id_helpers::{is_not_found, normalize_map_record_ids};
-
-async fn save_calendar_record<T, Db: surrealdb::Connection>(
-    db: &surrealdb::Surreal<Db>,
-    cal_id: Option<&str>,
-    map: &serde_json::Map<String, serde_json::Value>,
-) -> Result<T, SurrealDomainError>
-where
-    T: serde::de::DeserializeOwned,
-{
-    let pl_raw = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
-    let pl_str = if pl_raw.is_empty() || pl_raw == "NONE" || pl_raw == "planets:NONE" {
-        "earth"
-    } else {
-        pl_raw.trim_start_matches("planets:")
-    };
-    let name_str = map.get("name").and_then(|v| v.as_str()).unwrap_or("Календарь");
-    let is_m = map.get("is_master").and_then(|v| v.as_bool()).unwrap_or(false);
-    let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");
-    let data_val = map.get("data").cloned().unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
-
-    let (query, has_cid) = match cal_id {
-        Some(cid) => (
-            "RETURN fn::save_calendar(type::record('calendars', $cal_id), $pid, $plid, $name, $is_master, $data);",
-            Some(cid.to_string()),
-        ),
-        None => (
-            "RETURN fn::save_calendar(NONE, $pid, $plid, $name, $is_master, $data);",
-            None,
-        ),
-    };
-
-    let mut q = db.query(query)
-        .bind(("pid", pid_str.to_string()))
-        .bind(("plid", pl_str.to_string()))
-        .bind(("name", name_str.to_string()))
-        .bind(("is_master", is_m))
-        .bind(("data", data_val));
-
-    if let Some(cid) = has_cid {
-        q = q.bind(("cal_id", cid));
-    }
-
-    let mut res = q.await?;
-    let items: Vec<serde_json::Value> = res.take(0)?;
-    let val = items
-        .into_iter()
-        .next()
-        .ok_or_else(|| SurrealDomainError::constraint_violation("fn::save_calendar returned no records"))?;
-    Ok(serde_json::from_value(val)?)
-}
 
 pub(crate) async fn repo_create<T, Db: surrealdb::Connection>(
     db: &surrealdb::Surreal<Db>,
@@ -60,9 +11,8 @@ where
     T: serde::Serialize + serde::de::DeserializeOwned + crate::repo::SurrealRepository,
 {
     let val = serde_json::to_value(&entity)?;
-    let mut map = match val {
-        serde_json::Value::Object(m) => m,
-        _ => return Err(SurrealDomainError::invalid_parameter("entity must serialize to a JSON object")),
+    let serde_json::Value::Object(mut map) = val else {
+        return Err(SurrealDomainError::invalid_parameter("entity must serialize to a JSON object"));
     };
     map.remove("id");
     map.retain(|_, v| !v.is_null());
@@ -103,38 +53,37 @@ pub(crate) async fn repo_save<T, Db: surrealdb::Connection>(
 where
     T: serde::Serialize + serde::de::DeserializeOwned + crate::repo::SurrealRepository,
 {
-    if let Some(id_str) = entity.get_id() {
-        let actual_id = match id_str.split_once(':') {
-            Some((_, aid)) => aid.trim_matches('`'),
-            None => id_str.trim_matches('`'),
-        };
+    let Some(id_str) = entity.get_id() else {
+        return T::create(db, entity.clone()).await;
+    };
 
-        let val = serde_json::to_value(entity)?;
-        let mut map = match val {
-            serde_json::Value::Object(m) => m,
-            _ => return Err(SurrealDomainError::invalid_parameter("entity must serialize to a JSON object")),
-        };
-        map.remove("id");
-        normalize_map_record_ids(&mut map);
+    let actual_id = match id_str.split_once(':') {
+        Some((_, aid)) => aid.trim_matches('`'),
+        None => id_str.trim_matches('`'),
+    };
 
-        if table == "calendars" {
-            return save_calendar_record(db, Some(actual_id), &map).await;
-        }
+    let val = serde_json::to_value(entity)?;
+    let serde_json::Value::Object(mut map) = val else {
+        return Err(SurrealDomainError::invalid_parameter("entity must serialize to a JSON object"));
+    };
+    map.remove("id");
+    normalize_map_record_ids(&mut map);
 
-        let mut res = db
-            .query("UPSERT $__record_id MERGE $data")
-            .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)))
-            .bind(("data", serde_json::Value::Object(map)))
-            .await?;
-        let items: Vec<serde_json::Value> = res.take(0)?;
-        let saved_val = items
-            .into_iter()
-            .next()
-            .ok_or_else(|| SurrealDomainError::constraint_violation("UPSERT returned no records"))?;
-        Ok(serde_json::from_value(saved_val)?)
-    } else {
-        T::create(db, entity.clone()).await
+    if table == "calendars" {
+        return save_calendar_record(db, Some(actual_id), &map).await;
     }
+
+    let mut res = db
+        .query("UPSERT $__record_id MERGE $data")
+        .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)))
+        .bind(("data", serde_json::Value::Object(map)))
+        .await?;
+    let items: Vec<serde_json::Value> = res.take(0)?;
+    let saved_val = items
+        .into_iter()
+        .next()
+        .ok_or_else(|| SurrealDomainError::constraint_violation("UPSERT returned no records"))?;
+    Ok(serde_json::from_value(saved_val)?)
 }
 
 pub(crate) async fn repo_delete<Db: surrealdb::Connection>(
@@ -152,23 +101,13 @@ pub(crate) async fn repo_delete<Db: surrealdb::Connection>(
         None => id.trim_matches('`'),
     };
     if table == "calendars" {
-        let mut res = db
-            .query("RETURN fn::delete_calendar(type::record('calendars', $cal_id));")
-            .bind(("cal_id", actual_id.to_string()))
-            .await?;
-        let _ = res.take::<Option<bool>>(0)?;
-        return Ok(());
+        return delete_calendar_record(db, actual_id).await;
     }
     let res: Result<Option<serde_json::Value>, surrealdb::Error> =
         db.delete((table, actual_id)).await;
     match res {
         Ok(_) => Ok(()),
-        Err(e) => {
-            if is_not_found(&e) {
-                Ok(())
-            } else {
-                Err(SurrealDomainError::from(e))
-            }
-        }
+        Err(e) if is_not_found(&e) => Ok(()),
+        Err(e) => Err(SurrealDomainError::from(e)),
     }
 }

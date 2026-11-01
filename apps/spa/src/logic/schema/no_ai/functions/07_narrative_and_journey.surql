@@ -164,8 +164,8 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             status,
             location_id,
             timeline_event_id,
-            (timeline_event_id.m_abs ?? (SELECT VALUE out.m_abs FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? (SELECT VALUE out.calendar_id FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS calendar_id,
+            (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -472,8 +472,8 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
             status,
             location_id,
             timeline_event_id,
-            (timeline_event_id.m_abs ?? (SELECT VALUE out.m_abs FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? (SELECT VALUE out.calendar_id FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS calendar_id,
+            (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -512,8 +512,8 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
             status,
             location_id,
             timeline_event_id,
-            (timeline_event_id.m_abs ?? (SELECT VALUE out.m_abs FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? (SELECT VALUE out.calendar_id FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS calendar_id,
+            (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -552,8 +552,8 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
             status,
             location_id,
             timeline_event_id,
-            (timeline_event_id.m_abs ?? (SELECT VALUE out.m_abs FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? (SELECT VALUE out.calendar_id FROM occurs_at WHERE in = $parent.id LIMIT 1)[0]) AS calendar_id,
+            (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{

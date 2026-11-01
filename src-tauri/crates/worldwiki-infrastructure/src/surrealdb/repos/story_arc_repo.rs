@@ -5,7 +5,7 @@ use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
-use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, StoryArc};
+use worldwiki_domain::plot::{ArcChapterRelation, ArcEntityRelation, ChapterArcRelation, StoryArc};
 use worldwiki_ports::repositories::StoryArcRepository;
 use super::helpers::clean_id;
 
@@ -110,6 +110,15 @@ impl StoryArcRepository for SurrealStoryArcRepository {
             self.db,
             "RETURN fn::list_entities_for_arc($arc_id);",
             ("arc_id", clean_arc),
+        )
+    }
+
+    async fn list_arcs_for_chapter(&self, chapter_id: &str) -> Result<Vec<ChapterArcRelation>, DomainError> {
+        let clean_chap = clean_id("chapters", chapter_id);
+        surreal_take_list!(
+            self.db,
+            "RETURN fn::list_arcs_for_chapter($chapter_id);",
+            ("chapter_id", clean_chap),
         )
     }
 }

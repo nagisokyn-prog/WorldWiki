@@ -65,3 +65,11 @@ pub struct ArcEntityRelation {
     pub arc_id: String,
     pub entity_id: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChapterArcRelation {
+    pub arc_id: String,
+    pub title: String,
+    pub status: String,
+    pub phase: Option<String>,
+}

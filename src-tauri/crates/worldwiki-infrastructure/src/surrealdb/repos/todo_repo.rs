@@ -1,4 +1,4 @@
-//! SurrealDB implementation of task (todo) repository.
+//! SurrealDB implementation of task repository.
 
 use super::helpers::clean_id;
 use async_trait::async_trait;
@@ -104,23 +104,14 @@ mod tests {
         db.use_ns("test").use_db("test").await.expect("use ns/db");
 
         // Schema initialization for test database
-        db.query("
-            DEFINE TABLE OVERWRITE todos SCHEMAFULL;
-            DEFINE FIELD OVERWRITE owner_id    ON todos TYPE record<volumes | chapters | story_arcs>;
-            DEFINE FIELD OVERWRITE text        ON todos TYPE string;
-            DEFINE FIELD OVERWRITE is_done     ON todos TYPE bool DEFAULT false;
-            DEFINE FIELD OVERWRITE sort_order  ON todos TYPE int DEFAULT 0;
-            DEFINE FIELD OVERWRITE created_at  ON todos TYPE datetime DEFAULT time::now();
-            DEFINE FIELD OVERWRITE updated_at  ON todos TYPE datetime DEFAULT time::now();
-            DEFINE INDEX OVERWRITE idx_todos_owner_id ON todos FIELDS owner_id;
-        ")
-            .await
-            .expect("schema")
-            .check()
-            .expect("check");
+        let tables_schema = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/01_tables.surql");
+        let indexes_schema = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
         let analyzers_schema = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
         let ddl_funcs = include_str!("../../../../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql");
+
         let _ = db.query(analyzers_schema).await;
+        let _ = db.query(tables_schema).await;
+        let _ = db.query(indexes_schema).await;
         let _ = db.query(ddl_funcs).await;
 
         let repo = SurrealTodoRepository::new(Arc::new(db));

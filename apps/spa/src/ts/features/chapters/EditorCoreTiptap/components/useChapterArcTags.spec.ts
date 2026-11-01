@@ -10,7 +10,8 @@ vi.mock('@/services/api.client', () => ({
   assignArcChapter: vi.fn(),
   removeArcChapter: vi.fn(),
   getArcChapters: vi.fn(),
-  getArcEntities: vi.fn()
+  getArcEntities: vi.fn(),
+  getArcsForChapter: vi.fn()
 }));
 
 describe('useChapterArcTags', () => {

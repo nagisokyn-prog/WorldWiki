@@ -22,8 +22,7 @@ impl SurrealTimelineRepository {
 impl TimelineEventRepository for SurrealTimelineRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<TimelineEvent>, DomainError> {
         let clean = clean_raw_id!(id, "timeline_events");
-        let sql = "SELECT * FROM type::record('timeline_events', $id);";
-        surreal_take_one!(self.db, sql, ("id", clean))
+        surreal_take_one!(self.db, "RETURN fn::get_timeline_event($id);", ("id", clean))
     }
 
     async fn save(&self, event: &TimelineEvent) -> Result<String, DomainError> {
@@ -57,26 +56,20 @@ impl TimelineEventRepository for SurrealTimelineRepository {
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<TimelineEvent>, DomainError> {
-        let p_raw = project_id.to_string();
         let p_clean = clean_raw_id!(project_id, "projects");
-        let sql = "SELECT id, project_id, title, description, m_abs, calendar_id, block_id, created_at FROM timeline_events WHERE (project_id = type::record('projects', $p_clean) OR project_id = $p_raw OR project_id = $p_clean OR project_id = type::record('projects', $p_raw)) ORDER BY m_abs ASC;";
-        surreal_take_list!(self.db, sql, ("p_raw", p_raw), ("p_clean", p_clean))
+        surreal_take_list!(
+            self.db,
+            "RETURN fn::list_timeline_events_by_project($p_clean);",
+            ("p_clean", p_clean)
+        )
     }
 
     async fn add_reveal(&self, reveal: &EventReveal) -> Result<(), DomainError> {
         let ev_clean = clean_raw_id!(&reveal.event_id, "timeline_events");
         let ch_clean = clean_raw_id!(&reveal.chapter_id, "chapters");
-        let sql = r#"
-            RELATE (type::record('timeline_events', $ev))->revealed_in->(type::record('chapters', $ch)) CONTENT {
-                pov_id: $pov_id,
-                kind: $kind,
-                block_id: $block_id,
-                created_at: time::now()
-            };
-        "#;
         surreal_exec!(
             self.db,
-            sql,
+            "RETURN fn::add_event_reveal($ev, $ch, $pov_id, $kind, $block_id);",
             ("ev", ev_clean),
             ("ch", ch_clean),
             ("pov_id", reveal.pov_id.clone()),
@@ -88,7 +81,11 @@ impl TimelineEventRepository for SurrealTimelineRepository {
     async fn remove_reveal(&self, event_id: &str, chapter_id: &str) -> Result<(), DomainError> {
         let ev_clean = clean_raw_id!(event_id, "timeline_events");
         let ch_clean = clean_raw_id!(chapter_id, "chapters");
-        let sql = "DELETE revealed_in WHERE in = type::record('timeline_events', $ev) AND out = type::record('chapters', $ch);";
-        surreal_exec!(self.db, sql, ("ev", ev_clean), ("ch", ch_clean))
+        surreal_exec!(
+            self.db,
+            "RETURN fn::remove_event_reveal($ev, $ch);",
+            ("ev", ev_clean),
+            ("ch", ch_clean),
+        )
     }
 }

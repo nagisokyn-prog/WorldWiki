@@ -1,6 +1,8 @@
 pub mod bind_helpers;
+pub mod calendar_ops;
 pub mod error;
 pub mod id_helpers;
+pub mod json_helpers;
 pub mod mock;
 pub mod read_ops;
 pub mod repo;

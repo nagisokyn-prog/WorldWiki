@@ -568,6 +568,10 @@ export async function getArcChapters(arcId: string): Promise<unknown[]> {
     return await invoke('get_arc_chapters', { arcId });
 }
 
+export async function getArcsForChapter(chapterId: string): Promise<unknown[]> {
+    return await invoke('get_arcs_for_chapter', { chapterId });
+}
+
 export async function getArcEntities(arcId: string): Promise<unknown[]> {
     return await invoke('get_arc_entities', { arcId });
 }

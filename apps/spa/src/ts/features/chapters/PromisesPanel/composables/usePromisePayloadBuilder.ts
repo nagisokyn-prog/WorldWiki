@@ -75,3 +75,12 @@ export function createNewPromiseRecord(
     resolved_in_chapter: null
   };
 }
+
+export function syncPromisesToLocalStorage(project: string, promises: RichPlotPromise[]): void {
+  if (!project) return;
+  try {
+    localStorage.setItem(`ww_plot_promises_${project}`, JSON.stringify(promises));
+  } catch (err) {
+    console.warn('[usePromiseActions] Failed to backup promises to localStorage:', err);
+  }
+}

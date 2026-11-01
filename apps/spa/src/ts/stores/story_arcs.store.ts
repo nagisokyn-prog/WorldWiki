@@ -9,7 +9,8 @@ import {
   assignArcEntity,
   removeArcEntity,
   getArcChapters,
-  getArcEntities
+  getArcEntities,
+  getArcsForChapter
 } from '../services/api.client';
 import type { StoryArc as GeneratedStoryArc } from '../types/generated/StoryArc';
 
@@ -192,6 +193,15 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     arcEntities.value.set(arcId, existing.filter(r => (r.out || r.entity_id) !== entityId));
   }
 
+  async function loadArcsForChapter(chapterId: string): Promise<unknown[]> {
+    try {
+      return await getArcsForChapter(chapterId);
+    } catch (err: unknown) {
+      console.warn('[StoryArcsStore] getArcsForChapter fallback:', err);
+      return [];
+    }
+  }
+
   return {
     currentProject,
     arcs,
@@ -203,6 +213,7 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     saveArc,
     removeArc,
     loadBindings,
+    loadArcsForChapter,
     bindChapter,
     unbindChapter,
     bindEntity,

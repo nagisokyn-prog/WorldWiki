@@ -4,7 +4,7 @@ import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
 import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
 
-import { preparePromisePayload, createNewPromiseRecord } from './usePromisePayloadBuilder';
+import { preparePromisePayload, createNewPromiseRecord, syncPromisesToLocalStorage } from './usePromisePayloadBuilder';
 
 export function usePromiseActions(params: UsePromiseActionsParams) {
   const { promises, emit } = params;
@@ -14,15 +14,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const getProject = () => params.props?.project ?? params.project ?? '';
   const getChapterId = () => (params.props?.chapterId !== undefined ? params.props.chapterId : params.chapterId) ?? null;
 
-  const syncLocalBackup = () => {
-    const proj = getProject();
-    if (!proj) return;
-    try {
-      localStorage.setItem(`ww_plot_promises_${proj}`, JSON.stringify(promises.value));
-    } catch (err) {
-      console.warn('[usePromiseActions] Failed to backup promises to localStorage:', err);
-    }
-  };
+  const syncLocalBackup = () => syncPromisesToLocalStorage(getProject(), promises.value);
 
   let persistQueue = Promise.resolve();
   const updatePromiseDebounceMap = new Map<string, ReturnType<typeof setTimeout>>();
@@ -212,12 +204,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     emit('change');
   };
 
-  const locateSource = (item: {
-    chapter_id?: string | null;
-    paragraph_index?: number | null;
-    quote?: string | null;
-    block_id?: string | null;
-  }) => {
+  const locateSource = (item: { chapter_id?: string | null; paragraph_index?: number | null; quote?: string | null; block_id?: string | null }) => {
     emit('locate', {
       chapterId: item.chapter_id || getChapterId() || '',
       paragraphIndex: item.paragraph_index ?? 1,

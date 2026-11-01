@@ -9,8 +9,10 @@ const { mockCal } = vi.hoisted(() => ({
     id: 'cal:1',
     name: 'Основной календарь',
     is_default: true,
+    is_master: true,
     data: {
       название: 'Основной календарь',
+      is_master: true,
       эпохи: [{ название: 'Новая Эра', год_начала: 1, год_конца: 2000 }],
       месяцы: [
         { название: 'Январь', дней: 30 },
@@ -25,7 +27,17 @@ const { mockCal } = vi.hoisted(() => ({
 vi.mock('@/services/api.client', () => ({
   getEntities: vi.fn().mockResolvedValue([]),
   getGlobalTimeline: vi.fn().mockResolvedValue({ events: [] }),
-  getCalendars: vi.fn().mockResolvedValue([mockCal])
+  getCalendars: vi.fn().mockResolvedValue([mockCal]),
+  getStoryArcs: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('@/services/api/calendar.api', () => ({
+  calendarApi: {
+    getCalendars: vi.fn().mockResolvedValue([mockCal]),
+    getPlanetCalendarBundle: vi.fn().mockResolvedValue({ calendars: [mockCal], planets: [] }),
+    saveCalendar: vi.fn().mockResolvedValue({ success: true }),
+    deleteCalendar: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 describe('usePromiseCardMeta', () => {

@@ -31,3 +31,4 @@ export function useTab1ExtraDaysTape(props: Tab1ExtraDaysTapeProps) {
     toggleCollapsed,
   };
 }
+

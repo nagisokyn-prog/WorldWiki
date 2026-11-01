@@ -18,6 +18,9 @@ vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     loadCalendars: vi.fn().mockResolvedValue([]),
     getCalendars: vi.fn().mockResolvedValue([]),
+    getPlanets: vi.fn().mockReturnValue([]),
+    savePlanetToStorage: vi.fn(),
+    deletePlanetFromStorage: vi.fn(),
     calendars: [],
   }),
 }));

@@ -112,16 +112,17 @@ export function useProjectLauncherModal(
           formData.value.type = rawType;
           customTypeInput.value = '';
         } else {
+          formData.value.type = 'custom';
+          customTypeInput.value = rawType;
           // Если кастомного типа ещё нет в барабане, добавляем его в customStoredTypes
-          const newEntry = { value: rawType, label: rawType };
-          customStoredTypes.value.push(newEntry);
-          try {
-            localStorage.setItem(CUSTOM_TYPES_KEY, JSON.stringify(customStoredTypes.value));
-          } catch (e) {
-            console.warn('Failed to save custom type:', e);
+          if (!customStoredTypes.value.some(t => t.value === rawType)) {
+            customStoredTypes.value.push({ value: rawType, label: rawType });
+            try {
+              localStorage.setItem(CUSTOM_TYPES_KEY, JSON.stringify(customStoredTypes.value));
+            } catch (e) {
+              console.warn('Failed to save custom type:', e);
+            }
           }
-          formData.value.type = rawType;
-          customTypeInput.value = '';
         }
 
         const projectGenres = (config.genres as string[]) || [];

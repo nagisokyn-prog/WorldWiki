@@ -55,3 +55,4 @@ describe('useTab2AnchorEventsSection', () => {
     expect(showAddRow.value).toBe(false);
   });
 });
+

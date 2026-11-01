@@ -29,3 +29,4 @@ describe('useTab5DstTransitionRules', () => {
     expect(occurrenceOptions).toEqual(OCCURRENCE_OPTIONS);
   });
 });
+

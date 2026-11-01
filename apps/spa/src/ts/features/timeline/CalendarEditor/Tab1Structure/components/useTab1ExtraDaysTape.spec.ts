@@ -41,3 +41,4 @@ describe('useTab1ExtraDaysTape Composable', () => {
     expect(isCollapsed.value).toBe(true);
   });
 });
+

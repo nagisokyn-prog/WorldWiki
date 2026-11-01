@@ -37,3 +37,4 @@ describe('useTab1MonthsSection', () => {
     expect(maxDaysInSelectedMonth.value).toBe(28);
   });
 });
+

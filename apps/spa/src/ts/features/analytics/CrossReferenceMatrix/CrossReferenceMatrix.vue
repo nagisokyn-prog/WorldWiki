@@ -33,7 +33,7 @@
                 <span>Сущность \ Глава</span>
               </th>
               <th
-                v-for="col in chapters"
+                v-for="col in chapterColumns"
                 :key="col.id"
                 class="matrix-th-col"
                 :title="col.title"
@@ -41,7 +41,7 @@
                 <div class="col-header-content">
                   <span class="col-order">{{ col.sort_order }}</span>
                   <span class="col-title">{{ col.title }}</span>
-                  <span class="col-words">{{ chapterSummaries.get(col.id)?.formattedWordCount || '0 сл' }}</span>
+                  <span class="col-words">{{ col.formattedWordCount }}</span>
                 </div>
               </th>
               <th class="matrix-th-total">Всего</th>
@@ -109,11 +109,11 @@
                 <span>Уникальных сущностей:</span>
               </td>
               <td
-                v-for="col in chapters"
+                v-for="col in chapterColumns"
                 :key="`footer-${col.id}`"
                 class="matrix-footer-cell"
               >
-                <span>{{ chapterSummaries.get(col.id)?.total || 0 }}</span>
+                <span>{{ col.uniqueEntities }}</span>
               </td>
               <td class="matrix-footer-grand-total">
                 <span>{{ totalProjectAppearances }}</span>
@@ -142,9 +142,9 @@ const props = withDefaults(
 const {
   filters,
   chapters,
+  chapterColumns,
   rows,
   availableEntityTypes,
-  chapterSummaries,
   totalProjectAppearances,
   isLoading,
   refresh,

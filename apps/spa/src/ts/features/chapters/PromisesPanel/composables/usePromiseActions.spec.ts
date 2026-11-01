@@ -80,7 +80,7 @@ describe('usePromiseActions', () => {
       ...initial,
       location_id: 'В тронном зале',
       participant_ids: ['Гендальф']
-    });
+    }, true);
 
     expect(promises.value[0].location_id).toBe('В тронном зале');
     expect(promises.value[0].participant_ids).toEqual(['Гендальф']);

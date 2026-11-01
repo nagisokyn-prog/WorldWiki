@@ -41,7 +41,10 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     for (const group of shell.editorGroups) {
       for (const tab of group.tabs) {
         if (matchesEntityId(tab, 'planet', id)) {
-          shell.updateTabTitle(tab.id, name);
+          if (typeof shell.updateTabTitle === 'function') {
+            shell.updateTabTitle(tab.id, name);
+          }
+          tab.title = name;
         }
       }
     }
@@ -52,7 +55,10 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     for (const group of shell.editorGroups) {
       for (const tab of group.tabs) {
         if (matchesEntityId(tab, 'calendar', id)) {
-          shell.updateTabTitle(tab.id, name);
+          if (typeof shell.updateTabTitle === 'function') {
+            shell.updateTabTitle(tab.id, name);
+          }
+          tab.title = name;
         }
       }
     }

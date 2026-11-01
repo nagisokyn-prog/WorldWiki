@@ -60,11 +60,17 @@ export const useCalendarStore = defineStore('calendar', () => {
         }
       }
 
-      const list = (rawList || []).map((c) => ({
-        ...c,
-        id: normalizeCalendarId(c.id),
-        planet_id: normalizeCalendarId(c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id || 'planets:earth'),
-      }));
+      const list = (rawList || []).map((c) => {
+        const item: CalendarRecord = {
+          ...c,
+          id: normalizeCalendarId(c.id),
+        };
+        const pId = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
+        if (pId) {
+          item.planet_id = normalizeCalendarId(pId);
+        }
+        return item;
+      });
 
       if (list && list.length > 0) {
         const hasMaster = list.some((c) => c.is_master);
@@ -98,11 +104,12 @@ export const useCalendarStore = defineStore('calendar', () => {
           defaultCalData.название = 'Григорианский';
           await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as unknown as CalendarData);
           const rawNewList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
-          const newList = (rawNewList || []).map((c) => ({
-            ...c,
-            id: normalizeCalendarId(c.id),
-            planet_id: normalizeCalendarId(c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id || 'planets:earth'),
-          }));
+          const newList = (rawNewList || []).map((c) => {
+            const item: CalendarRecord = { ...c, id: normalizeCalendarId(c.id) };
+            const pId = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
+            if (pId) item.planet_id = normalizeCalendarId(pId);
+            return item;
+          });
           setCache(cacheKey, newList || []);
           return newList || [];
         } finally {

@@ -66,16 +66,8 @@
 </template>
 
 <script setup lang="ts">
-import type { AnchorEventDto } from '../Tab2ErasSync.model';
+import type { Tab2AnchorEventRowProps, Tab2AnchorEventRowEmits } from './Tab2AnchorEventRow.model';
 
-defineProps<{
-  ev: AnchorEventDto;
-  idx: number;
-  isReadOnly?: boolean;
-}>();
-
-defineEmits<{
-  (e: 'field-change', idx: number, field: keyof AnchorEventDto, value: unknown): void;
-  (e: 'remove', idx: number): void;
-}>();
+defineProps<Tab2AnchorEventRowProps>();
+defineEmits<Tab2AnchorEventRowEmits>();
 </script>

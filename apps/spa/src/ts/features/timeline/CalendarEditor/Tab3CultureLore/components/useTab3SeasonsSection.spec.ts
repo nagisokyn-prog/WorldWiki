@@ -39,3 +39,4 @@ describe('useTab3SeasonsSection', () => {
     expect(emit).toHaveBeenCalledWith('update-seasons', expect.any(Array));
   });
 });
+

@@ -44,7 +44,7 @@ describe('useTab3CultureLore', () => {
 
     addHoliday();
     expect(emit).toHaveBeenCalledWith('update', expect.objectContaining({
-      праздники: expect.arrayContaining([expect.objectContaining({ название: 'Праздник 2' })]),
+      праздники: expect.arrayContaining([expect.objectContaining({ название: 'Новый праздник' })]),
     }));
 
     removeHoliday(0);

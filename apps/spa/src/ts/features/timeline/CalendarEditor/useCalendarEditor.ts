@@ -101,6 +101,7 @@ export function useCalendarEditor(
         };
       }
       hydrateFromStorage();
+      if (hasUnsavedDraft.value && calendarRecord.value?.data) emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Не удалось загрузить календарь';
       console.error('[CalendarEditor] Ошибка загрузки:', e);
@@ -194,12 +195,12 @@ export function useCalendarEditor(
       document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: calendarRecord.value.id || props.calendarId, name: preset.data.название } }));
     }
 
-    // Автоматическая проверка и инъекция часового пояса и региона в планету
-    await syncPresetWithPlanet(preset, patchedData, props.projectId, calendarStore);
-
     hasUnsavedDraft.value = true;
     scheduleStateSave();
     emit('update:calendar', patchedData as unknown as Record<string, unknown>);
+
+    // Автоматическая проверка и инъекция часового пояса и региона в планету
+    await syncPresetWithPlanet(preset, patchedData, props.projectId, calendarStore);
   }
 
   const handleRenamed = (e: Event) => {

@@ -23,15 +23,18 @@ export const calendarApi = {
     delete calendarPayload.is_default;
     delete calendarPayload.is_master;
 
-    const rustCalendar = {
+    const rustCalendar: Record<string, unknown> = {
       id: id || null,
-      planet_id: (plainData.planet_id as string) || (actualData.planet_id as string) || 'planets:earth',
       project_id: projectRecordId(project),
       name: (actualData.название as string) || (plainData.name as string) || 'Новый календарь',
       is_default: is_default || false,
       is_master: is_master || false,
       data: calendarPayload
     };
+    const pId = (plainData.planet_id as string) || (actualData.planet_id as string);
+    if (pId) {
+      rustCalendar.planet_id = pId;
+    }
     return invoke<{ success: boolean }>('save_calendar', { data: rustCalendar });
   },
 

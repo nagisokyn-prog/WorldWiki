@@ -241,7 +241,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
   };
 
-  const updatePromise = async (updatedItem: RichPlotPromise) => {
+  const updatePromise = async (updatedItem: RichPlotPromise, immediate = false) => {
     if (!updatedItem.id) return;
     const targetClean = cleanId(updatedItem.id);
     const index = promises.value.findIndex((p) => p.id === updatedItem.id || cleanId(p.id) === targetClean);
@@ -254,6 +254,10 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     const existingTimer = updatePromiseDebounceMap.get(targetClean);
     if (existingTimer) {
       clearTimeout(existingTimer);
+    }
+    if (immediate) {
+      updatePromiseDebounceMap.delete(targetClean);
+      return persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
     }
     const timer = setTimeout(() => {
       updatePromiseDebounceMap.delete(targetClean);

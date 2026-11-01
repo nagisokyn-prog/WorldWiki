@@ -43,17 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import type { CrossReferenceFilterState } from '../CrossReferenceMatrix.model';
+import type { MatrixToolbarProps, MatrixToolbarEmits } from './MatrixToolbar.model';
 
-defineProps<{
-  filters: CrossReferenceFilterState;
-  availableEntityTypes: string[];
-  rowsCount: number;
-  chaptersCount: number;
-  isLoading: boolean;
-}>();
-
-defineEmits<{
-  (e: 'refresh'): void;
-}>();
+defineProps<MatrixToolbarProps>();
+defineEmits<MatrixToolbarEmits>();
 </script>

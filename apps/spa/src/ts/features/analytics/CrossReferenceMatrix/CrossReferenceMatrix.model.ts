@@ -30,6 +30,15 @@ export interface CrossReferenceFilterState {
   highlightGaps: boolean;
 }
 
+export interface ChapterColumnSummary {
+  id: string;
+  sort_order: number;
+  title: string;
+  word_count: number;
+  formattedWordCount: string;
+  uniqueEntities: number;
+}
+
 export interface CrossReferenceMatrixProps {
   project?: string;
 }

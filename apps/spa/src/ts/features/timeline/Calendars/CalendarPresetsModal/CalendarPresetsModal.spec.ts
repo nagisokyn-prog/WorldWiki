@@ -3,11 +3,11 @@ import { useCalendarPresetsModal } from './useCalendarPresetsModal';
 import { CALENDAR_PRESETS } from '../presets';
 
 describe('useCalendarPresetsModal', () => {
-  it('loads all 10 presets and initializes with all category', () => {
+  it('loads all presets and initializes with all category', () => {
     const emit = vi.fn();
     const modal = useCalendarPresetsModal({ modelValue: true }, emit);
 
-    expect(modal.filteredPresets.value.length).toBe(10);
+    expect(modal.filteredPresets.value.length).toBe(CALENDAR_PRESETS.length);
     expect(modal.activeCategory.value).toBe('all');
   });
 
@@ -16,13 +16,13 @@ describe('useCalendarPresetsModal', () => {
     const modal = useCalendarPresetsModal({ modelValue: true }, emit);
 
     modal.selectCategory('fantasy');
-    expect(modal.filteredPresets.value.length).toBe(3);
+    expect(modal.filteredPresets.value.length).toBe(CALENDAR_PRESETS.filter((p) => p.category === 'fantasy').length);
     modal.filteredPresets.value.forEach((p) => {
       expect(p.category).toBe('fantasy');
     });
 
     modal.selectCategory('real_world');
-    expect(modal.filteredPresets.value.length).toBe(7);
+    expect(modal.filteredPresets.value.length).toBe(CALENDAR_PRESETS.filter((p) => p.category === 'real_world').length);
   });
 
   it('filters presets by search query in Russian', () => {

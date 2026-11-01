@@ -66,3 +66,4 @@ export function normalizeCalendarId(id: unknown): string {
   }
   return String(id).replace(/["'⟨⟩]/g, '').trim();
 }
+

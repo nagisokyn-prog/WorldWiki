@@ -218,6 +218,31 @@ export function usePromiseCardMeta(
     emit('change');
   };
 
+  const onEraChange = (newEraIdx: number) => {
+    dateTime.currentEraIdx.value = newEraIdx;
+    const era = dateTime.activeCalendarEras.value[newEraIdx];
+    if (era) {
+      const min = era.год_начала ?? 1;
+      const max = era.год_конца ?? (min + 100);
+      if (dateTime.currentYear.value < min || dateTime.currentYear.value > max) {
+        dateTime.currentYear.value = min;
+      }
+    }
+    handleDateFieldsChange();
+  };
+
+  const onYearChange = (newYear: number) => {
+    const era = dateTime.activeCalendarEras.value[dateTime.currentEraIdx.value];
+    let clampedYear = newYear;
+    if (era) {
+      const min = era.год_начала ?? 1;
+      const max = era.год_конца ?? (min + 100);
+      clampedYear = Math.min(max, Math.max(min, newYear));
+    }
+    dateTime.currentYear.value = clampedYear;
+    handleDateFieldsChange();
+  };
+
   const handleCalendarChange = (calId: string) => {
     dateTime.setCalendar(calId);
     handleDateFieldsChange();
@@ -272,7 +297,11 @@ export function usePromiseCardMeta(
     dayWheelOptions: dateTime.dayWheelOptions,
     hourWheelOptions: dateTime.hourWheelOptions,
     minuteWheelOptions: dateTime.minuteWheelOptions,
+    eraMinYear: dateTime.eraMinYear,
+    eraMaxYear: dateTime.eraMaxYear,
     diegeticInfo: dateTime.diegeticInfo,
+    onEraChange,
+    onYearChange,
     onUniversalDateChange: handleUniversalDateChange,
     onDateFieldsChange: handleDateFieldsChange,
     onCalendarChange: handleCalendarChange,

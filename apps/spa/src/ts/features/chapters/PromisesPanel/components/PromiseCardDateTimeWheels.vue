@@ -19,9 +19,11 @@
             type="number"
             :value="currentYear"
             class="w-14 px-1 py-0.5 text-xs text-right bg-panel border border-border rounded text-main focus:outline-none focus:border-accent"
-            min="1"
+            :min="eraMinYear ?? 1"
+            :max="eraMaxYear ?? undefined"
             title="Прямой ввод года"
-            @input="$emit('update:currentYear', Math.max(1, Number(($event.target as HTMLInputElement).value) || 1)); $emit('change')"
+            @change="$emit('update:currentYear', Math.min(eraMaxYear ?? Infinity, Math.max(eraMinYear ?? 1, Number(($event.target as HTMLInputElement).value) || (eraMinYear ?? 1)))); $emit('change')"
+            @keydown.enter="$emit('update:currentYear', Math.min(eraMaxYear ?? Infinity, Math.max(eraMinYear ?? 1, Number(($event.target as HTMLInputElement).value) || (eraMinYear ?? 1)))); $emit('change')"
           />
         </div>
         <XboxWheel
@@ -82,7 +84,17 @@
 import type { PromiseCardDateTimeWheelsProps, PromiseCardDateTimeWheelsEmits } from './PromiseCardDateTimeWheels.model';
 import { XboxWheel } from '@worldwiki/components';
 
-defineProps<PromiseCardDateTimeWheelsProps>();
+const props = defineProps<PromiseCardDateTimeWheelsProps>();
 
-defineEmits<PromiseCardDateTimeWheelsEmits>();
+const emit = defineEmits<PromiseCardDateTimeWheelsEmits>();
+
+const handleYearInput = (rawVal: string) => {
+  const num = Number(rawVal);
+  if (isNaN(num)) return;
+  const min = props.eraMinYear ?? 1;
+  const max = props.eraMaxYear ?? Infinity;
+  const clamped = Math.min(max, Math.max(min, num));
+  emit('update:currentYear', clamped);
+  emit('change');
+};
 </script>

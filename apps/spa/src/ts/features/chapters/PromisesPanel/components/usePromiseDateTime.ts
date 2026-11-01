@@ -65,7 +65,9 @@ export function usePromiseDateTime(
     dayWheelOptions,
     hourWheelOptions,
     minuteWheelOptions,
-    diegeticInfo
+    diegeticInfo,
+    eraMinYear,
+    eraMaxYear
   } = usePromiseDateHelpers(
     activeCalendar,
     activeCalendarMonths,
@@ -97,10 +99,30 @@ export function usePromiseDateTime(
     currentMinute.value = Number(input.minute) || 0;
   };
 
-  const syncModelFromMabs = (mAbs: number, cal: CalendarRecord) => {
+  const syncModelFromMabs = (mAbs: number, cal: CalendarRecord, explicitEraIdx?: number) => {
     const calData = getCalendarData(cal);
     if (!calData) return;
-    const dateInput = CalendarMath.getDateFromAbsolute(mAbs, calData);
+
+    // Сначала рассчитываем дату в базовой шкале
+    const rawDate = CalendarMath.getDateFromAbsolute(mAbs, calData, 0);
+
+    // Определяем эру: явный индекс или поиск эры, чей диапазон [год_начала, год_конца] включает rawDate.year
+    let resolvedEraIdx = 0;
+    if (explicitEraIdx !== undefined && calData.эпохи && explicitEraIdx >= 0 && explicitEraIdx < calData.эпохи.length) {
+      resolvedEraIdx = explicitEraIdx;
+    } else if (calData.эпохи && calData.эпохи.length > 0) {
+      const matched = calData.эпохи.findIndex((era) => {
+        const start = era.год_начала ?? 1;
+        const end = era.год_конца ?? Infinity;
+        return rawDate.year >= start && rawDate.year <= end;
+      });
+      if (matched !== -1) {
+        resolvedEraIdx = matched;
+      }
+    }
+
+    const dateInput = CalendarMath.getDateFromAbsolute(mAbs, calData, resolvedEraIdx);
+    dateInput.era_index = resolvedEraIdx;
     syncStateFromInput(dateInput, cal.id);
     universalDateModel.value = {
       calendar_id: cal.id,
@@ -179,10 +201,12 @@ export function usePromiseDateTime(
       return;
     }
 
+    const explicitEra = itemData?.date_fields?.era_index;
+
     if (itemData?.m_abs !== undefined && itemData.m_abs !== null && calendars.value.length > 0) {
       const cal = (itemData.calendar_id && calendars.value.find(c => c.id === itemData.calendar_id)) || activeCalendar.value || calendars.value[0];
       if (cal) {
-        syncModelFromMabs(itemData.m_abs, cal);
+        syncModelFromMabs(itemData.m_abs, cal, explicitEra);
         return;
       }
     }
@@ -192,7 +216,7 @@ export function usePromiseDateTime(
       const ev = eventsList.find(e => e.id === tid);
       if (ev && ev.m_abs !== undefined && calendars.value.length > 0) {
         const cal = activeCalendar.value || calendars.value[0];
-        if (cal) syncModelFromMabs(ev.m_abs, cal);
+        if (cal) syncModelFromMabs(ev.m_abs, cal, explicitEra);
         return;
       }
     }
@@ -225,6 +249,8 @@ export function usePromiseDateTime(
     dayWheelOptions,
     hourWheelOptions,
     minuteWheelOptions,
+    eraMinYear,
+    eraMaxYear,
     diegeticInfo,
     setCalendar,
     onDateFieldsChange,

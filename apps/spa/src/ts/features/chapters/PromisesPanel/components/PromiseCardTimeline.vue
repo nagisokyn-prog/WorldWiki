@@ -59,6 +59,8 @@
       :day-wheel-options="dayWheelOptions"
       :hour-wheel-options="hourWheelOptions"
       :minute-wheel-options="minuteWheelOptions"
+      :era-min-year="eraMinYear"
+      :era-max-year="eraMaxYear"
       @update:current-era-idx="$emit('update:currentEraIdx', $event)"
       @update:current-year="$emit('update:currentYear', $event)"
       @update:current-month-idx="$emit('update:currentMonthIdx', $event)"

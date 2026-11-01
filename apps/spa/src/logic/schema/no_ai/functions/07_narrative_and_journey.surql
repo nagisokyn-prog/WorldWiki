@@ -51,22 +51,22 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         LET $evt_mabs = type::int($data.m_abs);
         
         IF $existing_evt_id != NONE AND $existing_evt_id != NULL {
-            UPSERT $existing_evt_id MERGE {
-                project_id: $p_rec,
-                title: $evt_title,
-                description: $evt_desc,
-                m_abs: $evt_mabs,
-                calendar_id: $cal_rec
-            };
+            (UPSERT $existing_evt_id SET
+                project_id = $p_rec,
+                title = $evt_title,
+                description = $evt_desc,
+                m_abs = $evt_mabs,
+                calendar_id = $cal_rec
+            );
             $existing_evt_id
         } ELSE {
             LET $new_evt = (CREATE timeline_events SET
                 project_id = $p_rec,
-                title: $evt_title,
-                description: $evt_desc,
-                m_abs: $evt_mabs,
-                calendar_id: $cal_rec,
-                created_at: time::now()
+                title = $evt_title,
+                description = $evt_desc,
+                m_abs = $evt_mabs,
+                calendar_id = $cal_rec,
+                created_at = time::now()
             );
             $new_evt[0].id
         }
@@ -339,12 +339,15 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
             IF chapter_id != NONE AND chapter_id != NULL THEN type::string(chapter_id)
                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
                ELSE NONE END AS chapter_id, 
+            IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
             IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
                ELSE IF chapter_id.sort_order != NONE THEN chapter_id.sort_order * 1440
                ELSE NONE END AS m_abs, 
             IF <-participant_of.in.id != NONE AND <-participant_of.in.id != NULL THEN <-participant_of.in.id ELSE [] END AS participant_ids, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
-            IF note != NONE AND note != NULL THEN note ELSE '' END AS description
+            IF note != NONE AND note != NULL THEN note ELSE '' END AS description,
+            IF kind != NONE AND kind != NULL THEN kind ELSE 'gun' END AS kind,
+            IF status != NONE AND status != NULL THEN status ELSE 'planted' END AS status
         FROM plot_promises
         WHERE project_id = $p_rec
         LIMIT 5000
@@ -414,11 +417,18 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            IF array::first(->promise_milestones.out.chapter_id) != NONE AND array::first(->promise_milestones.out.chapter_id) != NULL THEN type::string(array::first(->promise_milestones.out.chapter_id)) ELSE NONE END AS chapter_id, 
-            IF m_abs != NONE { m_abs } ELSE { array::first(->promise_milestones.out.timeline_event_id.m_abs) } AS m_abs, 
-            [] AS participant_ids, 
+            IF chapter_id != NONE AND chapter_id != NULL THEN type::string(chapter_id)
+               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
+               ELSE NONE END AS chapter_id, 
+            IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
+            IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
+               ELSE IF chapter_id.sort_order != NONE THEN chapter_id.sort_order * 1440
+               ELSE NONE END AS m_abs, 
+            IF <-participant_of.in.id != NONE AND <-participant_of.in.id != NULL THEN <-participant_of.in.id ELSE [] END AS participant_ids, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
-            IF note != NONE AND note != NULL THEN note ELSE '' END AS description
+            IF note != NONE AND note != NULL THEN note ELSE '' END AS description,
+            IF kind != NONE AND kind != NULL THEN kind ELSE 'gun' END AS kind,
+            IF status != NONE AND status != NULL THEN status ELSE 'planted' END AS status
         FROM plot_promises
         WHERE project_id = $p_rec
         LIMIT 5000

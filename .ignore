@@ -1,0 +1,30 @@
+# Зависимости и сборка
+node_modules/
+target/
+dist/
+vendor/
+.cargo/
+
+# Тяжёлые бинарники и медиа
+*.wasm
+*.dll
+*.exe
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.webp
+
+# Логи и временные файлы
+*.log
+tmp/
+temp/
+.idea/
+.vscode/
+
+# Архивы и бэкапы
+*.zip
+*.tar.gz
+*.backup
+*.surql_backup
+

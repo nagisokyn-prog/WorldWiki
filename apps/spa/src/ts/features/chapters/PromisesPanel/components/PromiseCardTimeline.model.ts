@@ -18,6 +18,8 @@ export interface PromiseCardTimelineProps {
     dayWheelOptions: Array<{ value: number; label: string }>;
     hourWheelOptions: Array<{ value: number; label: string }>;
     minuteWheelOptions: Array<{ value: number; label: string }>;
+    eraMinYear?: number;
+    eraMaxYear?: number;
 }
 
 export type PromiseCardTimelineEmits = {

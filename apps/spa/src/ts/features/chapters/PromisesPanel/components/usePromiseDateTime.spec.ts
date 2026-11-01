@@ -61,4 +61,48 @@ describe('usePromiseDateTime', () => {
     dt.currentHour.value = 20;
     expect(dt.diegeticInfo.value?.timeOfDayName).toBe('🌇 Вечер');
   });
+
+  it('generates 60 minute options from 00 to 59', () => {
+    const emitChange = vi.fn();
+    const dt = usePromiseDateTime(calendars, emitChange);
+
+    expect(dt.minuteWheelOptions.value.length).toBe(60);
+    expect(dt.minuteWheelOptions.value[0]).toEqual({ value: 0, label: '00' });
+    expect(dt.minuteWheelOptions.value[59]).toEqual({ value: 59, label: '59' });
+  });
+
+  it('restores matching era from mAbs when year falls in era range', () => {
+    const multiEraCals = ref<CalendarRecord[]>([
+      {
+        id: 'cal:multi',
+        name: 'Мульти-эпохальный',
+        is_default: true,
+        data: {
+          название: 'Мульти-эпохальный',
+          эпохи: [
+            { название: 'Древняя Эра', год_начала: 1, год_конца: 1000 },
+            { название: 'Новейшая Эра', год_начала: 1001, год_конца: 3000 }
+          ],
+          месяцы: [{ название: 'Месяц 1', дней: 30 }],
+          настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 }
+        }
+      }
+    ]);
+
+    const emitChange = vi.fn();
+    const dt = usePromiseDateTime(multiEraCals, emitChange);
+
+    // Set year 2026 (in Era 1: 1001..3000)
+    dt.currentEraIdx.value = 1;
+    dt.currentYear.value = 2026;
+    dt.onDateFieldsChange();
+
+    const mAbs = dt.universalDateModel.value?.absolute_minute;
+    expect(mAbs).toBeDefined();
+
+    // Now re-sync from mAbs alone
+    dt.syncInitialTimelineDate({ m_abs: mAbs, calendar_id: 'cal:multi' });
+    expect(dt.currentEraIdx.value).toBe(1);
+    expect(dt.currentYear.value).toBe(2026);
+  });
 });

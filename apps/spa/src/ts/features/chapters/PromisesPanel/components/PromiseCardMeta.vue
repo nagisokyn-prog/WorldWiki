@@ -116,10 +116,12 @@
       :day-wheel-options="dayWheelOptions"
       :hour-wheel-options="hourWheelOptions"
       :minute-wheel-options="minuteWheelOptions"
+      :era-min-year="eraMinYear"
+      :era-max-year="eraMaxYear"
       @toggle-picker="toggleDatePicker"
       @update:current-calendar-id="onCalendarChange"
-      @update:current-era-idx="currentEraIdx = $event"
-      @update:current-year="currentYear = $event"
+      @update:current-era-idx="onEraChange"
+      @update:current-year="onYearChange"
       @update:current-month-idx="currentMonthIdx = $event"
       @update:current-day="currentDay = $event"
       @update:current-hour="currentHour = $event"
@@ -162,6 +164,8 @@ const {
   dayWheelOptions,
   hourWheelOptions,
   minuteWheelOptions,
+  eraMinYear,
+  eraMaxYear,
   currentEraIdx,
   currentYear,
   currentMonthIdx,
@@ -169,6 +173,8 @@ const {
   currentHour,
   currentMinute,
   diegeticInfo,
+  onEraChange,
+  onYearChange,
   addParticipant,
   removeParticipant,
   handleParticipantBackspace,

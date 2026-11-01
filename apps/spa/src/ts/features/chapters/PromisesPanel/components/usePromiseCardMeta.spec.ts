@@ -193,4 +193,16 @@ describe('usePromiseCardMeta', () => {
     }));
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  it('adjusts year when era changes and clamps to bounds', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+
+    meta.onEraChange(0);
+    expect(emit).toHaveBeenCalledWith('change');
+
+    meta.onYearChange(500);
+    expect(meta.currentYear.value).toBe(500);
+    expect(emit).toHaveBeenCalledWith('change');
+  });
 });

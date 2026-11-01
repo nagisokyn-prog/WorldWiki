@@ -25,10 +25,31 @@ export function usePromiseDateHelpers(
     }));
   });
 
+  const currentEra = computed(() => {
+    return activeCalendarEras.value[currentEraIdx.value] || activeCalendarEras.value[0] || { год_начала: 1, год_конца: 9999, название: '' };
+  });
+
+  const eraMinYear = computed(() => {
+    return currentEra.value.год_начала !== undefined ? currentEra.value.год_начала : 1;
+  });
+
+  const eraMaxYear = computed(() => {
+    return currentEra.value.год_конца !== undefined ? currentEra.value.год_конца : (eraMinYear.value + 100);
+  });
+
   const yearWheelOptions = computed(() => {
-    const y = Number(currentYear.value) || 1;
-    const min = Math.max(1, y - 50);
-    const max = Math.max(100, y + 50);
+    const minStart = eraMinYear.value;
+    const maxEnd = eraMaxYear.value;
+    const y = Number(currentYear.value) || minStart;
+
+    let min = minStart;
+    let max = Math.min(maxEnd, minStart + 100);
+
+    if (y > minStart + 100) {
+      min = Math.max(minStart, y - 50);
+      max = Math.min(maxEnd, y + 50);
+    }
+
     const list: Array<{ value: number; label: string }> = [];
     for (let i = min; i <= max; i++) {
       list.push({ value: i, label: String(i) });
@@ -58,9 +79,9 @@ export function usePromiseDateHelpers(
   });
 
   const minuteWheelOptions = computed(() => {
-    return Array.from({ length: 12 }, (_, i) => ({
-      value: i * 5,
-      label: String(i * 5).padStart(2, '0')
+    return Array.from({ length: 60 }, (_, i) => ({
+      value: i,
+      label: String(i).padStart(2, '0')
     }));
   });
 
@@ -128,6 +149,8 @@ export function usePromiseDateHelpers(
     dayWheelOptions,
     hourWheelOptions,
     minuteWheelOptions,
-    diegeticInfo
+    diegeticInfo,
+    eraMinYear,
+    eraMaxYear
   };
 }

@@ -16,13 +16,6 @@
           🗺️
         </button>
         <button 
-          class="btn-xs btn-outline" 
-          title="Добавить новую сцену" 
-          @click.stop="addNewScene"
-        >
-          ＋ Сцена
-        </button>
-        <button 
           class="btn-icon-subtle text-xs" 
           title="Обновить список" 
           @click.stop="loadPromises"

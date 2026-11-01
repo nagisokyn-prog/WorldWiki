@@ -1,8 +1,336 @@
 [
   {
+    "rule": "AI-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/todo_repo.rs",
+    "line": 1,
+    "symbol": "comment",
+    "message": "Invalid or undated TODO comment '//! SurrealDB implementation of task (todo) repository.'. Required format: '// TODO(YYYY-MM-DD, #issue_or_url): description'.",
+    "fingerprint": "ce28d7d9a40fedd3808ff296bf12aabaef2b0714e38d2b3dbd093479bab6d324"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (176.1) exceeds warning limit (150.0)",
+    "fingerprint": "4c71f266307a31342b74034682f4779f903ac036a9553f7a48955fa6b9520465"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/write_ops.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (197.1) exceeds warning limit (150.0)",
+    "fingerprint": "ceaa386c538b5ad7b8dcb4a17b2767591b0f2ef1413927e5bbe47cfe28826119"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (180) exceeds recommended limit (165)",
+    "fingerprint": "0e7b37b149b516d765f3b53dc61ac2ba7a3ced3164e2fbbaff4041ffdd21777f"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/usePromiseCardMeta.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (289) exceeds recommended limit (265)",
+    "fingerprint": "3a2beb7e5f54beaadd641c9a74e38288b2e75fe5a7aa14bdae94f3c0dec695a3"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventsSection.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (191) exceeds recommended limit (165)",
+    "fingerprint": "11afd84802cb45581178ef1026933460e60900f4e0a389435994fdf9eac51b2f"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/useCalendarEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (289) exceeds recommended limit (265)",
+    "fingerprint": "e905af80c2aac08a6f4e4bd8af09b0c2eb37453ace1af3fc181935e3686ae650"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/PlanetEditor/usePlanetEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (304) exceeds recommended limit (265)",
+    "fingerprint": "887803be36e1d234cbc2f29b41bb6569e7e7925ea383dc0da8f7ee1d343f94fd"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/stores/calendar.store.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (329) exceeds recommended limit (315)",
+    "fingerprint": "0a160f969084cd0d474f5460a6950814ba8b3e646873886148444cca856f4914"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 48,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "a5c8a31f9c45402ac76f82a2ed03b9c791f2a33b941cc5ae28767f17d2311e31"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 52,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "60c70ae2ddbe17db71aec1482e3824da50a99525b18386dc95934085358d5cb6"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 56,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "f4fa6113869ead837cb7ebb02796c386ba5f7ef801e1f614dafbf08b5f0ce07b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 62,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "a5c8a31f9c45402ac76f82a2ed03b9c791f2a33b941cc5ae28767f17d2311e31"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 63,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "4a090ac6fe10d8dba86203271d4a9e63617207970dfa3457b7fcb4ce2f2ce1ad"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 68,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "60c70ae2ddbe17db71aec1482e3824da50a99525b18386dc95934085358d5cb6"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 69,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "b698710530b48858f8c394214a8a0602bf0116fa4986f320f36217879de9554f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 74,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "f4fa6113869ead837cb7ebb02796c386ba5f7ef801e1f614dafbf08b5f0ce07b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 75,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "48a4babfabc6eea9d42fc0baf610fc9c4609d13df3f515c28feae5e93e46f391"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 36,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "01dffac4c66ba27749afc81938eb7aadd6eedb9d6a69f9226b7d500b13ae0e7f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 40,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "af23cdbd4b49f5020767dc0adb725db0fda54175924c9f98a0b2d7a43ad13691"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 44,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "dd2484c60e6d0f1657106ee6fa91df457f75edbc497e8e61fadc66be9d62624a"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 50,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "dd2484c60e6d0f1657106ee6fa91df457f75edbc497e8e61fadc66be9d62624a"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 51,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "8c12a2045849aff16ee89fde9ef3584ee2e2729a754d0d681d2e23f0ca9056da"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 56,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "af23cdbd4b49f5020767dc0adb725db0fda54175924c9f98a0b2d7a43ad13691"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 57,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "100c3d792aacca90b3875fc65c942fb5c666b039eba12cdfa412983ff0d3d920"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 68,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "01dffac4c66ba27749afc81938eb7aadd6eedb9d6a69f9226b7d500b13ae0e7f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 69,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "bed579f46362c3fa5010193d81ea98cb81ec3a64cdbbf58a6c66ec4001f5ca96"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 75,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "b27755ca11ec6f2d334014de45eca4cad7d7fc442f4d858eebb574a75cd7777e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 80,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "9b70c5eade4dc45962ee6a08ad8dcba945e4fd40fc536576d1a4b6ea88b3601b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 45,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 1176,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "9b6e16251a45f09c7352f04d439b13dfaa826d492eaec21700de7eaad1f97ae5"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
+    "line": 86,
+    "symbol": "token_role_mismatch_text",
+    "message": "Background token `--bg-panel` used in text `color` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "d5a1be1b449a2b5b2e61a852017510eb8c474f07eb80c1bbd14e3d3f793e749c"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
+    "line": 91,
+    "symbol": "token_role_mismatch_text",
+    "message": "Background token `--bg-panel` used in text `color` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "cbf17756c23cbe299c71e8ab12d65088b1f33afc28f7b4720c56ce607b8cc2f7"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
+    "line": 1182,
+    "symbol": "token_role_mismatch_text",
+    "message": "Background token `--bg-surface` used in text `color` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "5655321c7f72d9bce82e5e8a477a0a4e9b32f1a920f49bec8b6f2a8ef63cadb6"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/analytics_repo/item_tracker/tracker.rs",
+    "line": 1,
+    "symbol": "get_item_tracker_impl",
+    "message": "High .clone() density detected (9 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "2b09db3680d8c7f1612fea3f63957b308c6e036ff73baf74c9d606e6e65e5a06"
+  },
+  {
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql",
+    "line": 1,
+    "symbol": "fn::upsert_plot_promise",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "65d8082eeb7d5b7c6d7d9ff9577f3ff2a0920fcda06a141817d2acd52bcc14fc"
+  },
+  {
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql",
+    "line": 457,
+    "symbol": "fn::get_plot_promise",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "991c47c757cfc8426fc8915e2f6c9acabe1df748ac7ea9eb7c62473f4689bc60"
+  },
+  {
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql",
+    "line": 497,
+    "symbol": "fn::list_plot_promises_by_project",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "e69bce47881998206bdad4ee1c5ad84dfde491894807bf141f58fc3f13d74a93"
+  },
+  {
+    "rule": "SURQL-005",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql",
+    "line": 537,
+    "symbol": "fn::list_plot_promises_by_chapter",
+    "message": "Subquery detected in SELECT projection list. This executes per-row (N+1 query hazard).",
+    "fingerprint": "86c5470689107e9ddc7d344441a32a0a441d4a24aba5c2bb4c2bb9eed8c5120b"
+  },
+  {
+    "rule": "SURQL-017",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/todo_repo.rs",
+    "line": 108,
+    "symbol": "todos.owner_id",
+    "message": "(Rust Inline SURQL) Foreign key field 'todos.owner_id' (type record<...>) lacks a B-Tree index.",
+    "fingerprint": "b96f602de982f196db1485664d70db5d7d2e14e0e647db842338cc5d28af2d00"
+  },
+  {
+    "rule": "SURQL-027",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql",
+    "line": 774,
+    "symbol": "fn::list_arcs_for_chapter",
+    "message": "Stored function 'fn::list_arcs_for_chapter' is orphaned: 0 call sites found in codebase.",
+    "fingerprint": "243deb55ab3f21777d237613473030986b726bc232db6a292a51f05bcb1f4f1a"
+  },
+  {
     "rule": "SURQL-027",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
-    "line": 178,
+    "line": 186,
     "symbol": "fn::get_timeline_event",
     "message": "Stored function 'fn::get_timeline_event' is orphaned: 0 call sites found in codebase.",
     "fingerprint": "728af6916fc75368fc78b3f5b112e8208bdbf0e375fd507d0cb36b688890c540"
@@ -10,7 +338,7 @@
   {
     "rule": "SURQL-027",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
-    "line": 241,
+    "line": 249,
     "symbol": "fn::list_timeline_events_by_project",
     "message": "Stored function 'fn::list_timeline_events_by_project' is orphaned: 0 call sites found in codebase.",
     "fingerprint": "c0cddd80020907cdacca42e6e29b2c94672b23515a0112945d9dae7b33a60ea8"
@@ -18,7 +346,7 @@
   {
     "rule": "SURQL-027",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
-    "line": 247,
+    "line": 255,
     "symbol": "fn::add_event_reveal",
     "message": "Stored function 'fn::add_event_reveal' is orphaned: 0 call sites found in codebase.",
     "fingerprint": "c9b3ceed1d396a212e9ae1a454432dcd9df12a99367c2c48549f36b8c047771a"
@@ -26,9 +354,177 @@
   {
     "rule": "SURQL-027",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql",
-    "line": 265,
+    "line": 273,
     "symbol": "fn::remove_event_reveal",
     "message": "Stored function 'fn::remove_event_reveal' is orphaned: 0 call sites found in codebase.",
     "fingerprint": "32e574e92043ebdd1ea2c5639d490b62cb517f1c08e99c555d4cd9bacc413da8"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue",
+    "line": 141,
+    "symbol": "ChekhovGunTracker",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\analytics\\ChekhovGunTracker\\ChekhovGunTracker.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "ba0ca5b8a8c8dd0097186662b86a9a73e5d0d3d452a236c49bcd6034f660d164"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/analytics/ConsistencyChecker/ConsistencyChecker.vue",
+    "line": 164,
+    "symbol": "ConsistencyChecker",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\analytics\\ConsistencyChecker\\ConsistencyChecker.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "f31834062bb7077b9d6c449db74ae8cc224c5dc963a6d0ec4c3407fe0344e548"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardDateTimeWheels.vue",
+    "line": 83,
+    "symbol": "PromiseCardDateTimeWheels",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\chapters\\PromisesPanel\\components\\PromiseCardDateTimeWheels.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "88634e1496694b44f669b5169359257fb2e5433273bb2071b3c5fef13bef9b3b"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1ExtraDaysTape.vue",
+    "line": 100,
+    "symbol": "Tab1ExtraDaysTape",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1ExtraDaysTape.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "71649a909bb930fda04fdd37e88597f7bc40cb5bb30fa25af3474fa155636b75"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1MonthsSection.vue",
+    "line": 104,
+    "symbol": "Tab1MonthsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1MonthsSection.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "82bf3a2beab82c74ad8fa9b93c160f03e359ba724f436e4df7357e452e78565a"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventsSection.vue",
+    "line": 169,
+    "symbol": "Tab2AnchorEventsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2AnchorEventsSection.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "c2e2b4d40677b2c540224b780e615eb642032bdf3f9873bb31bbcd7c4434298d"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncEraForm.vue",
+    "line": 56,
+    "symbol": "Tab2SyncEraForm",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncEraForm.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "02c2ec63800b98beb9af524f990b71bb7ae0df0367152f5632cf7a4aaf68691a"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncEventForm.vue",
+    "line": 98,
+    "symbol": "Tab2SyncEventForm",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncEventForm.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "c64a804d4d9dcf44293906542a68fc2030bda7630f1b14b069c837a8491fcf89"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3AgeTimezoneSection.vue",
+    "line": 122,
+    "symbol": "Tab3AgeTimezoneSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3AgeTimezoneSection.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "b3365cb142f7c431c89388343e6392d8c2bd17975e9397d0bc940a7c11c28f32"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab3CultureLore/components/Tab3SeasonsSection.vue",
+    "line": 97,
+    "symbol": "Tab3SeasonsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab3CultureLore\\components\\Tab3SeasonsSection.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "c7b8d16b65e7e3dee9bae4da65d4a1069593a6be58b31a42694f82ef47bd67d2"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/components/Tab5DstTransitionRules.vue",
+    "line": 94,
+    "symbol": "Tab5DstTransitionRules",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab5ReformsDst\\components\\Tab5DstTransitionRules.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "f2bb6d62d9b636346aaaaadc751850455d3604f89fa24bc69165a164a0fb8f73"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/components/Tab5ReformsSection.vue",
+    "line": 149,
+    "symbol": "Tab5ReformsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab5ReformsDst\\components\\Tab5ReformsSection.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "f0871b9388668a90e8b5bdc274300d60f296ef0fb174faed834774a2857e3347"
+  },
+  {
+    "rule": "VUE-001",
+    "file": "./apps/spa/src/ts/features/timeline/PlanetEditor/components/PlanetTimezonesTab.vue",
+    "line": 158,
+    "symbol": "PlanetTimezonesTab",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\PlanetEditor\\components\\PlanetTimezonesTab.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+    "fingerprint": "63efe2ac8d0f18e3f081f01a99ecda557348583c5b3ee4f599c2a15f9a3ad525"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardDateTimeWheels.vue",
+    "line": 83,
+    "symbol": "PromiseCardDateTimeWheels",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\chapters\\PromisesPanel\\components\\PromiseCardDateTimeWheels.vue' is missing required companion hook usePromiseCardDateTimeWheels.ts",
+    "fingerprint": "9a1af39b48d8ccbb712b09ee861f96b86cd4ffff3ffa2f6d31496cd1413468a3"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1ExtraDaysTape.vue",
+    "line": 100,
+    "symbol": "Tab1ExtraDaysTape",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab1Structure\\components\\Tab1ExtraDaysTape.vue' is missing required companion hook useTab1ExtraDaysTape.ts",
+    "fingerprint": "3f89d43c7e8e1493fda8fa6ff0b833833cf9d0b5f489dbbe2154463abf478dc7"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncEraForm.vue",
+    "line": 56,
+    "symbol": "Tab2SyncEraForm",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncEraForm.vue' is missing required companion hook useTab2SyncEraForm.ts",
+    "fingerprint": "0585336dee17097501c1d3e6384acff234e3833e3a510211b5449f50acc54dd1"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab2ErasSync/components/Tab2SyncEventForm.vue",
+    "line": 98,
+    "symbol": "Tab2SyncEventForm",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab2ErasSync\\components\\Tab2SyncEventForm.vue' is missing required companion hook useTab2SyncEventForm.ts",
+    "fingerprint": "8bf0a2525d1a2384f3d0854e98d53a09ab9d9cb20c60ca8d71c79efac5eb5245"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/components/Tab5DstTransitionRules.vue",
+    "line": 94,
+    "symbol": "Tab5DstTransitionRules",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab5ReformsDst\\components\\Tab5DstTransitionRules.vue' is missing required companion hook useTab5DstTransitionRules.ts",
+    "fingerprint": "fa6b87ac24bcfa3b310fc1d8831821987d047a4c6cbfae8b70cf84a1bfae3975"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab5ReformsDst/components/Tab5ReformsSection.vue",
+    "line": 149,
+    "symbol": "Tab5ReformsSection",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\CalendarEditor\\Tab5ReformsDst\\components\\Tab5ReformsSection.vue' is missing required companion hook useTab5ReformsSection.ts",
+    "fingerprint": "482d4d9815b19142104e80efcb1758495c28ed4bcd8ed507ddafa8708f983a58"
+  },
+  {
+    "rule": "VUE-002",
+    "file": "./apps/spa/src/ts/features/timeline/PlanetEditor/components/PlanetTimezonesTab.vue",
+    "line": 158,
+    "symbol": "PlanetTimezonesTab",
+    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\PlanetEditor\\components\\PlanetTimezonesTab.vue' is missing required companion hook usePlanetTimezonesTab.ts",
+    "fingerprint": "2c51583ee569dc35e1ea5a8be9fe666f73acdbcbae9104269277b827069a0169"
+  },
+  {
+    "rule": "VUE-009",
+    "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
+    "line": 164,
+    "symbol": "template_method",
+    "message": "Uncached function call inside v-for template re-executes on every render frame",
+    "fingerprint": "61234606970d8ae587cc432646efaf0839262cb3fd4c70a28d3dfe176fcb5721"
   }
 ]

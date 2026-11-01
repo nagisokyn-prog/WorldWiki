@@ -32,12 +32,12 @@ pub(crate) async fn get_item_journey_impl(
 
     let character_names: std::collections::HashMap<String, String> = characters
         .into_iter()
-        .map(|c| (clean_id(&c.id).to_string(), c.name))
+        .map(|c| (clean_id(&c.id).to_string(), c.name.unwrap_or_default()))
         .collect();
 
     let chapter_map: std::collections::HashMap<String, (i32, String)> = chapters
         .into_iter()
-        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title)))
+        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title.unwrap_or_default())))
         .collect();
 
     let attrs = &target_item.attributes;
@@ -85,7 +85,7 @@ pub(crate) async fn get_item_journey_impl(
         },
         description: format!(
             "Предмет '{}' ({}) создан / появился в мире",
-            target_item.name, item_type
+            target_item.name.as_deref().unwrap_or(""), item_type
         ),
     });
 
@@ -156,7 +156,7 @@ pub(crate) async fn get_item_journey_impl(
 
             nodes.push(ItemJourneyNodeDto {
                 id: format!("promise_{}", clean_id(&prom.id)),
-                title: format!("Сцена: {}", prom.title),
+                title: format!("Сцена: {}", prom.title.as_deref().unwrap_or("")),
                 node_type: "scene".to_string(),
                 m_abs: prom.m_abs,
                 chapter_order: ch_order,
@@ -164,7 +164,7 @@ pub(crate) async fn get_item_journey_impl(
                 chapter_title: ch_title,
                 owner_id: None,
                 owner_name: None,
-                description: prom.description,
+                description: prom.description.unwrap_or_default(),
             });
         }
     }
@@ -181,7 +181,7 @@ pub(crate) async fn get_item_journey_impl(
 
             nodes.push(ItemJourneyNodeDto {
                 id: format!("event_{}", clean_id(&ev.id)),
-                title: format!("Событие: {}", ev.title),
+                title: format!("Событие: {}", ev.title.as_deref().unwrap_or("")),
                 node_type: "scene".to_string(),
                 m_abs: ev.m_abs,
                 chapter_order: ch_order,
@@ -189,7 +189,7 @@ pub(crate) async fn get_item_journey_impl(
                 chapter_title: ch_title,
                 owner_id: None,
                 owner_name: None,
-                description: ev.description,
+                description: ev.description.unwrap_or_default(),
             });
         }
     }
@@ -206,7 +206,7 @@ pub(crate) async fn get_item_journey_impl(
 
     Ok(ItemJourneyDto {
         item_id: target_item.id,
-        item_name: target_item.name,
+        item_name: target_item.name.unwrap_or_default(),
         item_type,
         status_category,
         nodes,

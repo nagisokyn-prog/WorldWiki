@@ -164,6 +164,14 @@ export function useTab2ErasSync(
     emit('update', { anchor_events: events as unknown as CalendarAnchorEvent[] });
   }
 
+  function updateAnchorEvent(idx: number, event: AnchorEventDto) {
+    const list = [...anchorEvents.value];
+    if (idx >= 0 && idx < list.length) {
+      list[idx] = event;
+      updateAnchorEvents(list);
+    }
+  }
+
   function addAnchorEvent(event: AnchorEventDto) {
     const list = [...anchorEvents.value, event];
     updateAnchorEvents(list);
@@ -202,6 +210,7 @@ export function useTab2ErasSync(
     removeEra,
     reorderEra,
     updateAnchorEvents,
+    updateAnchorEvent,
     addAnchorEvent,
     removeAnchorEvent,
     saveCurrentEvent,

@@ -70,15 +70,11 @@
 
         <div class="form-group">
           <label class="form-label">Направление вращения</label>
-          <select
-            :value="planet.rotation_direction"
-            class="form-select"
-            :disabled="isReadOnly"
-            @change="$emit('update:rotation-direction', ($event.target as HTMLSelectElement).value as 'direct' | 'retrograde')"
-          >
-            <option value="direct">Прямое (Восход на востоке)</option>
-            <option value="retrograde">Ретроградное (Восход на западе)</option>
-          </select>
+          <XboxWheel
+            :model-value="planet.rotation_direction"
+            :options="rotationOptions"
+            @update:model-value="$emit('update:rotation-direction', $event as 'direct' | 'retrograde')"
+          />
         </div>
       </div>
     </div>
@@ -124,9 +120,15 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { PlanetAstrophysicsTabProps, PlanetAstrophysicsTabEmits } from './PlanetAstrophysicsTab.model';
 
 defineProps<PlanetAstrophysicsTabProps>();
 
 defineEmits<PlanetAstrophysicsTabEmits>();
+
+const rotationOptions = [
+  { value: 'direct', label: 'Прямое (Восход на востоке)' },
+  { value: 'retrograde', label: 'Ретроградное (Восход на западе)' },
+];
 </script>

@@ -45,11 +45,12 @@
               </div>
             </td>
             <td>
-              <select v-model="tz.dst_rule" class="form-select text-xs py-1" :disabled="isReadOnly">
-                <option value="none">🚫 Без перевода (None)</option>
-                <option value="eu">🇪🇺 EU (+60м)</option>
-                <option value="us">🇺🇸 US (+60м)</option>
-              </select>
+              <XboxWheel
+                :model-value="tz.dst_rule"
+                :options="dstOptions"
+                style="min-width: 130px;"
+                @update:model-value="tz.dst_rule = $event as any"
+              />
             </td>
             <td>
               <button
@@ -79,15 +80,34 @@
     <!-- Географические регионы и города -->
     <div class="section-card">
       <div class="section-header">
-        <div class="section-title">🗺️ Географические регионы, города и световой день</div>
-        <button
-          v-if="!isReadOnly"
-          type="button"
-          class="btn-ghost-sm interactive-el"
-          @click="$emit('add-region')"
-        >
-          + Добавить регион
-        </button>
+        <div>
+          <div class="section-title">🗺️ Географические регионы, города и световой день</div>
+          <div class="section-desc">Опорные точки планеты для расчета долготы, полудня и длительности светового дня.</div>
+        </div>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="btn-ghost-sm interactive-el"
+            @click="$emit('apply-regions-preset', 'earth')"
+          >
+            🌐 Города Земли
+          </button>
+          <button
+            type="button"
+            class="btn-ghost-sm interactive-el"
+            @click="$emit('apply-regions-preset', 'fantasy')"
+          >
+            🏰 Фэнтези регионы
+          </button>
+          <button
+            v-if="!isReadOnly"
+            type="button"
+            class="btn-ghost-sm interactive-el"
+            @click="$emit('add-region')"
+          >
+            + Добавить регион
+          </button>
+        </div>
       </div>
 
       <table class="items-table">
@@ -106,9 +126,12 @@
           <tr v-for="(reg, idx) in planet.regions" :key="idx">
             <td><input v-model="reg.name" type="text" class="table-input" :disabled="isReadOnly" /></td>
             <td>
-              <select v-model="reg.timezone_code" class="form-select text-xs py-1" :disabled="isReadOnly">
-                <option v-for="tz in planet.timezones" :key="tz.code" :value="tz.code">{{ tz.code }}</option>
-              </select>
+              <XboxWheel
+                :model-value="reg.timezone_code"
+                :options="timezoneCodeOptions"
+                style="min-width: 100px;"
+                @update:model-value="reg.timezone_code = $event"
+              />
             </td>
             <td><input v-model.number="reg.latitude" type="number" step="0.1" class="table-input" :disabled="isReadOnly" /></td>
             <td><input v-model.number="reg.longitude" type="number" step="0.1" class="table-input" :disabled="isReadOnly" /></td>
@@ -133,9 +156,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { PlanetTimezonesTabProps, PlanetTimezonesTabEmits } from './PlanetTimezonesTab.model';
 
-defineProps<PlanetTimezonesTabProps>();
+const props = defineProps<PlanetTimezonesTabProps>();
 
 defineEmits<PlanetTimezonesTabEmits>();
+
+const dstOptions = [
+  { value: 'none', label: '🚫 Без перевода (None)' },
+  { value: 'eu', label: '🇪🇺 EU (+60м)' },
+  { value: 'us', label: '🇺🇸 US (+60м)' },
+];
+
+const timezoneCodeOptions = computed(() =>
+  props.planet.timezones.map((tz) => ({
+    value: tz.code,
+    label: tz.code,
+  }))
+);
 </script>

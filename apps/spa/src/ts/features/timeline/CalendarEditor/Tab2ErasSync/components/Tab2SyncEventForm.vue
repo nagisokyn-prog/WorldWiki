@@ -14,16 +14,11 @@
             ➕ Новое событие
           </button>
         </div>
-        <select
-          class="form-select"
-          :value="selectedEventId"
-          :disabled="isReadOnly"
-          @change="$emit('update-selected-event', ($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="ev in anchorEvents" :key="ev.id || ev.name" :value="ev.id || ev.name">
-            {{ ev.name }} (Год {{ ev.year }})
-          </option>
-        </select>
+        <XboxWheel
+          :model-value="selectedEventId"
+          :options="eventOptions"
+          @update:model-value="$emit('update-selected-event', $event)"
+        />
       </div>
 
       <div class="form-group">
@@ -55,7 +50,13 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Смещение (лет)</label>
+        <!-- Тултип к «Смещение (лет)» (Пункт 9) -->
+        <label
+          class="form-label"
+          title="Количество лет между опорным историческим событием мира и точкой отсчета данного календаря. Например, если календарь начался через 500 лет после Падения Империи, укажите 500 лет 'После события'."
+        >
+          Смещение (лет) <span style="font-size: 11px; opacity: 0.7;">ℹ️</span>
+        </label>
         <input
           type="number"
           class="form-input"
@@ -95,9 +96,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncEventFormProps, Tab2SyncEventFormEmits } from './Tab2SyncEventForm.model';
 
-defineProps<Tab2SyncEventFormProps>();
+const props = defineProps<Tab2SyncEventFormProps>();
 
 defineEmits<Tab2SyncEventFormEmits>();
+
+const eventOptions = computed(() =>
+  props.anchorEvents.map((ev) => ({
+    value: ev.id || ev.name,
+    label: `${ev.name} (Год ${ev.year})`,
+  }))
+);
 </script>

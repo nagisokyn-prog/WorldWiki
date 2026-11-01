@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import type { CalendarMonth, CalendarSettings } from '@/services/Calendars/calendar.types';
+import type { CalendarData, CalendarMonth, CalendarSettings } from '@/services/Calendars/calendar.types';
 import type {
   Tab1StructureProps,
   Tab1StructureEmits,
@@ -176,6 +176,22 @@ export function useTab1Structure(
     }
   }
 
+  const firstMonthOfYear = computed<number>(() => {
+    return props.calendarData?.первый_месяц_года ?? 0;
+  });
+
+  const newYearDay = computed<number>(() => {
+    return Number((props.calendarData as Record<string, unknown>)?.день_начала_года) || 1;
+  });
+
+  function setFirstMonthOfYear(monthIndex: number) {
+    emit('update', { первый_месяц_года: monthIndex });
+  }
+
+  function setNewYearDay(day: number) {
+    emit('update', { день_начала_года: day } as unknown as Partial<CalendarData>);
+  }
+
   // Високосы
   function updateLeapRules(rules: LeapRuleDto[]) {
     emit('update', { правило_високосного_года: rules as unknown as string });
@@ -204,6 +220,10 @@ export function useTab1Structure(
     timeSettings,
     extraDays,
     totalYearDays,
+    firstMonthOfYear,
+    newYearDay,
+    setFirstMonthOfYear,
+    setNewYearDay,
     applyDialPreset,
     setDayStartOffset,
     applyWeekPreset,

@@ -82,29 +82,31 @@
     </table>
 
     <!-- Момент смены суток -->
-    <div class="form-group">
-      <label class="form-label">Момент смены суток (day_start_offset)</label>
-      <select
-        :value="dayStartOffset"
-        class="form-select max-w-sm"
-        :disabled="isReadOnly"
-        @change="$emit('set-day-start-offset', ($event.target as HTMLSelectElement).value as DayStartMode)"
-      >
-        <option value="midnight">Полночь (00:00, 0 тиков — стандарт)</option>
-        <option value="sunrise">Рассвет (+0.25 от суток — Египет, Эфиопия)</option>
-        <option value="noon">Полдень (+0.50 от суток — счет JDN)</option>
-        <option value="sunset">Закат (-0.25 от суток — древнесемитский, ислам)</option>
-        <option value="custom">⚙️ Кастомное время / смещение</option>
-      </select>
+    <div class="form-group max-w-sm">
+      <label class="form-label">Момент смены суток</label>
+      <XboxWheel
+        :model-value="dayStartOffset"
+        :options="dayStartOptions"
+        @update:model-value="$emit('set-day-start-offset', $event as DayStartMode)"
+      />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab1DialSectionProps, Tab1DialSectionEmits } from './Tab1DialSection.model';
 import type { DayStartMode } from '../Tab1Structure.model';
 
 defineProps<Tab1DialSectionProps>();
 
 defineEmits<Tab1DialSectionEmits>();
+
+const dayStartOptions = [
+  { value: 'midnight', label: 'Полночь (00:00, 0 тиков — стандарт)' },
+  { value: 'sunrise', label: 'Рассвет (+0.25 от суток — Египет, Эфиопия)' },
+  { value: 'noon', label: 'Полдень (+0.50 от суток — счет JDN)' },
+  { value: 'sunset', label: 'Закат (-0.25 от суток — древнесемитский, ислам)' },
+  { value: 'custom', label: '⚙️ Кастомное время / смещение' },
+];
 </script>

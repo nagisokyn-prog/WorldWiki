@@ -3,17 +3,11 @@
     <div class="grid-3">
       <div class="form-group">
         <label class="form-label">Опорная эпоха в Календаре Мира</label>
-        <select
-          class="form-select"
-          :value="selectedMasterEraIndex"
-          :disabled="isReadOnly"
-          @change="$emit('update-master-era', parseInt(($event.target as HTMLSelectElement).value) || 0)"
-        >
-          <option :value="-1">🌍 От начала Календаря Мира (Год 1)</option>
-          <option v-for="(era, idx) in masterEras" :key="idx" :value="idx">
-            🏛️ {{ era.название }} (с {{ era.год_начала }} г.)
-          </option>
-        </select>
+        <XboxWheel
+          :model-value="String(selectedMasterEraIndex)"
+          :options="eraOptions"
+          @update:model-value="$emit('update-master-era', parseInt($event) || 0)"
+        />
       </div>
       <div class="form-group">
         <label class="form-label">Направление отсчёта</label>
@@ -43,7 +37,9 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Смещение (лет)</label>
+        <label class="form-label" title="Смещение в годах относительно опорной эпохи">
+          Смещение (лет) <span style="font-size: 11px; opacity: 0.7;">ℹ️</span>
+        </label>
         <input
           type="number"
           class="form-input"
@@ -58,9 +54,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncEraFormProps, Tab2SyncEraFormEmits } from './Tab2SyncEraForm.model';
 
-defineProps<Tab2SyncEraFormProps>();
+const props = defineProps<Tab2SyncEraFormProps>();
 
 defineEmits<Tab2SyncEraFormEmits>();
+
+const eraOptions = computed(() => [
+  { value: '-1', label: '🌍 От начала Календаря Мира (Год 1)' },
+  ...props.masterEras.map((era, idx) => ({
+    value: String(idx),
+    label: `🏛️ ${era.название} (с ${era.год_начала} г.)`,
+  })),
+]);
 </script>

@@ -56,12 +56,12 @@
         <div class="form-group">
           <label class="form-label">⚙️ Величина сезонного сдвига времени</label>
           <div style="display: flex; gap: 8px; align-items: center;">
-            <select class="form-select" :value="shiftSelectVal" style="flex: 1;" :disabled="isReadOnly || policyConfig.policy === 'none'" @change="$emit('update-shift-select', ($event.target as HTMLSelectElement).value)">
-              <option value="60">+60 минут (+1 час — стандарт Земли)</option>
-              <option value="120">+120 минут (+2 часа — двойное летнее время / жатва)</option>
-              <option value="30">+30 минут (+0.5 часа — дробный шаг, Иран/Индия)</option>
-              <option value="custom">⚙️ Своё точное значение минут...</option>
-            </select>
+            <XboxWheel
+              :model-value="shiftSelectVal"
+              :options="shiftOptions"
+              style="flex: 1;"
+              @update:model-value="$emit('update-shift-select', $event)"
+            />
             <input
               v-if="shiftSelectVal === 'custom'"
               type="number"
@@ -114,6 +114,7 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab5DstSectionProps, Tab5DstSectionEmits } from './Tab5DstSection.model';
 import Tab5DstSimulatorCard from './Tab5DstSimulatorCard.vue';
 import Tab5DstTransitionRules from './Tab5DstTransitionRules.vue';
@@ -121,4 +122,11 @@ import Tab5DstTransitionRules from './Tab5DstTransitionRules.vue';
 defineProps<Tab5DstSectionProps>();
 
 defineEmits<Tab5DstSectionEmits>();
+
+const shiftOptions = [
+  { value: '60', label: '+60 минут (+1 час — стандарт Земли)' },
+  { value: '120', label: '+120 минут (+2 часа — двойное летнее время / жатва)' },
+  { value: '30', label: '+30 минут (+0.5 часа — дробный шаг, Иран/Индия)' },
+  { value: 'custom', label: '⚙️ Своё точное значение минут...' },
+];
 </script>

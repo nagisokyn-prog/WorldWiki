@@ -4,7 +4,7 @@
  * Бизнес-сохранение делегирует calendarApi, математические расчеты — ядру календаря.
  */
 
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue';
 import type {
   PlanetEditorProps,
   PlanetEditorEmits,
@@ -21,6 +21,8 @@ import {
   populatePlanetFromEntity,
   calculateSolstices,
   buildEarth24Timezones,
+  buildEarthRegions,
+  buildFantasyRegions,
 } from './planetEditor.utils';
 import { calendarApi } from '@/services/api/calendar.api';
 import { useCalendarStore } from '@/stores/calendar.store';
@@ -64,9 +66,17 @@ export function usePlanetEditor(
         }
       }
     };
+    const handleTriggerSave = (e: Event) => {
+      const custom = e as CustomEvent<{ id?: string }>;
+      if (!custom.detail?.id || custom.detail.id === props.planetId || String(planet.value.id).endsWith(custom.detail.id)) {
+        void savePlanet();
+      }
+    };
     document.addEventListener('ww:planet-renamed', handleRenamed as EventListener);
+    document.addEventListener('ww:trigger-planet-save', handleTriggerSave as EventListener);
     onUnmounted(() => {
       document.removeEventListener('ww:planet-renamed', handleRenamed as EventListener);
+      document.removeEventListener('ww:trigger-planet-save', handleTriggerSave as EventListener);
     });
   });
 
@@ -110,6 +120,14 @@ export function usePlanetEditor(
   }
 
 
+  function syncStorage() {
+    calendarStore.savePlanetToStorage(props.projectId, toPlanetEntity(planet.value, props.projectId));
+  }
+
+  onBeforeUnmount(() => {
+    syncStorage();
+  });
+
   function recalculateAstroPoints() {
     planet.value.solstices = calculateSolstices(planet.value.orbit_days);
   }
@@ -122,11 +140,15 @@ export function usePlanetEditor(
       offset_hours: tz?.offset_hours ?? 0,
       dst_rule: tz?.dst_rule || 'none',
     });
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   function removeTimezone(index: number) {
     if (index >= 0 && index < planet.value.timezones.length) {
       planet.value.timezones.splice(index, 1);
+      syncStorage();
+      emit('update:planet', planet.value);
     }
   }
 
@@ -135,9 +157,16 @@ export function usePlanetEditor(
       planet.value.timezones = [
         { name: 'Нулевой меридиан', code: 'UTC+0', offset_hours: 0, dst_rule: 'none' },
       ];
+      if (planet.value.regions && planet.value.regions.length > 0) {
+        planet.value.regions.forEach((r) => {
+          r.timezone_code = 'UTC+0';
+        });
+      }
     } else if (preset === 'earth24') {
       planet.value.timezones = buildEarth24Timezones();
     }
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   // Регионы
@@ -150,12 +179,26 @@ export function usePlanetEditor(
       max_day_hours: reg?.max_day_hours || '12ч 00м',
       min_day_hours: reg?.min_day_hours || '12ч 00м',
     });
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   function removeRegion(index: number) {
     if (index >= 0 && index < planet.value.regions.length) {
       planet.value.regions.splice(index, 1);
+      syncStorage();
+      emit('update:planet', planet.value);
     }
+  }
+
+  function applyRegionsPreset(preset: 'earth' | 'fantasy') {
+    if (preset === 'earth') {
+      planet.value.regions = buildEarthRegions();
+    } else if (preset === 'fantasy') {
+      planet.value.regions = buildFantasyRegions();
+    }
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   // Спутники (Луны)
@@ -272,6 +315,7 @@ export function usePlanetEditor(
     if (p.regions) planet.value.regions = JSON.parse(JSON.stringify(p.regions));
     if (p.moons) planet.value.moons = JSON.parse(JSON.stringify(p.moons));
 
+    syncStorage();
     emit('update:name', planet.value.name);
     emit('update:planet', planet.value);
   }
@@ -293,6 +337,7 @@ export function usePlanetEditor(
     addTimezone,
     removeTimezone,
     applyTimezonePreset,
+    applyRegionsPreset,
     addRegion,
     removeRegion,
     addMoon,

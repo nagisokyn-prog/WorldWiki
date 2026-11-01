@@ -92,6 +92,8 @@
         <Tab3CultureLore
           v-else-if="activeTab === 'cultureLore'"
           :calendar-data="calData"
+          :project-id="projectId"
+          :planet-id="calData?.planet_id"
           :is-read-only="isReadOnly"
           @update="patchCalendarData"
         />

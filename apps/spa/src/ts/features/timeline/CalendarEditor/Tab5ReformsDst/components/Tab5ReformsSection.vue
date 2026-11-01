@@ -61,9 +61,12 @@
           <label class="form-label">Последний день старого стиля (O.S.)</label>
           <div style="display: flex; gap: 6px; align-items: center;">
             <input type="number" class="form-input" :value="gapParams.oldDay" min="1" max="31" style="width: 65px;" :disabled="isReadOnly" @input="$emit('update-gap', { oldDay: +($event.target as HTMLInputElement).value })" />
-            <select class="form-select" :value="gapParams.oldMonth" style="min-width: 130px;" :disabled="isReadOnly" @change="$emit('update-gap', { oldMonth: +($event.target as HTMLSelectElement).value })">
-              <option v-for="(m, i) in monthNames" :key="i" :value="i + 1">{{ i + 1 }}. {{ m }}</option>
-            </select>
+            <XboxWheel
+              :model-value="String(gapParams.oldMonth)"
+              :options="monthOptions"
+              style="min-width: 140px;"
+              @update:model-value="$emit('update-gap', { oldMonth: parseInt($event) || 1 })"
+            />
             <input type="number" class="form-input" :value="gapParams.oldYear" style="width: 80px;" :disabled="isReadOnly" @input="$emit('update-gap', { oldYear: +($event.target as HTMLInputElement).value })" />
           </div>
         </div>
@@ -102,9 +105,12 @@
           <label class="form-label">Дата наступления Новой Эры</label>
           <div style="display: flex; gap: 6px; align-items: center;">
             <input type="number" class="form-input" :value="resetParams.resetDay" min="1" max="31" style="width: 65px;" :disabled="isReadOnly" @input="$emit('update-reset', { resetDay: +($event.target as HTMLInputElement).value })" />
-            <select class="form-select" :value="resetParams.resetMonth" style="min-width: 130px;" :disabled="isReadOnly" @change="$emit('update-reset', { resetMonth: +($event.target as HTMLSelectElement).value })">
-              <option v-for="(m, i) in monthNames" :key="i" :value="i + 1">{{ i + 1 }}. {{ m }}</option>
-            </select>
+            <XboxWheel
+              :model-value="String(resetParams.resetMonth)"
+              :options="monthOptions"
+              style="min-width: 140px;"
+              @update:model-value="$emit('update-reset', { resetMonth: parseInt($event) || 1 })"
+            />
             <input type="number" class="form-input" :value="resetParams.resetYearOld" style="width: 80px;" :disabled="isReadOnly" @input="$emit('update-reset', { resetYearOld: +($event.target as HTMLInputElement).value })" />
           </div>
         </div>
@@ -141,15 +147,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab5ReformsSectionProps, Tab5ReformsSectionEmits } from './Tab5ReformsSection.model';
 import type {
   ReformMode,
   } from '../Tab5ReformsDst.model';
 import Tab5DualDatingCard from './Tab5DualDatingCard.vue';
 
-defineProps<Tab5ReformsSectionProps>();
+const props = defineProps<Tab5ReformsSectionProps>();
 
 defineEmits<Tab5ReformsSectionEmits>();
+
+const monthOptions = computed(() =>
+  props.monthNames.map((m, i) => ({
+    value: String(i + 1),
+    label: `${i + 1}. ${m}`,
+  }))
+);
 
 const modeCards = [
   { mode: 'gap' as ReformMode, icon: '🕳️', title: 'Выброшенные дни (Gap)', desc: 'Скачок дат без разрыва дней недели. Например, после четверга 4 октября сразу пятница 15 октября.' },

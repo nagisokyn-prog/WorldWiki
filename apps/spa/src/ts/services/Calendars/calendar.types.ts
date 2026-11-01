@@ -273,6 +273,7 @@ export interface WorldTimezone {
   name: string;
   code?: string;
   base_offset_hours: number;
+  dst_rule?: string;
   historical_rules?: HistoricalTimezoneRule[];
 }
 

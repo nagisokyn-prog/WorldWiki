@@ -7,6 +7,7 @@ import type {
   PlanetDto,
   PlanetSolstices,
   PlanetTimezone,
+  PlanetRegion,
 } from './PlanetEditor.model';
 import type { PlanetEntity } from '@/services/Calendars/calendar.types';
 
@@ -24,6 +25,7 @@ export function toPlanetEntity(p: PlanetDto, projectId: string): PlanetEntity {
       name: tz.name,
       code: tz.code,
       base_offset_hours: tz.offset_hours,
+      dst_rule: tz.dst_rule,
     })),
     regions: p.regions.map((r, idx) => ({
       id: `reg_${idx}`,
@@ -114,18 +116,18 @@ export function populatePlanetFromEntity(dto: PlanetDto, found: PlanetEntity): v
     dto.timezones = found.timezones.map((tz) => ({
       name: tz.name,
       code: tz.code || 'UTC+0',
-      offset_hours: tz.base_offset_hours ?? 0,
-      dst_rule: 'none',
+      offset_hours: tz.base_offset_hours ?? (tz as unknown as { offset_hours?: number }).offset_hours ?? 0,
+      dst_rule: (((tz as unknown as { dst_rule?: string }).dst_rule as 'none' | 'eu' | 'us') || 'none'),
     }));
   }
   if (found.regions && found.regions.length > 0) {
     dto.regions = found.regions.map((r) => ({
       name: r.name,
-      timezone_code: r.timezone_id || 'UTC+0',
+      timezone_code: r.timezone_id || (r as unknown as { timezone_code?: string }).timezone_code || 'UTC+0',
       latitude: r.latitude || 0,
       longitude: r.longitude || 0,
-      max_day_hours: `${r.summer_day_hours || 12}ч`,
-      min_day_hours: `${r.winter_day_hours || 12}ч`,
+      max_day_hours: r.summer_day_hours !== undefined ? `${r.summer_day_hours}ч` : ((r as unknown as { max_day_hours?: string }).max_day_hours || '12ч'),
+      min_day_hours: r.winter_day_hours !== undefined ? `${r.winter_day_hours}ч` : ((r as unknown as { min_day_hours?: string }).min_day_hours || '12ч'),
     }));
   }
   if (found.moons && found.moons.length > 0) {
@@ -147,16 +149,55 @@ export function calculateSolstices(orbitDays: number): PlanetSolstices {
   };
 }
 
+const EARTH_TZ_NAMES: Record<number, { name: string; dst: 'none' | 'eu' | 'us' }> = {
+  0: { name: 'Гринвич (UTC+0)', dst: 'eu' },
+  1: { name: 'Центральная Европа (UTC+1)', dst: 'eu' },
+  2: { name: 'Восточная Европа (UTC+2)', dst: 'eu' },
+  3: { name: 'Москва (UTC+3)', dst: 'none' },
+  4: { name: 'Самара, Баку (UTC+4)', dst: 'none' },
+  5: { name: 'Екатеринбург (UTC+5)', dst: 'none' },
+  6: { name: 'Омск, Астана (UTC+6)', dst: 'none' },
+  7: { name: 'Красноярск, Бангкок (UTC+7)', dst: 'none' },
+  8: { name: 'Иркутск, Пекин (UTC+8)', dst: 'none' },
+  9: { name: 'Якутск, Токио (UTC+9)', dst: 'none' },
+  10: { name: 'Владивосток, Сидней (UTC+10)', dst: 'none' },
+  11: { name: 'Магадан (UTC+11)', dst: 'none' },
+  12: { name: 'Камчатка, Фиджи (UTC+12)', dst: 'none' },
+  [-5]: { name: 'Восточное побережье США (UTC-5)', dst: 'us' },
+  [-6]: { name: 'Центральное время США (UTC-6)', dst: 'us' },
+  [-7]: { name: 'Горное время США (UTC-7)', dst: 'us' },
+  [-8]: { name: 'Тихоокеанское побережье США (UTC-8)', dst: 'us' },
+};
+
 export function buildEarth24Timezones(): PlanetTimezone[] {
   const list: PlanetTimezone[] = [];
   for (let h = -12; h <= 12; h++) {
     const sign = h >= 0 ? '+' : '';
+    const info = EARTH_TZ_NAMES[h];
     list.push({
-      name: h === 0 ? 'Гринвич / Меридиан' : `Пояс ${sign}${h}`,
+      name: info ? info.name : `Пояс ${sign}${h}`,
       code: `UTC${sign}${h}`,
       offset_hours: h,
-      dst_rule: 'none',
+      dst_rule: info ? info.dst : 'none',
     });
   }
   return list;
+}
+
+export function buildEarthRegions(): PlanetRegion[] {
+  return [
+    { name: 'Москва', timezone_code: 'UTC+3', latitude: 55.75, longitude: 37.61, max_day_hours: '17ч 34м', min_day_hours: '7ч 12м' },
+    { name: 'Лондон (Гринвич)', timezone_code: 'UTC+0', latitude: 51.5, longitude: -0.12, max_day_hours: '16ч 38м', min_day_hours: '7ч 50м' },
+    { name: 'Токио', timezone_code: 'UTC+9', latitude: 35.68, longitude: 139.69, max_day_hours: '14ч 35м', min_day_hours: '9ч 45м' },
+    { name: 'Нью-Йорк', timezone_code: 'UTC-5', latitude: 40.71, longitude: -74.0, max_day_hours: '15ч 05м', min_day_hours: '9ч 15м' },
+    { name: 'Сидней', timezone_code: 'UTC+10', latitude: -33.86, longitude: 151.2, max_day_hours: '14ч 24м', min_day_hours: '9ч 54м' },
+  ];
+}
+
+export function buildFantasyRegions(): PlanetRegion[] {
+  return [
+    { name: 'Столица Империи', timezone_code: 'UTC+0', latitude: 50.0, longitude: 0.0, max_day_hours: '16ч 00м', min_day_hours: '8ч 00м' },
+    { name: 'Южная Гавань', timezone_code: 'UTC+3', latitude: 30.0, longitude: 45.0, max_day_hours: '14ч 00м', min_day_hours: '10ч 00м' },
+    { name: 'Северные Пределы', timezone_code: 'UTC-2', latitude: 65.0, longitude: -30.0, max_day_hours: '20ч 00м', min_day_hours: '4ч 00м' },
+  ];
 }

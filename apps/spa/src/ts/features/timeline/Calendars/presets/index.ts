@@ -6,6 +6,7 @@ import { chinaPreset } from './china.preset';
 import { japanPreset } from './japan.preset';
 import { koreaPreset } from './korea.preset';
 import { europePreset } from './europe.preset';
+import { egyptAncientPreset } from './egypt_ancient.preset';
 import { shireTolkienPreset } from './shire_tolkien.preset';
 import { harptosFaerunPreset } from './harptos_faerun.preset';
 import { westerosMartinPreset } from './westeros_martin.preset';
@@ -21,6 +22,7 @@ export const CALENDAR_PRESETS: CalendarPreset[] = [
   japanPreset,
   koreaPreset,
   europePreset,
+  egyptAncientPreset,
 
   // Фэнтези
   shireTolkienPreset,

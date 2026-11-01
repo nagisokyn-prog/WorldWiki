@@ -32,6 +32,7 @@ export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
       continue;
     }
     if (editor.entityType === 'calendar') {
+      document.dispatchEvent(new CustomEvent('ww:trigger-calendar-save', { detail: { id: editor.rawId } }));
       try {
         const { useCalendarStore } = await import('../calendar.store');
         const calendarStore = useCalendarStore();
@@ -51,6 +52,14 @@ export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
       } catch (err) {
         console.error('[saveAll] Error saving calendar tab:', err);
       }
+      continue;
+    }
+    if (editor.entityType === 'planet') {
+      document.dispatchEvent(new CustomEvent('ww:trigger-planet-save', { detail: { id: editor.rawId } }));
+      editor.unsaved = false;
+      deps.markSaved(editor.id);
+      triggerRef(deps.openEditors);
+      savedCount++;
       continue;
     }
     try {

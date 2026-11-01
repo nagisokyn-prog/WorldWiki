@@ -115,6 +115,7 @@
       :planet="planet"
       :is-read-only="isReadOnly"
       @apply-preset="applyTimezonePreset"
+      @apply-regions-preset="applyRegionsPreset"
       @add-timezone="addTimezone"
       @remove-timezone="removeTimezone"
       @add-region="addRegion"
@@ -166,6 +167,7 @@ const {
   updateOrbitDays,
   recalculateAstroPoints,
   applyTimezonePreset,
+  applyRegionsPreset,
   addTimezone,
   removeTimezone,
   addRegion,

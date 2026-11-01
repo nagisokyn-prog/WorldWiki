@@ -196,14 +196,17 @@ export const useCalendarStore = defineStore('calendar', () => {
       const planetRawId = cleanPlanetId.replace(/^planets:/, '');
 
       // Ensure planet exists in DB first
-      const defaultPlanet = getDefaultPlanet(projectName);
+      const existingPlanets = getPlanets(projectName);
+      const targetPlanet = existingPlanets.find(p => String(p.id).replace(/^planets:/, '') === planetRawId) || getDefaultPlanet(projectName);
       try {
-        await calendarApi.savePlanetDirect(projectName, planetRawId, defaultPlanet.name, {
-          ticks_per_day: defaultPlanet.ticks_per_day,
-          axial_tilt_mdeg: Math.round((defaultPlanet.axial_tilt || 0) * 1000),
-          orbit_days_num: Math.round(defaultPlanet.orbit_days * 10000),
+        await calendarApi.savePlanetDirect(projectName, planetRawId, targetPlanet.name, {
+          ticks_per_day: targetPlanet.ticks_per_day,
+          axial_tilt_mdeg: Math.round((targetPlanet.axial_tilt || 0) * 1000),
+          orbit_days_num: Math.round(targetPlanet.orbit_days * 10000),
           orbit_days_den: 10000,
-          moons: defaultPlanet.moons || [],
+          moons: targetPlanet.moons || [],
+          timezones: targetPlanet.timezones || [],
+          regions: targetPlanet.regions || [],
         });
       } catch (err) {
         console.warn('Could not auto-save planet to DB (may already exist):', err);
@@ -275,7 +278,8 @@ export const useCalendarStore = defineStore('calendar', () => {
   function savePlanetToStorage(projectName: string, planet: PlanetEntity): void {
     const key = `worldwiki:planets:${projectName}`;
     const list = readPlanetsFromStorage(projectName) || [getDefaultPlanet(projectName)];
-    const idx = list.findIndex(p => p.id === planet.id);
+    const cleanId = String(planet.id).replace(/^planets:/, '');
+    const idx = list.findIndex(p => String(p.id).replace(/^planets:/, '') === cleanId);
     if (idx >= 0) {
       list[idx] = planet;
     } else {
@@ -298,6 +302,8 @@ export const useCalendarStore = defineStore('calendar', () => {
         orbit_days_num: Math.round((planet.orbit_days || 365) * 10000),
         orbit_days_den: 10000,
         moons: planet.moons || [],
+        timezones: planet.timezones || [],
+        regions: planet.regions || [],
       });
     } catch (e) {
       console.error('Failed to save planet to DB:', e);

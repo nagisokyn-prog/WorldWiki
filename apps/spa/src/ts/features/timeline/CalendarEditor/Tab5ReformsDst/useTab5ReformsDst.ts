@@ -148,17 +148,22 @@ export function useTab5ReformsDst(props: Tab5ReformsDstProps, emit: Tab5ReformsD
     dualDatingInput.value = { ...def.dualDatingInput };
   }
 
-  function selectDstPreset(key: DstPresetKey) {
+  let isSyncingFromProps = false;
+
+  function selectDstPreset(key: DstPresetKey, shouldSync = true) {
     dstActivePreset.value = key;
     const def = DST_PRESETS[key];
     if (def) {
       policyConfig.value = { ...def };
       shiftSelectVal.value = String(def.shiftMinutes);
     }
-    syncToCalendar();
+    if (shouldSync && !isSyncingFromProps) {
+      syncToCalendar();
+    }
   }
 
   function syncToCalendar() {
+    if (isSyncingFromProps) return;
     emit('update', {
       dst_policy: {
         is_enabled: policyConfig.value.policy !== 'none',
@@ -180,54 +185,59 @@ export function useTab5ReformsDst(props: Tab5ReformsDstProps, emit: Tab5ReformsD
     const cd = props.calendarData;
     if (!cd) return;
 
-    // 1. Reform preset / params
-    const rawCd = cd as Record<string, unknown>;
-    const reformKey = (rawCd.reform_key as string) || (cd.reform_key as string);
-    if (reformKey && ['gregorian_1582', 'caesar_46bc', 'russia_1918', 'french_1792', 'fantasy_magic'].includes(reformKey)) {
-      selectReformPreset(reformKey as ReformPresetKey);
-    } else if (Array.isArray(cd.reforms) && cd.reforms.length > 0) {
-      const first = cd.reforms[0] as unknown as { mode?: string; gap_days?: number; start_day?: number; start_month?: number; effective_year?: number; added_days?: number };
-      if (first.mode === 'gap') {
-        mode.value = 'gap';
-        gapParams.value = {
-          oldDay: first.start_day ?? 1,
-          oldMonth: first.start_month ?? 1,
-          oldYear: first.effective_year ?? 1918,
-          droppedDays: first.gap_days ?? 10,
-        };
-      } else if (first.mode === 'transitional') {
-        mode.value = 'transitional';
-        transParams.value = {
-          transitionalYear: first.effective_year ?? -46,
-          addedDays: first.added_days ?? 90,
-        };
-      } else if (first.mode === 'reset') {
-        mode.value = 'reset';
-        resetParams.value = {
-          resetDay: first.start_day ?? 1,
-          resetMonth: first.start_month ?? 1,
-          resetYearOld: first.effective_year ?? 1792,
-          resetToYear: 1,
-        };
-      }
-    }
-
-    // 2. DST policy preset
-    const dstPreset = (rawCd.dst_preset as string) || (cd.dst_preset as string);
-    if (dstPreset && ['eu_standard', 'us_standard', 'fixed_dates', 'fantasy_harvest', 'none'].includes(dstPreset)) {
-      selectDstPreset(dstPreset as DstPresetKey);
-    } else {
-      const rawPolicy = rawCd.dst_policy as { is_enabled?: boolean; spring_shift_minutes?: number } | undefined;
-      if (rawPolicy && typeof rawPolicy === 'object') {
-        if (rawPolicy.is_enabled === false) {
-          selectDstPreset('none');
-        } else {
-          policyConfig.value.isEnabled = true;
-          policyConfig.value.policy = 'relative';
-          policyConfig.value.shiftMinutes = rawPolicy.spring_shift_minutes || 60;
-          shiftSelectVal.value = String(policyConfig.value.shiftMinutes);
+    isSyncingFromProps = true;
+    try {
+      // 1. Reform preset / params
+      const rawCd = cd as Record<string, unknown>;
+      const reformKey = (rawCd.reform_key as string) || (cd.reform_key as string);
+      if (reformKey && ['gregorian_1582', 'caesar_46bc', 'russia_1918', 'french_1792', 'fantasy_magic'].includes(reformKey)) {
+        selectReformPreset(reformKey as ReformPresetKey);
+      } else if (Array.isArray(cd.reforms) && cd.reforms.length > 0) {
+        const first = cd.reforms[0] as unknown as { mode?: string; gap_days?: number; start_day?: number; start_month?: number; effective_year?: number; added_days?: number };
+        if (first.mode === 'gap') {
+          mode.value = 'gap';
+          gapParams.value = {
+            oldDay: first.start_day ?? 1,
+            oldMonth: first.start_month ?? 1,
+            oldYear: first.effective_year ?? 1918,
+            droppedDays: first.gap_days ?? 10,
+          };
+        } else if (first.mode === 'transitional') {
+          mode.value = 'transitional';
+          transParams.value = {
+            transitionalYear: first.effective_year ?? -46,
+            addedDays: first.added_days ?? 90,
+          };
+        } else if (first.mode === 'reset') {
+          mode.value = 'reset';
+          resetParams.value = {
+            resetDay: first.start_day ?? 1,
+            resetMonth: first.start_month ?? 1,
+            resetYearOld: first.effective_year ?? 1792,
+            resetToYear: 1,
+          };
         }
       }
+
+      // 2. DST policy preset (никогда не эмитим обратно родителю при входящей синхронизации)
+      const dstPreset = (rawCd.dst_preset as string) || (cd.dst_preset as string);
+      if (dstPreset && ['eu_standard', 'us_standard', 'fixed_dates', 'fantasy_harvest', 'none'].includes(dstPreset)) {
+        selectDstPreset(dstPreset as DstPresetKey, false);
+      } else {
+        const rawPolicy = rawCd.dst_policy as { is_enabled?: boolean; spring_shift_minutes?: number } | undefined;
+        if (rawPolicy && typeof rawPolicy === 'object') {
+          if (rawPolicy.is_enabled === false) {
+            selectDstPreset('none', false);
+          } else {
+            policyConfig.value.isEnabled = true;
+            policyConfig.value.policy = 'relative';
+            policyConfig.value.shiftMinutes = rawPolicy.spring_shift_minutes || 60;
+            shiftSelectVal.value = String(policyConfig.value.shiftMinutes);
+          }
+        }
+      }
+    } finally {
+      isSyncingFromProps = false;
     }
   }
 

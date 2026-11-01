@@ -24,22 +24,44 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
   };
 
-  const persist = async (item: RichPlotPromise, logMsg: string) => {
-    let payloadForLog: PlotPromise | null = null;
-    try {
-      console.log(logMsg, { project: getProject(), item });
-      const payload = preparePromisePayload(item, getChapterId());
-      payloadForLog = payload;
-      await plotApi.savePlotPromise(getProject(), payload);
-    } catch (err) {
-      console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
-        errorMsg: err instanceof Error ? err.message : String(err),
-        item,
-        payload: payloadForLog
-      });
-    }
-    syncLocalBackup();
-    emit('change');
+  let persistQueue = Promise.resolve();
+
+  const persist = (item: RichPlotPromise, logMsg: string): Promise<void> => {
+    persistQueue = persistQueue.then(async () => {
+      let payloadForLog: PlotPromise | null = null;
+      let attempts = 0;
+      while (attempts < 3) {
+        attempts++;
+        try {
+          console.log(logMsg, { project: getProject(), item });
+          const payload = preparePromisePayload(item, getChapterId());
+          payloadForLog = payload;
+          await plotApi.savePlotPromise(getProject(), payload);
+          break;
+        } catch (err) {
+          const errStr = err instanceof Error ? err.message : String(err);
+          const isConflict =
+            errStr.includes('Transaction conflict') ||
+            errStr.includes('write conflict') ||
+            (typeof err === 'object' && err !== null && JSON.stringify(err).includes('conflict'));
+          if (isConflict && attempts < 3) {
+            await new Promise((r) => setTimeout(r, attempts * 50));
+            continue;
+          }
+          console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
+            errorMsg: errStr,
+            item,
+            payload: payloadForLog
+          });
+          break;
+        }
+      }
+      syncLocalBackup();
+      emit('change');
+    }).catch((qErr) => {
+      console.warn('[usePromiseActions] Queue error:', qErr);
+    });
+    return persistQueue;
   };
 
   const addPromise = async (payload: {

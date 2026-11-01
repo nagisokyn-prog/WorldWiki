@@ -112,6 +112,8 @@ pub struct SavePlanetParams {
     pub orbit_days_num: Option<i64>,
     pub orbit_days_den: Option<i64>,
     pub moons: Option<Value>,
+    pub timezones: Option<Value>,
+    pub regions: Option<Value>,
 }
 
 /// Сохранить планету через хранимую функцию SurrealDB
@@ -126,7 +128,7 @@ pub async fn save_planet_inner(
         "NONE".to_string()
     };
     let query_str = format!(
-        "RETURN fn::save_planet({}, type::record('projects', $p), $name, $ticks, $tilt, $num, $den, $moons);",
+        "RETURN fn::save_planet({}, type::record('projects', $p), $name, $ticks, $tilt, $num, $den, $moons, $timezones, $regions);",
         id_clause
     );
 
@@ -140,6 +142,8 @@ pub async fn save_planet_inner(
             .bind(("num", params.orbit_days_num))
             .bind(("den", params.orbit_days_den))
             .bind(("moons", params.moons.clone()))
+            .bind(("timezones", params.timezones.clone()))
+            .bind(("regions", params.regions.clone()))
             .await?;
 
         let errs = res.take_errors();

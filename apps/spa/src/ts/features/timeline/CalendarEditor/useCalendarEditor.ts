@@ -190,7 +190,7 @@ export function useCalendarEditor(
   function openAuditModal() { isAuditModalOpen.value = true; }
   function openPresetsModal() { isPresetsModalOpen.value = true; }
 
-  function applyPreset(preset: CalendarPreset) {
+  async function applyPreset(preset: CalendarPreset) {
     if (!calendarRecord.value) return;
     const patchedData = { ...(calendarRecord.value.data || {}), ...preset.data } as CalendarData;
     calendarRecord.value.data = patchedData;
@@ -199,6 +199,61 @@ export function useCalendarEditor(
       emit('update:name', preset.data.название);
       document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: calendarRecord.value.id || props.calendarId, name: preset.data.название } }));
     }
+
+    // Автоматическая проверка и инъекция часового пояса и региона в планету (Пункт 2)
+    try {
+      const planets = calendarStore.getPlanets(props.projectId);
+      const cleanTargetId = String(patchedData.planet_id || '').replace(/^planets:/, '');
+      const targetPlanet = planets.find((p) => String(p.id).replace(/^planets:/, '') === cleanTargetId || p.name === patchedData.planet_id) || planets[0];
+      if (targetPlanet) {
+        let planetUpdated = false;
+        const currentTzs = [...(targetPlanet.timezones || [])];
+        const currentRegs = [...(targetPlanet.regions || [])];
+
+        const presetTz = typeof patchedData.calendar_timezone === 'string' ? patchedData.calendar_timezone : undefined;
+        if (presetTz && !currentTzs.some((tz) => tz.code === presetTz || tz.name === presetTz)) {
+          const match = presetTz.match(/([+-]?\d+(?:\.\d+)?)/);
+          const offsetHours = match ? parseFloat(match[1]) : 0;
+          currentTzs.push({
+            id: `tz_${preset.id}`,
+            name: `${preset.name} (${presetTz})`,
+            code: presetTz,
+            base_offset_hours: offsetHours,
+          });
+          planetUpdated = true;
+        }
+
+        const cultureRegionName = preset.name;
+        let regId = `reg_${preset.id}`;
+        const foundReg = currentRegs.find((r) => r.name.toLowerCase().includes(cultureRegionName.toLowerCase()));
+        if (!foundReg) {
+          currentRegs.push({
+            id: regId,
+            name: cultureRegionName,
+            timezone_id: presetTz || 'UTC+0',
+            latitude: 50.0,
+            longitude: 0.0,
+          });
+          planetUpdated = true;
+        } else {
+          regId = foundReg.id || regId;
+        }
+
+        if (!patchedData.region_ids) patchedData.region_ids = [];
+        if (!patchedData.region_ids.includes(regId)) patchedData.region_ids.push(regId);
+
+        if (planetUpdated) {
+          await calendarStore.savePlanet(props.projectId, {
+            ...targetPlanet,
+            timezones: currentTzs,
+            regions: currentRegs,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[CalendarEditor] Failed to sync preset timezones with planet:', err);
+    }
+
     hasUnsavedDraft.value = true;
     scheduleStateSave();
     emit('update:calendar', patchedData as unknown as Record<string, unknown>);
@@ -214,8 +269,16 @@ export function useCalendarEditor(
     }
   };
 
+  const handleTriggerSave = (e: Event) => {
+    const custom = e as CustomEvent<{ id?: string }>;
+    if (!custom.detail?.id || custom.detail.id === props.calendarId || String(calendarRecord.value?.id).endsWith(custom.detail.id)) {
+      void saveCalendar();
+    }
+  };
+
   onMounted(() => {
     document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
+    document.addEventListener('ww:trigger-calendar-save', handleTriggerSave as EventListener);
   });
 
   void loadCalendar();
@@ -223,6 +286,7 @@ export function useCalendarEditor(
   onUnmounted(() => {
     if (debounceTimer) clearTimeout(debounceTimer);
     document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
+    document.removeEventListener('ww:trigger-calendar-save', handleTriggerSave as EventListener);
   });
 
   watch(() => props.calendarId, async (newVal, oldVal) => {

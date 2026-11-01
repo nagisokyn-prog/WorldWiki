@@ -33,6 +33,7 @@
       :age-rule="ageRule"
       :calendar-timezone="calendarTimezone"
       :regions-list="regionsList"
+      :timezones-list="timezonesList"
       :selected-regions="selectedRegions"
       :is-read-only="isReadOnly"
       @update-age-rule="updateAgeRule"
@@ -61,6 +62,7 @@ const {
   phaseNames,
   ageRule,
   regionsList,
+  timezonesList,
   selectedRegions,
   calendarTimezone,
   updateSeasons,

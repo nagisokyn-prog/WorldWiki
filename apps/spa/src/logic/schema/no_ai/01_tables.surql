@@ -79,6 +79,8 @@ DEFINE FIELD OVERWRITE axial_tilt_mdeg  ON planets TYPE option<int | null>;
 DEFINE FIELD OVERWRITE orbit_days_num   ON planets TYPE option<int | null>;
 DEFINE FIELD OVERWRITE orbit_days_den   ON planets TYPE option<int | null>;
 DEFINE FIELD OVERWRITE moons            ON planets TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
+DEFINE FIELD OVERWRITE timezones        ON planets TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
+DEFINE FIELD OVERWRITE regions          ON planets TYPE array<object> FLEXIBLE DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE created_at       ON planets TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at       ON planets TYPE datetime DEFAULT time::now();
 

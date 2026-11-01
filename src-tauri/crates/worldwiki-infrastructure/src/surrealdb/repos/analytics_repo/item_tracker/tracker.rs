@@ -29,16 +29,18 @@ pub(crate) async fn get_item_tracker_impl(
     // Map chapter id -> (sort_order, title)
     let chapter_map: std::collections::HashMap<String, (i32, String)> = chapters
         .into_iter()
-        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title)))
+        .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title.unwrap_or_default())))
         .collect();
 
     let mut character_names = std::collections::HashMap::new();
     let mut item_entities: Vec<RawEntity> = Vec::new();
 
     for ent in all_entities {
-        if ent.entity_type == "character" {
-            character_names.insert(clean_id(&ent.id).to_string(), ent.name);
-        } else if ent.entity_type == "item" {
+        let ent_type = ent.entity_type.as_deref().unwrap_or("unknown");
+        let ent_name = ent.name.clone().unwrap_or_default();
+        if ent_type == "character" {
+            character_names.insert(clean_id(&ent.id).to_string(), ent_name);
+        } else if ent_type == "item" {
             item_entities.push(ent);
         }
     }
@@ -193,7 +195,7 @@ pub(crate) async fn get_item_tracker_impl(
 
         tracked_items.push(TrackedItemDto {
             id: item.id,
-            name: item.name,
+            name: item.name.unwrap_or_default(),
             item_type,
             status_category,
             current_owner_id,

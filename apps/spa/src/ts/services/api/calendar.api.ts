@@ -70,6 +70,8 @@ export const calendarApi = {
         orbit_days_num: Number(data.orbit_days_num) || 365,
         orbit_days_den: Number(data.orbit_days_den) || 1,
         moons: sanitizedMoons,
+        timezones: Array.isArray(data.timezones) ? data.timezones : [],
+        regions: Array.isArray(data.regions) ? data.regions : [],
       },
     });
   },

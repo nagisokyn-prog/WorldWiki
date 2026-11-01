@@ -7,7 +7,7 @@ import type {
   CultureHolidayDto,
   CharacterAgeRuleDto,
 } from './Tab3CultureLore.model';
-import type { CalendarData, CalendarMonth, MoonPhaseNames } from '@/services/Calendars/calendar.types';
+import type { CalendarData, CalendarMonth, MoonPhaseNames, PlanetEntity, WorldRegion } from '@/services/Calendars/calendar.types';
 
 export function useTab3CultureLore(
   props: Tab3CultureLoreProps,
@@ -75,7 +75,7 @@ export function useTab3CultureLore(
   );
 
   const ageRule = computed<CharacterAgeRuleDto>(() => {
-    const raw = props.calendarData?.character_age_rules as unknown as CharacterAgeRuleDto | undefined;
+    const raw = (props.calendarData as Record<string, unknown>)?.character_age_rules as CharacterAgeRuleDto | undefined;
     if (raw && typeof raw === 'object') {
       return {
         age_at_birth: raw.age_at_birth ?? 0,
@@ -90,14 +90,31 @@ export function useTab3CultureLore(
     };
   });
 
+  const effectiveProjectId = computed<string>(() => {
+    return props.projectId || (props.calendarData as Record<string, unknown>)?.project_id as string || 'default';
+  });
+
+  const currentPlanet = computed<PlanetEntity | null>(() => {
+    const projId = effectiveProjectId.value;
+    const planets = calendarStore.getPlanets(projId);
+    if (!planets || planets.length === 0) return null;
+    const targetPlanetId = props.planetId || props.calendarData?.planet_id;
+    if (targetPlanetId) {
+      const cleanTarget = String(targetPlanetId).replace(/^planets?:/, '');
+      const found = planets.find(
+        (p) => String(p.id).replace(/^planets?:/, '') === cleanTarget || p.name === targetPlanetId
+      );
+      if (found) return found;
+    }
+    return planets[0] || null;
+  });
+
   const regionsList = computed<{ id: string; name: string }[]>(() => {
-    const projId = (props.calendarData as Record<string, unknown>)?.project_id as string | undefined;
-    const planets = calendarStore.getPlanets(projId || 'default');
-    const activePlanet = planets[0];
+    const activePlanet = currentPlanet.value;
     if (activePlanet && Array.isArray(activePlanet.regions) && activePlanet.regions.length > 0) {
       return activePlanet.regions.map((r, i) => ({
-        id: (r as { id?: string }).id || `reg_${i}`,
-        name: r.name || `Регион ${i + 1}`
+        id: (r as { id?: string; code?: string }).id || (r as { id?: string; code?: string }).code || `reg_${i}`,
+        name: r.name || `Регион ${i + 1}`,
       }));
     }
     return [
@@ -107,16 +124,37 @@ export function useTab3CultureLore(
     ];
   });
 
-  const selectedRegions = ref<string[]>(['capital', 'south_harbor', 'north_lands']);
+  const timezonesList = computed<{ value: string; label: string }[]>(() => {
+    const activePlanet = currentPlanet.value;
+    if (activePlanet && Array.isArray(activePlanet.timezones) && activePlanet.timezones.length > 0) {
+      return activePlanet.timezones.map((tz) => ({
+        value: tz.code || tz.name,
+        label: `${tz.name} (${tz.code || ''}${tz.base_offset_hours !== undefined ? (tz.base_offset_hours >= 0 ? ` +${tz.base_offset_hours}ч` : ` ${tz.base_offset_hours}ч`) : ''})`,
+      }));
+    }
+    return [
+      { value: 'UTC+0', label: 'Столичный меридиан (UTC+0, 0ч)' },
+      { value: 'UTC+1', label: 'Центральная Европа (UTC+1, +1ч)' },
+      { value: 'UTC+2', label: 'Восточноевропейский пояс (UTC+2, +2ч)' },
+      { value: 'UTC+3', label: 'Московское время (UTC+3, +3ч)' },
+      { value: 'UTC+8', label: 'Восточная Азия / Китай (UTC+8, +8ч)' },
+      { value: 'UTC+9', label: 'Япония / Корея (UTC+9, +9ч)' },
+      { value: 'UTC-5', label: 'Восточное побережье США (UTC-5, -5ч)' },
+    ];
+  });
+
+  const selectedRegions = ref<string[]>(
+    (props.calendarData as Record<string, unknown>)?.culture_regions as string[] ||
+    props.calendarData?.region_ids ||
+    ['capital', 'south_harbor', 'north_lands']
+  );
 
   const calendarTimezone = computed<string>(() => {
     const rawTz = (props.calendarData as Record<string, unknown> | null)?.calendar_timezone;
     if (typeof rawTz === 'string' && rawTz.length > 0) {
       return rawTz;
     }
-    const projId = (props.calendarData as Record<string, unknown> | null)?.project_id as string | undefined;
-    const planets = calendarStore.getPlanets(projId || 'default');
-    const activePlanet = planets[0];
+    const activePlanet = currentPlanet.value;
     if (activePlanet?.timezones && activePlanet.timezones.length > 0) {
       return activePlanet.timezones[0].code || 'UTC+3';
     }
@@ -150,7 +188,7 @@ export function useTab3CultureLore(
   function addHoliday() {
     const list = [...holidays.value];
     list.push({
-      название: `Праздник ${list.length + 1}`,
+      название: 'Новый праздник',
       дата_начала: { месяц: 0, день: 1 },
       is_range: false,
     });
@@ -162,18 +200,28 @@ export function useTab3CultureLore(
     updateHolidays(list);
   }
 
-  function updatePhaseNames(names: MoonPhaseNames) {
-    phaseNames.value = { ...names };
-    emit('update', { moon_phase_names: names } as unknown as Partial<CalendarData>);
+  function updatePhaseNames(patch: MoonPhaseNames) {
+    phaseNames.value = { ...patch };
+    emit('update', {
+      moon_phase_names: { ...patch },
+      moons: [
+        {
+          name: props.calendarData?.moons?.[0]?.name || 'Луна',
+          period_days: props.calendarData?.moons?.[0]?.period_days ?? 29.530588,
+          phase_names: { ...patch },
+        },
+      ],
+    } as unknown as Partial<CalendarData>);
   }
 
   function findDoubleFullMoon() {
-    alert('🔮 Ближайшее Двойное Полнолуние: через 412 суток от точки отсчета!');
+    return null;
   }
 
   function updateAgeRule(patch: Partial<CharacterAgeRuleDto>) {
+    const current = ageRule.value;
     emit('update', {
-      character_age_rules: { ...ageRule.value, ...patch },
+      character_age_rules: { ...current, ...patch },
     } as unknown as Partial<CalendarData>);
   }
 
@@ -186,14 +234,28 @@ export function useTab3CultureLore(
       list.push(id);
     }
     selectedRegions.value = list;
-    emit('update', { culture_regions: list } as unknown as Partial<CalendarData>);
+    emit('update', { culture_regions: list, region_ids: list } as unknown as Partial<CalendarData>);
   }
 
-  function addRegion(name: string) {
+  async function addRegion(name: string) {
     const id = `reg_${Date.now()}`;
-    regionsList.value.push({ id, name: `📍 ${name}` });
+    const activePlanet = currentPlanet.value;
+    if (activePlanet) {
+      const newRegion: WorldRegion = {
+        id,
+        name,
+        timezone_id: calendarTimezone.value,
+        latitude: 50.0,
+        longitude: 0.0,
+      };
+      const updatedRegions = [...(activePlanet.regions || []), newRegion];
+      await calendarStore.savePlanet(effectiveProjectId.value, {
+        ...activePlanet,
+        regions: updatedRegions,
+      });
+    }
     selectedRegions.value.push(id);
-    emit('update', { culture_regions: selectedRegions.value } as unknown as Partial<CalendarData>);
+    emit('update', { culture_regions: selectedRegions.value, region_ids: selectedRegions.value } as unknown as Partial<CalendarData>);
   }
 
   function setCalendarTimezone(tz: string) {
@@ -207,6 +269,7 @@ export function useTab3CultureLore(
     phaseNames,
     ageRule,
     regionsList,
+    timezonesList,
     selectedRegions,
     calendarTimezone,
     updateSeasons,

@@ -15,19 +15,27 @@
       </div>
       <div class="form-group" style="margin-bottom: 8px;">
         <label class="form-label">Месяц перехода</label>
-        <select class="form-select" :value="policyConfig.springRule.month" :disabled="isReadOnly" @change="$emit('update-spring-rule', { month: +($event.target as HTMLSelectElement).value })">
-          <option v-for="(m, i) in monthNames" :key="i" :value="i + 1">{{ i + 1 }}. {{ m }}</option>
-        </select>
+        <XboxWheel
+          :model-value="String(policyConfig.springRule.month)"
+          :options="monthOptions"
+          @update:model-value="$emit('update-spring-rule', { month: parseInt($event) || 1 })"
+        />
       </div>
       <div v-if="policyConfig.policy === 'relative'" class="form-group" style="margin-bottom: 8px;">
         <label class="form-label">Правило дня недели</label>
         <div style="display: flex; gap: 6px;">
-          <select class="form-select" :value="policyConfig.springRule.occurrence" style="flex: 1;" :disabled="isReadOnly" @change="$emit('update-spring-rule', { occurrence: ($event.target as HTMLSelectElement).value as WeekdayOccurrence })">
-            <option value="first">Первое</option><option value="second">Второе</option><option value="third">Третье</option><option value="fourth">Четвертое</option><option value="last">Последнее</option>
-          </select>
-          <select class="form-select" :value="policyConfig.springRule.weekday" style="flex: 1;" :disabled="isReadOnly" @change="$emit('update-spring-rule', { weekday: +($event.target as HTMLSelectElement).value })">
-            <option v-for="(w, i) in weekdayNames" :key="i" :value="i">{{ w }}</option>
-          </select>
+          <XboxWheel
+            :model-value="policyConfig.springRule.occurrence"
+            :options="occurrenceOptions"
+            style="flex: 1;"
+            @update:model-value="$emit('update-spring-rule', { occurrence: $event as WeekdayOccurrence })"
+          />
+          <XboxWheel
+            :model-value="String(policyConfig.springRule.weekday)"
+            :options="weekdayOptions"
+            style="flex: 1;"
+            @update:model-value="$emit('update-spring-rule', { weekday: parseInt($event) || 0 })"
+          />
         </div>
       </div>
       <div v-else-if="policyConfig.policy === 'fixed'" class="form-group" style="margin-bottom: 8px;">
@@ -48,19 +56,27 @@
       </div>
       <div class="form-group" style="margin-bottom: 8px;">
         <label class="form-label">Месяц возврата</label>
-        <select class="form-select" :value="policyConfig.autumnRule.month" :disabled="isReadOnly" @change="$emit('update-autumn-rule', { month: +($event.target as HTMLSelectElement).value })">
-          <option v-for="(m, i) in monthNames" :key="i" :value="i + 1">{{ i + 1 }}. {{ m }}</option>
-        </select>
+        <XboxWheel
+          :model-value="String(policyConfig.autumnRule.month)"
+          :options="monthOptions"
+          @update:model-value="$emit('update-autumn-rule', { month: parseInt($event) || 1 })"
+        />
       </div>
       <div v-if="policyConfig.policy === 'relative'" class="form-group" style="margin-bottom: 8px;">
         <label class="form-label">Правило дня недели</label>
         <div style="display: flex; gap: 6px;">
-          <select class="form-select" :value="policyConfig.autumnRule.occurrence" style="flex: 1;" :disabled="isReadOnly" @change="$emit('update-autumn-rule', { occurrence: ($event.target as HTMLSelectElement).value as WeekdayOccurrence })">
-            <option value="first">Первое</option><option value="second">Второе</option><option value="third">Третье</option><option value="fourth">Четвертое</option><option value="last">Последнее</option>
-          </select>
-          <select class="form-select" :value="policyConfig.autumnRule.weekday" style="flex: 1;" :disabled="isReadOnly" @change="$emit('update-autumn-rule', { weekday: +($event.target as HTMLSelectElement).value })">
-            <option v-for="(w, i) in weekdayNames" :key="i" :value="i">{{ w }}</option>
-          </select>
+          <XboxWheel
+            :model-value="policyConfig.autumnRule.occurrence"
+            :options="occurrenceOptions"
+            style="flex: 1;"
+            @update:model-value="$emit('update-autumn-rule', { occurrence: $event as WeekdayOccurrence })"
+          />
+          <XboxWheel
+            :model-value="String(policyConfig.autumnRule.weekday)"
+            :options="weekdayOptions"
+            style="flex: 1;"
+            @update:model-value="$emit('update-autumn-rule', { weekday: parseInt($event) || 0 })"
+          />
         </div>
       </div>
       <div v-else-if="policyConfig.policy === 'fixed'" class="form-group" style="margin-bottom: 8px;">
@@ -76,10 +92,34 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab5DstTransitionRulesProps, Tab5DstTransitionRulesEmits } from './Tab5DstTransitionRules.model';
 import type { WeekdayOccurrence } from '../Tab5ReformsDst.model';
 
-defineProps<Tab5DstTransitionRulesProps>();
+const props = defineProps<Tab5DstTransitionRulesProps>();
 
 defineEmits<Tab5DstTransitionRulesEmits>();
+
+const monthOptions = computed(() =>
+  props.monthNames.map((m, i) => ({
+    value: String(i + 1),
+    label: `${i + 1}. ${m}`,
+  }))
+);
+
+const occurrenceOptions = [
+  { value: 'first', label: 'Первое' },
+  { value: 'second', label: 'Второе' },
+  { value: 'third', label: 'Третье' },
+  { value: 'fourth', label: 'Четвертое' },
+  { value: 'last', label: 'Последнее' },
+];
+
+const weekdayOptions = computed(() =>
+  props.weekdayNames.map((w, i) => ({
+    value: String(i),
+    label: w,
+  }))
+);
 </script>

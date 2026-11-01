@@ -6,7 +6,7 @@
 DEFINE FUNCTION OVERWRITE fn::get_planet_calendar_bundle($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $planets = (
-        SELECT id, project_id, name, ticks_per_day, axial_tilt_mdeg, orbit_days_num, orbit_days_den, moons, created_at, updated_at 
+        SELECT id, project_id, name, ticks_per_day, axial_tilt_mdeg, orbit_days_num, orbit_days_den, moons, timezones, regions, created_at, updated_at 
         FROM planets 
         WHERE fn::normalize_project_id(project_id) = $p_rec 
         ORDER BY created_at ASC 
@@ -34,12 +34,16 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
     $axial_tilt_mdeg: any,
     $orbit_days_num: any,
     $orbit_days_den: any,
-    $moons: any
+    $moons: any,
+    $timezones: any,
+    $regions: any
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $clean_ticks = IF $ticks_per_day != NONE AND $ticks_per_day != NULL AND type::int($ticks_per_day) > 0 { type::int($ticks_per_day) } ELSE { 86400 };
     
     LET $clean_moons = IF $moons != NONE AND $moons != NULL { $moons } ELSE { [] };
+    LET $clean_timezones = IF $timezones != NONE AND $timezones != NULL { $timezones } ELSE { [] };
+    LET $clean_regions = IF $regions != NONE AND $regions != NULL { $regions } ELSE { [] };
 
     LET $str_pl = IF $id != NONE AND $id != NULL {
         string::replace(string::replace(string::replace(string::replace(type::string($id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '')
@@ -59,6 +63,8 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
                 orbit_days_num = $orbit_days_num,
                 orbit_days_den = $orbit_days_den,
                 moons = $clean_moons,
+                timezones = $clean_timezones,
+                regions = $clean_regions,
                 updated_at = time::now()
         );
         RETURN $res[0];
@@ -72,6 +78,8 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
                 orbit_days_num = $orbit_days_num,
                 orbit_days_den = $orbit_days_den,
                 moons = $clean_moons,
+                timezones = $clean_timezones,
+                regions = $clean_regions,
                 created_at = time::now(),
                 updated_at = time::now()
         );

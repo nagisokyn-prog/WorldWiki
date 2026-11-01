@@ -26,6 +26,8 @@ export interface CharacterAgeRuleDto {
 
 export interface Tab3CultureLoreProps {
   calendarData: CalendarData | null;
+  projectId?: string;
+  planetId?: string;
   isReadOnly?: boolean;
 }
 

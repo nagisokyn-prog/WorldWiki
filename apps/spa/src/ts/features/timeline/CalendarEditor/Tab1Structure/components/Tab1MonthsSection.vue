@@ -17,6 +17,36 @@
       </div>
     </header>
 
+    <!-- Начало Нового Года (Пункт 14) -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px;">
+      <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-main);">
+        🎍 Начало Нового Года культуры (Точка новолетия)
+      </div>
+      <div class="grid-2 gap-3" style="align-items: center;">
+        <div class="form-group">
+          <label class="form-label">Месяц наступления Нового года</label>
+          <XboxWheel
+            :model-value="String(firstMonthOfYear ?? 0)"
+            :options="monthOptions"
+            @update:model-value="$emit('set-first-month', parseInt($event) || 0)"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">День месяца встречи Нового года</label>
+          <input
+            type="number"
+            class="form-input"
+            :value="newYearDay ?? 1"
+            min="1"
+            :max="maxDaysInSelectedMonth"
+            :disabled="isReadOnly"
+            style="width: 90px;"
+            @input="$emit('set-new-year-day', parseInt(($event.target as HTMLInputElement).value) || 1)"
+          />
+        </div>
+      </div>
+    </div>
+
     <table class="items-table">
       <thead>
         <tr>
@@ -72,6 +102,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab1MonthsSectionProps, Tab1MonthsSectionEmits } from './Tab1MonthsSection.model';
 import { useTab1MonthsSection } from './useTab1MonthsSection';
 
@@ -80,4 +112,16 @@ const props = defineProps<Tab1MonthsSectionProps>();
 defineEmits<Tab1MonthsSectionEmits>();
 
 const { seasonLabels } = useTab1MonthsSection(props);
+
+const monthOptions = computed(() =>
+  props.months.map((m, idx) => ({
+    value: String(idx),
+    label: `${idx + 1}. ${m.название || `Месяц ${idx + 1}`}`,
+  }))
+);
+
+const maxDaysInSelectedMonth = computed(() => {
+  const selected = props.months[props.firstMonthOfYear ?? 0];
+  return selected ? Number(selected.дней) || 31 : 31;
+});
 </script>

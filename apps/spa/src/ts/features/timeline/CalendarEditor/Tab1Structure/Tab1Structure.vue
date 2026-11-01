@@ -27,10 +27,14 @@
     <Tab1MonthsSection
       :months="months"
       :total-year-days="totalYearDays"
+      :first-month-of-year="firstMonthOfYear"
+      :new-year-day="newYearDay"
       :is-read-only="isReadOnly"
       @balance-months="balanceMonthsEvenly"
       @add-month="addMonth"
       @update-months="updateMonths"
+      @set-first-month="setFirstMonthOfYear"
+      @set-new-year-day="setNewYearDay"
     />
 
     <!-- СЕКЦИЯ 4: КАЛЕНДАРНАЯ КОРРЕКЦИЯ И ПРАЗДНИКИ (WASM ENGINE) -->
@@ -96,6 +100,10 @@ const {
   dialUnits,
   dayStartOffset,
   totalYearDays,
+  firstMonthOfYear,
+  newYearDay,
+  setFirstMonthOfYear,
+  setNewYearDay,
   newWeekdayName,
   applyDialPreset,
   setDayStartOffset,

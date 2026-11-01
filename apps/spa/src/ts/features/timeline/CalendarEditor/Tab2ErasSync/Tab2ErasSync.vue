@@ -47,6 +47,7 @@
       :anchor-events="anchorEvents"
       :is-read-only="isReadOnly"
       @add-anchor-event="addAnchorEvent"
+      @update-anchor-event="updateAnchorEvent"
       @remove-anchor-event="removeAnchorEvent"
     />
   </div>
@@ -87,5 +88,6 @@ const {
   addAnchorEvent,
   removeAnchorEvent,
   saveCurrentEvent,
+  updateAnchorEvent,
 } = useTab2ErasSync(props, emit);
 </script>

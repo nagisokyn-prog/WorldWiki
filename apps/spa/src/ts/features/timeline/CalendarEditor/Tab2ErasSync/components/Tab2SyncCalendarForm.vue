@@ -3,16 +3,11 @@
     <div class="grid-2">
       <div class="form-group">
         <label class="form-label">Календарь другого поселения / культуры</label>
-        <select
-          class="form-select"
-          :value="targetCalendarId"
-          :disabled="isReadOnly"
-          @change="$emit('update-target-calendar', ($event.target as HTMLSelectElement).value)"
-        >
-          <option value="julian">Юлианский календарь (Церковный)</option>
-          <option value="padishah">Имперский Стандарт Падишаха</option>
-          <option value="fremen">Цикл Сиетча Табр (Фременский)</option>
-        </select>
+        <XboxWheel
+          :model-value="targetCalendarId"
+          :options="calendarOptions"
+          @update:model-value="$emit('update-target-calendar', $event)"
+        />
       </div>
       <div class="form-group">
         <label class="form-label">Когда там шёл год</label>
@@ -30,8 +25,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncCalendarFormProps, Tab2SyncCalendarFormEmits } from './Tab2SyncCalendarForm.model';
+
 defineProps<Tab2SyncCalendarFormProps>();
 
 defineEmits<Tab2SyncCalendarFormEmits>();
+
+const calendarOptions = [
+  { value: 'julian', label: 'Юлианский календарь (Церковный)' },
+  { value: 'padishah', label: 'Имперский Стандарт Падишаха' },
+  { value: 'fremen', label: 'Цикл Сиетча Табр (Фременский)' },
+];
 </script>

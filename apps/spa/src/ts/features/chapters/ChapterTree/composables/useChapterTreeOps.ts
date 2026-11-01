@@ -79,17 +79,15 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 options.emit('open-planet-viewer', newPlanet);
                 options.emit('open-entity', { ...newPlanet, entityType: 'planet', id: newId, name: newName, title: newName });
-            } else {
-                // Создание календаря на планете
-                const planetId = parentId.replace(/^(entity:)?planets?:/, '');
-                let calName = name?.trim();
-                if (!calName || calName === 'Новый календарь') {
-                    const promptTitle = 'Введите название нового календаря:';
-                    const promptFn = typeof window !== 'undefined' && window.prompt ? window.prompt.bind(window) : null;
-                    const res = promptFn ? promptFn(promptTitle, 'Григорианский') : null;
-                    if (!res || !res.trim()) return;
-                    calName = res.trim();
+                await nextTick();
+                const pNode = options.findNodeById(`entity:planet:${newId}`) || options.findNodeById(newId);
+                if (pNode && options.explorerTreeRef.value) {
+                    options.explorerTreeRef.value.startRename(pNode);
                 }
+            } else {
+                // Создание календаря на планете без системных prompt-окон
+                const planetId = parentId.replace(/^(entity:)?planets?:/, '');
+                const calName = name?.trim() || 'Новый календарь';
                 const defaultCalData = CalendarMath.getDefaultCalendar();
                 defaultCalData.planet_id = planetId;
                 defaultCalData.название = calName;
@@ -115,6 +113,11 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 if (created) {
                     const cleanCalId = String(created.id ?? '').replace(/^(entity:)?calendars?:/, '');
                     options.emit('open-entity', { ...created, entityType: 'calendar', id: cleanCalId, name: created.name, title: created.name });
+                    await nextTick();
+                    const node = options.findNodeById(`entity:calendar:${cleanCalId}`) || options.findNodeById(cleanCalId);
+                    if (node && options.explorerTreeRef.value) {
+                        options.explorerTreeRef.value.startRename(node);
+                    }
                 }
             }
         } else if (name) {

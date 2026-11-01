@@ -272,9 +272,9 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $entities = (
         SELECT 
             type::string(id) AS id, 
-            name, 
-            schema_id.type_key AS entity_type, 
-            attributes
+            IF name != NONE AND name != NULL THEN name ELSE '' END AS name, 
+            IF schema_id.type_key != NONE AND schema_id.type_key != NULL THEN schema_id.type_key ELSE 'unknown' END AS entity_type, 
+            IF attributes != NONE AND attributes != NULL THEN attributes ELSE {} END AS attributes
         FROM entities
         WHERE project_id = $p_rec
         LIMIT 5000
@@ -283,8 +283,8 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $chapters = (
         SELECT 
             type::string(id) AS id, 
-            title, 
-            IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF sort_order != NONE AND sort_order != NULL THEN sort_order ELSE 0 END AS sort_order
         FROM chapters
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
@@ -294,11 +294,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id, 
+            IF array::first(->promise_milestones.out.chapter_id) != NONE AND array::first(->promise_milestones.out.chapter_id) != NULL THEN type::string(array::first(->promise_milestones.out.chapter_id)) ELSE NONE END AS chapter_id, 
             m_abs, 
-            <-participant_of.in.id AS participant_ids, 
-            title, 
-            IF note != NONE { note } ELSE { '' } AS description
+            IF <-participant_of.in.id != NONE AND <-participant_of.in.id != NULL THEN <-participant_of.in.id ELSE [] END AS participant_ids, 
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF note != NONE AND note != NULL THEN note ELSE '' END AS description
         FROM plot_promises
         WHERE project_id = $p_rec
         LIMIT 5000
@@ -307,11 +307,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            type::string(array::first(->revealed_in.out)) AS chapter_id, 
+            IF array::first(->revealed_in.out) != NONE AND array::first(->revealed_in.out) != NULL THEN type::string(array::first(->revealed_in.out)) ELSE NONE END AS chapter_id, 
             m_abs, 
-            <-participates_in.in AS participants, 
-            title, 
-            IF description != NONE { description } ELSE { '' } AS description
+            IF <-participates_in.in != NONE AND <-participates_in.in != NULL THEN <-participates_in.in ELSE [] END AS participants, 
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF description != NONE AND description != NULL THEN description ELSE '' END AS description
         FROM timeline_events
         WHERE project_id = $p_rec
         LIMIT 5000
@@ -333,9 +333,9 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $item_info = (
         SELECT 
             type::string(id) AS id, 
-            name, 
-            schema_id.type_key AS entity_type, 
-            attributes
+            IF name != NONE AND name != NULL THEN name ELSE '' END AS name, 
+            IF schema_id.type_key != NONE AND schema_id.type_key != NULL THEN schema_id.type_key ELSE 'unknown' END AS entity_type, 
+            IF attributes != NONE AND attributes != NULL THEN attributes ELSE {} END AS attributes
         FROM $item_rec
         LIMIT 1
     )[0];
@@ -343,7 +343,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $characters = (
         SELECT 
             type::string(id) AS id, 
-            name
+            IF name != NONE AND name != NULL THEN name ELSE '' END AS name
         FROM entities
         WHERE project_id = $p_rec AND schema_id.type_key = 'character'
         LIMIT 1000
@@ -352,8 +352,8 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $chapters = (
         SELECT 
             type::string(id) AS id, 
-            title, 
-            IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF sort_order != NONE AND sort_order != NULL THEN sort_order ELSE 0 END AS sort_order
         FROM chapters
         WHERE project_id = $p_rec
         ORDER BY sort_order ASC
@@ -363,11 +363,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            type::string(array::first(->promise_milestones.out.chapter_id)) AS chapter_id, 
+            IF array::first(->promise_milestones.out.chapter_id) != NONE AND array::first(->promise_milestones.out.chapter_id) != NULL THEN type::string(array::first(->promise_milestones.out.chapter_id)) ELSE NONE END AS chapter_id, 
             IF m_abs != NONE { m_abs } ELSE { array::first(->promise_milestones.out.timeline_event_id.m_abs) } AS m_abs, 
             [] AS participant_ids, 
-            title, 
-            IF note != NONE { note } ELSE { '' } AS description
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF note != NONE AND note != NULL THEN note ELSE '' END AS description
         FROM plot_promises
         WHERE project_id = $p_rec
         LIMIT 5000
@@ -376,11 +376,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $events = (
         SELECT 
             type::string(id) AS id, 
-            type::string(array::first(->revealed_in.out)) AS chapter_id, 
+            IF array::first(->revealed_in.out) != NONE AND array::first(->revealed_in.out) != NULL THEN type::string(array::first(->revealed_in.out)) ELSE NONE END AS chapter_id, 
             m_abs, 
-            <-participates_in.in AS participants, 
-            title, 
-            IF description != NONE { description } ELSE { '' } AS description
+            IF <-participates_in.in != NONE AND <-participates_in.in != NULL THEN <-participates_in.in ELSE [] END AS participants, 
+            IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF description != NONE AND description != NULL THEN description ELSE '' END AS description
         FROM timeline_events
         WHERE project_id = $p_rec
         LIMIT 5000

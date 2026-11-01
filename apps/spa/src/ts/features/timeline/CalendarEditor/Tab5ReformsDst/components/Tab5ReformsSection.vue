@@ -147,28 +147,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab5ReformsSectionProps, Tab5ReformsSectionEmits } from './Tab5ReformsSection.model';
-import type {
-  ReformMode,
-  } from '../Tab5ReformsDst.model';
+import { useTab5ReformsSection } from './useTab5ReformsSection';
 import Tab5DualDatingCard from './Tab5DualDatingCard.vue';
 
 const props = defineProps<Tab5ReformsSectionProps>();
 
 defineEmits<Tab5ReformsSectionEmits>();
 
-const monthOptions = computed(() =>
-  props.monthNames.map((m, i) => ({
-    value: String(i + 1),
-    label: `${i + 1}. ${m}`,
-  }))
-);
-
-const modeCards = [
-  { mode: 'gap' as ReformMode, icon: '🕳️', title: 'Выброшенные дни (Gap)', desc: 'Скачок дат без разрыва дней недели. Например, после четверга 4 октября сразу пятница 15 октября.' },
-  { mode: 'transitional' as ReformMode, icon: '⏳', title: 'Переходный год (Transitional)', desc: 'Один конкретный год удлиняется или сокращается интеркалярными месяцами/днями.' },
-  { mode: 'reset' as ReformMode, icon: '🔄', title: 'Новая Эра (EpochReset)', desc: 'В момент реформы номер года обнуляется (Год 1 Новой Эры), привязываясь к M_abs.' },
-];
+const { monthOptions, modeCards } = useTab5ReformsSection(props);
 </script>

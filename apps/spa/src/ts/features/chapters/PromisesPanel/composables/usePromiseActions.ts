@@ -44,7 +44,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
           console.log(logMsg, { project: getProject(), item });
           const payload = preparePromisePayload(item, getChapterId());
           payloadForLog = payload;
-          const saved = await plotApi.savePlotPromise(getProject(), payload);
+          const saved = (await plotApi.savePlotPromise(getProject(), payload)) as RichPlotPromise | null;
           if (saved) {
             const cleanSavedId = cleanId(item.id);
             const idx = promises.value.findIndex((p) => p.id === item.id || cleanId(p.id) === cleanSavedId);

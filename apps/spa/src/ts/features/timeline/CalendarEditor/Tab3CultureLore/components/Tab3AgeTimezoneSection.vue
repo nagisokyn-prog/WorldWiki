@@ -120,7 +120,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab3AgeTimezoneSectionProps, Tab3AgeTimezoneSectionEmits } from './Tab3AgeTimezoneSection.model';
 import { useTab3AgeTimezoneSection } from './useTab3AgeTimezoneSection';
@@ -129,35 +128,13 @@ const props = defineProps<Tab3AgeTimezoneSectionProps>();
 
 const emit = defineEmits<Tab3AgeTimezoneSectionEmits>();
 
-const { showAddRegion, newRegionName, submitNewRegion } = useTab3AgeTimezoneSection(emit);
-
-const ageAtBirthOptions = [
-  { value: '0', label: '0 лет — Европейский стандарт (новорожденному 0 лет)' },
-  { value: '1', label: '1 год — Восточноазиатский стандарт (сяй: ребенок рождается в возрасте 1 года)' },
-];
-
-const stepOnNewYearOptions = [
-  { value: 'birthday', label: '🎂 В личный день рождения (индивидуальная годовщина)' },
-  { value: 'new_year', label: '🎍 1-го января Нового Года (коллективно взрослеют в Сольналь)' },
-];
-
-const yearOnlyOptions = [
-  { value: 'exact_date', label: 'По точной дате (Месяц, День)' },
-  { value: 'year_only', label: 'Грубо: только по разнице номеров годов' },
-];
-
-const timezonesOptions = computed(() => {
-  if (props.timezonesList && props.timezonesList.length > 0) {
-    return props.timezonesList;
-  }
-  return [
-    { value: 'UTC+0', label: 'Столичный меридиан (UTC+0, 0ч)' },
-    { value: 'UTC+1', label: 'Центральная Европа (UTC+1, +1ч)' },
-    { value: 'UTC+2', label: 'Восточноевропейский пояс (UTC+2, +2ч)' },
-    { value: 'UTC+3', label: 'Московское время (UTC+3, +3ч)' },
-    { value: 'UTC+8', label: 'Восточная Азия / Китай (UTC+8, +8ч)' },
-    { value: 'UTC+9', label: 'Япония / Корея (UTC+9, +9ч)' },
-    { value: 'UTC-5', label: 'Восточное побережье США (UTC-5, -5ч)' },
-  ];
-});
+const {
+  showAddRegion,
+  newRegionName,
+  submitNewRegion,
+  ageAtBirthOptions,
+  stepOnNewYearOptions,
+  yearOnlyOptions,
+  timezonesOptions,
+} = useTab3AgeTimezoneSection(props, emit);
 </script>

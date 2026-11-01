@@ -54,19 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncEraFormProps, Tab2SyncEraFormEmits } from './Tab2SyncEraForm.model';
+import { useTab2SyncEraForm } from './useTab2SyncEraForm';
 
 const props = defineProps<Tab2SyncEraFormProps>();
 
 defineEmits<Tab2SyncEraFormEmits>();
 
-const eraOptions = computed(() => [
-  { value: '-1', label: '🌍 От начала Календаря Мира (Год 1)' },
-  ...props.masterEras.map((era, idx) => ({
-    value: String(idx),
-    label: `🏛️ ${era.название} (с ${era.год_начала} г.)`,
-  })),
-]);
+const { eraOptions } = useTab2SyncEraForm(props);
 </script>

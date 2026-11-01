@@ -9,13 +9,15 @@ import type {
   CalendarTabInfo,
   CalendarEditorEmits,
 } from './CalendarEditor.model';
+import { buildCalendarTabsList } from './CalendarEditor.model';
 import {
   getCalendarStateKey,
   getCalendarScrollKey,
   saveCalendarLocalDraft,
-  loadCalendarLocalDraft,
   clearCalendarLocalDraft,
+  hydrateCalendarLocalDraft,
 } from './useCalendarEditorStorage';
+import { syncPresetWithPlanet } from './useCalendarPresetSync';
 
 export function useCalendarEditor(
   props: CalendarEditorProps,
@@ -26,12 +28,8 @@ export function useCalendarEditor(
   const activeTab = ref<CalendarEditorTab>('timeGrid');
   const calendarRecord = ref<CalendarRecord | null>(null);
   const masterCalendarRecord = ref<CalendarRecord | null>(null);
-  const isLoading = ref<boolean>(false);
-  const isSaving = ref<boolean>(false);
-  const error = ref<string | null>(null);
-  const isAuditModalOpen = ref<boolean>(false);
-  const isPresetsModalOpen = ref<boolean>(false);
-  const hasUnsavedDraft = ref<boolean>(false);
+  const isLoading = ref(false), isSaving = ref(false), error = ref<string | null>(null);
+  const isAuditModalOpen = ref(false), isPresetsModalOpen = ref(false), hasUnsavedDraft = ref(false);
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -51,13 +49,9 @@ export function useCalendarEditor(
     return Number((calData.value as Record<string, unknown>)?.planet_orbit_days) || 365.2422;
   });
 
-  const tabsList = computed<CalendarTabInfo[]>(() => [
-    { id: 'timeGrid', label: 'Структура года', icon: '⏰', badge: `${totalDays.value} дн` },
-    { id: 'erasSync', label: 'Летоисчисление и эры', icon: '🏛️', badge: calData.value?.эпохи ? `${calData.value.эпохи.length} эр` : undefined },
-    { id: 'cultureLore', label: 'Традиции и культура', icon: '🎭', badge: calData.value?.праздники ? `${calData.value.праздники.length} праздн.` : undefined },
-    { id: 'playground', label: 'Калькулятор дат сюжета', icon: '🧪', badge: 'Сюжет' },
-    { id: 'reformsDst', label: 'Реформы и перевод часов', icon: '🔄', badge: 'Стиль' },
-  ]);
+  const tabsList = computed<CalendarTabInfo[]>(() =>
+    buildCalendarTabsList(totalDays.value, calData.value)
+  );
 
   function scheduleStateSave() {
     if (isLoading.value) return;
@@ -72,16 +66,16 @@ export function useCalendarEditor(
   }
 
   function hydrateFromStorage() {
-    const saved = loadCalendarLocalDraft(getStateKey());
-    if (!saved) return;
-    if (saved.activeTab && tabsList.value.some((t) => t.id === saved.activeTab)) {
-      activeTab.value = saved.activeTab as CalendarEditorTab;
-    }
-    if (saved.unsavedData && calendarRecord.value) {
-      calendarRecord.value.data = saved.unsavedData as unknown as CalendarData;
-      if (saved.unsavedName) calendarRecord.value.name = saved.unsavedName;
-      hasUnsavedDraft.value = true;
-    }
+    hydrateCalendarLocalDraft(getStateKey(), (saved) => {
+      if (saved.activeTab && tabsList.value.some((t) => t.id === saved.activeTab)) {
+        activeTab.value = saved.activeTab as CalendarEditorTab;
+      }
+      if (saved.unsavedData && calendarRecord.value) {
+        calendarRecord.value.data = saved.unsavedData as unknown as CalendarData;
+        if (saved.unsavedName) calendarRecord.value.name = saved.unsavedName;
+        hasUnsavedDraft.value = true;
+      }
+    });
   }
 
   async function loadCalendar() {
@@ -200,59 +194,8 @@ export function useCalendarEditor(
       document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: calendarRecord.value.id || props.calendarId, name: preset.data.название } }));
     }
 
-    // Автоматическая проверка и инъекция часового пояса и региона в планету (Пункт 2)
-    try {
-      const planets = calendarStore.getPlanets(props.projectId);
-      const cleanTargetId = String(patchedData.planet_id || '').replace(/^planets:/, '');
-      const targetPlanet = planets.find((p) => String(p.id).replace(/^planets:/, '') === cleanTargetId || p.name === patchedData.planet_id) || planets[0];
-      if (targetPlanet) {
-        let planetUpdated = false;
-        const currentTzs = [...(targetPlanet.timezones || [])];
-        const currentRegs = [...(targetPlanet.regions || [])];
-
-        const presetTz = typeof patchedData.calendar_timezone === 'string' ? patchedData.calendar_timezone : undefined;
-        if (presetTz && !currentTzs.some((tz) => tz.code === presetTz || tz.name === presetTz)) {
-          const match = presetTz.match(/([+-]?\d+(?:\.\d+)?)/);
-          const offsetHours = match ? parseFloat(match[1]) : 0;
-          currentTzs.push({
-            id: `tz_${preset.id}`,
-            name: `${preset.name} (${presetTz})`,
-            code: presetTz,
-            base_offset_hours: offsetHours,
-          });
-          planetUpdated = true;
-        }
-
-        const cultureRegionName = preset.name;
-        let regId = `reg_${preset.id}`;
-        const foundReg = currentRegs.find((r) => r.name.toLowerCase().includes(cultureRegionName.toLowerCase()));
-        if (!foundReg) {
-          currentRegs.push({
-            id: regId,
-            name: cultureRegionName,
-            timezone_id: presetTz || 'UTC+0',
-            latitude: 50.0,
-            longitude: 0.0,
-          });
-          planetUpdated = true;
-        } else {
-          regId = foundReg.id || regId;
-        }
-
-        if (!patchedData.region_ids) patchedData.region_ids = [];
-        if (!patchedData.region_ids.includes(regId)) patchedData.region_ids.push(regId);
-
-        if (planetUpdated) {
-          await calendarStore.savePlanet(props.projectId, {
-            ...targetPlanet,
-            timezones: currentTzs,
-            regions: currentRegs,
-          });
-        }
-      }
-    } catch (err) {
-      console.warn('[CalendarEditor] Failed to sync preset timezones with planet:', err);
-    }
+    // Автоматическая проверка и инъекция часового пояса и региона в планету
+    await syncPresetWithPlanet(preset, patchedData, props.projectId, calendarStore);
 
     hasUnsavedDraft.value = true;
     scheduleStateSave();
@@ -261,11 +204,9 @@ export function useCalendarEditor(
 
   const handleRenamed = (e: Event) => {
     const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
-    if (calendarRecord.value && (calendarRecord.value.id === id || String(calendarRecord.value.id).endsWith(id) || props.calendarId === id)) {
-      if (calendarRecord.value.name !== name) {
-        calendarRecord.value.name = name;
-        if (calendarRecord.value.data) calendarRecord.value.data.название = name;
-      }
+    if (calendarRecord.value && (calendarRecord.value.id === id || String(calendarRecord.value.id).endsWith(id) || props.calendarId === id) && calendarRecord.value.name !== name) {
+      calendarRecord.value.name = name;
+      if (calendarRecord.value.data) calendarRecord.value.data.название = name;
     }
   };
 

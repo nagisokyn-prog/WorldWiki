@@ -28,16 +28,8 @@
     "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (180) exceeds recommended limit (165)",
-    "fingerprint": "0e7b37b149b516d765f3b53dc61ac2ba7a3ced3164e2fbbaff4041ffdd21777f"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/usePromiseCardMeta.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (289) exceeds recommended limit (265)",
-    "fingerprint": "3a2beb7e5f54beaadd641c9a74e38288b2e75fe5a7aa14bdae94f3c0dec695a3"
+    "message": "Frontend file SLOC (179) exceeds recommended limit (165)",
+    "fingerprint": "ab4ce93aa018b042f0a6f5fc68a623d8fb7f2fb60641180d7c20662b47523fdd"
   },
   {
     "rule": "ARCH-031",
@@ -70,206 +62,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (329) exceeds recommended limit (315)",
     "fingerprint": "0a160f969084cd0d474f5460a6950814ba8b3e646873886148444cca856f4914"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 48,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "a5c8a31f9c45402ac76f82a2ed03b9c791f2a33b941cc5ae28767f17d2311e31"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 52,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "60c70ae2ddbe17db71aec1482e3824da50a99525b18386dc95934085358d5cb6"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 56,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "f4fa6113869ead837cb7ebb02796c386ba5f7ef801e1f614dafbf08b5f0ce07b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 62,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "a5c8a31f9c45402ac76f82a2ed03b9c791f2a33b941cc5ae28767f17d2311e31"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 63,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "4a090ac6fe10d8dba86203271d4a9e63617207970dfa3457b7fcb4ce2f2ce1ad"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 68,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "60c70ae2ddbe17db71aec1482e3824da50a99525b18386dc95934085358d5cb6"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 69,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "b698710530b48858f8c394214a8a0602bf0116fa4986f320f36217879de9554f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 74,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "f4fa6113869ead837cb7ebb02796c386ba5f7ef801e1f614dafbf08b5f0ce07b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 75,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "48a4babfabc6eea9d42fc0baf610fc9c4609d13df3f515c28feae5e93e46f391"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 36,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "01dffac4c66ba27749afc81938eb7aadd6eedb9d6a69f9226b7d500b13ae0e7f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 40,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "af23cdbd4b49f5020767dc0adb725db0fda54175924c9f98a0b2d7a43ad13691"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 44,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "dd2484c60e6d0f1657106ee6fa91df457f75edbc497e8e61fadc66be9d62624a"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 50,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "dd2484c60e6d0f1657106ee6fa91df457f75edbc497e8e61fadc66be9d62624a"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 51,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "8c12a2045849aff16ee89fde9ef3584ee2e2729a754d0d681d2e23f0ca9056da"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 56,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "af23cdbd4b49f5020767dc0adb725db0fda54175924c9f98a0b2d7a43ad13691"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 57,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "100c3d792aacca90b3875fc65c942fb5c666b039eba12cdfa412983ff0d3d920"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 68,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "01dffac4c66ba27749afc81938eb7aadd6eedb9d6a69f9226b7d500b13ae0e7f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 69,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "bed579f46362c3fa5010193d81ea98cb81ec3a64cdbbf58a6c66ec4001f5ca96"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 75,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "b27755ca11ec6f2d334014de45eca4cad7d7fc442f4d858eebb574a75cd7777e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 80,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "9b70c5eade4dc45962ee6a08ad8dcba945e4fd40fc536576d1a4b6ea88b3601b"
-  },
-  {
-    "rule": "CSS-PERF-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 45,
-    "symbol": "no_transition_all",
-    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
-    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
-  },
-  {
-    "rule": "CSS-PERF-004",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
-    "line": 1176,
-    "symbol": "no_transition_all",
-    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
-    "fingerprint": "9b6e16251a45f09c7352f04d439b13dfaa826d492eaec21700de7eaad1f97ae5"
-  },
-  {
-    "rule": "DS-003",
-    "file": "./packages/resources/src/styles/features/analytics/ChekhovGunTracker.css",
-    "line": 86,
-    "symbol": "token_role_mismatch_text",
-    "message": "Background token `--bg-panel` used in text `color` property. This breaks contrast ratio on theme inversion.",
-    "fingerprint": "d5a1be1b449a2b5b2e61a852017510eb8c474f07eb80c1bbd14e3d3f793e749c"
-  },
-  {
-    "rule": "DS-003",
-    "file": "./packages/resources/src/styles/features/analytics/ConsistencyChecker.css",
-    "line": 91,
-    "symbol": "token_role_mismatch_text",
-    "message": "Background token `--bg-panel` used in text `color` property. This breaks contrast ratio on theme inversion.",
-    "fingerprint": "cbf17756c23cbe299c71e8ab12d65088b1f33afc28f7b4720c56ce607b8cc2f7"
-  },
-  {
-    "rule": "DS-003",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarEditor.css",
-    "line": 1182,
-    "symbol": "token_role_mismatch_text",
-    "message": "Background token `--bg-surface` used in text `color` property. This breaks contrast ratio on theme inversion.",
-    "fingerprint": "5655321c7f72d9bce82e5e8a477a0a4e9b32f1a920f49bec8b6f2a8ef63cadb6"
   },
   {
     "rule": "SLOP-001",
@@ -377,14 +169,6 @@
   },
   {
     "rule": "VUE-001",
-    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardDateTimeWheels.vue",
-    "line": 83,
-    "symbol": "PromiseCardDateTimeWheels",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\chapters\\PromisesPanel\\components\\PromiseCardDateTimeWheels.vue' contains raw business logic (functions, callbacks, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "88634e1496694b44f669b5169359257fb2e5433273bb2071b3c5fef13bef9b3b"
-  },
-  {
-    "rule": "VUE-001",
     "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1ExtraDaysTape.vue",
     "line": 100,
     "symbol": "Tab1ExtraDaysTape",
@@ -465,14 +249,6 @@
   },
   {
     "rule": "VUE-002",
-    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/components/PromiseCardDateTimeWheels.vue",
-    "line": 83,
-    "symbol": "PromiseCardDateTimeWheels",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\chapters\\PromisesPanel\\components\\PromiseCardDateTimeWheels.vue' is missing required companion hook usePromiseCardDateTimeWheels.ts",
-    "fingerprint": "9a1af39b48d8ccbb712b09ee861f96b86cd4ffff3ffa2f6d31496cd1413468a3"
-  },
-  {
-    "rule": "VUE-002",
     "file": "./apps/spa/src/ts/features/timeline/CalendarEditor/Tab1Structure/components/Tab1ExtraDaysTape.vue",
     "line": 100,
     "symbol": "Tab1ExtraDaysTape",
@@ -518,13 +294,5 @@
     "symbol": "PlanetTimezonesTab",
     "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\timeline\\PlanetEditor\\components\\PlanetTimezonesTab.vue' is missing required companion hook usePlanetTimezonesTab.ts",
     "fingerprint": "2c51583ee569dc35e1ea5a8be9fe666f73acdbcbae9104269277b827069a0169"
-  },
-  {
-    "rule": "VUE-009",
-    "file": "./apps/spa/src/ts/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue",
-    "line": 164,
-    "symbol": "template_method",
-    "message": "Uncached function call inside v-for template re-executes on every render frame",
-    "fingerprint": "61234606970d8ae587cc432646efaf0839262cb3fd4c70a28d3dfe176fcb5721"
   }
 ]

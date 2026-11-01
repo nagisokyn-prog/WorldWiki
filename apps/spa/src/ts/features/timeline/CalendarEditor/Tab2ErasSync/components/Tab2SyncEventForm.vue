@@ -96,18 +96,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncEventFormProps, Tab2SyncEventFormEmits } from './Tab2SyncEventForm.model';
+import { useTab2SyncEventForm } from './useTab2SyncEventForm';
 
 const props = defineProps<Tab2SyncEventFormProps>();
 
 defineEmits<Tab2SyncEventFormEmits>();
 
-const eventOptions = computed(() =>
-  props.anchorEvents.map((ev) => ({
-    value: ev.id || ev.name,
-    label: `${ev.name} (Год ${ev.year})`,
-  }))
-);
+const { eventOptions } = useTab2SyncEventForm(props);
 </script>

@@ -62,3 +62,14 @@ export function clearCalendarLocalDraft(stateKey: string, scrollKey?: string): v
   }
 }
 
+export function hydrateCalendarLocalDraft(
+  key: string,
+  onHydrate: (saved: CalendarLocalState) => void
+): void {
+  const saved = loadCalendarLocalDraft(key);
+  if (saved) {
+    onHydrate(saved);
+  }
+}
+
+

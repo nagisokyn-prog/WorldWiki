@@ -1173,13 +1173,13 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
   box-shadow: var(--shadow-sm);
 }
 
 .suggest-trigger-btn:hover {
   background: var(--accent-primary);
-  color: var(--bg-surface);
+  color: var(--text-on-accent);
   border-color: var(--accent-primary-hover);
 }
 

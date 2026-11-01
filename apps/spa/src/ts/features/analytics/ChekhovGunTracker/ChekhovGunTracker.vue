@@ -139,7 +139,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { ChekhovGunTrackerProps, ChekhovGunTrackerEmits } from './ChekhovGunTracker.model';
 import GunStatusColumn from './components/GunStatusColumn.vue';
 import GunJourneyModal from './components/GunJourneyModal.vue';
@@ -153,8 +152,6 @@ const props = withDefaults(
   }
 );
 defineEmits<ChekhovGunTrackerEmits>();
-
-const activeProjectId = computed(() => props.projectId || props.project || '');
 
 const {
   filter,
@@ -172,7 +169,7 @@ const {
   openJourney,
   closeJourneyModal,
   resetFilter,
-} = useChekhovGunTracker(activeProjectId);
+} = useChekhovGunTracker(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/ChekhovGunTracker.css"></style>

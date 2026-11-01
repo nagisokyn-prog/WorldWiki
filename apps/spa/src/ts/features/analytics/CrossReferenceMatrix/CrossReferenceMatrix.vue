@@ -1,71 +1,17 @@
 <template>
   <div class="matrix-container">
     <!-- Matrix Toolbar -->
-    <div class="matrix-toolbar">
-      <div class="matrix-toolbar-title">
-        <h2 class="matrix-title">
-          <span class="matrix-icon">📊</span>
-          <span>Матрица Участий</span>
-        </h2>
-        <span v-if="rows.length" class="matrix-badge">
-          {{ rows.length }} сущн. / {{ chapters.length }} глав
-        </span>
-      </div>
-
-      <div class="matrix-toolbar-controls">
-        <input
-          v-model="filters.searchQuery"
-          type="text"
-          placeholder="Поиск сущности..."
-          class="matrix-search-input"
-        />
-
-        <select
-          v-model="filters.selectedEntityType"
-          class="matrix-select"
-        >
-          <option value="all">Все типы</option>
-          <option v-for="t in availableEntityTypes" :key="t" :value="t">{{ t }}</option>
-        </select>
-
-        <label class="matrix-checkbox-label">
-          <input v-model="filters.highlightGaps" type="checkbox" class="matrix-checkbox" />
-          <span>Подсветка разрывов (3+ глав)</span>
-        </label>
-
-        <button
-          class="btn-refresh"
-          :disabled="isLoading"
-          @click="refresh"
-        >
-          🔄 {{ isLoading ? 'Загрузка...' : 'Обновить' }}
-        </button>
-      </div>
-    </div>
+    <MatrixToolbar
+      :filters="filters"
+      :available-entity-types="availableEntityTypes"
+      :rows-count="rows.length"
+      :chapters-count="chapters.length"
+      :is-loading="isLoading"
+      @refresh="refresh"
+    />
 
     <!-- Matrix Legend -->
-    <div class="matrix-legend">
-      <div class="legend-chip">
-        <span class="legend-marker marker-scene">●</span>
-        <span>Сцена / Прямое участие</span>
-      </div>
-      <div class="legend-chip">
-        <span class="legend-marker marker-mention">○</span>
-        <span>Упоминание ((Имя))</span>
-      </div>
-      <div class="legend-chip">
-        <span class="legend-marker marker-absent">—</span>
-        <span>Отсутствует</span>
-      </div>
-      <div class="legend-chip">
-        <span class="legend-marker">💀</span>
-        <span>Погиб</span>
-      </div>
-      <div class="legend-chip legend-chip-warning">
-        <span>⚠️</span>
-        <span>Провал повествования (3+ глав)</span>
-      </div>
-    </div>
+    <MatrixLegend />
 
     <!-- Matrix Viewport -->
     <div class="matrix-viewport">
@@ -75,98 +21,102 @@
       </div>
 
       <div v-else-if="!rows.length" class="matrix-empty">
-        <div class="empty-icon">📂</div>
-        <p>Нет данных для отображения.</p>
-        <span class="empty-hint">Убедитесь, что в главах созданы сцены или упоминания ((Сущностей)).</span>
+        <p>Нет данных для отображения. Проверьте фильтры или добавьте сущности в главы.</p>
       </div>
 
       <div v-else class="matrix-table-wrapper">
         <table class="matrix-table">
+          <!-- Thead: Главы -->
           <thead>
             <tr>
-              <th class="matrix-th sticky-corner">
-                <span class="th-label">Сущность</span>
-              </th>
-              <th class="matrix-th sticky-top th-total">
-                <span class="th-label">Итого</span>
+              <th class="matrix-th-corner">
+                <span>Сущность \ Глава</span>
               </th>
               <th
-                v-for="(ch, idx) in chapters"
-                :key="ch.id"
-                class="matrix-th sticky-top th-chapter"
-                :title="ch.title + ' (' + (ch.word_count || 0) + ' сл.)'"
+                v-for="col in chapters"
+                :key="col.id"
+                class="matrix-th-col"
+                :title="col.title"
               >
-                <div class="chapter-header-box">
-                  <span class="chapter-order-badge">Глава {{ ch.sort_order || (idx + 1) }}</span>
-                  <span class="chapter-title-text">{{ ch.title }}</span>
-                  <span class="chapter-word-pill">{{ formatWordCount(ch.word_count) }}</span>
+                <div class="col-header-content">
+                  <span class="col-order">{{ col.sort_order }}</span>
+                  <span class="col-title">{{ col.title }}</span>
+                  <span class="col-words">{{ chapterSummaries.get(col.id)?.formattedWordCount || '0 сл' }}</span>
                 </div>
               </th>
+              <th class="matrix-th-total">Всего</th>
             </tr>
           </thead>
+
+          <!-- Tbody: Сущности -->
           <tbody>
             <tr
               v-for="row in rows"
               :key="row.entity.id"
               class="matrix-row"
-              :class="{ 'row-gap-warning': row.hasGapWarning }"
+              :class="{
+                'row-has-gap': filters.highlightGaps && row.hasGapWarning,
+                'row-is-dead': row.entity.is_deceased,
+              }"
             >
-              <td class="matrix-td sticky-left matrix-entity-cell">
-                <div class="entity-name-box">
-                  <div class="entity-title-group">
-                    <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
-                    <span v-if="row.entity.role_in_story" class="entity-role-badge" :title="'Роль: ' + row.entity.role_in_story">
-                      {{ row.entity.role_in_story }}
-                    </span>
-                  </div>
-                  <span v-if="row.hasGapWarning" class="matrix-gap-badge" title="Персонаж пропал на 3+ главы подряд!">⚠️ Разрыв</span>
+              <!-- Фиксированная первая колонка с именем сущности -->
+              <td class="matrix-td-entity">
+                <div class="entity-info">
+                  <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
+                  <span class="entity-type-badge">{{ row.entity.entity_type }}</span>
+                  <span v-if="row.entity.is_deceased" class="dead-badge" title="Сущность мертва">💀</span>
+                  <span
+                    v-if="filters.highlightGaps && row.hasGapWarning"
+                    class="gap-badge"
+                    title="Провал в появлении: не упоминается 3+ глав подряд"
+                  >
+                    ⚠️
+                  </span>
                 </div>
               </td>
-              <td class="matrix-td matrix-total-cell" :title="`Сцен: ${row.totalScenes}, Упоминаний: ${row.totalMentions}`">
-                <div class="matrix-total-group">
-                  <span class="matrix-total-badge">{{ row.totalAppearances }}</span>
-                  <div v-if="row.totalScenes > 0 || row.totalMentions > 0" class="matrix-total-sub">
-                    <span v-if="row.totalScenes > 0" class="sub-scene" title="Сцены">●{{ row.totalScenes }}</span>
-                    <span v-if="row.totalMentions > 0" class="sub-mention" title="Упоминания">○{{ row.totalMentions }}</span>
-                  </div>
-                </div>
-              </td>
+
+              <!-- Ячейки для каждой главы (прекомпутированный список ячеек) -->
               <td
-                v-for="ch in chapters"
-                :key="ch.id"
-                class="matrix-td matrix-cell"
-                :title="row.entity.name + ' в ' + ch.title + ': ' + (row.cells.get(ch.id)?.label || '')"
+                v-for="cell in row.cellList"
+                :key="cell.chapterId"
+                class="matrix-cell"
+                :class="[
+                  `status-${cell.status}`,
+                  {
+                    'cell-death': cell.isDeceased,
+                  },
+                ]"
+                :title="cell.label"
               >
-                <div v-if="row.cells.get(ch.id)?.hasScene || row.cells.get(ch.id)?.hasMention" class="cell-badges-group">
-                  <span v-if="row.cells.get(ch.id)?.hasScene" class="cell-badge cell-scene" title="Сцена / Прямое участие">●</span>
-                  <span v-if="row.cells.get(ch.id)?.hasMention" class="cell-badge cell-mention" title="Упоминание ((Имя))">○</span>
-                </div>
-                <span v-else-if="row.cells.get(ch.id)?.isDeceased" class="cell-badge cell-deceased" title="Погиб">💀</span>
-                <span v-else class="cell-badge cell-absent">—</span>
+                <span v-if="cell.status === 'scene'" class="cell-marker marker-scene">●</span>
+                <span v-else-if="cell.status === 'mention'" class="cell-marker marker-mention">○</span>
+                <span v-else class="cell-marker marker-absent">—</span>
+
+                <span v-if="cell.isDeceased" class="death-icon">💀</span>
+              </td>
+
+              <!-- Суммарная колонка справа -->
+              <td class="matrix-td-row-total">
+                <span class="row-total-badge">{{ row.totalAppearances }}</span>
               </td>
             </tr>
           </tbody>
+
+          <!-- Tfoot: Суммарная статистика по главам -->
           <tfoot>
-            <tr class="matrix-row matrix-summary-row">
-              <td class="matrix-td sticky-left matrix-entity-cell">
-                <span class="matrix-summary-label">👥 Участников в главе:</span>
-              </td>
-              <td class="matrix-td matrix-total-cell" :title="'Всего участий: ' + totalProjectAppearances">
-                <span class="matrix-total-badge">{{ totalProjectAppearances }}</span>
+            <tr class="matrix-footer-row">
+              <td class="matrix-footer-label">
+                <span>Уникальных сущностей:</span>
               </td>
               <td
-                v-for="ch in chapters"
-                :key="'footer-' + ch.id"
-                class="matrix-td matrix-cell matrix-summary-cell"
-                :title="`Глава ${ch.sort_order}: ${chapterStats.get(ch.id)?.total || 0} участников (● ${chapterStats.get(ch.id)?.scenes || 0}, ○ ${chapterStats.get(ch.id)?.mentions || 0})`"
+                v-for="col in chapters"
+                :key="`footer-${col.id}`"
+                class="matrix-footer-cell"
               >
-                <div class="chapter-summary-box">
-                  <span class="summary-total">{{ chapterStats.get(ch.id)?.total || 0 }}</span>
-                  <div v-if="(chapterStats.get(ch.id)?.total || 0) > 0" class="summary-sub">
-                    <span v-if="(chapterStats.get(ch.id)?.scenes || 0) > 0" class="sub-scene" title="В сценах">●{{ chapterStats.get(ch.id)?.scenes }}</span>
-                    <span v-if="(chapterStats.get(ch.id)?.mentions || 0) > 0" class="sub-mention" title="В упоминаниях">○{{ chapterStats.get(ch.id)?.mentions }}</span>
-                  </div>
-                </div>
+                <span>{{ chapterSummaries.get(col.id)?.total || 0 }}</span>
+              </td>
+              <td class="matrix-footer-grand-total">
+                <span>{{ totalProjectAppearances }}</span>
               </td>
             </tr>
           </tfoot>
@@ -179,6 +129,8 @@
 <script setup lang="ts">
 import type { CrossReferenceMatrixProps } from './CrossReferenceMatrix.model';
 import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
+import MatrixToolbar from './components/MatrixToolbar.vue';
+import MatrixLegend from './components/MatrixLegend.vue';
 
 const props = withDefaults(
   defineProps<CrossReferenceMatrixProps>(),
@@ -192,11 +144,10 @@ const {
   chapters,
   rows,
   availableEntityTypes,
-  chapterStats,
+  chapterSummaries,
   totalProjectAppearances,
   isLoading,
   refresh,
-  formatWordCount,
 } = useCrossReferenceMatrix(props.project);
 </script>
 

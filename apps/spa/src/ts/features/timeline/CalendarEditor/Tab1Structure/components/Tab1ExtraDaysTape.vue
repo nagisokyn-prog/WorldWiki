@@ -98,27 +98,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab1ExtraDaysTapeProps, Tab1ExtraDaysTapeEmits } from './Tab1ExtraDaysTape.model';
+import { useTab1ExtraDaysTape } from './useTab1ExtraDaysTape';
 
 const props = defineProps<Tab1ExtraDaysTapeProps>();
 
 defineEmits<Tab1ExtraDaysTapeEmits>();
 
-const isCollapsed = ref(props.extraDaysCount === 0);
-
-const placementOptions = [
-  { value: 'end_of_year', label: 'В конце года (после всех месяцев)' },
-  { value: 'mid_year', label: 'В середине года (как у Толкина)' },
-  { value: 'start_of_year', label: 'В начале года (перед 1-м месяцем)' },
-  { value: 'after_month', label: 'После конкретного месяца...' },
-];
-
-const monthOptions = computed(() =>
-  props.months.map((m, idx) => ({
-    value: String(idx),
-    label: m.название || `Месяц ${idx + 1}`,
-  }))
-);
+const { isCollapsed, placementOptions, monthOptions, toggleCollapsed } = useTab1ExtraDaysTape(props);
 </script>

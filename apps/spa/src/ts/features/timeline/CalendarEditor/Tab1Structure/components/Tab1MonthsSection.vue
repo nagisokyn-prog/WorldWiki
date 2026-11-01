@@ -102,7 +102,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab1MonthsSectionProps, Tab1MonthsSectionEmits } from './Tab1MonthsSection.model';
 import { useTab1MonthsSection } from './useTab1MonthsSection';
@@ -111,17 +110,5 @@ const props = defineProps<Tab1MonthsSectionProps>();
 
 defineEmits<Tab1MonthsSectionEmits>();
 
-const { seasonLabels } = useTab1MonthsSection(props);
-
-const monthOptions = computed(() =>
-  props.months.map((m, idx) => ({
-    value: String(idx),
-    label: `${idx + 1}. ${m.название || `Месяц ${idx + 1}`}`,
-  }))
-);
-
-const maxDaysInSelectedMonth = computed(() => {
-  const selected = props.months[props.firstMonthOfYear ?? 0];
-  return selected ? Number(selected.дней) || 31 : 31;
-});
+const { seasonLabels, monthOptions, maxDaysInSelectedMonth } = useTab1MonthsSection(props);
 </script>

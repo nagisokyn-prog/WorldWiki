@@ -4,9 +4,10 @@ import type {
   ContradictionAnomalyDto,
   AnomalySeverity,
   AuditSummaryStats,
+  ConsistencyCheckerProps,
 } from './ConsistencyChecker.model';
 
-export function useConsistencyChecker(projectIdRef: MaybeRef<string>) {
+export function useConsistencyChecker(projectIdOrProps: MaybeRef<string> | ConsistencyCheckerProps) {
   const store = useAnalyticsStore();
   const currentView = ref<'anomalies' | 'chapters'>('anomalies');
   const searchQuery = ref<string>('');
@@ -15,7 +16,13 @@ export function useConsistencyChecker(projectIdRef: MaybeRef<string>) {
   const selectedEntityId = ref<string>('');
   const isAuditing = ref<boolean>(false);
 
-  const getProjectId = () => toValue(projectIdRef);
+  const getProjectId = () => {
+    const val = toValue(projectIdOrProps);
+    if (typeof val === 'object' && val !== null) {
+      return (val as ConsistencyCheckerProps).projectId || (val as ConsistencyCheckerProps).project || '';
+    }
+    return (val as string) || '';
+  };
 
   const rawAnomalies = computed<ContradictionAnomalyDto[]>(() => {
     return (store.violations as unknown as ContradictionAnomalyDto[]) || [];

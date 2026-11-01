@@ -92,34 +92,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { Tab5DstTransitionRulesProps, Tab5DstTransitionRulesEmits } from './Tab5DstTransitionRules.model';
 import type { WeekdayOccurrence } from '../Tab5ReformsDst.model';
+import { useTab5DstTransitionRules } from './useTab5DstTransitionRules';
 
 const props = defineProps<Tab5DstTransitionRulesProps>();
 
 defineEmits<Tab5DstTransitionRulesEmits>();
 
-const monthOptions = computed(() =>
-  props.monthNames.map((m, i) => ({
-    value: String(i + 1),
-    label: `${i + 1}. ${m}`,
-  }))
-);
-
-const occurrenceOptions = [
-  { value: 'first', label: 'Первое' },
-  { value: 'second', label: 'Второе' },
-  { value: 'third', label: 'Третье' },
-  { value: 'fourth', label: 'Четвертое' },
-  { value: 'last', label: 'Последнее' },
-];
-
-const weekdayOptions = computed(() =>
-  props.weekdayNames.map((w, i) => ({
-    value: String(i),
-    label: w,
-  }))
-);
+const { monthOptions, occurrenceOptions, weekdayOptions } = useTab5DstTransitionRules(props);
 </script>

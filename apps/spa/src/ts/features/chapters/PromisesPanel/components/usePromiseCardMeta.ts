@@ -3,6 +3,7 @@ import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
 import { usePromiseDateTime } from './usePromiseDateTime';
 import { usePromiseParticipants } from './usePromiseParticipants';
+import { usePromiseCardLocation } from './usePromiseCardLocation';
 import { fetchPromiseCardEntities } from './usePromiseCardEntitiesLoader';
 import type { RichPlotPromise } from '../usePromisesPanel';
 import type { SceneArcItem } from './PromiseCardArcTags.model';
@@ -18,7 +19,6 @@ export function usePromiseCardMeta(
   emit: PromiseCardMetaEmits
 ) {
   const isEditingMeta = ref(false);
-  const locationDraft = ref(props.item.location_id || '');
 
   const arcsStore = useStoryArcsStore();
   const availableArcs = computed(() => arcsStore.arcs);
@@ -32,6 +32,7 @@ export function usePromiseCardMeta(
   const calendars = ref<CalendarRecord[]>([]);
   const dateTime = usePromiseDateTime(calendars, () => emit('change'));
   const participants = usePromiseParticipants(props, projectCharacters, emit);
+  const location = usePromiseCardLocation(props, projectLocations, emit);
 
   const loadProjectEntities = async () => {
     if (!props.project) return;
@@ -47,10 +48,6 @@ export function usePromiseCardMeta(
     }
   };
 
-  watch(() => props.item.location_id, (val) => {
-    locationDraft.value = val || '';
-  });
-
   watch(() => props.item.arc_id, (val) => {
     localArcId.value = val ?? null;
   });
@@ -65,82 +62,6 @@ export function usePromiseCardMeta(
 
   watch(() => props.project, loadProjectEntities);
   onMounted(loadProjectEntities);
-
-  const isLocationDropdownOpen = ref(false);
-
-  const filteredLocations = computed(() => {
-    const q = locationDraft.value.trim().toLowerCase();
-    if (!q) return projectLocations.value;
-    return projectLocations.value.filter(l => l.name.toLowerCase().includes(q));
-  });
-
-  const getLocationDisplayName = (locIdOrName: string): string => {
-    if (!locIdOrName) return '';
-    const clean = String(locIdOrName).trim();
-    const found = projectLocations.value.find(l => 
-      l.id === clean || 
-      l.id.replace(/^(locations|entities):/, '') === clean || 
-      l.name.toLowerCase() === clean.toLowerCase()
-    );
-    return found?.name || clean;
-  };
-
-  const isEntityLocation = computed(() => {
-    if (!props.item.location_id) return false;
-    const clean = String(props.item.location_id).trim().toLowerCase();
-    return projectLocations.value.some(l => 
-      l.id.toLowerCase() === clean || 
-      l.id.toLowerCase().replace(/^(locations|entities):/, '') === clean || 
-      l.name.toLowerCase() === clean
-    );
-  });
-
-  const selectLocation = (locName: string) => {
-    const clean = locName.trim();
-    const found = projectLocations.value.find(l => l.name.toLowerCase() === clean.toLowerCase());
-    const finalVal = found ? found.name : clean;
-    const updated = {
-      ...props.item,
-      location_id: finalVal || null
-    };
-    emit('update:item', updated);
-    emit('change');
-    locationDraft.value = finalVal;
-    isLocationDropdownOpen.value = false;
-  };
-
-  const onLocationBlur = () => {
-    setTimeout(() => {
-      isLocationDropdownOpen.value = false;
-      const currentVal = (props.item.location_id || '').trim();
-      const draftVal = locationDraft.value.trim();
-      if (draftVal !== currentVal) {
-        selectLocation(draftVal);
-      }
-    }, 200);
-  };
-
-  const clearLocation = () => {
-    const updated = {
-      ...props.item,
-      location_id: null
-    };
-    emit('update:item', updated);
-    emit('change');
-    locationDraft.value = '';
-    isLocationDropdownOpen.value = false;
-  };
-
-  const saveLocation = () => {
-    const val = locationDraft.value.trim();
-    if (val === (props.item.location_id || '')) return;
-    const updated = {
-      ...props.item,
-      location_id: val || null
-    };
-    emit('update:item', updated);
-    emit('change');
-  };
 
   const updateKind = (newKind: string) => {
     if (newKind === props.item.kind) return;
@@ -255,14 +176,15 @@ export function usePromiseCardMeta(
 
   return {
     isEditingMeta,
-    locationDraft,
-    isLocationDropdownOpen,
-    filteredLocations,
-    getLocationDisplayName,
-    isEntityLocation,
-    selectLocation,
-    onLocationBlur,
-    clearLocation,
+    locationDraft: location.locationDraft,
+    isLocationDropdownOpen: location.isLocationDropdownOpen,
+    filteredLocations: location.filteredLocations,
+    getLocationDisplayName: location.getLocationDisplayName,
+    isEntityLocation: location.isEntityLocation,
+    selectLocation: location.selectLocation,
+    onLocationBlur: location.onLocationBlur,
+    clearLocation: location.clearLocation,
+    saveLocation: location.saveLocation,
     availableArcs,
     localArcId,
     localArcPhase,
@@ -306,7 +228,6 @@ export function usePromiseCardMeta(
     onDateFieldsChange: handleDateFieldsChange,
     onCalendarChange: handleCalendarChange,
     toggleDatePicker: dateTime.toggleDatePicker,
-    saveLocation,
     updateKind,
     effectiveArcs,
     onArcChange,

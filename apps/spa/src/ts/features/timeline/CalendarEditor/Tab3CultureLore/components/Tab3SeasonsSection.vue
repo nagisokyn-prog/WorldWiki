@@ -95,25 +95,20 @@
 </template>
 
 <script setup lang="ts">
-import {
-  SEASON_PALETTES,
-  type Tab3SeasonsSectionProps,
-  type Tab3SeasonsSectionEmits,
+import type {
+  Tab3SeasonsSectionProps,
+  Tab3SeasonsSectionEmits,
 } from './Tab3SeasonsSection.model';
-import type { CultureSeasonDto } from '../Tab3CultureLore.model';
 import { useTab3SeasonsSection } from './useTab3SeasonsSection';
 
 const props = defineProps<Tab3SeasonsSectionProps>();
 
 const emit = defineEmits<Tab3SeasonsSectionEmits>();
 
-const palettes = SEASON_PALETTES;
-
-const { toggleHemisphere, toggleMonthInSeason } = useTab3SeasonsSection(props, emit);
-
-function setSeasonColor(s: CultureSeasonDto, colorVar: string) {
-  if (props.isReadOnly) return;
-  s.цвет = colorVar;
-  emit('update-seasons', [...props.seasons]);
-}
+const {
+  palettes,
+  toggleHemisphere,
+  toggleMonthInSeason,
+  setSeasonColor,
+} = useTab3SeasonsSection(props, emit);
 </script>

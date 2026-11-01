@@ -162,7 +162,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { ConsistencyCheckerProps, ConsistencyCheckerEmits } from './ConsistencyChecker.model';
 import { useConsistencyChecker } from './useConsistencyChecker';
 import AuditSummaryHeader from './components/AuditSummaryHeader.vue';
@@ -179,8 +178,6 @@ const props = withDefaults(
 
 defineEmits<ConsistencyCheckerEmits>();
 
-const activeProjectId = computed(() => props.projectId || props.project || '');
-
 const {
   currentView,
   chapterViolations,
@@ -194,7 +191,7 @@ const {
   isAuditing,
   resetFilters,
   runAudit,
-} = useConsistencyChecker(activeProjectId);
+} = useConsistencyChecker(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/ConsistencyChecker.css"></style>

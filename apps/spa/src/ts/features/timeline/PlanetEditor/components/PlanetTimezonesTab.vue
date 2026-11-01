@@ -156,24 +156,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
 import type { PlanetTimezonesTabProps, PlanetTimezonesTabEmits } from './PlanetTimezonesTab.model';
+import { usePlanetTimezonesTab } from './usePlanetTimezonesTab';
 
 const props = defineProps<PlanetTimezonesTabProps>();
 
 defineEmits<PlanetTimezonesTabEmits>();
 
-const dstOptions = [
-  { value: 'none', label: '🚫 Без перевода (None)' },
-  { value: 'eu', label: '🇪🇺 EU (+60м)' },
-  { value: 'us', label: '🇺🇸 US (+60м)' },
-];
-
-const timezoneCodeOptions = computed(() =>
-  props.planet.timezones.map((tz) => ({
-    value: tz.code,
-    label: tz.code,
-  }))
-);
+const { dstOptions, timezoneCodeOptions } = usePlanetTimezonesTab(props);
 </script>

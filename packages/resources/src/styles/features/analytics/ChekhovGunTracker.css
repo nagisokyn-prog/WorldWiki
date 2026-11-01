@@ -45,34 +45,34 @@
 }
 
 .text-success {
-  color: var(--success, #22c55e);
+  color: var(--color-success, var(--success));
 }
 
 .text-warning {
-  color: var(--warning, #f59e0b);
+  color: var(--color-warning, var(--warning));
 }
 
 .text-danger {
-  color: var(--error, #ef4444);
+  color: var(--color-danger, var(--error));
 }
 
 /* Badges */
 .badge-active {
   background-color: var(--bg-hover);
-  color: var(--success, #22c55e);
-  border-color: var(--success, #22c55e);
+  color: var(--color-success, var(--success));
+  border-color: var(--color-success, var(--success));
 }
 
 .badge-sleeping {
   background-color: var(--warning-bg, var(--bg-hover));
-  color: var(--warning, #f59e0b);
-  border-color: var(--warning, #f59e0b);
+  color: var(--color-warning, var(--warning));
+  border-color: var(--color-warning, var(--warning));
 }
 
 .badge-forgotten {
   background-color: var(--error-bg, var(--bg-hover));
-  color: var(--error, #ef4444);
-  border-color: var(--error, #ef4444);
+  color: var(--color-danger, var(--error));
+  border-color: var(--color-danger, var(--error));
 }
 
 .badge-destroyed {
@@ -83,5 +83,5 @@
 
 .btn-refresh:hover {
   background-color: var(--accent);
-  color: var(--bg-panel);
+  color: var(--text-on-accent);
 }

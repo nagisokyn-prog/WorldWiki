@@ -20,11 +20,20 @@ import {
   createDefaultPlanetDto,
   populatePlanetFromEntity,
   calculateSolstices,
-  buildEarth24Timezones,
-  buildEarthRegions,
-  buildFantasyRegions,
 } from './planetEditor.utils';
-import { calendarApi } from '@/services/api/calendar.api';
+import {
+  persistPlanetSave,
+  persistPlanetDelete,
+  applyPlanetPresetData,
+  addPlanetTimezone,
+  removePlanetTimezone,
+  applyPlanetTimezonePreset,
+  addPlanetRegion,
+  removePlanetRegion,
+  applyPlanetRegionsPreset,
+  addPlanetMoon,
+  removePlanetMoon,
+} from './planetPersistence';
 import { useCalendarStore } from '@/stores/calendar.store';
 
 export function usePlanetEditor(
@@ -33,8 +42,7 @@ export function usePlanetEditor(
 ) {
   const calendarStore = useCalendarStore();
   const activeTab = ref<PlanetEditorTab>('astrophysics');
-  const isSaving = ref(false);
-  const errorMessage = ref<string | null>(null);
+  const isSaving = ref(false), errorMessage = ref<string | null>(null);
 
   // Реактивное состояние редактируемой планеты
   const planet = ref<PlanetDto>(createDefaultPlanetDto(props.planetId));
@@ -134,87 +142,49 @@ export function usePlanetEditor(
 
   // Часовые пояса
   function addTimezone(tz?: Partial<PlanetTimezone>) {
-    planet.value.timezones.push({
-      name: tz?.name || `Пояс ${planet.value.timezones.length + 1}`,
-      code: tz?.code || `UTC+${planet.value.timezones.length}`,
-      offset_hours: tz?.offset_hours ?? 0,
-      dst_rule: tz?.dst_rule || 'none',
-    });
+    addPlanetTimezone(planet.value, tz);
     syncStorage();
     emit('update:planet', planet.value);
   }
 
   function removeTimezone(index: number) {
-    if (index >= 0 && index < planet.value.timezones.length) {
-      planet.value.timezones.splice(index, 1);
-      syncStorage();
-      emit('update:planet', planet.value);
-    }
+    removePlanetTimezone(planet.value, index);
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   function applyTimezonePreset(preset: 'earth24' | 'single') {
-    if (preset === 'single') {
-      planet.value.timezones = [
-        { name: 'Нулевой меридиан', code: 'UTC+0', offset_hours: 0, dst_rule: 'none' },
-      ];
-      if (planet.value.regions && planet.value.regions.length > 0) {
-        planet.value.regions.forEach((r) => {
-          r.timezone_code = 'UTC+0';
-        });
-      }
-    } else if (preset === 'earth24') {
-      planet.value.timezones = buildEarth24Timezones();
-    }
+    applyPlanetTimezonePreset(planet.value, preset);
     syncStorage();
     emit('update:planet', planet.value);
   }
 
   // Регионы
   function addRegion(reg?: Partial<PlanetRegion>) {
-    planet.value.regions.push({
-      name: reg?.name || `Регион ${planet.value.regions.length + 1}`,
-      timezone_code: reg?.timezone_code || 'UTC+0',
-      latitude: reg?.latitude ?? 0,
-      longitude: reg?.longitude ?? 0,
-      max_day_hours: reg?.max_day_hours || '12ч 00м',
-      min_day_hours: reg?.min_day_hours || '12ч 00м',
-    });
+    addPlanetRegion(planet.value, reg);
     syncStorage();
     emit('update:planet', planet.value);
   }
 
   function removeRegion(index: number) {
-    if (index >= 0 && index < planet.value.regions.length) {
-      planet.value.regions.splice(index, 1);
-      syncStorage();
-      emit('update:planet', planet.value);
-    }
+    removePlanetRegion(planet.value, index);
+    syncStorage();
+    emit('update:planet', planet.value);
   }
 
   function applyRegionsPreset(preset: 'earth' | 'fantasy') {
-    if (preset === 'earth') {
-      planet.value.regions = buildEarthRegions();
-    } else if (preset === 'fantasy') {
-      planet.value.regions = buildFantasyRegions();
-    }
+    applyPlanetRegionsPreset(planet.value, preset);
     syncStorage();
     emit('update:planet', planet.value);
   }
 
   // Спутники (Луны)
   function addMoon(moon?: Partial<PlanetMoon>) {
-    planet.value.moons.push({
-      name: moon?.name || `Луна ${planet.value.moons.length + 1}`,
-      orbital_period: moon?.orbital_period ?? 28.0,
-      start_phase: moon?.start_phase ?? 0.0,
-      color: moon?.color || 'var(--color-moon-secondary, var(--color-border-subtle))',
-    });
+    addPlanetMoon(planet.value, moon);
   }
 
   function removeMoon(index: number) {
-    if (index >= 0 && index < planet.value.moons.length) {
-      planet.value.moons.splice(index, 1);
-    }
+    removePlanetMoon(planet.value, index);
   }
 
   // Сохранение планеты через API бэкенда
@@ -222,39 +192,10 @@ export function usePlanetEditor(
     isSaving.value = true;
     errorMessage.value = null;
     try {
-      const payload: Record<string, unknown> = {
-        name: planet.value.name,
-        ticks_per_day: planet.value.ticks_per_day,
-        axial_tilt_mdeg: planet.value.axial_tilt_mdeg,
-        orbit_days_num: planet.value.orbit_days_num,
-        orbit_days_den: planet.value.orbit_days_den,
-        rotation_direction: planet.value.rotation_direction,
-        moons: planet.value.moons.map((m) => {
-          const clean: Record<string, unknown> = {
-            name: m.name,
-            orbital_period: m.orbital_period,
-            start_phase: m.start_phase,
-          };
-          if (m.id) clean.id = m.id;
-          return clean;
-        }),
-        timezones: planet.value.timezones,
-        regions: planet.value.regions,
-        solstices: planet.value.solstices,
-      };
-
-      calendarStore.savePlanetToStorage(props.projectId, toPlanetEntity(planet.value, props.projectId));
-      await calendarApi.savePlanetDirect(
-        props.projectId,
-        planet.value.id || null,
-        planet.value.name,
-        payload
-      );
-
+      await persistPlanetSave(planet.value, props.projectId, calendarStore);
       document.dispatchEvent(new CustomEvent('ww:planet-renamed', {
         detail: { id: props.planetId || planet.value.id, name: planet.value.name },
       }));
-
       emit('save', planet.value);
       emit('update:name', planet.value.name);
       emit('update:planet', planet.value);
@@ -274,8 +215,7 @@ export function usePlanetEditor(
     }
 
     try {
-      calendarStore.deletePlanetFromStorage(props.projectId, String(planet.value.id || props.planetId));
-      await calendarApi.deletePlanetDirect(props.projectId, planet.value.id);
+      await persistPlanetDelete(planet.value.id, props.projectId, calendarStore);
       document.dispatchEvent(new CustomEvent('ww:planet-deleted', {
         detail: { id: props.planetId || planet.value.id },
       }));
@@ -288,33 +228,10 @@ export function usePlanetEditor(
   }
 
   const isPresetsModalOpen = ref(false);
-
-  function openPresetsModal() {
-    isPresetsModalOpen.value = true;
-  }
+  const openPresetsModal = () => { isPresetsModalOpen.value = true; };
 
   function applyPreset(preset: PlanetPreset) {
-    const p = preset.data;
-    if (p.name) planet.value.name = p.name;
-    if (p.icon) planet.value.icon = p.icon;
-    if (p.day_hours !== undefined) planet.value.day_hours = p.day_hours;
-    if (p.day_minutes !== undefined) planet.value.day_minutes = p.day_minutes;
-    if (p.day_seconds !== undefined) planet.value.day_seconds = p.day_seconds;
-    if (p.ticks_per_day !== undefined) {
-      planet.value.ticks_per_day = p.ticks_per_day;
-    } else {
-      updateDayTicks();
-    }
-    if (p.orbit_days !== undefined) planet.value.orbit_days = p.orbit_days;
-    if (p.orbit_days_num !== undefined) planet.value.orbit_days_num = p.orbit_days_num;
-    if (p.orbit_days_den !== undefined) planet.value.orbit_days_den = p.orbit_days_den;
-    if (p.axial_tilt_mdeg !== undefined) planet.value.axial_tilt_mdeg = p.axial_tilt_mdeg;
-    if (p.rotation_direction) planet.value.rotation_direction = p.rotation_direction;
-    if (p.solstices) planet.value.solstices = { ...p.solstices };
-    if (p.timezones) planet.value.timezones = JSON.parse(JSON.stringify(p.timezones));
-    if (p.regions) planet.value.regions = JSON.parse(JSON.stringify(p.regions));
-    if (p.moons) planet.value.moons = JSON.parse(JSON.stringify(p.moons));
-
+    applyPlanetPresetData(planet.value, preset, updateDayTicks);
     syncStorage();
     emit('update:name', planet.value.name);
     emit('update:planet', planet.value);

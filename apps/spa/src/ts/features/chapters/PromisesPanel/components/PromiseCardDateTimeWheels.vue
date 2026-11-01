@@ -8,7 +8,7 @@
           :model-value="currentEraIdx"
           :options="eraWheelOptions"
           placeholder="Эпоха"
-          @update:model-value="$emit('update:currentEraIdx', Number($event)); $emit('change')"
+          @update:model-value="onEraChange"
         />
       </div>
 
@@ -22,15 +22,15 @@
             :min="eraMinYear ?? 1"
             :max="eraMaxYear ?? undefined"
             title="Прямой ввод года"
-            @change="$emit('update:currentYear', Math.min(eraMaxYear ?? Infinity, Math.max(eraMinYear ?? 1, Number(($event.target as HTMLInputElement).value) || (eraMinYear ?? 1)))); $emit('change')"
-            @keydown.enter="$emit('update:currentYear', Math.min(eraMaxYear ?? Infinity, Math.max(eraMinYear ?? 1, Number(($event.target as HTMLInputElement).value) || (eraMinYear ?? 1)))); $emit('change')"
+            @change="handleYearInput(($event.target as HTMLInputElement).value)"
+            @keydown.enter="handleYearInput(($event.target as HTMLInputElement).value)"
           />
         </div>
         <XboxWheel
           :model-value="currentYear"
           :options="yearWheelOptions"
           placeholder="Год"
-          @update:model-value="$emit('update:currentYear', Number($event)); $emit('change')"
+          @update:model-value="onYearChange"
         />
       </div>
 
@@ -40,7 +40,7 @@
           :model-value="currentMonthIdx"
           :options="monthWheelOptions"
           placeholder="Месяц"
-          @update:model-value="$emit('update:currentMonthIdx', Number($event)); $emit('change')"
+          @update:model-value="onMonthChange"
         />
       </div>
     </div>
@@ -53,7 +53,7 @@
           :model-value="currentDay"
           :options="dayWheelOptions"
           placeholder="День"
-          @update:model-value="$emit('update:currentDay', Number($event)); $emit('change')"
+          @update:model-value="onDayChange"
         />
       </div>
 
@@ -63,7 +63,7 @@
           :model-value="currentHour"
           :options="hourWheelOptions"
           placeholder="Час"
-          @update:model-value="$emit('update:currentHour', Number($event)); $emit('change')"
+          @update:model-value="onHourChange"
         />
       </div>
 
@@ -73,7 +73,7 @@
           :model-value="currentMinute"
           :options="minuteWheelOptions"
           placeholder="Мин"
-          @update:model-value="$emit('update:currentMinute', Number($event)); $emit('change')"
+          @update:model-value="onMinuteChange"
         />
       </div>
     </div>
@@ -83,18 +83,18 @@
 <script setup lang="ts">
 import type { PromiseCardDateTimeWheelsProps, PromiseCardDateTimeWheelsEmits } from './PromiseCardDateTimeWheels.model';
 import { XboxWheel } from '@worldwiki/components';
+import { usePromiseCardDateTimeWheels } from './usePromiseCardDateTimeWheels';
 
 const props = defineProps<PromiseCardDateTimeWheelsProps>();
-
 const emit = defineEmits<PromiseCardDateTimeWheelsEmits>();
 
-const handleYearInput = (rawVal: string) => {
-  const num = Number(rawVal);
-  if (isNaN(num)) return;
-  const min = props.eraMinYear ?? 1;
-  const max = props.eraMaxYear ?? Infinity;
-  const clamped = Math.min(max, Math.max(min, num));
-  emit('update:currentYear', clamped);
-  emit('change');
-};
+const {
+  handleYearInput,
+  onEraChange,
+  onYearChange,
+  onMonthChange,
+  onDayChange,
+  onHourChange,
+  onMinuteChange
+} = usePromiseCardDateTimeWheels(props, emit);
 </script>

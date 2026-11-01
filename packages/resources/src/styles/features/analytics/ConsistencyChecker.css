@@ -33,28 +33,28 @@
 }
 
 .text-success {
-  color: var(--success, #22c55e);
+  color: var(--color-success, var(--success));
 }
 
 .text-warning {
-  color: var(--warning, #f59e0b);
+  color: var(--color-warning, var(--warning));
 }
 
 .text-danger {
-  color: var(--error, #ef4444);
+  color: var(--color-danger, var(--error));
 }
 
 /* Badges */
 .badge-critical {
   background-color: var(--error-bg, var(--bg-hover));
-  color: var(--error, #ef4444);
-  border: 1px solid var(--error, #ef4444);
+  color: var(--color-danger, var(--error));
+  border: 1px solid var(--color-danger, var(--error));
 }
 
 .badge-warning {
   background-color: var(--warning-bg, var(--bg-hover));
-  color: var(--warning, #f59e0b);
-  border: 1px solid var(--warning, #f59e0b);
+  color: var(--color-warning, var(--warning));
+  border: 1px solid var(--color-warning, var(--warning));
 }
 
 .badge-notice {
@@ -65,19 +65,19 @@
 
 .badge-success {
   background-color: var(--bg-hover);
-  color: var(--success, #22c55e);
-  border: 1px solid var(--success, #22c55e);
+  color: var(--color-success, var(--success));
+  border: 1px solid var(--color-success, var(--success));
 }
 
 /* Card Severity Accents */
 .severity-critical {
   border-left-width: 4px;
-  border-left-color: var(--error, #ef4444);
+  border-left-color: var(--color-danger, var(--error));
 }
 
 .severity-warning {
   border-left-width: 4px;
-  border-left-color: var(--warning, #f59e0b);
+  border-left-color: var(--color-warning, var(--warning));
 }
 
 .severity-notice {
@@ -88,7 +88,7 @@
 /* Buttons */
 .btn-refresh-audit {
   background-color: var(--accent);
-  color: var(--bg-panel);
+  color: var(--text-on-accent);
   border: none;
 }
 

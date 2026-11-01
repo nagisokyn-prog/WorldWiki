@@ -30,3 +30,15 @@ export type CalendarEditorEmits = {
   (e: 'save', data: Record<string, unknown>): void;
   (e: 'delete', id: string): void;
 };
+
+import type { CalendarData } from '@/services/Calendars/calendar.types';
+
+export function buildCalendarTabsList(totalDays: number, calData: CalendarData | null): CalendarTabInfo[] {
+  return [
+    { id: 'timeGrid', label: 'Структура года', icon: '⏰', badge: `${totalDays} дн` },
+    { id: 'erasSync', label: 'Летоисчисление и эры', icon: '🏛️', badge: calData?.эпохи ? `${calData.эпохи.length} эр` : undefined },
+    { id: 'cultureLore', label: 'Традиции и культура', icon: '🎭', badge: calData?.праздники ? `${calData.праздники.length} праздн.` : undefined },
+    { id: 'playground', label: 'Калькулятор дат сюжета', icon: '🧪', badge: 'Сюжет' },
+    { id: 'reformsDst', label: 'Реформы и перевод часов', icon: '🔄', badge: 'Стиль' },
+  ];
+}

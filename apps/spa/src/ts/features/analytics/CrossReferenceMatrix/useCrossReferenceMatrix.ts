@@ -171,9 +171,25 @@ export function useCrossReferenceMatrix(project: string) {
 
         const hasGapWarning = filters.value.highlightGaps && maxGap >= 3 && total > 1;
 
+        const cellList = chs.map(ch => {
+          const c = cells.get(ch.id);
+          return {
+            chapterId: ch.id,
+            chapterTitle: ch.title,
+            status: c?.status ?? 'absent',
+            hasScene: c?.hasScene ?? false,
+            hasMention: c?.hasMention ?? false,
+            isDeceased: c?.isDeceased ?? false,
+            count: c?.count ?? 0,
+            role: c?.role ?? null,
+            label: c?.label ?? 'Отсутствует',
+          };
+        });
+
         return {
           entity,
           cells,
+          cellList,
           totalAppearances: total,
           totalScenes,
           totalMentions,
@@ -238,10 +254,38 @@ export function useCrossReferenceMatrix(project: string) {
     return `${count} сл.`;
   };
 
+  const chapterSummaries = computed(() => {
+    const map = new Map<string, {
+      id: string;
+      sort_order: number;
+      title: string;
+      word_count: number;
+      formattedWordCount: string;
+      total: number;
+      scenes: number;
+      mentions: number;
+    }>();
+    for (const ch of chapters.value) {
+      const st = chapterStats.value.get(ch.id) || { scenes: 0, mentions: 0, total: 0 };
+      map.set(ch.id, {
+        id: ch.id,
+        sort_order: ch.sort_order,
+        title: ch.title,
+        word_count: ch.word_count,
+        formattedWordCount: formatWordCount(ch.word_count),
+        total: st.total,
+        scenes: st.scenes,
+        mentions: st.mentions,
+      });
+    }
+    return map;
+  });
+
   return {
     filters,
     matrixData,
     chapters,
+    chapterSummaries,
     rows,
     availableEntityTypes,
     chapterStats,

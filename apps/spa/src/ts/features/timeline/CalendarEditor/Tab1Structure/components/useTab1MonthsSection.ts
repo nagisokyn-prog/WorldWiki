@@ -1,7 +1,7 @@
 import { computed } from 'vue';
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
+import type { Tab1MonthsSectionProps } from './Tab1MonthsSection.model';
 
-export function useTab1MonthsSection(props: { months: CalendarMonth[] }) {
+export function useTab1MonthsSection(props: Tab1MonthsSectionProps) {
   const seasonLabels = computed(() => {
     const total = props.months.length;
     return props.months.map((_, idx) => {
@@ -14,7 +14,21 @@ export function useTab1MonthsSection(props: { months: CalendarMonth[] }) {
     });
   });
 
+  const monthOptions = computed(() =>
+    props.months.map((m, idx) => ({
+      value: String(idx),
+      label: `${idx + 1}. ${m.название || `Месяц ${idx + 1}`}`,
+    }))
+  );
+
+  const maxDaysInSelectedMonth = computed(() => {
+    const selected = props.months[props.firstMonthOfYear ?? 0];
+    return selected ? Number(selected.дней) || 31 : 31;
+  });
+
   return {
     seasonLabels,
+    monthOptions,
+    maxDaysInSelectedMonth,
   };
 }

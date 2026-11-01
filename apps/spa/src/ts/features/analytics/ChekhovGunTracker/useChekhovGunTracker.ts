@@ -4,11 +4,18 @@ import type {
   TrackedItem,
   GunTrackerFilterState,
   ItemJourneyReport,
+  ChekhovGunTrackerProps,
 } from './ChekhovGunTracker.model';
 
-export function useChekhovGunTracker(projectIdRef: MaybeRef<string>) {
+export function useChekhovGunTracker(projectIdOrProps: MaybeRef<string> | ChekhovGunTrackerProps) {
   const store = useAnalyticsStore();
-  const getProjectId = () => toValue(projectIdRef);
+  const getProjectId = () => {
+    const val = toValue(projectIdOrProps);
+    if (typeof val === 'object' && val !== null) {
+      return (val as ChekhovGunTrackerProps).projectId || (val as ChekhovGunTrackerProps).project || '';
+    }
+    return (val as string) || '';
+  };
 
   const filter = ref<GunTrackerFilterState>({
     search: '',

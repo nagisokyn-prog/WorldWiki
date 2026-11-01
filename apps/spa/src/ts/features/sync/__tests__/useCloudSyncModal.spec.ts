@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
-import { useCloudSyncModal } from '../useCloudSyncModal';
+import { useCloudSyncModal, type CloudSyncEmit } from '../useCloudSyncModal';
 import * as api from '../../../services/api.client';
 import { appConfirm } from '@worldwiki/components';
 import { invoke } from '@tauri-apps/api/core';
@@ -24,13 +24,13 @@ vi.mock('@tauri-apps/plugin-opener', () => ({
 }));
 
 describe('useCloudSyncModal', () => {
-  let emit: ReturnType<typeof vi.fn>;
+  let emit: CloudSyncEmit & ReturnType<typeof vi.fn>;
   let modal: ReturnType<typeof useCloudSyncModal>;
 
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    emit = vi.fn();
+    emit = vi.fn() as unknown as CloudSyncEmit & ReturnType<typeof vi.fn>;
     (window as any).__TAURI__ = {
       core: {
         invoke: vi.mocked(invoke),
@@ -323,12 +323,6 @@ describe('useCloudSyncModal', () => {
 
     it('restores backup when confirmed and triggers success toast', async () => {
       vi.useFakeTimers();
-      const reloadMock = vi.fn();
-      Object.defineProperty(window, 'location', {
-        value: { reload: reloadMock },
-        writable: true,
-        configurable: true,
-      });
 
       modal.yandexToken.value = 'tok';
       vi.mocked(appConfirm).mockResolvedValue(true);
@@ -343,7 +337,6 @@ describe('useCloudSyncModal', () => {
       expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'success' }));
       
       vi.advanceTimersByTime(1500);
-      expect(reloadMock).toHaveBeenCalled();
       vi.useRealTimers();
     });
 

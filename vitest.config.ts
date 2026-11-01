@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    isolate: false,
+    pool: 'vmThreads',
     include: [
       'test/**/*.test.ts',
       'apps/spa/src/ts/**/*.spec.ts',

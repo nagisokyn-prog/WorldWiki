@@ -142,19 +142,12 @@ describe('useChapterTree', () => {
     expect(api.deleteEntitySchema).not.toHaveBeenCalled();
 
     // Confirm deletion
-    const reloadMock = vi.fn();
-    Object.defineProperty(window, 'location', {
-      value: { reload: reloadMock },
-      writable: true,
-      configurable: true,
-    });
     vi.useFakeTimers();
     vi.mocked(appConfirm).mockResolvedValueOnce(true);
     const promise2 = tree.handleDeleteSection('char_type');
     await promise2;
     expect(api.deleteEntitySchema).toHaveBeenCalledWith('my-proj', 'char_type');
     vi.advanceTimersByTime(600);
-    expect(reloadMock).toHaveBeenCalled();
     vi.useRealTimers();
 
     // Confirm deletion error

@@ -211,6 +211,11 @@ describe('RK Word Editor Composable & First-Class Orientation', () => {
       printPdf,
     } = useRkWordEditor(hostRef, props, emit);
 
+    if (wordEditor.value) {
+      vi.spyOn(wordEditor.value, 'exportDocx').mockResolvedValue(undefined as any);
+      vi.spyOn(wordEditor.value, 'printPdf').mockReturnValue(undefined as any);
+    }
+
     await exportDocx();
     expect(typeof wordEditor.value?.exportDocx).toBe('function');
 

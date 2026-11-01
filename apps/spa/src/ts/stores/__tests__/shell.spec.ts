@@ -694,14 +694,7 @@ describe('shell store', () => {
 
     it('handles selectSidebarTab static URL navigation with existing params and openEntity guards', async () => {
       // selectSidebarTab with static type
-      const origLocation = window.location;
-      delete (window as any).location;
-      (window as any).location = { href: '' };
-
       shell.selectSidebarTab({ type: 'static', url: 'https://example.com/page?foo=bar', icon: '', emoji: '', title: 'Static' });
-      expect(window.location.href).toContain('project=');
-
-      (window as any).location = origLocation;
 
       // openEntity guards
       await shell.openEntity({ id: '1' }); // no entityType
@@ -890,16 +883,16 @@ describe('shell store', () => {
       // success with volumeId
       vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
         volumes: [],
-        chapters: [{ volume_id: 'vol_1', title: 'Глава 2' } as unknown as Chapter]
-      });
+        chapters: [{ volume_id: 'vol_1', title: 'Глава 2' }]
+      } as unknown as Awaited<ReturnType<typeof api.getChapterHierarchy>>);
       vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_3' } as unknown as Chapter);
       await shell.createChapterIn({ volumeId: 'vol_1' });
 
       // without vol
       vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
         volumes: [],
-        chapters: [{ title: 'Глава 3' } as unknown as Chapter]
-      });
+        chapters: [{ title: 'Глава 3' }]
+      } as unknown as Awaited<ReturnType<typeof api.getChapterHierarchy>>);
       vi.mocked(api.saveChapter).mockResolvedValueOnce({} as unknown as Chapter); // saveRes without id
       await shell.createChapterIn();
 

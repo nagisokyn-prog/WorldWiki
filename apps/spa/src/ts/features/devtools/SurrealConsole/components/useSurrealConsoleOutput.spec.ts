@@ -4,10 +4,12 @@ import { useSurrealConsoleOutput } from './useSurrealConsoleOutput';
 describe('useSurrealConsoleOutput', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    Object.assign(navigator, {
-      clipboard: {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
         writeText: vi.fn().mockResolvedValue(undefined),
       },
+      writable: true,
+      configurable: true,
     });
   });
 

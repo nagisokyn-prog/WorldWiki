@@ -55,13 +55,6 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
                     } ELSE { NONE },
                     source: 'scene',
                     role: role
-                }),
-                (->participant_of->plot_promises->promise_milestones.{
-                    chapter_id: IF out.chapter_id != NONE {
-                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
-                    } ELSE { NONE },
-                    source: 'scene',
-                    role: stage
                 })
             ) AS appearances
         FROM entities 

@@ -178,6 +178,10 @@ mod tests {
     async fn setup_test_db() -> Arc<Surreal<Db>> {
         let db = Surreal::new::<Mem>(()).await.unwrap();
         db.use_ns("test").use_db("test").await.unwrap();
+        let analyzers = include_str!("../../../../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
+        let workspace = include_str!("../../../../../apps/spa/src/logic/schema/ai/01_workspace_tables.surql");
+        let _ = db.query(analyzers).await;
+        let _ = db.query(workspace).await;
         Arc::new(db)
     }
 

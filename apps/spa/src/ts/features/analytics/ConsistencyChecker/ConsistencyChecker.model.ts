@@ -12,6 +12,7 @@ export interface AuditSummaryStats {
 
 export interface ConsistencyCheckerProps {
   projectId?: string;
+  project?: string;
 }
 
 export type ConsistencyCheckerEmits = {

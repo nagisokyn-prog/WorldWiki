@@ -23,7 +23,8 @@ export interface GunTrackerFilterState {
 }
 
 export interface ChekhovGunTrackerProps {
-  projectId: string;
+  projectId?: string;
+  project?: string;
 }
 
 export interface ChekhovGunTrackerEmits {

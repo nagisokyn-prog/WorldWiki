@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { plotApi } from '@/services/api/plot.api';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
@@ -25,18 +25,38 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   };
 
   let persistQueue = Promise.resolve();
+  const updatePromiseDebounceMap = new Map<string, ReturnType<typeof setTimeout>>();
+
+  onUnmounted(() => {
+    for (const timer of updatePromiseDebounceMap.values()) {
+      clearTimeout(timer);
+    }
+    updatePromiseDebounceMap.clear();
+  });
 
   const persist = (item: RichPlotPromise, logMsg: string): Promise<void> => {
     persistQueue = persistQueue.then(async () => {
       let payloadForLog: PlotPromise | null = null;
       let attempts = 0;
-      while (attempts < 3) {
+      while (attempts < 4) {
         attempts++;
         try {
           console.log(logMsg, { project: getProject(), item });
           const payload = preparePromisePayload(item, getChapterId());
           payloadForLog = payload;
-          await plotApi.savePlotPromise(getProject(), payload);
+          const saved = await plotApi.savePlotPromise(getProject(), payload);
+          if (saved) {
+            const cleanSavedId = cleanId(item.id);
+            const idx = promises.value.findIndex((p) => p.id === item.id || cleanId(p.id) === cleanSavedId);
+            if (idx !== -1) {
+              promises.value[idx] = {
+                ...promises.value[idx],
+                timeline_event_id: saved.timeline_event_id || promises.value[idx].timeline_event_id,
+                m_abs: saved.m_abs ?? promises.value[idx].m_abs,
+                calendar_id: saved.calendar_id || promises.value[idx].calendar_id
+              };
+            }
+          }
           break;
         } catch (err) {
           const errStr = err instanceof Error ? err.message : String(err);
@@ -44,8 +64,8 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
             errStr.includes('Transaction conflict') ||
             errStr.includes('write conflict') ||
             (typeof err === 'object' && err !== null && JSON.stringify(err).includes('conflict'));
-          if (isConflict && attempts < 3) {
-            await new Promise((r) => setTimeout(r, attempts * 50));
+          if (isConflict && attempts < 4) {
+            await new Promise((r) => setTimeout(r, attempts * 150));
             continue;
           }
           console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
@@ -228,7 +248,18 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     if (index !== -1) {
       promises.value[index] = { ...updatedItem };
     }
-    await persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
+    syncLocalBackup();
+    emit('change');
+
+    const existingTimer = updatePromiseDebounceMap.get(targetClean);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+    const timer = setTimeout(() => {
+      updatePromiseDebounceMap.delete(targetClean);
+      void persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
+    }, 250);
+    updatePromiseDebounceMap.set(targetClean, timer);
   };
 
   const addNewScene = () => {

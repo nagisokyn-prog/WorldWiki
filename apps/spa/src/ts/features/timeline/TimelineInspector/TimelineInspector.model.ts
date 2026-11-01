@@ -98,8 +98,9 @@ export interface VisualizedConnectionLine {
 
 export interface TimelineInspectorProps {
   projectId?: string;
+  project?: string;
 }
 
 export interface TimelineInspectorEmits {
-  (e: 'open-chapter', chapter: { id: string; title: string }): void;
+  (e: 'open-chapter', chapter: { id: string; title: string } | string): void;
 }

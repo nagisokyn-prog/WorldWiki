@@ -122,8 +122,14 @@
                   <span v-if="row.hasGapWarning" class="matrix-gap-badge" title="Персонаж пропал на 3+ главы подряд!">⚠️ Разрыв</span>
                 </div>
               </td>
-              <td class="matrix-td matrix-total-cell">
-                <span class="matrix-total-badge">{{ row.totalAppearances }}</span>
+              <td class="matrix-td matrix-total-cell" :title="`Сцен: ${row.totalScenes}, Упоминаний: ${row.totalMentions}`">
+                <div class="matrix-total-group">
+                  <span class="matrix-total-badge">{{ row.totalAppearances }}</span>
+                  <div v-if="row.totalScenes > 0 || row.totalMentions > 0" class="matrix-total-sub">
+                    <span v-if="row.totalScenes > 0" class="sub-scene" title="Сцены">●{{ row.totalScenes }}</span>
+                    <span v-if="row.totalMentions > 0" class="sub-mention" title="Упоминания">○{{ row.totalMentions }}</span>
+                  </div>
+                </div>
               </td>
               <td
                 v-for="ch in chapters"
@@ -131,13 +137,39 @@
                 class="matrix-td matrix-cell"
                 :title="row.entity.name + ' в ' + ch.title + ': ' + (row.cells.get(ch.id)?.label || '')"
               >
-                <span v-if="row.cells.get(ch.id)?.status === 'scene'" class="cell-badge cell-scene">●</span>
-                <span v-else-if="row.cells.get(ch.id)?.status === 'mention'" class="cell-badge cell-mention">○</span>
-                <span v-else-if="row.cells.get(ch.id)?.status === 'deceased'" class="cell-badge cell-deceased">💀</span>
+                <div v-if="row.cells.get(ch.id)?.hasScene || row.cells.get(ch.id)?.hasMention" class="cell-badges-group">
+                  <span v-if="row.cells.get(ch.id)?.hasScene" class="cell-badge cell-scene" title="Сцена / Прямое участие">●</span>
+                  <span v-if="row.cells.get(ch.id)?.hasMention" class="cell-badge cell-mention" title="Упоминание ((Имя))">○</span>
+                </div>
+                <span v-else-if="row.cells.get(ch.id)?.isDeceased" class="cell-badge cell-deceased" title="Погиб">💀</span>
                 <span v-else class="cell-badge cell-absent">—</span>
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr class="matrix-row matrix-summary-row">
+              <td class="matrix-td sticky-left matrix-entity-cell">
+                <span class="matrix-summary-label">👥 Участников в главе:</span>
+              </td>
+              <td class="matrix-td matrix-total-cell" :title="'Всего участий: ' + totalProjectAppearances">
+                <span class="matrix-total-badge">{{ totalProjectAppearances }}</span>
+              </td>
+              <td
+                v-for="ch in chapters"
+                :key="'footer-' + ch.id"
+                class="matrix-td matrix-cell matrix-summary-cell"
+                :title="`Глава ${ch.sort_order}: ${chapterStats.get(ch.id)?.total || 0} участников (● ${chapterStats.get(ch.id)?.scenes || 0}, ○ ${chapterStats.get(ch.id)?.mentions || 0})`"
+              >
+                <div class="chapter-summary-box">
+                  <span class="summary-total">{{ chapterStats.get(ch.id)?.total || 0 }}</span>
+                  <div v-if="(chapterStats.get(ch.id)?.total || 0) > 0" class="summary-sub">
+                    <span v-if="(chapterStats.get(ch.id)?.scenes || 0) > 0" class="sub-scene" title="В сценах">●{{ chapterStats.get(ch.id)?.scenes }}</span>
+                    <span v-if="(chapterStats.get(ch.id)?.mentions || 0) > 0" class="sub-mention" title="В упоминаниях">○{{ chapterStats.get(ch.id)?.mentions }}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -160,6 +192,8 @@ const {
   chapters,
   rows,
   availableEntityTypes,
+  chapterStats,
+  totalProjectAppearances,
   isLoading,
   refresh,
   formatWordCount,

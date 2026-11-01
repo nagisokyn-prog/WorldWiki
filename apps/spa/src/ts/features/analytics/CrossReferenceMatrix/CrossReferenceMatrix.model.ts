@@ -1,9 +1,13 @@
 import type { MatrixEntity } from '@/stores/analytics.store';
 
-export type AppearanceStatus = 'scene' | 'mention' | 'deceased' | 'absent';
+export type AppearanceStatus = 'scene' | 'mention' | 'both' | 'deceased' | 'absent';
 
 export interface CellStatusInfo {
   status: AppearanceStatus;
+  hasScene: boolean;
+  hasMention: boolean;
+  isDeceased: boolean;
+  count: number;
   role?: string | null;
   label: string;
 }
@@ -12,6 +16,8 @@ export interface EntityPresenceRow {
   entity: MatrixEntity;
   cells: Map<string, CellStatusInfo>;
   totalAppearances: number;
+  totalScenes: number;
+  totalMentions: number;
   hasGapWarning: boolean;
 }
 

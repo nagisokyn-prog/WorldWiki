@@ -61,6 +61,8 @@ pub struct RawPromise {
     #[serde(default)]
     pub chapter_id: Option<String>,
     #[serde(default)]
+    pub resolved_at_chapter_id: Option<String>,
+    #[serde(default)]
     pub m_abs: Option<i64>,
     #[serde(default)]
     pub participant_ids: Vec<String>,
@@ -68,6 +70,10 @@ pub struct RawPromise {
     pub title: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub kind: Option<String>,
+    #[serde(default)]
+    pub status: Option<String>,
 }
 
 #[derive(serde::Deserialize, Default)]
@@ -90,4 +96,5 @@ pub fn clean_id(raw: &str) -> &str {
     raw.trim_start_matches("entities:")
         .trim_start_matches("chapters:")
         .trim_start_matches("projects:")
+        .trim_start_matches("plot_promises:")
 }

@@ -1,93 +1,94 @@
 .consistency-checker-root {
-  background-color: var(--color-surface);
-  color: var(--color-text-main);
+  background-color: var(--bg-main, var(--bg-base));
+  color: var(--text-main);
+  font-family: var(--font-family-base, sans-serif);
 }
 
 .border-subtle {
-  border-color: var(--color-border);
+  border-color: var(--border-color);
 }
 
 .bg-surface {
-  background-color: var(--color-surface);
+  background-color: var(--bg-panel);
 }
 
 .bg-surface-hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--bg-hover);
 }
 
 .bg-input {
-  background-color: var(--color-bg-input, var(--color-surface-hover));
+  background-color: var(--bg-sunken);
 }
 
 .text-main {
-  color: var(--color-text-main);
+  color: var(--text-main);
 }
 
 .text-muted {
-  color: var(--color-text-muted);
+  color: var(--text-muted);
 }
 
 .text-accent {
-  color: var(--color-accent);
+  color: var(--accent);
 }
 
 .text-success {
-  color: var(--color-success);
+  color: var(--success, #22c55e);
 }
 
 .text-warning {
-  color: var(--color-warning);
+  color: var(--warning, #f59e0b);
 }
 
 .text-danger {
-  color: var(--color-danger);
+  color: var(--error, #ef4444);
 }
 
 /* Badges */
 .badge-critical {
-  background-color: var(--color-danger-bg, var(--color-surface-hover));
-  color: var(--color-danger);
-  border: 1px solid var(--color-danger);
+  background-color: var(--error-bg, var(--bg-hover));
+  color: var(--error, #ef4444);
+  border: 1px solid var(--error, #ef4444);
 }
 
 .badge-warning {
-  background-color: var(--color-warning-bg, var(--color-surface-hover));
-  color: var(--color-warning);
-  border: 1px solid var(--color-warning);
+  background-color: var(--warning-bg, var(--bg-hover));
+  color: var(--warning, #f59e0b);
+  border: 1px solid var(--warning, #f59e0b);
 }
 
 .badge-notice {
-  background-color: var(--color-accent-bg, var(--color-surface-hover));
-  color: var(--color-accent);
-  border: 1px solid var(--color-accent);
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .badge-success {
-  background-color: var(--color-success-bg, var(--color-surface-hover));
-  color: var(--color-success);
-  border: 1px solid var(--color-success);
+  background-color: var(--bg-hover);
+  color: var(--success, #22c55e);
+  border: 1px solid var(--success, #22c55e);
 }
 
 /* Card Severity Accents */
 .severity-critical {
   border-left-width: 4px;
-  border-left-color: var(--color-danger);
+  border-left-color: var(--error, #ef4444);
 }
 
 .severity-warning {
   border-left-width: 4px;
-  border-left-color: var(--color-warning);
+  border-left-color: var(--warning, #f59e0b);
 }
 
 .severity-notice {
   border-left-width: 4px;
-  border-left-color: var(--color-accent);
+  border-left-color: var(--accent);
 }
 
 /* Buttons */
 .btn-refresh-audit {
-  background-color: var(--color-accent);
-  color: var(--color-surface);
+  background-color: var(--accent);
+  color: var(--bg-panel);
   border: none;
 }
 
@@ -98,4 +99,39 @@
 .btn-refresh-audit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Chapter Violations Table */
+.audit-chapter-table-wrapper {
+  overflow-x: auto;
+}
+
+.audit-chapter-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.audit-chapter-table th {
+  padding: 8px 12px;
+  background-color: var(--bg-sunken);
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.audit-chapter-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.audit-chapter-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.audit-chapter-row:hover {
+  background-color: var(--bg-hover);
 }

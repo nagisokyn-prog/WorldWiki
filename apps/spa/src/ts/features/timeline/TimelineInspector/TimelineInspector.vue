@@ -52,7 +52,7 @@
         <p>Загрузка хронологических связей...</p>
       </div>
 
-      <div v-else-if="!filteredEvents.length || !filteredChapters.length" class="inspector-empty">
+      <div v-else-if="!filteredEvents.length && !filteredChapters.length" class="inspector-empty">
         <div class="empty-icon">📂</div>
         <p>Нет связанных событий для отображения.</p>
         <span class="empty-hint">Привяжите события таймлайна к главам или создайте сцены с датами в редакторе.</span>
@@ -112,6 +112,10 @@
           </div>
           <div class="axis-rail axis-rail-diegetic"></div>
 
+          <div v-if="!formattedEvents.length" class="axis-empty-hint p-4 text-xs text-muted italic">
+            <span>ℹ️ В главах пока нет связанных событий или сцен с датами</span>
+          </div>
+
           <div
             v-for="(ev, idx) in formattedEvents"
             :key="'ev-node-' + ev.id"
@@ -170,6 +174,7 @@ import type { TimelineInspectorProps, TimelineInspectorEmits } from './TimelineI
 
 const props = withDefaults(defineProps<TimelineInspectorProps>(), {
   projectId: '',
+  project: '',
 });
 const emit = defineEmits<TimelineInspectorEmits>();
 

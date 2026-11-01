@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, toValue, type MaybeRef } from 'vue';
 import { useAnalyticsStore } from '@/stores/analytics.store';
 import type {
   TrackedItem,
@@ -6,8 +6,9 @@ import type {
   ItemJourneyReport,
 } from './ChekhovGunTracker.model';
 
-export function useChekhovGunTracker(projectId: string) {
+export function useChekhovGunTracker(projectIdRef: MaybeRef<string>) {
   const store = useAnalyticsStore();
+  const getProjectId = () => toValue(projectIdRef);
 
   const filter = ref<GunTrackerFilterState>({
     search: '',
@@ -88,16 +89,19 @@ export function useChekhovGunTracker(projectId: string) {
   );
 
   async function loadData(force = false) {
-    if (!projectId) return;
-    await store.loadItemTracker(projectId, force);
+    const pId = getProjectId();
+    if (!pId) return;
+    await store.loadItemTracker(pId, force);
   }
 
   async function openJourney(item: TrackedItem) {
+    const pId = getProjectId();
+    if (!pId) return;
     selectedJourney.value = null;
     isJourneyModalOpen.value = true;
     isJourneyLoading.value = true;
     try {
-      const journey = await store.loadItemJourney(projectId, item.id);
+      const journey = await store.loadItemJourney(pId, item.id);
       selectedJourney.value = journey;
     } finally {
       isJourneyLoading.value = false;

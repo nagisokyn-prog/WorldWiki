@@ -329,13 +329,26 @@
           <cross-reference-matrix-vue :project="projectName || 'default'" />
         </div>
         <div v-else-if="activePanelTab === 'consistency'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-          <consistency-checker-vue :project="projectName || 'default'" />
+          <consistency-checker-vue
+            :project-id="projectName || 'default'"
+            :project="projectName || 'default'"
+            @jump-to-chapter="openChapterTab"
+            @open-entity="openEntity"
+          />
         </div>
         <div v-else-if="activePanelTab === 'chekhov-guns'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-          <chekhov-gun-tracker-vue :project-id="projectName || 'default'" />
+          <chekhov-gun-tracker-vue
+            :project-id="projectName || 'default'"
+            :project="projectName || 'default'"
+            @jump-to-chapter="openChapterTab"
+          />
         </div>
         <div v-else-if="activePanelTab === 'timeline-inspector'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-          <timeline-inspector-vue :project-id="projectName || 'default'" @open-chapter="openChapterTab" />
+          <timeline-inspector-vue
+            :project-id="projectName || 'default'"
+            :project="projectName || 'default'"
+            @open-chapter="openChapterTab"
+          />
         </div>
         <div v-else-if="activePanelTab === 'arc-board'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <arc-board-vue :project-id="projectName || 'default'" />

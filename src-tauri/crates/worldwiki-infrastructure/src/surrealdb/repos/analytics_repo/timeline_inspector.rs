@@ -34,7 +34,8 @@ struct RawTimelineEventNode {
 
 #[derive(serde::Deserialize)]
 struct RawTimelineRevealLink {
-    chapter_id: String,
+    #[serde(default)]
+    chapter_id: Option<String>,
     #[serde(default)]
     chapter_title: Option<String>,
     #[serde(default)]
@@ -54,7 +55,7 @@ struct RawTimelineRevealLink {
 impl RawTimelineRevealLink {
     fn into_dto(self) -> TimelineRevealLink {
         TimelineRevealLink {
-            chapter_id: self.chapter_id,
+            chapter_id: self.chapter_id.unwrap_or_default(),
             chapter_title: self.chapter_title.unwrap_or_default(),
             chapter_sort_order: self.chapter_sort_order.or(self.chapter_order).unwrap_or(0),
             pov_id: self.pov_id,
@@ -68,14 +69,19 @@ impl RawTimelineRevealLink {
 #[derive(serde::Deserialize)]
 #[serde(untagged)]
 enum RawParticipant {
-    Object { id: String },
+    Object {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        name: Option<String>,
+    },
     String(String),
 }
 
 impl RawParticipant {
     fn into_id(self) -> String {
         match self {
-            RawParticipant::Object { id } => id,
+            RawParticipant::Object { id, name } => id.or(name).unwrap_or_default(),
             RawParticipant::String(s) => s,
         }
     }

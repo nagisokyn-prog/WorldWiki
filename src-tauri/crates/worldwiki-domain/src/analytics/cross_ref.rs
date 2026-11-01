@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 pub enum CellAppearanceKind {
     Scene,      // ● Сцена / ключевой эпизод
     Mention,    // ○ Упоминание в тексте
-    None,       // — Отсутствие
+    Both,       // ● ○ Сцена и упоминание
+    None,       // — Отсутствует
     Deceased,   // 💀 Погиб до этой главы
 }
 
@@ -15,6 +16,12 @@ pub struct CellAppearanceDto {
     pub kind: CellAppearanceKind,
     pub source: Option<String>,
     pub role: Option<String>,
+    #[serde(default)]
+    pub has_scene: bool,
+    #[serde(default)]
+    pub has_mention: bool,
+    #[serde(default)]
+    pub count: i32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

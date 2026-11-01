@@ -11,6 +11,11 @@ pub fn eval_item_rules(
 ) {
     for item in &item_tracker.items {
         if item.usage_state == worldwiki_domain::analytics::ItemUsageState::Forgotten {
+            let ch_ids: Vec<String> = item
+                .custody_chain
+                .iter()
+                .filter_map(|c| c.chapter_id.clone())
+                .collect();
             anomalies.push(ContradictionAnomaly {
                 rule: ContradictionRule::ForgottenItem,
                 severity: ContradictionSeverity::Warning,
@@ -23,7 +28,7 @@ pub fn eval_item_rules(
                     item.skipped_chapters
                 ),
                 entity_ids: vec![item.id.clone()],
-                chapter_ids: vec![],
+                chapter_ids: ch_ids,
                 event_ids: vec![],
                 promise_ids: vec![],
             });
@@ -46,6 +51,7 @@ pub fn eval_item_rules(
                         .collect();
 
                     if !owner_present && !other_chars.is_empty() && item.custody_chain.is_empty() {
+                        let ch_ids: Vec<String> = ev.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                         anomalies.push(ContradictionAnomaly {
                             rule: ContradictionRule::ChainOfCustodyViolation,
                             severity: ContradictionSeverity::Warning,
@@ -58,7 +64,7 @@ pub fn eval_item_rules(
                                 ev.m_abs
                             ),
                             entity_ids: vec![item.id.clone(), current_owner.clone()],
-                            chapter_ids: vec![],
+                            chapter_ids: ch_ids,
                             event_ids: vec![ev.event_id.clone()],
                             promise_ids: vec![],
                         });

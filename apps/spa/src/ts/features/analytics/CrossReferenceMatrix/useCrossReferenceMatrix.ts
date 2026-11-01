@@ -62,22 +62,46 @@ export function useCrossReferenceMatrix(project: string) {
       .map((entity: MatrixEntity): EntityPresenceRow => {
         const cells = new Map<string, CellStatusInfo>();
         let total = 0;
+        let totalScenes = 0;
+        let totalMentions = 0;
         let lastSeenIdx = -1;
         let maxGap = 0;
         const isDeceased = Boolean(entity.is_deceased || entity.status_category === 'Мёртв');
 
+        interface MergedApp {
+          hasScene: boolean;
+          hasMention: boolean;
+          isDeceased: boolean;
+          count: number;
+          role?: string | null;
+        }
+        const appearancesMap = new Map<string, MergedApp>();
+
         const rawApps = entity.appearances_by_chapter || entity.appearances || [];
-        const appearancesMap = new Map<string, { kind?: string; source?: string | null; role?: string | null }>();
         rawApps.forEach(app => {
           if (!app.chapter_id) return;
           const cleanId = app.chapter_id.replace(/^chapters:/, '');
-          const existing = appearancesMap.get(app.chapter_id);
-          const isNewScene = app.kind === 'scene' || app.source === 'scene' || app.source === 'manual';
-          if (!existing || isNewScene) {
-            appearancesMap.set(app.chapter_id, app);
-            appearancesMap.set(cleanId, app);
-            appearancesMap.set(`chapters:${cleanId}`, app);
-          }
+          const existing = appearancesMap.get(cleanId) || {
+            hasScene: false,
+            hasMention: false,
+            isDeceased: false,
+            count: 0,
+            role: null,
+          };
+
+          const isScene = Boolean(app.has_scene || app.kind === 'scene' || app.kind === 'both' || app.source === 'scene' || app.source === 'manual');
+          const isMention = Boolean(app.has_mention || app.kind === 'mention' || app.kind === 'both' || app.source === 'mention');
+          const isDec = app.kind === 'deceased';
+
+          existing.hasScene = existing.hasScene || isScene;
+          existing.hasMention = existing.hasMention || isMention;
+          existing.isDeceased = existing.isDeceased || isDec;
+          existing.count += (app.count ?? 1);
+          if (app.role) existing.role = app.role;
+
+          appearancesMap.set(app.chapter_id, existing);
+          appearancesMap.set(cleanId, existing);
+          appearancesMap.set(`chapters:${cleanId}`, existing);
         });
 
         // Determine the index of the last active appearance or death point
@@ -85,7 +109,7 @@ export function useCrossReferenceMatrix(project: string) {
         chs.forEach((ch, idx) => {
           const cleanChId = ch.id.replace(/^chapters:/, '');
           const app = appearancesMap.get(ch.id) || appearancesMap.get(cleanChId) || appearancesMap.get(`chapters:${cleanChId}`);
-          if (app && (app.kind === 'scene' || app.kind === 'mention' || app.source === 'scene' || app.source === 'mention' || app.source === 'manual')) {
+          if (app && (app.hasScene || app.hasMention)) {
             lastActiveIdx = idx;
           }
         });
@@ -94,13 +118,28 @@ export function useCrossReferenceMatrix(project: string) {
           const cleanChId = ch.id.replace(/^chapters:/, '');
           const app = appearancesMap.get(ch.id) || appearancesMap.get(cleanChId) || appearancesMap.get(`chapters:${cleanChId}`);
           
-          if (app && (app.kind === 'scene' || app.kind === 'mention' || app.source === 'scene' || app.source === 'mention' || app.source === 'manual')) {
-            const isScene = app.kind === 'scene' || app.source === 'scene' || app.source === 'manual';
-            const status: AppearanceStatus = isScene ? 'scene' : 'mention';
+          if (app && (app.hasScene || app.hasMention)) {
+            let status: AppearanceStatus = 'mention';
+            let label = 'Упоминание ((Имя))';
+            if (app.hasScene && app.hasMention) {
+              status = 'both';
+              label = 'Сцена и упоминание';
+            } else if (app.hasScene) {
+              status = 'scene';
+              label = 'Сцена / Прямое участие';
+            }
+
+            if (app.hasScene) totalScenes++;
+            if (app.hasMention) totalMentions++;
+
             cells.set(ch.id, {
               status,
+              hasScene: app.hasScene,
+              hasMention: app.hasMention,
+              isDeceased: false,
+              count: app.count,
               role: app.role,
-              label: isScene ? 'Сцена' : 'Упоминание',
+              label,
             });
             total++;
 
@@ -109,14 +148,22 @@ export function useCrossReferenceMatrix(project: string) {
               if (gap > maxGap) maxGap = gap;
             }
             lastSeenIdx = idx;
-          } else if (app?.kind === 'deceased' || (isDeceased && (lastActiveIdx === -1 || idx > lastActiveIdx))) {
+          } else if (app?.isDeceased || (isDeceased && (lastActiveIdx === -1 || idx > lastActiveIdx))) {
             cells.set(ch.id, {
               status: 'deceased',
+              hasScene: false,
+              hasMention: false,
+              isDeceased: true,
+              count: 0,
               label: 'Погиб',
             });
           } else {
             cells.set(ch.id, {
               status: 'absent',
+              hasScene: false,
+              hasMention: false,
+              isDeceased: false,
+              count: 0,
               label: 'Отсутствует',
             });
           }
@@ -128,6 +175,8 @@ export function useCrossReferenceMatrix(project: string) {
           entity,
           cells,
           totalAppearances: total,
+          totalScenes,
+          totalMentions,
           hasGapWarning,
         };
       })
@@ -142,6 +191,31 @@ export function useCrossReferenceMatrix(project: string) {
         }
         return a.entity.name.localeCompare(b.entity.name, 'ru');
       });
+  });
+
+  const chapterStats = computed(() => {
+    const stats = new Map<string, { scenes: number; mentions: number; total: number }>();
+    chapters.value.forEach(ch => {
+      stats.set(ch.id, { scenes: 0, mentions: 0, total: 0 });
+    });
+    rows.value.forEach(row => {
+      chapters.value.forEach(ch => {
+        const cell = row.cells.get(ch.id);
+        if (cell) {
+          const st = stats.get(ch.id);
+          if (st) {
+            if (cell.hasScene) st.scenes++;
+            if (cell.hasMention) st.mentions++;
+            if (cell.hasScene || cell.hasMention) st.total++;
+          }
+        }
+      });
+    });
+    return stats;
+  });
+
+  const totalProjectAppearances = computed(() => {
+    return rows.value.reduce((acc, r) => acc + r.totalAppearances, 0);
   });
 
   const refresh = async () => {
@@ -170,6 +244,8 @@ export function useCrossReferenceMatrix(project: string) {
     chapters,
     rows,
     availableEntityTypes,
+    chapterStats,
+    totalProjectAppearances,
     isLoading,
     error,
     refresh,

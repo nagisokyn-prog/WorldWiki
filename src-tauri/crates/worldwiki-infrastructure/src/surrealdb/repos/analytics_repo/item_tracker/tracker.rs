@@ -209,6 +209,112 @@ pub(crate) async fn get_item_tracker_impl(
         });
     }
 
+    // Include narrative promises of kind "gun" or "foreshadowing"
+    for prom in &promises {
+        let is_gun = prom.kind.as_deref() == Some("gun") || prom.kind.as_deref() == Some("foreshadowing");
+        if !is_gun {
+            continue;
+        }
+
+        let prom_clean = clean_id(&prom.id);
+        if tracked_items.iter().any(|t| clean_id(&t.id) == prom_clean) {
+            continue;
+        }
+
+        let first_ch_order = prom
+            .chapter_id
+            .as_ref()
+            .and_then(|c_id| chapter_map.get(clean_id(c_id)))
+            .map(|(ord, _)| *ord);
+
+        let last_ch_order = prom
+            .resolved_at_chapter_id
+            .as_ref()
+            .and_then(|c_id| chapter_map.get(clean_id(c_id)))
+            .map(|(ord, _)| *ord)
+            .or(first_ch_order);
+
+        let skipped_chapters = if let Some(last_order) = last_ch_order {
+            (max_chapter_order - last_order).max(0)
+        } else {
+            0
+        };
+
+        let raw_status = prom.status.as_deref().unwrap_or("active");
+        let (status_category, usage_state) = match raw_status {
+            "fired" | "resolved" => {
+                active_count += 1;
+                ("Выстрелило", ItemUsageState::Active)
+            }
+            "broken" | "dropped" => {
+                destroyed_count += 1;
+                ("Сорвано / Утеряно", ItemUsageState::DestroyedOrLost)
+            }
+            _ => {
+                if skipped_chapters >= 10 {
+                    forgotten_count += 1;
+                    ("Забыто (10+ глав)", ItemUsageState::Forgotten)
+                } else if skipped_chapters >= 5 {
+                    sleeping_count += 1;
+                    ("В ожидании (5+ глав)", ItemUsageState::Sleeping)
+                } else {
+                    active_count += 1;
+                    ("Заряжено", ItemUsageState::Active)
+                }
+            }
+        };
+
+        let current_owner_id = prom.participant_ids.first().cloned();
+        let current_owner_name = current_owner_id.as_ref().map(|id| {
+            let o_clean = clean_id(id);
+            character_names
+                .get(o_clean)
+                .cloned()
+                .unwrap_or_else(|| id.clone())
+        });
+
+        let mut custody_chain = Vec::new();
+        if let Some(ref ch_id) = prom.chapter_id {
+            let clean_cid = clean_id(ch_id);
+            let (order, title) = chapter_map
+                .get(clean_cid)
+                .map(|(o, t)| (Some(*o), Some(t.clone())))
+                .unwrap_or((None, None));
+
+            custody_chain.push(CustodyEventDto {
+                owner_id: current_owner_id.clone(),
+                owner_name: current_owner_name.clone(),
+                chapter_id: Some(ch_id.clone()),
+                chapter_order: order,
+                chapter_title: title,
+                m_abs: prom.m_abs,
+                circumstances: prom.description.clone().unwrap_or_default(),
+                status_on_stage: Some(status_category.to_string()),
+            });
+        }
+
+        let item_type = if prom.kind.as_deref() == Some("foreshadowing") {
+            "Предзнаменование".to_string()
+        } else {
+            "Чеховское ружьё".to_string()
+        };
+
+        tracked_items.push(TrackedItemDto {
+            id: prom.id.clone(),
+            name: prom.title.clone().unwrap_or_else(|| "Чеховское ружьё".to_string()),
+            item_type,
+            status_category: status_category.to_string(),
+            current_owner_id,
+            current_owner_name,
+            first_chapter_order: first_ch_order,
+            last_chapter_order: last_ch_order,
+            skipped_chapters,
+            total_mentions: if prom.resolved_at_chapter_id.is_some() { 2 } else { 1 },
+            usage_state,
+            custody_chain,
+        });
+    }
+
     let summary = ItemTrackerSummaryDto {
         total_items: tracked_items.len(),
         active_count,

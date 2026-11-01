@@ -17,9 +17,12 @@ export interface MatrixChapter {
 
 export interface MatrixAppearance {
   chapter_id: string;
-  kind?: 'scene' | 'mention' | 'none' | 'deceased';
+  kind?: 'scene' | 'mention' | 'both' | 'none' | 'deceased';
   source?: 'mention' | 'manual' | 'scene' | string | null;
   role?: string | null;
+  has_scene?: boolean;
+  has_mention?: boolean;
+  count?: number;
 }
 
 export interface MatrixEntity {

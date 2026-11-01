@@ -1,7 +1,7 @@
 //! Matrix and cross-reference analytics methods.
 
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 use worldwiki_domain::analytics::{
     AbsenceWarningDto, CellAppearanceDto, CellAppearanceKind, ChapterHeaderDto, CrossRefMatrixDto,
     EntityRowDto,
@@ -77,30 +77,68 @@ fn build_entity_appearances(
     let mut last_seen_order = 0;
     let mut appeared_in_any = false;
 
-    for ch in chapters {
-        let found_app = ent.appearances.iter().find(|a| {
-            if let Some(ch_id) = &a.chapter_id {
-                ch_id == &ch.id
-                    || ch_id.trim_start_matches("chapters:")
-                        == ch.id.trim_start_matches("chapters:")
-            } else {
-                false
+    let mut active_chap_orders = Vec::new();
+    for a in &ent.appearances {
+        if let Some(ch_id) = &a.chapter_id {
+            let clean = ch_id.trim_start_matches("chapters:");
+            if let Some(ch) = chapters
+                .iter()
+                .find(|c| c.id.trim_start_matches("chapters:") == clean)
+            {
+                active_chap_orders.push(ch.sort_order.unwrap_or(0));
             }
-        });
+        }
+    }
+    let max_active_order = active_chap_orders.into_iter().max().unwrap_or(0);
 
+    for ch in chapters {
+        let ch_id_clean = ch.id.trim_start_matches("chapters:");
         let ch_order = ch.sort_order.unwrap_or(0);
 
-        let (kind, src, role) = if ent.is_deceased.unwrap_or(false) && ent.death_m_abs.is_some() {
-            (CellAppearanceKind::Deceased, None, None)
-        } else if let Some(app) = found_app {
+        let matching_apps: Vec<&RawAppearanceEdge> = ent
+            .appearances
+            .iter()
+            .filter(|a| {
+                if let Some(ch_id) = &a.chapter_id {
+                    let clean = ch_id.trim_start_matches("chapters:");
+                    clean == ch_id_clean
+                } else {
+                    false
+                }
+            })
+            .collect();
+
+        let has_scene = matching_apps
+            .iter()
+            .any(|a| a.source.as_deref() == Some("scene") || a.source.as_deref() == Some("manual"));
+        let has_mention = matching_apps
+            .iter()
+            .any(|a| a.source.as_deref() == Some("mention") || a.source.is_none());
+        let count = matching_apps.len() as i32;
+
+        let (kind, src, role) = if has_scene || has_mention {
             appeared_in_any = true;
-            last_seen_order = ch_order;
-            let k = if app.source.as_deref() == Some("scene") {
+            if ch_order > last_seen_order {
+                last_seen_order = ch_order;
+            }
+            let k = if has_scene && has_mention {
+                CellAppearanceKind::Both
+            } else if has_scene {
                 CellAppearanceKind::Scene
             } else {
                 CellAppearanceKind::Mention
             };
-            (k, app.source.clone(), app.role.clone())
+            let primary_src = if has_scene {
+                Some("scene".to_string())
+            } else {
+                Some("mention".to_string())
+            };
+            let primary_role = matching_apps.iter().find_map(|a| a.role.clone());
+            (k, primary_src, primary_role)
+        } else if ent.is_deceased.unwrap_or(false)
+            && (max_active_order == 0 || ch_order > max_active_order)
+        {
+            (CellAppearanceKind::Deceased, None, None)
         } else {
             (CellAppearanceKind::None, None, None)
         };
@@ -110,6 +148,9 @@ fn build_entity_appearances(
             kind,
             source: src,
             role,
+            has_scene,
+            has_mention,
+            count,
         });
     }
 

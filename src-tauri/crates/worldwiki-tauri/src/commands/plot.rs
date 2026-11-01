@@ -52,7 +52,20 @@ pub async fn save_plot_promise(
         .plot
         .save_promise(&promise)
         .await
-        .map_err(IpcError::from)
+        .map_err(IpcError::from)?;
+
+    if let Some(saved) = state
+        .services
+        .plot
+        .promise_repo
+        .get_by_id(&promise.id)
+        .await
+        .map_err(IpcError::from)?
+    {
+        Ok(saved)
+    } else {
+        Ok(promise)
+    }
 }
 
 bridge_command!(

@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, toValue, type MaybeRef } from 'vue';
 import { useAnalyticsStore } from '@/stores/analytics.store';
 import type {
   ContradictionAnomalyDto,
@@ -6,13 +6,16 @@ import type {
   AuditSummaryStats,
 } from './ConsistencyChecker.model';
 
-export function useConsistencyChecker(projectId: string) {
+export function useConsistencyChecker(projectIdRef: MaybeRef<string>) {
   const store = useAnalyticsStore();
+  const currentView = ref<'anomalies' | 'chapters'>('anomalies');
   const searchQuery = ref<string>('');
   const selectedSeverity = ref<'all' | AnomalySeverity>('all');
   const selectedRule = ref<string>('all');
   const selectedEntityId = ref<string>('');
   const isAuditing = ref<boolean>(false);
+
+  const getProjectId = () => toValue(projectIdRef);
 
   const rawAnomalies = computed<ContradictionAnomalyDto[]>(() => {
     return (store.violations as unknown as ContradictionAnomalyDto[]) || [];
@@ -94,6 +97,56 @@ export function useConsistencyChecker(projectId: string) {
     };
   });
 
+  const chapterViolations = computed(() => {
+    const map = new Map<string, {
+      chapterId: string;
+      title: string;
+      order: number;
+      critical: number;
+      warning: number;
+      notice: number;
+      total: number;
+      anomalies: ContradictionAnomalyDto[];
+    }>();
+
+    const chapters = store.matrixData?.chapters || [];
+    const chapterMap = new Map<string, { title: string; order: number }>();
+    chapters.forEach(ch => {
+      const clean = ch.id.replace(/^chapters:/, '');
+      chapterMap.set(clean, { title: ch.title, order: ch.sort_order });
+      chapterMap.set(ch.id, { title: ch.title, order: ch.sort_order });
+    });
+
+    rawAnomalies.value.forEach(a => {
+      const cids = a.chapter_ids || [];
+      cids.forEach(cid => {
+        const clean = cid.replace(/^chapters:/, '');
+        if (!map.has(clean)) {
+          const info = chapterMap.get(clean) || chapterMap.get(cid);
+          map.set(clean, {
+            chapterId: cid,
+            title: info?.title || `Глава ${clean}`,
+            order: info?.order ?? 999,
+            critical: 0,
+            warning: 0,
+            notice: 0,
+            total: 0,
+            anomalies: [],
+          });
+        }
+        const item = map.get(clean)!;
+        item.total++;
+        item.anomalies.push(a);
+        const sev = (a.severity || '').toLowerCase();
+        if (sev === 'critical') item.critical++;
+        else if (sev === 'warning') item.warning++;
+        else item.notice++;
+      });
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.order - b.order);
+  });
+
   const resetFilters = () => {
     searchQuery.value = '';
     selectedSeverity.value = 'all';
@@ -102,22 +155,29 @@ export function useConsistencyChecker(projectId: string) {
   };
 
   const runAudit = async () => {
-    if (!projectId) return;
+    const pId = getProjectId();
+    if (!pId) return;
     isAuditing.value = true;
     try {
-      await store.loadConsistency(projectId);
+      await store.loadConsistency(pId);
+      if (!store.matrixData) {
+        await store.loadMatrix(pId);
+      }
     } finally {
       isAuditing.value = false;
     }
   };
 
   onMounted(() => {
-    if (projectId && !rawAnomalies.value.length) {
+    const pId = getProjectId();
+    if (pId && !rawAnomalies.value.length) {
       void runAudit();
     }
   });
 
   return {
+    currentView,
+    chapterViolations,
     anomalies: rawAnomalies,
     filteredAnomalies,
     searchQuery,

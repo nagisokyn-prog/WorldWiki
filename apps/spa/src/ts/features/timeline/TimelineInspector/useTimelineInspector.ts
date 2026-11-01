@@ -24,7 +24,7 @@ export function useTimelineInspector(
   const getProjectId = () =>
     typeof propsOrProjectId === 'string'
       ? propsOrProjectId
-      : (propsOrProjectId.projectId || '');
+      : (propsOrProjectId.projectId || propsOrProjectId.project || '');
 
   const calendarStore = useCalendarStore();
   const calendarData = ref<CalendarData | null>(null);
@@ -84,7 +84,11 @@ export function useTimelineInspector(
           return false;
         }
         if (filters.value.selectedEntityId !== 'all') {
-          const hasParticipant = ev.participants.some((p) => p.id === filters.value.selectedEntityId);
+          const target = filters.value.selectedEntityId.replace(/^entities:/, '');
+          const hasParticipant = ev.participants.some((p: any) => {
+            const pid = typeof p === 'string' ? p : p?.id;
+            return pid && pid.replace(/^entities:/, '') === target;
+          });
           if (!hasParticipant) return false;
         }
         if (filters.value.selectedPovId !== 'all') {
@@ -124,9 +128,14 @@ export function useTimelineInspector(
         }
       }
 
-      const cleanParticipants = (ev.participants || []).filter(
-        (p) => p && p.name && p.name.trim().length > 0
-      );
+      const cleanParticipants = (ev.participants || [])
+        .map((p: any) => {
+          if (typeof p === 'string') {
+            return { id: p, name: p.replace(/^entities:/, '') };
+          }
+          return p;
+        })
+        .filter((p: any) => p && p.name && String(p.name).trim().length > 0);
 
       const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
       const kindMeta = getInspectorKindMeta(kind);

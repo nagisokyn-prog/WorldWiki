@@ -107,7 +107,8 @@ export const useShellStore = defineStore('shell', () => {
     activeEditor,
     addLog,
     addToast,
-    loadEntityList: (entityType: string) => entityOps.loadEntityList(entityType)
+    loadEntityList: (entityType: string) => entityOps.loadEntityList(entityType),
+    chapters,
   });
 
   // ─── 4. Подсистема EntityOps ─────────────────────────

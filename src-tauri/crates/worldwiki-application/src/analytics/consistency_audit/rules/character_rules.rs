@@ -15,6 +15,7 @@ pub fn eval_deceased_rules(
         {
             for ev in &timeline_data.events {
                 if is_participant(&ev.participants, &ent.id) && ev.m_abs > death_m_abs {
+                    let ch_ids: Vec<String> = ev.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                     anomalies.push(ContradictionAnomaly {
                         rule: ContradictionRule::DeceasedEntityActive,
                         severity: ContradictionSeverity::Critical,
@@ -24,7 +25,7 @@ pub fn eval_deceased_rules(
                             ent.name, death_m_abs, ev.title, ev.m_abs
                         ),
                         entity_ids: vec![ent.id.clone()],
-                        chapter_ids: vec![],
+                        chapter_ids: ch_ids,
                         event_ids: vec![ev.event_id.clone()],
                         promise_ids: vec![],
                     });
@@ -43,6 +44,7 @@ pub fn eval_birth_rules(
         if let Some(birth_m_abs) = ent.birth_m_abs {
             for ev in &timeline_data.events {
                 if is_participant(&ev.participants, &ent.id) && ev.m_abs < birth_m_abs {
+                    let ch_ids: Vec<String> = ev.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                     anomalies.push(ContradictionAnomaly {
                         rule: ContradictionRule::ActionBeforeBirth,
                         severity: ContradictionSeverity::Critical,
@@ -52,7 +54,7 @@ pub fn eval_birth_rules(
                             ent.name, birth_m_abs, ev.title, ev.m_abs
                         ),
                         entity_ids: vec![ent.id.clone()],
-                        chapter_ids: vec![],
+                        chapter_ids: ch_ids,
                         event_ids: vec![ev.event_id.clone()],
                         promise_ids: vec![],
                     });
@@ -96,6 +98,8 @@ pub fn eval_bilocation_rules(
             if ev1.m_abs == ev2.m_abs && ev1.event_id != ev2.event_id {
                 for p in &ev1.participants {
                     if ev2.participants.contains(p) {
+                        let mut ch_ids: Vec<String> = ev1.reveals.iter().map(|r| r.chapter_id.clone()).collect();
+                        ch_ids.extend(ev2.reveals.iter().map(|r| r.chapter_id.clone()));
                         anomalies.push(ContradictionAnomaly {
                             rule: ContradictionRule::EntityBilocation,
                             severity: ContradictionSeverity::Warning,
@@ -105,7 +109,7 @@ pub fn eval_bilocation_rules(
                                 ev1.title, ev2.title
                             ),
                             entity_ids: vec![p.clone()],
-                            chapter_ids: vec![],
+                            chapter_ids: ch_ids,
                             event_ids: vec![ev1.event_id.clone(), ev2.event_id.clone()],
                             promise_ids: vec![],
                         });

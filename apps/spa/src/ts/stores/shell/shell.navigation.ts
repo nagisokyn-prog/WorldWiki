@@ -1,4 +1,4 @@
-import type { Ref, ComputedRef } from 'vue';
+import type { Ref, ComputedRef, ShallowRef } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
 import { entityApi } from '../../services/Entity/entity.api';
 import type { Chapter } from '../../types/generated/Chapter';
@@ -17,6 +17,7 @@ export interface ShellNavigationDeps {
   addLog: (text: string, type?: 'info' | 'warn' | 'error' | 'success') => void;
   addToast: (text: string, type?: 'info' | 'warn' | 'error' | 'success') => void;
   loadEntityList: (entityType: string) => Promise<void>;
+  chapters?: Ref<Array<Chapter>> | ShallowRef<Array<Chapter>> | { value: Array<Chapter> };
 }
 
 export function useShellNavigation(deps: ShellNavigationDeps) {
@@ -106,16 +107,27 @@ export function useShellNavigation(deps: ShellNavigationDeps) {
     deps.layout.activeView.value = 'entity';
   };
 
-  const openChapterTab = (chapter: Chapter | { id?: string | number; title?: string; [key: string]: unknown }) => {
-    const id = String(chapter.id);
+  const openChapterTab = (chapterOrId: Chapter | { id?: string | number; title?: string; [key: string]: unknown } | string) => {
+    let targetChapter: { id: string; title: string; [key: string]: unknown };
+    if (typeof chapterOrId === 'string') {
+      const cleanId = chapterOrId.replace(/^chapters:/, '');
+      const chList = deps.chapters?.value as Chapter[] | undefined;
+      const found = chList?.find((c) => String(c.id).replace(/^chapters:/, '') === cleanId);
+      targetChapter = found ? { ...found, id: String(found.id).replace(/^chapters:/, '') } : { id: cleanId, title: `Глава ${cleanId}` };
+    } else {
+      const idStr = String(chapterOrId.id ?? '').replace(/^chapters:/, '');
+      targetChapter = { ...chapterOrId, id: idStr, title: chapterOrId.title || `Глава ${idStr}` };
+    }
+
+    const id = targetChapter.id;
     if (!deps.eg.findTabGlobal(id)) {
       deps.eg.openTab({
         id,
         rawId: id,
-        title: chapter.title || `Глава ${id}`,
+        title: targetChapter.title,
         entityType: 'chapter',
         tabType: 'chapter',
-        data: chapter as Record<string, unknown>,
+        data: targetChapter,
         unsaved: false,
       });
     } else {
@@ -126,7 +138,7 @@ export function useShellNavigation(deps: ShellNavigationDeps) {
       }
     }
     deps.layout.activeView.value = 'entity';
-    deps.addLog(`Editor -> Chapter [${chapter.title}]`, 'info');
+    deps.addLog(`Editor -> Chapter [${targetChapter.title}]`, 'info');
   };
 
   const openSchemaEditor = async (entityType: string) => {

@@ -36,14 +36,32 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
             attributes['роль_в_истории'] AS role_in_story,
             array::concat(
                 (->appears_in.{
-                    chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
-                    source: source,
+                    chapter_id: IF out.chapter_id != NONE {
+                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
+                    } ELSE IF out.id != NONE {
+                        IF out.id.id != NONE { out.id.id } ELSE { type::string(out.id) }
+                    } ELSE {
+                        type::string(out)
+                    },
+                    source: IF source != NONE { source } ELSE { 'mention' },
                     role: role
                 }),
                 (->participant_of.{
-                    chapter_id: IF array::len(out->promise_milestones) > 0 { type::string(array::first(out->promise_milestones.out.chapter_id)) } ELSE { NONE },
+                    chapter_id: IF out.chapter_id != NONE {
+                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
+                    } ELSE IF array::len(out->promise_milestones) > 0 {
+                        LET $first_ch = array::first(out->promise_milestones.out.chapter_id);
+                        IF $first_ch.id != NONE { $first_ch.id } ELSE { type::string($first_ch) }
+                    } ELSE { NONE },
                     source: 'scene',
                     role: role
+                }),
+                (->participant_of->plot_promises->promise_milestones.{
+                    chapter_id: IF out.chapter_id != NONE {
+                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
+                    } ELSE { NONE },
+                    source: 'scene',
+                    role: stage
                 })
             ) AS appearances
         FROM entities 
@@ -106,17 +124,49 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             note AS description,
             IF kind != NONE { kind } ELSE { 'scene' } AS kind,
             location_id,
-            m_abs,
-            IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
+            IF timeline_event_id.m_abs != NONE {
+                timeline_event_id.m_abs
+            } ELSE IF array::first(->occurs_at.out.m_abs) != NONE {
+                array::first(->occurs_at.out.m_abs)
+            } ELSE IF chapter_id.sort_order != NONE {
+                chapter_id.sort_order * 1440
+            } ELSE {
+                1440
+            } AS m_abs,
+            IF timeline_event_id.calendar_id != NONE {
+                IF timeline_event_id.calendar_id.id != NONE { timeline_event_id.calendar_id.id } ELSE { type::string(timeline_event_id.calendar_id) }
+            } ELSE IF array::first(->occurs_at.out.calendar_id) != NONE {
+                LET $oc_cal = array::first(->occurs_at.out.calendar_id);
+                IF $oc_cal.id != NONE { $oc_cal.id } ELSE { type::string($oc_cal) }
+            } ELSE {
+                'default'
+            } AS calendar_id,
             [
                 {
-                    chapter_id: IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) },
-                    chapter_title: chapter_id.title,
-                    chapter_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
-                    chapter_sort_order: IF chapter_id.sort_order != NONE { chapter_id.sort_order } ELSE { 0 },
+                    chapter_id: IF chapter_id != NONE {
+                        IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) }
+                    } ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE {
+                        LET $pm_ch = array::first(->promise_milestones.out.chapter_id);
+                        IF $pm_ch.id != NONE { $pm_ch.id } ELSE { type::string($pm_ch) }
+                    } ELSE { '' },
+                    chapter_title: IF chapter_id.title != NONE {
+                        chapter_id.title
+                    } ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE {
+                        array::first(->promise_milestones.out.chapter_id.title)
+                    } ELSE { 'Глава' },
+                    chapter_order: IF chapter_id.sort_order != NONE {
+                        chapter_id.sort_order
+                    } ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE {
+                        array::first(->promise_milestones.out.chapter_id.sort_order)
+                    } ELSE { 0 },
+                    chapter_sort_order: IF chapter_id.sort_order != NONE {
+                        chapter_id.sort_order
+                    } ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE {
+                        array::first(->promise_milestones.out.chapter_id.sort_order)
+                    } ELSE { 0 },
                     pov_id: NONE,
                     kind: 'direct',
-                    block_id: block_id,
+                    block_id: IF block_id != NONE { block_id } ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id } ELSE { NONE },
                     is_anachronism: false
                 }
             ] AS reveals,
@@ -127,8 +177,6 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } AS participants
         FROM plot_promises
         WHERE project_id = $p_rec
-          AND m_abs != NONE
-          AND (timeline_event_id = NONE OR timeline_event_id = NULL OR type::string(timeline_event_id) CONTAINS 'ev_scene_')
         LIMIT 2000
     );
 

@@ -216,8 +216,12 @@ surreal_entity! {
     pub struct Todo {
         pub owner_id: String,
         pub text: String,
-        pub is_done: bool,
+        #[serde(default)] pub is_done: bool,
         #[ts(type = "number")] pub sort_order: i64,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub status: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub arc_id: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub arc_title: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub depends_on: Option<String>,
     }
 }
 
@@ -263,6 +267,8 @@ surreal_entity! {
         #[serde(default)] pub arcs: Vec<SceneArcItem>,
         #[serde(skip_serializing_if = "Option::is_none")] pub arc_id: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")] pub arc_phase: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub time_nature: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub is_flashback: Option<bool>,
     }
 }
 

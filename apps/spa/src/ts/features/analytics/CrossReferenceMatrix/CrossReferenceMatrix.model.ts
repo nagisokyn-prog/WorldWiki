@@ -14,6 +14,8 @@ export interface CellStatusInfo {
 
 export interface EntityPresenceRow {
   entity: MatrixEntity;
+  icon: string;
+  typeLabel: string;
   cells: Map<string, CellStatusInfo>;
   cellList: Array<CellStatusInfo & { chapterId: string; chapterTitle: string }>;
   totalAppearances: number;

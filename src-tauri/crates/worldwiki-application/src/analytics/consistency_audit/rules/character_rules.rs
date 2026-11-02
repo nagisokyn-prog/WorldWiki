@@ -14,7 +14,9 @@ pub fn eval_deceased_rules(
             && let Some(death_m_abs) = ent.death_m_abs
         {
             for ev in &timeline_data.events {
-                if is_participant(&ev.participants, &ent.id) && ev.m_abs > death_m_abs {
+                if (is_participant(&ev.participants, &ent.id) || is_participant(&ev.participants, &ent.name))
+                    && ev.m_abs > death_m_abs
+                {
                     let ch_ids: Vec<String> = ev.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                     anomalies.push(ContradictionAnomaly {
                         rule: ContradictionRule::DeceasedEntityActive,
@@ -43,7 +45,9 @@ pub fn eval_birth_rules(
     for ent in &matrix.entities {
         if let Some(birth_m_abs) = ent.birth_m_abs {
             for ev in &timeline_data.events {
-                if is_participant(&ev.participants, &ent.id) && ev.m_abs < birth_m_abs {
+                if (is_participant(&ev.participants, &ent.id) || is_participant(&ev.participants, &ent.name))
+                    && ev.m_abs < birth_m_abs
+                {
                     let ch_ids: Vec<String> = ev.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                     anomalies.push(ContradictionAnomaly {
                         rule: ContradictionRule::ActionBeforeBirth,
@@ -97,7 +101,8 @@ pub fn eval_bilocation_rules(
         for ev2 in timeline_data.events.iter().skip(i + 1) {
             if ev1.m_abs == ev2.m_abs && ev1.event_id != ev2.event_id {
                 for p in &ev1.participants {
-                    if ev2.participants.contains(p) {
+                    let clean_p = super::utils::clean_id(p);
+                    if ev2.participants.iter().any(|p2| super::utils::clean_id(p2) == clean_p || p2 == p) {
                         let mut ch_ids: Vec<String> = ev1.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                         ch_ids.extend(ev2.reveals.iter().map(|r| r.chapter_id.clone()));
                         anomalies.push(ContradictionAnomaly {

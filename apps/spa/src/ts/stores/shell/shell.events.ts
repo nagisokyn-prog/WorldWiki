@@ -1,4 +1,4 @@
-import type { Ref } from 'vue';
+import { onScopeDispose, type Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
 import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
@@ -90,7 +90,7 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
   }).catch(() => {});
 
   if (typeof document !== 'undefined') {
-    document.addEventListener('ww:chapter-renamed', ((e: Event) => {
+    const handleChapterRenamed = (e: Event) => {
       const detail = (e as CustomEvent<{ id: string; title: string }>).detail;
       if (!detail?.id || detail.title === undefined) return;
       const cleanTargetId = String(detail.id).replace(/^(chapters|chapter):/, '');
@@ -104,6 +104,12 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
           }
         });
       });
-    }) as EventListener);
+    };
+
+    document.addEventListener('ww:chapter-renamed', handleChapterRenamed as EventListener);
+
+    onScopeDispose(() => {
+      document.removeEventListener('ww:chapter-renamed', handleChapterRenamed as EventListener);
+    });
   }
 }

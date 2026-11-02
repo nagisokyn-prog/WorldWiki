@@ -520,14 +520,8 @@ export async function getTodos(ownerId: string): Promise<Todo[]> {
     return await invoke('get_todos', { ownerId });
 }
 
-export async function createTodo(
-    ownerId: string,
-    text: string,
-    sortOrder: number | null,
-    arcId?: string | null,
-    dependsOn?: string | null
-): Promise<string> {
-    return await invoke('create_todo', { ownerId, text, sortOrder, arcId: arcId ?? null, dependsOn: dependsOn ?? null });
+export async function createTodo(ownerId: string, text: string, sortOrder: number | null, arcId: string | null, dependsOn: string | null): Promise<string> {
+    return await invoke('create_todo', { ownerId, text, sortOrder, arcId, dependsOn });
 }
 
 export async function setTodoStatus(id: string, status: string): Promise<Todo> {

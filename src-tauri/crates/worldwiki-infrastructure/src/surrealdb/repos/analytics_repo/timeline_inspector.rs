@@ -82,10 +82,10 @@ impl RawParticipant {
     fn into_id(self) -> String {
         match self {
             RawParticipant::Object { id, name } => {
-                if let Some(n) = name.filter(|n| !n.trim().is_empty()) {
-                    n
+                if let Some(i) = id.filter(|i| !i.trim().is_empty()) {
+                    i
                 } else {
-                    id.unwrap_or_default()
+                    name.unwrap_or_default()
                 }
             }
             RawParticipant::String(s) => s,

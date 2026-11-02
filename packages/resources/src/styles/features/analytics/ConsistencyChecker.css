@@ -60,7 +60,7 @@
   cursor: pointer;
   background: transparent;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .view-tab-btn.is-active {

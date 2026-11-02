@@ -1,165 +1,131 @@
 <template>
-  <div class="planning-panel">
-    <!-- Заголовок -->
-    <div class="plan-header">
-      <div class="plan-title">
-        <span class="plan-icon">{{ nodeIcon }}</span>
-        <span class="plan-name">{{ nodeName }}</span>
+  <div class="planning-panel flex flex-col h-full min-h-0 overflow-hidden">
+    <!-- Volume Progress Header with Collapse Toggle -->
+    <PlanVolumeHeader
+      :title="volumeTitle"
+      :stats="volumeStats"
+      :is-collapsed="isVolumeCollapsed"
+      @toggle-collapse="toggleVolumeCollapse"
+    />
+
+    <!-- Tapestry Scrollable Stream (Collapsible under volume) -->
+    <div
+      v-show="!isVolumeCollapsed"
+      class="tapestry-stream flex-1 overflow-y-auto pr-1 flex flex-col gap-3 min-h-0"
+    >
+      <!-- Loading State -->
+      <div v-if="loading && chaptersList.length === 0" class="text-xs text-muted text-center py-6">
+        Загрузка ткани сюжета...
       </div>
-      <div v-if="items.length" class="plan-stats flex items-center gap-2">
-        <span v-if="inProgressCount > 0" class="badge-subtle text-[11px]" title="Задач в работе">
-          🟡 {{ inProgressCount }}
-        </span>
-        <span class="plan-done">{{ doneCount }}</span>/<span class="plan-total">{{ items.length }}</span>
-      </div>
-    </div>
 
-    <!-- Прогресс бар -->
-    <div v-if="items.length" class="plan-progress-bar">
-      <div class="plan-progress-fill" :style="{ '--plan-progress': progressPct + '%' }"></div>
-    </div>
+      <!-- Render Chapters Stream -->
+      <TapestryChapterCard
+        v-for="chapter in chaptersList"
+        :key="chapter.chapterId"
+        :chapter="chapter"
+        :all-project-arcs="allProjectArcs"
+        @toggle="toggleTodoStatus"
+        @cycle-status="cycleStatus"
+        @save="saveTodo"
+        @delete="deleteTodo"
+        @navigate="navigateToChapter"
+        @toggle-collapse="toggleCollapse"
+        @add-todo="addTodo"
+        @attach-arc="attachArc"
+      />
 
-    <!-- Список пунктов -->
-    <div ref="listEl" class="plan-list">
-      <div
-        v-for="(item, idx) in items"
-        :key="item.id"
-        class="plan-item flex-col items-stretch"
-        :class="{
-          'is-blocked': item.status === 'blocked',
-          'in-progress': item.status === 'in_progress'
-        }"
-        :style="{ '--indent-pl': (12 + item.indent * 20) + 'px' }"
-      >
-        <div class="flex items-center gap-1.5 w-full">
-          <!-- Индикатор статуса -->
-          <button
-            class="plan-toggle"
-            :class="[`status-${item.status}`, { done: item.status === 'done' || item.done }]"
-            :title="getStatusTitle(item)"
-            @click="toggleItem(item)"
-            @contextmenu.prevent="cycleStatus(item)"
-          >
-            <span v-if="item.status === 'done' || item.done">✓</span>
-            <span v-else-if="item.status === 'in_progress'" class="circle-pulse" title="В работе 🟡"></span>
-            <span v-else-if="item.status === 'blocked'" title="Ожидает 🔒">🔒</span>
-            <span v-else class="circle-empty" title="В планах ⚪"></span>
-          </button>
-
-          <!-- Текст пункта -->
+      <!-- Outlining Action: Add Planned Chapter in Volume -->
+      <div class="tapestry-add-chapter-box pt-2 border-t border-border">
+        <div v-if="isAddingChapter" class="flex items-center gap-1.5 w-full">
           <input
-            v-model="item.text"
-            class="plan-text flex-1"
-            :class="{ done: item.status === 'done' || item.done }"
-            placeholder="Пункт плана..."
-            @blur="saveItem(item)"
-            @keydown.enter.exact.prevent="addItemAfter(idx, item.indent)"
-            @keydown.tab.exact.prevent="indentItem(item, 1)"
-            @keydown.shift.tab.prevent="indentItem(item, -1)"
-            @keydown.delete="onDeleteKey($event, item, idx)"
+            ref="chapterInputRef"
+            v-model="newChapterTitle"
+            class="plan-inline-add-input flex-1"
+            placeholder="Название новой главы (например, Глава 3: Побег)..."
+            @keydown.enter.prevent="submitAddChapter"
+            @keydown.esc="cancelAddChapter"
           />
-
-          <!-- Кнопка удаления -->
-          <button class="plan-delete" title="Удалить" @click="deleteItem(item, idx)">×</button>
+          <button type="button" class="btn-subtle text-xs px-2 py-1" @click="submitAddChapter">
+            Создать
+          </button>
+          <button type="button" class="btn-subtle text-xs px-2 py-1 text-muted" @click="cancelAddChapter">
+            ✕
+          </button>
         </div>
-
-        <!-- Мета-строка (Сюжетная арка и Зависимость) -->
-        <div v-if="item.arc_id || item.depends_on" class="plan-meta-row">
-          <span
-            v-if="item.arc_id"
-            class="plan-arc-pill"
-            :title="'Сюжетная арка: ' + (item.arc_title || getArcTitle(item.arc_id))"
-            @click.stop="$emit('select-arc', item.arc_id)"
-          >
-            <span>⚡</span>
-            <span>{{ item.arc_title || getArcTitle(item.arc_id) }}</span>
-          </span>
-          <span
-            v-if="item.depends_on"
-            class="plan-dependency-pill"
-            :title="'Ожидает выполнения предшествующей задачи'"
-          >
-            <span>🔗</span>
-            <span>Ожидает</span>
-          </span>
-        </div>
+        <button
+          v-else
+          type="button"
+          class="btn-add-chapter-stream w-full py-2 px-3 rounded border border-dashed border-border hover:border-accent text-xs text-muted hover:text-accent transition-colors flex items-center justify-center gap-1.5"
+          @click="startAddingChapter"
+        >
+          <span>＋</span> Запланировать следующую главу в томе
+        </button>
       </div>
 
-      <!-- Пусто -->
-      <div v-if="!items.length" class="plan-empty">
-        <span>Нет пунктов плана.</span>
-        <span class="plan-empty-sub">Нажмите "+" чтобы добавить</span>
-      </div>
-    </div>
-
-    <!-- Кнопка добавить -->
-    <div class="plan-footer">
-      <button class="plan-add-btn" @click="addItem">
-        <span>＋</span> Добавить пункт
-      </button>
+      <!-- Volume Backlog Ideas Section -->
+      <VolumeBacklogSection
+        :items="backlogTodos"
+        :volume-id="resolvedVolumeId"
+        :current-chapter-id="currentChapterId"
+        @move-to-chapter="moveBacklogToChapter"
+        @delete="deleteTodo"
+        @add-backlog="addTodo"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PlanningPanelProps, PlanningPanelEmits, PlanItem, TodoStatus } from './PlanningPanel.model';
+import type { PlanningPanelProps, PlanningPanelEmits } from './PlanningPanel.model';
 import { usePlanningPanel } from './usePlanningPanel';
+import PlanVolumeHeader from './components/PlanVolumeHeader.vue';
+import TapestryChapterCard from './components/TapestryChapterCard.vue';
+import VolumeBacklogSection from './components/VolumeBacklogSection.vue';
 
 const props = withDefaults(defineProps<PlanningPanelProps>(), {
   project: undefined,
-  parentType: undefined,
-  parentId: undefined,
-  parentTitle: '',
+  volumeId: null,
+  volumeTitle: '',
+  currentChapterId: null,
+  currentChapterTitle: '',
   arcsList: () => [],
   selectedArcFilter: null
 });
 
-defineEmits<PlanningPanelEmits>();
+const emit = defineEmits<PlanningPanelEmits>();
 
 const {
-  items,
-  listEl,
-  nodeIcon,
-  nodeName,
-  doneCount,
-  inProgressCount,
-  progressPct,
-  saveItem,
-  toggleItem,
-  setItemStatus,
-  addItem,
-  addItemAfter,
-  indentItem,
-  deleteItem,
-  onDeleteKey
-} = usePlanningPanel(props);
-
-const getStatusTitle = (item: PlanItem): string => {
-  if (item.status === 'done') return 'Готово 🟢 (кликните, чтобы вернуть в планы)';
-  if (item.status === 'in_progress') return 'В работе 🟡 (кликните, чтобы завершить)';
-  if (item.status === 'blocked') return 'Ожидает 🔒 (заблокировано предшествующей задачей)';
-  return 'В планах ⚪ (кликните, чтобы отметить готовым)';
-};
-
-const getArcTitle = (arcId?: string | null): string => {
-  if (!arcId) return 'Арка';
-  const found = props.arcsList?.find(a => a.id === arcId || a.id.endsWith(arcId) || arcId.endsWith(a.id));
-  return found?.title || 'Арка';
-};
-
-const cycleStatus = async (item: PlanItem): Promise<void> => {
-  const transitions: Record<TodoStatus, TodoStatus> = {
-    planned: 'in_progress',
-    in_progress: 'done',
-    done: 'planned',
-    blocked: 'planned'
-  };
-  await setItemStatus(item, transitions[item.status] || 'planned');
-};
-
-defineExpose({
-  addItem
+  loading,
+  chaptersList,
+  backlogTodos,
+  allProjectArcs,
+  volumeTitle,
+  volumeStats,
+  resolvedVolumeId,
+  isVolumeCollapsed,
+  isAddingChapter,
+  newChapterTitle,
+  chapterInputRef,
+  toggleCollapse,
+  toggleVolumeCollapse,
+  toggleTodoStatus,
+  cycleStatus,
+  saveTodo,
+  addTodo,
+  deleteTodo,
+  startAddingChapter,
+  cancelAddChapter,
+  submitAddChapter,
+  moveBacklogToChapter,
+  attachArc
+} = usePlanningPanel(props, (evt, ...args) => {
+  if (evt === 'change') emit('change');
+  if (evt === 'select-arc') emit('select-arc', (args[0] as string) || null);
 });
+
+function navigateToChapter(chapterId: string) {
+  emit('select-chapter', chapterId);
+}
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>
+<style src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

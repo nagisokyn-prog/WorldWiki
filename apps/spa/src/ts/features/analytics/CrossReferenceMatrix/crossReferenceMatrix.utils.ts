@@ -157,6 +157,8 @@ export function buildEntityPresenceRow(
 
   return {
     entity,
+    icon: getEntityIcon(entity.entity_type),
+    typeLabel: getEntityTypeLabel(entity.entity_type),
     cells,
     cellList,
     totalAppearances: total,

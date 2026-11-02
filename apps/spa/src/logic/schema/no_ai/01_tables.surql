@@ -161,8 +161,8 @@ DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now(
 -- 15. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА (ПЕРЕПЛЕТЁННАЯ ТКАНЬ СЮЖЕТА, 3NF)
 DEFINE TABLE OVERWRITE todos SCHEMAFULL;
 DEFINE FIELD OVERWRITE owner_id    ON todos TYPE record<volumes | chapters | story_arcs>;
-DEFINE FIELD OVERWRITE arc_id      ON todos TYPE option<record<story_arcs>>;
-DEFINE FIELD OVERWRITE depends_on  ON todos TYPE option<record<todos>>;
+DEFINE FIELD OVERWRITE arc_id      ON todos TYPE option<record<story_arcs> | null>;
+DEFINE FIELD OVERWRITE depends_on  ON todos TYPE option<record<todos> | null>;
 DEFINE FIELD OVERWRITE text        ON todos TYPE string;
 DEFINE FIELD OVERWRITE status      ON todos TYPE string DEFAULT 'planned'
   ASSERT $value IN ['planned', 'in_progress', 'done', 'blocked'];

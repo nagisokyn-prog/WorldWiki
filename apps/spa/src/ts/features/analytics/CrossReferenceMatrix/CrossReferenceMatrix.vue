@@ -65,9 +65,9 @@
               <td class="matrix-td sticky-left matrix-entity-cell">
                 <div class="entity-name-box">
                   <div class="entity-title-group">
-                    <span class="entity-icon">{{ getEntityIcon(row.entity.entity_type) }}</span>
+                    <span class="entity-icon">{{ row.icon }}</span>
                     <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
-                    <span class="entity-role-badge">{{ getEntityTypeLabel(row.entity.entity_type) }}</span>
+                    <span class="entity-role-badge">{{ row.typeLabel }}</span>
                   </div>
                   <div class="entity-flags">
                     <span v-if="row.entity.is_deceased" class="dead-badge" title="Сущность мертва">💀</span>
@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import type { CrossReferenceMatrixProps } from './CrossReferenceMatrix.model';
-import { useCrossReferenceMatrix, getEntityIcon, getEntityTypeLabel } from './useCrossReferenceMatrix';
+import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
 import MatrixToolbar from './components/MatrixToolbar.vue';
 import MatrixLegend from './components/MatrixLegend.vue';
 

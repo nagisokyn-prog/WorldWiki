@@ -3,7 +3,6 @@ import { useAnalyticsStore } from '@/stores/analytics.store';
 import { useChapterStore } from '@/stores/chapter.store';
 import { plotApi } from '@/services/api/plot.api';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
 import type {
   TrackedItem,
   GunTrackerFilterState,
@@ -24,7 +23,7 @@ export function isGunItem(item: TrackedItem): boolean {
 
 export function buildGunJourneyReport(
   item: TrackedItem,
-  promise: PlotPromise | RichPlotPromise | null,
+  promise: PlotPromise | null,
   chapters: Array<{ id: string | unknown; title?: string; sort_order?: number | bigint | null }> = []
 ): ItemJourneyReport {
   const getChapterInfo = (chId?: string | null): { title: string; order: number } | null => {
@@ -44,7 +43,6 @@ export function buildGunJourneyReport(
   };
 
   const nodes: ItemJourneyNode[] = [];
-  const rich = promise as RichPlotPromise | null;
   const firstMilestone = promise?.milestones?.[0];
 
   if (promise && Array.isArray(promise.milestones) && promise.milestones.length > 0) {

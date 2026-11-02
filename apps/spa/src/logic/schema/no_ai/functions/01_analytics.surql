@@ -107,8 +107,8 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } AS participants
         FROM timeline_events
         WHERE project_id = $p_rec
-          AND count(<-participates_in) > 0
-          AND count(<-occurs_at) == 0
+          AND array::len(<-participates_in) > 0
+          AND array::len(<-occurs_at) == 0
           AND id NOT IN (SELECT VALUE timeline_event_id FROM plot_promises WHERE timeline_event_id != NONE)
         ORDER BY m_abs ASC
         LIMIT 2000

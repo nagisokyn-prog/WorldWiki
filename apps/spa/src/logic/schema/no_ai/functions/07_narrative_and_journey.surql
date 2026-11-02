@@ -623,7 +623,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_plot_promise($id: any) {
     
     -- Собираем связанные timeline_events
     LET $te_ids = (
-        SELECT VALUE out FROM occurs_at WHERE in = $rec
+        SELECT VALUE out FROM occurs_at WHERE in = $rec LIMIT 100
     );
     LET $direct_te = (SELECT VALUE timeline_event_id FROM $rec LIMIT 1)[0];
     LET $all_te = array::distinct(array::concat($te_ids, IF $direct_te != NONE AND $direct_te != NULL { [$direct_te] } ELSE { [] }));
@@ -659,8 +659,8 @@ DEFINE FUNCTION OVERWRITE fn::save_todo(
     $is_done: bool,
     $sort_order: int,
     $status: option<string>,
-    $arc_id: option<any>,
-    $depends_on: option<any>
+    $arc_id: any,
+    $depends_on: any
 ) {
     LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
     LET $o_rec = type::record($owner_table, $owner_id);
@@ -719,78 +719,6 @@ DEFINE FUNCTION OVERWRITE fn::set_todo_status($id: any, $new_status: string) {
     };
 
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
-};
-
--- 50.2. ПОЛУЧЕНИЕ ПЕРЕПЛЕТЁННЫХ ЗАДАЧ ДЛЯ ГЛАВЫ (ГЛАВА + АРКИ + ТОМ)
-DEFINE FUNCTION OVERWRITE fn::list_chapter_interwoven_todos($chap: any) {
-    LET $ch_rec = IF string::starts_with(type::string($chap), 'chapters:') { type::record($chap) } ELSE { type::record('chapters', $chap) };
-    
-    -- Задачи текущей главы
-    LET $chapter_todos = (
-        SELECT 
-            id,
-            owner_id,
-            arc_id,
-            arc_id.title AS arc_title,
-            arc_id.status AS arc_status,
-            depends_on,
-            depends_on.text AS depends_on_text,
-            depends_on.owner_id.title AS depends_on_owner_title,
-            depends_on.status AS depends_on_status,
-            text,
-            status,
-            is_done,
-            sort_order,
-            created_at,
-            updated_at
-        FROM todos 
-        WHERE owner_id = $ch_rec 
-        ORDER BY sort_order ASC, created_at ASC 
-        LIMIT 300
-    );
-
-    -- Арки, в которых участвует эта глава
-    LET $arc_ids = array::distinct(
-        array::concat(
-            $chapter_todos.*.arc_id,
-            (SELECT VALUE in FROM progresses WHERE out = $ch_rec),
-            (SELECT VALUE out FROM advances_arc WHERE in.chapter_id = $ch_rec)
-        )
-    );
-
-    -- Том, к которому принадлежит глава
-    LET $vol_rec = (SELECT VALUE in FROM contains WHERE out = $ch_rec LIMIT 1)[0];
-    
-    -- Задачи тома по тем же аркам или без арок (бэклог тома)
-    LET $volume_todos = IF $vol_rec != NONE {
-        (
-            SELECT 
-                id,
-                owner_id,
-                arc_id,
-                arc_id.title AS arc_title,
-                arc_id.status AS arc_status,
-                depends_on,
-                text,
-                status,
-                is_done,
-                sort_order,
-                created_at,
-                updated_at
-            FROM todos 
-            WHERE owner_id = $vol_rec 
-            ORDER BY sort_order ASC, created_at ASC 
-            LIMIT 100
-        )
-    } ELSE {
-        []
-    };
-
-    RETURN {
-        chapter_todos: $chapter_todos,
-        volume_todos: $volume_todos,
-        related_arc_ids: $arc_ids
-    };
 };
 
 -- 51. ПОЛУЧЕНИЕ ЗАДАЧИ ПО ID

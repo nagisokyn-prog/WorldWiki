@@ -162,7 +162,7 @@
   padding: 3px;
   background-color: var(--bg-sunken);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .scope-btn {
@@ -172,10 +172,10 @@
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
   color: var(--text-muted);
   background: transparent;
 }
@@ -194,14 +194,14 @@
   font-size: 10px;
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: 9999px;
+  border-radius: var(--radius-round);
   background-color: var(--bg-hover);
   color: var(--text-muted);
   margin-left: 2px;
 }
 
 .scope-btn.is-active .scope-badge {
-  background-color: rgba(0, 0, 0, 0.25);
+  background-color: var(--bg-selected);
   color: var(--text-on-accent);
 }
 
@@ -234,7 +234,7 @@
   width: 100%;
   padding: 5px 10px 5px 28px;
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--border-color);
   background-color: var(--bg-sunken);
   color: var(--text-main);
@@ -248,7 +248,7 @@
 .filter-select {
   padding: 5px 10px;
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--border-color);
   background-color: var(--bg-sunken);
   color: var(--text-main);
@@ -352,7 +352,7 @@
   border: 1px solid var(--border-color);
   background-color: var(--bg-card);
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--anim-speed-fast, 0.15s) ease, box-shadow var(--anim-speed-fast, 0.15s) ease, transform var(--anim-speed-fast, 0.15s) ease;
+  transition: border-color var(--anim-speed-fast, 0.15s) ease, transform var(--anim-speed-fast, 0.15s) ease;
 }
 
 .gun-item-card:hover {
@@ -483,7 +483,7 @@
   border: 1px solid var(--border-color);
   color: var(--accent);
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.15s) ease;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .btn-journey-pill:hover {
@@ -504,7 +504,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: var(--bg-overlay);
   backdrop-filter: blur(4px);
   padding: 16px;
 }

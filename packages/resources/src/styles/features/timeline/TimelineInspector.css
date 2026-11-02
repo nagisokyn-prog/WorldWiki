@@ -460,3 +460,135 @@
   stroke-dasharray: 6 5;
   opacity: 0.95;
 }
+
+/* Активное состояние главы при фокусе */
+.chapter-node--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-md);
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.chapter-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1, 4px);
+  margin-bottom: 2px;
+}
+
+.chapter-scene-count {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.chapter-flashback-badge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  margin-top: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.chapter-flashback-badge:hover {
+  opacity: 0.8;
+}
+
+.chapter-node-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 3px;
+}
+
+.chapter-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm, 4px);
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.chapter-action-btn:hover {
+  opacity: 1;
+  background-color: var(--bg-hover);
+}
+
+/* Состояния карточек событий */
+.event-node--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-md);
+  transform: translateX(-50%) translateY(-2px);
+  z-index: 5;
+}
+
+.event-node--dimmed {
+  opacity: 0.35;
+  filter: grayscale(40%);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.event-node--flashback {
+  border-left: 3px solid var(--warning);
+}
+
+.flashback-tag {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.event-jump-back {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 4px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  cursor: pointer;
+  text-align: center;
+  border-top: 1px dashed var(--border-color);
+  transition: background-color 0.15s ease;
+}
+
+.event-jump-back:hover {
+  background-color: var(--bg-card);
+}
+
+/* Радарная пульс-анимация при переходе к событию */
+.event-node--ping {
+  animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1);
+  border-color: var(--warning);
+  box-shadow: 0 0 0 4px var(--warning);
+  z-index: 10;
+}
+
+@keyframes radar-ping {
+  0% {
+    box-shadow: 0 0 0 0 var(--warning);
+    transform: translateX(-50%) scale(1.05);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+    transform: translateX(-50%) scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    transform: translateX(-50%) scale(1);
+  }
+}

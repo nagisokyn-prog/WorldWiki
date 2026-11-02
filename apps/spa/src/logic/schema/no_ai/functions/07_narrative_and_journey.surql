@@ -83,6 +83,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             paragraph_index: $target_para,
             block_id: $target_block,
             kind: IF $data.kind != NONE { $data.kind } ELSE { 'gun' },
+            time_nature: IF $data.time_nature != NONE { $data.time_nature } ELSE { 'present' },
             title: IF $data.title != NONE { $data.title } ELSE { '' },
             note: IF $data.note != NONE { $data.note } ELSE { NONE },
             status: IF $data.status != NONE { $data.status } ELSE { 'planted' },

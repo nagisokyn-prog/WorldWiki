@@ -221,6 +221,8 @@ DEFINE FIELD OVERWRITE paragraph_index   ON plot_promises TYPE option<int | null
 DEFINE FIELD OVERWRITE block_id          ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE kind              ON plot_promises TYPE string
   ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'conflict', 'scene'];
+DEFINE FIELD OVERWRITE time_nature       ON plot_promises TYPE string DEFAULT 'present'
+  ASSERT $value IN ['present', 'flashback', 'flashforward', 'memory', 'dream'];
 DEFINE FIELD OVERWRITE title             ON plot_promises TYPE string;
 DEFINE FIELD OVERWRITE note              ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE status            ON plot_promises TYPE string DEFAULT 'planted'

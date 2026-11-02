@@ -29,22 +29,24 @@
           <!-- Thead: Главы -->
           <thead>
             <tr>
-              <th class="matrix-th-corner">
-                <span>Сущность \ Глава</span>
+              <th class="matrix-th sticky-corner">
+                <span class="th-label">Сущность \ Глава</span>
               </th>
               <th
                 v-for="col in chapterColumns"
                 :key="col.id"
-                class="matrix-th-col"
+                class="matrix-th sticky-top th-chapter"
                 :title="col.title"
               >
-                <div class="col-header-content">
-                  <span class="col-order">{{ col.sort_order }}</span>
-                  <span class="col-title">{{ col.title }}</span>
-                  <span class="col-words">{{ col.formattedWordCount }}</span>
+                <div class="chapter-header-box">
+                  <span class="chapter-order-badge">Гл. #{{ col.sort_order }}</span>
+                  <span class="chapter-title-text">{{ col.title }}</span>
+                  <span class="chapter-word-pill">{{ col.formattedWordCount }}</span>
                 </div>
               </th>
-              <th class="matrix-th-total">Всего</th>
+              <th class="matrix-th sticky-top th-total">
+                <span class="th-label">Всего</span>
+              </th>
             </tr>
           </thead>
 
@@ -60,26 +62,31 @@
               }"
             >
               <!-- Фиксированная первая колонка с именем сущности -->
-              <td class="matrix-td-entity">
-                <div class="entity-info">
-                  <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
-                  <span class="entity-type-badge">{{ row.entity.entity_type }}</span>
-                  <span v-if="row.entity.is_deceased" class="dead-badge" title="Сущность мертва">💀</span>
-                  <span
-                    v-if="filters.highlightGaps && row.hasGapWarning"
-                    class="gap-badge"
-                    title="Провал в появлении: не упоминается 3+ глав подряд"
-                  >
-                    ⚠️
-                  </span>
+              <td class="matrix-td sticky-left matrix-entity-cell">
+                <div class="entity-name-box">
+                  <div class="entity-title-group">
+                    <span class="entity-icon">{{ getEntityIcon(row.entity.entity_type) }}</span>
+                    <span class="entity-name" :title="row.entity.name">{{ row.entity.name }}</span>
+                    <span class="entity-role-badge">{{ getEntityTypeLabel(row.entity.entity_type) }}</span>
+                  </div>
+                  <div class="entity-flags">
+                    <span v-if="row.entity.is_deceased" class="dead-badge" title="Сущность мертва">💀</span>
+                    <span
+                      v-if="filters.highlightGaps && row.hasGapWarning"
+                      class="matrix-gap-badge"
+                      title="Провал в появлении: не упоминается 3+ глав подряд"
+                    >
+                      ⚠️
+                    </span>
+                  </div>
                 </div>
               </td>
 
-              <!-- Ячейки для каждой главы (прекомпутированный список ячеек) -->
+              <!-- Ячейки для каждой главы -->
               <td
                 v-for="cell in row.cellList"
                 :key="cell.chapterId"
-                class="matrix-cell"
+                class="matrix-td matrix-cell"
                 :class="[
                   `status-${cell.status}`,
                   {
@@ -88,16 +95,23 @@
                 ]"
                 :title="cell.label"
               >
-                <span v-if="cell.status === 'scene'" class="cell-marker marker-scene">●</span>
-                <span v-else-if="cell.status === 'mention'" class="cell-marker marker-mention">○</span>
-                <span v-else class="cell-marker marker-absent">—</span>
-
-                <span v-if="cell.isDeceased" class="death-icon">💀</span>
+                <div class="cell-badges-group">
+                  <span v-if="cell.hasScene" class="cell-badge badge-scene" title="Сцена">🎬 {{ cell.count || 1 }}</span>
+                  <span v-if="cell.hasMention" class="cell-badge badge-mention" title="Упоминание в тексте">💬</span>
+                  <span v-if="cell.isDeceased" class="death-icon" title="Погиб">💀</span>
+                  <span v-if="!cell.hasScene && !cell.hasMention && !cell.isDeceased" class="cell-badge badge-absent">·</span>
+                </div>
               </td>
 
               <!-- Суммарная колонка справа -->
-              <td class="matrix-td-row-total">
-                <span class="row-total-badge">{{ row.totalAppearances }}</span>
+              <td class="matrix-td matrix-total-cell">
+                <div class="matrix-total-group">
+                  <span class="matrix-total-badge">{{ row.totalAppearances }}</span>
+                  <div class="matrix-total-sub">
+                    <span class="sub-scene" title="Сцен">🎬 {{ row.totalScenes }}</span>
+                    <span class="sub-mention" title="Упоминаний">💬 {{ row.totalMentions }}</span>
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -105,18 +119,18 @@
           <!-- Tfoot: Суммарная статистика по главам -->
           <tfoot>
             <tr class="matrix-footer-row">
-              <td class="matrix-footer-label">
-                <span>Уникальных сущностей:</span>
+              <td class="matrix-td sticky-left matrix-footer-label">
+                <span class="font-bold">Уникальных сущностей:</span>
               </td>
               <td
                 v-for="col in chapterColumns"
                 :key="`footer-${col.id}`"
-                class="matrix-footer-cell"
+                class="matrix-td matrix-footer-cell"
               >
-                <span>{{ col.uniqueEntities }}</span>
+                <span class="footer-count-badge">{{ col.uniqueEntities }}</span>
               </td>
-              <td class="matrix-footer-grand-total">
-                <span>{{ totalProjectAppearances }}</span>
+              <td class="matrix-td matrix-total-cell matrix-footer-grand-total">
+                <span class="footer-total-badge">{{ totalProjectAppearances }}</span>
               </td>
             </tr>
           </tfoot>
@@ -128,7 +142,7 @@
 
 <script setup lang="ts">
 import type { CrossReferenceMatrixProps } from './CrossReferenceMatrix.model';
-import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
+import { useCrossReferenceMatrix, getEntityIcon, getEntityTypeLabel } from './useCrossReferenceMatrix';
 import MatrixToolbar from './components/MatrixToolbar.vue';
 import MatrixLegend from './components/MatrixLegend.vue';
 

@@ -132,6 +132,9 @@ export interface ItemJourneyNode {
   owner_id?: string | null;
   owner_name?: string | null;
   description: string;
+  quote?: string | null;
+  block_id?: string | null;
+  paragraph_index?: number | null;
 }
 
 export interface ItemJourneyReport {

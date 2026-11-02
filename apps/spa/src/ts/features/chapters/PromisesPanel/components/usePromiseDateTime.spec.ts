@@ -105,4 +105,57 @@ describe('usePromiseDateTime', () => {
     expect(dt.currentEraIdx.value).toBe(1);
     expect(dt.currentYear.value).toBe(2026);
   });
+
+  it('correctly discriminates reverse countdown eras (BCE) from forward eras (CE) with overlapping year numbers', () => {
+    const overlappingCal = ref<CalendarRecord[]>([
+      {
+        id: 'cal:russia',
+        name: 'Российский календарь',
+        is_default: true,
+        data: {
+          название: 'Российский календарь',
+          эпохи: [
+            { название: 'От Сотворения Мира (С.М. / 5508 до н.э.)', год_начала: 1, год_конца: 5508, обратный_отсчет: true },
+            { название: 'Современная Россия (РФ)', год_начала: 1991, год_конца: 9999, обратный_отсчет: false }
+          ],
+          месяцы: [{ название: 'Январь', дней: 30 }],
+          настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 }
+        }
+      }
+    ]);
+
+    const emitChange = vi.fn();
+    const dt = usePromiseDateTime(overlappingCal, emitChange);
+
+    // 1. Устанавливаем современную дату (2024 год н.э., mAbs > 0)
+    dt.currentEraIdx.value = 1;
+    dt.currentYear.value = 2024;
+    dt.onDateFieldsChange();
+
+    const modernMabs = dt.universalDateModel.value?.absolute_minute;
+    expect(modernMabs).toBeDefined();
+    expect(modernMabs!).toBeGreaterThan(0);
+
+    // 2. Синхронизируем обратно только из mAbs:
+    // Декодер обязан выбрать эру 1 (Современная Россия), а НЕ эру 0 (От Сотворения Мира),
+    // несмотря на то, что 2024 входит в диапазон [1, 5508] эры 0.
+    dt.syncInitialTimelineDate({ m_abs: modernMabs, calendar_id: 'cal:russia' });
+    expect(dt.currentEraIdx.value).toBe(1);
+    expect(dt.currentYear.value).toBe(2024);
+
+    // 3. Устанавливаем дату до нашей эры (2024 год до н.э. по обратному отсчету, mAbs < 0)
+    dt.currentEraIdx.value = 0;
+    dt.currentYear.value = 2024;
+    dt.onDateFieldsChange();
+
+    const bceMabs = dt.universalDateModel.value?.absolute_minute;
+    expect(bceMabs).toBeDefined();
+    expect(bceMabs!).toBeLessThan(0);
+
+    // 4. Синхронизируем обратно из отрицательного mAbs:
+    // Декодер обязан выбрать эру 0 (От Сотворения Мира, обратный отсчет)
+    dt.syncInitialTimelineDate({ m_abs: bceMabs, calendar_id: 'cal:russia' });
+    expect(dt.currentEraIdx.value).toBe(0);
+    expect(dt.currentYear.value).toBe(2024);
+  });
 });

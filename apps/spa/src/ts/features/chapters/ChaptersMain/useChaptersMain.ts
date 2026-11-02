@@ -67,6 +67,20 @@ export function useChaptersMain(
     }
   };
 
+  watch(
+    () => currentChapter.value?.title,
+    (newTitle) => {
+      if (newTitle !== undefined && currentChapter.value?.id) {
+        emit('chapter-renamed', { id: currentChapter.value.id, title: newTitle });
+        document.dispatchEvent(
+          new CustomEvent('ww:chapter-renamed', {
+            detail: { id: currentChapter.value.id, title: newTitle },
+          })
+        );
+      }
+    }
+  );
+
   const triggerSave = () => {
     saveChapter(props.project, emit);
   };

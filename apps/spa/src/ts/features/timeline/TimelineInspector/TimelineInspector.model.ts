@@ -11,7 +11,7 @@ export interface InspectorReveal {
 export interface InspectorParticipant {
   id: string;
   name: string;
-  entity_type: string;
+  entity_type?: string;
 }
 
 export interface InspectorEvent {
@@ -59,12 +59,19 @@ export interface FormattedInspectorEvent extends InspectorEvent {
   cleanParticipants: InspectorParticipant[];
   isScene: boolean;
   kindMeta: InspectorKindMeta;
+  isFlashback?: boolean;
+  primaryChapterId?: string;
+  primaryChapterTitle?: string;
 }
 
 export interface InspectorChapter {
   id: string;
   title: string;
   sort_order: number;
+  sceneCount?: number;
+  flashbackCount?: number;
+  earliestFlashbackEventId?: string | null;
+  timeRangeLabel?: string | null;
 }
 
 export interface TimelineInspectorData {
@@ -72,12 +79,16 @@ export interface TimelineInspectorData {
   chapters: InspectorChapter[];
 }
 
+export type ConnectionLinkMode = 'focus' | 'all' | 'none';
+
 export interface TimelineInspectorFilterState {
   searchQuery: string;
   selectedEntityId: string;
   selectedPovId: string;
   readerHorizonChapterOrder: number | null; // null = Author / God mode; number = Reader Mode up to chapter N
   showFlashbacksOnly: boolean;
+  linkMode: ConnectionLinkMode;
+  isolatedChapterId: string | null; // null = all scenes; string = show scenes only for this chapter
 }
 
 export interface VisualizedConnectionLine {

@@ -15,9 +15,11 @@ import {
   buildChapterColumns,
   formatWordCount,
   getRoleWeight,
+  getEntityIcon,
+  getEntityTypeLabel,
 } from './crossReferenceMatrix.utils';
 
-export { getRoleWeight, formatWordCount };
+export { getRoleWeight, formatWordCount, getEntityIcon, getEntityTypeLabel };
 
 export function useCrossReferenceMatrix(project: string) {
   const store = useAnalyticsStore();

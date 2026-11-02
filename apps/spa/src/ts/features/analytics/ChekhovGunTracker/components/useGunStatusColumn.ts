@@ -9,15 +9,24 @@ export function useGunStatusColumn(propsGetter: () => GunStatusColumnProps) {
   const isEmpty = computed(() => props.value.items.length === 0);
 
   const emptyText = computed(() => {
+    const isGunScope = props.value.scope === 'guns';
     switch (props.value.stateKey) {
       case 'active':
-        return 'Нет предметов, активно задействованных в текущих главах';
+        return isGunScope
+          ? 'Нет активных чеховских ружей в текущих главах'
+          : 'Нет предметов, активно задействованных в текущих главах';
       case 'sleeping':
-        return 'Нет артефактов в режиме ожидания';
+        return isGunScope
+          ? 'Нет ружей в режиме ожидания выстрела'
+          : 'Нет артефактов в режиме ожидания';
       case 'forgotten':
-        return 'Отлично! Забытых предметов и невыстреливших ружей не обнаружено';
+        return isGunScope
+          ? 'Отлично! Забытых и невыстреливших ружей не обнаружено'
+          : 'Отлично! Забытых предметов не обнаружено';
       case 'destroyed':
-        return 'Нет уничтоженных или утерянных предметов';
+        return isGunScope
+          ? 'Нет сорванных или снятых ружей'
+          : 'Нет уничтоженных или утерянных предметов';
       default:
         return 'Список пуст';
     }

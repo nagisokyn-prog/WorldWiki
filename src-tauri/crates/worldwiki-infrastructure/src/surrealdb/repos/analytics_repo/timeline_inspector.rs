@@ -81,7 +81,13 @@ enum RawParticipant {
 impl RawParticipant {
     fn into_id(self) -> String {
         match self {
-            RawParticipant::Object { id, name } => id.or(name).unwrap_or_default(),
+            RawParticipant::Object { id, name } => {
+                if let Some(n) = name.filter(|n| !n.trim().is_empty()) {
+                    n
+                } else {
+                    id.unwrap_or_default()
+                }
+            }
             RawParticipant::String(s) => s,
         }
     }

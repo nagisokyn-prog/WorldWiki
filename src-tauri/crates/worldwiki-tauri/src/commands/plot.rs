@@ -23,6 +23,24 @@ pub async fn get_plot_promises(
     Ok(items)
 }
 
+#[tauri::command]
+pub async fn get_plot_promise(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<serde_json::Value>, IpcError> {
+    let clean = id.trim_start_matches("plot_promises:").to_string();
+    let sql = "RETURN fn::get_plot_promise($id);";
+    let mut res = state
+        .services
+        .db
+        .query(sql)
+        .bind(("id", clean))
+        .await
+        .map_err(|e| IpcError::from(e.to_string()))?;
+    let item: Option<serde_json::Value> = res.take(0).map_err(|e| IpcError::from(e.to_string()))?;
+    Ok(item)
+}
+
 bridge_command!(
     delete_plot_promise(id: String) -> Result<(), IpcError>
         => plot.delete_promise(&id)

@@ -59,15 +59,29 @@
   gap: var(--space-3, 12px);
 }
 
+.matrix-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.matrix-search-box .search-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
 .matrix-search-input {
   font-size: var(--font-size-xs, 12px);
-  padding: 5px 10px;
+  padding: 6px 10px 6px 26px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background-color: var(--bg-sunken);
   color: var(--text-main);
   outline: none;
-  min-width: 160px;
+  min-width: 180px;
 }
 
 .matrix-search-input:focus {
@@ -76,7 +90,7 @@
 
 .matrix-select {
   font-size: var(--font-size-xs, 12px);
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background-color: var(--bg-sunken);
@@ -154,21 +168,26 @@
 }
 
 .legend-marker {
-  font-size: 11px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .marker-scene {
   color: var(--accent);
-  font-weight: bold;
 }
 
 .marker-mention {
-  color: var(--accent);
+  color: var(--text-muted);
 }
 
 .marker-absent {
   color: var(--text-muted);
-  opacity: 0.4;
+  opacity: 0.5;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .legend-chip-warning {
@@ -310,13 +329,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .chapter-order-badge {
   font-size: 10px;
   font-weight: 700;
   color: var(--accent);
+  background-color: var(--bg-hover);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
 }
 
 .chapter-title-text {
@@ -340,7 +368,7 @@
 
 /* Entity Column */
 .matrix-entity-cell {
-  min-width: 180px;
+  min-width: 220px;
 }
 
 .entity-name-box {
@@ -357,6 +385,11 @@
   min-width: 0;
 }
 
+.entity-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 .entity-name {
   font-weight: 600;
   color: var(--text-main);
@@ -367,14 +400,14 @@
 
 .entity-role-badge {
   font-size: 10px;
-  font-weight: 500;
-  padding: 1px 5px;
+  font-weight: 600;
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
   background-color: var(--bg-hover);
   color: var(--accent);
   border: 1px solid var(--border-color);
   white-space: nowrap;
-  text-transform: lowercase;
+  text-transform: capitalize;
 }
 
 .matrix-gap-badge {
@@ -445,8 +478,48 @@
   min-width: 22px;
   height: 22px;
   border-radius: var(--radius-xs);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
+}
+
+.cell-badge.badge-scene {
+  background-color: var(--bg-hover);
+  color: var(--accent);
+  font-weight: 700;
+  border: 1px solid var(--accent);
+  padding: 2px 6px;
+}
+
+.cell-badge.badge-mention {
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+}
+
+.cell-badge.badge-absent {
+  color: var(--text-muted);
+  opacity: 0.3;
+  font-size: 14px;
+}
+
+.footer-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.footer-total-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  background-color: var(--bg-hover);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
 }
 
 .cell-scene {

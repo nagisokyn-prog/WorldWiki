@@ -12,7 +12,13 @@ pub(crate) async fn get_item_journey_impl(
     let proj_clean = clean_raw_id!(project_id, "projects");
     let item_clean = clean_id(item_id);
 
-    let sql = "RETURN fn::get_item_journey(type::record('projects', $p), type::record('entities', $e));";
+    let is_promise = item_id.starts_with("plot_promises");
+    let sql = if is_promise {
+        "RETURN fn::get_item_journey(type::record('projects', $p), type::record('plot_promises', $e));"
+    } else {
+        "RETURN fn::get_item_journey(type::record('projects', $p), type::record('entities', $e));"
+    };
+
     let bundle: Option<RawItemJourneyBundle> = surreal_take_one!(
         db,
         sql,
@@ -39,6 +45,81 @@ pub(crate) async fn get_item_journey_impl(
         .into_iter()
         .map(|c| (clean_id(&c.id).to_string(), (c.sort_order.unwrap_or(0), c.title.unwrap_or_default())))
         .collect();
+
+    if is_promise {
+        let prom = promises.iter().find(|p| clean_id(&p.id) == item_clean);
+        let mut nodes = Vec::new();
+        let (ch_order, ch_title) = prom
+            .as_ref()
+            .and_then(|p| p.chapter_id.as_ref())
+            .and_then(|cid| chapter_map.get(clean_id(cid)))
+            .map(|(ord, tit)| (Some(*ord), Some(tit.clone())))
+            .unwrap_or((None, None));
+
+        let prom_title = prom
+            .and_then(|p| p.title.clone())
+            .unwrap_or_else(|| target_item.name.clone().unwrap_or_default());
+
+        let owner_name = prom
+            .and_then(|p| p.participant_ids.first())
+            .and_then(|pid| character_names.get(clean_id(pid)))
+            .cloned();
+
+        let desc = prom
+            .and_then(|p| p.description.clone())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| prom_title.clone());
+
+        nodes.push(ItemJourneyNodeDto {
+            id: format!("{}_plant", item_clean),
+            title: "Завязка (Посадка ружья)".to_string(),
+            node_type: "creation".to_string(),
+            m_abs: prom.and_then(|p| p.m_abs),
+            chapter_order: ch_order,
+            chapter_id: prom.and_then(|p| p.chapter_id.clone()),
+            chapter_title: ch_title,
+            owner_id: prom.and_then(|p| p.participant_ids.first().cloned()),
+            owner_name,
+            description: desc,
+        });
+
+        if let Some(res_cid) = prom.and_then(|p| p.resolved_at_chapter_id.as_ref()) {
+            let (res_order, res_title) = chapter_map
+                .get(clean_id(res_cid))
+                .map(|(ord, tit)| (Some(*ord), Some(tit.clone())))
+                .unwrap_or((None, None));
+
+            nodes.push(ItemJourneyNodeDto {
+                id: format!("{}_resolution", item_clean),
+                title: "Выстрел (Развязка ружья)".to_string(),
+                node_type: "destruction".to_string(),
+                m_abs: None,
+                chapter_order: res_order,
+                chapter_id: Some(res_cid.clone()),
+                chapter_title: res_title,
+                owner_id: None,
+                owner_name: None,
+                description: "Сюжетное ружьё выстрелило — драматургическая линия завершена.".to_string(),
+            });
+        }
+
+        let raw_status = prom
+            .and_then(|p| p.status.clone())
+            .unwrap_or_else(|| "Заряжено".to_string());
+        let status_category = match raw_status.as_str() {
+            "resolved" | "fired" => "Выстрелило".to_string(),
+            "broken" | "dropped" => "Сорвано".to_string(),
+            _ => "Заряжено".to_string(),
+        };
+
+        return Ok(ItemJourneyDto {
+            item_id: target_item.id,
+            item_name: prom_title,
+            item_type: "Чеховское ружьё".to_string(),
+            status_category,
+            nodes,
+        });
+    }
 
     let attrs = &target_item.attributes;
     let item_type = attrs

@@ -3,7 +3,7 @@
     <div
       class="correction-subcard-title"
       style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;"
-      @click="isCollapsed = !isCollapsed"
+      @click="toggleCollapsed"
     >
       <span style="display: flex; align-items: center; gap: 6px;">
         <span>✨</span> Дни вне месяцев (Ежегодные праздники)

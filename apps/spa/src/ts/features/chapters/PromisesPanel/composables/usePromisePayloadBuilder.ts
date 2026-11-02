@@ -26,6 +26,7 @@ export function preparePromisePayload(
     arcs: finalArcs,
     arc_id: derivedArcId,
     arc_phase: derivedArcPhase,
+    time_nature: item.time_nature || 'present',
   };
 }
 

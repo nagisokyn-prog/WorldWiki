@@ -16,10 +16,20 @@ export type {
   CustodyEvent,
 };
 
+export type GunTrackerScope = 'guns' | 'items' | 'all';
+
 export interface GunTrackerFilterState {
   search: string;
   itemType: string;
   usageState: string;
+  scope: GunTrackerScope;
+}
+
+export interface LocatePromisePayload {
+  chapterId: string;
+  paragraphIndex: number;
+  quote: string;
+  blockId?: string;
 }
 
 export interface ChekhovGunTrackerProps {
@@ -30,6 +40,7 @@ export interface ChekhovGunTrackerProps {
 export interface ChekhovGunTrackerEmits {
   (e: 'select-item', item: TrackedItem): void;
   (e: 'jump-to-chapter', chapterId: string): void;
+  (e: 'locate-promise', payload: LocatePromisePayload): void;
 }
 
 export interface GunStatusColumnProps {
@@ -38,6 +49,7 @@ export interface GunStatusColumnProps {
   stateKey: 'active' | 'sleeping' | 'forgotten' | 'destroyed';
   items: TrackedItem[];
   colorClass: string;
+  scope?: GunTrackerScope;
 }
 
 export interface GunStatusColumnEmits {
@@ -56,9 +68,11 @@ export interface GunJourneyModalProps {
   journey: ItemJourneyReport | null;
   isOpen: boolean;
   isLoading: boolean;
+  activeItem?: TrackedItem | null;
 }
 
 export interface GunJourneyModalEmits {
   (e: 'close'): void;
   (e: 'jump-to-chapter', chapterId: string): void;
+  (e: 'locate-node', payload: LocatePromisePayload): void;
 }

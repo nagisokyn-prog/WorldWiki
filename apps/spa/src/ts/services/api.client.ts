@@ -496,6 +496,10 @@ export async function getPlotPromises(project: string): Promise<unknown[]> {
     return await invoke('get_plot_promises', { project });
 }
 
+export async function getPlotPromise(id: string): Promise<unknown | null> {
+    return await invoke('get_plot_promise', { id });
+}
+
 export async function plantPlotPromise(promise: PlotPromise): Promise<void> {
     return await invoke('plant_plot_promise', { promise });
 }
@@ -671,10 +675,6 @@ export async function getTodo(id: string): Promise<Todo | null> {
 
 export async function saveTodo(project: string, data: Todo): Promise<Todo> {
     return await invoke('save_todo', { project, data });
-}
-
-export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
-    return await invoke('get_plot_promise', { id });
 }
 
 export async function getCalendars(project: string): Promise<Calendar[]> {

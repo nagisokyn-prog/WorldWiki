@@ -103,19 +103,37 @@ export function usePromiseDateTime(
     const calData = getCalendarData(cal);
     if (!calData) return;
 
-    // Сначала рассчитываем дату в базовой шкале
-    const rawDate = CalendarMath.getDateFromAbsolute(mAbs, calData, 0);
+    const isEventBCE = mAbs < 0;
+    const baseEraIdx = calData.эпохи && calData.эпохи.length > 0
+      ? Math.max(0, calData.эпохи.findIndex((e) => !!e.обратный_отсчет === isEventBCE))
+      : 0;
+
+    // Сначала рассчитываем дату в базовой шкале соответствующего направления (до н.э. / н.э.)
+    const rawDate = CalendarMath.getDateFromAbsolute(mAbs, calData, baseEraIdx);
 
     // Определяем эру: явный индекс или поиск эры, чей диапазон [год_начала, год_конца] включает rawDate.year
-    let resolvedEraIdx = 0;
+    let resolvedEraIdx = baseEraIdx;
     if (explicitEraIdx !== undefined && calData.эпохи && explicitEraIdx >= 0 && explicitEraIdx < calData.эпохи.length) {
       resolvedEraIdx = explicitEraIdx;
     } else if (calData.эпохи && calData.эпохи.length > 0) {
-      const matched = calData.эпохи.findIndex((era) => {
+      // 1. Приоритетный поиск: строгое совпадение направления отсчета (до н.э. против н.э.) и диапазона лет
+      let matched = calData.эпохи.findIndex((era) => {
+        const isEraBCE = !!era.обратный_отсчет;
+        if (isEraBCE !== isEventBCE) return false;
         const start = era.год_начала ?? 1;
         const end = era.год_конца ?? Infinity;
         return rawDate.year >= start && rawDate.year <= end;
       });
+
+      // 2. Если строгого совпадения по направлению нет, мягкий fallback
+      if (matched === -1) {
+        matched = calData.эпохи.findIndex((era) => {
+          const start = era.год_начала ?? 1;
+          const end = era.год_конца ?? Infinity;
+          return rawDate.year >= start && rawDate.year <= end;
+        });
+      }
+
       if (matched !== -1) {
         resolvedEraIdx = matched;
       }

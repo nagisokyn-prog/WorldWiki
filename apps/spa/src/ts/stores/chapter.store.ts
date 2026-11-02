@@ -91,13 +91,19 @@ export const useChapterStore = defineStore('chapter', () => {
       await chapterService.save(project, currentChapter.value);
 
       hasUnsavedChanges.value = false;
-      if (emitFn) emitFn('chapter-saved');
+      if (emitFn) {
+        emitFn('chapter-saved');
+        emitFn('chapter-renamed', { id: currentChapter.value.id, title: currentChapter.value.title });
+      }
       
       const listIdx = chapters.value.findIndex(c => c.id === currentChapterId.value);
       if (listIdx !== -1) chapters.value[listIdx].title = currentChapter.value.title;
       
       await chapterService.updateIndex(project);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+      document.dispatchEvent(new CustomEvent('ww:chapter-renamed', {
+        detail: { id: currentChapter.value.id, title: currentChapter.value.title }
+      }));
       console.log('✅ chapterStore.saveChapter: глава сохранена');
       debugError.value = null;
       return true;

@@ -30,6 +30,20 @@
       </span>
     </div>
 
+    <!-- Режим времени (Повествовательный контекст сцены) -->
+    <div class="flex items-center justify-between gap-1.5 py-1 border-t border-border mt-0.5">
+      <span class="text-xs text-muted">Поток времени:</span>
+      <select
+        :value="currentTimeNature || 'present'"
+        class="bg-surface-subtle text-main border border-border rounded px-2 py-0.5 text-xs cursor-pointer focus:outline-none focus:border-accent"
+        @change="$emit('update:currentTimeNature', ($event.target as HTMLSelectElement).value); $emit('change')"
+      >
+        <option value="present">🎬 Настоящее (Основной сюжет)</option>
+        <option value="flashback">⏪ Флешбэк (Воспоминание)</option>
+        <option value="flashforward">🔮 Взгляд в будущее</option>
+      </select>
+    </div>
+
     <!-- Выбор календаря (при раскрытых барабанах) -->
     <div v-if="isDatePickerOpen && calendars && calendars.length > 1" class="flex items-center gap-2 py-1">
       <span class="text-xs text-muted">Календарь:</span>

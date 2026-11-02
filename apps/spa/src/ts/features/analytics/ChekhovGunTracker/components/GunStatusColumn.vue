@@ -1,19 +1,19 @@
 <template>
-  <div class="gun-status-column flex flex-col flex-1 min-w-[280px] max-w-[420px] rounded-xl border border-border bg-surface-alt/50 overflow-hidden shadow-sm">
+  <div class="gun-status-column">
     <!-- Header колонки -->
-    <div class="column-header p-3 border-b border-border flex items-center justify-between bg-card/60">
-      <div class="flex items-center gap-2">
-        <span class="text-base">{{ icon }}</span>
-        <h3 class="text-sm font-bold text-main">{{ title }}</h3>
+    <div class="column-header">
+      <div class="column-title-group">
+        <span class="column-icon">{{ icon }}</span>
+        <h3 class="column-title">{{ title }}</h3>
       </div>
-      <span class="badge text-xs font-bold px-2 py-0.5 rounded-full" :class="colorClass">
+      <span class="column-badge" :class="colorClass">
         {{ itemCount }}
       </span>
     </div>
 
     <!-- Список карточек -->
-    <div class="column-body flex-1 overflow-y-auto p-3 space-y-2.5">
-      <div v-if="isEmpty" class="empty-placeholder p-4 text-center text-xs text-muted italic rounded-lg border border-dashed border-border/60">
+    <div class="column-body">
+      <div v-if="isEmpty" class="column-empty-placeholder">
         {{ emptyText }}
       </div>
 
@@ -37,3 +37,5 @@ defineEmits<GunStatusColumnEmits>();
 
 const { itemCount, isEmpty, emptyText } = useGunStatusColumn(() => props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/ChekhovGunTracker.css"></style>

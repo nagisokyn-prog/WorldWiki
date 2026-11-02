@@ -27,7 +27,7 @@ export const plotApi = {
   getPlotPromise: async (id: string): Promise<PlotPromise | null> => {
     const item = await api.getPlotPromise(id);
     if (!item) return null;
-    const p = processIds(item);
+    const p = processIds<PlotPromise>(item as PlotPromise);
     return {
       ...p,
       arcs: Array.isArray(p.arcs) ? p.arcs : [],
@@ -43,10 +43,11 @@ export const plotApi = {
       arcs: Array.isArray(data.arcs) ? data.arcs : [],
       arc_id: typeof data.arc_id === 'string' ? data.arc_id : null,
       arc_phase: typeof data.arc_phase === 'string' ? data.arc_phase : null,
+      time_nature: typeof data.time_nature === 'string' ? data.time_nature : null,
     };
     const rawProject = (project || '').replace(/^projects:/, '');
     const res = await api.savePlotPromise(rawProject, normalizedData);
-    return processIds(res);
+    return processIds<PlotPromise>(res as PlotPromise);
   },
 
   deletePlotPromise: async (id: string): Promise<void> => {

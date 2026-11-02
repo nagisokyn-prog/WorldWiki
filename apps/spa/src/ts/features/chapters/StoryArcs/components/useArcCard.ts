@@ -1,8 +1,10 @@
 import { computed } from 'vue';
+import { useChapterStore } from '@/stores/chapter.store';
 import type { RichPlotPromise, SceneArcItem } from '@/features/chapters/PromisesPanel/composables/PromiseActions.model';
 import type { ArcCardProps, PhaseCounts } from './ArcCard.model';
 
 export function useArcCard(props: ArcCardProps) {
+  const chapterStore = useChapterStore();
   const getPhaseForBlock = (block: RichPlotPromise, arcId?: string | null): string => {
     let phase = block.arc_phase;
     if (Array.isArray(block.arcs) && block.arcs.length > 0 && arcId) {
@@ -67,6 +69,15 @@ export function useArcCard(props: ArcCardProps) {
   };
 
   const formatChapterName = (chapterId: string) => {
+    if (!chapterId) return 'Глава ?';
+    const cleanId = chapterId.replace(/^chapters:/, '');
+    const found = chapterStore.hierarchy?.chapters?.find((c) => {
+      const cid = (typeof c.id === 'string' ? c.id : String(c.id)).replace(/^chapters:/, '');
+      return cid === cleanId;
+    });
+    if (found && found.title) {
+      return found.title;
+    }
     return chapterId.replace(/^chapters:/, 'Гл. ');
   };
 

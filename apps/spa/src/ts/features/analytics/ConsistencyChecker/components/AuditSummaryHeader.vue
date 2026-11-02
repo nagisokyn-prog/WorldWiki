@@ -73,3 +73,5 @@ defineEmits<AuditSummaryHeaderEmits>();
 
 const { healthIcon, healthScoreClass } = useAuditSummaryHeader(() => props.summary);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/ConsistencyChecker.css"></style>

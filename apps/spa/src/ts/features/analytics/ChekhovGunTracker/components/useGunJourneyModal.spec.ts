@@ -45,9 +45,41 @@ describe('useGunJourneyModal Composable', () => {
   });
 
   it('handles null journey gracefully', () => {
-    const { hasNodes, nodes } = useGunJourneyModal(() => null);
+    const { hasNodes, nodes, isPromise, modalTitle, emptyText } = useGunJourneyModal(() => null);
 
     expect(hasNodes.value).toBe(false);
     expect(nodes.value).toEqual([]);
+    expect(isPromise.value).toBe(false);
+    expect(modalTitle.value).toBe('Путь предмета');
+    expect(emptyText.value).toBe('История владения и упоминания данного предмета в тексте пока отсутствуют.');
+  });
+
+  it('correctly adapts for Chekhov gun when activeItem is provided even with null journey', () => {
+    const gunItem = {
+      id: 'plot_promises:gun1',
+      name: 'Пистолет в первом акте',
+      item_type: 'Чеховское ружьё',
+      status_category: 'Заряжено',
+      current_owner_id: null,
+      current_owner_name: 'Лёха',
+      first_chapter_order: 0,
+      last_chapter_order: 0,
+      skipped_chapters: 0,
+      total_mentions: 1,
+      usage_state: 'active' as const,
+      custody_chain: [],
+    };
+
+    const { isPromise, modalTitle, itemTypeLabel, statusCategoryLabel, emptyText, getNodeIcon, getNodeBadgeClass } =
+      useGunJourneyModal(() => null, () => gunItem);
+
+    expect(isPromise.value).toBe(true);
+    expect(modalTitle.value).toBe('Пистолет в первом акте');
+    expect(itemTypeLabel.value).toBe('Чеховское ружьё');
+    expect(statusCategoryLabel.value).toBe('Заряжено');
+    expect(emptyText.value).toBe('Вехи развития этого сюжетного ружья в тексте пока отсутствуют.');
+    expect(getNodeIcon('destruction')).toBe('🎯');
+    expect(getNodeIcon('scene')).toBe('🌿');
+    expect(getNodeBadgeClass('destruction')).toContain('text-primary');
   });
 });

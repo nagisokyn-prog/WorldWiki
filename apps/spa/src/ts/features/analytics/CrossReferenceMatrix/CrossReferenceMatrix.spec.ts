@@ -193,5 +193,34 @@ describe('useCrossReferenceMatrix Composable', () => {
     expect(row.cells.get('ch:2')?.status).toBe('deceased');
     expect(row.cells.get('ch:3')?.status).toBe('deceased');
   });
+
+  it('correctly handles both scene and mention in the same chapter', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'ch:1', title: 'Глава 1', sort_order: 1, word_count: 1000 },
+      ],
+      entities: [
+        {
+          id: 'ent:lexa',
+          name: 'Лёха',
+          entity_type: 'character',
+          appearances: [
+            { chapter_id: 'ch:1', source: 'scene', has_scene: true },
+            { chapter_id: 'ch:1', source: 'mention', has_mention: true },
+          ],
+        },
+      ],
+    };
+
+    const { rows } = useCrossReferenceMatrix('test_proj');
+    expect(rows.value).toHaveLength(1);
+    const row = rows.value[0];
+    const cell = row.cells.get('ch:1');
+    expect(cell?.status).toBe('both');
+    expect(cell?.hasScene).toBe(true);
+    expect(cell?.hasMention).toBe(true);
+    expect(cell?.count).toBe(2);
+  });
 });
 

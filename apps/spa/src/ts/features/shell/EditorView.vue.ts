@@ -138,6 +138,30 @@ export default defineComponent({
     };
     const openSchemaEditor = shell.openSchemaEditor;
     const openChapterTab = shell.openChapterTab;
+    const handleLocateFromTracker = (payload: {
+      chapterId: string;
+      paragraphIndex?: number;
+      quote?: string;
+      blockId?: string;
+    }) => {
+      openChapterTab(payload.chapterId);
+      shell.activePanelTab = '';
+      const trigger = () => {
+        document.dispatchEvent(
+          new CustomEvent('ww:locate-promise', {
+            detail: {
+              chapterId: payload.chapterId,
+              paragraphIndex: payload.paragraphIndex ?? 0,
+              quote: payload.quote || '',
+              blockId: payload.blockId,
+            },
+          })
+        );
+      };
+      trigger();
+      setTimeout(trigger, 300);
+      setTimeout(trigger, 650);
+    };
     const closeEditor = shell.closeEditor;
     const markUnsaved = shell.markUnsaved;
     const markSaved = shell.markSaved;
@@ -242,6 +266,7 @@ export default defineComponent({
       openPlanetViewer,
       openSchemaEditor,
       openChapterTab,
+      handleLocateFromTracker,
       closeEditor,
       markUnsaved,
       markSaved,

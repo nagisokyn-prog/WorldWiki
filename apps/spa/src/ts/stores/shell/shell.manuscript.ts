@@ -202,7 +202,18 @@ export function useShellManuscript(deps: ManuscriptDeps) {
   };
 
   const onChapterRenamed = (data: { id: string; title: string }) => {
+    const cleanId = String(data.id).replace(/^chapters:/, '');
     deps.updateTabData(data.id, { title: data.title });
+    deps.updateTabData(cleanId, { title: data.title });
+    deps.updateTabData(`chapter:${cleanId}`, { title: data.title });
+
+    const chaps = deps.chapters.value;
+    if (chaps && Array.isArray(chaps)) {
+      const found = chaps.find(c => compareIds(c.id, cleanId));
+      if (found) {
+        found.title = data.title;
+      }
+    }
     if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
     if (deps.currentSidebarTab.value === 'chapters') deps.loadEntityList('chapters');
   };

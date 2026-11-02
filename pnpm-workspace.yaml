@@ -2,7 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
   vue-demi: true
 minimumReleaseAgeExclude:
   - "@intlify/core-base@11.4.17"

@@ -97,6 +97,8 @@ pub struct PlotPromise {
     pub arc_id: Option<String>,
     #[serde(default)]
     pub arc_phase: Option<String>,
+    #[serde(default)]
+    pub time_nature: Option<String>,
     #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
     #[serde(default = "default_datetime")]
@@ -128,6 +130,7 @@ impl PlotPromise {
             arcs: Vec::new(),
             arc_id: None,
             arc_phase: None,
+            time_nature: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

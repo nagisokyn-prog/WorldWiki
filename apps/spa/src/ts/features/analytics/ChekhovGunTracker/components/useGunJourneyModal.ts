@@ -1,21 +1,54 @@
 import { computed } from 'vue';
-import type { ItemJourneyReport } from '../ChekhovGunTracker.model';
+import type { ItemJourneyReport, TrackedItem } from '../ChekhovGunTracker.model';
+import { isGunItem } from '../useChekhovGunTracker';
 
-export function useGunJourneyModal(journeyGetter: () => ItemJourneyReport | null) {
+export function useGunJourneyModal(
+  journeyGetter: () => ItemJourneyReport | null,
+  activeItemGetter?: () => TrackedItem | null | undefined
+) {
   const journey = computed(() => journeyGetter());
+  const activeItem = computed(() => activeItemGetter?.() ?? null);
 
   const hasNodes = computed(() => (journey.value?.nodes?.length ?? 0) > 0);
+
+  const isPromise = computed(() => {
+    if (activeItem.value) {
+      return isGunItem(activeItem.value);
+    }
+    const id = journey.value?.item_id || '';
+    const it = journey.value?.item_type || '';
+    return id.startsWith('plot_promises:') || it.includes('ружь') || it.includes('предзнаменование');
+  });
+
+  const modalTitle = computed(() => {
+    if (isPromise.value) {
+      return journey.value?.item_name || activeItem.value?.name || 'Хронология сюжетного ружья';
+    }
+    return journey.value?.item_name || activeItem.value?.name || 'Путь предмета';
+  });
+
+  const itemTypeLabel = computed(() => {
+    return (
+      journey.value?.item_type ||
+      activeItem.value?.item_type ||
+      (isPromise.value ? 'Чеховское ружьё' : 'Артефакт')
+    );
+  });
+
+  const statusCategoryLabel = computed(() => {
+    return journey.value?.status_category || activeItem.value?.status_category || 'Активен';
+  });
 
   const getNodeIcon = (nodeType: string): string => {
     switch (nodeType) {
       case 'creation':
         return '🌱';
       case 'custody':
-        return '👤';
+        return isPromise.value ? '🎭' : '👤';
       case 'scene':
-        return '⚡';
+        return isPromise.value ? '🌿' : '⚡';
       case 'destruction':
-        return '💥';
+        return isPromise.value ? '🎯' : '💥';
       default:
         return '📍';
     }
@@ -30,11 +63,20 @@ export function useGunJourneyModal(journeyGetter: () => ItemJourneyReport | null
       case 'scene':
         return 'bg-warning/10 text-warning border-warning/30';
       case 'destruction':
-        return 'bg-danger/10 text-danger border-danger/30';
+        return isPromise.value
+          ? 'bg-primary/15 text-primary border-primary/40'
+          : 'bg-danger/10 text-danger border-danger/30';
       default:
         return 'bg-surface-hover text-muted border-border';
     }
   };
+
+  const emptyText = computed(() => {
+    if (isPromise.value) {
+      return 'Вехи развития этого сюжетного ружья в тексте пока отсутствуют.';
+    }
+    return 'История владения и упоминания данного предмета в тексте пока отсутствуют.';
+  });
 
   const nodes = computed(() => (journey.value?.nodes ?? []).map((node) => ({
     ...node,
@@ -44,6 +86,12 @@ export function useGunJourneyModal(journeyGetter: () => ItemJourneyReport | null
 
   return {
     journey,
+    activeItem,
+    isPromise,
+    modalTitle,
+    itemTypeLabel,
+    statusCategoryLabel,
+    emptyText,
     hasNodes,
     nodes,
     getNodeIcon,

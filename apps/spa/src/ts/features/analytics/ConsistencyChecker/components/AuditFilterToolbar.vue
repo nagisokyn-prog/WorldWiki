@@ -1,13 +1,13 @@
 <template>
-  <div class="audit-filter-toolbar flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-subtle bg-surface">
+  <div class="audit-filter-toolbar">
     <!-- Search Bar -->
-    <div class="search-wrap relative flex-1 min-w-[200px] max-w-[360px]">
-      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-xs">🔍</span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
       <input
         :value="searchQuery"
         type="text"
         placeholder="Поиск по названию или описанию..."
-        class="search-input w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-subtle bg-input text-main placeholder:text-muted focus:outline-none focus:border-accent"
+        class="search-input"
         @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
     </div>
@@ -17,7 +17,7 @@
       <!-- Severity Filter -->
       <select
         :value="selectedSeverity"
-        class="filter-select text-xs px-2.5 py-1.5 rounded-md border border-subtle bg-input text-main cursor-pointer"
+        class="filter-select"
         @change="$emit('update:selectedSeverity', ($event.target as HTMLSelectElement).value)"
       >
         <option value="all">Все уровни строгости</option>
@@ -29,7 +29,7 @@
       <!-- Rule Type Filter -->
       <select
         :value="selectedRule"
-        class="filter-select text-xs px-2.5 py-1.5 rounded-md border border-subtle bg-input text-main cursor-pointer"
+        class="filter-select"
         @change="$emit('update:selectedRule', ($event.target as HTMLSelectElement).value)"
       >
         <option value="all">Все типы правил</option>
@@ -46,7 +46,7 @@
       <!-- Reset Filters Button -->
       <button
         v-if="hasActiveFilters"
-        class="btn-reset-filters text-2xs px-2.5 py-1.5 rounded-md text-muted hover:text-main bg-surface-hover border border-subtle cursor-pointer transition-colors"
+        class="btn-reset-filters"
         @click="$emit('resetFilters')"
       >
         ✕ Сбросить
@@ -65,3 +65,5 @@ defineEmits<AuditFilterToolbarEmits>();
 
 useAuditFilterToolbar();
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/ConsistencyChecker.css"></style>

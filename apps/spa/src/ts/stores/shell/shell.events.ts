@@ -31,7 +31,12 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
                 if (data) {
                   tab.data = { ...(data as unknown as Record<string, unknown>) };
                   tab.unsaved = false;
-                  deps.eg.updateTabData(tab.id, { data: tab.data, unsaved: false });
+                  if (data.title) {
+                    tab.title = data.title;
+                    deps.eg.updateTabData(tab.id, { data: tab.data, title: data.title, unsaved: false });
+                  } else {
+                    deps.eg.updateTabData(tab.id, { data: tab.data, unsaved: false });
+                  }
                 }
               });
             } else if (type !== 'schema-editor') {
@@ -39,7 +44,13 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
                 if (data) {
                   tab.data = { ...(data as Record<string, unknown>) };
                   tab.unsaved = false;
-                  deps.eg.updateTabData(tab.id, { data: tab.data, unsaved: false });
+                  const newTitle = (data.Name || data.name || data.title) as string | undefined;
+                  if (newTitle) {
+                    tab.title = newTitle;
+                    deps.eg.updateTabData(tab.id, { data: tab.data, title: newTitle, unsaved: false });
+                  } else {
+                    deps.eg.updateTabData(tab.id, { data: tab.data, unsaved: false });
+                  }
                 }
               });
             }
@@ -77,4 +88,22 @@ export function setupShellTauriEvents(deps: ShellEventsDeps) {
       });
     })?.catch?.(() => {});
   }).catch(() => {});
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('ww:chapter-renamed', ((e: Event) => {
+      const detail = (e as CustomEvent<{ id: string; title: string }>).detail;
+      if (!detail?.id || detail.title === undefined) return;
+      const cleanTargetId = String(detail.id).replace(/^(chapters|chapter):/, '');
+      deps.eg.groups.value.forEach((group) => {
+        group.tabs.forEach((tab) => {
+          const tabCleanRawId = (tab.rawId || '').replace(/^(chapters|chapter):/, '');
+          const tabCleanId = (tab.id || '').replace(/^(chapters|chapter):/, '');
+          if (tabCleanRawId === cleanTargetId || tabCleanId === cleanTargetId) {
+            tab.title = detail.title;
+            deps.eg.updateTabData(tab.id, { title: detail.title });
+          }
+        });
+      });
+    }) as EventListener);
+  }
 }

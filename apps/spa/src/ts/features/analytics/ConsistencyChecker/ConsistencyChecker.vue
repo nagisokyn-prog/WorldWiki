@@ -8,18 +8,18 @@
     />
 
     <!-- View Switcher Bar -->
-    <div class="flex items-center justify-between px-4 py-2 border-b border-subtle bg-surface">
-      <div class="flex items-center gap-2">
+    <div class="consistency-view-switcher">
+      <div class="view-switcher-group">
         <button
-          class="px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-colors"
-          :class="currentView === 'anomalies' ? 'bg-surface-hover text-accent border border-subtle' : 'text-muted hover:text-main'"
+          class="view-tab-btn"
+          :class="{ 'is-active': currentView === 'anomalies' }"
           @click="currentView = 'anomalies'"
         >
           📋 Нарушения ({{ filteredAnomalies.length }})
         </button>
         <button
-          class="px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-colors"
-          :class="currentView === 'chapters' ? 'bg-surface-hover text-accent border border-subtle' : 'text-muted hover:text-main'"
+          class="view-tab-btn"
+          :class="{ 'is-active': currentView === 'chapters' }"
           @click="currentView = 'chapters'"
         >
           📖 По главам ({{ chapterViolations.length }})
@@ -51,19 +51,17 @@
       <!-- Clean State: Zero Violations -->
       <div
         v-else-if="!anomalies.length"
-        class="empty-state-card flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-subtle bg-surface space-y-3"
+        class="empty-state-card"
       >
-        <div class="p-3 rounded-full bg-surface-hover text-3xl">
+        <div class="empty-state-icon">
           ✨
         </div>
-        <div>
-          <h3 class="text-base font-bold text-success m-0">
-            Сюжетных противоречий не обнаружено!
-          </h3>
-          <p class="text-xs text-muted m-0 mt-1 max-w-sm">
-            Все перемещения персонажей, фазы жизни, ружья и события согласованы по времени и пространству.
-          </p>
-        </div>
+        <h3 class="empty-state-title">
+          Сюжетных противоречий не обнаружено!
+        </h3>
+        <p class="empty-state-desc">
+          Все перемещения персонажей, фазы жизни, ружья и события согласованы по времени и пространству.
+        </p>
       </div>
 
       <!-- Chapters View Table -->

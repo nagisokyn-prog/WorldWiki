@@ -35,6 +35,8 @@ export type RichPlotPromise = PlotPromise & {
   m_abs?: number | null;
   calendar_id?: string | null;
   date_fields?: Record<string, unknown> | null;
+  time_nature?: string | null;
+  is_flashback?: boolean;
   /** UI-флаг: текст был удалён из рукописи (не сохраняется в БД) */
   is_orphaned?: boolean;
 };

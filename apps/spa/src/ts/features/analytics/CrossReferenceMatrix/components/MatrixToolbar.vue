@@ -11,12 +11,15 @@
     </div>
 
     <div class="matrix-toolbar-controls">
-      <input
-        v-model="filters.searchQuery"
-        type="text"
-        placeholder="Поиск сущности..."
-        class="matrix-search-input"
-      />
+      <div class="matrix-search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          v-model="filters.searchQuery"
+          type="text"
+          placeholder="Поиск сущности..."
+          class="matrix-search-input"
+        />
+      </div>
 
       <select
         v-model="filters.selectedEntityType"
@@ -48,3 +51,5 @@ import type { MatrixToolbarProps, MatrixToolbarEmits } from './MatrixToolbar.mod
 defineProps<MatrixToolbarProps>();
 defineEmits<MatrixToolbarEmits>();
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/CrossReferenceMatrix.css"></style>

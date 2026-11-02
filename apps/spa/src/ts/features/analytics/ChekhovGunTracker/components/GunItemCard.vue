@@ -1,41 +1,44 @@
 <template>
-  <div class="gun-item-card p-3 rounded-lg border border-border bg-card hover:border-primary/50 transition-all flex flex-col gap-2">
-    <!-- Верхняя строка: Тип и Статус -->
-    <div class="flex items-center justify-between gap-2">
-      <span class="text-xs font-semibold px-2 py-0.5 rounded border flex items-center gap-1" :class="stateBadgeClass">
-        <span>{{ typeIcon }}</span>
+  <div class="gun-item-card">
+    <!-- Верхняя строка: Тип и Статус (как на карточках Скрина 4) -->
+    <div class="card-header-row">
+      <span class="category-badge" :class="stateBadgeClass">
+        <span class="category-icon">{{ typeIcon }}</span>
         <span>{{ item.item_type }}</span>
       </span>
-      <span class="text-[11px] font-medium text-muted">
+      <span class="status-badge">
         {{ stateLabel }}
       </span>
     </div>
 
-    <!-- Заголовок артефакта -->
-    <h4 class="text-sm font-bold text-main line-clamp-1">
+    <!-- Текст ружья (цитата) или заголовок артефакта -->
+    <div v-if="isPromise" class="gun-quote-box" :title="item.name">
+      <p class="gun-quote-text">«{{ item.name }}»</p>
+    </div>
+    <h4 v-else class="item-title" :title="item.name">
       {{ item.name }}
     </h4>
 
-    <!-- Владелец -->
-    <div class="text-xs flex items-center gap-1.5 text-muted">
-      <span>👤</span>
-      <span v-if="item.current_owner_name" class="text-main font-medium truncate">
-        {{ item.current_owner_name }}
-      </span>
-      <span v-else class="italic text-muted/70">
-        Без постоянного владельца
+    <!-- Владелец или Участники сцены -->
+    <div class="participant-row">
+      <span class="participant-icon">{{ isPromise ? '🎭' : '👤' }}</span>
+      <span class="participant-name">
+        {{ participantOrOwnerLabel }}
       </span>
     </div>
 
-    <!-- Хронология глав -->
-    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border/50 pt-2 mt-1">
-      <span class="truncate">{{ chapterRangeLabel }}</span>
+    <!-- Хронология глав и кнопка перехода -->
+    <div class="card-footer-row">
+      <span class="chapter-meta">
+        <span class="chapter-meta-icon">📅</span>
+        <span>{{ chapterRangeLabel }}</span>
+      </span>
       <button
-        class="btn-journey text-xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer flex-shrink-0"
+        class="btn-journey-pill"
         @click="$emit('view-journey', item)"
       >
-        <span>Путь</span>
-        <span>→</span>
+        <span>{{ actionButtonText }}</span>
+        <span class="arrow-icon">→</span>
       </button>
     </div>
   </div>
@@ -48,5 +51,16 @@ import { useGunItemCard } from './useGunItemCard';
 const props = defineProps<GunItemCardProps>();
 defineEmits<GunItemCardEmits>();
 
-const { item, typeIcon, stateBadgeClass, stateLabel, chapterRangeLabel } = useGunItemCard(() => props.item);
+const {
+  item,
+  isPromise,
+  typeIcon,
+  stateBadgeClass,
+  stateLabel,
+  participantOrOwnerLabel,
+  chapterRangeLabel,
+  actionButtonText,
+} = useGunItemCard(() => props.item);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/ChekhovGunTracker.css"></style>

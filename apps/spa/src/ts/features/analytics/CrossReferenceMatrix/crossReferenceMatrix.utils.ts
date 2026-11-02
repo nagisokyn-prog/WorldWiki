@@ -28,6 +28,26 @@ export function formatWordCount(count?: number | null): string {
   return `${count} сл.`;
 }
 
+export function getEntityIcon(type?: string | null): string {
+  const t = (type || '').toLowerCase();
+  if (t === 'character' || t.includes('персонаж')) return '👤';
+  if (t === 'item' || t.includes('предмет') || t.includes('артефакт')) return '🗡️';
+  if (t === 'location' || t.includes('локация')) return '📍';
+  if (t === 'faction' || t.includes('фракция')) return '👥';
+  if (t === 'event' || t.includes('событие')) return '⌛';
+  return '🏷️';
+}
+
+export function getEntityTypeLabel(type?: string | null): string {
+  const t = (type || '').toLowerCase();
+  if (t === 'character' || t.includes('персонаж')) return 'персонаж';
+  if (t === 'item' || t.includes('предмет') || t.includes('артефакт')) return 'предмет';
+  if (t === 'location' || t.includes('локация')) return 'локация';
+  if (t === 'faction' || t.includes('фракция')) return 'фракция';
+  if (t === 'event' || t.includes('событие')) return 'событие';
+  return type || 'сущность';
+}
+
 interface MergedApp {
   hasScene: boolean;
   hasMention: boolean;

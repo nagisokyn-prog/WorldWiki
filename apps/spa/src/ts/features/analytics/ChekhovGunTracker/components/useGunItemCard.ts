@@ -4,7 +4,18 @@ import type { TrackedItem } from '../ChekhovGunTracker.model';
 export function useGunItemCard(itemGetter: () => TrackedItem) {
   const item = computed(() => itemGetter());
 
+  const isPromise = computed(() =>
+    item.value.id.startsWith('plot_promises:') ||
+    item.value.item_type === 'Чеховское ружьё' ||
+    item.value.item_type === 'Предзнаменование'
+  );
+
   const typeIcon = computed(() => {
+    if (isPromise.value) {
+      const t = item.value.item_type.toLowerCase();
+      if (t.includes('предзнаменование')) return '🔮';
+      return '🗡️';
+    }
     const t = item.value.item_type.toLowerCase();
     if (t.includes('оружие') || t.includes('weapon')) return '⚔️';
     if (t.includes('артефакт') || t.includes('artifact')) return '🔮';
@@ -12,7 +23,7 @@ export function useGunItemCard(itemGetter: () => TrackedItem) {
     if (t.includes('реликв') || t.includes('relic')) return '👑';
     if (t.includes('транспорт') || t.includes('vehicle')) return '🚀';
     if (t.includes('зелье') || t.includes('веществ') || t.includes('potion')) return '🧪';
-    return '🗡️';
+    return '📦';
   });
 
   const stateBadgeClass = computed(() => {
@@ -31,6 +42,20 @@ export function useGunItemCard(itemGetter: () => TrackedItem) {
   });
 
   const stateLabel = computed(() => {
+    if (isPromise.value) {
+      switch (item.value.usage_state) {
+        case 'active':
+          return item.value.status_category?.includes('Выстрелило') ? '🎯 Выстрелило' : '🌱 Заряжено';
+        case 'sleeping':
+          return '🟡 Ждёт выстрела (5+ глав)';
+        case 'forgotten':
+          return `🔴 Забыто (${item.value.skipped_chapters} глав)`;
+        case 'destroyed_or_lost':
+          return '⚪ Сорвано / Снято';
+        default:
+          return '🌱 Заложено';
+      }
+    }
     switch (item.value.usage_state) {
       case 'active':
         return '🟢 В сюжете';
@@ -45,9 +70,22 @@ export function useGunItemCard(itemGetter: () => TrackedItem) {
     }
   });
 
+  const participantOrOwnerLabel = computed(() => {
+    if (isPromise.value) {
+      if (item.value.current_owner_name) {
+        return `🎭 В сцене: ${item.value.current_owner_name}`;
+      }
+      return '📖 Заложено в тексте рукописи';
+    }
+    if (item.value.current_owner_name) {
+      return item.value.current_owner_name;
+    }
+    return 'Без постоянного владельца';
+  });
+
   const chapterRangeLabel = computed(() => {
     if (item.value.total_mentions === 0) {
-      return 'В тексте еще не появлялся';
+      return isPromise.value ? 'В главах пока не упоминалось' : 'В тексте еще не появлялся';
     }
     const first = item.value.first_chapter_order;
     const last = item.value.last_chapter_order;
@@ -57,11 +95,16 @@ export function useGunItemCard(itemGetter: () => TrackedItem) {
     return `Главы ${first ?? '?'} → ${last ?? '?'} (${item.value.total_mentions} сцен)`;
   });
 
+  const actionButtonText = computed(() => (isPromise.value ? 'Вехи' : 'Путь'));
+
   return {
     item,
+    isPromise,
     typeIcon,
     stateBadgeClass,
     stateLabel,
+    participantOrOwnerLabel,
     chapterRangeLabel,
+    actionButtonText,
   };
 }

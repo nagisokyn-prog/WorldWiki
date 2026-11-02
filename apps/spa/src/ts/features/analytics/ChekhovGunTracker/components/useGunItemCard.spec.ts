@@ -48,4 +48,30 @@ describe('useGunItemCard Composable', () => {
     expect(stateLabel.value).toContain('Забыт (14 глав)');
     expect(chapterRangeLabel.value).toBe('Глава 2 (1 появление)');
   });
+
+  it('correctly discriminates narrative promises (Chekhov guns) from physical items', () => {
+    const gun: TrackedItem = {
+      id: 'plot_promises:secret_letter',
+      name: 'Тайна письма',
+      item_type: 'Чеховское ружьё',
+      status_category: 'Заряжено',
+      current_owner_id: 'char:1',
+      current_owner_name: 'Ника',
+      first_chapter_order: 1,
+      last_chapter_order: 3,
+      skipped_chapters: 0,
+      total_mentions: 3,
+      usage_state: 'active',
+      custody_chain: [],
+    };
+
+    const { isPromise, typeIcon, stateLabel, participantOrOwnerLabel, actionButtonText } =
+      useGunItemCard(() => gun);
+
+    expect(isPromise.value).toBe(true);
+    expect(typeIcon.value).toBe('🗡️');
+    expect(stateLabel.value).toBe('🌱 Заряжено');
+    expect(participantOrOwnerLabel.value).toBe('🎭 В сцене: Ника');
+    expect(actionButtonText.value).toBe('Вехи');
+  });
 });

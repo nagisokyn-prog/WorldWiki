@@ -37,9 +37,9 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
             array::concat(
                 (->appears_in.{
                     chapter_id: IF out.chapter_id != NONE {
-                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
+                        type::string(out.chapter_id)
                     } ELSE IF out.id != NONE {
-                        IF out.id.id != NONE { out.id.id } ELSE { type::string(out.id) }
+                        type::string(out.id)
                     } ELSE {
                         type::string(out)
                     },
@@ -48,10 +48,18 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
                 }),
                 (->participant_of.{
                     chapter_id: IF out.chapter_id != NONE {
-                        IF out.chapter_id.id != NONE { out.chapter_id.id } ELSE { type::string(out.chapter_id) }
+                        type::string(out.chapter_id)
                     } ELSE IF array::len(out->promise_milestones) > 0 {
                         LET $first_ch = array::first(out->promise_milestones.out.chapter_id);
-                        IF $first_ch.id != NONE { $first_ch.id } ELSE { type::string($first_ch) }
+                        type::string($first_ch)
+                    } ELSE { NONE },
+                    source: 'scene',
+                    role: role
+                }),
+                (->participates_in.{
+                    chapter_id: IF array::len(out->revealed_in) > 0 {
+                        LET $first_rev = array::first(out->revealed_in.out);
+                        type::string($first_rev)
                     } ELSE { NONE },
                     source: 'scene',
                     role: role
@@ -88,9 +96,9 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 chapter_order: IF out.sort_order != NONE { out.sort_order } ELSE { 0 },
                 chapter_sort_order: IF out.sort_order != NONE { out.sort_order } ELSE { 0 },
                 pov_id: IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE },
-                kind: IF kind != NONE { kind } ELSE { 'direct' },
+                kind: IF kind != NONE { kind } ELSE IF array::first(<-occurs_at.time_nature) != NONE { array::first(<-occurs_at.time_nature) } ELSE { 'direct' },
                 block_id: block_id,
-                is_anachronism: false
+                is_anachronism: IF kind == 'flashback' OR array::first(<-occurs_at.time_nature) == 'flashback' { true } ELSE { false }
             } AS reveals,
             <-participates_in<-entities.{
                 id: IF id.id != NONE { id.id } ELSE { type::string(id) },
@@ -99,6 +107,8 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } AS participants
         FROM timeline_events
         WHERE project_id = $p_rec
+          AND count(<-occurs_at) == 0
+          AND id NOT IN (SELECT VALUE timeline_event_id FROM plot_promises WHERE timeline_event_id != NONE)
         ORDER BY m_abs ASC
         LIMIT 2000
     );
@@ -158,9 +168,9 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                         array::first(->promise_milestones.out.chapter_id.sort_order)
                     } ELSE { 0 },
                     pov_id: NONE,
-                    kind: 'direct',
+                    kind: IF time_nature == 'flashback' OR is_flashback == true OR array::first(->occurs_at.time_nature) == 'flashback' { 'flashback' } ELSE { 'direct' },
                     block_id: IF block_id != NONE { block_id } ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id } ELSE { NONE },
-                    is_anachronism: false
+                    is_anachronism: IF time_nature == 'flashback' OR is_flashback == true OR array::first(->occurs_at.time_nature) == 'flashback' { true } ELSE { false }
                 }
             ] AS reveals,
             <-participant_of<-entities.{
@@ -345,6 +355,9 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
                   OR name IN $names 
                   OR string::lowercase(name) IN $lower_names 
                   OR (attributes.aliases != NONE AND array::len(array::intersect(attributes.aliases, $names)) > 0)
+                  OR (attributes.aliases != NONE AND array::len(array::intersect((SELECT VALUE string::lowercase($this) FROM attributes.aliases), $lower_names)) > 0)
+                  OR (attributes['псевдонимы'] != NONE AND array::len(array::intersect(attributes['псевдонимы'], $names)) > 0)
+                  OR (attributes['псевдонимы'] != NONE AND array::len(array::intersect((SELECT VALUE string::lowercase($this) FROM attributes['псевдонимы']), $lower_names)) > 0)
               )
             LIMIT 1000
         );

@@ -341,6 +341,7 @@
             :project-id="projectName || 'default'"
             :project="projectName || 'default'"
             @jump-to-chapter="openChapterTab"
+            @locate-promise="handleLocateFromTracker"
           />
         </div>
         <div v-else-if="activePanelTab === 'timeline-inspector'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">

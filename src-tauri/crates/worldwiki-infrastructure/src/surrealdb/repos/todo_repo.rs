@@ -41,17 +41,38 @@ impl TodoRepository for SurrealTodoRepository {
             ("chapters", clean_raw_id!(&todo.owner_id))
         };
 
+        let status_str = match todo.status {
+            worldwiki_domain::plot::TodoStatus::Planned => "planned",
+            worldwiki_domain::plot::TodoStatus::InProgress => "in_progress",
+            worldwiki_domain::plot::TodoStatus::Done => "done",
+            worldwiki_domain::plot::TodoStatus::Blocked => "blocked",
+        };
+
         surreal_exec!(
             self.db,
-            "RETURN fn::save_todo($raw_id, $owner_table, $owner_raw, $text, $is_done, $sort_order);",
+            "RETURN fn::save_todo($raw_id, $owner_table, $owner_raw, $text, $is_done, $sort_order, $status, $arc_id, $depends_on);",
             ("raw_id", raw_id),
             ("owner_table", owner_table),
             ("owner_raw", owner_raw),
             ("text", todo.text.clone()),
             ("is_done", todo.is_done),
             ("sort_order", todo.sort_order),
+            ("status", status_str),
+            ("arc_id", todo.arc_id.clone()),
+            ("depends_on", todo.depends_on.clone()),
         )?;
         Ok(clean)
+    }
+
+    async fn set_status(&self, id: &str, status: &str) -> Result<Option<Todo>, DomainError> {
+        let clean = clean_id("todos", id);
+        let raw_id = clean_raw_id!(&clean, "todos");
+        surreal_take_one!(
+            self.db,
+            "RETURN fn::set_todo_status($raw_id, $status);",
+            ("raw_id", raw_id),
+            ("status", status)
+        )
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {

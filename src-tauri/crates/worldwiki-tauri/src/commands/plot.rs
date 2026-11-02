@@ -112,15 +112,50 @@ pub async fn create_todo(
     owner_id: String,
     text: String,
     sort_order: Option<i32>,
+    arc_id: Option<String>,
+    depends_on: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, IpcError> {
     state
         .services
         .plot
-        .create_todo(&owner_id, &text, sort_order.unwrap_or(0))
+        .create_todo_ext(&owner_id, &text, sort_order.unwrap_or(0), arc_id, depends_on)
         .await
         .map_err(|e| {
             eprintln!("[IPC ERROR][create_todo] owner_id={}, text={}: {}", owner_id, text, e);
+            IpcError::from(e)
+        })
+}
+
+#[tauri::command]
+pub async fn set_todo_status(
+    id: String,
+    status: String,
+    state: State<'_, AppState>,
+) -> Result<Todo, IpcError> {
+    state
+        .services
+        .plot
+        .set_todo_status(&id, &status)
+        .await
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][set_todo_status] id={}, status={}: {}", id, status, e);
+            IpcError::from(e)
+        })
+}
+
+#[tauri::command]
+pub async fn auto_start_chapter(
+    chapter_id: String,
+    state: State<'_, AppState>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .plot
+        .auto_start_chapter(&chapter_id)
+        .await
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][auto_start_chapter] chapter_id={}: {}", chapter_id, e);
             IpcError::from(e)
         })
 }

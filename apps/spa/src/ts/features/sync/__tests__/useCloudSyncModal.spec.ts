@@ -19,8 +19,12 @@ vi.mock('@worldwiki/components', () => ({
   appConfirm: vi.fn(),
 }));
 
+const { mockOpenUrl } = vi.hoisted(() => ({
+  mockOpenUrl: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@tauri-apps/plugin-opener', () => ({
-  openUrl: vi.fn().mockResolvedValue(undefined),
+  openUrl: mockOpenUrl,
 }));
 
 describe('useCloudSyncModal', () => {
@@ -124,16 +128,14 @@ describe('useCloudSyncModal', () => {
 
   describe('openAuthUrl', () => {
     it('opens auth url and sets showAuthCodeInput', async () => {
-      const { openUrl } = await import('@tauri-apps/plugin-opener');
       await modal.connectYandex();
 
-      expect(openUrl).toHaveBeenCalledWith(expect.stringContaining('oauth.yandex.ru/authorize'));
+      expect(mockOpenUrl).toHaveBeenCalledWith(expect.stringContaining('oauth.yandex.ru/authorize'));
       expect(modal.showAuthCodeInput.value).toBe(true);
     });
 
     it('handles error when openUrl fails', async () => {
-      const { openUrl } = await import('@tauri-apps/plugin-opener');
-      vi.mocked(openUrl).mockRejectedValueOnce(new Error('Browser failed'));
+      mockOpenUrl.mockRejectedValueOnce(new Error('Browser failed'));
 
       await modal.connectYandex();
       expect(modal.showAuthCodeInput.value).toBe(true);

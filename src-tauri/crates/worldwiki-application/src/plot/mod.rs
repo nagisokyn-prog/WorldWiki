@@ -80,6 +80,52 @@ impl PlotServices {
         Ok(id)
     }
 
+    pub async fn create_todo_ext(
+        &self,
+        owner_id: &str,
+        text: &str,
+        sort_order: i32,
+        arc_id: Option<String>,
+        depends_on: Option<String>,
+    ) -> Result<String, ApplicationError> {
+        let mut todo = Todo::new(owner_id, text, sort_order);
+        todo.arc_id = arc_id;
+        if let Some(dep) = depends_on {
+            todo = todo.with_depends_on(dep);
+        }
+        let id = self.todo_repo.save(&todo).await?;
+        Ok(id)
+    }
+
+    pub async fn set_todo_status(&self, todo_id: &str, status: &str) -> Result<Todo, ApplicationError> {
+        if let Some(updated) = self.todo_repo.set_status(todo_id, status).await? {
+            Ok(updated)
+        } else if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
+            let st = match status {
+                "in_progress" => worldwiki_domain::plot::TodoStatus::InProgress,
+                "done" => worldwiki_domain::plot::TodoStatus::Done,
+                "blocked" => worldwiki_domain::plot::TodoStatus::Blocked,
+                _ => worldwiki_domain::plot::TodoStatus::Planned,
+            };
+            todo.set_status(st);
+            self.todo_repo.save(&todo).await?;
+            Ok(todo)
+        } else {
+            Err(ApplicationError::NotFound(format!("Todo {todo_id} not found")))
+        }
+    }
+
+    pub async fn auto_start_chapter(&self, chapter_id: &str) -> Result<(), ApplicationError> {
+        let todos = self.todo_repo.list_by_owner(chapter_id).await?;
+        for t in todos {
+            if t.status == worldwiki_domain::plot::TodoStatus::Planned {
+                let _ = self.set_todo_status(&t.id, "in_progress").await;
+                break;
+            }
+        }
+        Ok(())
+    }
+
     pub async fn update_todo(&self, todo_id: &str, text: &str) -> Result<(), ApplicationError> {
         if let Some(mut todo) = self.todo_repo.get_by_id(todo_id).await? {
             todo.text = text.to_string();

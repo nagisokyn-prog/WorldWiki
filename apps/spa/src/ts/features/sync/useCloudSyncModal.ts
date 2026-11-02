@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import * as api from '../../services/api.client';
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
@@ -87,7 +88,6 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     const connectYandex = async () => {
         const url = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${YANDEX_CLIENT_ID}`;
         try {
-            const { openUrl } = await import('@tauri-apps/plugin-opener');
             await openUrl(url);
             showAuthCodeInput.value = true;
             authError.value = '';

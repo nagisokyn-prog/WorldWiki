@@ -12,6 +12,7 @@ vi.mock('../../../../services/api.client', () => ({
   createTodo: vi.fn(),
   updateTodo: vi.fn(),
   toggleTodo: vi.fn(),
+  setTodoStatus: vi.fn(),
   deleteTodo: vi.fn(),
 }));
 
@@ -74,12 +75,13 @@ describe('usePlanningPanel', () => {
 
     // Toggle item with id error rollback
     const item = panel.items.value[0];
+    vi.mocked(api.setTodoStatus).mockRejectedValueOnce(new Error('Toggle error'));
     vi.mocked(api.toggleTodo).mockRejectedValueOnce(new Error('Toggle error'));
     await panel.toggleItem(item);
     expect(item.done).toBe(false);
 
     // Toggle item without id
-    const newItem = { id: '', text: 'New', done: false, indent: 0 };
+    const newItem = { id: '', text: 'New', done: false, status: 'planned' as const, indent: 0 };
     await panel.toggleItem(newItem);
     expect(newItem.done).toBe(true);
 
@@ -155,8 +157,30 @@ describe('usePlanningPanel', () => {
     await panel.addItemAfter(0, 0);
     expect(focusSpy2).toHaveBeenCalled();
 
-    panel.items.value = [{ id: '1', text: 'T1', done: false, indent: 0 }, { id: '2', text: '', done: false, indent: 0 }];
+    panel.items.value = [{ id: '1', text: 'T1', done: false, indent: 0, status: 'planned' } as any, { id: '2', text: '', done: false, indent: 0, status: 'planned' } as any];
     await panel.onDeleteKey({ key: 'Backspace', preventDefault: vi.fn() } as any, panel.items.value[1], 1);
     expect(focusSpy1).toHaveBeenCalled();
+  });
+
+  it('manages 4-state statuses and cascade unblocking', async () => {
+    vi.mocked(api.getTodos).mockResolvedValue([
+      { id: 'p1', text: 'Parent', is_done: false, status: 'planned', owner_id: 'ch_1' },
+      { id: 'p2', text: 'Child', is_done: false, status: 'blocked', depends_on: 'p1', owner_id: 'ch_1' },
+    ] as any);
+    vi.mocked(api.setTodoStatus).mockResolvedValue({ id: 'p1', status: 'done', is_done: true } as any);
+
+    const panel = usePlanningPanel(props);
+    await panel.load();
+
+    expect(panel.items.value.length).toBe(2);
+
+    // Blocked alert on toggle
+    await panel.toggleItem(panel.items.value[1]);
+    expect(panel.items.value[1].status).toBe('blocked');
+
+    // Setting parent to done unblocks child
+    await panel.setItemStatus(panel.items.value[0], 'done');
+    expect(panel.items.value[0].status).toBe('done');
+    expect(panel.items.value[1].status).toBe('planned');
   });
 });

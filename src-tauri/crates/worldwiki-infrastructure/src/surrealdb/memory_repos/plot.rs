@@ -75,6 +75,31 @@ impl TodoRepository for InMemoryTodoRepository {
         Ok(id)
     }
 
+    async fn set_status(&self, id: &str, status: &str) -> Result<Option<Todo>, DomainError> {
+        if let Some(mut entry) = self.storage.get_mut(id) {
+            let st = match status {
+                "in_progress" => worldwiki_domain::plot::TodoStatus::InProgress,
+                "done" => worldwiki_domain::plot::TodoStatus::Done,
+                "blocked" => worldwiki_domain::plot::TodoStatus::Blocked,
+                _ => worldwiki_domain::plot::TodoStatus::Planned,
+            };
+            entry.set_status(st);
+            let updated = entry.clone();
+            
+            // Если статус стал Done, разблокируем зависимые
+            if st == worldwiki_domain::plot::TodoStatus::Done {
+                for mut other in self.storage.iter_mut() {
+                    if other.depends_on.as_deref() == Some(id) && other.status == worldwiki_domain::plot::TodoStatus::Blocked {
+                        other.set_status(worldwiki_domain::plot::TodoStatus::Planned);
+                    }
+                }
+            }
+            Ok(Some(updated))
+        } else {
+            Ok(None)
+        }
+    }
+
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         self.storage.remove(id);
         Ok(())

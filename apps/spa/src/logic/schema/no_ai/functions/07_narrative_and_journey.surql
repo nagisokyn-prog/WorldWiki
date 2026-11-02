@@ -620,7 +620,34 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
 -- 49. УДАЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ
 DEFINE FUNCTION OVERWRITE fn::delete_plot_promise($id: any) {
     LET $rec = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
+    
+    -- Собираем связанные timeline_events
+    LET $te_ids = (
+        SELECT VALUE out FROM occurs_at WHERE in = $rec
+    );
+    LET $direct_te = (SELECT VALUE timeline_event_id FROM $rec LIMIT 1)[0];
+    LET $all_te = array::distinct(array::concat($te_ids, IF $direct_te != NONE AND $direct_te != NULL { [$direct_te] } ELSE { [] }));
+
+    -- Очищаем ребра связей
+    DELETE occurs_at WHERE in = $rec;
+    DELETE promise_milestones WHERE in = $rec;
+    DELETE advances_arc WHERE in = $rec;
+    DELETE participant_of WHERE out = $rec;
+    
+    -- Удаляем сюжетное обещание
     DELETE $rec;
+
+    -- Если у связанного timeline_events нет других сюжетных обещаний и нет канонических участников лора (participates_in), удаляем его
+    FOR $te IN $all_te {
+        IF $te != NONE AND $te != NULL {
+            LET $other_promises = (SELECT VALUE count() FROM occurs_at WHERE out = $te);
+            LET $direct_refs = (SELECT VALUE count() FROM plot_promises WHERE timeline_event_id = $te);
+            LET $lore_participants = (SELECT VALUE count() FROM participates_in WHERE out = $te);
+            IF ($other_promises[0] ?? 0) == 0 AND ($direct_refs[0] ?? 0) == 0 AND ($lore_participants[0] ?? 0) == 0 {
+                DELETE $te;
+            };
+        };
+    };
 };
 
 -- 50. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ ЗАДАЧИ ПЛАНИРОВЩИКА (TODO)
@@ -630,43 +657,166 @@ DEFINE FUNCTION OVERWRITE fn::save_todo(
     $owner_id: string,
     $text: string,
     $is_done: bool,
-    $sort_order: int
+    $sort_order: int,
+    $status: option<string>,
+    $arc_id: option<any>,
+    $depends_on: option<any>
 ) {
     LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
     LET $o_rec = type::record($owner_table, $owner_id);
+    LET $arc_rec = IF $arc_id != NONE AND $arc_id != NULL AND type::string($arc_id) != '' {
+        IF string::starts_with(type::string($arc_id), 'story_arcs:') { type::record($arc_id) } ELSE { type::record('story_arcs', $arc_id) }
+    } ELSE { NONE };
+    LET $dep_rec = IF $depends_on != NONE AND $depends_on != NULL AND type::string($depends_on) != '' {
+        IF string::starts_with(type::string($depends_on), 'todos:') { type::record($depends_on) } ELSE { type::record('todos', $depends_on) }
+    } ELSE { NONE };
+
+    -- Определение статуса
+    LET $calculated_status = IF $status != NONE AND $status != NULL AND type::string($status) != '' {
+        type::string($status)
+    } ELSE IF $is_done {
+        'done'
+    } ELSE IF $dep_rec != NONE AND (SELECT VALUE status FROM $dep_rec LIMIT 1)[0] != 'done' {
+        'blocked'
+    } ELSE {
+        'planned'
+    };
+
     LET $res = (
         UPSERT $t_rec SET
             owner_id = $o_rec,
+            arc_id = $arc_rec,
+            depends_on = $dep_rec,
             text = $text,
-            is_done = $is_done,
+            status = $calculated_status,
+            is_done = ($calculated_status = 'done'),
             sort_order = $sort_order,
             updated_at = time::now()
     );
+
+    -- Если статус стал 'done', разблокируем зависимые задачи (blocked -> planned)
+    IF $calculated_status = 'done' {
+        UPDATE todos SET status = 'planned' WHERE depends_on = $t_rec AND status = 'blocked';
+    };
+
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 50.1. АТОМАРНАЯ СМЕНА СТАТУСА ЗАДАЧИ
+DEFINE FUNCTION OVERWRITE fn::set_todo_status($id: any, $new_status: string) {
+    LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
+    LET $is_done_val = ($new_status = 'done');
+    
+    LET $res = (
+        UPDATE $t_rec SET
+            status = $new_status,
+            is_done = $is_done_val,
+            updated_at = time::now()
+    );
+
+    IF $new_status = 'done' {
+        UPDATE todos SET status = 'planned' WHERE depends_on = $t_rec AND status = 'blocked';
+    };
+
+    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
+};
+
+-- 50.2. ПОЛУЧЕНИЕ ПЕРЕПЛЕТЁННЫХ ЗАДАЧ ДЛЯ ГЛАВЫ (ГЛАВА + АРКИ + ТОМ)
+DEFINE FUNCTION OVERWRITE fn::list_chapter_interwoven_todos($chap: any) {
+    LET $ch_rec = IF string::starts_with(type::string($chap), 'chapters:') { type::record($chap) } ELSE { type::record('chapters', $chap) };
+    
+    -- Задачи текущей главы
+    LET $chapter_todos = (
+        SELECT 
+            id,
+            owner_id,
+            arc_id,
+            arc_id.title AS arc_title,
+            arc_id.status AS arc_status,
+            depends_on,
+            depends_on.text AS depends_on_text,
+            depends_on.owner_id.title AS depends_on_owner_title,
+            depends_on.status AS depends_on_status,
+            text,
+            status,
+            is_done,
+            sort_order,
+            created_at,
+            updated_at
+        FROM todos 
+        WHERE owner_id = $ch_rec 
+        ORDER BY sort_order ASC, created_at ASC 
+        LIMIT 300
+    );
+
+    -- Арки, в которых участвует эта глава
+    LET $arc_ids = array::distinct(
+        array::concat(
+            $chapter_todos.*.arc_id,
+            (SELECT VALUE in FROM progresses WHERE out = $ch_rec),
+            (SELECT VALUE out FROM advances_arc WHERE in.chapter_id = $ch_rec)
+        )
+    );
+
+    -- Том, к которому принадлежит глава
+    LET $vol_rec = (SELECT VALUE in FROM contains WHERE out = $ch_rec LIMIT 1)[0];
+    
+    -- Задачи тома по тем же аркам или без арок (бэклог тома)
+    LET $volume_todos = IF $vol_rec != NONE {
+        (
+            SELECT 
+                id,
+                owner_id,
+                arc_id,
+                arc_id.title AS arc_title,
+                arc_id.status AS arc_status,
+                depends_on,
+                text,
+                status,
+                is_done,
+                sort_order,
+                created_at,
+                updated_at
+            FROM todos 
+            WHERE owner_id = $vol_rec 
+            ORDER BY sort_order ASC, created_at ASC 
+            LIMIT 100
+        )
+    } ELSE {
+        []
+    };
+
+    RETURN {
+        chapter_todos: $chapter_todos,
+        volume_todos: $volume_todos,
+        related_arc_ids: $arc_ids
+    };
 };
 
 -- 51. ПОЛУЧЕНИЕ ЗАДАЧИ ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_todo($id: any) {
     LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
-    LET $res = (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM $t_rec LIMIT 1);
+    LET $res = (SELECT id, owner_id, arc_id, depends_on, text, status, is_done, sort_order, created_at, updated_at FROM $t_rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
 -- 52. УДАЛЕНИЕ ЗАДАЧИ
 DEFINE FUNCTION OVERWRITE fn::delete_todo($id: any) {
     LET $t_rec = IF string::starts_with(type::string($id), 'todos:') { type::record($id) } ELSE { type::record('todos', $id) };
+    -- Освобождаем зависящие задачи, если родитель удален
+    UPDATE todos SET depends_on = NONE, status = IF status = 'blocked' { 'planned' } ELSE { status } WHERE depends_on = $t_rec;
     DELETE $t_rec;
 };
 
 -- 53. СПИСОК ЗАДАЧ ПО ВЛАДЕЛЬЦУ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owner($owner_table: string, $owner_id: string) {
     LET $o_rec = type::record($owner_table, $owner_id);
-    RETURN (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC LIMIT 200);
+    RETURN (SELECT id, owner_id, arc_id, arc_id.title AS arc_title, depends_on, text, status, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC LIMIT 300);
 };
 
 -- 54. СПИСОК ЗАДАЧ ПО СПИСКУ ВЛАДЕЛЬЦЕВ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owners($owners: array<any>) {
-    RETURN (SELECT id, owner_id, text, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC LIMIT 500);
+    RETURN (SELECT id, owner_id, arc_id, arc_id.title AS arc_title, depends_on, text, status, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC LIMIT 500);
 };
 
 -- 55. ПОЛУЧЕНИЕ СЮЖЕТНОЙ АРКИ ПО ID

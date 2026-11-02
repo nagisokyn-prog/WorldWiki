@@ -1,5 +1,6 @@
 import { watch, onMounted, onUnmounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import * as api from '@/services/api.client';
 import { useChapterStore } from '../../../stores/chapter.store';
 import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
@@ -98,10 +99,19 @@ export function useChaptersMain(
     emit('open-chapter-as-tab', ch);
   };
 
+  const startedChapters = new Set<string>();
+
   const markUnsaved = () => {
     hasUnsavedChanges.value = true;
     syncAutoParticipants();
     emit('chapter-unsaved');
+
+    const chapId = currentChapter.value?.id;
+    if (chapId && !startedChapters.has(chapId)) {
+      startedChapters.add(chapId);
+      void api.autoStartChapter(chapId).catch(() => {});
+    }
+
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => saveChapter(props.project, emit), 2000);
   };

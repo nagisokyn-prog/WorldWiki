@@ -58,8 +58,11 @@ DEFINE INDEX OVERWRITE idx_appears_in_project ON appears_in FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_appears_in_in      ON appears_in FIELDS in;
 DEFINE INDEX OVERWRITE idx_appears_in_out     ON appears_in FIELDS out;
 
--- 8. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА
+-- 8. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА (ПЕРЕПЛЕТЁННАЯ ТКАНЬ)
 DEFINE INDEX OVERWRITE idx_todos_owner        ON todos FIELDS owner_id;
+DEFINE INDEX OVERWRITE idx_todos_arc          ON todos FIELDS arc_id;
+DEFINE INDEX OVERWRITE idx_todos_depends      ON todos FIELDS depends_on;
+DEFINE INDEX OVERWRITE idx_todos_status       ON todos FIELDS status;
 
 -- 9. ТАЙМЛАЙН И УЧАСТИЕ
 DEFINE INDEX OVERWRITE idx_event_project           ON timeline_events FIELDS project_id;

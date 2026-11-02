@@ -177,21 +177,21 @@ export function useChapterTreeSections(options: UseChapterTreeSectionsOptions) {
         return sections;
     });
 
+    const findNodeInNodes = (nodes: ExplorerNode[], targetId: string): ExplorerNode | null => {
+        for (const node of nodes) {
+            if (node.id === targetId) return node;
+            if (node.children && node.children.length > 0) {
+                const found = findNodeInNodes(node.children, targetId);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
     const findNodeById = (id: string): ExplorerNode | null => {
         for (const sect of explorerSections.value) {
-            for (const node of sect.nodes) {
-                if (node.id === id) return node;
-                if (node.children) {
-                    for (const child of node.children) {
-                        if (child.id === id) return child;
-                        if (child.children) {
-                            for (const gchild of child.children) {
-                                if (gchild.id === id) return gchild;
-                            }
-                        }
-                    }
-                }
-            }
+            const found = findNodeInNodes(sect.nodes, id);
+            if (found) return found;
         }
         return null;
     };

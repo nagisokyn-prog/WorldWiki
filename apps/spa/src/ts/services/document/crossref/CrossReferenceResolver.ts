@@ -8,15 +8,53 @@ import type { ResolvedCrossReference } from './types';
  */
 export class CrossReferenceResolver {
   /**
+   * Pre-indexes all block nodes in the document AST into an O(1) lookup Map.
+   */
+  public static buildNodeMap(doc: SemanticDocument): Map<string, BlockNode> {
+    const map = new Map<string, BlockNode>();
+
+    const traverseBlock = (block: BlockNode): void => {
+      if (block.id) {
+        map.set(block.id, block);
+      }
+      if ('content' in block && Array.isArray(block.content)) {
+        for (const item of block.content) {
+          if ('type' in item && typeof item.type === 'string' && !CrossReferenceResolver.isInlineNode(item as InlineNode)) {
+            traverseBlock(item as BlockNode);
+          }
+        }
+      }
+      if (block.type === 'table' && block.rows) {
+        for (const row of block.rows) {
+          for (const cell of row.cells) {
+            if (cell.content) {
+              for (const nested of cell.content) {
+                traverseBlock(nested);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    for (const block of doc.blocks) {
+      traverseBlock(block);
+    }
+
+    return map;
+  }
+
+  /**
    * Resolves a single cross-reference.
    */
   public static resolve(
     ref: CrossReferenceNode,
     doc: SemanticDocument,
     ctx: NumberingContext,
-    profile: NumberingProfile
+    profile: NumberingProfile,
+    nodeMap?: Map<string, BlockNode>
   ): ResolvedCrossReference {
-    const targetNode = this.findNodeById(doc, ref.targetId);
+    const targetNode = nodeMap ? nodeMap.get(ref.targetId) : this.findNodeById(doc, ref.targetId);
 
     if (!targetNode) {
       return {
@@ -93,11 +131,12 @@ export class CrossReferenceResolver {
     profile: NumberingProfile
   ): Map<string, ResolvedCrossReference> {
     const result = new Map<string, ResolvedCrossReference>();
+    const nodeMap = this.buildNodeMap(doc);
 
     const traverseInline = (inlines: InlineNode[]): void => {
       for (const inline of inlines) {
         if (inline.type === 'cross_reference') {
-          const resolved = this.resolve(inline, doc, ctx, profile);
+          const resolved = this.resolve(inline, doc, ctx, profile, nodeMap);
           result.set(inline.targetId, resolved);
         } else if (inline.type === 'footnote_reference' && inline.content) {
           traverseInline(inline.content);

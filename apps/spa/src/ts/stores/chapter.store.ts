@@ -50,7 +50,11 @@ export const useChapterStore = defineStore('chapter', () => {
     const ch = currentChapterNode.value;
     const volId = ch?.volume_id;
     if (!volId || !hierarchy.value.volumes) return null;
-    return hierarchy.value.volumes.find(v => v.id === volId) || null;
+    const cleanVolId = String(typeof volId === 'object' && volId !== null ? (volId as { id?: unknown }).id : volId).replace(/^volumes:/, '');
+    return hierarchy.value.volumes.find(v => {
+      const cleanVId = String(typeof v.id === 'object' && v.id !== null ? (v.id as { id?: unknown }).id : v.id).replace(/^volumes:/, '');
+      return cleanVId === cleanVolId;
+    }) || null;
   });
 
   const loadChapters = async (project: string) => {

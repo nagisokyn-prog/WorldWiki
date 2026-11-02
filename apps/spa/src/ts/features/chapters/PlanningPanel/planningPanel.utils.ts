@@ -26,9 +26,14 @@ export function calculateVolumeStats(chapters: TapestryChapterNode[], backlog: T
   return { total, done, inProgress, planned, blocked };
 }
 
-export function getCleanId(id?: string | null): string {
+export function getCleanId(id?: unknown): string {
   if (!id) return '';
-  return id.replace(/^(chapters|volumes|story_arcs|todos):/, '');
+  if (typeof id === 'object' && id !== null) {
+    const obj = id as Record<string, unknown>;
+    if (obj.id) return getCleanId(obj.id);
+    return '';
+  }
+  return String(id).replace(/^(chapters|volumes|story_arcs|todos|projects|entities):/, '');
 }
 
 export function getQualifiedOwnerId(id?: string | null, type: 'chapter' | 'volume' = 'chapter'): string {

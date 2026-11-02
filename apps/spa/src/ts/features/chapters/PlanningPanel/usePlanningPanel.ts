@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, getCurrentInstance } from 'vue';
 import * as api from '@/services/api.client';
 import { chapterService } from '@/services/chapter.service';
 import { useChapterStore } from '@/stores/chapter.store';
@@ -32,6 +32,7 @@ export function usePlanningPanel(
   const chaptersList = ref<TapestryChapterNode[]>([]);
   const backlogTodos = ref<TapestryTodo[]>([]);
   const expandedChapters = ref<Set<string>>(new Set());
+  const manuallyCollapsedChapters = ref<Set<string>>(new Set());
   const isVolumeCollapsed = ref(false);
 
   const currentProject = computed(() => props.project || chapterStore.currentChapter?.project_id || 'default');
@@ -45,7 +46,12 @@ export function usePlanningPanel(
   const currentChapterIdRef = computed(() => props.currentChapterId);
 
   const volumeTitle = computed(() => {
-    return props.volumeTitle || chapterStore.currentVolume?.title || 'Том рукописи';
+    return (
+      props.volumeTitle ||
+      chapterStore.currentVolume?.title ||
+      chapterStore.hierarchy?.volumes?.[0]?.title ||
+      'Рукопись тома'
+    );
   });
 
   const allProjectArcs = computed(() => {
@@ -67,26 +73,41 @@ export function usePlanningPanel(
   );
 
   const loadTapestryData = async () => {
-    const volId = resolvedVolumeId.value;
-    if (!volId) return;
-
     loading.value = true;
     try {
-      const cleanVolId = getCleanId(volId);
-      const allChapters = chapterStore.hierarchy?.chapters || [];
-      const volumeChapters = allChapters.filter(c => getCleanId(c.volume_id) === cleanVolId);
+      if (!chapterStore.hierarchy?.chapters?.length) {
+        await chapterStore.loadChapters(currentProject.value);
+      }
+
+      const allChapters = chapterStore.hierarchy?.chapters || chapterStore.chapters || [];
+      const resolvedVol =
+        resolvedVolumeId.value ||
+        chapterStore.currentVolume?.id ||
+        chapterStore.hierarchy?.volumes?.[0]?.id ||
+        null;
+
+      const cleanVolId = resolvedVol ? getCleanId(resolvedVol) : null;
+      let volumeChapters = cleanVolId
+        ? allChapters.filter((c) => getCleanId(c.volume_id) === cleanVolId)
+        : allChapters;
+
+      if (volumeChapters.length === 0 && allChapters.length > 0) {
+        volumeChapters = allChapters;
+      }
 
       const [backlogRaw, ...chapterTodosResults] = await Promise.all([
-        api.getTodos(getQualifiedOwnerId(cleanVolId, 'volume')).catch(() => [] as Todo[]),
-        ...volumeChapters.map(ch =>
+        cleanVolId
+          ? api.getTodos(getQualifiedOwnerId(cleanVolId, 'volume')).catch(() => [] as Todo[])
+          : Promise.resolve([] as Todo[]),
+        ...volumeChapters.map((ch) =>
           api.getTodos(getQualifiedOwnerId(getCleanId(ch.id), 'chapter')).catch(() => [] as Todo[])
-        )
+        ),
       ]);
 
       backlogTodos.value = (backlogRaw || []).map(mapToTapestryTodo);
 
       const currentCleanId = props.currentChapterId ? getCleanId(props.currentChapterId) : null;
-      if (currentCleanId && !expandedChapters.value.has(currentCleanId)) {
+      if (currentCleanId && !expandedChapters.value.has(currentCleanId) && !manuallyCollapsedChapters.value.has(currentCleanId)) {
         expandedChapters.value.add(currentCleanId);
       }
 
@@ -139,8 +160,10 @@ export function usePlanningPanel(
     const cleanId = getCleanId(chapterId);
     if (expandedChapters.value.has(cleanId)) {
       expandedChapters.value.delete(cleanId);
+      manuallyCollapsedChapters.value.add(cleanId);
     } else {
       expandedChapters.value.add(cleanId);
+      manuallyCollapsedChapters.value.delete(cleanId);
     }
     const ch = chaptersList.value.find(c => getCleanId(c.chapterId) === cleanId);
     if (ch) {
@@ -165,14 +188,14 @@ export function usePlanningPanel(
     newChapterTitle.value = '';
   }
 
-  async function submitAddChapter() {
-    const title = newChapterTitle.value.trim();
+  async function addPlannedChapter(titleInput?: string) {
+    const title = (typeof titleInput === 'string' ? titleInput : newChapterTitle.value).trim();
     if (!title) {
       cancelAddChapter();
       return;
     }
 
-    const volId = resolvedVolumeId.value;
+    const volId = resolvedVolumeId.value || chapterStore.currentVolume?.id || chapterStore.hierarchy?.volumes?.[0]?.id;
     if (!volId) return;
 
     try {
@@ -180,18 +203,49 @@ export function usePlanningPanel(
       const nextSortOrder = highestOrder + 1;
 
       const newCh = chapterService.createNew(title);
-      newCh.volume_id = getQualifiedOwnerId(getCleanId(volId), 'volume');
+      const fullVolId = getQualifiedOwnerId(getCleanId(volId), 'volume');
+      newCh.volume_id = fullVolId;
       newCh.sort_order = BigInt(nextSortOrder);
 
-      await chapterService.save(currentProject.value, newCh);
+      const saved = await chapterService.save(currentProject.value, newCh);
+      const newChId = (typeof saved === 'string' && saved) ? saved : (newCh.id || '');
+
+      await api.assignChapter(currentProject.value, newChId, fullVolId);
+
+      const newNode: TapestryChapterNode = {
+        chapterId: newChId,
+        title,
+        sortOrder: nextSortOrder,
+        isCurrent: false,
+        isCollapsed: true,
+        arcGroups: [],
+        standaloneTodos: [],
+        doneCount: 0,
+        totalCount: 0
+      };
+      chaptersList.value.push(newNode);
+
+      if (chapterStore.hierarchy?.chapters) {
+        chapterStore.hierarchy.chapters.push({
+          id: newChId,
+          volume_id: fullVolId,
+          title,
+          sort_order: BigInt(nextSortOrder) as any,
+          content: '',
+          word_count: 0 as any
+        } as any);
+      }
 
       cancelAddChapter();
-      await loadTapestryData();
       emit?.('change');
     } catch (e) {
+      console.error('[addPlannedChapter ERROR]:', e);
       appAlert('Не удалось запланировать главу');
-      console.error(e);
     }
+  }
+
+  async function submitAddChapter() {
+    await addPlannedChapter();
   }
 
   async function attachArc(
@@ -215,9 +269,24 @@ export function usePlanningPanel(
     }
   }
 
-  watch([resolvedVolumeId, () => props.currentChapterId, () => props.selectedArcFilter], () => {
-    loadTapestryData();
-  }, { immediate: true });
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      loadTapestryData();
+    });
+  }
+
+  watch(
+    [
+      resolvedVolumeId,
+      () => props.currentChapterId,
+      () => props.selectedArcFilter,
+      () => chapterStore.hierarchy?.chapters?.length,
+      () => chapterStore.currentVolume?.id,
+    ],
+    () => {
+      loadTapestryData();
+    }
+  );
 
   return {
     loading,
@@ -242,6 +311,7 @@ export function usePlanningPanel(
     deleteTodo: todos.deleteTodo,
     startAddingChapter,
     cancelAddChapter,
+    addPlannedChapter,
     submitAddChapter,
     moveBacklogToChapter: todos.moveBacklogToChapter,
     attachArc

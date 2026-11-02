@@ -190,4 +190,4 @@ const {
 } = useTimelineInspector(props, emit);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/timeline/TimelineInspector.css"></style>
+<style src="@worldwiki/resources/styles/features/timeline/TimelineInspector.css"></style>

@@ -417,8 +417,9 @@ describe('useTiptapEditor', () => {
         // 3. Normal non-entity link
         const aNormal = document.createElement('a');
         aNormal.setAttribute('href', 'https://google.com');
+        aNormal.addEventListener('click', (e) => e.preventDefault());
         document.body.appendChild(aNormal);
-        aNormal.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        aNormal.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
         document.body.removeChild(aNormal);
 
         // 4. Query link without Ctrl (locked -> preventDefault) and with Ctrl (triggers window open)
@@ -518,6 +519,7 @@ describe('useTiptapEditor', () => {
       // Query without type/id
       const aNoTypeId = document.createElement('a');
       aNoTypeId.setAttribute('href', '?other=123');
+      aNoTypeId.addEventListener('click', (e) => e.preventDefault());
       document.body.appendChild(aNoTypeId);
       aNoTypeId.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }));
       document.body.removeChild(aNoTypeId);

@@ -5,7 +5,7 @@
 DEFINE FUNCTION OVERWRITE fn::get_chapter_hierarchy($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
     LET $volumes = (SELECT id, project_id, title FROM volumes WHERE project_id = $p_rec LIMIT 500);
-    LET $chapters = (SELECT id, volume_id, title, sort_order, content, word_count, created_at, updated_at FROM chapters WHERE volume_id.project_id = $p_rec LIMIT 1000);
+    LET $chapters = (SELECT id, volume_id, title, sort_order, content, word_count, created_at, updated_at FROM chapters WHERE volume_id.project_id = $p_rec OR project_id = $p_rec LIMIT 1000);
     LET $vol_ids = (SELECT VALUE id FROM $volumes LIMIT 500);
     LET $chap_ids = (SELECT VALUE id FROM $chapters LIMIT 1000);
     LET $relations = (

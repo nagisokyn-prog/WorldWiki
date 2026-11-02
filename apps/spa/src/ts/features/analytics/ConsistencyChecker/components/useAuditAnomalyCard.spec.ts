@@ -42,4 +42,22 @@ describe('useAuditAnomalyCard Composable', () => {
     expect(cleanId('plot_promises:p_1')).toBe('p_1');
     expect(cleanId('')).toBe('');
   });
+
+  it('deduplicates entity_ids and chapter_ids and formats labels', () => {
+    const anomaly: ContradictionAnomalyDto = {
+      rule: 'entity_bilocation',
+      severity: 'warning',
+      title: 'Test',
+      description: 'Desc',
+      entity_ids: ['entities:art', 'entities:art'],
+      chapter_ids: ['chapters:ch_1', 'chapters:ch_1'],
+      event_ids: [],
+      promise_ids: [],
+    };
+    const { uniqueEntityIds, uniqueChapterIds, getEntityLabel, getChapterLabel } = useAuditAnomalyCard(() => anomaly);
+    expect(uniqueEntityIds.value).toEqual(['entities:art']);
+    expect(uniqueChapterIds.value).toEqual(['chapters:ch_1']);
+    expect(getEntityLabel('entities:art')).toBe('art');
+    expect(getChapterLabel('chapters:ch_1')).toBe('ch_1');
+  });
 });

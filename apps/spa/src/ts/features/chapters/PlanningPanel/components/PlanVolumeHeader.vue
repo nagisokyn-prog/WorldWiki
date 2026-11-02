@@ -1,35 +1,35 @@
 <template>
-  <div class="plan-volume-header pb-2 mb-2 border-b border-border">
+  <div class="plan-volume-header">
     <!-- Clickable Header with Collapse Toggle & Progress -->
     <div
-      class="flex items-center justify-between mb-1.5 cursor-pointer select-none hover:opacity-90 transition-opacity"
+      class="volume-header-row"
       title="Нажмите, чтобы скрыть или развернуть главы тома"
       @click="handleToggle"
     >
-      <div class="flex items-center gap-2 overflow-hidden">
-        <span class="text-muted text-xs transition-transform duration-200">
+      <div class="volume-header-left">
+        <span class="volume-collapse-icon">
           {{ isCollapsed ? '▸' : '▼' }}
         </span>
-        <span class="volume-header-icon text-base">📚</span>
-        <span class="volume-header-title font-semibold text-sm text-main truncate" :title="title">
+        <span class="volume-header-icon">📚</span>
+        <span class="volume-header-title" :title="title">
           {{ title }}
         </span>
       </div>
-      <div class="volume-header-pct font-bold text-xs text-accent">
+      <div class="volume-header-pct">
         {{ progressPct }}%
       </div>
     </div>
 
     <!-- Continuous Progress Bar -->
-    <div class="volume-progress-bar w-full h-1.5 rounded-full bg-secondary overflow-hidden mb-2">
+    <div class="volume-progress-bar">
       <div
-        class="volume-progress-fill h-full bg-accent transition-all duration-300"
+        class="volume-progress-fill"
         :style="{ width: progressPct + '%' }"
       ></div>
     </div>
 
     <!-- Status Badges -->
-    <div class="volume-status-chips flex items-center gap-1.5 flex-wrap text-[11px]">
+    <div class="volume-status-chips">
       <span v-if="stats.inProgress > 0" class="chip-status chip-warning" title="Задач в работе">
         🟡 {{ stats.inProgress }} в работе
       </span>
@@ -42,7 +42,7 @@
       <span v-if="stats.blocked > 0" class="chip-status chip-blocked" title="Заблокированных задач">
         🔒 {{ stats.blocked }} ждёт
       </span>
-      <span v-if="stats.total === 0" class="text-xs text-muted">
+      <span v-if="stats.total === 0" class="chip-status-empty">
         Нет задач
       </span>
     </div>
@@ -54,7 +54,7 @@ import type { PlanVolumeHeaderProps, PlanVolumeHeaderEmits } from './PlanVolumeH
 import { usePlanVolumeHeader } from './usePlanVolumeHeader';
 
 const props = withDefaults(defineProps<PlanVolumeHeaderProps>(), {
-  isCollapsed: false
+  isCollapsed: false,
 });
 const emit = defineEmits<PlanVolumeHeaderEmits>();
 

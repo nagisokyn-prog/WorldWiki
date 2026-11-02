@@ -35,27 +35,28 @@
       />
 
       <!-- Outlining Action: Add Planned Chapter in Volume -->
-      <div class="tapestry-add-chapter-box pt-2 border-t border-border">
-        <div v-if="isAddingChapter" class="flex items-center gap-1.5 w-full">
+      <div class="tapestry-add-chapter-box">
+        <div v-if="isAddingChapter" class="plan-inline-add-row">
           <input
             ref="chapterInputRef"
             v-model="newChapterTitle"
-            class="plan-inline-add-input flex-1"
+            class="plan-inline-add-input"
+            style="flex: 1;"
             placeholder="Название новой главы (например, Глава 3: Побег)..."
             @keydown.enter.prevent="submitAddChapter"
             @keydown.esc="cancelAddChapter"
           />
-          <button type="button" class="btn-subtle text-xs px-2 py-1" @click="submitAddChapter">
+          <button type="button" class="btn-subtle" @click="submitAddChapter">
             Создать
           </button>
-          <button type="button" class="btn-subtle text-xs px-2 py-1 text-muted" @click="cancelAddChapter">
+          <button type="button" class="btn-subtle" style="color: var(--text-muted);" @click="cancelAddChapter">
             ✕
           </button>
         </div>
         <button
           v-else
           type="button"
-          class="btn-add-chapter-stream w-full py-2 px-3 rounded border border-dashed border-border hover:border-accent text-xs text-muted hover:text-accent transition-colors flex items-center justify-center gap-1.5"
+          class="btn-add-chapter-stream"
           @click="startAddingChapter"
         >
           <span>＋</span> Запланировать следующую главу в томе

@@ -107,11 +107,49 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } AS participants
         FROM timeline_events
         WHERE project_id = $p_rec
-          AND array::len(<-participates_in) > 0
           AND array::len(<-occurs_at) == 0
           AND id NOT IN (SELECT VALUE timeline_event_id FROM plot_promises WHERE timeline_event_id != NONE)
         ORDER BY m_abs ASC
         LIMIT 2000
+    );
+
+    LET $entity_events = (
+        SELECT 
+            id,
+            name AS title,
+            description,
+            'event' AS kind,
+            IF attributes.location_id != NONE { attributes.location_id } ELSE { NONE } AS location_id,
+            IF attributes['дата_события']['m_abs'] != NONE {
+                attributes['дата_события']['m_abs']
+            } ELSE IF attributes.m_abs != NONE {
+                attributes.m_abs
+            } ELSE IF attributes['дата']['m_abs'] != NONE {
+                attributes['дата']['m_abs']
+            } ELSE IF attributes.date_m_abs != NONE {
+                attributes.date_m_abs
+            } ELSE IF attributes.time_m_abs != NONE {
+                attributes.time_m_abs
+            } ELSE {
+                0
+            } AS m_abs,
+            IF attributes.calendar_id != NONE { type::string(attributes.calendar_id) } ELSE { 'default' } AS calendar_id,
+            [] AS reveals,
+            [] AS participants
+        FROM entities
+        WHERE (project_id = $p_rec OR schema_id.project_id = $p_rec)
+          AND (
+            schema_id.type_key = 'event' 
+            OR schema_id.type_key = 'events' 
+            OR schema_id.type_key = 'historical_event' 
+            OR schema_id.type_key = 'history'
+            OR schema_id.type_key = 'lore_event'
+            OR string::contains(string::lowercase(type::string(schema_id.type_key)), 'event')
+            OR string::contains(string::lowercase(type::string(schema_id.type_key)), 'событ')
+            OR string::contains(string::lowercase(type::string(schema_id.type_key)), 'войн')
+            OR string::contains(string::lowercase(type::string(schema_id.type_key)), 'эпох')
+          )
+        LIMIT 500
     );
 
     LET $scene_events = (
@@ -184,12 +222,12 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
         LIMIT 2000
     );
 
-    LET $all_events = array::concat($events, $scene_events);
+    LET $all_events = array::concat($events, $scene_events, $entity_events);
 
     LET $chapters = (
         SELECT id, title, IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order 
         FROM chapters 
-        WHERE volume_id.project_id = $p_rec
+        WHERE volume_id.project_id = $p_rec OR project_id = $p_rec
         ORDER BY sort_order ASC
         LIMIT 1000
     );

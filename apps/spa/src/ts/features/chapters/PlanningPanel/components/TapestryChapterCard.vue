@@ -17,9 +17,20 @@
     <!-- Expanded Full Detail View (for expanded chapter) -->
     <div v-else class="chapter-expanded-content">
       <!-- Chapter Main Header -->
-      <div class="chapter-expanded-header flex items-center justify-between pb-2 border-b border-border">
+      <div
+        class="chapter-expanded-header flex items-center justify-between pb-2 border-b border-border cursor-pointer"
+        title="Свернуть главу"
+        @click="onToggleCollapse"
+      >
         <div class="flex items-center gap-2 overflow-hidden">
-          <button type="button" class="text-muted text-xs hover:text-main" title="Свернуть главу" @click.stop="onToggleCollapse">▼</button>
+          <button
+            type="button"
+            class="text-muted text-xs hover:text-main"
+            title="Свернуть главу"
+            @click.stop="onToggleCollapse"
+          >
+            ▼
+          </button>
           <span class="chapter-icon">📄</span>
           <span class="chapter-main-title font-semibold text-sm text-main">{{ chapter.title }}</span>
           <span v-if="chapter.isCurrent" class="chip-current-focus text-[10px]">📍 ТЕКУЩАЯ</span>

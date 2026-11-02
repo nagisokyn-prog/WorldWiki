@@ -49,7 +49,7 @@ impl ConsistencyAuditWorkflow {
         eval_deceased_rules(&matrix, &timeline_data, &mut anomalies);
         eval_birth_rules(&matrix, &timeline_data, &mut anomalies);
         eval_anachronism_rules(&timeline_data, &mut anomalies);
-        eval_bilocation_rules(&timeline_data, &mut anomalies);
+        eval_bilocation_rules(&matrix, &timeline_data, &mut anomalies);
         eval_absence_rules(&matrix, &mut anomalies);
 
         if let Some(tracker) = item_tracker {

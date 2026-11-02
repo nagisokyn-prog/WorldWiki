@@ -138,7 +138,7 @@ export function usePlanningTodos(
     todoOrId: TapestryTodo | string,
     targetChapterId?: string
   ) {
-    const target = targetChapterId || currentChapterId.value;
+    const target = targetChapterId || currentChapterId.value || chaptersList.value.find(c => c.isCurrent)?.chapterId;
     if (!target) return;
 
     const todo = typeof todoOrId === 'string'

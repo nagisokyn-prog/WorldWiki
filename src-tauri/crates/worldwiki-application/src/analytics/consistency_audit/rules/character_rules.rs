@@ -94,6 +94,7 @@ pub fn eval_anachronism_rules(
 }
 
 pub fn eval_bilocation_rules(
+    matrix: &CrossRefMatrixDto,
     timeline_data: &TimelineInspectorDto,
     anomalies: &mut Vec<ContradictionAnomaly>,
 ) {
@@ -103,15 +104,31 @@ pub fn eval_bilocation_rules(
                 for p in &ev1.participants {
                     let clean_p = super::utils::clean_id(p);
                     if ev2.participants.iter().any(|p2| super::utils::clean_id(p2) == clean_p || p2 == p) {
+                        let ent_name = matrix
+                            .entities
+                            .iter()
+                            .find(|e| super::utils::clean_id(&e.id) == clean_p || e.name == *p)
+                            .map(|e| e.name.clone())
+                            .unwrap_or_else(|| {
+                                if !clean_p.is_empty() {
+                                    clean_p.to_string()
+                                } else {
+                                    "Персонаж".to_string()
+                                }
+                            });
+
                         let mut ch_ids: Vec<String> = ev1.reveals.iter().map(|r| r.chapter_id.clone()).collect();
                         ch_ids.extend(ev2.reveals.iter().map(|r| r.chapter_id.clone()));
+                        ch_ids.sort();
+                        ch_ids.dedup();
+
                         anomalies.push(ContradictionAnomaly {
                             rule: ContradictionRule::EntityBilocation,
                             severity: ContradictionSeverity::Warning,
-                            title: format!("Билокация персонажа в минуту {}", ev1.m_abs),
+                            title: format!("Билокация персонажа '{}' в минуту {}", ent_name, ev1.m_abs),
                             description: format!(
-                                "Персонаж одновременно участвует в событиях '{}' и '{}'",
-                                ev1.title, ev2.title
+                                "Персонаж '{}' одновременно участвует в событиях '{}' и '{}'",
+                                ent_name, ev1.title, ev2.title
                             ),
                             entity_ids: vec![p.clone()],
                             chapter_ids: ch_ids,

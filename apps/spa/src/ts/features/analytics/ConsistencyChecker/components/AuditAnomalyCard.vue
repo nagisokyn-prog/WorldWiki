@@ -35,23 +35,23 @@
     <!-- Meta Tags: Entities & Chapters -->
     <div class="flex flex-wrap items-center gap-1.5 pl-7 text-2xs">
       <span
-        v-for="eid in anomaly.entity_ids"
+        v-for="eid in uniqueEntityIds"
         :key="eid"
         class="meta-tag tag-entity px-2 py-0.5 rounded-md border border-subtle bg-surface-hover text-main font-medium flex items-center gap-1 cursor-pointer hover:border-accent"
         @click="$emit('openEntity', eid)"
       >
         <span>👤</span>
-        <span>{{ cleanId(eid) }}</span>
+        <span>{{ getEntityLabel(eid) }}</span>
       </span>
 
       <span
-        v-for="cid in anomaly.chapter_ids"
+        v-for="cid in uniqueChapterIds"
         :key="cid"
         class="meta-tag tag-chapter px-2 py-0.5 rounded-md border border-subtle bg-surface-hover text-muted font-medium flex items-center gap-1 cursor-pointer hover:border-accent"
         @click="$emit('jumpToChapter', cid)"
       >
         <span>📖</span>
-        <span>{{ cleanId(cid) }}</span>
+        <span>{{ getChapterLabel(cid) }}</span>
       </span>
     </div>
 
@@ -86,5 +86,13 @@ const props = defineProps<AuditAnomalyCardProps>();
 
 defineEmits<AuditAnomalyCardEmits>();
 
-const { ruleEmoji, ruleTooltip, cleanId } = useAuditAnomalyCard(() => props.anomaly);
+const {
+  ruleEmoji,
+  ruleTooltip,
+  cleanId,
+  uniqueEntityIds,
+  uniqueChapterIds,
+  getEntityLabel,
+  getChapterLabel,
+} = useAuditAnomalyCard(() => props.anomaly);
 </script>

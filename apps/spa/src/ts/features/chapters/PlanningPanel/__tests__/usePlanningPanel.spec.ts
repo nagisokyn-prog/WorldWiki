@@ -57,7 +57,7 @@ describe('usePlanningPanel - Unified Tapestry', () => {
 
     const arcsStore = useStoryArcsStore();
     arcsStore.arcs = [
-      { id: 'story_arcs:arc_1', title: 'Возвращение домой', color: 'var(--accent)', arc_type: 'plot', status: 'active', project_id: 'proj_1' }
+      { id: 'story_arcs:arc_1', title: 'Возвращение домой', color: 'var(--accent)', arc_type: 'plot', status: 'active', project_id: 'proj_1', description: null }
     ];
     arcsStore.arcChapters.set('story_arcs:arc_1', [
       { chapter_id: 'chapters:ch_2', phase: 'escalation' }

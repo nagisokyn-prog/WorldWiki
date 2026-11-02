@@ -61,3 +61,10 @@ export type PlanningPanelEmits = {
   'select-chapter': [chapterId: string];
   'select-arc': [arcId: string | null];
 };
+
+export type PlanningPanelEmitFn = {
+  (event: 'change'): void;
+  (event: 'select-chapter', chapterId: string): void;
+  (event: 'select-arc', arcId: string | null): void;
+};
+

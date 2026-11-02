@@ -28,7 +28,7 @@
         @cycle-status="cycleStatus"
         @save="saveTodo"
         @delete="deleteTodo"
-        @navigate="navigateToChapter"
+        @navigate="$emit('select-chapter', $event)"
         @toggle-collapse="toggleCollapse"
         @add-todo="addTodo"
         @attach-arc="attachArc"
@@ -118,14 +118,7 @@ const {
   submitAddChapter,
   moveBacklogToChapter,
   attachArc
-} = usePlanningPanel(props, (evt, ...args) => {
-  if (evt === 'change') emit('change');
-  if (evt === 'select-arc') emit('select-arc', (args[0] as string) || null);
-});
-
-function navigateToChapter(chapterId: string) {
-  emit('select-chapter', chapterId);
-}
+} = usePlanningPanel(props, emit);
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

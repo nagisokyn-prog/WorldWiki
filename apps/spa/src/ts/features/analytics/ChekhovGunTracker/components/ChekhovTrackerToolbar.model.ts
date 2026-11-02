@@ -1,0 +1,14 @@
+import type { GunTrackerFilterState, GunTrackerScope } from '../ChekhovGunTracker.model';
+
+export interface ChekhovTrackerToolbarProps {
+  filter: GunTrackerFilterState;
+  gunsCount: number;
+  itemsCount: number;
+  totalCount: number;
+  itemTypes: string[];
+}
+
+export type ChekhovTrackerToolbarEmits = {
+  (e: 'set-scope', scope: GunTrackerScope): void;
+  (e: 'reset-filter'): void;
+};

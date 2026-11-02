@@ -1,10 +1,11 @@
 import { computed } from 'vue';
-import type { ItemJourneyReport, TrackedItem } from '../ChekhovGunTracker.model';
+import type { ItemJourneyReport, TrackedItem, GunJourneyModalEmits, ItemJourneyNode } from '../ChekhovGunTracker.model';
 import { isGunItem } from '../useChekhovGunTracker';
 
 export function useGunJourneyModal(
   journeyGetter: () => ItemJourneyReport | null,
-  activeItemGetter?: () => TrackedItem | null | undefined
+  activeItemGetter?: () => TrackedItem | null | undefined,
+  emit?: GunJourneyModalEmits
 ) {
   const journey = computed(() => journeyGetter());
   const activeItem = computed(() => activeItemGetter?.() ?? null);
@@ -84,6 +85,18 @@ export function useGunJourneyModal(
     badgeClass: getNodeBadgeClass(node.node_type),
   })));
 
+  function onLocateNode(node: ItemJourneyNode) {
+    if (!node.chapter_id) return;
+    emit?.('locate-node', {
+      chapterId: node.chapter_id,
+      paragraphIndex: node.paragraph_index ?? 0,
+      quote: node.quote || node.description || '',
+      blockId: node.block_id || undefined,
+    });
+    emit?.('jump-to-chapter', node.chapter_id);
+    emit?.('close');
+  }
+
   return {
     journey,
     activeItem,
@@ -96,5 +109,6 @@ export function useGunJourneyModal(
     nodes,
     getNodeIcon,
     getNodeBadgeClass,
+    onLocateNode,
   };
 }

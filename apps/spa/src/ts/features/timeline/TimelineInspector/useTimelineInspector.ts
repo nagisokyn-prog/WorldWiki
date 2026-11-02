@@ -1,22 +1,26 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { getTimelineInspectorData } from '@/services/api.client';
-import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
-import { CalendarFormat } from '@/services/Calendars/calendar.format';
-import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
+import type { CalendarData } from '@/services/Calendars/calendar.types';
 import { useCalendarStore } from '@/stores/calendar.store';
 import {
   type TimelineInspectorData,
   type TimelineInspectorFilterState,
   type InspectorEvent,
   type InspectorChapter,
-  type InspectorReveal,
   type VisualizedConnectionLine,
   type FormattedInspectorEvent,
   type TimelineInspectorProps,
   type TimelineInspectorEmits,
-  type InspectorParticipant,
   getInspectorKindMeta,
 } from './TimelineInspector.model';
+import {
+  normalizeId,
+  getEventId,
+  checkIsFlashback,
+  formatEventDate,
+  cleanParticipantsList,
+  calculateConnectionLines
+} from './timelineInspector.utils';
 
 export function useTimelineInspector(
   propsOrProjectId: TimelineInspectorProps | string,
@@ -33,7 +37,6 @@ export function useTimelineInspector(
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
 
-  // Интерактивное состояние фокуса и навигации
   const activeChapterId = ref<string | null>(null);
   const hoveredChapterId = ref<string | null>(null);
   const hoveredEventId = ref<string | null>(null);
@@ -43,10 +46,10 @@ export function useTimelineInspector(
     searchQuery: '',
     selectedEntityId: 'all',
     selectedPovId: 'all',
-    readerHorizonChapterOrder: null, // null = full author view
+    readerHorizonChapterOrder: null,
     showFlashbacksOnly: false,
-    linkMode: 'focus', // По умолчанию интерактивный фокус (Zero-Clutter)
-    isolatedChapterId: null, // null = все сцены
+    linkMode: 'focus',
+    isolatedChapterId: null,
   });
 
   const loadInspectorData = async () => {
@@ -72,50 +75,6 @@ export function useTimelineInspector(
     } finally {
       isLoading.value = false;
     }
-  };
-
-  const getEventId = (ev: InspectorEvent): string => {
-    return ev.event_id || ev.id || '';
-  };
-
-  const normalizeId = (id?: string | null): string => {
-    if (!id) return '';
-    return String(id).replace(/^(chapters|plot_promises|timeline_events|entities):/, '');
-  };
-
-  // Метод 1: Явный флаг флешбэка + дельта анахронизма
-  const checkIsFlashback = (ev: InspectorEvent, allChs: InspectorChapter[]): boolean => {
-    if (ev.reveals?.some((r) => r.kind === 'flashback' || (r as unknown as { time_nature?: string }).time_nature === 'flashback')) {
-      return true;
-    }
-    const rawObj = ev as unknown as { time_nature?: string; is_flashback?: boolean };
-    if (rawObj.time_nature === 'flashback' || rawObj.is_flashback === true) {
-      return true;
-    }
-    const text = `${ev.title} ${ev.description || ''}`.toLowerCase();
-    if (text.includes('флешбэк') || text.includes('флешбек') || text.includes('ретроспектив') || text.includes('воспоминани')) {
-      return true;
-    }
-
-    // Хронологический анахронизм: если сцена привязана к поздней главе, но её дата меньше дат ранних глав
-    const primaryRev = ev.reveals?.[0];
-    if (primaryRev && ev.m_abs > 0 && allChs.length > 1) {
-      const cleanChId = normalizeId(primaryRev.chapter_id);
-      const chIdx = allChs.findIndex((c) => normalizeId(c.id) === cleanChId);
-      if (chIdx > 0) {
-        const prevChIds = new Set(allChs.slice(0, chIdx).map((c) => normalizeId(c.id)));
-        const prevEvents = (data.value?.events || []).filter(
-          (e) => e.m_abs > 0 && e.reveals?.some((r) => prevChIds.has(normalizeId(r.chapter_id)))
-        );
-        if (prevEvents.length > 0) {
-          const maxPrevMabs = Math.max(...prevEvents.map((e) => e.m_abs));
-          if (ev.m_abs < maxPrevMabs - 1440) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
   };
 
   const filteredChapters = computed<InspectorChapter[]>(() => {
@@ -144,7 +103,7 @@ export function useTimelineInspector(
       let minMabs = Infinity;
 
       chEvents.forEach((ev) => {
-        if (checkIsFlashback(ev, chs)) {
+        if (checkIsFlashback(ev, chs, allEvents)) {
           flashbackCount++;
           if (ev.m_abs < minMabs) {
             minMabs = ev.m_abs;
@@ -191,13 +150,12 @@ export function useTimelineInspector(
         if (!hasPov) return false;
       }
       if (filters.value.showFlashbacksOnly) {
-        const isFb = checkIsFlashback(ev, chaptersList);
+        const isFb = checkIsFlashback(ev, chaptersList, data.value?.events);
         if (!isFb) return false;
       }
       return true;
     });
 
-    // Клиентская дедупликация: исключаем дубликаты событий мира, если есть сцена с тем же временем и текстом
     const sceneSignatures = new Set<string>();
     evs.forEach((ev) => {
       const isScene = getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:');
@@ -226,37 +184,11 @@ export function useTimelineInspector(
 
     return filteredEvents.value.map((ev) => {
       const evId = getEventId(ev);
-      let formattedDate = `M_abs: ${ev.m_abs}`;
-      if (cal && ev.m_abs !== undefined && ev.m_abs !== null) {
-        try {
-          const dateInput = CalendarMath.getDateFromAbsolute(ev.m_abs, cal);
-          const calDate: CalendarDate = {
-            absolute_minute: ev.m_abs,
-            calendar_id: (cal as unknown as { id?: string; _id?: string }).id || (cal as unknown as { id?: string; _id?: string })._id || 'default',
-            original_input: dateInput,
-          };
-          formattedDate = CalendarFormat.formatDate(cal, calDate) || `M_abs: ${ev.m_abs}`;
-        } catch {
-          formattedDate = `M_abs: ${ev.m_abs}`;
-        }
-      }
-
-      const cleanParticipants: InspectorParticipant[] = (ev.participants || [])
-        .map((p: { id?: string; name?: string; entity_type?: string } | string) => {
-          if (typeof p === 'string') {
-            return { id: p, name: p.replace(/^entities:/, ''), entity_type: 'character' };
-          }
-          return {
-            id: p.id || '',
-            name: p.name || '',
-            entity_type: p.entity_type || 'character',
-          };
-        })
-        .filter((p: InspectorParticipant) => p && p.name && String(p.name).trim().length > 0);
-
+      const formattedDate = formatEventDate(ev.m_abs, cal);
+      const cleanParticipants = cleanParticipantsList(ev.participants);
       const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
       const kindMeta = getInspectorKindMeta(kind);
-      const isFlashback = checkIsFlashback(ev, chaptersList);
+      const isFlashback = checkIsFlashback(ev, chaptersList, data.value?.events);
       const primaryReveal = ev.reveals?.[0];
 
       return {
@@ -279,71 +211,17 @@ export function useTimelineInspector(
   const startX = 60;
 
   const connectionLines = computed<VisualizedConnectionLine[]>(() => {
-    if (filters.value.linkMode === 'none') return [];
-
-    const lines: VisualizedConnectionLine[] = [];
-    const chs = filteredChapters.value;
-    const evs = filteredEvents.value;
-
-    if (!chs.length || !evs.length) return [];
-
-    const chapterPositions = new Map<string, number>();
-    chs.forEach((ch, idx) => {
-      chapterPositions.set(normalizeId(ch.id), startX + idx * chapterSpacing);
+    return calculateConnectionLines({
+      linkMode: filters.value.linkMode,
+      chapters: filteredChapters.value,
+      events: filteredEvents.value,
+      activeChapterId: activeChapterId.value,
+      hoveredChapterId: hoveredChapterId.value,
+      hoveredEventId: hoveredEventId.value,
+      startX,
+      chapterSpacing,
+      eventSpacing
     });
-
-    const eventPositions = new Map<string, number>();
-    evs.forEach((ev, idx) => {
-      const evId = getEventId(ev) || `ev-${idx}`;
-      eventPositions.set(evId, startX + idx * eventSpacing);
-    });
-
-    const targetChId = activeChapterId.value ? normalizeId(activeChapterId.value) : (hoveredChapterId.value ? normalizeId(hoveredChapterId.value) : null);
-    const targetEvId = hoveredEventId.value ? getEventId({ id: hoveredEventId.value, title: '', m_abs: 0, reveals: [], participants: [] }) : null;
-
-    evs.forEach((ev) => {
-      const evId = getEventId(ev);
-
-      if (filters.value.linkMode === 'focus') {
-        if (targetChId) {
-          const belongsToTargetCh = ev.reveals.some((r) => normalizeId(r.chapter_id) === targetChId);
-          if (!belongsToTargetCh) return;
-        } else if (targetEvId) {
-          if (evId !== targetEvId) return;
-        } else {
-          return;
-        }
-      }
-
-      ev.reveals.forEach((r: InspectorReveal) => {
-        const cleanRChId = normalizeId(r.chapter_id);
-        if (targetChId && cleanRChId !== targetChId) return;
-
-        const x1 = chapterPositions.get(cleanRChId);
-        const x2 = eventPositions.get(evId);
-
-        if (x1 !== undefined && x2 !== undefined) {
-          const isFlashback = checkIsFlashback(ev, chs) || r.kind === 'flashback' || x1 > x2;
-          lines.push({
-            id: `line-${evId}-${r.chapter_id}`,
-            eventId: evId,
-            chapterId: r.chapter_id,
-            eventTitle: ev.title,
-            chapterTitle: r.chapter_title,
-            chapterOrder: r.chapter_order ?? r.chapter_sort_order ?? 0,
-            m_abs: ev.m_abs,
-            kind: r.kind,
-            isFlashback,
-            x1,
-            y1: 60,
-            x2,
-            y2: 170,
-          });
-        }
-      });
-    });
-
-    return lines;
   });
 
   const canvasMinWidth = computed(() => {

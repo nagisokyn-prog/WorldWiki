@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useVolumeBacklogSection } from './useVolumeBacklogSection';
+import { useVolumeBacklogSection } from '../useVolumeBacklogSection';
 
 describe('useVolumeBacklogSection', () => {
   it('toggles expansion and submits new backlog item', () => {

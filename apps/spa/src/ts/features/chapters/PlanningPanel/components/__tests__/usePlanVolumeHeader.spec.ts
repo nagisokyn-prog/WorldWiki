@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { usePlanVolumeHeader } from './usePlanVolumeHeader';
-import type { PlanVolumeHeaderProps } from './PlanVolumeHeader.model';
+import { usePlanVolumeHeader } from '../usePlanVolumeHeader';
+import type { PlanVolumeHeaderProps } from '../PlanVolumeHeader.model';
 
 describe('usePlanVolumeHeader', () => {
   it('computes progress percentage correctly', () => {

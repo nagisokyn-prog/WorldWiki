@@ -4,6 +4,9 @@ import { DocumentExportService } from '../DocumentExportService';
 
 describe('DocumentExportService', () => {
   it('triggers window.print for PDF format', async () => {
+    if (typeof window.print === 'undefined') {
+      window.print = () => {};
+    }
     const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const doc = normalizeSemanticDocument({
       metadata: { title: 'Отчет по НИР', authors: ['Исследователь'] }

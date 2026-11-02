@@ -1,74 +1,14 @@
 <template>
   <div class="inspector-container">
     <!-- Тулбар управления -->
-    <div class="inspector-toolbar">
-      <div class="inspector-toolbar-title">
-        <h2 class="inspector-title">
-          <span class="inspector-icon">⏳</span> Хронологический Инспектор
-        </h2>
-        <span v-if="filteredEvents.length" class="inspector-badge">
-          {{ filteredEvents.length }} событий / {{ filteredChapters.length }} глав
-        </span>
-      </div>
-
-      <div class="inspector-toolbar-controls">
-        <!-- Режим связей стрелками -->
-        <div class="inspector-control-group">
-          <span class="control-label">Связи:</span>
-          <select v-model="filters.linkMode" class="inspector-select">
-            <option value="focus">🎯 Фокус (при наведении / клике)</option>
-            <option value="all">🕸️ Все связи (паутина)</option>
-            <option value="none">🚫 Без связей</option>
-          </select>
-        </div>
-
-        <!-- Изоляция сцен главы -->
-        <div class="inspector-control-group">
-          <span class="control-label">Сцены:</span>
-          <select v-model="filters.isolatedChapterId" class="inspector-select">
-            <option :value="null">Все сцены рукописи</option>
-            <option
-              v-for="ch in filteredChapters"
-              :key="'iso-' + ch.id"
-              :value="ch.id"
-            >
-              {{ ch.title }} ({{ ch.sceneCount || 0 }} сцен)
-            </option>
-          </select>
-        </div>
-
-        <!-- Переключатель режима горизонтов читателя -->
-        <div class="inspector-control-group">
-          <span class="control-label">Горизонт:</span>
-          <select
-            v-model="filters.readerHorizonChapterOrder"
-            class="inspector-select"
-          >
-            <option :value="null">👑 Режим Автора (Все главы)</option>
-            <option
-              v-for="ch in filteredChapters"
-              :key="'opt-' + ch.id"
-              :value="ch.sort_order"
-            >
-              📖 До: {{ ch.title }}
-            </option>
-          </select>
-        </div>
-
-        <label class="inspector-checkbox-label">
-          <input v-model="filters.showFlashbacksOnly" type="checkbox" class="inspector-checkbox" />
-          <span>Только ретроспективы (Flashbacks)</span>
-        </label>
-
-        <button
-          class="btn-refresh"
-          :disabled="isLoading"
-          @click="refresh"
-        >
-          🔄 {{ isLoading ? 'Загрузка...' : 'Обновить' }}
-        </button>
-      </div>
-    </div>
+    <TimelineInspectorToolbar
+      :filters="filters"
+      :filtered-events-count="filteredEvents.length"
+      :filtered-chapters-count="filteredChapters.length"
+      :filtered-chapters="filteredChapters"
+      :is-loading="isLoading"
+      @refresh="refresh"
+    />
 
     <!-- Область визуализации осей -->
     <div class="inspector-viewport">
@@ -91,55 +31,17 @@
           </div>
           <div class="axis-rail axis-rail-narrative"></div>
           
-          <div
+          <TimelineChapterNode
             v-for="(ch, idx) in filteredChapters"
             :key="'ch-node-' + ch.id"
-            :data-chapter-id="normalizeId(ch.id)"
-            class="chapter-node interactive-el"
-            :class="{
-              'chapter-node--active': activeChapterId === normalizeId(ch.id),
-              'chapter-node--has-flashback': (ch.flashbackCount || 0) > 0
-            }"
-            :style="{ left: (60 + idx * 140) + 'px' }"
-            @click="selectChapter(ch)"
-            @mouseenter="hoveredChapterId = ch.id"
-            @mouseleave="hoveredChapterId = null"
-          >
-            <div class="chapter-pin-top"></div>
-            
-            <div class="chapter-node-header">
-              <span class="chapter-badge">Гл. #{{ ch.sort_order }}</span>
-              <span v-if="ch.sceneCount !== undefined" class="chapter-scene-count" :title="`Сцен в главе: ${ch.sceneCount}`">
-                🎬 {{ ch.sceneCount }}
-              </span>
-            </div>
-
-            <div class="chapter-node-title" :title="ch.title">
-              {{ ch.title }}
-            </div>
-
-            <!-- Бейдж-радар прыжка к флешбэку -->
-            <div
-              v-if="(ch.flashbackCount || 0) > 0"
-              class="chapter-flashback-badge"
-              :title="`В этой главе ${ch.flashbackCount} флешбэк(а). Кликните, чтобы прыгнуть к сцене в прошлом`"
-              @click.stop="jumpToFlashback(ch, $event)"
-            >
-              ⏪ Флешбэк ({{ ch.flashbackCount }})
-            </div>
-
-            <div class="chapter-node-actions">
-              <button
-                class="chapter-action-btn"
-                title="Открыть главу в редакторе"
-                @click.stop="navigateToChapter(ch)"
-              >
-                ✏️
-              </button>
-            </div>
-
-            <div class="chapter-pin-bottom"></div>
-          </div>
+            :chapter="ch"
+            :index="idx"
+            :is-active="activeChapterId === normalizeId(ch.id)"
+            @select="selectChapter"
+            @navigate="navigateToChapter"
+            @jump-flashback="jumpToFlashback"
+            @set-hover="hoveredChapterId = $event"
+          />
         </div>
 
         <!-- SVG Соединительные нити Безье -->
@@ -254,6 +156,8 @@
 
 <script setup lang="ts">
 import { useTimelineInspector } from './useTimelineInspector';
+import TimelineInspectorToolbar from './components/TimelineInspectorToolbar.vue';
+import TimelineChapterNode from './components/TimelineChapterNode.vue';
 import type { TimelineInspectorProps, TimelineInspectorEmits } from './TimelineInspector.model';
 
 const props = withDefaults(defineProps<TimelineInspectorProps>(), {

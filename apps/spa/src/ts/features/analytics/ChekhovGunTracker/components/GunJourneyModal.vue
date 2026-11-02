@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GunJourneyModalProps, GunJourneyModalEmits, ItemJourneyNode } from '../ChekhovGunTracker.model';
+import type { GunJourneyModalProps, GunJourneyModalEmits } from '../ChekhovGunTracker.model';
 import { useGunJourneyModal } from './useGunJourneyModal';
 
 const props = defineProps<GunJourneyModalProps>();
@@ -109,22 +109,12 @@ const {
   emptyText,
   hasNodes,
   nodes,
+  onLocateNode,
 } = useGunJourneyModal(
   () => props.journey,
-  () => props.activeItem
+  () => props.activeItem,
+  emit
 );
-
-function onLocateNode(node: ItemJourneyNode) {
-  if (!node.chapter_id) return;
-  emit('locate-node', {
-    chapterId: node.chapter_id,
-    paragraphIndex: node.paragraph_index ?? 0,
-    quote: node.quote || node.description || '',
-    blockId: node.block_id || undefined,
-  });
-  emit('jump-to-chapter', node.chapter_id);
-  emit('close');
-}
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/ChekhovGunTracker.css"></style>

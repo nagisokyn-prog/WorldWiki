@@ -78,3 +78,4 @@ const emit = defineEmits<TimelineInspectorToolbarEmits>();
 
 const { onRefresh } = useTimelineInspectorToolbar(props, emit);
 </script>
+

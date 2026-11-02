@@ -26,3 +26,4 @@ describe('useTimelineInspectorToolbar', () => {
     expect(emit).toHaveBeenCalledWith('refresh');
   });
 });
+

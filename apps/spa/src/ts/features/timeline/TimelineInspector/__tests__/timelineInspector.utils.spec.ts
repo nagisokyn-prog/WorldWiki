@@ -73,3 +73,4 @@ describe('timelineInspector.utils', () => {
     expect(lines[0].eventId).toBe('timeline_events:e1');
   });
 });
+

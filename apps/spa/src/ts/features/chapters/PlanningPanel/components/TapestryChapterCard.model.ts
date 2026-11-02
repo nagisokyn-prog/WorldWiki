@@ -16,3 +16,4 @@ export type TapestryChapterCardEmits = {
   (e: 'add-todo', payload: { ownerId: string; text: string; arcId?: string | null }): void;
   (e: 'attach-arc', payload: { chapterId: string; arcId: string }): void;
 };
+

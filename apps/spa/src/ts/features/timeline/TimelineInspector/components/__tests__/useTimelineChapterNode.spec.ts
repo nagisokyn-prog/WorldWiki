@@ -35,3 +35,4 @@ describe('useTimelineChapterNode', () => {
     expect(emit).toHaveBeenCalledWith('set-hover', null);
   });
 });
+

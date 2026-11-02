@@ -15,3 +15,4 @@ export interface PlanVolumeHeaderProps {
 export type PlanVolumeHeaderEmits = {
   (e: 'toggle-collapse'): void;
 };
+

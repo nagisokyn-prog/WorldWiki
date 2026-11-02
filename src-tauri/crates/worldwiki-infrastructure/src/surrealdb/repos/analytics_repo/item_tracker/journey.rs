@@ -1,4 +1,4 @@
-use super::types::{clean_id, RawItemJourneyBundle, RawPromiseRow, RawTimelineEventRow};
+use super::types::{clean_id, RawEvent, RawItemJourneyBundle, RawPromise};
 use std::collections::HashMap;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -19,7 +19,7 @@ fn build_promise_journey(
     item_clean: &str,
     target_item_id: String,
     target_item_name: Option<String>,
-    prom: Option<&RawPromiseRow>,
+    prom: Option<&RawPromise>,
     chapter_map: &HashMap<String, (i32, String)>,
     character_names: &HashMap<String, String>,
 ) -> ItemJourneyDto {
@@ -88,15 +88,19 @@ fn build_promise_journey(
     }
 }
 
+struct EntityJourneyContext<'a> {
+    pub chapter_map: &'a HashMap<String, (i32, String)>,
+    pub character_names: &'a HashMap<String, String>,
+}
+
 fn build_entity_journey(
     item_clean: &str,
     target_item_id: String,
     target_name: Option<String>,
-    attrs: &serde_json::Map<String, serde_json::Value>,
-    promises: Vec<RawPromiseRow>,
-    events: Vec<RawTimelineEventRow>,
-    chapter_map: &HashMap<String, (i32, String)>,
-    character_names: &HashMap<String, String>,
+    attrs: &serde_json::Value,
+    promises: Vec<RawPromise>,
+    events: Vec<RawEvent>,
+    ctx: &EntityJourneyContext,
 ) -> ItemJourneyDto {
     let item_type = attrs
         .get("тип_предмета")
@@ -149,7 +153,8 @@ fn build_entity_journey(
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
             let o_clean = clean_id(owner_val);
-            let o_name = character_names
+            let o_name = ctx
+                .character_names
                 .get(o_clean)
                 .cloned()
                 .unwrap_or_else(|| owner_val.to_string());
@@ -180,7 +185,7 @@ fn build_entity_journey(
     // 3. Scene and event nodes
     for prom in promises {
         if prom.participant_ids.iter().any(|p| clean_id(p) == item_clean) {
-            let (ch_order, ch_title) = resolve_chapter_info(chapter_map, prom.chapter_id.as_deref());
+            let (ch_order, ch_title) = resolve_chapter_info(ctx.chapter_map, prom.chapter_id.as_deref());
             let title = format!("Сцена: {}", prom.title.as_deref().unwrap_or(""));
 
             nodes.push(ItemJourneyNodeDto {
@@ -200,7 +205,7 @@ fn build_entity_journey(
 
     for ev in events {
         if ev.participants.iter().any(|p| clean_id(p) == item_clean) {
-            let (ch_order, ch_title) = resolve_chapter_info(chapter_map, ev.chapter_id.as_deref());
+            let (ch_order, ch_title) = resolve_chapter_info(ctx.chapter_map, ev.chapter_id.as_deref());
             let title = format!("Событие: {}", ev.title.as_deref().unwrap_or(""));
 
             nodes.push(ItemJourneyNodeDto {
@@ -288,6 +293,11 @@ pub(crate) async fn get_item_journey_impl(
         ));
     }
 
+    let ctx = EntityJourneyContext {
+        chapter_map: &chapter_map,
+        character_names: &character_names,
+    };
+
     Ok(build_entity_journey(
         item_clean,
         target_item.id,
@@ -295,7 +305,6 @@ pub(crate) async fn get_item_journey_impl(
         &target_item.attributes,
         bundle.promises,
         bundle.events,
-        &chapter_map,
-        &character_names,
+        &ctx,
     ))
 }

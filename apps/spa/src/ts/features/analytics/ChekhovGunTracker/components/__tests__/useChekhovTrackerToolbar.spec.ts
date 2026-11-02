@@ -21,3 +21,4 @@ describe('useChekhovTrackerToolbar', () => {
     expect(emit).toHaveBeenCalledWith('reset-filter');
   });
 });
+

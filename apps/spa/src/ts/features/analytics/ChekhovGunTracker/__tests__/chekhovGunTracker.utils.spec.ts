@@ -46,3 +46,4 @@ describe('chekhovGunTracker.utils', () => {
     expect(report.nodes[0].title).toContain('Завязка');
   });
 });
+

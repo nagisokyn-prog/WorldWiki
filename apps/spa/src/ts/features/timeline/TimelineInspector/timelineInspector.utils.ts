@@ -1,12 +1,15 @@
 import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
-import type {
-  InspectorEvent,
-  InspectorChapter,
-  InspectorReveal,
-  VisualizedConnectionLine,
-  InspectorParticipant
+import {
+  type InspectorEvent,
+  type InspectorChapter,
+  type InspectorReveal,
+  type VisualizedConnectionLine,
+  type InspectorParticipant,
+  type FormattedInspectorEvent,
+  type TimelineInspectorFilterState,
+  getInspectorKindMeta
 } from './TimelineInspector.model';
 
 export function normalizeId(id?: string | null): string {
@@ -35,7 +38,6 @@ export function checkIsFlashback(
     return true;
   }
 
-  // Хронологический анахронизм: если сцена привязана к поздней главе, но её дата меньше дат ранних глав
   const primaryRev = ev.reveals?.[0];
   if (primaryRev && ev.m_abs > 0 && allChs.length > 1 && allEvents) {
     const cleanChId = normalizeId(primaryRev.chapter_id);
@@ -87,6 +89,140 @@ export function cleanParticipantsList(rawParticipants?: Array<{ id?: string; nam
       };
     })
     .filter((p) => Boolean(p && p.name && String(p.name).trim().length > 0));
+}
+
+export function buildFilteredChapters(
+  rawChapters: InspectorChapter[],
+  allEvents: InspectorEvent[],
+  readerHorizonOrder: number | null
+): InspectorChapter[] {
+  let chs = [...rawChapters].sort((a, b) => a.sort_order - b.sort_order);
+  if (readerHorizonOrder !== null) {
+    chs = chs.filter((c, idx) => {
+      const order = (c.sort_order && Number(c.sort_order) > 0) ? Number(c.sort_order) : (idx + 1);
+      return order <= (readerHorizonOrder ?? 999999);
+    });
+  }
+
+  return chs.map((ch, idx) => {
+    const order = (ch.sort_order && Number(ch.sort_order) > 0) ? Number(ch.sort_order) : (idx + 1);
+    const title = ch.title && ch.title.trim() ? ch.title.trim() : `Глава #${order}`;
+    const cleanChId = normalizeId(ch.id);
+    const chEvents = allEvents.filter((ev) =>
+      ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanChId)
+    );
+
+    const sceneCount = chEvents.length;
+    let flashbackCount = 0;
+    let earliestFlashbackEventId: string | null = null;
+    let minMabs = Infinity;
+
+    chEvents.forEach((ev) => {
+      if (checkIsFlashback(ev, chs, allEvents)) {
+        flashbackCount++;
+        if (ev.m_abs < minMabs) {
+          minMabs = ev.m_abs;
+          earliestFlashbackEventId = getEventId(ev);
+        }
+      }
+    });
+
+    return {
+      ...ch,
+      title,
+      sort_order: order,
+      sceneCount,
+      flashbackCount,
+      earliestFlashbackEventId,
+    };
+  });
+}
+
+export function filterInspectorEvents(
+  rawEvents: InspectorEvent[],
+  chaptersList: InspectorChapter[],
+  filters: TimelineInspectorFilterState
+): InspectorEvent[] {
+  const q = filters.searchQuery.toLowerCase().trim();
+  const isolatedChId = filters.isolatedChapterId ? normalizeId(filters.isolatedChapterId) : null;
+
+  let evs = rawEvents.filter((ev: InspectorEvent) => {
+    if (q && !ev.title.toLowerCase().includes(q) && !(ev.description || '').toLowerCase().includes(q)) {
+      return false;
+    }
+    if (isolatedChId) {
+      const belongsToIsolated = ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId);
+      if (!belongsToIsolated) return false;
+    }
+    if (filters.selectedEntityId !== 'all') {
+      const target = normalizeId(filters.selectedEntityId);
+      const hasParticipant = ev.participants.some((p: { id?: string } | string) => {
+        const pid = typeof p === 'string' ? p : p?.id;
+        return pid && normalizeId(pid) === target;
+      });
+      if (!hasParticipant) return false;
+    }
+    if (filters.selectedPovId !== 'all') {
+      const hasPov = ev.reveals.some((r) => r.pov_id === filters.selectedPovId);
+      if (!hasPov) return false;
+    }
+    if (filters.showFlashbacksOnly) {
+      const isFb = checkIsFlashback(ev, chaptersList, rawEvents);
+      if (!isFb) return false;
+    }
+    return true;
+  });
+
+  const sceneSignatures = new Set<string>();
+  evs.forEach((ev) => {
+    const isScene = getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:');
+    if (isScene) {
+      sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
+    }
+  });
+
+  evs = evs.filter((ev) => {
+    const isPureEvent = getEventId(ev).startsWith('timeline_events:') && ev.kind === 'event';
+    if (isPureEvent) {
+      const sig = `${ev.m_abs}_${ev.title.trim().toLowerCase()}`;
+      if (sceneSignatures.has(sig)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return evs.sort((a, b) => a.m_abs - b.m_abs);
+}
+
+export function buildFormattedEvents(
+  events: InspectorEvent[],
+  chapters: InspectorChapter[],
+  cal: CalendarData | null,
+  rawAllEvents?: InspectorEvent[]
+): FormattedInspectorEvent[] {
+  return events.map((ev) => {
+    const evId = getEventId(ev);
+    const formattedDate = formatEventDate(ev.m_abs, cal);
+    const cleanParticipants = cleanParticipantsList(ev.participants);
+    const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
+    const kindMeta = getInspectorKindMeta(kind);
+    const isFlashback = checkIsFlashback(ev, chapters, rawAllEvents);
+    const primaryReveal = ev.reveals?.[0];
+
+    return {
+      ...ev,
+      id: evId,
+      formattedDate,
+      cleanParticipants,
+      isScene: evId.startsWith('plot_promises:') || !evId.startsWith('timeline_events:'),
+      kind,
+      kindMeta,
+      isFlashback,
+      primaryChapterId: primaryReveal?.chapter_id ? normalizeId(primaryReveal.chapter_id) : undefined,
+      primaryChapterTitle: primaryReveal?.chapter_title || undefined,
+    };
+  });
 }
 
 export function calculateConnectionLines(params: {

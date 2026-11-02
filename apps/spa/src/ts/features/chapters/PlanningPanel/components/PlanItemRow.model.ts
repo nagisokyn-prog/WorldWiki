@@ -11,3 +11,4 @@ export type PlanItemRowEmits = {
   (e: 'delete', item: TapestryTodo): void;
   (e: 'navigate', chapterId: string): void;
 };
+

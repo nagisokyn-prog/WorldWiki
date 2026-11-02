@@ -5,20 +5,16 @@ import { useCalendarStore } from '@/stores/calendar.store';
 import {
   type TimelineInspectorData,
   type TimelineInspectorFilterState,
-  type InspectorEvent,
   type InspectorChapter,
-  type VisualizedConnectionLine,
   type FormattedInspectorEvent,
   type TimelineInspectorProps,
   type TimelineInspectorEmits,
-  getInspectorKindMeta,
 } from './TimelineInspector.model';
 import {
   normalizeId,
-  getEventId,
-  checkIsFlashback,
-  formatEventDate,
-  cleanParticipantsList,
+  buildFilteredChapters,
+  filterInspectorEvents,
+  buildFormattedEvents,
   calculateConnectionLines
 } from './timelineInspector.utils';
 
@@ -77,140 +73,38 @@ export function useTimelineInspector(
     }
   };
 
-  const filteredChapters = computed<InspectorChapter[]>(() => {
+  const filteredChapters = computed(() => {
     if (!data.value) return [];
-    let chs = [...data.value.chapters].sort((a, b) => a.sort_order - b.sort_order);
-    if (filters.value.readerHorizonChapterOrder !== null) {
-      chs = chs.filter((c, idx) => {
-        const order = (c.sort_order && Number(c.sort_order) > 0) ? Number(c.sort_order) : (idx + 1);
-        return order <= (filters.value.readerHorizonChapterOrder ?? 999999);
-      });
-    }
-
-    const allEvents = data.value.events || [];
-
-    return chs.map((ch, idx) => {
-      const order = (ch.sort_order && Number(ch.sort_order) > 0) ? Number(ch.sort_order) : (idx + 1);
-      const title = ch.title && ch.title.trim() ? ch.title.trim() : `Глава #${order}`;
-      const cleanChId = normalizeId(ch.id);
-      const chEvents = allEvents.filter((ev) =>
-        ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanChId)
-      );
-
-      const sceneCount = chEvents.length;
-      let flashbackCount = 0;
-      let earliestFlashbackEventId: string | null = null;
-      let minMabs = Infinity;
-
-      chEvents.forEach((ev) => {
-        if (checkIsFlashback(ev, chs, allEvents)) {
-          flashbackCount++;
-          if (ev.m_abs < minMabs) {
-            minMabs = ev.m_abs;
-            earliestFlashbackEventId = getEventId(ev);
-          }
-        }
-      });
-
-      return {
-        ...ch,
-        title,
-        sort_order: order,
-        sceneCount,
-        flashbackCount,
-        earliestFlashbackEventId,
-      };
-    });
+    return buildFilteredChapters(
+      data.value.chapters,
+      data.value.events || [],
+      filters.value.readerHorizonChapterOrder
+    );
   });
 
-  const filteredEvents = computed<InspectorEvent[]>(() => {
+  const filteredEvents = computed(() => {
     if (!data.value) return [];
-    const q = filters.value.searchQuery.toLowerCase().trim();
-    const isolatedChId = filters.value.isolatedChapterId ? normalizeId(filters.value.isolatedChapterId) : null;
-    const chaptersList = data.value.chapters || [];
-
-    let evs = data.value.events.filter((ev: InspectorEvent) => {
-      if (q && !ev.title.toLowerCase().includes(q) && !(ev.description || '').toLowerCase().includes(q)) {
-        return false;
-      }
-      if (isolatedChId) {
-        const belongsToIsolated = ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId);
-        if (!belongsToIsolated) return false;
-      }
-      if (filters.value.selectedEntityId !== 'all') {
-        const target = normalizeId(filters.value.selectedEntityId);
-        const hasParticipant = ev.participants.some((p: { id?: string } | string) => {
-          const pid = typeof p === 'string' ? p : p?.id;
-          return pid && normalizeId(pid) === target;
-        });
-        if (!hasParticipant) return false;
-      }
-      if (filters.value.selectedPovId !== 'all') {
-        const hasPov = ev.reveals.some((r) => r.pov_id === filters.value.selectedPovId);
-        if (!hasPov) return false;
-      }
-      if (filters.value.showFlashbacksOnly) {
-        const isFb = checkIsFlashback(ev, chaptersList, data.value?.events);
-        if (!isFb) return false;
-      }
-      return true;
-    });
-
-    const sceneSignatures = new Set<string>();
-    evs.forEach((ev) => {
-      const isScene = getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:');
-      if (isScene) {
-        sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
-      }
-    });
-
-    evs = evs.filter((ev) => {
-      const isPureEvent = getEventId(ev).startsWith('timeline_events:') && ev.kind === 'event';
-      if (isPureEvent) {
-        const sig = `${ev.m_abs}_${ev.title.trim().toLowerCase()}`;
-        if (sceneSignatures.has(sig)) {
-          return false;
-        }
-      }
-      return true;
-    });
-
-    return evs.sort((a, b) => a.m_abs - b.m_abs);
+    return filterInspectorEvents(
+      data.value.events || [],
+      data.value.chapters || [],
+      filters.value
+    );
   });
 
-  const formattedEvents = computed<FormattedInspectorEvent[]>(() => {
-    const cal = calendarData.value;
-    const chaptersList = filteredChapters.value;
-
-    return filteredEvents.value.map((ev) => {
-      const evId = getEventId(ev);
-      const formattedDate = formatEventDate(ev.m_abs, cal);
-      const cleanParticipants = cleanParticipantsList(ev.participants);
-      const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
-      const kindMeta = getInspectorKindMeta(kind);
-      const isFlashback = checkIsFlashback(ev, chaptersList, data.value?.events);
-      const primaryReveal = ev.reveals?.[0];
-
-      return {
-        ...ev,
-        id: evId,
-        formattedDate,
-        cleanParticipants,
-        isScene: evId.startsWith('plot_promises:') || !evId.startsWith('timeline_events:'),
-        kind,
-        kindMeta,
-        isFlashback,
-        primaryChapterId: primaryReveal?.chapter_id ? normalizeId(primaryReveal.chapter_id) : undefined,
-        primaryChapterTitle: primaryReveal?.chapter_title || undefined,
-      };
-    });
+  const formattedEvents = computed(() => {
+    return buildFormattedEvents(
+      filteredEvents.value,
+      filteredChapters.value,
+      calendarData.value,
+      data.value?.events
+    );
   });
 
   const chapterSpacing = 140;
   const eventSpacing = 160;
   const startX = 60;
 
-  const connectionLines = computed<VisualizedConnectionLine[]>(() => {
+  const connectionLines = computed(() => {
     return calculateConnectionLines({
       linkMode: filters.value.linkMode,
       chapters: filteredChapters.value,

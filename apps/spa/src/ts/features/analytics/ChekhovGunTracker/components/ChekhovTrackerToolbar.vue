@@ -87,3 +87,4 @@ const emit = defineEmits<ChekhovTrackerToolbarEmits>();
 
 const { onScopeClick, onResetClick } = useChekhovTrackerToolbar(props, emit);
 </script>
+

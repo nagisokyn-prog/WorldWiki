@@ -739,12 +739,46 @@ DEFINE FUNCTION OVERWRITE fn::delete_todo($id: any) {
 -- 53. СПИСОК ЗАДАЧ ПО ВЛАДЕЛЬЦУ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owner($owner_table: string, $owner_id: string) {
     LET $o_rec = type::record($owner_table, $owner_id);
-    RETURN (SELECT id, owner_id, arc_id, arc_id.title AS arc_title, depends_on, text, status, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id = $o_rec ORDER BY sort_order ASC, created_at ASC LIMIT 300);
+    RETURN (
+        SELECT 
+            type::string(id) AS id, 
+            type::string(owner_id) AS owner_id, 
+            IF arc_id != NONE AND arc_id != NULL { type::string(arc_id) } ELSE { NONE } AS arc_id, 
+            IF arc_id != NONE AND arc_id != NULL { arc_id.title } ELSE { NONE } AS arc_title, 
+            IF depends_on != NONE AND depends_on != NULL { type::string(depends_on) } ELSE { NONE } AS depends_on, 
+            text, 
+            status, 
+            is_done, 
+            sort_order, 
+            created_at, 
+            updated_at 
+        FROM todos 
+        WHERE owner_id = $o_rec 
+        ORDER BY sort_order ASC, created_at ASC 
+        LIMIT 300
+    );
 };
 
 -- 54. СПИСОК ЗАДАЧ ПО СПИСКУ ВЛАДЕЛЬЦЕВ
 DEFINE FUNCTION OVERWRITE fn::list_todos_by_owners($owners: array<any>) {
-    RETURN (SELECT id, owner_id, arc_id, arc_id.title AS arc_title, depends_on, text, status, is_done, sort_order, created_at, updated_at FROM todos WHERE owner_id IN $owners ORDER BY sort_order ASC, created_at ASC LIMIT 500);
+    RETURN (
+        SELECT 
+            type::string(id) AS id, 
+            type::string(owner_id) AS owner_id, 
+            IF arc_id != NONE AND arc_id != NULL { type::string(arc_id) } ELSE { NONE } AS arc_id, 
+            IF arc_id != NONE AND arc_id != NULL { arc_id.title } ELSE { NONE } AS arc_title, 
+            IF depends_on != NONE AND depends_on != NULL { type::string(depends_on) } ELSE { NONE } AS depends_on, 
+            text, 
+            status, 
+            is_done, 
+            sort_order, 
+            created_at, 
+            updated_at 
+        FROM todos 
+        WHERE owner_id IN $owners 
+        ORDER BY sort_order ASC, created_at ASC 
+        LIMIT 500
+    );
 };
 
 -- 55. ПОЛУЧЕНИЕ СЮЖЕТНОЙ АРКИ ПО ID

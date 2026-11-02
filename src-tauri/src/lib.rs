@@ -158,6 +158,7 @@ pub fn run() {
             worldwiki_tauri::commands::get_todos,
             worldwiki_tauri::commands::create_todo,
             worldwiki_tauri::commands::set_todo_status,
+            worldwiki_tauri::commands::set_todo_dependency,
             worldwiki_tauri::commands::auto_start_chapter,
             worldwiki_tauri::commands::update_todo,
             worldwiki_tauri::commands::toggle_todo,
@@ -175,7 +176,6 @@ pub fn run() {
             worldwiki_tauri::commands::get_arcs_for_chapter,
             worldwiki_tauri::commands::get_arc_entities,
             worldwiki_tauri::commands::get_cross_reference_matrix,
-            worldwiki_tauri::commands::audit_manuscript_consistency,
             worldwiki_tauri::commands::get_timeline_inspector_data,
 
             worldwiki_tauri::commands::get_character_journey,

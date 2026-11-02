@@ -23,11 +23,13 @@
         v-for="todo in arcGroup.todos"
         :key="todo.id"
         :item="todo"
+        :all-todos="allTodos"
         @toggle="$emit('toggle', $event)"
         @cycle-status="$emit('cycle-status', $event)"
         @save="$emit('save', $event)"
         @delete="$emit('delete', $event)"
         @navigate="$emit('navigate', $event)"
+        @set-dependency="(item, pid) => $emit('set-dependency', item, pid)"
       />
     </div>
 

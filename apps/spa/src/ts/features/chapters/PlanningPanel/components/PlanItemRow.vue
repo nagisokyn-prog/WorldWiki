@@ -33,6 +33,57 @@
         @keydown.enter.prevent="onSave"
       />
 
+      <!-- Dependency Picker Toggle -->
+      <div class="relative">
+        <button
+          type="button"
+          class="plan-item-dep-btn text-muted hover:text-accent px-1 text-xs cursor-pointer bg-transparent border-none"
+          :class="{ 'text-accent': !!item.depends_on }"
+          title="Связать с задачей-предшественником"
+          @click.stop="toggleDepMenu"
+        >
+          🔗
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          v-if="isDepMenuOpen"
+          class="dep-picker-dropdown absolute right-0 top-full mt-1 z-50 bg-secondary border border-border rounded shadow-lg p-1.5 min-w-56 max-h-56 overflow-y-auto flex flex-col gap-1 text-xs"
+          @click.stop
+        >
+          <div class="px-1 text-[10px] font-semibold text-muted uppercase">Предшествующее событие:</div>
+
+          <button
+            v-if="item.depends_on"
+            type="button"
+            class="text-left text-danger hover:bg-hover px-2 py-1 rounded flex items-center gap-1 cursor-pointer bg-transparent border-none text-xs"
+            @click="onSelectDependency(null)"
+          >
+            <span>✕</span>
+            <span>Снять зависимость</span>
+          </button>
+
+          <div v-for="group in groupedCandidates" :key="group.chapterId" class="flex flex-col gap-0.5">
+            <div class="text-[10px] text-muted font-medium px-1 mt-1 truncate">📄 {{ group.chapterTitle }}</div>
+            <button
+              v-for="cand in group.todos"
+              :key="cand.id"
+              type="button"
+              class="text-left text-xs px-2 py-1 rounded hover:bg-hover text-main truncate flex items-center justify-between cursor-pointer bg-transparent border-none"
+              :class="{ 'font-semibold text-accent': cand.id === item.depends_on }"
+              @click="onSelectDependency(cand.id)"
+            >
+              <span class="truncate">{{ cand.text }}</span>
+              <span v-if="cand.id === item.depends_on" class="text-accent text-[10px] ml-1 shrink-0">✓</span>
+            </button>
+          </div>
+
+          <div v-if="groupedCandidates.length === 0" class="text-muted text-center p-2 text-xs">
+            Нет доступных задач для связи
+          </div>
+        </div>
+      </div>
+
       <!-- Delete Button -->
       <button
         type="button"
@@ -53,6 +104,14 @@
       >
         <span>⛓️</span>
         <span>Ждёт: {{ item.depends_on_title }}</span>
+        <button
+          type="button"
+          class="ml-1 text-muted hover:text-danger cursor-pointer bg-transparent border-none text-[10px] px-0.5"
+          title="Отвязать зависимость"
+          @click.stop="onSelectDependency(null)"
+        >
+          ✕
+        </button>
       </span>
 
       <button
@@ -78,6 +137,10 @@ const emit = defineEmits<PlanItemRowEmits>();
 
 const {
   statusTooltip,
+  isDepMenuOpen,
+  groupedCandidates,
+  toggleDepMenu,
+  onSelectDependency,
   onToggle,
   onCycleStatus,
   onSave,

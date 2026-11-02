@@ -24,14 +24,16 @@
         :key="chapter.chapterId"
         :chapter="chapter"
         :all-project-arcs="allProjectArcs"
+        :all-todos="allVolumeTodos"
         @toggle="toggleTodoStatus"
         @cycle-status="cycleStatus"
         @save="saveTodo"
         @delete="deleteTodo"
-        @navigate="$emit('select-chapter', $event)"
+        @navigate="handleNavigate"
         @toggle-collapse="toggleCollapse"
         @add-todo="addTodo"
         @attach-arc="attachArc"
+        @set-dependency="setDependency"
       />
 
       <!-- Outlining Action: Add Planned Chapter in Volume -->
@@ -68,9 +70,10 @@
         :items="backlogTodos"
         :volume-id="resolvedVolumeId"
         :current-chapter-id="currentChapterId"
+        :chapters="chaptersList"
         @move-to-chapter="moveBacklogToChapter"
         @delete="deleteTodo"
-        @add-backlog="addTodo"
+        @add-backlog="addBacklog"
       />
     </div>
   </div>
@@ -100,6 +103,8 @@ const {
   chaptersList,
   backlogTodos,
   allProjectArcs,
+  allVolumeTodos,
+  handleNavigate,
   volumeTitle,
   volumeStats,
   resolvedVolumeId,
@@ -112,7 +117,9 @@ const {
   toggleTodoStatus,
   cycleStatus,
   saveTodo,
+  setDependency,
   addTodo,
+  addBacklog,
   deleteTodo,
   startAddingChapter,
   cancelAddChapter,

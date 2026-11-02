@@ -22,11 +22,17 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
             id, 
             name, 
             schema_id.type_key AS entity_type,
-            (attributes['статус_категория'] = 'Мёртв' OR attributes.is_deceased = true) AS is_deceased,
+            (
+                (attributes['статус_категория'] = 'Мёртв' OR attributes.is_deceased = true)
+                AND attributes['статус_категория'] != 'Воскрес / Вернулся'
+                AND attributes['статус_категория'] != 'Жив'
+            ) AS is_deceased,
             IF attributes['дата_смерти']['m_abs'] != NONE {
                 attributes['дата_смерти']['m_abs']
-            } ELSE {
+            } ELSE IF attributes.death_m_abs != NONE {
                 attributes.death_m_abs
+            } ELSE {
+                NONE
             } AS death_m_abs,
             IF attributes['дата_рождения']['m_abs'] != NONE {
                 attributes['дата_рождения']['m_abs']
@@ -98,7 +104,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 pov_id: IF pov_id != NONE { IF pov_id.id != NONE { pov_id.id } ELSE { type::string(pov_id) } } ELSE { NONE },
                 kind: IF kind != NONE { kind } ELSE IF array::first(<-occurs_at.time_nature) != NONE { array::first(<-occurs_at.time_nature) } ELSE { 'direct' },
                 block_id: block_id,
-                is_anachronism: IF kind == 'flashback' OR array::first(<-occurs_at.time_nature) == 'flashback' { true } ELSE { false }
+                is_anachronism: false
             } AS reveals,
             <-participates_in<-entities.{
                 id: IF id.id != NONE { id.id } ELSE { type::string(id) },
@@ -209,7 +215,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     pov_id: NONE,
                     kind: IF time_nature == 'flashback' OR is_flashback == true OR array::first(->occurs_at.time_nature) == 'flashback' { 'flashback' } ELSE { 'direct' },
                     block_id: IF block_id != NONE { block_id } ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id } ELSE { NONE },
-                    is_anachronism: IF time_nature == 'flashback' OR is_flashback == true OR array::first(->occurs_at.time_nature) == 'flashback' { true } ELSE { false }
+                    is_anachronism: false
                 }
             ] AS reveals,
             <-participant_of<-entities.{

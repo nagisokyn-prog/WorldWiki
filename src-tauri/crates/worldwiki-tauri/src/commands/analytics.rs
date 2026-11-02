@@ -1,6 +1,6 @@
 use worldwiki_application::analytics::ManuscriptStatisticsDto;
 use worldwiki_domain::analytics::{
-    CharacterJourneyDto, ConsistencyAuditReportDto, CrossRefMatrixDto,
+    CharacterJourneyDto, CrossRefMatrixDto,
     ItemJourneyDto, ItemTrackerDto, JourneyFilterMode,
     MultiJourneyResponseDto, TimelineInspectorDto,
 };
@@ -12,10 +12,6 @@ bridge_command!(
         => cross_ref_service.get_matrix(&project_id)
 );
 
-bridge_command!(
-    audit_manuscript_consistency(project_id: String) -> Result<ConsistencyAuditReportDto, IpcError>
-        => consistency_workflow.execute(&project_id)
-);
 
 bridge_command!(
     get_timeline_inspector_data(

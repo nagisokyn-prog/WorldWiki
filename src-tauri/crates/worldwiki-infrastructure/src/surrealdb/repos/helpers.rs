@@ -86,9 +86,17 @@ pub fn take_list<T: serde::de::DeserializeOwned>(
     res: &mut IndexedResults,
     idx: usize,
 ) -> Result<Vec<T>, DomainError> {
-    let raw: Vec<Value> = res
-        .take(idx)
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let raw: Vec<Value> = match res.take(idx) {
+        Ok(v) => v,
+        Err(e) => {
+            let msg = e.to_string();
+            if msg.contains("invalid type: null") || msg.contains("expected a sequence") || msg.contains("expected string or map") {
+                Vec::new()
+            } else {
+                return Err(DomainError::ConstraintViolation(msg));
+            }
+        }
+    };
     let mut list = Vec::with_capacity(raw.len());
     for mut val in raw {
         if val.is_null() {

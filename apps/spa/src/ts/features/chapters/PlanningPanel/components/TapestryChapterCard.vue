@@ -1,5 +1,9 @@
 <template>
-  <div class="tapestry-chapter-card" :class="{ 'is-focused': chapter.isCurrent, 'is-collapsed': chapter.isCollapsed }">
+  <div
+    :id="'chapter-card-' + chapter.chapterId.replace(/^[a-z_]+:/, '')"
+    class="tapestry-chapter-card"
+    :class="{ 'is-focused': chapter.isCurrent, 'is-collapsed': chapter.isCollapsed }"
+  >
     <!-- Collapsed Compact Header (for any collapsed chapter) -->
     <div v-if="chapter.isCollapsed" class="chapter-compact-header flex items-center justify-between cursor-pointer" @click="onToggleCollapse">
       <div class="flex items-center gap-2 overflow-hidden">
@@ -72,12 +76,14 @@
           :key="group.arcId"
           :arc-group="group"
           :chapter-id="chapter.chapterId"
+          :all-todos="allTodos"
           @toggle="$emit('toggle', $event)"
           @cycle-status="$emit('cycle-status', $event)"
           @save="$emit('save', $event)"
           @delete="$emit('delete', $event)"
           @navigate="$emit('navigate', $event)"
           @add-todo="$emit('add-todo', $event)"
+          @set-dependency="(item, pid) => $emit('set-dependency', item, pid)"
         />
 
         <div v-if="chapter.arcGroups.length === 0" class="empty-arcs-hint text-xs text-muted px-2 py-1 italic">
@@ -99,11 +105,13 @@
             v-for="todo in chapter.standaloneTodos"
             :key="todo.id"
             :item="todo"
+            :all-todos="allTodos"
             @toggle="$emit('toggle', $event)"
             @cycle-status="$emit('cycle-status', $event)"
             @save="$emit('save', $event)"
             @delete="$emit('delete', $event)"
             @navigate="$emit('navigate', $event)"
+            @set-dependency="(item, pid) => $emit('set-dependency', item, pid)"
           />
         </div>
 

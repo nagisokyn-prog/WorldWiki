@@ -572,3 +572,9 @@
 .tapestry-stream::-webkit-scrollbar-thumb:hover {
     background: var(--accent);
 }
+
+.chapter-card-highlight {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    transition: outline var(--anim-speed-normal, 0.2s) ease;
+}

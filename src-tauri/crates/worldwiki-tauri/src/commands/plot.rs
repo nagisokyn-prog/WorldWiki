@@ -111,15 +111,25 @@ pub async fn get_todos(
 pub async fn create_todo(
     owner_id: String,
     text: String,
-    sort_order: Option<i32>,
+    sort_order: Option<i64>,
     arc_id: Option<String>,
     depends_on: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, IpcError> {
+    let order_i32 = sort_order
+        .map(|s| {
+            if s > (i32::MAX as i64) || s < (i32::MIN as i64) {
+                (s % (i32::MAX as i64)) as i32
+            } else {
+                s as i32
+            }
+        })
+        .unwrap_or(0);
+
     state
         .services
         .plot
-        .create_todo_ext(&owner_id, &text, sort_order.unwrap_or(0), arc_id, depends_on)
+        .create_todo_ext(&owner_id, &text, order_i32, arc_id, depends_on)
         .await
         .map_err(|e| {
             eprintln!("[IPC ERROR][create_todo] owner_id={}, text={}: {}", owner_id, text, e);
@@ -140,6 +150,23 @@ pub async fn set_todo_status(
         .await
         .map_err(|e| {
             eprintln!("[IPC ERROR][set_todo_status] id={}, status={}: {}", id, status, e);
+            IpcError::from(e)
+        })
+}
+
+#[tauri::command]
+pub async fn set_todo_dependency(
+    id: String,
+    depends_on: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<Todo, IpcError> {
+    state
+        .services
+        .plot
+        .set_todo_dependency(&id, depends_on.clone())
+        .await
+        .map_err(|e| {
+            eprintln!("[IPC ERROR][set_todo_dependency] id={}, depends_on={:?}: {}", id, depends_on, e);
             IpcError::from(e)
         })
 }

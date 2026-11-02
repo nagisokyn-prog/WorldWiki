@@ -9,7 +9,8 @@ import type {
   PlanningPanelProps,
   PlanningPanelEmitFn,
   TapestryChapterNode,
-  TapestryTodo
+  TapestryTodo,
+  DependencyCandidate
 } from './PlanningPanel.model';
 import {
   getCleanId,
@@ -40,6 +41,11 @@ export function usePlanningPanel(
   const resolvedVolumeId = computed(() => {
     if (props.volumeId) return props.volumeId;
     if (chapterStore.currentVolume?.id) return chapterStore.currentVolume.id;
+    if (chapterStore.hierarchy?.volumes?.[0]?.id) return chapterStore.hierarchy.volumes[0].id;
+    const firstChapterWithVolume = (chapterStore.hierarchy?.chapters || chapterStore.chapters || []).find(
+      (c) => c.volume_id
+    );
+    if (firstChapterWithVolume?.volume_id) return firstChapterWithVolume.volume_id;
     return null;
   });
 
@@ -59,6 +65,49 @@ export function usePlanningPanel(
   });
 
   const volumeStats = computed(() => calculateVolumeStats(chaptersList.value, backlogTodos.value));
+
+  const allVolumeTodos = computed<DependencyCandidate[]>(() => {
+    const result: DependencyCandidate[] = [];
+    for (const ch of chaptersList.value) {
+      for (const group of ch.arcGroups) {
+        for (const t of group.todos) {
+          result.push({
+            id: t.id,
+            text: t.text,
+            chapterId: ch.chapterId,
+            chapterTitle: ch.title,
+            status: t.status
+          });
+        }
+      }
+      for (const t of ch.standaloneTodos) {
+        result.push({
+          id: t.id,
+          text: t.text,
+          chapterId: ch.chapterId,
+          chapterTitle: ch.title,
+          status: t.status
+        });
+      }
+    }
+    return result;
+  });
+
+  function handleNavigate(targetChapterId: string) {
+    const cleanId = getCleanId(targetChapterId);
+    if (!expandedChapters.value.has(cleanId)) {
+      expandedChapters.value.add(cleanId);
+    }
+    emit?.('select-chapter', targetChapterId);
+    nextTick(() => {
+      const el = document.getElementById(`chapter-card-${cleanId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        el.classList.add('chapter-card-highlight');
+        setTimeout(() => el.classList.remove('chapter-card-highlight'), 1800);
+      }
+    });
+  }
 
   const isAddingChapter = ref(false);
   const newChapterTitle = ref('');
@@ -205,7 +254,7 @@ export function usePlanningPanel(
       const newCh = chapterService.createNew(title);
       const fullVolId = getQualifiedOwnerId(getCleanId(volId), 'volume');
       newCh.volume_id = fullVolId;
-      newCh.sort_order = BigInt(nextSortOrder);
+      newCh.sort_order = nextSortOrder as unknown as bigint;
 
       const saved = await chapterService.save(currentProject.value, newCh);
       const newChId = (typeof saved === 'string' && saved) ? saved : (newCh.id || '');
@@ -230,7 +279,7 @@ export function usePlanningPanel(
           id: newChId,
           volume_id: fullVolId,
           title,
-          sort_order: BigInt(nextSortOrder) as any,
+          sort_order: nextSortOrder as any,
           content: '',
           word_count: 0 as any
         } as any);
@@ -304,10 +353,14 @@ export function usePlanningPanel(
     loadTapestryData,
     toggleCollapse,
     toggleVolumeCollapse,
+    allVolumeTodos,
+    handleNavigate,
+    setDependency: todos.setDependency,
     toggleTodoStatus: todos.toggleTodoStatus,
     cycleStatus: todos.cycleStatus,
     saveTodo: todos.saveTodo,
     addTodo: todos.addTodo,
+    addBacklog: todos.addBacklog,
     deleteTodo: todos.deleteTodo,
     startAddingChapter,
     cancelAddChapter,

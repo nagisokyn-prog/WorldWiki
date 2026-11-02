@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
-  getCrossReferenceMatrix,
-  auditManuscriptConsistency,
+  getCrossReferenceMatrix ,
   getManuscriptStatistics,
   getItemTracker,
   getItemJourney,
@@ -56,19 +55,6 @@ export interface ConsistencyViolation {
   event_id?: string;
   event_ids?: string[];
   promise_ids?: string[];
-}
-
-export interface ConsistencyAuditSummaryData {
-  total: number;
-  critical_count: number;
-  warning_count: number;
-  notice_count: number;
-  healthy_percent: number;
-}
-
-export interface ConsistencyAuditReport {
-  summary: ConsistencyAuditSummaryData;
-  anomalies: ConsistencyViolation[];
 }
 
 export interface ManuscriptStats {
@@ -148,8 +134,6 @@ export interface ItemJourneyReport {
 export const useAnalyticsStore = defineStore('analytics', () => {
   const currentProject = ref<string | null>(null);
   const matrixData = ref<CrossReferenceMatrixData | null>(null);
-  const auditReport = ref<ConsistencyAuditReport | null>(null);
-  const violations = ref<ConsistencyViolation[]>([]);
   const stats = ref<ManuscriptStats | null>(null);
   const itemTracker = ref<ItemTrackerReport | null>(null);
   const itemTrackerLoading = ref<boolean>(false);
@@ -176,41 +160,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       return null;
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  async function loadConsistency(project: string): Promise<ConsistencyAuditReport | null> {
-    currentProject.value = project;
-    try {
-      const raw = await auditManuscriptConsistency(project);
-      const data = raw as unknown as (ConsistencyAuditReport | ConsistencyViolation[]);
-      if (data && 'anomalies' in data && Array.isArray((data as ConsistencyAuditReport).anomalies)) {
-        const report = data as ConsistencyAuditReport;
-        auditReport.value = report;
-        violations.value = report.anomalies;
-      } else if (Array.isArray(data)) {
-        const arr = data as ConsistencyViolation[];
-        violations.value = arr;
-        auditReport.value = {
-          summary: {
-            total: arr.length,
-            critical_count: arr.filter((v) => v.severity === 'critical').length,
-            warning_count: arr.filter((v) => v.severity === 'warning').length,
-            notice_count: arr.filter((v) => v.severity === 'notice' || v.severity === 'info').length,
-            healthy_percent: arr.length === 0 ? 100 : 75,
-          },
-          anomalies: arr,
-        };
-      } else {
-        violations.value = [];
-        auditReport.value = null;
-      }
-      return auditReport.value;
-    } catch (err: unknown) {
-      console.error('[AnalyticsStore] Error running consistency audit:', err);
-      violations.value = [];
-      auditReport.value = null;
-      return null;
     }
   }
 
@@ -258,8 +207,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 
   function invalidate() {
     matrixData.value = null;
-    auditReport.value = null;
-    violations.value = [];
     stats.value = null;
     itemTracker.value = null;
   }
@@ -267,15 +214,12 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   return {
     currentProject,
     matrixData,
-    auditReport,
-    violations,
     stats,
     itemTracker,
     itemTrackerLoading,
     isLoading,
     error,
     loadMatrix,
-    loadConsistency,
     loadStats,
     loadItemTracker,
     loadItemJourney,

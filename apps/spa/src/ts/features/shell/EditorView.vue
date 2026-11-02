@@ -272,13 +272,6 @@
           </div>
           <div
             class="panel-tab-new interactive-el"
-            :class="{ active: activePanelTab === 'consistency' }"
-            @click.stop="setActivePanelTab('consistency')"
-          >
-            🛡️ Аудит Сюжета
-          </div>
-          <div
-            class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'chekhov-guns' }"
             @click.stop="setActivePanelTab('chekhov-guns')"
           >
@@ -327,14 +320,6 @@
         </div>
         <div v-else-if="activePanelTab === 'matrix'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <cross-reference-matrix-vue :project="projectName || 'default'" />
-        </div>
-        <div v-else-if="activePanelTab === 'consistency'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-          <consistency-checker-vue
-            :project-id="projectName || 'default'"
-            :project="projectName || 'default'"
-            @jump-to-chapter="openChapterTab"
-            @open-entity="openEntity"
-          />
         </div>
         <div v-else-if="activePanelTab === 'chekhov-guns'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <chekhov-gun-tracker-vue

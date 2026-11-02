@@ -528,6 +528,10 @@ export async function setTodoStatus(id: string, status: string): Promise<Todo> {
     return await invoke('set_todo_status', { id, status });
 }
 
+export async function setTodoDependency(id: string, dependsOn: string | null): Promise<Todo> {
+    return await invoke('set_todo_dependency', { id, dependsOn });
+}
+
 export async function autoStartChapter(chapterId: string): Promise<void> {
     return await invoke('auto_start_chapter', { chapterId });
 }
@@ -590,10 +594,6 @@ export async function getArcEntities(arcId: string): Promise<unknown[]> {
 
 export async function getCrossReferenceMatrix(projectId: string): Promise<unknown> {
     return await invoke('get_cross_reference_matrix', { projectId });
-}
-
-export async function auditManuscriptConsistency(projectId: string): Promise<unknown> {
-    return await invoke('audit_manuscript_consistency', { projectId });
 }
 
 export async function getTimelineInspectorData(projectId: string, readerChapterOrderLimit: number | null): Promise<unknown> {

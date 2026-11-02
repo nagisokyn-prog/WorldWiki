@@ -74,10 +74,9 @@
           "id": "characterStatus",
           "type": "select",
           "label": "Статус",
-          "required": true,
           "options": [
             {
-              "value": "Не указано",
+              "value": "",
               "label": "Не указано"
             },
             {
@@ -91,13 +90,20 @@
             {
               "value": "Пропал без вести",
               "label": "🟡 Пропал без вести"
+            },
+            {
+              "value": "В коме / плену",
+              "label": "🟣 В коме / плену"
+            },
+            {
+              "value": "Воскрес / Вернулся",
+              "label": "✨ Воскрес / Вернулся"
             }
           ],
-          "placeholder": "Выберите статус",
+          "placeholder": "Текущий статус (по умолчанию Жив)",
           "path": "статус_категория",
           "isSystem": true,
-          "preventDelete": true,
-          "preventHide": true
+          "preventDelete": true
         },
         {
           "id": "characterBirthdate",
@@ -112,13 +118,12 @@
         {
           "id": "characterDeathdate",
           "type": "calendar_datetime",
-          "label": "Дата смерти",
+          "label": "Дата смерти (статическая)",
           "placeholder": "Выберите дату гибели по календарю мира",
           "path": "дата_смерти",
-          "hint": "Критично для аудита непротиворечивости (исключает действия после смерти)",
+          "hint": "Для динамической хронологии статусов используйте блок ниже",
           "isSystem": true,
-          "preventDelete": true,
-          "preventHide": true
+          "hidden": true
         },
         {
           "id": "characterTags",
@@ -130,6 +135,14 @@
         }
       ],
       "dynamicContainers": [
+        {
+          "id": "characterStatusTimeline",
+          "type": "timeline",
+          "title": "Линия жизни и статуса",
+          "emptyMessage": "Статусы не добавлены (по умолчанию персонаж считается живым)",
+          "template": "characterStatusTimelineTemplate",
+          "dataPath": "эволюция_статуса"
+        },
         {
           "id": "ageTimeline",
           "type": "timeline",
@@ -2246,6 +2259,73 @@
   },
   "entityType": "character",
   "templates": {
+    "characterStatusTimelineTemplate": {
+      "type": "timeline",
+      "headerTitle": "Этап жизненного цикла",
+      "fields": [
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус персонажа",
+          "options": [
+            {
+              "value": "Жив",
+              "label": "🟢 Жив"
+            },
+            {
+              "value": "Пропал без вести",
+              "label": "🟡 Пропал без вести"
+            },
+            {
+              "value": "В коме / плену",
+              "label": "🟣 В коме / плену"
+            },
+            {
+              "value": "Мёртв",
+              "label": "🔴 Мёртв"
+            },
+            {
+              "value": "Воскрес / Вернулся",
+              "label": "✨ Воскрес / Вернулся"
+            }
+          ],
+          "default": "Жив"
+        },
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава, опционально)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава, опционально)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "calendar_datetime",
+          "class": "начальная_дата",
+          "label": "Дата и время начала (по календарю, опционально)",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "calendar_datetime",
+          "class": "конечная_дата",
+          "label": "Дата и время окончания (по календарю, опционально)",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Обстоятельства / Причина смены статуса",
+          "placeholder": "Например, ранен в бою у реки, числился пропавшим...",
+          "rows": 2
+        }
+      ],
+      "itemClass": "timeline-item"
+    },
     "characterRelationshipTemplate": {
       "type": "dynamic",
       "isBidirectional": true,

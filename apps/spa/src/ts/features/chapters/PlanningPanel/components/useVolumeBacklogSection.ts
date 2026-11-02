@@ -1,4 +1,4 @@
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import type { VolumeBacklogSectionProps, VolumeBacklogSectionEmits } from './VolumeBacklogSection.model';
 
 export function useVolumeBacklogSection(props: VolumeBacklogSectionProps, emit: VolumeBacklogSectionEmits) {
@@ -6,6 +6,7 @@ export function useVolumeBacklogSection(props: VolumeBacklogSectionProps, emit: 
   const isAdding = ref(false);
   const newText = ref('');
   const inputRef = ref<HTMLInputElement | null>(null);
+  const activeMoveItemId = ref<string | null>(null);
 
   function toggleExpanded() {
     isExpanded.value = !isExpanded.value;
@@ -24,21 +25,52 @@ export function useVolumeBacklogSection(props: VolumeBacklogSectionProps, emit: 
 
   function submitAdd() {
     const text = newText.value.trim();
-    if (text && props.volumeId) {
-      emit('add-backlog', { ownerId: props.volumeId, text });
+    if (text) {
+      emit('add-backlog', { ownerId: props.volumeId || '', text });
     }
     cancelAdd();
   }
+
+  function toggleMoveMenu(todoId: string) {
+    activeMoveItemId.value = activeMoveItemId.value === todoId ? null : todoId;
+  }
+
+  function closeMoveMenu() {
+    activeMoveItemId.value = null;
+  }
+
+  function moveToChapter(todoId: string, chapterId: string) {
+    emit('move-to-chapter', { todoId, targetChapterId: chapterId });
+    closeMoveMenu();
+  }
+
+  function handleDocumentClick() {
+    if (activeMoveItemId.value) {
+      closeMoveMenu();
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener('click', handleDocumentClick);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('click', handleDocumentClick);
+  });
 
   return {
     isExpanded,
     isAdding,
     newText,
     inputRef,
+    activeMoveItemId,
     toggleExpanded,
     startAdding,
     cancelAdd,
-    submitAdd
+    submitAdd,
+    toggleMoveMenu,
+    closeMoveMenu,
+    moveToChapter
   };
 }
 

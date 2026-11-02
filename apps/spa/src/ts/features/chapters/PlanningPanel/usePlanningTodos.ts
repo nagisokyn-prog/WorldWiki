@@ -1,6 +1,6 @@
 import { type Ref } from 'vue';
 import * as api from '@/services/api.client';
-import { appAlert } from '@worldwiki/components';
+import { appAlert, appConfirm } from '@worldwiki/components';
 import type {
   TapestryChapterNode,
   TapestryTodo,
@@ -15,7 +15,8 @@ import {
   CYCLE_STATUS_MAP,
   cascadeUnblockDependencies,
   insertTodoIntoState,
-  removeTodoFromState
+  removeTodoFromState,
+  linkCrossChapterCausality
 } from './planningPanel.utils';
 
 export function usePlanningTodos(
@@ -45,7 +46,26 @@ export function usePlanningTodos(
       await api.setTodoStatus(todo.id, nextStatus);
 
       if (nextStatus === 'done') {
-        cascadeUnblockDependencies(chaptersList.value, todo.id);
+        const unblocked = cascadeUnblockDependencies(chaptersList.value, todo.id);
+        if (unblocked.length === 1) {
+          const target = unblocked[0];
+          const confirmTake = await appConfirm(
+            `🔓 Разблокирована следующая сцена:\n"${target.text}"\n\nВзять её в работу прямо сейчас?`
+          );
+          if (confirmTake) {
+            await applyStatus(target, 'in_progress');
+          }
+        } else if (unblocked.length > 1) {
+          const list = unblocked.map(t => `• ${t.text}`).join('\n');
+          const confirmTake = await appConfirm(
+            `🔓 Разблокированы сцены (${unblocked.length} шт.):\n${list}\n\nВзять их в работу прямо сейчас?`
+          );
+          if (confirmTake) {
+            for (const t of unblocked) {
+              await applyStatus(t, 'in_progress');
+            }
+          }
+        }
       }
 
       emit?.('change');
@@ -75,21 +95,68 @@ export function usePlanningTodos(
     }
   }
 
+  async function setDependency(todo: TapestryTodo, parentId: string | null) {
+    const oldDep = todo.depends_on;
+    const oldStatus = todo.status;
+    const oldDone = todo.done;
+
+    todo.depends_on = parentId;
+    if (parentId) {
+      let isParentDone = false;
+      for (const ch of chaptersList.value) {
+        for (const grp of ch.arcGroups) {
+          const p = grp.todos.find(t => getCleanId(t.id) === getCleanId(parentId));
+          if (p && (p.status === 'done' || p.done)) isParentDone = true;
+        }
+        const p = ch.standaloneTodos.find(t => getCleanId(t.id) === getCleanId(parentId));
+        if (p && (p.status === 'done' || p.done)) isParentDone = true;
+      }
+      if (!isParentDone) {
+        todo.status = 'blocked';
+        todo.done = false;
+      }
+    } else if (todo.status === 'blocked') {
+      todo.status = 'planned';
+    }
+
+    try {
+      await api.setTodoDependency(todo.id, parentId);
+      linkCrossChapterCausality(chaptersList.value);
+      emit?.('change');
+    } catch (e) {
+      todo.depends_on = oldDep;
+      todo.status = oldStatus;
+      todo.done = oldDone;
+      linkCrossChapterCausality(chaptersList.value);
+      appAlert('Не удалось обновить зависимость задачи');
+      console.error(e);
+    }
+  }
+
   async function addTodo(payload: {
     ownerId: string;
     text: string;
     arcId?: string | null;
     dependsOn?: string | null;
+    ownerType?: 'volume' | 'chapter';
   }) {
+    const cleanPayloadOwner = getCleanId(payload.ownerId);
+    const cleanVolume = resolvedVolumeId.value ? getCleanId(resolvedVolumeId.value) : null;
+    const isVolume =
+      payload.ownerType === 'volume' ||
+      payload.ownerId.startsWith('volumes:') ||
+      Boolean(cleanVolume && cleanPayloadOwner === cleanVolume);
+
     const ownerId = getQualifiedOwnerId(
       payload.ownerId,
-      payload.ownerId.includes('volumes:') ? 'volume' : 'chapter'
+      isVolume ? 'volume' : 'chapter'
     );
     try {
+      const nextOrder = Math.floor(Date.now() / 1000);
       const createdId = await api.createTodo(
         ownerId,
         payload.text,
-        Date.now(),
+        nextOrder,
         payload.arcId || null,
         payload.dependsOn || null
       );
@@ -98,7 +165,7 @@ export function usePlanningTodos(
         id: createdId,
         owner_id: ownerId,
         text: payload.text,
-        sort_order: Date.now(),
+        sort_order: nextOrder,
         arc_id: payload.arcId || null,
         depends_on: payload.dependsOn || null,
         status: 'planned' as unknown as string,
@@ -121,6 +188,22 @@ export function usePlanningTodos(
     }
   }
 
+  async function addBacklog(payload: { ownerId?: string; text: string }) {
+    const targetVolumeId =
+      payload.ownerId ||
+      resolvedVolumeId.value ||
+      '';
+    if (!targetVolumeId) {
+      appAlert('Не выбран том для сохранения мысли в бэклог');
+      return;
+    }
+    await addTodo({
+      ownerId: targetVolumeId,
+      text: payload.text,
+      ownerType: 'volume'
+    });
+  }
+
   async function deleteTodo(todoOrId: TapestryTodo | string) {
     const id = typeof todoOrId === 'string' ? todoOrId : todoOrId.id;
     const isDone = typeof todoOrId === 'string' ? false : todoOrId.done;
@@ -135,15 +218,30 @@ export function usePlanningTodos(
   }
 
   async function moveBacklogToChapter(
-    todoOrId: TapestryTodo | string,
-    targetChapterId?: string
+    todoOrIdOrPayload: TapestryTodo | string | { todoId: string; targetChapterId?: string },
+    targetChapterIdParam?: string
   ) {
-    const target = targetChapterId || currentChapterId.value || chaptersList.value.find(c => c.isCurrent)?.chapterId;
-    if (!target) return;
+    let todoId: string;
+    let targetChId = targetChapterIdParam;
 
-    const todo = typeof todoOrId === 'string'
-      ? backlogTodos.value.find(t => getCleanId(t.id) === getCleanId(todoOrId))
-      : todoOrId;
+    if (typeof todoOrIdOrPayload === 'object' && todoOrIdOrPayload !== null) {
+      if ('todoId' in todoOrIdOrPayload) {
+        todoId = todoOrIdOrPayload.todoId;
+        targetChId = todoOrIdOrPayload.targetChapterId || targetChId;
+      } else {
+        todoId = (todoOrIdOrPayload as TapestryTodo).id;
+      }
+    } else {
+      todoId = String(todoOrIdOrPayload);
+    }
+
+    const target = targetChId || currentChapterId.value || chaptersList.value.find(c => c.isCurrent)?.chapterId;
+    if (!target) {
+      appAlert('Не выбрана глава для переноса задачи');
+      return;
+    }
+
+    const todo = backlogTodos.value.find(t => getCleanId(t.id) === getCleanId(todoId));
     if (!todo) return;
 
     const qualifiedTarget = getQualifiedOwnerId(target, 'chapter');
@@ -151,10 +249,11 @@ export function usePlanningTodos(
       await api.deleteTodo(todo.id);
       removeTodoFromState(chaptersList.value, backlogTodos.value, todo.id, todo.done);
 
+      const nextOrder = Math.floor(Date.now() / 1000);
       const createdId = await api.createTodo(
         qualifiedTarget,
         todo.text,
-        Date.now(),
+        nextOrder,
         todo.arc_id || null,
         todo.depends_on || null
       );
@@ -184,7 +283,9 @@ export function usePlanningTodos(
     toggleTodoStatus,
     cycleStatus,
     saveTodo,
+    setDependency,
     addTodo,
+    addBacklog,
     deleteTodo,
     moveBacklogToChapter
   };

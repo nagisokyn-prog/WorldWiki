@@ -99,6 +99,14 @@ impl PlotServices {
         self.todos.update_todo(todo_id, text).await
     }
 
+    pub async fn set_todo_dependency(
+        &self,
+        todo_id: &str,
+        depends_on: Option<String>,
+    ) -> Result<Todo, ApplicationError> {
+        self.todos.set_todo_dependency(todo_id, depends_on).await
+    }
+
     pub async fn complete_todo(&self, todo_id: &str) -> Result<(), ApplicationError> {
         self.todos.complete_todo(todo_id).await
     }

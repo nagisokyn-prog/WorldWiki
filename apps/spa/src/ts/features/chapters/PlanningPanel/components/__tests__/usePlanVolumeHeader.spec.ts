@@ -29,4 +29,19 @@ describe('usePlanVolumeHeader', () => {
 
     expect(progressPct.value).toBe(0);
   });
+
+  it('toggles help guide card visibility', () => {
+    const props: PlanVolumeHeaderProps = {
+      title: 'Том 1',
+      stats: { total: 0, done: 0, inProgress: 0, planned: 0, blocked: 0 }
+    };
+    const emit = vi.fn();
+    const { isHelpOpen, toggleHelp } = usePlanVolumeHeader(props, emit);
+
+    expect(isHelpOpen.value).toBe(false);
+    toggleHelp();
+    expect(isHelpOpen.value).toBe(true);
+    toggleHelp();
+    expect(isHelpOpen.value).toBe(false);
+  });
 });

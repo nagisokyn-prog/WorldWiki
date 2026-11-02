@@ -20,7 +20,6 @@ import CreateChapterModalVue from '@/features/chapters/CreateChapterModal/Create
 import CreateEntityModalVue from '@/features/entities/CreateEntityModal/CreateEntityModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
-import ConsistencyCheckerVue from '@/features/analytics/ConsistencyChecker/ConsistencyChecker.vue';
 import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue';
 import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
@@ -40,7 +39,6 @@ export default defineComponent({
     PlanetEditorVue,
     SchemaEditorMainVue,
     CrossReferenceMatrixVue,
-    ConsistencyCheckerVue,
     ChekhovGunTrackerVue,
     ArcBoardVue,
     TimelineInspectorVue,

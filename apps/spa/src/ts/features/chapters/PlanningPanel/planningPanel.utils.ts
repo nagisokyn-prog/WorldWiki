@@ -39,8 +39,8 @@ export function getCleanId(id?: unknown): string {
 export function getQualifiedOwnerId(id?: string | null, type: 'chapter' | 'volume' = 'chapter'): string {
   const raw = (id || '').trim();
   if (!raw) return '';
-  if (raw.includes(':')) return raw;
-  return type === 'volume' ? `volumes:${raw}` : `chapters:${raw}`;
+  const clean = getCleanId(raw);
+  return type === 'volume' ? `volumes:${clean}` : `chapters:${clean}`;
 }
 
 export function getPhaseLabel(phase?: string | null): string {
@@ -83,11 +83,17 @@ export function linkCrossChapterCausality(nodes: TapestryChapterNode[]): void {
   for (const n of nodes) {
     for (const g of n.arcGroups) {
       for (const t of g.todos) {
+        t.depends_on_title = null;
+        t.blocks_title = null;
+        t.blocks_chapter_id = null;
         allTapestryTodos.push(t);
         todoChapterMap.set(getCleanId(t.id), n.title);
       }
     }
     for (const t of n.standaloneTodos) {
+      t.depends_on_title = null;
+      t.blocks_title = null;
+      t.blocks_chapter_id = null;
       allTapestryTodos.push(t);
       todoChapterMap.set(getCleanId(t.id), n.title);
     }
@@ -189,22 +195,26 @@ export function removeTodoFromState(
   }
 }
 
-export function cascadeUnblockDependencies(chapters: TapestryChapterNode[], parentTodoId: string): void {
+export function cascadeUnblockDependencies(chapters: TapestryChapterNode[], parentTodoId: string): TapestryTodo[] {
   const cleanParentId = getCleanId(parentTodoId);
+  const unblocked: TapestryTodo[] = [];
   for (const ch of chapters) {
     for (const grp of ch.arcGroups) {
       for (const item of grp.todos) {
         if (item.depends_on && getCleanId(item.depends_on) === cleanParentId && item.status === 'blocked') {
           item.status = 'planned';
+          unblocked.push(item);
         }
       }
     }
     for (const item of ch.standaloneTodos) {
       if (item.depends_on && getCleanId(item.depends_on) === cleanParentId && item.status === 'blocked') {
         item.status = 'planned';
+        unblocked.push(item);
       }
     }
   }
+  return unblocked;
 }
 
 export function buildChapterArcGroups(

@@ -695,94 +695,6 @@ async fn test_character_journey_and_cross_reference_matrix() {
     assert_eq!(journey["promises"].as_array().unwrap().len(), 1, "Сцена должна отразиться в promises пути персонажа");
 }
 
-/// ТЕСТ 5: Детектор противоречий (Consistency Checker / ConsistencyAuditWorkflow)
-#[tokio::test]
-async fn test_manuscript_consistency_audit_rules() {
-    let db = create_test_db().await;
-    let proj_key = "proj_consistency";
-    seed_project(&db, proj_key, "Проект для аудита целостности").await;
-
-    let services = create_test_services(Arc::new(db.clone()));
-
-    // 1. Создаем персонажей: один живой, один погибший в m_abs=1000, один нерожденный (m_abs=5000)
-    let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1", 1).await;
-    let _ch2 = create_test_chapter(&db, proj_key, "ch2", "Глава 2", 2).await;
-
-    let _hero_alive = create_test_entity(&db, proj_key, "hero_alive", "Живой Герой", "character").await;
-
-    let _dead = create_test_entity_with_attrs(
-        &db,
-        proj_key,
-        "dead_hero",
-        "Погибший Герой",
-        "character",
-        json!({ "статус_категория": "Мёртв", "is_deceased": true, "death_m_abs": 1000 }),
-    ).await;
-
-    let _unborn = create_test_entity_with_attrs(
-        &db,
-        proj_key,
-        "unborn_hero",
-        "Нерожденный Герой",
-        "character",
-        json!({ "дата_рождения": { "m_abs": 5000 }, "birth_m_abs": 5000 }),
-    ).await;
-
-    // 2. Создаем событие в m_abs=2880, где участвует погибший герой (Критическая ошибка 🔴)
-    let _ev_late = create_timeline_event(&db, proj_key, "ev_late", "Битва после смерти", 2).await; // m_abs = 2880
-    let _ = db.query("RELATE (type::record('entities', 'dead_hero')) -> participates_in -> (type::record('timeline_events', $ev)) SET project_id = type::record('projects', $p), role = 'fighter'")
-        .bind(("ev", "ev_late"))
-        .bind(("p", proj_key))
-        .await
-        .expect("relate dead hero to late event");
-
-    // Создаем событие в m_abs=1440, где участвует еще не родившийся персонаж (Критическая ошибка 🔴 ActionBeforeBirth)
-    let _ = db.query("RELATE (type::record('entities', 'unborn_hero')) -> participates_in -> (type::record('timeline_events', $ev)) SET project_id = type::record('projects', $p), role = 'actor'")
-        .bind(("ev", "ev_late"))
-        .bind(("p", proj_key))
-        .await
-        .expect("relate unborn hero to early event");
-
-    // 3. Создаем два события в одно и то же время m_abs=1440, где одновременно участвует Живой Герой (Билокация 🟡)
-    let _ev_biloc1 = create_timeline_event(&db, proj_key, "ev_b1", "Событие в Замке", 1).await;
-    let _ev_biloc2 = create_timeline_event(&db, proj_key, "ev_b2", "Событие в Лесу", 1).await;
-
-    let _ = db.query("RELATE (type::record('entities', $hero)) -> participates_in -> (type::record('timeline_events', 'ev_b1')) SET project_id = type::record('projects', $p), role = 'guest'")
-        .bind(("hero", "hero_alive"))
-        .bind(("p", proj_key))
-        .await
-        .expect("relate biloc 1");
-
-    let _ = db.query("RELATE (type::record('entities', $hero)) -> participates_in -> (type::record('timeline_events', 'ev_b2')) SET project_id = type::record('projects', $p), role = 'traveler'")
-        .bind(("hero", "hero_alive"))
-        .bind(("p", proj_key))
-        .await
-        .expect("relate biloc 2");
-
-    // 4. Запускаем ConsistencyAuditWorkflow
-    let report = services.consistency_workflow.execute(proj_key).await.expect("execute consistency audit");
-
-    // Проверяем обнаружение нарушения "Погибший персонаж активен"
-    let deceased_anomalies: Vec<_> = report.anomalies.iter()
-        .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::DeceasedEntityActive))
-        .collect();
-    assert!(!deceased_anomalies.is_empty(), "Должна быть обнаружена ошибка активности погибшего персонажа");
-    assert_eq!(deceased_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
-
-    // Проверяем обнаружение нарушения "Действие персонажа до рождения" (ActionBeforeBirth)
-    let before_birth_anomalies: Vec<_> = report.anomalies.iter()
-        .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::ActionBeforeBirth))
-        .collect();
-    assert!(!before_birth_anomalies.is_empty(), "Должна быть обнаружена ошибка действия персонажа до рождения");
-    assert_eq!(before_birth_anomalies[0].severity, worldwiki_domain::analytics::ContradictionSeverity::Critical);
-
-    // Проверяем обнаружение нарушения "Билокация"
-    let biloc_anomalies: Vec<_> = report.anomalies.iter()
-        .filter(|a| matches!(a.rule, worldwiki_domain::analytics::ContradictionRule::EntityBilocation))
-        .collect();
-    assert!(!biloc_anomalies.is_empty(), "Должна быть обнаружена билокация персонажа");
-}
-
 /// ТЕСТ 6: Авто-синхронизация упоминаний ((Сущность)) и изоляция источников
 #[tokio::test]
 async fn test_chapter_mentions_sync_and_source_isolation() {
@@ -1134,41 +1046,6 @@ async fn test_mentions_cross_project_isolation() {
     let mut check_apps = db.query("SELECT * FROM appears_in WHERE out = type::record('chapters', 'ch_a');").await.expect("check apps");
     let apps: Vec<Value> = check_apps.take(0).expect("take apps");
     assert_eq!(apps.len(), 0, "Персонажи чужого проекта или несуществующие сущности не должны привязываться");
-}
-
-/// ТЕСТ 13: Граничные случаи аудита противоречий (Consistency Audit Edge Cases)
-#[tokio::test]
-async fn test_consistency_audit_clean_and_edge_cases() {
-    let db = create_test_db().await;
-    let proj_key = "proj_clean_audit";
-    seed_project(&db, proj_key, "Чистый проект без ошибок").await;
-
-    let services = create_test_services(Arc::new(db.clone()));
-
-    // 1. Создаем нормального живого персонажа и событие
-    let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1", 1).await;
-    let _hero = create_test_entity(&db, proj_key, "hero", "Живой", "character").await;
-    let _ev = create_timeline_event(&db, proj_key, "ev1", "Обычное событие", 1).await;
-
-    let _ = db.query("RELATE (type::record('entities', 'hero')) -> participates_in -> (type::record('timeline_events', 'ev1')) SET project_id = type::record('projects', $p), role = 'actor'")
-        .bind(("p", proj_key))
-        .await
-        .expect("relate normal");
-
-    // 2. Создаем сущность с is_deceased=true, но death_m_abs = None (не указана точная дата)
-    let _ = create_test_entity_with_attrs(
-        &db,
-        proj_key,
-        "dead_nodate",
-        "Призрак",
-        "character",
-        json!({ "is_deceased": true }),
-    ).await;
-
-    // 3. Запуск аудита на чистом проекте
-    let report = services.consistency_workflow.execute(proj_key).await.expect("run audit");
-    assert_eq!(report.anomalies.len(), 0, "В чистом проекте не должно быть ложных срабатываний");
-    assert_eq!(report.summary.healthy_percent, 100);
 }
 
 /// ТЕСТ 9: Высокопроизводительный Мульти-персонажный путь (fn::get_multi_character_journey)

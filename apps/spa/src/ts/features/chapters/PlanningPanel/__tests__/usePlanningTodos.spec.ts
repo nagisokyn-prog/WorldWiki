@@ -7,11 +7,13 @@ import type { TapestryChapterNode, TapestryTodo } from '../PlanningPanel.model';
 vi.mock('@/services/api.client', () => ({
   createTodo: vi.fn().mockResolvedValue('todo:new_1'),
   setTodoStatus: vi.fn().mockResolvedValue({ id: 'todo:1', status: 'done' }),
+  setTodoDependency: vi.fn().mockResolvedValue({ id: 'todo:1' }),
   deleteTodo: vi.fn().mockResolvedValue(true)
 }));
 
 vi.mock('@worldwiki/components', () => ({
-  appAlert: vi.fn()
+  appAlert: vi.fn(),
+  appConfirm: vi.fn().mockResolvedValue(true)
 }));
 
 describe('usePlanningTodos', () => {
@@ -96,5 +98,327 @@ describe('usePlanningTodos', () => {
     expect(api.deleteTodo).toHaveBeenCalledWith('todo:del');
     expect(backlog.value.length).toBe(0);
     expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('adds backlog item via addBacklog and qualifies volume ID correctly', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('vol1'); // without volumes: prefix
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { addBacklog } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await addBacklog({
+      ownerId: 'vol1',
+      text: 'Идея для кульминации тома'
+    });
+
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'volumes:vol1',
+      'Идея для кульминации тома',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(1);
+    expect(backlog.value[0].text).toBe('Идея для кульминации тома');
+    expect(backlog.value[0].owner_id).toBe('volumes:vol1');
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('addBacklog falls back to resolvedVolumeId when ownerId is omitted', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('volumes:vol_main');
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { addBacklog } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await addBacklog({
+      text: 'Записать мысль без явного ownerId'
+    });
+
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'volumes:vol_main',
+      'Записать мысль без явного ownerId',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(1);
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('moves backlog item to any selected chapter via payload object', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([
+      {
+        chapterId: 'chapters:c2',
+        title: 'Глава 2',
+        sortOrder: 2,
+        isCurrent: false,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [],
+        doneCount: 0,
+        totalCount: 0
+      }
+    ]);
+    const backlog = ref<TapestryTodo[]>([
+      {
+        id: 'todo:backlog_1',
+        owner_id: 'volumes:vol1',
+        text: 'Переносимая мысль',
+        status: 'planned',
+        done: false,
+        sort_order: 1
+      }
+    ]);
+    const volId = ref<string | null>('volumes:vol1');
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { moveBacklogToChapter } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await moveBacklogToChapter({
+      todoId: 'todo:backlog_1',
+      targetChapterId: 'chapters:c2'
+    });
+
+    expect(api.deleteTodo).toHaveBeenCalledWith('todo:backlog_1');
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'chapters:c2',
+      'Переносимая мысль',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(0);
+    expect(chaptersList.value[0].standaloneTodos.length).toBe(1);
+    expect(chaptersList.value[0].standaloneTodos[0].owner_id).toBe('chapters:c2');
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('adds backlog item via addBacklog and qualifies volume ID correctly', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('vol1'); // without volumes: prefix
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { addBacklog } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await addBacklog({
+      ownerId: 'vol1',
+      text: 'Идея для кульминации тома'
+    });
+
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'volumes:vol1',
+      'Идея для кульминации тома',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(1);
+    expect(backlog.value[0].text).toBe('Идея для кульминации тома');
+    expect(backlog.value[0].owner_id).toBe('volumes:vol1');
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('addBacklog falls back to resolvedVolumeId when ownerId is omitted', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('volumes:vol_main');
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { addBacklog } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await addBacklog({
+      text: 'Записать мысль без явного ownerId'
+    });
+
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'volumes:vol_main',
+      'Записать мысль без явного ownerId',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(1);
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('moves backlog item to any selected chapter via payload object', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([
+      {
+        chapterId: 'chapters:c2',
+        title: 'Глава 2',
+        sortOrder: 2,
+        isCurrent: false,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [],
+        doneCount: 0,
+        totalCount: 0
+      }
+    ]);
+    const backlog = ref<TapestryTodo[]>([
+      {
+        id: 'todo:backlog_1',
+        owner_id: 'volumes:vol1',
+        text: 'Переносимая мысль',
+        status: 'planned',
+        done: false,
+        sort_order: 1
+      }
+    ]);
+    const volId = ref<string | null>('volumes:vol1');
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { moveBacklogToChapter } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    await moveBacklogToChapter({
+      todoId: 'todo:backlog_1',
+      targetChapterId: 'chapters:c2'
+    });
+
+    expect(api.deleteTodo).toHaveBeenCalledWith('todo:backlog_1');
+    expect(api.createTodo).toHaveBeenCalledWith(
+      'chapters:c2',
+      'Переносимая мысль',
+      expect.any(Number),
+      null,
+      null
+    );
+    expect(backlog.value.length).toBe(0);
+    expect(chaptersList.value[0].standaloneTodos.length).toBe(1);
+    expect(chaptersList.value[0].standaloneTodos[0].owner_id).toBe('chapters:c2');
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('sets and unsets dependency, updating blocked status and cross-causality', async () => {
+    const parentTodo: TapestryTodo = {
+      id: 'todo:parent',
+      owner_id: 'chapters:c1',
+      text: 'Допросить трактирщика',
+      status: 'planned',
+      done: false,
+      sort_order: 1
+    };
+    const childTodo: TapestryTodo = {
+      id: 'todo:child',
+      owner_id: 'chapters:c2',
+      text: 'Спуститься в катакомбы',
+      status: 'planned',
+      done: false,
+      sort_order: 1
+    };
+    const chaptersList = ref<TapestryChapterNode[]>([
+      {
+        chapterId: 'chapters:c1',
+        title: 'Глава 1',
+        sortOrder: 1,
+        isCurrent: true,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [parentTodo],
+        doneCount: 0,
+        totalCount: 1
+      },
+      {
+        chapterId: 'chapters:c2',
+        title: 'Глава 2',
+        sortOrder: 2,
+        isCurrent: false,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [childTodo],
+        doneCount: 0,
+        totalCount: 1
+      }
+    ]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('volumes:v1');
+    const curChId = ref<string | null>('chapters:c1');
+    const emit = vi.fn();
+
+    const { setDependency } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+
+    // Set dependency: parent is not done, so child becomes blocked
+    await setDependency(childTodo, 'todo:parent');
+
+    expect(api.setTodoDependency).toHaveBeenCalledWith('todo:child', 'todo:parent');
+    expect(childTodo.depends_on).toBe('todo:parent');
+    expect(childTodo.status).toBe('blocked');
+    expect(childTodo.depends_on_title).toContain('Допросить трактирщика');
+    expect(parentTodo.blocks_title).toBe('Глава 2');
+    expect(emit).toHaveBeenCalledWith('change');
+
+    // Unset dependency: child becomes planned
+    await setDependency(childTodo, null);
+
+    expect(api.setTodoDependency).toHaveBeenCalledWith('todo:child', null);
+    expect(childTodo.depends_on).toBeNull();
+    expect(childTodo.status).toBe('planned');
+    expect(childTodo.depends_on_title).toBeNull();
+    expect(parentTodo.blocks_title).toBeNull();
+  });
+
+  it('prompts author and takes unblocked task into work when parent completes', async () => {
+    const { appConfirm } = await import('@worldwiki/components');
+    vi.mocked(appConfirm).mockResolvedValue(true);
+
+    const parentTodo: TapestryTodo = {
+      id: 'todo:parent2',
+      owner_id: 'chapters:c1',
+      text: 'Вскрыть сундук',
+      status: 'in_progress',
+      done: false,
+      sort_order: 1
+    };
+    const childTodo: TapestryTodo = {
+      id: 'todo:child2',
+      owner_id: 'chapters:c2',
+      text: 'Изучить старый свиток',
+      status: 'blocked',
+      done: false,
+      sort_order: 1,
+      depends_on: 'todo:parent2'
+    };
+    const chaptersList = ref<TapestryChapterNode[]>([
+      {
+        chapterId: 'chapters:c1',
+        title: 'Глава 1',
+        sortOrder: 1,
+        isCurrent: true,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [parentTodo],
+        doneCount: 0,
+        totalCount: 1
+      },
+      {
+        chapterId: 'chapters:c2',
+        title: 'Глава 2',
+        sortOrder: 2,
+        isCurrent: false,
+        isCollapsed: false,
+        arcGroups: [],
+        standaloneTodos: [childTodo],
+        doneCount: 0,
+        totalCount: 1
+      }
+    ]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('volumes:v1');
+    const curChId = ref<string | null>('chapters:c1');
+    const emit = vi.fn();
+
+    const { toggleTodoStatus } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+
+    // Toggle parent from in_progress to done
+    await toggleTodoStatus(parentTodo);
+
+    expect(parentTodo.status).toBe('done');
+    expect(appConfirm).toHaveBeenCalledWith(expect.stringContaining('Изучить старый свиток'));
+    expect(childTodo.status).toBe('in_progress');
   });
 });

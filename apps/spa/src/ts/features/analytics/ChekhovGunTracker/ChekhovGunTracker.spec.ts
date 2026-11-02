@@ -15,7 +15,6 @@ vi.mock('@/services/api.client', () => ({
   getItemTracker: vi.fn(),
   getItemJourney: vi.fn(),
   getCrossReferenceMatrix: vi.fn(),
-  auditManuscriptConsistency: vi.fn(),
   getManuscriptStatistics: vi.fn(),
 }));
 

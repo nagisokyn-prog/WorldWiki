@@ -18,6 +18,14 @@ export interface TapestryTodo {
   blocks_chapter_id?: string | null;
 }
 
+export interface DependencyCandidate {
+  id: string;
+  text: string;
+  chapterId: string;
+  chapterTitle: string;
+  status: TodoStatus;
+}
+
 export interface TapestryArcGroup {
   arcId: string;
   title: string;

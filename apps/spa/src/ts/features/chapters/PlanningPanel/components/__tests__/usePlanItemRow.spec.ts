@@ -55,4 +55,32 @@ describe('usePlanItemRow', () => {
     const blocked = usePlanItemRow({ item: { ...baseTodo, status: 'blocked' } }, emit);
     expect(blocked.statusTooltip.value).toContain('Ожидает');
   });
+
+  it('groups available candidates and emits set-dependency', () => {
+    const emit = vi.fn();
+    const hook = usePlanItemRow(
+      {
+        item: { ...baseTodo, id: 't1' },
+        allTodos: [
+          { id: 't1', text: 'Тест сам себя', chapterId: 'ch1', chapterTitle: 'Гл 1', status: 'planned' },
+          { id: 't2', text: 'Родительская задача', chapterId: 'ch2', chapterTitle: 'Гл 2', status: 'planned' }
+        ]
+      },
+      emit
+    );
+
+    expect(hook.groupedCandidates.value.length).toBe(1);
+    expect(hook.groupedCandidates.value[0].todos[0].id).toBe('t2');
+
+    expect(hook.isDepMenuOpen.value).toBe(false);
+    hook.toggleDepMenu();
+    expect(hook.isDepMenuOpen.value).toBe(true);
+
+    hook.onSelectDependency('t2');
+    expect(emit).toHaveBeenCalledWith('set-dependency', expect.anything(), 't2');
+    expect(hook.isDepMenuOpen.value).toBe(false);
+
+    hook.onSelectDependency(null);
+    expect(emit).toHaveBeenCalledWith('set-dependency', expect.anything(), null);
+  });
 });

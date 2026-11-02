@@ -12,7 +12,6 @@ pub use errors::DomainError;
 
 #[cfg(test)]
 mod tests {
-    use crate::analytics::{ContradictionAnomaly, ContradictionRule, ContradictionSeverity};
     use crate::calendar::{EventReveal, TimelineEvent};
     use crate::knowledge::Entity;
     use crate::manuscript::{AppearanceSource, Chapter, EntityAppearance, TextBlock};
@@ -23,18 +22,6 @@ mod tests {
         let ev = TimelineEvent::new("proj_1", "cal_1", "Затмение", 500);
         assert_eq!(ev.title, "Затмение");
         assert_eq!(ev.m_abs, 500);
-
-        let anomaly = ContradictionAnomaly {
-            rule: ContradictionRule::DeceasedEntityActive,
-            severity: ContradictionSeverity::Critical,
-            title: "Конфликт".to_string(),
-            description: "Описание".to_string(),
-            entity_ids: vec!["ent_1".to_string()],
-            chapter_ids: vec![],
-            event_ids: vec![ev.id.clone()],
-            promise_ids: vec![],
-        };
-        assert_eq!(anomaly.severity, ContradictionSeverity::Critical);
     }
 
     #[test]

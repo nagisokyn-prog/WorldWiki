@@ -1,9 +1,10 @@
-import type { TapestryChapterNode, TapestryTodo } from '../PlanningPanel.model';
+import type { TapestryChapterNode, TapestryTodo, DependencyCandidate } from '../PlanningPanel.model';
 import type { StoryArc } from '@/stores/story_arcs.store';
 
 export interface TapestryChapterCardProps {
   chapter: TapestryChapterNode;
   allProjectArcs: StoryArc[];
+  allTodos?: DependencyCandidate[];
 }
 
 export type TapestryChapterCardEmits = {
@@ -15,5 +16,6 @@ export type TapestryChapterCardEmits = {
   (e: 'toggle-collapse', chapterId: string): void;
   (e: 'add-todo', payload: { ownerId: string; text: string; arcId?: string | null }): void;
   (e: 'attach-arc', payload: { chapterId: string; arcId: string }): void;
+  (e: 'set-dependency', item: TapestryTodo, parentId: string | null): void;
 };
 

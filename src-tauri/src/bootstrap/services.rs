@@ -4,8 +4,8 @@ use surrealdb::engine::local::Db;
 
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::analytics::{
-    CharacterJourneyService, ConsistencyAuditWorkflow, CrossReferenceMatrixService,
-    ItemTrackerService, ManuscriptAnalyticsService, TimelineInspectorService,
+    CharacterJourneyService, CrossReferenceMatrixService, ItemTrackerService,
+    ManuscriptAnalyticsService, TimelineInspectorService,
 };
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::common::JobManager;
@@ -24,7 +24,7 @@ use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepositor
 use worldwiki_infrastructure::surrealdb::repos::{
     SurrealAnalyticsRepository, SurrealChapterRepository, SurrealEntityRepository,
     SurrealPlotPromiseRepository, SurrealRAGAdapter, SurrealRelationRepository,
-    SurrealStoryArcRepository, SurrealTimelineRepository, SurrealTodoRepository,
+    SurrealStoryArcRepository, SurrealTodoRepository,
 };
 use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
 use worldwiki_ports::ai::{
@@ -32,9 +32,8 @@ use worldwiki_ports::ai::{
 };
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_ports::repositories::{
-    AnalyticsRepositoryPort, ChapterRepository, EntityRepository,
-    PlotPromiseRepository, RelationRepository, StoryArcRepository, TimelineEventRepository,
-    TodoRepository,
+    AnalyticsRepositoryPort, ChapterRepository, EntityRepository, PlotPromiseRepository,
+    RelationRepository, StoryArcRepository, TodoRepository,
 };
 use worldwiki_tauri::state::AppServices;
 
@@ -45,7 +44,6 @@ struct CoreDomainServices {
     calendar: Arc<CalendarServices>,
     plot: Arc<PlotServices>,
     story_arcs: Arc<StoryArcServices>,
-    consistency_workflow: Arc<ConsistencyAuditWorkflow>,
     cross_ref_service: Arc<CrossReferenceMatrixService>,
     timeline_inspector_service: Arc<TimelineInspectorService>,
     character_journey_service: Arc<CharacterJourneyService>,
@@ -78,13 +76,6 @@ fn build_core_domain(
         Arc::clone(&events),
     ));
     let story_arcs = Arc::new(StoryArcServices::new(Arc::clone(&repos.story_arc)));
-    let consistency_workflow = Arc::new(ConsistencyAuditWorkflow::new(
-        Arc::clone(&repos.analytics),
-        Arc::clone(&repos.entity),
-        Arc::clone(&repos.chapter),
-        Arc::clone(&repos.timeline),
-        Arc::clone(&repos.promise),
-    ));
     let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(Arc::clone(
         &repos.analytics,
     )));
@@ -107,7 +98,6 @@ fn build_core_domain(
         calendar,
         plot,
         story_arcs,
-        consistency_workflow,
         cross_ref_service,
         timeline_inspector_service,
         character_journey_service,
@@ -164,7 +154,6 @@ struct SurrealRepos {
     promise: Arc<dyn PlotPromiseRepository>,
     todo: Arc<dyn TodoRepository>,
     story_arc: Arc<dyn StoryArcRepository>,
-    timeline: Arc<dyn TimelineEventRepository>,
     analytics: Arc<dyn AnalyticsRepositoryPort>,
     rag: Arc<dyn RAGContextPort>,
     chat: Arc<dyn ChatRepository>,
@@ -181,7 +170,6 @@ impl SurrealRepos {
             promise: Arc::new(SurrealPlotPromiseRepository::new(Arc::clone(db))),
             todo: Arc::new(SurrealTodoRepository::new(Arc::clone(db))),
             story_arc: Arc::new(SurrealStoryArcRepository::new(Arc::clone(db))),
-            timeline: Arc::new(SurrealTimelineRepository::new(Arc::clone(db))),
             analytics: Arc::new(SurrealAnalyticsRepository::new(Arc::clone(db))),
             rag: Arc::new(SurrealRAGAdapter::new(Arc::clone(db))),
             chat: Arc::new(SurrealChatRepository::new(Arc::clone(db))),
@@ -228,7 +216,6 @@ pub fn build_surreal_app_services(
         calendar: core.calendar,
         plot: core.plot,
         story_arcs: core.story_arcs,
-        consistency_workflow: core.consistency_workflow,
         cross_ref_service: core.cross_ref_service,
         timeline_inspector_service: core.timeline_inspector_service,
         character_journey_service: core.character_journey_service,

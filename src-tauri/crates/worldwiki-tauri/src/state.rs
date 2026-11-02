@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::analytics::{
-    CharacterJourneyService, ConsistencyAuditWorkflow, CrossReferenceMatrixService,
+    CharacterJourneyService, CrossReferenceMatrixService,
     ItemTrackerService, ManuscriptAnalyticsService, TimelineInspectorService,
 };
 use worldwiki_application::calendar::CalendarServices;
@@ -20,7 +20,6 @@ pub struct AppServices {
     pub calendar: Arc<CalendarServices>,
     pub plot: Arc<PlotServices>,
     pub story_arcs: Arc<StoryArcServices>,
-    pub consistency_workflow: Arc<ConsistencyAuditWorkflow>,
     pub cross_ref_service: Arc<CrossReferenceMatrixService>,
     pub timeline_inspector_service: Arc<TimelineInspectorService>,
     pub character_journey_service: Arc<CharacterJourneyService>,

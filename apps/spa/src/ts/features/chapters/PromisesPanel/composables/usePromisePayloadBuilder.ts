@@ -20,6 +20,7 @@ export function preparePromisePayload(
 
   return {
     ...(item as unknown as PlotPromise),
+    is_flashback: item.is_flashback ? true : false,
     chapter_id: chapId || undefined,
     paragraph_index: item.paragraph_index ?? 1,
     block_id: item.block_id || null,

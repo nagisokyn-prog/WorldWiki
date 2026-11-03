@@ -44,6 +44,20 @@ jobs:
         # Явно задаём store, чтобы кэш pnpm/action-setup и setup-node(cache: pnpm) работали стабильно.
         run: pnpm config set store-dir "$env:LOCALAPPDATA\pnpm\store"
 
+      - name: Add Cargo to PATH
+        run: |
+          $cargoPaths = @(
+            "$env:USERPROFILE\.cargo\bin",
+            "C:\Users\Kuzma\.cargo\bin",
+            "$env:CARGO_HOME\bin"
+          )
+          foreach ($p in $cargoPaths) {
+            if ($p -and (Test-Path $p)) {
+              Add-Content -Path $env:GITHUB_PATH -Value $p
+              break
+            }
+          }
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:

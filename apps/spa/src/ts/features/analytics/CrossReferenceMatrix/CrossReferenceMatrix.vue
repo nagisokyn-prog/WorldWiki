@@ -4,6 +4,7 @@
     <MatrixToolbar
       :filters="filters"
       :available-entity-types="availableEntityTypes"
+      :volume-options="volumeOptions"
       :rows-count="rows.length"
       :chapters-count="chapters.length"
       :is-loading="isLoading"
@@ -26,8 +27,31 @@
 
       <div v-else class="matrix-table-wrapper">
         <table class="matrix-table">
-          <!-- Thead: Главы -->
+          <!-- Thead: Тома и Главы -->
           <thead>
+            <!-- Superheader: Группировка по томам -->
+            <tr v-if="volumeGroups.length > 0" class="matrix-volume-superheader">
+              <th class="matrix-th sticky-corner-top">
+                <span class="th-label">Том / Глава</span>
+              </th>
+              <th
+                v-for="grp in volumeGroups"
+                :key="'vol-hdr-' + grp.volumeId"
+                class="matrix-th matrix-volume-th"
+                :colspan="grp.chaptersCount"
+              >
+                <div class="matrix-volume-banner flex items-center justify-center gap-1.5 py-1 px-2 font-bold text-xs text-accent bg-accent/10 border-b border-border rounded-t">
+                  <span>📚</span>
+                  <span>{{ grp.volumeTitle }}</span>
+                  <span class="text-[10px] text-muted font-normal">({{ grp.chaptersCount }} гл.)</span>
+                </div>
+              </th>
+              <th class="matrix-th th-total sticky-top" :rowspan="2">
+                <span class="th-label">Всего</span>
+              </th>
+            </tr>
+
+            <!-- Главы -->
             <tr>
               <th class="matrix-th sticky-corner">
                 <span class="th-label">Сущность \ Глава</span>
@@ -44,7 +68,7 @@
                   <span class="chapter-word-pill">{{ col.formattedWordCount }}</span>
                 </div>
               </th>
-              <th class="matrix-th sticky-top th-total">
+              <th v-if="volumeGroups.length === 0" class="matrix-th sticky-top th-total">
                 <span class="th-label">Всего</span>
               </th>
             </tr>
@@ -99,7 +123,7 @@
                   <span v-if="cell.hasScene" class="cell-badge badge-scene" title="Сцена">🎬 {{ cell.count || 1 }}</span>
                   <span v-if="cell.hasMention" class="cell-badge badge-mention" title="Упоминание в тексте">💬</span>
                   <span v-if="cell.isDeceased" class="death-icon" title="Погиб">💀</span>
-                  <span v-if="!cell.hasScene && !cell.hasMention && !cell.isDeceased" class="cell-badge badge-absent">·</span>
+                  <span v-if="!cell.hasScene && !cell.hasMention && !cell.isDeceased" class="cell-badge badge-absent">—</span>
                 </div>
               </td>
 
@@ -157,12 +181,14 @@ const {
   filters,
   chapters,
   chapterColumns,
+  volumeGroups,
   rows,
   availableEntityTypes,
+  volumeOptions,
   totalProjectAppearances,
   isLoading,
   refresh,
-} = useCrossReferenceMatrix(props.project);
+} = useCrossReferenceMatrix(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/CrossReferenceMatrix.css"></style>

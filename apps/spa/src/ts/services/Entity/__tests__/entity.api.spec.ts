@@ -224,6 +224,7 @@ describe('entityApi', () => {
   describe('Schemas methods', () => {
     it('getSchemas parses list from backend', async () => {
       localStorage.setItem('worldwiki_schema_sync_v2_proj_1', 'v2_done');
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: false } as any);
       vi.mocked(components.invoke).mockResolvedValueOnce([
         { type_key: 'char', type_name: 'Character', icon: '👤', full_schema: { fields: [] } },
       ]);

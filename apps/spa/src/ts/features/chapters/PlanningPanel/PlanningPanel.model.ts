@@ -1,4 +1,6 @@
 import type { StoryArc } from '@/stores/story_arcs.store';
+import type { PlanVolumeStats } from './components/PlanVolumeHeader.model';
+import type { BacklogChapterOption } from './components/VolumeBacklogSection.model';
 
 export type TodoStatus = 'planned' | 'in_progress' | 'done' | 'blocked';
 
@@ -45,6 +47,17 @@ export interface TapestryChapterNode {
   standaloneTodos: TapestryTodo[];
   doneCount: number;
   totalCount: number;
+}
+
+export interface TapestryVolumeBlock {
+  volumeId: string;
+  cleanVolumeId: string;
+  title: string;
+  isCollapsed: boolean;
+  stats: PlanVolumeStats;
+  chapters: TapestryChapterNode[];
+  chapterOptions: BacklogChapterOption[];
+  backlogTodos: TapestryTodo[];
 }
 
 export interface StoryArcSummary {

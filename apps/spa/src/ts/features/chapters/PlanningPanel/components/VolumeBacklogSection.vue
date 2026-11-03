@@ -28,10 +28,10 @@
         </div>
         <div class="flex items-center gap-1">
           <!-- Move to any chapter dropdown -->
-          <div class="relative">
+          <div class="backlog-move-container">
             <button
               type="button"
-              class="btn-subtle text-[11px] px-2 py-0.5 rounded text-accent hover:bg-hover flex items-center gap-1"
+              class="btn-backlog-move"
               title="Перенести задачу в главу"
               @click.stop="toggleMoveMenu(item.id)"
             >
@@ -39,22 +39,22 @@
             </button>
             <div
               v-if="activeMoveItemId === item.id"
-              class="chapter-move-dropdown absolute right-0 bottom-full mb-1 z-50 bg-secondary border border-border rounded shadow-lg p-1 min-w-48 max-h-52 overflow-y-auto flex flex-col gap-0.5"
+              class="chapter-move-dropdown"
               @click.stop
             >
-              <div class="px-2 py-1 text-[10px] font-semibold text-muted uppercase">Перенести в главу:</div>
+              <div class="chapter-move-header">Перенести в главу:</div>
               <button
                 v-for="ch in chapters"
                 :key="ch.chapterId"
                 type="button"
-                class="text-left text-xs px-2 py-1 rounded hover:bg-hover text-main truncate flex items-center justify-between"
-                :class="{ 'font-semibold text-accent': ch.chapterId === currentChapterId }"
+                class="chapter-move-item"
+                :class="{ 'is-current': ch.chapterId === currentChapterId }"
                 @click="moveToChapter(item.id, ch.chapterId)"
               >
                 <span class="truncate">{{ ch.title }}</span>
                 <span v-if="ch.chapterId === currentChapterId" class="text-[10px] text-accent ml-1 shrink-0">(тек.)</span>
               </button>
-              <div v-if="!chapters || chapters.length === 0" class="text-xs text-muted p-2 text-center">
+              <div v-if="!chapters || chapters.length === 0" class="chapter-move-empty">
                 Нет доступных глав
               </div>
             </div>
@@ -62,7 +62,7 @@
 
           <button
             type="button"
-            class="text-xs text-muted hover:text-danger px-1"
+            class="btn-backlog-delete"
             title="Удалить"
             @click="$emit('delete', item)"
           >
@@ -124,3 +124,5 @@ const {
   moveToChapter
 } = useVolumeBacklogSection(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

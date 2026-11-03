@@ -36,9 +36,17 @@ export interface ChapterColumnSummary {
   id: string;
   sort_order: number;
   title: string;
+  volume_id?: string | null;
+  volume_title?: string | null;
   word_count: number;
   formattedWordCount: string;
   uniqueEntities: number;
+}
+
+export interface MatrixVolumeGroup {
+  volumeId: string;
+  volumeTitle: string;
+  chaptersCount: number;
 }
 
 export interface CrossReferenceMatrixProps {

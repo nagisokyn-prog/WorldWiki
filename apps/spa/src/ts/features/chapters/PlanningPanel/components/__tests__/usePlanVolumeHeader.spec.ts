@@ -44,4 +44,22 @@ describe('usePlanVolumeHeader', () => {
     toggleHelp();
     expect(isHelpOpen.value).toBe(false);
   });
+
+  it('toggles volume menu and selects volume', () => {
+    const props: PlanVolumeHeaderProps = {
+      title: 'Том 1',
+      stats: { total: 0, done: 0, inProgress: 0, planned: 0, blocked: 0 },
+      volumes: [{ id: 'vol_1', title: 'Том 1' }, { id: 'vol_2', title: 'Том 2' }]
+    };
+    const emit = vi.fn();
+    const { isVolumeMenuOpen, toggleVolumeMenu, selectVolume } = usePlanVolumeHeader(props, emit);
+
+    expect(isVolumeMenuOpen.value).toBe(false);
+    toggleVolumeMenu();
+    expect(isVolumeMenuOpen.value).toBe(true);
+
+    selectVolume('vol_2');
+    expect(emit).toHaveBeenCalledWith('select-volume', 'vol_2');
+    expect(isVolumeMenuOpen.value).toBe(false);
+  });
 });

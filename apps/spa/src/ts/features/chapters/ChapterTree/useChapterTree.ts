@@ -172,6 +172,9 @@ export function useChapterTree(
 
         if (data) {
             emit('select-node', { type: data.type, node: data.original });
+            if (data.type === 'volume' && data.original) {
+                store.selectVolume(String((data.original as { id: string }).id));
+            }
             if (data.type === 'chapter') {
                 if (!event?.ctrlKey && !event?.shiftKey) {
                     emit('select-chapter', data.original);

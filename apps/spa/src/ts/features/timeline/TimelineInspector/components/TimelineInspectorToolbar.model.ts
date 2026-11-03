@@ -5,6 +5,7 @@ export interface TimelineInspectorToolbarProps {
   filteredEventsCount: number;
   filteredChaptersCount: number;
   filteredChapters: InspectorChapter[];
+  volumeOptions?: Array<{ id: string; title: string }>;
   isLoading: boolean;
 }
 

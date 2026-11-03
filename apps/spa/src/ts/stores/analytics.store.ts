@@ -10,6 +10,7 @@ import {
 export interface MatrixChapter {
   id: string;
   title: string;
+  volume_id?: string | null;
   sort_order: number;
   word_count: number;
 }

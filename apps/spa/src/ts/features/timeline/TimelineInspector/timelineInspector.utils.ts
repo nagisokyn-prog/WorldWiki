@@ -12,9 +12,19 @@ import {
   getInspectorKindMeta
 } from './TimelineInspector.model';
 
-export function normalizeId(id?: string | null): string {
+export function normalizeId(id?: unknown): string {
   if (!id) return '';
-  return String(id).replace(/^(chapters|plot_promises|timeline_events|entities):/, '');
+  if (typeof id === 'object' && id !== null) {
+    const obj = id as Record<string, unknown>;
+    if (obj.id) return normalizeId(obj.id);
+    if (obj.String) return normalizeId(obj.String);
+    return '';
+  }
+  return String(id)
+    .replace(/^⟨|⟩$/g, '')
+    .replace(/^[a-zA-Z0-9_-]+:/, '')
+    .replace(/^⟨|⟩$/g, '')
+    .trim();
 }
 
 export function getEventId(ev: InspectorEvent): string {
@@ -96,7 +106,7 @@ export function buildFilteredChapters(
   allEvents: InspectorEvent[],
   readerHorizonOrder: number | null
 ): InspectorChapter[] {
-  let chs = [...rawChapters].sort((a, b) => a.sort_order - b.sort_order);
+  let chs = [...rawChapters];
   if (readerHorizonOrder !== null) {
     chs = chs.filter((c, idx) => {
       const order = (c.sort_order && Number(c.sort_order) > 0) ? Number(c.sort_order) : (idx + 1);
@@ -105,7 +115,8 @@ export function buildFilteredChapters(
   }
 
   return chs.map((ch, idx) => {
-    const order = (ch.sort_order && Number(ch.sort_order) > 0) ? Number(ch.sort_order) : (idx + 1);
+    const rawOrder = ch.sort_order ? Number(ch.sort_order) : 0;
+    const order = (rawOrder > 0 && rawOrder < 1000) ? rawOrder : (idx + 1);
     const title = ch.title && ch.title.trim() ? ch.title.trim() : `Глава #${order}`;
     const cleanChId = normalizeId(ch.id);
     const chEvents = allEvents.filter((ev) =>
@@ -169,6 +180,13 @@ export function filterInspectorEvents(
     if (filters.showFlashbacksOnly) {
       const isFb = checkIsFlashback(ev, chaptersList, rawEvents);
       if (!isFb) return false;
+    }
+    if (filters.selectedVolumeId && filters.selectedVolumeId !== 'all') {
+      const allowedChIds = new Set(chaptersList.map((c) => normalizeId(c.id)));
+      if (ev.reveals && ev.reveals.length > 0) {
+        const isInVolume = ev.reveals.some((r) => allowedChIds.has(normalizeId(r.chapter_id)));
+        if (!isInVolume) return false;
+      }
     }
     return true;
   });

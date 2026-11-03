@@ -10,6 +10,14 @@
     </div>
 
     <div class="inspector-toolbar-controls">
+      <!-- Фильтр по томам -->
+      <div v-if="volumeOptions && volumeOptions.length > 1" class="inspector-control-group">
+        <span class="control-label">Том:</span>
+        <select v-model="filters.selectedVolumeId" class="inspector-select" title="Фильтр по томам">
+          <option v-for="v in volumeOptions" :key="v.id" :value="v.id">📚 {{ v.title }}</option>
+        </select>
+      </div>
+
       <!-- Режим связей стрелками -->
       <div class="inspector-control-group">
         <span class="control-label">Связи:</span>

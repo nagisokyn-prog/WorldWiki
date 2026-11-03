@@ -34,6 +34,16 @@
     </div>
 
     <div class="toolbar-filters">
+      <!-- Volume Select -->
+      <select
+        v-if="volumeOptions && volumeOptions.length > 1"
+        v-model="filter.selectedVolumeId"
+        class="filter-select"
+        title="Фильтр по томам"
+      >
+        <option v-for="v in volumeOptions" :key="v.id" :value="v.id">📚 {{ v.title }}</option>
+      </select>
+
       <!-- Search Input -->
       <div class="search-box">
         <span class="search-icon">🔍</span>

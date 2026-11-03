@@ -10,6 +10,7 @@ import type {
   PlanningPanelEmitFn,
   TapestryChapterNode,
   TapestryTodo,
+  TapestryVolumeBlock,
   DependencyCandidate
 } from './PlanningPanel.model';
 import {
@@ -30,16 +31,31 @@ export function usePlanningPanel(
   const storyArcsStore = useStoryArcsStore();
 
   const loading = ref(false);
+  const volumeBlocks = ref<TapestryVolumeBlock[]>([]);
   const chaptersList = ref<TapestryChapterNode[]>([]);
   const backlogTodos = ref<TapestryTodo[]>([]);
   const expandedChapters = ref<Set<string>>(new Set());
   const manuallyCollapsedChapters = ref<Set<string>>(new Set());
-  const isVolumeCollapsed = ref(false);
+  const collapsedVolumeIds = ref<Set<string>>(new Set());
+  const selectedVolumeIdOverride = ref<string | null>(null);
+
+  const addingChapterVolumeId = ref<string | null>(null);
+  const newChapterTitle = ref('');
+  const chapterInputRef = ref<HTMLInputElement | null>(null);
+
+  const isAddingVolume = ref(false);
+  const newVolumeTitle = ref('');
+  const volumeInputRef = ref<HTMLInputElement | null>(null);
+
+  const isHelpOpen = ref(false);
 
   const currentProject = computed(() => props.project || chapterStore.currentChapter?.project_id || 'default');
+  const allVolumes = computed(() => chapterStore.hierarchy?.volumes || []);
 
   const resolvedVolumeId = computed(() => {
+    if (selectedVolumeIdOverride.value) return selectedVolumeIdOverride.value;
     if (props.volumeId) return props.volumeId;
+    if (chapterStore.selectedVolumeId) return chapterStore.selectedVolumeId;
     if (chapterStore.currentVolume?.id) return chapterStore.currentVolume.id;
     if (chapterStore.hierarchy?.volumes?.[0]?.id) return chapterStore.hierarchy.volumes[0].id;
     const firstChapterWithVolume = (chapterStore.hierarchy?.chapters || chapterStore.chapters || []).find(
@@ -52,6 +68,13 @@ export function usePlanningPanel(
   const currentChapterIdRef = computed(() => props.currentChapterId);
 
   const volumeTitle = computed(() => {
+    if (resolvedVolumeId.value) {
+      const cleanTarget = getCleanId(resolvedVolumeId.value);
+      const v = (chapterStore.hierarchy?.volumes || []).find(
+        (vol) => getCleanId(vol.id) === cleanTarget
+      );
+      if (v?.title) return v.title;
+    }
     return (
       props.volumeTitle ||
       chapterStore.currentVolume?.title ||
@@ -65,6 +88,22 @@ export function usePlanningPanel(
   });
 
   const volumeStats = computed(() => calculateVolumeStats(chaptersList.value, backlogTodos.value));
+
+  const totalStats = computed(() => {
+    let total = 0;
+    let done = 0;
+    let inProgress = 0;
+    let planned = 0;
+    let blocked = 0;
+    for (const b of volumeBlocks.value) {
+      total += b.stats.total;
+      done += b.stats.done;
+      inProgress += b.stats.inProgress;
+      planned += b.stats.planned;
+      blocked += b.stats.blocked;
+    }
+    return { total, done, inProgress, planned, blocked };
+  });
 
   const allVolumeTodos = computed<DependencyCandidate[]>(() => {
     const result: DependencyCandidate[] = [];
@@ -109,9 +148,12 @@ export function usePlanningPanel(
     });
   }
 
-  const isAddingChapter = ref(false);
-  const newChapterTitle = ref('');
-  const chapterInputRef = ref<HTMLInputElement | null>(null);
+  const isVolumeCollapsed = computed(() => {
+    if (!resolvedVolumeId.value) return false;
+    return collapsedVolumeIds.value.has(getCleanId(resolvedVolumeId.value));
+  });
+
+  const isAddingChapter = computed(() => addingChapterVolumeId.value !== null);
 
   const todos = usePlanningTodos(
     chaptersList,
@@ -124,79 +166,150 @@ export function usePlanningPanel(
   const loadTapestryData = async () => {
     loading.value = true;
     try {
-      if (!chapterStore.hierarchy?.chapters?.length) {
+      if (!chapterStore.hierarchy?.chapters?.length && currentProject.value) {
         await chapterStore.loadChapters(currentProject.value);
       }
 
       const allChapters = chapterStore.hierarchy?.chapters || chapterStore.chapters || [];
-      const resolvedVol =
-        resolvedVolumeId.value ||
-        chapterStore.currentVolume?.id ||
-        chapterStore.hierarchy?.volumes?.[0]?.id ||
-        null;
-
-      const cleanVolId = resolvedVol ? getCleanId(resolvedVol) : null;
-      let volumeChapters = cleanVolId
-        ? allChapters.filter((c) => getCleanId(c.volume_id) === cleanVolId)
-        : allChapters;
-
-      if (volumeChapters.length === 0 && allChapters.length > 0) {
-        volumeChapters = allChapters;
-      }
-
-      const [backlogRaw, ...chapterTodosResults] = await Promise.all([
-        cleanVolId
-          ? api.getTodos(getQualifiedOwnerId(cleanVolId, 'volume')).catch(() => [] as Todo[])
-          : Promise.resolve([] as Todo[]),
-        ...volumeChapters.map((ch) =>
-          api.getTodos(getQualifiedOwnerId(getCleanId(ch.id), 'chapter')).catch(() => [] as Todo[])
-        ),
-      ]);
-
-      backlogTodos.value = (backlogRaw || []).map(mapToTapestryTodo);
+      const rawVolumes = chapterStore.hierarchy?.volumes && chapterStore.hierarchy.volumes.length > 0
+        ? chapterStore.hierarchy.volumes
+        : [{ id: 'volumes:default', title: 'Основной том' }];
 
       const currentCleanId = props.currentChapterId ? getCleanId(props.currentChapterId) : null;
       if (currentCleanId && !expandedChapters.value.has(currentCleanId) && !manuallyCollapsedChapters.value.has(currentCleanId)) {
         expandedChapters.value.add(currentCleanId);
       }
 
-      const nodes: TapestryChapterNode[] = [];
-      for (let i = 0; i < volumeChapters.length; i++) {
-        const ch = volumeChapters[i];
+      const volBacklogPromises = rawVolumes.map((v) => {
+        const cleanVId = getCleanId(v.id);
+        return api.getTodos(getQualifiedOwnerId(cleanVId, 'volume')).catch(() => [] as Todo[]);
+      });
+
+      const chTodosPromises = allChapters.map((ch) => {
         const cleanChId = getCleanId(ch.id);
-        const chTodos = (chapterTodosResults[i] || []).map(mapToTapestryTodo);
+        return api.getTodos(getQualifiedOwnerId(cleanChId, 'chapter')).catch(() => [] as Todo[]);
+      });
 
-        const { arcGroups, standaloneTodos } = buildChapterArcGroups(
-          chTodos,
-          cleanChId,
-          allProjectArcs.value,
-          storyArcsStore.arcChapters
-        );
+      const [volBacklogs, chTodos] = await Promise.all([
+        Promise.all(volBacklogPromises),
+        Promise.all(chTodosPromises),
+      ]);
 
-        let doneCount = standaloneTodos.filter(t => t.status === 'done' || t.done).length;
-        let totalCount = standaloneTodos.length;
-        for (const grp of arcGroups) {
-          doneCount += grp.todos.filter(t => t.status === 'done' || t.done).length;
-          totalCount += grp.todos.length;
-        }
+      const chTodosMap = new Map<string, TapestryTodo[]>();
+      allChapters.forEach((ch, idx) => {
+        const cleanChId = getCleanId(ch.id);
+        chTodosMap.set(cleanChId, (chTodos[idx] || []).map(mapToTapestryTodo));
+      });
 
-        const isCurrent = currentCleanId === cleanChId;
-        nodes.push({
-          chapterId: ch.id || '',
-          title: ch.title || `Глава ${ch.sort_order ?? ''}`,
-          sortOrder: typeof ch.sort_order === 'bigint' ? Number(ch.sort_order) : (ch.sort_order ?? 0),
-          isCurrent,
-          isCollapsed: !expandedChapters.value.has(cleanChId),
-          arcGroups,
-          standaloneTodos,
-          doneCount,
-          totalCount
+      const blocks: TapestryVolumeBlock[] = [];
+      const assignedChapterIds = new Set<string>();
+
+      rawVolumes.forEach((vol, vIdx) => {
+        const rawVolId = vol.id || `volumes:vol_${vIdx}`;
+        const cleanVolId = getCleanId(rawVolId);
+        const volTitle = vol.title || `Том ${vIdx + 1}`;
+        const volBacklog = (volBacklogs[vIdx] || []).map(mapToTapestryTodo);
+
+        const matchingChapters = allChapters.filter((c) => {
+          if (!c.volume_id && vIdx === 0) return true;
+          return getCleanId(c.volume_id) === cleanVolId;
         });
+
+        matchingChapters.forEach((c) => assignedChapterIds.add(getCleanId(c.id)));
+
+        const chapterNodes: TapestryChapterNode[] = matchingChapters.map((ch) => {
+          const cleanChId = getCleanId(ch.id);
+          const rawTodos = chTodosMap.get(cleanChId) || [];
+          const { arcGroups, standaloneTodos } = buildChapterArcGroups(
+            rawTodos,
+            cleanChId,
+            allProjectArcs.value,
+            storyArcsStore.arcChapters
+          );
+
+          let doneCount = standaloneTodos.filter((t) => t.status === 'done' || t.done).length;
+          let totalCount = standaloneTodos.length;
+          for (const grp of arcGroups) {
+            doneCount += grp.todos.filter((t) => t.status === 'done' || t.done).length;
+            totalCount += grp.todos.length;
+          }
+
+          return {
+            chapterId: ch.id || '',
+            title: ch.title || `Глава ${ch.sort_order ?? ''}`,
+            sortOrder: typeof ch.sort_order === 'bigint' ? Number(ch.sort_order) : (ch.sort_order ?? 0),
+            isCurrent: currentCleanId === cleanChId,
+            isCollapsed: !expandedChapters.value.has(cleanChId),
+            arcGroups,
+            standaloneTodos,
+            doneCount,
+            totalCount
+          };
+        });
+
+        chapterNodes.sort((a, b) => a.sortOrder - b.sortOrder);
+
+        const stats = calculateVolumeStats(chapterNodes, volBacklog);
+        const chapterOptions = chapterNodes.map((c) => ({
+          chapterId: c.chapterId,
+          title: c.title
+        }));
+
+        blocks.push({
+          volumeId: rawVolId,
+          cleanVolumeId: cleanVolId,
+          title: volTitle,
+          isCollapsed: collapsedVolumeIds.value.has(cleanVolId),
+          stats,
+          chapters: chapterNodes,
+          chapterOptions,
+          backlogTodos: volBacklog
+        });
+      });
+
+      // Handle unassigned chapters in extra block if needed
+      const remainingChapters = allChapters.filter(c => !assignedChapterIds.has(getCleanId(c.id)));
+      if (remainingChapters.length > 0 && rawVolumes.length > 0) {
+        const firstBlock = blocks[0];
+        const extraNodes = remainingChapters.map((ch) => {
+          const cleanChId = getCleanId(ch.id);
+          const rawTodos = chTodosMap.get(cleanChId) || [];
+          const { arcGroups, standaloneTodos } = buildChapterArcGroups(
+            rawTodos,
+            cleanChId,
+            allProjectArcs.value,
+            storyArcsStore.arcChapters
+          );
+          let doneCount = standaloneTodos.filter((t) => t.status === 'done' || t.done).length;
+          let totalCount = standaloneTodos.length;
+          for (const grp of arcGroups) {
+            doneCount += grp.todos.filter((t) => t.status === 'done' || t.done).length;
+            totalCount += grp.todos.length;
+          }
+          return {
+            chapterId: ch.id || '',
+            title: ch.title || `Глава ${ch.sort_order ?? ''}`,
+            sortOrder: typeof ch.sort_order === 'bigint' ? Number(ch.sort_order) : (ch.sort_order ?? 0),
+            isCurrent: currentCleanId === cleanChId,
+            isCollapsed: !expandedChapters.value.has(cleanChId),
+            arcGroups,
+            standaloneTodos,
+            doneCount,
+            totalCount
+          };
+        });
+        firstBlock.chapters.push(...extraNodes);
+        firstBlock.chapters.sort((a, b) => a.sortOrder - b.sortOrder);
+        firstBlock.stats = calculateVolumeStats(firstBlock.chapters, firstBlock.backlogTodos);
+        firstBlock.chapterOptions = firstBlock.chapters.map(c => ({ chapterId: c.chapterId, title: c.title }));
       }
 
-      nodes.sort((a, b) => a.sortOrder - b.sortOrder);
-      linkCrossChapterCausality(nodes);
-      chaptersList.value = nodes;
+      const allNodes = blocks.flatMap((b) => b.chapters);
+      linkCrossChapterCausality(allNodes);
+
+      volumeBlocks.value = blocks;
+      chaptersList.value = allNodes;
+      backlogTodos.value = blocks.flatMap((b) => b.backlogTodos);
     } catch (e) {
       console.error('[usePlanningPanel] Error loading tapestry:', e);
       appAlert('Не удалось загрузить задачи плана');
@@ -214,18 +327,37 @@ export function usePlanningPanel(
       expandedChapters.value.add(cleanId);
       manuallyCollapsedChapters.value.delete(cleanId);
     }
-    const ch = chaptersList.value.find(c => getCleanId(c.chapterId) === cleanId);
-    if (ch) {
-      ch.isCollapsed = !expandedChapters.value.has(cleanId);
+
+    for (const block of volumeBlocks.value) {
+      const ch = block.chapters.find((c) => getCleanId(c.chapterId) === cleanId);
+      if (ch) {
+        ch.isCollapsed = !expandedChapters.value.has(cleanId);
+      }
+    }
+    const flatCh = chaptersList.value.find((c) => getCleanId(c.chapterId) === cleanId);
+    if (flatCh) {
+      flatCh.isCollapsed = !expandedChapters.value.has(cleanId);
     }
   }
 
-  function toggleVolumeCollapse() {
-    isVolumeCollapsed.value = !isVolumeCollapsed.value;
+  function toggleVolumeCollapse(volId?: string) {
+    const targetVol = volId || resolvedVolumeId.value || volumeBlocks.value[0]?.volumeId;
+    if (!targetVol) return;
+    const cleanVol = getCleanId(targetVol);
+    if (collapsedVolumeIds.value.has(cleanVol)) {
+      collapsedVolumeIds.value.delete(cleanVol);
+    } else {
+      collapsedVolumeIds.value.add(cleanVol);
+    }
+
+    const block = volumeBlocks.value.find((b) => b.cleanVolumeId === cleanVol);
+    if (block) {
+      block.isCollapsed = collapsedVolumeIds.value.has(cleanVol);
+    }
   }
 
-  function startAddingChapter() {
-    isAddingChapter.value = true;
+  function startAddingChapter(volId?: string) {
+    addingChapterVolumeId.value = volId || resolvedVolumeId.value || volumeBlocks.value[0]?.volumeId || null;
     newChapterTitle.value = '';
     nextTick(() => {
       chapterInputRef.value?.focus();
@@ -233,26 +365,46 @@ export function usePlanningPanel(
   }
 
   function cancelAddChapter() {
-    isAddingChapter.value = false;
+    addingChapterVolumeId.value = null;
     newChapterTitle.value = '';
   }
 
-  async function addPlannedChapter(titleInput?: string) {
-    const title = (typeof titleInput === 'string' ? titleInput : newChapterTitle.value).trim();
+  async function addPlannedChapter(volIdOrTitle?: string, titleInput?: string) {
+    let targetVolId: string | undefined;
+    let title: string;
+
+    if (titleInput !== undefined) {
+      targetVolId = volIdOrTitle;
+      title = titleInput.trim();
+    } else if (
+      volIdOrTitle &&
+      !newChapterTitle.value.trim() &&
+      !volumeBlocks.value.some(b => b.volumeId === volIdOrTitle || b.cleanVolumeId === getCleanId(volIdOrTitle))
+    ) {
+      // Called directly with title as first argument (e.g. in unit tests or programmatic invocation)
+      title = volIdOrTitle.trim();
+      targetVolId = addingChapterVolumeId.value || resolvedVolumeId.value || chapterStore.hierarchy?.volumes?.[0]?.id || 'volumes:vol_1';
+    } else {
+      targetVolId = volIdOrTitle || addingChapterVolumeId.value || resolvedVolumeId.value || chapterStore.hierarchy?.volumes?.[0]?.id || 'volumes:vol_1';
+      title = (newChapterTitle.value || volIdOrTitle || '').trim();
+    }
+
     if (!title) {
       cancelAddChapter();
       return;
     }
 
-    const volId = resolvedVolumeId.value || chapterStore.currentVolume?.id || chapterStore.hierarchy?.volumes?.[0]?.id;
-    if (!volId) return;
+    if (!targetVolId) return;
 
     try {
-      const highestOrder = chaptersList.value.reduce((max, c) => Math.max(max, c.sortOrder), 0);
+      const cleanVolId = getCleanId(targetVolId);
+      const targetBlock = volumeBlocks.value.find(b => b.cleanVolumeId === cleanVolId);
+      const chsInVol = targetBlock ? targetBlock.chapters : chaptersList.value;
+      const highestOrder = chsInVol.reduce((max, c) => Math.max(max, c.sortOrder), 0);
       const nextSortOrder = highestOrder + 1;
 
       const newCh = chapterService.createNew(title);
-      const fullVolId = getQualifiedOwnerId(getCleanId(volId), 'volume');
+      const fullVolId = getQualifiedOwnerId(cleanVolId, 'volume');
       newCh.volume_id = fullVolId;
       newCh.sort_order = nextSortOrder as unknown as bigint;
 
@@ -272,6 +424,12 @@ export function usePlanningPanel(
         doneCount: 0,
         totalCount: 0
       };
+
+      if (targetBlock) {
+        targetBlock.chapters.push(newNode);
+        targetBlock.stats = calculateVolumeStats(targetBlock.chapters, targetBlock.backlogTodos);
+        targetBlock.chapterOptions = targetBlock.chapters.map(c => ({ chapterId: c.chapterId, title: c.title }));
+      }
       chaptersList.value.push(newNode);
 
       if (chapterStore.hierarchy?.chapters) {
@@ -293,8 +451,39 @@ export function usePlanningPanel(
     }
   }
 
-  async function submitAddChapter() {
-    await addPlannedChapter();
+  async function submitAddChapter(volId?: string) {
+    await addPlannedChapter(volId);
+  }
+
+  function startAddVolume() {
+    isAddingVolume.value = true;
+    newVolumeTitle.value = '';
+    nextTick(() => {
+      volumeInputRef.value?.focus();
+    });
+  }
+
+  function cancelAddVolume() {
+    isAddingVolume.value = false;
+    newVolumeTitle.value = '';
+  }
+
+  async function submitAddVolume() {
+    const title = newVolumeTitle.value.trim();
+    if (!title) {
+      cancelAddVolume();
+      return;
+    }
+    try {
+      await api.createVolume(currentProject.value, title);
+      await chapterStore.loadChapters(currentProject.value);
+      cancelAddVolume();
+      await loadTapestryData();
+      emit?.('change');
+    } catch (e) {
+      console.error('[submitAddVolume ERROR]:', e);
+      appAlert('Не удалось создать новый том');
+    }
   }
 
   async function attachArc(
@@ -318,6 +507,24 @@ export function usePlanningPanel(
     }
   }
 
+  function selectVolume(volId: string) {
+    selectedVolumeIdOverride.value = volId;
+    chapterStore.selectVolume(volId);
+    loadTapestryData();
+  }
+
+  function toggleHelp() {
+    isHelpOpen.value = !isHelpOpen.value;
+  }
+
+  async function addBacklogToVolume(volId: string, payload: { ownerId?: string; text: string }) {
+    await todos.addBacklog({
+      ownerId: volId,
+      text: payload.text
+    });
+    await loadTapestryData();
+  }
+
   if (getCurrentInstance()) {
     onMounted(() => {
       loadTapestryData();
@@ -330,6 +537,7 @@ export function usePlanningPanel(
       () => props.currentChapterId,
       () => props.selectedArcFilter,
       () => chapterStore.hierarchy?.chapters?.length,
+      () => chapterStore.hierarchy?.volumes?.length,
       () => chapterStore.currentVolume?.id,
     ],
     () => {
@@ -339,16 +547,29 @@ export function usePlanningPanel(
 
   return {
     loading,
+    volumeBlocks,
     chaptersList,
     backlogTodos,
     allProjectArcs,
     volumeTitle,
     volumeStats,
+    totalStats,
+    allVolumes,
     resolvedVolumeId,
+    selectVolume,
     isVolumeCollapsed,
+    addingChapterVolumeId,
     isAddingChapter,
     newChapterTitle,
     chapterInputRef,
+    isAddingVolume,
+    newVolumeTitle,
+    volumeInputRef,
+    isHelpOpen,
+    toggleHelp,
+    startAddVolume,
+    cancelAddVolume,
+    submitAddVolume,
     load: loadTapestryData,
     loadTapestryData,
     toggleCollapse,
@@ -361,6 +582,7 @@ export function usePlanningPanel(
     saveTodo: todos.saveTodo,
     addTodo: todos.addTodo,
     addBacklog: todos.addBacklog,
+    addBacklogToVolume,
     deleteTodo: todos.deleteTodo,
     startAddingChapter,
     cancelAddChapter,

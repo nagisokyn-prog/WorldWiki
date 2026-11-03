@@ -222,5 +222,40 @@ describe('useCrossReferenceMatrix Composable', () => {
     expect(cell?.hasMention).toBe(true);
     expect(cell?.count).toBe(2);
   });
+
+  it('filters chapters and matrix rows by selectedVolumeId', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'ch:1', title: 'Глава 1', volume_id: 'volumes:vol_1', sort_order: 1, word_count: 1000 },
+        { id: 'ch:2', title: 'Глава 2', volume_id: 'volumes:vol_2', sort_order: 2, word_count: 1200 },
+      ],
+      entities: [
+        {
+          id: 'ent:1',
+          name: 'Герой',
+          entity_type: 'character',
+          appearances: [
+            { chapter_id: 'ch:1', source: 'scene' },
+            { chapter_id: 'ch:2', source: 'scene' },
+          ],
+        },
+      ],
+    };
+
+    const { filters, chapters } = useCrossReferenceMatrix('test_proj');
+    expect(chapters.value).toHaveLength(2);
+
+    filters.value.selectedVolumeId = 'vol_1';
+    expect(chapters.value).toHaveLength(1);
+    expect(chapters.value[0].id).toBe('ch:1');
+
+    filters.value.selectedVolumeId = 'vol_2';
+    expect(chapters.value).toHaveLength(1);
+    expect(chapters.value[0].id).toBe('ch:2');
+
+    filters.value.selectedVolumeId = 'all';
+    expect(chapters.value).toHaveLength(2);
+  });
 });
 

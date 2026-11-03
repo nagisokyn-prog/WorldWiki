@@ -11,6 +11,21 @@ import type {
   ChapterColumnSummary,
 } from './CrossReferenceMatrix.model';
 
+export function normalizeCleanId(val?: unknown): string {
+  if (!val) return '';
+  if (typeof val === 'object' && val !== null) {
+    const obj = val as Record<string, unknown>;
+    if (obj.id) return normalizeCleanId(obj.id);
+    if (obj.String) return normalizeCleanId(obj.String);
+    return '';
+  }
+  return String(val)
+    .replace(/^⟨|⟩$/g, '')
+    .replace(/^[a-zA-Z0-9_-]+:/, '')
+    .replace(/^⟨|⟩$/g, '')
+    .trim();
+}
+
 export function getRoleWeight(role?: string | null): number {
   if (!role) return 1;
   const r = role.toLowerCase().trim();
@@ -72,7 +87,7 @@ export function buildEntityPresenceRow(
   const rawApps = entity.appearances_by_chapter || entity.appearances || [];
   rawApps.forEach((app) => {
     if (!app.chapter_id) return;
-    const cleanId = app.chapter_id.replace(/^chapters:/, '');
+    const cleanId = normalizeCleanId(app.chapter_id);
     const existing = appearancesMap.get(cleanId) || {
       hasScene: false,
       hasMention: false,
@@ -100,7 +115,7 @@ export function buildEntityPresenceRow(
   const cellList: Array<CellStatusInfo & { chapterId: string; chapterTitle: string }> = [];
 
   chapters.forEach((ch, idx) => {
-    const cleanChId = ch.id.replace(/^chapters:/, '');
+    const cleanChId = normalizeCleanId(ch.id);
     const app = appearancesMap.get(cleanChId);
 
     let status: AppearanceStatus = 'absent';
@@ -172,12 +187,15 @@ export function buildChapterColumns(
   chapters: MatrixChapter[],
   chapterStats: Map<string, { scenes: number; mentions: number; total: number }>
 ): ChapterColumnSummary[] {
-  return chapters.map((ch) => {
+  return chapters.map((ch, idx) => {
     const st = chapterStats.get(ch.id) || { scenes: 0, mentions: 0, total: 0 };
+    const displayOrder = (ch.sort_order > 0 && ch.sort_order < 1000) ? ch.sort_order : (idx + 1);
     return {
       id: ch.id,
-      sort_order: ch.sort_order,
+      sort_order: displayOrder,
       title: ch.title,
+      volume_id: ch.volume_id,
+      volume_title: (ch as unknown as { volume_title?: string }).volume_title,
       word_count: ch.word_count,
       formattedWordCount: formatWordCount(ch.word_count),
       uniqueEntities: st.total,

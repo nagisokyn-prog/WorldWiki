@@ -6,6 +6,7 @@ export interface ChekhovTrackerToolbarProps {
   itemsCount: number;
   totalCount: number;
   itemTypes: string[];
+  volumeOptions?: Array<{ id: string; title: string }>;
 }
 
 export type ChekhovTrackerToolbarEmits = {

@@ -23,6 +23,7 @@ export interface GunTrackerFilterState {
   itemType: string;
   usageState: string;
   scope: GunTrackerScope;
+  selectedVolumeId?: string;
 }
 
 export interface LocatePromisePayload {

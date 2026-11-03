@@ -22,6 +22,15 @@
       </div>
 
       <select
+        v-if="volumeOptions && volumeOptions.length > 1"
+        v-model="filters.selectedVolumeId"
+        class="matrix-select"
+        title="Фильтр по томам"
+      >
+        <option v-for="v in volumeOptions" :key="v.id" :value="v.id">📚 {{ v.title }}</option>
+      </select>
+
+      <select
         v-model="filters.selectedEntityType"
         class="matrix-select"
       >

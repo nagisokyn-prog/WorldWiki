@@ -17,6 +17,21 @@ import type {
 import { isGunItem, buildGunJourneyReport } from './chekhovGunTracker.utils';
 export { isGunItem, buildGunJourneyReport };
 
+function cleanId(val?: unknown): string {
+  if (!val) return '';
+  if (typeof val === 'object' && val !== null) {
+    const obj = val as Record<string, unknown>;
+    if (obj.id) return cleanId(obj.id);
+    if (obj.String) return cleanId(obj.String);
+    return '';
+  }
+  return String(val)
+    .replace(/^⟨|⟩$/g, '')
+    .replace(/^[a-zA-Z0-9_-]+:/, '')
+    .replace(/^⟨|⟩$/g, '')
+    .trim();
+}
+
 export function useChekhovGunTracker(
   projectIdOrProps: MaybeRef<string> | ChekhovGunTrackerProps,
   emit?: ChekhovGunTrackerEmits
@@ -36,6 +51,7 @@ export function useChekhovGunTracker(
     itemType: 'all',
     usageState: 'all',
     scope: 'guns',
+    selectedVolumeId: 'all',
   });
 
   const selectedItem = ref<TrackedItem | null>(null);
@@ -46,19 +62,59 @@ export function useChekhovGunTracker(
   const isLoading = computed(() => store.itemTrackerLoading);
   const rawItems = computed<TrackedItem[]>(() => store.itemTracker?.items ?? []);
 
+  const volumeOptions = computed(() => {
+    const list: Array<{ id: string; title: string }> = [{ id: 'all', title: 'Все тома' }];
+    const known = new Set<string>();
+    (chapterStore.hierarchy?.volumes || []).forEach((v) => {
+      const clean = cleanId(v.id);
+      if (clean && !known.has(clean)) {
+        known.add(clean);
+        list.push({ id: clean, title: v.title || `Том ${clean}` });
+      }
+    });
+    (chapterStore.hierarchy?.chapters || chapterStore.chapters || []).forEach((ch) => {
+      const vId = cleanId(ch.volume_id);
+      if (vId && !known.has(vId)) {
+        known.add(vId);
+        list.push({ id: vId, title: `Том ${vId}` });
+      }
+    });
+    return list;
+  });
+
   const gunsCount = computed(() => rawItems.value.filter(isGunItem).length);
   const itemsCount = computed(() => rawItems.value.filter((i) => !isGunItem(i)).length);
   const totalCount = computed(() => rawItems.value.length);
 
-  // Фильтрация элементов по выбранному срезу: ружья / артефакты / всё
+  // Фильтрация элементов по выбранному срезу: ружья / артефакты / всё + фильтрация по тому
   const scopedItems = computed<TrackedItem[]>(() => {
+    let list = rawItems.value;
     if (filter.value.scope === 'guns') {
-      return rawItems.value.filter(isGunItem);
+      list = list.filter(isGunItem);
+    } else if (filter.value.scope === 'items') {
+      list = list.filter((i) => !isGunItem(i));
     }
-    if (filter.value.scope === 'items') {
-      return rawItems.value.filter((i) => !isGunItem(i));
+
+    if (filter.value.selectedVolumeId && filter.value.selectedVolumeId !== 'all') {
+      const cleanTarget = cleanId(filter.value.selectedVolumeId);
+      const volumeChapterIds = new Set<string>();
+      (chapterStore.hierarchy?.chapters || chapterStore.chapters || []).forEach((ch) => {
+        const cVol = cleanId(ch.volume_id);
+        if (cVol === cleanTarget) {
+          volumeChapterIds.add(cleanId(ch.id));
+        }
+      });
+
+      list = list.filter((item) => {
+        if (!item.custody_chain || item.custody_chain.length === 0) return true;
+        return item.custody_chain.some((c) => {
+          if (!c.chapter_id) return false;
+          return volumeChapterIds.has(cleanId(c.chapter_id));
+        });
+      });
     }
-    return rawItems.value;
+
+    return list;
   });
 
   // Динамическая сводка по текущему срезу
@@ -133,6 +189,9 @@ export function useChekhovGunTracker(
   async function loadData(force = false) {
     const pId = getProjectId();
     if (!pId) return;
+    if (!chapterStore.hierarchy?.volumes?.length) {
+      await chapterStore.loadChapters(pId);
+    }
     await store.loadItemTracker(pId, force);
   }
 
@@ -210,6 +269,7 @@ export function useChekhovGunTracker(
     filter,
     summary,
     isLoading,
+    volumeOptions,
     gunsCount,
     itemsCount,
     totalCount,

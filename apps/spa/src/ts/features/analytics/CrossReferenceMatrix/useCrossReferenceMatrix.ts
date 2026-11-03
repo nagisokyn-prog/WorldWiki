@@ -1,16 +1,20 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, toValue, type MaybeRef } from 'vue';
 import {
   useAnalyticsStore,
   type CrossReferenceMatrixData,
   type MatrixChapter,
   type MatrixEntity,
 } from '@/stores/analytics.store';
+import { useChapterStore } from '@/stores/chapter.store';
 import type {
   CrossReferenceFilterState,
+  CrossReferenceMatrixProps,
   EntityPresenceRow,
   ChapterColumnSummary,
+  MatrixVolumeGroup,
 } from './CrossReferenceMatrix.model';
 import {
+  normalizeCleanId,
   buildEntityPresenceRow,
   buildChapterColumns,
   formatWordCount,
@@ -21,8 +25,17 @@ import {
 
 export { getRoleWeight, formatWordCount, getEntityIcon, getEntityTypeLabel };
 
-export function useCrossReferenceMatrix(project: string) {
+export function useCrossReferenceMatrix(projectOrProps?: MaybeRef<string> | CrossReferenceMatrixProps) {
   const store = useAnalyticsStore();
+  const chapterStore = useChapterStore();
+
+  const getProjectId = () => {
+    const val = toValue(projectOrProps);
+    if (typeof val === 'object' && val !== null) {
+      return (val as CrossReferenceMatrixProps).project || chapterStore.currentChapter?.project_id || 'default';
+    }
+    return (val as string) || chapterStore.currentChapter?.project_id || 'default';
+  };
 
   const filters = ref<CrossReferenceFilterState>({
     searchQuery: '',
@@ -36,6 +49,33 @@ export function useCrossReferenceMatrix(project: string) {
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
 
+  const volumeOptions = computed(() => {
+    const list: Array<{ id: string; title: string }> = [{ id: 'all', title: 'Все тома' }];
+    const known = new Set<string>();
+
+    (chapterStore.hierarchy?.volumes || []).forEach((v) => {
+      const clean = normalizeCleanId(v.id);
+      if (clean && !known.has(clean)) {
+        known.add(clean);
+        list.push({ id: clean, title: v.title || `Том ${clean}` });
+      }
+    });
+
+    const allChs = [
+      ...(chapterStore.hierarchy?.chapters || chapterStore.chapters || []),
+      ...(matrixData.value?.chapters || []),
+    ];
+    allChs.forEach((c) => {
+      const vId = normalizeCleanId(c.volume_id);
+      if (vId && !known.has(vId)) {
+        known.add(vId);
+        list.push({ id: vId, title: `Том ${vId}` });
+      }
+    });
+
+    return list;
+  });
+
   const availableEntityTypes = computed(() => {
     if (!matrixData.value) return [];
     const set = new Set<string>();
@@ -47,7 +87,48 @@ export function useCrossReferenceMatrix(project: string) {
 
   const chapters = computed<MatrixChapter[]>(() => {
     if (!matrixData.value) return [];
-    return [...matrixData.value.chapters].sort((a, b) => a.sort_order - b.sort_order);
+    const hierarchyChapters = chapterStore.hierarchy?.chapters || chapterStore.chapters || [];
+    const volMap = new Map<string, string>();
+    const volOrderMap = new Map<string, number>();
+    const volTitleMap = new Map<string, string>();
+
+    (chapterStore.hierarchy?.volumes || []).forEach((v, vIdx) => {
+      const cleanV = normalizeCleanId(v.id);
+      volOrderMap.set(cleanV, vIdx);
+      if (v.title) volTitleMap.set(cleanV, v.title);
+    });
+
+    hierarchyChapters.forEach((hc) => {
+      const cleanChId = normalizeCleanId(hc.id);
+      const cleanVolId = normalizeCleanId(hc.volume_id);
+      if (cleanChId && cleanVolId) {
+        volMap.set(cleanChId, cleanVolId);
+      }
+    });
+
+    let list = matrixData.value.chapters.map((c) => {
+      const cleanId = normalizeCleanId(c.id);
+      const resolvedVol = normalizeCleanId(c.volume_id) || volMap.get(cleanId) || '';
+      const rawTitle = (c as unknown as { volume_title?: string }).volume_title;
+      const resolvedTitle = rawTitle || volTitleMap.get(resolvedVol) || (resolvedVol ? `Том ${resolvedVol}` : 'Основной том');
+      return {
+        ...c,
+        volume_id: resolvedVol,
+        volume_title: resolvedTitle
+      };
+    });
+
+    if (filters.value.selectedVolumeId && filters.value.selectedVolumeId !== 'all') {
+      const cleanVol = normalizeCleanId(filters.value.selectedVolumeId);
+      list = list.filter((c) => normalizeCleanId(c.volume_id) === cleanVol);
+    }
+
+    return list.sort((a, b) => {
+      const vA = volOrderMap.get(normalizeCleanId(a.volume_id)) ?? 0;
+      const vB = volOrderMap.get(normalizeCleanId(b.volume_id)) ?? 0;
+      if (vA !== vB) return vA - vB;
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
   });
 
   const rows = computed<EntityPresenceRow[]>(() => {
@@ -101,25 +182,68 @@ export function useCrossReferenceMatrix(project: string) {
     return buildChapterColumns(chapters.value, chapterStats.value);
   });
 
+  const volumeGroups = computed<MatrixVolumeGroup[]>(() => {
+    const cols = chapterColumns.value;
+    if (!cols.length) return [];
+    const volTitleMap = new Map<string, string>();
+    (chapterStore.hierarchy?.volumes || []).forEach((v) => {
+      volTitleMap.set(normalizeCleanId(v.id), v.title || `Том ${normalizeCleanId(v.id)}`);
+    });
+
+    const groups: MatrixVolumeGroup[] = [];
+    let currentVolId: string | null = null;
+    let currentGroup: MatrixVolumeGroup | null = null;
+
+    for (const col of cols) {
+      const vId = normalizeCleanId(col.volume_id) || 'default';
+      const vTitle = col.volume_title || volTitleMap.get(vId) || (vId !== 'default' ? `Том ${vId}` : 'Основной том');
+      if (vId !== currentVolId || !currentGroup) {
+        currentVolId = vId;
+        currentGroup = {
+          volumeId: vId,
+          volumeTitle: vTitle,
+          chaptersCount: 1,
+        };
+        groups.push(currentGroup);
+      } else {
+        currentGroup.chaptersCount++;
+      }
+    }
+
+    return groups;
+  });
+
   const totalProjectAppearances = computed(() => {
     return rows.value.reduce((acc, r) => acc + r.totalAppearances, 0);
   });
 
-  const refresh = async () => {
-    if (project) {
-      await store.loadMatrix(project, true);
+  const loadData = async (force = false) => {
+    const proj = getProjectId();
+    if (proj) {
+      if (!chapterStore.hierarchy?.volumes?.length) {
+        await chapterStore.loadChapters(proj);
+      }
+      await store.loadMatrix(proj, force);
     }
   };
 
+  const refresh = async () => {
+    await loadData(true);
+  };
+
   onMounted(() => {
-    if (project && (!store.matrixData || store.currentProject !== project)) {
-      void store.loadMatrix(project);
-    }
+    void loadData();
+  });
+
+  watch(getProjectId, (newProj) => {
+    if (newProj) void loadData();
   });
 
   return {
     filters,
     matrixData,
+    volumeOptions,
+    volumeGroups,
     chapters,
     chapterColumns,
     rows,

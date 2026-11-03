@@ -6,6 +6,7 @@
       :filtered-events-count="filteredEvents.length"
       :filtered-chapters-count="filteredChapters.length"
       :filtered-chapters="filteredChapters"
+      :volume-options="volumeOptions"
       :is-loading="isLoading"
       @refresh="refresh"
     />
@@ -29,6 +30,35 @@
           <div class="axis-badge axis-badge-narrative">
             <span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)
           </div>
+
+          <!-- Скобки томов над главами (Volume Brackets) -->
+          <div
+            v-for="seg in volumeSegments"
+            :key="'vol-seg-' + seg.volumeId + '-' + seg.startIndex"
+            class="timeline-volume-bracket"
+            :style="{ left: seg.leftPx + 'px', width: seg.widthPx + 'px' }"
+          >
+            <div class="bracket-arm bracket-arm-left"></div>
+            <div class="bracket-pill" :title="`Том: ${seg.volumeTitle} (${seg.count} гл.)`">
+              <span class="vol-icon">📚</span>
+              <span class="vol-name">{{ seg.volumeTitle }}</span>
+              <span class="vol-count">({{ seg.count }} гл.)</span>
+            </div>
+            <div class="bracket-arm bracket-arm-right"></div>
+          </div>
+
+          <!-- Разделители томов на рельсе (Volume Boundary Divider) -->
+          <div
+            v-for="seg in volumeSegments.filter(s => s.boundaryLeftPx !== undefined)"
+            :key="'vol-bound-' + seg.volumeId"
+            class="timeline-volume-boundary-marker"
+            :style="{ left: seg.boundaryLeftPx + 'px' }"
+            :title="`Граница между томами: переход к «${seg.volumeTitle}»`"
+          >
+            <div class="boundary-line"></div>
+            <div class="boundary-dot"></div>
+          </div>
+
           <div class="axis-rail axis-rail-narrative"></div>
           
           <TimelineChapterNode
@@ -168,6 +198,8 @@ const emit = defineEmits<TimelineInspectorEmits>();
 
 const {
   filters,
+  volumeOptions,
+  volumeSegments,
   filteredChapters,
   formattedEvents,
   filteredEvents,

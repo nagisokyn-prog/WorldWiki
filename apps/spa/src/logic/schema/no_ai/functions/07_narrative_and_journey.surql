@@ -327,6 +327,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
         SELECT 
             type::string(id) AS id, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF volume_id != NONE AND volume_id != NULL THEN type::string(volume_id) ELSE NONE END AS volume_id,
             IF sort_order != NONE AND sort_order != NULL THEN sort_order ELSE 0 END AS sort_order
         FROM chapters
         WHERE volume_id.project_id = $p_rec
@@ -408,6 +409,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
         SELECT 
             type::string(id) AS id, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
+            IF volume_id != NONE AND volume_id != NULL THEN type::string(volume_id) ELSE NONE END AS volume_id,
             IF sort_order != NONE AND sort_order != NULL THEN sort_order ELSE 0 END AS sort_order
         FROM chapters
         WHERE volume_id.project_id = $p_rec

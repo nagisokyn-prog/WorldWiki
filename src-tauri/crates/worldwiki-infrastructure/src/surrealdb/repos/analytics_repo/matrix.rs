@@ -14,6 +14,10 @@ pub(crate) struct RawChapterHeader {
     #[serde(default)]
     pub title: Option<String>,
     #[serde(default)]
+    pub volume_id: Option<String>,
+    #[serde(default)]
+    pub volume_title: Option<String>,
+    #[serde(default)]
     pub sort_order: Option<i32>,
     #[serde(default)]
     pub word_count: Option<i32>,
@@ -24,6 +28,8 @@ impl RawChapterHeader {
         ChapterHeaderDto {
             id: self.id,
             title: self.title.unwrap_or_default(),
+            volume_id: self.volume_id,
+            volume_title: self.volume_title,
             sort_order: self.sort_order.unwrap_or(0),
             word_count: self.word_count.unwrap_or(0),
         }

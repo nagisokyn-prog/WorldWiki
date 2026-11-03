@@ -2,10 +2,12 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { getTimelineInspectorData } from '@/services/api.client';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
 import { useCalendarStore } from '@/stores/calendar.store';
+import { useChapterStore } from '@/stores/chapter.store';
 import {
   type TimelineInspectorData,
   type TimelineInspectorFilterState,
   type InspectorChapter,
+  type TimelineVolumeSegment,
   type FormattedInspectorEvent,
   type TimelineInspectorProps,
   type TimelineInspectorEmits,
@@ -28,6 +30,7 @@ export function useTimelineInspector(
       : (propsOrProjectId.projectId || propsOrProjectId.project || '');
 
   const calendarStore = useCalendarStore();
+  const chapterStore = useChapterStore();
   const calendarData = ref<CalendarData | null>(null);
   const data = ref<TimelineInspectorData | null>(null);
   const isLoading = ref<boolean>(false);
@@ -42,10 +45,38 @@ export function useTimelineInspector(
     searchQuery: '',
     selectedEntityId: 'all',
     selectedPovId: 'all',
+    selectedVolumeId: 'all',
     readerHorizonChapterOrder: null,
     showFlashbacksOnly: false,
     linkMode: 'focus',
     isolatedChapterId: null,
+  });
+
+  const volumeOptions = computed(() => {
+    const list: Array<{ id: string; title: string }> = [{ id: 'all', title: 'Все тома' }];
+    const known = new Set<string>();
+
+    (chapterStore.hierarchy?.volumes || []).forEach((v) => {
+      const clean = normalizeId(v.id);
+      if (clean && !known.has(clean)) {
+        known.add(clean);
+        list.push({ id: clean, title: v.title || `Том ${clean}` });
+      }
+    });
+
+    const allChs = [
+      ...(chapterStore.hierarchy?.chapters || chapterStore.chapters || []),
+      ...(data.value?.chapters || []),
+    ];
+    allChs.forEach((c) => {
+      const vId = normalizeId(c.volume_id);
+      if (vId && !known.has(vId)) {
+        known.add(vId);
+        list.push({ id: vId, title: `Том ${vId}` });
+      }
+    });
+
+    return list;
   });
 
   const loadInspectorData = async () => {
@@ -54,6 +85,9 @@ export function useTimelineInspector(
     isLoading.value = true;
     error.value = null;
     try {
+      if (!chapterStore.hierarchy?.volumes?.length) {
+        await chapterStore.loadChapters(proj);
+      }
       const cals = await calendarStore.getCalendars(proj);
       if (cals && cals.length > 0) {
         const master = cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_master) || cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_default) || cals[0];
@@ -75,11 +109,95 @@ export function useTimelineInspector(
 
   const filteredChapters = computed(() => {
     if (!data.value) return [];
+    const hierarchyChapters = chapterStore.hierarchy?.chapters || chapterStore.chapters || [];
+    const volMap = new Map<string, string>();
+    const volOrderMap = new Map<string, number>();
+    const volTitleMap = new Map<string, string>();
+
+    (chapterStore.hierarchy?.volumes || []).forEach((v, vIdx) => {
+      const cleanV = normalizeId(v.id);
+      volOrderMap.set(cleanV, vIdx);
+      if (v.title) volTitleMap.set(cleanV, v.title);
+    });
+
+    hierarchyChapters.forEach((hc) => {
+      const cleanChId = normalizeId(hc.id);
+      const cleanVolId = normalizeId(hc.volume_id);
+      if (cleanChId && cleanVolId) {
+        volMap.set(cleanChId, cleanVolId);
+      }
+    });
+
+    let chList = (data.value.chapters || []).map((ch) => {
+      const cleanChId = normalizeId(ch.id);
+      const resolvedVol = normalizeId(ch.volume_id) || volMap.get(cleanChId) || '';
+      const rawTitle = (ch as unknown as { volume_title?: string }).volume_title;
+      const resolvedTitle = rawTitle || volTitleMap.get(resolvedVol) || (resolvedVol ? `Том ${resolvedVol}` : 'Основной том');
+      return {
+        ...ch,
+        volume_id: resolvedVol,
+        volume_title: resolvedTitle
+      };
+    });
+
+    if (filters.value.selectedVolumeId && filters.value.selectedVolumeId !== 'all') {
+      const cleanTarget = normalizeId(filters.value.selectedVolumeId);
+      chList = chList.filter(c => normalizeId(c.volume_id) === cleanTarget);
+    }
+
+    chList.sort((a, b) => {
+      const vA = volOrderMap.get(a.volume_id || '') ?? 0;
+      const vB = volOrderMap.get(b.volume_id || '') ?? 0;
+      if (vA !== vB) return vA - vB;
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
+
     return buildFilteredChapters(
-      data.value.chapters,
+      chList,
       data.value.events || [],
       filters.value.readerHorizonChapterOrder
     );
+  });
+
+  const volumeSegments = computed<TimelineVolumeSegment[]>(() => {
+    const chs = filteredChapters.value;
+    if (!chs.length) return [];
+    const volTitleMap = new Map<string, string>();
+    (chapterStore.hierarchy?.volumes || []).forEach((v) => {
+      volTitleMap.set(normalizeId(v.id), v.title || `Том ${normalizeId(v.id)}`);
+    });
+
+    const segments: TimelineVolumeSegment[] = [];
+    let currentVolId: string | null = null;
+    let currentSegment: TimelineVolumeSegment | null = null;
+
+    chs.forEach((ch, idx) => {
+      const vId = normalizeId(ch.volume_id) || 'default';
+      const vTitle = (ch as unknown as { volume_title?: string }).volume_title || volTitleMap.get(vId) || (vId !== 'default' ? `Том ${vId}` : 'Основной том');
+
+      if (vId !== currentVolId || !currentSegment) {
+        currentVolId = vId;
+        const c1 = 60 + idx * 140;
+        currentSegment = {
+          volumeId: vId,
+          volumeTitle: vTitle,
+          startIndex: idx,
+          count: 1,
+          leftPx: c1,
+          widthPx: 110,
+          boundaryLeftPx: idx > 0 ? Math.round(60 + (idx - 0.5) * 140) : undefined,
+        };
+        segments.push(currentSegment);
+      } else {
+        currentSegment.count++;
+        const c1 = 60 + currentSegment.startIndex * 140;
+        const c2 = 60 + (currentSegment.startIndex + currentSegment.count - 1) * 140;
+        currentSegment.leftPx = Math.round((c1 + c2) / 2);
+        currentSegment.widthPx = (currentSegment.count - 1) * 140 + 110;
+      }
+    });
+
+    return segments;
   });
 
   const filteredEvents = computed(() => {
@@ -230,6 +348,8 @@ export function useTimelineInspector(
 
   return {
     filters,
+    volumeOptions,
+    volumeSegments,
     filteredChapters,
     filteredEvents,
     formattedEvents,

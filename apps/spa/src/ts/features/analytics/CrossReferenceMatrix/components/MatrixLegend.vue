@@ -9,7 +9,7 @@
       <span>Упоминание ((Имя))</span>
     </div>
     <div class="legend-chip">
-      <span class="legend-marker marker-absent">·</span>
+      <span class="legend-marker marker-absent">—</span>
       <span>Отсутствует</span>
     </div>
     <div class="legend-chip">

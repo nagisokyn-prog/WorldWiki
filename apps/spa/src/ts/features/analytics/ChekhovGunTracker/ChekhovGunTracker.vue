@@ -44,6 +44,7 @@
       :items-count="itemsCount"
       :total-count="totalCount"
       :item-types="itemTypes"
+      :volume-options="volumeOptions"
       @set-scope="setScope"
       @reset-filter="resetFilter"
     />
@@ -129,6 +130,7 @@ const {
   filter,
   summary,
   isLoading,
+  volumeOptions,
   gunsCount,
   itemsCount,
   totalCount,

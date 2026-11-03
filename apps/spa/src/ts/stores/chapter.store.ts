@@ -33,6 +33,7 @@ export const useChapterStore = defineStore('chapter', () => {
   const hierarchy = ref<ChapterHierarchy>({ volumes: [], chapters: [] });
   const currentChapterId = ref<string | undefined>(undefined);
   const currentChapter = ref<ChapterWithHierarchy | null>(null);
+  const selectedVolumeId = ref<string | null>(null);
   const hasUnsavedChanges = ref(false);
   const debugError = ref<string | null>(null);
   const isSaving = ref(false);
@@ -47,6 +48,14 @@ export const useChapterStore = defineStore('chapter', () => {
   });
 
   const currentVolume = computed(() => {
+    if (selectedVolumeId.value && hierarchy.value.volumes) {
+      const cleanTarget = String(selectedVolumeId.value).replace(/^volumes:/, '');
+      const found = hierarchy.value.volumes.find(v => {
+        const cleanVId = String(typeof v.id === 'object' && v.id !== null ? (v.id as { id?: unknown }).id : v.id).replace(/^volumes:/, '');
+        return cleanVId === cleanTarget;
+      });
+      if (found) return found;
+    }
     const ch = currentChapterNode.value;
     const volId = ch?.volume_id;
     if (!volId || !hierarchy.value.volumes) return null;
@@ -56,6 +65,10 @@ export const useChapterStore = defineStore('chapter', () => {
       return cleanVId === cleanVolId;
     }) || null;
   });
+
+  const selectVolume = (id: string | null) => {
+    selectedVolumeId.value = id;
+  };
 
   const loadChapters = async (project: string) => {
     try {
@@ -248,6 +261,7 @@ export const useChapterStore = defineStore('chapter', () => {
 
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
+    selectedVolumeId, selectVolume,
     hasUnsavedChanges, debugError, isSaving,
     currentChapterNode, currentVolume,
     loadChapters, loadHierarchy, saveChapter, openChapter, 

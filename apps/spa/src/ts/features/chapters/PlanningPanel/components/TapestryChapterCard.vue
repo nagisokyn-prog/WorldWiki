@@ -12,9 +12,9 @@
         <span class="chapter-compact-title font-medium text-xs text-main">{{ chapter.title }}</span>
         <span v-if="chapter.isCurrent" class="chip-current-focus text-[10px]">📍 ТЕКУЩАЯ</span>
       </div>
-      <div class="flex items-center gap-2 text-xs">
-        <span v-if="chapter.totalCount > 0" class="text-muted">{{ chapter.doneCount }}/{{ chapter.totalCount }}</span>
-        <span v-if="chapter.totalCount > 0 && chapter.doneCount === chapter.totalCount" class="text-success">✅</span>
+      <div class="flex items-center gap-1.5 text-xs">
+        <span v-if="chapter.totalCount > 0" class="text-muted font-medium">{{ chapter.doneCount }}/{{ chapter.totalCount }}</span>
+        <span v-if="chapter.totalCount > 0 && chapter.doneCount === chapter.totalCount" class="chapter-done-check">✓</span>
       </div>
     </div>
 
@@ -47,7 +47,7 @@
       <!-- Bound Story Arcs Section -->
       <div class="chapter-arcs-section mt-3 flex flex-col gap-2">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">⚡ Сюжетные арки главы</span>
+          <span class="plan-section-label">⚡ Сюжетные арки главы</span>
           <div class="relative">
             <button type="button" class="btn-add-arc-to-chapter" title="Привязать арку" @click="isArcPickerOpen = !isArcPickerOpen">
               <span>＋</span> Арка
@@ -94,7 +94,7 @@
       <!-- Standalone Text & Editorial Todos Section -->
       <div class="chapter-standalone-section mt-4 pt-2 border-t border-border">
         <div class="flex items-center justify-between px-1 mb-2">
-          <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">📝 Задачи по тексту главы (Редактура)</span>
+          <span class="plan-section-label">📝 Задачи по тексту главы (Редактура)</span>
           <span class="text-xs text-muted">
             {{ chapter.standaloneTodos.filter(t => t.status === 'done' || t.done).length }}/{{ chapter.standaloneTodos.length }}
           </span>
@@ -159,3 +159,5 @@ const {
   onToggleCollapse
 } = useTapestryChapterCard(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

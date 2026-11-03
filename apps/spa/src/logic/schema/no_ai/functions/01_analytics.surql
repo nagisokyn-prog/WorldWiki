@@ -9,11 +9,13 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
         SELECT 
             id, 
             title, 
+            type::string(volume_id) AS volume_id,
+            volume_id.title AS volume_title,
             IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order, 
             IF word_count != NONE { word_count } ELSE { 0 } AS word_count 
         FROM chapters 
         WHERE volume_id.project_id = $p_rec
-        ORDER BY sort_order ASC
+        ORDER BY volume_id ASC, sort_order ASC
         LIMIT 1000
     );
 
@@ -231,10 +233,15 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
     LET $all_events = array::concat($events, $scene_events, $entity_events);
 
     LET $chapters = (
-        SELECT id, title, IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order 
+        SELECT 
+            id, 
+            title, 
+            type::string(volume_id) AS volume_id, 
+            volume_id.title AS volume_title,
+            IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order 
         FROM chapters 
-        WHERE volume_id.project_id = $p_rec OR project_id = $p_rec
-        ORDER BY sort_order ASC
+        WHERE volume_id.project_id = $p_rec
+        ORDER BY volume_id ASC, sort_order ASC
         LIMIT 1000
     );
 

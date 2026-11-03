@@ -38,6 +38,10 @@ pub struct ChapterHeaderDto {
     pub id: String,
     pub title: String,
     #[serde(default)]
+    pub volume_id: Option<String>,
+    #[serde(default)]
+    pub volume_title: Option<String>,
+    #[serde(default)]
     pub sort_order: i32,
     #[serde(default)]
     pub word_count: i32,

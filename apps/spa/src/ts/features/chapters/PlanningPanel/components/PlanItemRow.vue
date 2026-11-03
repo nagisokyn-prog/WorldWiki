@@ -34,11 +34,11 @@
       />
 
       <!-- Dependency Picker Toggle -->
-      <div class="relative">
+      <div class="plan-item-dep-container">
         <button
           type="button"
-          class="plan-item-dep-btn text-muted hover:text-accent px-1 text-xs cursor-pointer bg-transparent border-none"
-          :class="{ 'text-accent': !!item.depends_on }"
+          class="plan-item-dep-btn"
+          :class="{ 'is-linked': !!item.depends_on }"
           title="Связать с задачей-предшественником"
           @click.stop="toggleDepMenu"
         >
@@ -48,37 +48,40 @@
         <!-- Dropdown Menu -->
         <div
           v-if="isDepMenuOpen"
-          class="dep-picker-dropdown absolute right-0 top-full mt-1 z-50 bg-secondary border border-border rounded shadow-lg p-1.5 min-w-56 max-h-56 overflow-y-auto flex flex-col gap-1 text-xs"
+          class="dep-picker-dropdown"
           @click.stop
         >
-          <div class="px-1 text-[10px] font-semibold text-muted uppercase">Предшествующее событие:</div>
+          <div class="dep-picker-header">Предшествующее событие:</div>
 
           <button
             v-if="item.depends_on"
             type="button"
-            class="text-left text-danger hover:bg-hover px-2 py-1 rounded flex items-center gap-1 cursor-pointer bg-transparent border-none text-xs"
+            class="dep-picker-unlink-btn"
             @click="onSelectDependency(null)"
           >
             <span>✕</span>
             <span>Снять зависимость</span>
           </button>
 
-          <div v-for="group in groupedCandidates" :key="group.chapterId" class="flex flex-col gap-0.5">
-            <div class="text-[10px] text-muted font-medium px-1 mt-1 truncate">📄 {{ group.chapterTitle }}</div>
+          <div v-for="group in groupedCandidates" :key="group.chapterId" class="dep-picker-group">
+            <div class="dep-picker-chapter-title">📄 {{ group.chapterTitle }}</div>
             <button
               v-for="cand in group.todos"
               :key="cand.id"
               type="button"
-              class="text-left text-xs px-2 py-1 rounded hover:bg-hover text-main truncate flex items-center justify-between cursor-pointer bg-transparent border-none"
-              :class="{ 'font-semibold text-accent': cand.id === item.depends_on }"
+              class="dep-picker-item"
+              :class="{ 'is-selected': cand.id === item.depends_on }"
               @click="onSelectDependency(cand.id)"
             >
-              <span class="truncate">{{ cand.text }}</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="status-dot shrink-0" :class="(cand.status === 'done' || cand.done) ? 'success' : (cand.status === 'in_progress' ? 'warning' : 'neutral')"></span>
+                <span class="truncate">{{ cand.text }}</span>
+              </div>
               <span v-if="cand.id === item.depends_on" class="text-accent text-[10px] ml-1 shrink-0">✓</span>
             </button>
           </div>
 
-          <div v-if="groupedCandidates.length === 0" class="text-muted text-center p-2 text-xs">
+          <div v-if="groupedCandidates.length === 0" class="dep-picker-empty">
             Нет доступных задач для связи
           </div>
         </div>
@@ -148,3 +151,5 @@ const {
   onNavigate
 } = usePlanItemRow(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

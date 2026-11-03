@@ -2,6 +2,23 @@
    PlanningPanel.css — Переплетённая Ткань Сюжета (Unified Narrative Tapestry)
    ========================================================================== */
 
+/* Universal Font & Smoothing Reset for all Planning Panel Elements */
+.planning-panel,
+.tapestry-volume-block,
+.plan-volume-header,
+.tapestry-chapter-card,
+.plan-arc-group,
+.plan-item-row,
+.dep-picker-dropdown,
+.chapter-move-dropdown,
+.volume-select-dropdown,
+.volume-help-card,
+.volume-backlog-section {
+    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 .planning-panel {
     display: flex;
     flex-direction: column;
@@ -10,11 +27,36 @@
     color: var(--text-main);
 }
 
+/* Unified Section Labels / Micro-Headers (No Times New Roman leak) */
+.plan-section-label {
+    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Volume Block (Unified Flat Elevation) */
+.tapestry-volume-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    transition: border-color var(--anim-speed-normal, 0.2s) ease;
+}
+
 /* Volume Progress Header */
 .plan-volume-header {
     flex-shrink: 0;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
     border-bottom: 1px solid var(--border-color);
     transition: background-color var(--anim-speed-normal, 0.2s) ease;
 }
@@ -81,7 +123,6 @@
 .volume-progress-fill {
     height: 100%;
     background: var(--accent);
-    transition: width var(--anim-speed-normal, 0.3s) ease;
 }
 
 .volume-status-chips {
@@ -100,11 +141,25 @@
 .chip-status {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding: 2px 6px;
-    border-radius: var(--radius-xs);
-    font-weight: 500;
+    gap: 5px;
+    padding: 2px 7px;
+    border-radius: var(--radius-full, 9999px);
+    font-size: 10px;
+    font-weight: 600;
 }
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full, 9999px);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.status-dot.warning { background: var(--warning, #eab308); }
+.status-dot.success { background: var(--success, #22c55e); }
+.status-dot.neutral { background: var(--text-muted); }
+.status-dot.blocked { background: var(--danger, #ef4444); }
 
 .chip-warning {
     background: var(--warning-bg, var(--bg-hover));
@@ -119,23 +174,23 @@
 }
 
 .chip-neutral {
-    background: var(--bg-secondary);
+    background: var(--bg-hover);
     color: var(--text-muted);
     border: 1px solid var(--border-color);
 }
 
 .chip-blocked {
-    background: var(--bg-secondary);
+    background: var(--bg-hover);
     color: var(--text-muted);
     border: 1px dashed var(--border-color);
 }
 
 /* Tapestry Chapter Card */
 .tapestry-chapter-card {
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm, 6px);
     border: 1px solid var(--border-color);
-    background: var(--bg-panel, transparent);
-    transition: border-color var(--anim-speed-normal, 0.2s) ease;
+    background: var(--bg-card);
+    transition: border-color var(--anim-speed-normal, 0.2s) ease, box-shadow var(--anim-speed-normal, 0.2s) ease;
     overflow: hidden;
     flex-shrink: 0;
     width: 100%;
@@ -143,27 +198,38 @@
 
 .tapestry-chapter-card.is-focused {
     border-color: var(--accent);
-    background: var(--bg-secondary);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 
 .tapestry-chapter-card.is-collapsed {
-    opacity: 0.85;
+    background: var(--bg-card);
 }
 
 .tapestry-chapter-card.is-collapsed:hover {
-    opacity: 1;
-    border-color: var(--border-hover, var(--border-color));
+    border-color: var(--accent);
 }
 
 .chapter-compact-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 10px;
+    padding: 7px 10px;
     min-height: 32px;
     flex-shrink: 0;
     user-select: none;
     cursor: pointer;
+    background: var(--bg-card);
+    transition: background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-compact-header:hover {
+    background: var(--bg-hover);
+}
+
+.chapter-done-check {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--success, var(--accent));
 }
 
 .chapter-compact-header > div {
@@ -176,10 +242,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 8px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border-color);
     user-select: none;
     cursor: pointer;
+    background: var(--bg-hover);
 }
 
 .chapter-expanded-header > div {
@@ -189,24 +256,27 @@
 }
 
 .chapter-expanded-content {
-    padding: 10px 12px;
+    padding: 8px 10px;
+    background: var(--bg-card);
 }
 
 .chip-current-focus {
-    background: var(--bg-selected);
+    background: var(--bg-hover);
     color: var(--accent);
     font-weight: 700;
-    padding: 1px 5px;
-    border-radius: var(--radius-xs);
+    padding: 1px 6px;
+    border-radius: var(--radius-full, 9999px);
     border: 1px solid var(--accent);
 }
 
 /* Arc Group inside Chapter */
 .plan-arc-group {
-    border-left: 3px solid var(--accent);
-    background: var(--bg-secondary);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--bg-hover);
+    border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
     padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-left-width: 3px;
+    border-left-color: var(--accent);
 }
 
 .arc-group-title {
@@ -217,11 +287,12 @@
 
 .arc-phase-badge {
     font-size: 10px;
-    padding: 1px 5px;
-    border-radius: var(--radius-xs);
-    background: var(--bg-selected);
+    padding: 1px 6px;
+    border-radius: var(--radius-full, 9999px);
+    background: var(--bg-hover);
     color: var(--accent);
-    font-weight: 500;
+    border: 1px solid var(--border-color);
+    font-weight: 600;
 }
 
 /* Plan Item Row */
@@ -229,18 +300,19 @@
     display: flex;
     flex-direction: column;
     padding: 4px 6px;
-    border-radius: var(--radius-xs);
-    background: var(--bg-main, transparent);
+    border-radius: var(--radius-xs, 4px);
+    background: transparent;
     border: 1px solid transparent;
-    transition: background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .plan-item-row:hover {
     border-color: var(--border-color);
+    background: var(--bg-hover);
 }
 
 .plan-item-row.is-in-progress {
-    background: var(--bg-selected);
+    background: var(--bg-hover);
     border-color: var(--warning, var(--accent));
 }
 
@@ -370,29 +442,30 @@
 .causality-badge {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding: 1px 6px;
-    border-radius: var(--radius-xs);
+    gap: 4px;
+    padding: 1px 7px;
+    border-radius: var(--radius-full, 9999px);
     font-size: 10px;
+    font-weight: 500;
     border: 1px solid transparent;
 }
 
 .depends-badge {
-    background: var(--bg-secondary);
+    background: var(--bg-hover);
     color: var(--text-muted);
     border-color: var(--border-color);
 }
 
 .blocks-badge {
-    background: var(--bg-selected);
+    background: var(--bg-hover);
     color: var(--accent);
     border-color: var(--accent);
     cursor: pointer;
-    transition: background-color var(--anim-speed-normal, 0.2s) ease;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .blocks-badge:hover {
-    background: var(--bg-hover);
+    background: var(--bg-selected, var(--bg-hover));
 }
 
 /* Add Buttons */
@@ -418,19 +491,21 @@
 .btn-add-arc-to-chapter {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    padding: 1px 6px;
-    font-size: 11px;
-    border-radius: var(--radius-xs);
-    background: var(--bg-selected);
+    gap: 4px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: var(--radius-full, 9999px);
+    background: var(--bg-hover);
     color: var(--accent);
     border: 1px solid var(--border-color);
     cursor: pointer;
-    transition: background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .btn-add-arc-to-chapter:hover {
-    background: var(--bg-hover);
+    background: var(--bg-selected, var(--bg-hover));
     border-color: var(--accent);
 }
 
@@ -492,23 +567,26 @@
 
 .btn-add-chapter-stream {
     width: 100%;
-    padding: 6px 10px;
-    border-radius: var(--radius-xs);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm, 6px);
     border: 1px dashed var(--border-color);
     background: transparent;
     color: var(--text-muted);
     font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
+    transition: border-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease, background-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .btn-add-chapter-stream:hover {
     border-color: var(--accent);
     color: var(--accent);
+    background: var(--bg-hover);
 }
 
 /* Volume Backlog */
@@ -577,4 +655,488 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
     transition: outline var(--anim-speed-normal, 0.2s) ease;
+}
+
+/* Volume Selector Dropdown in Header */
+.volume-select-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.volume-header-title-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: var(--radius-xs);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-main);
+    transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.volume-header-title-btn:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.volume-header-title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+.volume-header-chevron {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.volume-select-dropdown {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 4px);
+    z-index: 100;
+    min-width: 200px;
+    max-width: 280px;
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--dropdown-bg, var(--bg-secondary));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md, 0 8px 24px var(--shadow-color));
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: inherit;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.volume-select-header {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 2px 6px;
+}
+
+.volume-select-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--text-main);
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease,
+                color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.volume-select-item:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.volume-select-item.is-selected {
+    background: var(--bg-selected);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.volume-select-check {
+    font-size: 10px;
+    color: var(--accent);
+}
+
+/* ==========================================================================
+   Help Guide, Dependency Picker, and Backlog Move Popovers
+   ========================================================================== */
+
+/* Help Guide Button & Card */
+.btn-help-guide {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: color var(--anim-speed-fast, 0.15s) ease,
+                border-color var(--anim-speed-fast, 0.15s) ease,
+                background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.btn-help-guide:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--bg-hover);
+}
+
+.volume-help-card {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm, 6px);
+    font-size: 11px;
+    font-family: inherit;
+    line-height: 1.5;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.volume-help-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 11px;
+}
+
+.volume-help-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.volume-help-close-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: inherit;
+    padding: 1px 5px;
+    border-radius: var(--radius-xs);
+    transition: color var(--anim-speed-fast, 0.15s) ease,
+                background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.volume-help-close-btn:hover {
+    color: var(--error);
+    background: var(--bg-hover);
+}
+
+.volume-help-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.volume-help-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--text-main);
+}
+
+.volume-help-item code {
+    background: var(--bg-base);
+    color: var(--accent);
+    padding: 1px 4px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-color);
+    font-size: 10px;
+}
+
+/* Dependency Picker Dropdown */
+.plan-item-dep-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.plan-item-dep-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: inherit;
+    padding: 2px 4px;
+    border-radius: var(--radius-xs);
+    transition: color var(--anim-speed-fast, 0.15s) ease,
+                background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.plan-item-dep-btn:hover {
+    color: var(--accent);
+    background: var(--bg-hover);
+}
+
+.plan-item-dep-btn.is-linked {
+    color: var(--accent);
+}
+
+.dep-picker-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 1000;
+    min-width: 250px;
+    max-width: 320px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.dep-picker-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+}
+
+.dep-picker-unlink-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--error);
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.dep-picker-unlink-btn:hover {
+    background: var(--error-bg, rgba(239, 68, 68, 0.15));
+}
+
+.dep-picker-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dep-picker-chapter-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 3px 6px 1px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dep-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--text-main);
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease,
+                color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.dep-picker-item:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.dep-picker-item.is-selected {
+    background: var(--bg-selected);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.dep-picker-empty {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-align: center;
+    padding: 8px 6px;
+}
+
+/* Backlog Move Chapter Dropdown */
+.backlog-move-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-backlog-move {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: var(--radius-full, 9999px);
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    color: var(--accent);
+    cursor: pointer;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease,
+                border-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.btn-backlog-move:hover {
+    background: var(--bg-selected, var(--bg-hover));
+    border-color: var(--accent);
+}
+
+.chapter-move-dropdown {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 4px);
+    z-index: 1000;
+    min-width: 200px;
+    max-width: 280px;
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.chapter-move-header {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 2px 6px;
+}
+
+.chapter-move-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--text-main);
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease,
+                color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-move-item:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.chapter-move-item.is-current {
+    background: var(--bg-selected);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.chapter-move-empty {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-align: center;
+    padding: 8px 6px;
+}
+
+.btn-backlog-delete {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+    transition: color var(--anim-speed-fast, 0.15s) ease,
+                background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.btn-backlog-delete:hover {
+    color: var(--error);
+    background: var(--bg-hover);
+}
+
+.btn-add-volume-stream {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--anim-speed-fast, 0.15s) ease;
+}
+
+.btn-add-volume-stream:hover {
+    border-color: var(--accent);
+    color: var(--text-main);
+    background: var(--bg-hover);
 }

@@ -11,77 +11,45 @@
           {{ isCollapsed ? '▸' : '▼' }}
         </span>
         <span class="volume-header-icon">📚</span>
-        <span class="volume-header-title" :title="title">
-          {{ title }}
-        </span>
+        <div class="volume-select-container">
+          <button
+            v-if="volumes && volumes.length > 1"
+            type="button"
+            class="volume-header-title-btn"
+            title="Переключить том"
+            @click.stop="toggleVolumeMenu"
+          >
+            <span class="volume-header-title-text">{{ title }}</span>
+            <span class="volume-header-chevron">▾</span>
+          </button>
+          <span v-else class="volume-header-title" :title="title">
+            {{ title }}
+          </span>
+
+          <!-- Volume Switcher Dropdown (optional if volumes passed) -->
+          <div
+            v-if="isVolumeMenuOpen"
+            class="volume-select-dropdown"
+            @click.stop
+          >
+            <div class="volume-select-header">Тома проекта:</div>
+            <button
+              v-for="vol in volumes"
+              :key="vol.id"
+              type="button"
+              class="volume-select-item"
+              :class="{ 'is-selected': vol.id === currentVolumeId || (title === vol.title) }"
+              @click="selectVolume(vol.id)"
+            >
+              <span class="truncate">📚 {{ vol.title || 'Новый том' }}</span>
+              <span v-if="vol.id === currentVolumeId || (title === vol.title)" class="volume-select-check">✓</span>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="volume-header-right flex items-center gap-2">
-        <button
-          type="button"
-          class="btn-help-guide text-[11px] px-1.5 py-0.5 rounded text-muted hover:text-accent flex items-center gap-1 cursor-pointer bg-transparent border border-border"
-          title="Справка по работе с Тканью сюжета"
-          @click.stop="toggleHelp"
-        >
-          <span>❓</span>
-          <span>Справка</span>
-        </button>
+      <div class="volume-header-right">
         <div class="volume-header-pct">
           {{ progressPct }}%
-        </div>
-      </div>
-    </div>
-
-    <!-- Collapsible Help Guide Card -->
-    <div v-if="isHelpOpen" class="volume-help-card mt-2 p-2.5 rounded bg-secondary border border-border text-xs flex flex-col gap-2">
-      <div class="flex items-center justify-between font-semibold text-accent border-b border-border pb-1.5">
-        <div class="flex items-center gap-1.5">
-          <span>💡</span>
-          <span>Как устроена «Ткань сюжета» и планирование тома</span>
-        </div>
-        <button
-          type="button"
-          class="text-muted hover:text-danger cursor-pointer bg-transparent border-none text-xs px-1"
-          title="Закрыть справку"
-          @click="toggleHelp"
-        >
-          ✕
-        </button>
-      </div>
-
-      <div class="help-grid flex flex-col gap-1.5 text-main">
-        <div class="help-item flex items-start gap-2">
-          <span class="text-sm shrink-0">📚</span>
-          <div>
-            <strong>Единый свиток тома:</strong> Все главы перед глазами в хронологическом порядке. Текущая глава развернута, остальные компактно свернуты.
-          </div>
-        </div>
-
-        <div class="help-item flex items-start gap-2">
-          <span class="text-sm shrink-0">⚡</span>
-          <div>
-            <strong>Сюжетные арки:</strong> Сквозные линии истории. Нажмите <code>＋ Арка</code> внутри главы, чтобы привязать линию и запланировать её шаги.
-          </div>
-        </div>
-
-        <div class="help-item flex items-start gap-2">
-          <span class="text-sm shrink-0">🔗</span>
-          <div>
-            <strong>Причинно-следственные связи:</strong> Нажмите <code>🔗</code> у любой задачи, чтобы связать её с предшествующим событием. Задача заблокируется замком <code>🔒</code>. Когда предшественник будет завершён (<code>🟢</code>), замок снимется, и система предложит взять сцену в работу!
-          </div>
-        </div>
-
-        <div class="help-item flex items-start gap-2">
-          <span class="text-sm shrink-0">💡</span>
-          <div>
-            <strong>Бэклог тома:</strong> Записывайте мысли и идеи внизу страницы. Кнопка <code>В главу ➔</code> позволяет в любой момент переместить задумку в нужную главу.
-          </div>
-        </div>
-
-        <div class="help-item flex items-start gap-2">
-          <span class="text-sm shrink-0">⚪ 🟡 🟢 🔒</span>
-          <div>
-            <strong>Статусы задач:</strong> ЛКМ переключает статус по кругу (В планах ➔ В работе ➔ Готово). ПКМ открывает выбор конкретного статуса.
-          </div>
         </div>
       </div>
     </div>
@@ -97,16 +65,16 @@
     <!-- Status Badges -->
     <div class="volume-status-chips">
       <span v-if="stats.inProgress > 0" class="chip-status chip-warning" title="Задач в работе">
-        🟡 {{ stats.inProgress }} в работе
+        <span class="status-dot warning"></span> {{ stats.inProgress }} в работе
       </span>
       <span v-if="stats.done > 0" class="chip-status chip-success" title="Завершенных задач">
-        🟢 {{ stats.done }} готово
+        <span class="status-dot success"></span> {{ stats.done }} готово
       </span>
       <span v-if="stats.planned > 0" class="chip-status chip-neutral" title="Задач в планах">
-        ⚪ {{ stats.planned }} в планах
+        <span class="status-dot neutral"></span> {{ stats.planned }} в планах
       </span>
       <span v-if="stats.blocked > 0" class="chip-status chip-blocked" title="Заблокированных задач">
-        🔒 {{ stats.blocked }} ждёт
+        <span class="status-dot blocked"></span> {{ stats.blocked }} ждёт
       </span>
       <span v-if="stats.total === 0" class="chip-status-empty">
         Нет задач
@@ -125,9 +93,12 @@ const props = withDefaults(defineProps<PlanVolumeHeaderProps>(), {
 const emit = defineEmits<PlanVolumeHeaderEmits>();
 
 const {
-  isHelpOpen,
+  isVolumeMenuOpen,
   progressPct,
   handleToggle,
-  toggleHelp
+  toggleVolumeMenu,
+  selectVolume
 } = usePlanVolumeHeader(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

@@ -259,6 +259,39 @@
   border-right: none;
 }
 
+.matrix-volume-superheader {
+  background-color: var(--bg-panel);
+}
+
+.matrix-volume-th {
+  padding: 4px 6px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  border-right: 2px solid var(--accent);
+}
+
+.matrix-volume-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--accent);
+  background-color: rgba(124, 58, 237, 0.08);
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.5px;
+}
+
+.sticky-corner-top {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  background-color: var(--bg-panel);
+}
+
 .matrix-td {
   padding: 8px 10px;
   border-bottom: 1px solid var(--border-color);

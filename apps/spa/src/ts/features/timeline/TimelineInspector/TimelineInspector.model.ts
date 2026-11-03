@@ -68,10 +68,22 @@ export interface InspectorChapter {
   id: string;
   title: string;
   sort_order: number;
+  volume_id?: string | null;
+  volume_title?: string | null;
   sceneCount?: number;
   flashbackCount?: number;
   earliestFlashbackEventId?: string | null;
   timeRangeLabel?: string | null;
+}
+
+export interface TimelineVolumeSegment {
+  volumeId: string;
+  volumeTitle: string;
+  startIndex: number;
+  count: number;
+  leftPx: number;
+  widthPx: number;
+  boundaryLeftPx?: number;
 }
 
 export interface TimelineInspectorData {
@@ -85,6 +97,7 @@ export interface TimelineInspectorFilterState {
   searchQuery: string;
   selectedEntityId: string;
   selectedPovId: string;
+  selectedVolumeId?: string;
   readerHorizonChapterOrder: number | null; // null = Author / God mode; number = Reader Mode up to chapter N
   showFlashbacksOnly: boolean;
   linkMode: ConnectionLinkMode;

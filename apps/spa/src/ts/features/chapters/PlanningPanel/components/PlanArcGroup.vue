@@ -77,3 +77,5 @@ const {
   submitAdd
 } = usePlanArcGroup(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

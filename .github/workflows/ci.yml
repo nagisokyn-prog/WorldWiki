@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: self-hosted
 
-    # Все шаги по умолчанию в pwsh — в нём надёжно работает Set-ExecutionPolicy -Scope Process.
+    # Все шаги по умолчанию в pwsh в нём надёжно работает Set-ExecutionPolicy -Scope Process.
     # Для шагов, где нужен cmd, явно указывается shell.
     defaults:
       run:

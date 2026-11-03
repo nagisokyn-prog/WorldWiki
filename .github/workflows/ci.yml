@@ -2,11 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [ '**' ] 
+    branches: [ '**' ]
 
 jobs:
   test:
     runs-on: self-hosted
+
+    # Все шаги по умолчанию в pwsh — в нём надёжно работает Set-ExecutionPolicy -Scope Process.
+    # Для шагов, где нужен cmd, явно указывается shell.
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
       - name: Checkout code
@@ -14,17 +20,29 @@ jobs:
         with:
           clean: false
 
+      # ВАЖНО: self-hosted Windows runner по умолчанию имеет Restricted/Undefined
+      # ExecutionPolicy, из-за чего pnpm/node shim'ы падают с "running scripts is disabled".
+      # Обходим это на уровне процесса — машину не трогаем.
+      - name: Enable PowerShell script execution
+        run: Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 12.17.0
+          # standalone: true ставит pnpm напрямую (без corepack/powershell shim) —
+          # это дополнительно снижает шанс наткнуться на ExecutionPolicy.
+          standalone: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
+
+      - name: Configure pnpm store
+        # Явно задаём store, чтобы кэш pnpm/action-setup и setup-node(cache: pnpm) работали стабильно.
+        run: pnpm config set store-dir "$env:LOCALAPPDATA\pnpm\store"
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -35,7 +53,7 @@ jobs:
             vendor/claw-code/rust
 
       - name: Install Node dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Project
         run: pnpm build
@@ -44,26 +62,32 @@ jobs:
         run: pnpm test
 
       - name: Cargo Check & Clippy
+        working-directory: src-tauri
         run: |
           cargo check
           cargo clippy -- -D warnings
-        working-directory: src-tauri
 
       - name: Run Backend Tests
-        run: cargo test
         working-directory: src-tauri
+        run: cargo test
 
       - name: Run Claw-Code Tests
-        run: cargo test
         working-directory: vendor/claw-code/rust
+        run: cargo test
 
       - name: Setup CMake
         uses: lukka/get-cmake@latest
 
+      # CMake-шаг — лучше через cmd, т.к. он использует MSVC-toolchain и /w-флаги,
+      # а PowerShell может не так пробрасывать кавычки в CMAKE_C_FLAGS.
       - name: Run Llama-Turboquant-Cpp Tests
+        working-directory: vendor/llama-turboquant-cpp
+        shell: cmd
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="/w" -DCMAKE_CXX_FLAGS="/w"
+          if errorlevel 1 exit /b %errorlevel%
           cmake --build build --config Release --parallel
+          if errorlevel 1 exit /b %errorlevel%
           cmake --build build --config Release --target test-arg-parser test-quantize-fns
+          if errorlevel 1 exit /b %errorlevel%
           ctest --test-dir build -C Release -L main -E "(test-backend-ops|test-json-partial)" --output-on-failure
-        working-directory: vendor/llama-turboquant-cpp

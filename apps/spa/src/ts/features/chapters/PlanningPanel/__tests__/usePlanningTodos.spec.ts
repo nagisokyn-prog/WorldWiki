@@ -45,6 +45,31 @@ describe('usePlanningTodos', () => {
     expect(emit).toHaveBeenCalledWith('change');
   });
 
+  it('sets specific status directly via setTodoSpecificStatus', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([]);
+    const volId = ref<string | null>('volumes:v1');
+    const curChId = ref<string | null>('chapters:c1');
+    const emit = vi.fn();
+
+    const { setTodoSpecificStatus } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit as any);
+    const todo: TapestryTodo = {
+      id: 'todo:1',
+      owner_id: 'chapters:ch1',
+      text: 'Test task',
+      status: 'planned',
+      done: false,
+      sort_order: 1
+    };
+
+    await setTodoSpecificStatus(todo, 'done');
+
+    expect(todo.status).toBe('done');
+    expect(todo.done).toBe(true);
+    expect(api.setTodoStatus).toHaveBeenCalledWith('todo:1', 'done');
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
   it('adds todo and adds it to state', async () => {
     const chaptersList = ref<TapestryChapterNode[]>([
       {

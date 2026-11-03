@@ -4,17 +4,8 @@
 
 /* Universal Font & Smoothing Reset for all Planning Panel Elements */
 .planning-panel,
-.tapestry-volume-block,
-.plan-volume-header,
-.tapestry-chapter-card,
-.plan-arc-group,
-.plan-item-row,
-.dep-picker-dropdown,
-.chapter-move-dropdown,
-.volume-select-dropdown,
-.volume-help-card,
-.volume-backlog-section {
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+.planning-panel * {
+    font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -426,6 +417,77 @@
 
 .plan-item-delete-btn:hover {
     color: var(--error);
+}
+
+/* Plan Status Container & Dropdown (ПКМ Picker) */
+.plan-status-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-picker-dropdown {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 4px);
+    z-index: 1050;
+    min-width: 150px;
+    background: var(--dropdown-bg, var(--bg-secondary));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.status-picker-header {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-color);
+    user-select: none;
+}
+
+.status-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 11px;
+    border-radius: var(--radius-xs, 4px);
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.status-picker-item:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.status-picker-item.is-selected {
+    background: var(--bg-selected, var(--bg-hover));
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.status-picker-check {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
 }
 
 /* Causality Links */
@@ -898,20 +960,21 @@
     position: absolute;
     right: 0;
     top: calc(100% + 4px);
-    z-index: 1000;
+    z-index: 1050;
     min-width: 250px;
     max-width: 320px;
     max-height: 240px;
     overflow-y: auto;
-    background: var(--bg-card);
+    background: var(--dropdown-bg, var(--bg-secondary));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm, 6px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
     padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
 }
@@ -1034,20 +1097,21 @@
     position: absolute;
     right: 0;
     bottom: calc(100% + 4px);
-    z-index: 1000;
+    z-index: 1050;
     min-width: 200px;
     max-width: 280px;
     max-height: 220px;
     overflow-y: auto;
-    background: var(--bg-card);
+    background: var(--dropdown-bg, var(--bg-secondary));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm, 6px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
     padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
 }

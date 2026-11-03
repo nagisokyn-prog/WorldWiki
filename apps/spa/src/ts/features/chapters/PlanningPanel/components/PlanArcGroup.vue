@@ -26,6 +26,7 @@
         :all-todos="allTodos"
         @toggle="$emit('toggle', $event)"
         @cycle-status="$emit('cycle-status', $event)"
+        @set-status="(item, status) => $emit('set-status', item, status)"
         @save="$emit('save', $event)"
         @delete="$emit('delete', $event)"
         @navigate="$emit('navigate', $event)"

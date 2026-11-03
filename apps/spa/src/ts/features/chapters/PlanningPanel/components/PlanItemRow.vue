@@ -8,20 +8,79 @@
     }"
   >
     <div class="plan-item-main flex items-center gap-2 w-full">
-      <!-- Status Icon Toggle -->
-      <button
-        type="button"
-        class="plan-status-btn"
-        :class="[`status-${item.status}`, { done: item.status === 'done' || item.done }]"
-        :title="statusTooltip"
-        @click="onToggle"
-        @contextmenu.prevent="onCycleStatus"
-      >
-        <span v-if="item.status === 'done' || item.done" class="status-icon-done">✓</span>
-        <span v-else-if="item.status === 'in_progress'" class="status-pulse-dot" title="В работе 🟡"></span>
-        <span v-else-if="item.status === 'blocked'" class="status-icon-lock" title="Ожидает 🔒">🔒</span>
-        <span v-else class="status-icon-planned" title="В планах ⚪"></span>
-      </button>
+      <!-- Status Icon Toggle & Context Menu -->
+      <div class="plan-status-container relative">
+        <button
+          type="button"
+          class="plan-status-btn"
+          :class="[`status-${item.status}`, { done: item.status === 'done' || item.done }]"
+          :title="statusTooltip"
+          @click="onToggle"
+          @contextmenu.prevent.stop="openStatusMenu"
+        >
+          <span v-if="item.status === 'done' || item.done" class="status-icon-done">✓</span>
+          <span v-else-if="item.status === 'in_progress'" class="status-pulse-dot" title="В работе 🟡"></span>
+          <span v-else-if="item.status === 'blocked'" class="status-icon-lock" title="Ожидает 🔒">🔒</span>
+          <span v-else class="status-icon-planned" title="В планах ⚪"></span>
+        </button>
+
+        <!-- Status Context Menu (ПКМ) -->
+        <div
+          v-if="isStatusMenuOpen"
+          class="status-picker-dropdown"
+          @click.stop
+        >
+          <div class="status-picker-header">Статус задачи:</div>
+          <button
+            type="button"
+            class="status-picker-item"
+            :class="{ 'is-selected': item.status === 'planned' && !item.done }"
+            @click="onSelectStatus('planned')"
+          >
+            <div class="flex items-center gap-2">
+              <span class="status-dot neutral"></span>
+              <span>В планах</span>
+            </div>
+            <span v-if="item.status === 'planned' && !item.done" class="status-picker-check">✓</span>
+          </button>
+          <button
+            type="button"
+            class="status-picker-item"
+            :class="{ 'is-selected': item.status === 'in_progress' }"
+            @click="onSelectStatus('in_progress')"
+          >
+            <div class="flex items-center gap-2">
+              <span class="status-dot warning"></span>
+              <span>В работе</span>
+            </div>
+            <span v-if="item.status === 'in_progress'" class="status-picker-check">✓</span>
+          </button>
+          <button
+            type="button"
+            class="status-picker-item"
+            :class="{ 'is-selected': item.status === 'done' || item.done }"
+            @click="onSelectStatus('done')"
+          >
+            <div class="flex items-center gap-2">
+              <span class="status-dot success"></span>
+              <span>Готово</span>
+            </div>
+            <span v-if="item.status === 'done' || item.done" class="status-picker-check">✓</span>
+          </button>
+          <button
+            type="button"
+            class="status-picker-item"
+            :class="{ 'is-selected': item.status === 'blocked' }"
+            @click="onSelectStatus('blocked')"
+          >
+            <div class="flex items-center gap-2">
+              <span class="status-dot blocked"></span>
+              <span>Ожидает</span>
+            </div>
+            <span v-if="item.status === 'blocked'" class="status-picker-check">✓</span>
+          </button>
+        </div>
+      </div>
 
       <!-- Input Text -->
       <input
@@ -74,7 +133,7 @@
               @click="onSelectDependency(cand.id)"
             >
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="status-dot shrink-0" :class="(cand.status === 'done' || cand.done) ? 'success' : (cand.status === 'in_progress' ? 'warning' : 'neutral')"></span>
+                <span class="status-dot shrink-0" :class="cand.status === 'done' ? 'success' : (cand.status === 'in_progress' ? 'warning' : 'neutral')"></span>
                 <span class="truncate">{{ cand.text }}</span>
               </div>
               <span v-if="cand.id === item.depends_on" class="text-accent text-[10px] ml-1 shrink-0">✓</span>
@@ -141,8 +200,12 @@ const emit = defineEmits<PlanItemRowEmits>();
 const {
   statusTooltip,
   isDepMenuOpen,
+  isStatusMenuOpen,
   groupedCandidates,
   toggleDepMenu,
+  openStatusMenu,
+  closeStatusMenu,
+  onSelectStatus,
   onSelectDependency,
   onToggle,
   onCycleStatus,

@@ -579,6 +579,7 @@ export function usePlanningPanel(
     setDependency: todos.setDependency,
     toggleTodoStatus: todos.toggleTodoStatus,
     cycleStatus: todos.cycleStatus,
+    setTodoSpecificStatus: todos.setTodoSpecificStatus,
     saveTodo: todos.saveTodo,
     addTodo: todos.addTodo,
     addBacklog: todos.addBacklog,

@@ -31,9 +31,13 @@ export function usePlanningTodos(
     await applyStatus(todo, nextStatus);
   }
 
-  async function cycleStatus(todo: TapestryTodo) {
-    const nextStatus = CYCLE_STATUS_MAP[todo.status] || 'planned';
+  async function cycleStatus(todo: TapestryTodo, targetStatus?: TodoStatus) {
+    const nextStatus = targetStatus || CYCLE_STATUS_MAP[todo.status] || 'planned';
     await applyStatus(todo, nextStatus);
+  }
+
+  async function setTodoSpecificStatus(todo: TapestryTodo, status: TodoStatus) {
+    await applyStatus(todo, status);
   }
 
   async function applyStatus(todo: TapestryTodo, nextStatus: TodoStatus) {
@@ -282,6 +286,7 @@ export function usePlanningTodos(
   return {
     toggleTodoStatus,
     cycleStatus,
+    setTodoSpecificStatus,
     saveTodo,
     setDependency,
     addTodo,

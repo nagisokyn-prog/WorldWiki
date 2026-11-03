@@ -1,4 +1,4 @@
-import type { TapestryArcGroup, TapestryTodo, DependencyCandidate } from '../PlanningPanel.model';
+import type { TapestryArcGroup, TapestryTodo, DependencyCandidate, TodoStatus } from '../PlanningPanel.model';
 
 export interface PlanArcGroupProps {
   arcGroup: TapestryArcGroup;
@@ -8,7 +8,8 @@ export interface PlanArcGroupProps {
 
 export type PlanArcGroupEmits = {
   (e: 'toggle', item: TapestryTodo): void;
-  (e: 'cycle-status', item: TapestryTodo): void;
+  (e: 'cycle-status', item: TapestryTodo, status?: TodoStatus): void;
+  (e: 'set-status', item: TapestryTodo, status: TodoStatus): void;
   (e: 'save', item: TapestryTodo): void;
   (e: 'delete', item: TapestryTodo): void;
   (e: 'navigate', chapterId: string): void;

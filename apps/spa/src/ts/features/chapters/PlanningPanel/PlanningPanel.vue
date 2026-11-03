@@ -106,6 +106,7 @@
             :all-todos="allVolumeTodos"
             @toggle="toggleTodoStatus"
             @cycle-status="cycleStatus"
+            @set-status="setTodoSpecificStatus"
             @save="saveTodo"
             @delete="deleteTodo"
             @navigate="handleNavigate"
@@ -230,6 +231,7 @@ const {
   toggleVolumeCollapse,
   toggleTodoStatus,
   cycleStatus,
+  setTodoSpecificStatus,
   saveTodo,
   setDependency,
   addTodo,

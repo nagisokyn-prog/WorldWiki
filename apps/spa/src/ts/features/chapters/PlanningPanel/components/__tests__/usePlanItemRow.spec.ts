@@ -83,4 +83,20 @@ describe('usePlanItemRow', () => {
     hook.onSelectDependency(null);
     expect(emit).toHaveBeenCalledWith('set-dependency', expect.anything(), null);
   });
+
+  it('opens and closes status menu and emits set-status when selecting specific status', () => {
+    const emit = vi.fn();
+    const hook = usePlanItemRow(
+      { item: { ...baseTodo, status: 'planned' } },
+      emit
+    );
+
+    expect(hook.isStatusMenuOpen.value).toBe(false);
+    hook.openStatusMenu();
+    expect(hook.isStatusMenuOpen.value).toBe(true);
+
+    hook.onSelectStatus('in_progress');
+    expect(emit).toHaveBeenCalledWith('set-status', expect.anything(), 'in_progress');
+    expect(hook.isStatusMenuOpen.value).toBe(false);
+  });
 });

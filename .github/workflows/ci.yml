@@ -44,10 +44,10 @@ jobs:
         # Явно задаём store, чтобы кэш pnpm/action-setup и setup-node(cache: pnpm) работали стабильно.
         run: pnpm config set store-dir "$env:LOCALAPPDATA\pnpm\store"
 
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
+      - name: Add Cargo to PATH
+        run: |
+          $p = "C:\Users\Kuzma\.cargo\bin"
+          Add-Content -Path $env:GITHUB_PATH -Value $p
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2

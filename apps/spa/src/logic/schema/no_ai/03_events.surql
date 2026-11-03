@@ -61,7 +61,9 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
     LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id = $before.id);
     DELETE text_blocks WHERE chapter_id IN $chaps;
     DELETE chapter_revisions WHERE target_id IN $chaps;
-    DELETE todos WHERE owner_id = $before.id OR owner_id IN $chaps;
+    LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id OR owner_id IN $chaps);
+    UPDATE todos SET depends_on = NONE WHERE depends_on IN $del_todos;
+    DELETE todos WHERE id IN $del_todos;
     DELETE chapters WHERE volume_id = $before.id;
     DELETE contains WHERE in = $before.id OR out = $before.id;
 };
@@ -69,7 +71,9 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
     DELETE text_blocks WHERE chapter_id = $before.id;
     DELETE contains WHERE out = $before.id;
-    DELETE todos WHERE owner_id = $before.id;
+    LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id);
+    UPDATE todos SET depends_on = NONE WHERE depends_on IN $del_todos;
+    DELETE todos WHERE id IN $del_todos;
     DELETE chapter_revisions WHERE target_id = $before.id;
 
     -- Разрыв временных границ связей

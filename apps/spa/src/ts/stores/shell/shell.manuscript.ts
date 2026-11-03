@@ -6,6 +6,7 @@
 import { ref, type Ref } from 'vue';
 import * as api from '../../services/api.client';
 import { projectRecordId } from '../../services/api/project.api';
+import { useChapterStore } from '../chapter.store';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { EditorTab } from './shell.types';
 
@@ -150,10 +151,32 @@ export function useShellManuscript(deps: ManuscriptDeps) {
         }
       }
 
+      // Немедленно закрываем вкладки редактора для всех вариантов ID,
+      // чтобы предотвратить фоновые события автосохранения / blur
+      deps.closeEditor(chapter.id, true);
+      deps.closeEditor(cleanTargetId, true);
+      deps.closeEditor(`chapters:${cleanTargetId}`, true);
+
+      // Сбрасываем состояние в useChapterStore, если эта глава была загружена в сторе
+      try {
+        const chapterStore = useChapterStore();
+        if (chapterStore.currentChapterId && String(chapterStore.currentChapterId).replace(/^[^:]+:/, '') === cleanTargetId) {
+          chapterStore.currentChapter = null;
+          chapterStore.currentChapterId = undefined;
+          chapterStore.hasUnsavedChanges = false;
+        }
+      } catch (err: unknown) {
+        console.warn('[deleteChapter] Could not reset chapterStore:', err);
+      }
+
+      // Очищаем локальный список deps.chapters
+      if (deps.chapters.value) {
+        deps.chapters.value = deps.chapters.value.filter(c => String(c.id).replace(/^[^:]+:/, '') !== cleanTargetId);
+      }
+
       await api.deleteChapter(chapter.id);
       deps.addLog(`Deleted chapter [${chapter.id}]`, 'warn');
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-      deps.closeEditor(chapter.id, true);
+      if (deps.chapterTreeRef.value?.load) await deps.chapterTreeRef.value.load();
       if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && compareIds(deps.activeTreeNode.value.node.id, chapter.id)) {
         deps.activeTreeNode.value = null;
       }
@@ -171,6 +194,8 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       }
     } catch (e) {
       deps.addLog(`Error deleting chapter: ${e}`, 'error');
+      deps.addToast(`Ошибка удаления главы: ${e}`, 'error');
+      if (deps.chapterTreeRef.value?.load) void deps.chapterTreeRef.value.load();
     }
   };
 
@@ -244,7 +269,10 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       for (const ch of chaptersToDelete) {
         if (!ch.id) continue;
         try { await api.deleteChapter(ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
+        const cleanChId = String(ch.id).replace(/^[^:]+:/, '');
         deps.closeEditor(String(ch.id), true);
+        deps.closeEditor(cleanChId, true);
+        deps.closeEditor(`chapters:${cleanChId}`, true);
       }
 
       // Close open editors related to volume or deleted chapters

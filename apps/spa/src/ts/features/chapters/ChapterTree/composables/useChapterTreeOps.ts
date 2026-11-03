@@ -214,6 +214,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
     };
 
     const handleDelete = async (ids: string[]) => {
+        let needsDirectReload = false;
         for (const id of ids) {
             const node = options.findNodeById(id);
             if (!node || !node.data) continue;
@@ -226,8 +227,19 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const chapters = options.hierarchy.value.chapters.filter((c) =>
                     options.compareIds((c as { volumeId?: string }).volumeId || c.volume_id, original.id)
                 );
+                options.hierarchy.value = {
+                    ...options.hierarchy.value,
+                    volumes: options.hierarchy.value.volumes.filter((v) => !options.compareIds(v.id, original.id)),
+                    chapters: options.hierarchy.value.chapters.filter(
+                        (c) => !options.compareIds((c as { volumeId?: string }).volumeId || c.volume_id, original.id)
+                    )
+                };
                 options.emit('delete-volume', original, chapters, ids.length > 1);
             } else if (type === 'chapter') {
+                options.hierarchy.value = {
+                    ...options.hierarchy.value,
+                    chapters: options.hierarchy.value.chapters.filter((c) => !options.compareIds(c.id, original.id))
+                };
                 options.emit('delete-chapter', original, ids.length > 1);
             } else if (type === 'planet') {
                 const calendarStore = useCalendarStore();
@@ -240,6 +252,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 if (confirmed) {
                     calendarStore.deletePlanet(options.project, plId);
                     document.dispatchEvent(new CustomEvent('ww:planet-deleted', { detail: { id: plId } }));
+                    needsDirectReload = true;
                 }
             } else if (type === 'calendar') {
                 const calendarStore = useCalendarStore();
@@ -252,12 +265,15 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 if (confirmed) {
                     await calendarStore.deleteCalendar(calId);
                     document.dispatchEvent(new CustomEvent('ww:calendar-deleted', { detail: { id: calId } }));
+                    needsDirectReload = true;
                 }
             } else if (data.isEntity && type) {
                 options.emit('delete-entity', options.entityKey(type, String(original.id)), type, ids.length > 1);
             }
         }
-        await options.load();
+        if (needsDirectReload) {
+            await options.load();
+        }
     };
 
     return {

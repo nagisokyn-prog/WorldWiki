@@ -22,7 +22,13 @@ export interface ShellNavigationDeps {
 
 export function useShellNavigation(deps: ShellNavigationDeps) {
   const closeEditor = async (id: string, force = false) => {
+    const cleanId = id.replace(/^[a-zA-Z0-9_-]+:/, '');
     await deps.eg.closeTab(id, force);
+    if (cleanId !== id) {
+      await deps.eg.closeTab(cleanId, force);
+    }
+    await deps.eg.closeTab(`chapters:${cleanId}`, force);
+    await deps.eg.closeTab(`chapter:${cleanId}`, force);
     deps.addLog(`Editor -> Closed [${id}]`, 'warn');
   };
 

@@ -94,10 +94,12 @@ export function usePlanItemRow(props: PlanItemRowProps, emit: PlanItemRowEmits) 
   });
 
   function onToggle() {
+    emit('cycle-status', props.item);
     emit('toggle', props.item);
   }
 
   function onCycleStatus() {
+    emit('cycle-status', props.item);
     openStatusMenu();
   }
 

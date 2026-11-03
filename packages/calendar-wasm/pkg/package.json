@@ -1,0 +1,16 @@
+{
+  "name": "worldwiki-calendar-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for WorldWiki high-performance calendar engine",
+  "version": "0.85.0",
+  "files": [
+    "worldwiki_calendar_wasm_bg.wasm",
+    "worldwiki_calendar_wasm.js",
+    "worldwiki_calendar_wasm.d.ts"
+  ],
+  "main": "worldwiki_calendar_wasm.js",
+  "types": "worldwiki_calendar_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

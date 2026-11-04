@@ -1,5 +1,6 @@
 import { ref } from 'vue';
-import type { ParagraphFormatData, PageSize, WordDocumentDTO } from '@worldwiki/word-vibe';
+import type { PageSize, WordDocumentDTO } from '../components/EditorBody.model';
+import type { ParagraphFormatData } from '../components/EditorModals.model';
 import type { Editor } from '@tiptap/vue-3';
 
 export interface UseEditorWordBridgeOptions {

@@ -2,15 +2,22 @@ import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarDate } from '@/services/Calendars/calendar.types';
 import {
+  resolveLocationGeography,
+  computeLocationLocalTime,
+  getEntityName,
+  type GeographyEntityRecord,
+} from '@/services/Geography/locationHierarchy';
+import {
   type InspectorEvent,
   type InspectorChapter,
-  type InspectorReveal,
-  type VisualizedConnectionLine,
   type InspectorParticipant,
   type FormattedInspectorEvent,
   type TimelineInspectorFilterState,
-  getInspectorKindMeta
+  getInspectorKindMeta,
 } from './TimelineInspector.model';
+import { calculateConnectionLines } from './timelineInspectorVolume.utils';
+
+export { calculateConnectionLines };
 
 export function normalizeId(id?: unknown): string {
   if (!id) return '';
@@ -20,11 +27,7 @@ export function normalizeId(id?: unknown): string {
     if (obj.String) return normalizeId(obj.String);
     return '';
   }
-  return String(id)
-    .replace(/^⟨|⟩$/g, '')
-    .replace(/^[a-zA-Z0-9_-]+:/, '')
-    .replace(/^⟨|⟩$/g, '')
-    .trim();
+  return String(id).replace(/^⟨|⟩$/g, '').replace(/^[a-zA-Z0-9_-]+:/, '').replace(/^⟨|⟩$/g, '').trim();
 }
 
 export function getEventId(ev: InspectorEvent): string {
@@ -40,9 +43,7 @@ export function checkIsFlashback(
     return true;
   }
   const rawObj = ev as unknown as { time_nature?: string; is_flashback?: boolean };
-  if (rawObj.time_nature === 'flashback' || rawObj.is_flashback === true) {
-    return true;
-  }
+  if (rawObj.time_nature === 'flashback' || rawObj.is_flashback === true) return true;
   const text = `${ev.title} ${ev.description || ''}`.toLowerCase();
   if (text.includes('флешбэк') || text.includes('флешбек') || text.includes('ретроспектив') || text.includes('воспоминани')) {
     return true;
@@ -59,9 +60,7 @@ export function checkIsFlashback(
       );
       if (prevEvents.length > 0) {
         const maxPrevMabs = Math.max(...prevEvents.map((e) => e.m_abs));
-        if (ev.m_abs < maxPrevMabs - 1440) {
-          return true;
-        }
+        if (ev.m_abs < maxPrevMabs - 1440) return true;
       }
     }
   }
@@ -69,9 +68,7 @@ export function checkIsFlashback(
 }
 
 export function formatEventDate(mAbs: number, cal: CalendarData | null): string {
-  if (!cal || mAbs === undefined || mAbs === null) {
-    return `M_abs: ${mAbs}`;
-  }
+  if (!cal || mAbs === undefined || mAbs === null) return `M_abs: ${mAbs}`;
   try {
     const dateInput = CalendarMath.getDateFromAbsolute(mAbs, cal);
     const calDate: CalendarDate = {
@@ -85,18 +82,14 @@ export function formatEventDate(mAbs: number, cal: CalendarData | null): string 
   }
 }
 
-export function cleanParticipantsList(rawParticipants?: Array<{ id?: string; name?: string; entity_type?: string } | string>): InspectorParticipant[] {
+export function cleanParticipantsList(
+  rawParticipants?: Array<{ id?: string; name?: string; entity_type?: string } | string>
+): InspectorParticipant[] {
   if (!rawParticipants) return [];
   return rawParticipants
     .map((p) => {
-      if (typeof p === 'string') {
-        return { id: p, name: p.replace(/^entities:/, ''), entity_type: 'character' };
-      }
-      return {
-        id: p.id || '',
-        name: p.name || '',
-        entity_type: p.entity_type || 'character',
-      };
+      if (typeof p === 'string') return { id: p, name: p.replace(/^entities:/, ''), entity_type: 'character' };
+      return { id: p.id || '', name: p.name || '', entity_type: p.entity_type || 'character' };
     })
     .filter((p) => Boolean(p && p.name && String(p.name).trim().length > 0));
 }
@@ -109,19 +102,17 @@ export function buildFilteredChapters(
   let chs = [...rawChapters];
   if (readerHorizonOrder !== null) {
     chs = chs.filter((c, idx) => {
-      const order = (c.sort_order && Number(c.sort_order) > 0) ? Number(c.sort_order) : (idx + 1);
+      const order = c.sort_order && Number(c.sort_order) > 0 ? Number(c.sort_order) : idx + 1;
       return order <= (readerHorizonOrder ?? 999999);
     });
   }
 
   return chs.map((ch, idx) => {
     const rawOrder = ch.sort_order ? Number(ch.sort_order) : 0;
-    const order = (rawOrder > 0 && rawOrder < 1000) ? rawOrder : (idx + 1);
+    const order = rawOrder > 0 && rawOrder < 1000 ? rawOrder : idx + 1;
     const title = ch.title && ch.title.trim() ? ch.title.trim() : `Глава #${order}`;
     const cleanChId = normalizeId(ch.id);
-    const chEvents = allEvents.filter((ev) =>
-      ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanChId)
-    );
+    const chEvents = allEvents.filter((ev) => ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanChId));
 
     const sceneCount = chEvents.length;
     let flashbackCount = 0;
@@ -138,14 +129,7 @@ export function buildFilteredChapters(
       }
     });
 
-    return {
-      ...ch,
-      title,
-      sort_order: order,
-      sceneCount,
-      flashbackCount,
-      earliestFlashbackEventId,
-    };
+    return { ...ch, title, sort_order: order, sceneCount, flashbackCount, earliestFlashbackEventId };
   });
 }
 
@@ -158,13 +142,8 @@ export function filterInspectorEvents(
   const isolatedChId = filters.isolatedChapterId ? normalizeId(filters.isolatedChapterId) : null;
 
   let evs = rawEvents.filter((ev: InspectorEvent) => {
-    if (q && !ev.title.toLowerCase().includes(q) && !(ev.description || '').toLowerCase().includes(q)) {
-      return false;
-    }
-    if (isolatedChId) {
-      const belongsToIsolated = ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId);
-      if (!belongsToIsolated) return false;
-    }
+    if (q && !ev.title.toLowerCase().includes(q) && !(ev.description || '').toLowerCase().includes(q)) return false;
+    if (isolatedChId && !ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId)) return false;
     if (filters.selectedEntityId !== 'all') {
       const target = normalizeId(filters.selectedEntityId);
       const hasParticipant = ev.participants.some((p: { id?: string } | string) => {
@@ -173,20 +152,11 @@ export function filterInspectorEvents(
       });
       if (!hasParticipant) return false;
     }
-    if (filters.selectedPovId !== 'all') {
-      const hasPov = ev.reveals.some((r) => r.pov_id === filters.selectedPovId);
-      if (!hasPov) return false;
-    }
-    if (filters.showFlashbacksOnly) {
-      const isFb = checkIsFlashback(ev, chaptersList, rawEvents);
-      if (!isFb) return false;
-    }
-    if (filters.selectedVolumeId && filters.selectedVolumeId !== 'all') {
+    if (filters.selectedPovId !== 'all' && !ev.reveals.some((r) => r.pov_id === filters.selectedPovId)) return false;
+    if (filters.showFlashbacksOnly && !checkIsFlashback(ev, chaptersList, rawEvents)) return false;
+    if (filters.selectedVolumeId && filters.selectedVolumeId !== 'all' && ev.reveals?.length) {
       const allowedChIds = new Set(chaptersList.map((c) => normalizeId(c.id)));
-      if (ev.reveals && ev.reveals.length > 0) {
-        const isInVolume = ev.reveals.some((r) => allowedChIds.has(normalizeId(r.chapter_id)));
-        if (!isInVolume) return false;
-      }
+      if (!ev.reveals.some((r) => allowedChIds.has(normalizeId(r.chapter_id)))) return false;
     }
     return true;
   });
@@ -194,19 +164,12 @@ export function filterInspectorEvents(
   const sceneSignatures = new Set<string>();
   evs.forEach((ev) => {
     const isScene = getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:');
-    if (isScene) {
-      sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
-    }
+    if (isScene) sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
   });
 
   evs = evs.filter((ev) => {
     const isPureEvent = getEventId(ev).startsWith('timeline_events:') && ev.kind === 'event';
-    if (isPureEvent) {
-      const sig = `${ev.m_abs}_${ev.title.trim().toLowerCase()}`;
-      if (sceneSignatures.has(sig)) {
-        return false;
-      }
-    }
+    if (isPureEvent && sceneSignatures.has(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`)) return false;
     return true;
   });
 
@@ -217,8 +180,18 @@ export function buildFormattedEvents(
   events: InspectorEvent[],
   chapters: InspectorChapter[],
   cal: CalendarData | null,
-  rawAllEvents?: InspectorEvent[]
+  rawAllEvents?: InspectorEvent[],
+  projectEntities: GeographyEntityRecord[] = []
 ): FormattedInspectorEvent[] {
+  const entitiesById = new Map<string, GeographyEntityRecord>();
+  const entitiesByName = new Map<string, GeographyEntityRecord>();
+  for (const ent of projectEntities) {
+    const cid = normalizeId(ent.id);
+    if (cid) entitiesById.set(cid, ent);
+    const name = getEntityName(ent);
+    if (name) entitiesByName.set(name.toLowerCase(), ent);
+  }
+
   return events.map((ev) => {
     const evId = getEventId(ev);
     const formattedDate = formatEventDate(ev.m_abs, cal);
@@ -227,6 +200,27 @@ export function buildFormattedEvents(
     const kindMeta = getInspectorKindMeta(kind);
     const isFlashback = checkIsFlashback(ev, chapters, rawAllEvents);
     const primaryReveal = ev.reveals?.[0];
+
+    let locationName: string | undefined;
+    let localTimeBadge: string | undefined;
+    let localTimeHint: string | null = null;
+    let hasTimezoneDiscrepancy = false;
+
+    if (ev.location_id) {
+      const cleanLocId = normalizeId(ev.location_id);
+      const matchedLoc = entitiesById.get(cleanLocId) || entitiesByName.get(cleanLocId.toLowerCase());
+      locationName = matchedLoc ? getEntityName(matchedLoc) || cleanLocId : cleanLocId;
+
+      if (matchedLoc && ev.m_abs !== undefined && ev.m_abs !== null) {
+        const geo = resolveLocationGeography(matchedLoc, projectEntities, cal?.timezones || []);
+        const timeInfo = computeLocationLocalTime(ev.m_abs, geo, cal, cal?.timezones || []);
+        localTimeBadge = `${timeInfo.phaseEmoji} ${timeInfo.localTimeStr}`;
+        hasTimezoneDiscrepancy = timeInfo.hasDiscrepancy;
+        localTimeHint =
+          timeInfo.discrepancyHint ||
+          `Местное время в «${geo.entityName}»: ${timeInfo.localTimeStr} (${timeInfo.sunStatus.phase_label})`;
+      }
+    }
 
     return {
       ...ev,
@@ -239,91 +233,10 @@ export function buildFormattedEvents(
       isFlashback,
       primaryChapterId: primaryReveal?.chapter_id ? normalizeId(primaryReveal.chapter_id) : undefined,
       primaryChapterTitle: primaryReveal?.chapter_title || undefined,
+      locationName,
+      localTimeBadge,
+      localTimeHint,
+      hasTimezoneDiscrepancy,
     };
   });
-}
-
-export function calculateConnectionLines(params: {
-  linkMode: 'focus' | 'all' | 'none';
-  chapters: InspectorChapter[];
-  events: InspectorEvent[];
-  activeChapterId: string | null;
-  hoveredChapterId: string | null;
-  hoveredEventId: string | null;
-  startX?: number;
-  chapterSpacing?: number;
-  eventSpacing?: number;
-}): VisualizedConnectionLine[] {
-  const {
-    linkMode,
-    chapters,
-    events,
-    activeChapterId,
-    hoveredChapterId,
-    hoveredEventId,
-    startX = 60,
-    chapterSpacing = 140,
-    eventSpacing = 160
-  } = params;
-
-  if (linkMode === 'none' || !chapters.length || !events.length) return [];
-
-  const lines: VisualizedConnectionLine[] = [];
-  const chapterPositions = new Map<string, number>();
-  chapters.forEach((ch, idx) => {
-    chapterPositions.set(normalizeId(ch.id), startX + idx * chapterSpacing);
-  });
-
-  const eventPositions = new Map<string, number>();
-  events.forEach((ev, idx) => {
-    const evId = getEventId(ev) || `ev-${idx}`;
-    eventPositions.set(evId, startX + idx * eventSpacing);
-  });
-
-  const targetChId = activeChapterId ? normalizeId(activeChapterId) : (hoveredChapterId ? normalizeId(hoveredChapterId) : null);
-  const targetEvId = hoveredEventId ? getEventId({ id: hoveredEventId, title: '', m_abs: 0, reveals: [], participants: [] }) : null;
-
-  events.forEach((ev) => {
-    const evId = getEventId(ev);
-
-    if (linkMode === 'focus') {
-      if (targetChId) {
-        const belongsToTargetCh = ev.reveals.some((r) => normalizeId(r.chapter_id) === targetChId);
-        if (!belongsToTargetCh) return;
-      } else if (targetEvId) {
-        if (evId !== targetEvId) return;
-      } else {
-        return;
-      }
-    }
-
-    ev.reveals.forEach((r: InspectorReveal) => {
-      const cleanRChId = normalizeId(r.chapter_id);
-      if (targetChId && cleanRChId !== targetChId) return;
-
-      const x1 = chapterPositions.get(cleanRChId);
-      const x2 = eventPositions.get(evId);
-
-      if (x1 !== undefined && x2 !== undefined) {
-        const isFlashback = checkIsFlashback(ev, chapters) || r.kind === 'flashback' || x1 > x2;
-        lines.push({
-          id: `line-${evId}-${r.chapter_id}`,
-          eventId: evId,
-          chapterId: r.chapter_id,
-          eventTitle: ev.title,
-          chapterTitle: r.chapter_title,
-          chapterOrder: r.chapter_order ?? r.chapter_sort_order ?? 0,
-          m_abs: ev.m_abs,
-          kind: r.kind,
-          isFlashback,
-          x1,
-          y1: 60,
-          x2,
-          y2: 170,
-        });
-      }
-    });
-  });
-
-  return lines;
 }

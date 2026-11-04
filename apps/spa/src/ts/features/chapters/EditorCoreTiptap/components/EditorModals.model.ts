@@ -3,7 +3,22 @@ import type { PlotPromise } from '@/types/generated/PlotPromise'
 import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel'
 import type { PromiseTypeOption } from '../usePromiseContextMenu'
 import type { InsertEntityPayload } from '../EntityLinkSelector.model'
-import type { ParagraphFormatData } from '@worldwiki/word-vibe'
+export interface ParagraphFormatData {
+  firstLineType: 'none' | 'indent' | 'hanging';
+  firstLineCm: number;
+  leftIndentCm: number;
+  rightIndentCm: number;
+  lineHeight: string;
+}
+
+export interface ParagraphFormatModalStubProps {
+  isOpen?: boolean;
+}
+
+export type ParagraphFormatModalStubEmits = {
+  (e: 'close'): void;
+  (e: 'apply', data: ParagraphFormatData): void;
+};
 
 export interface EditorModalsProps {
   project: string;

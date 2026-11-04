@@ -10,19 +10,15 @@ import {
   CustomSuperscript, 
   CustomHighlight, 
   PageBreakNode, 
-  WordParagraphCommands 
-} from '../extensions/WordFormatExtensions';
-import {
+  WordParagraphCommands,
   countTableCaptions,
   nextTableCaptionNumber,
   buildTableCaptionText,
   TABLE_CAPTION_RE,
-} from '@worldwiki/word-vibe';
-import {
   countFigureCaptions,
   nextFigureCaptionNumber,
-  buildFigureCaptionText,
-} from '@worldwiki/word-vibe';
+  buildFigureCaptionText
+} from '../extensions/WordFormatExtensions';
 
 const createTestEditor = (content = '<p>Первый абзац документа</p><p>Второй абзац документа</p>') => {
   const CustomParagraph = Paragraph.extend({

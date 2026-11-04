@@ -8,7 +8,6 @@
     }"
   >
     <div class="plan-item-main flex items-center gap-2 w-full">
-      <!-- Status Icon Toggle & Context Menu -->
       <div class="plan-status-container relative">
         <button
           type="button"
@@ -24,12 +23,7 @@
           <span v-else class="status-icon-planned" title="В планах ⚪"></span>
         </button>
 
-        <!-- Status Context Menu (ПКМ) -->
-        <div
-          v-if="isStatusMenuOpen"
-          class="status-picker-dropdown"
-          @click.stop
-        >
+        <div v-if="isStatusMenuOpen" class="status-picker-dropdown" @click.stop>
           <div class="status-picker-header">Статус задачи:</div>
           <button
             type="button"
@@ -37,10 +31,7 @@
             :class="{ 'is-selected': item.status === 'planned' && !item.done }"
             @click="onSelectStatus('planned')"
           >
-            <div class="flex items-center gap-2">
-              <span class="status-dot neutral"></span>
-              <span>В планах</span>
-            </div>
+            <div class="flex items-center gap-2"><span class="status-dot neutral"></span><span>В планах</span></div>
             <span v-if="item.status === 'planned' && !item.done" class="status-picker-check">✓</span>
           </button>
           <button
@@ -49,10 +40,7 @@
             :class="{ 'is-selected': item.status === 'in_progress' }"
             @click="onSelectStatus('in_progress')"
           >
-            <div class="flex items-center gap-2">
-              <span class="status-dot warning"></span>
-              <span>В работе</span>
-            </div>
+            <div class="flex items-center gap-2"><span class="status-dot warning"></span><span>В работе</span></div>
             <span v-if="item.status === 'in_progress'" class="status-picker-check">✓</span>
           </button>
           <button
@@ -61,10 +49,7 @@
             :class="{ 'is-selected': item.status === 'done' || item.done }"
             @click="onSelectStatus('done')"
           >
-            <div class="flex items-center gap-2">
-              <span class="status-dot success"></span>
-              <span>Готово</span>
-            </div>
+            <div class="flex items-center gap-2"><span class="status-dot success"></span><span>Готово</span></div>
             <span v-if="item.status === 'done' || item.done" class="status-picker-check">✓</span>
           </button>
           <button
@@ -73,16 +58,12 @@
             :class="{ 'is-selected': item.status === 'blocked' }"
             @click="onSelectStatus('blocked')"
           >
-            <div class="flex items-center gap-2">
-              <span class="status-dot blocked"></span>
-              <span>Ожидает</span>
-            </div>
+            <div class="flex items-center gap-2"><span class="status-dot blocked"></span><span>Ожидает</span></div>
             <span v-if="item.status === 'blocked'" class="status-picker-check">✓</span>
           </button>
         </div>
       </div>
 
-      <!-- Input Text -->
       <input
         v-model="item.text"
         class="plan-item-input flex-1"
@@ -92,7 +73,6 @@
         @keydown.enter.prevent="onSave"
       />
 
-      <!-- Dependency Picker Toggle -->
       <div class="plan-item-dep-container">
         <button
           type="button"
@@ -104,22 +84,10 @@
           🔗
         </button>
 
-        <!-- Dropdown Menu -->
-        <div
-          v-if="isDepMenuOpen"
-          class="dep-picker-dropdown"
-          @click.stop
-        >
+        <div v-if="isDepMenuOpen" class="dep-picker-dropdown" @click.stop>
           <div class="dep-picker-header">Предшествующее событие:</div>
-
-          <button
-            v-if="item.depends_on"
-            type="button"
-            class="dep-picker-unlink-btn"
-            @click="onSelectDependency(null)"
-          >
-            <span>✕</span>
-            <span>Снять зависимость</span>
+          <button v-if="item.depends_on" type="button" class="dep-picker-unlink-btn" @click="onSelectDependency(null)">
+            <span>✕</span><span>Снять зависимость</span>
           </button>
 
           <div v-for="group in groupedCandidates" :key="group.chapterId" class="dep-picker-group">
@@ -140,24 +108,13 @@
             </button>
           </div>
 
-          <div v-if="groupedCandidates.length === 0" class="dep-picker-empty">
-            Нет доступных задач для связи
-          </div>
+          <div v-if="groupedCandidates.length === 0" class="dep-picker-empty">Нет доступных задач для связи</div>
         </div>
       </div>
 
-      <!-- Delete Button -->
-      <button
-        type="button"
-        class="plan-item-delete-btn"
-        title="Удалить задачу"
-        @click="onDelete"
-      >
-        ×
-      </button>
+      <button type="button" class="plan-item-delete-btn" title="Удалить задачу" @click="onDelete">×</button>
     </div>
 
-    <!-- Causality Links (Depends On / Blocks) -->
     <div v-if="item.depends_on_title || item.blocks_title" class="plan-item-causality">
       <span
         v-if="item.depends_on_title"
@@ -183,8 +140,7 @@
         :title="'Открывает шаг в главе: ' + item.blocks_title"
         @click.stop="onNavigate(item.blocks_chapter_id)"
       >
-        <span>🔗</span>
-        <span>Открывает: {{ item.blocks_title }} ➔</span>
+        <span>🔗</span><span>Открывает: {{ item.blocks_title }} ➔</span>
       </button>
     </div>
   </div>
@@ -198,20 +154,9 @@ const props = defineProps<PlanItemRowProps>();
 const emit = defineEmits<PlanItemRowEmits>();
 
 const {
-  statusTooltip,
-  isDepMenuOpen,
-  isStatusMenuOpen,
-  groupedCandidates,
-  toggleDepMenu,
-  openStatusMenu,
-  closeStatusMenu,
-  onSelectStatus,
-  onSelectDependency,
-  onToggle,
-  onCycleStatus,
-  onSave,
-  onDelete,
-  onNavigate
+  statusTooltip, isDepMenuOpen, isStatusMenuOpen, groupedCandidates, toggleDepMenu,
+  openStatusMenu, closeStatusMenu, onSelectStatus, onSelectDependency, onToggle,
+  onCycleStatus, onSave, onDelete, onNavigate
 } = usePlanItemRow(props, emit);
 </script>
 

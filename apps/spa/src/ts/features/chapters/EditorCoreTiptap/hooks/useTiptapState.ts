@@ -24,8 +24,7 @@ export function useTiptapState(
   const modeOptions = [
     { value: 'wysiwyg', label: '📝 WYSIWYG' },
     { value: 'markdown', label: '✏️ Markdown' },
-    { value: 'split', label: '📑 Split View' },
-    { value: 'word', label: '📄 Word (А4)' }
+    { value: 'split', label: '📑 Split View' }
   ];
 
   const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -35,14 +34,15 @@ export function useTiptapState(
     if (saved) {
       try {
         const { mode } = JSON.parse(saved);
-        if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split' || mode === 'word') {
+        if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
           return mode;
         }
       } catch (err) {
         console.warn('[useTiptapState] Failed to parse saved editor mode from localStorage:', err);
       }
     }
-    return (localStorage.getItem('default-editor-mode') as EditorMode) || 'wysiwyg';
+    const defaultMode = (localStorage.getItem('default-editor-mode') as EditorMode);
+    return defaultMode && defaultMode !== 'word' ? defaultMode : 'wysiwyg';
   };
 
   const editorMode = ref<EditorMode>(loadInitialMode());

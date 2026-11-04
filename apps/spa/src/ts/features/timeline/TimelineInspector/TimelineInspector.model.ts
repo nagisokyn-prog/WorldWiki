@@ -62,6 +62,10 @@ export interface FormattedInspectorEvent extends InspectorEvent {
   isFlashback?: boolean;
   primaryChapterId?: string;
   primaryChapterTitle?: string;
+  locationName?: string;
+  localTimeBadge?: string;
+  localTimeHint?: string | null;
+  hasTimezoneDiscrepancy?: boolean;
 }
 
 export interface InspectorChapter {

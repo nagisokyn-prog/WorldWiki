@@ -66,7 +66,7 @@
 import type { EditorBodyProps, EditorBodyEmits } from './EditorBody.model';
 import { EditorContent } from '@tiptap/vue-3';
 import EditorSplitView from './EditorSplitView.vue';
-import { WordVibeEditor } from '@worldwiki/word-vibe';
+import WordVibeEditor from '../stubs/WordVibeStub.vue';
 
 defineProps<EditorBodyProps>();
 

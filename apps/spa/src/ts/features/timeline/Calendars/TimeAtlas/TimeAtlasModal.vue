@@ -94,6 +94,7 @@
             v-if="activeTab === 'world_time'"
             v-model:world-hour="worldHour"
             v-model:world-minute="worldMinute"
+            v-model:world-slice-filter="worldSliceFilter"
             :master-calendar-name="masterCalendarName"
             :max-hours="maxHours"
             :max-minutes="maxMinutes"
@@ -101,6 +102,7 @@
             :world-time-snippet="worldTimeSnippet"
             :is-world-time-copied="isWorldTimeCopied"
             :copy-world-time-snippet="copyWorldTimeSnippet"
+            :open-location-entity="openLocationEntity"
           />
 
           <!-- ВКЛАДКА 4: Датировки для Рукописи -->
@@ -136,6 +138,8 @@ const {
   maxHours,
   maxMinutes,
   localCalendarRecords,
+  worldSliceFilter,
+  openLocationEntity,
   worldTimeSnapshot,
   worldTimeSnippet,
   worldHour,

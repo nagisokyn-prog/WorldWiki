@@ -5,7 +5,7 @@
 /* Universal Font & Smoothing Reset for all Planning Panel Elements */
 .planning-panel,
 .planning-panel * {
-    font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -147,10 +147,10 @@
     flex-shrink: 0;
 }
 
-.status-dot.warning { background: var(--warning, #eab308); }
-.status-dot.success { background: var(--success, #22c55e); }
+.status-dot.warning { background: var(--warning); }
+.status-dot.success { background: var(--success); }
 .status-dot.neutral { background: var(--text-muted); }
-.status-dot.blocked { background: var(--danger, #ef4444); }
+.status-dot.blocked { background: var(--danger, var(--error)); }
 
 .chip-warning {
     background: var(--warning-bg, var(--bg-hover));
@@ -178,10 +178,10 @@
 
 /* Tapestry Chapter Card */
 .tapestry-chapter-card {
-    border-radius: var(--radius-sm, 6px);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     background: var(--bg-card);
-    transition: border-color var(--anim-speed-normal, 0.2s) ease, box-shadow var(--anim-speed-normal, 0.2s) ease;
+    transition: border-color var(--anim-speed-normal, 0.2s) ease;
     overflow: hidden;
     flex-shrink: 0;
     width: 100%;
@@ -436,8 +436,8 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm, 6px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
     padding: 4px;
     display: flex;
     flex-direction: column;
@@ -969,8 +969,8 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm, 6px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
     padding: 6px;
     display: flex;
     flex-direction: column;
@@ -1008,7 +1008,7 @@
 }
 
 .dep-picker-unlink-btn:hover {
-    background: var(--error-bg, rgba(239, 68, 68, 0.15));
+    background: var(--error-bg, var(--bg-hover));
 }
 
 .dep-picker-group {
@@ -1106,8 +1106,8 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm, 6px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
     padding: 6px;
     display: flex;
     flex-direction: column;
@@ -1196,7 +1196,7 @@
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: all var(--anim-speed-fast, 0.15s) ease;
+    transition: border-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease, background-color var(--anim-speed-fast, 0.15s) ease;
 }
 
 .btn-add-volume-stream:hover {

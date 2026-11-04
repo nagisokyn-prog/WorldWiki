@@ -37,6 +37,14 @@
             <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
             <template v-for="section in config.sections" :key="section.id">
               <div v-if="section.id === activeSection">
+                <LocationAstronomyWidget
+                  v-if="props.entityType === 'location' && section.id === 'geography'"
+                  :project="props.project"
+                  :entity-id="props.entityId"
+                  :form-data="formData"
+                  @apply-timezone="(val: string) => { setProp('часовой_пояс', val); markModified(); }"
+                />
+
                 <!-- Обычные поля секции -->
                 <div v-if="section.fields && section.fields.length > 0" class="glass-card mb-4 p-4">
                     <div class="form-grid grid-dynamic">
@@ -327,6 +335,7 @@
 import { XboxWheel, TagsField, SafeHtml } from '@worldwiki/components';
 import { UniversalDatePicker, RelationshipBlock, ManuscriptPointPicker, type ManuscriptPoint } from '@/shared/ui';
 import EntityHistoryBanner from './components/EntityHistoryBanner.vue';
+import LocationAstronomyWidget from './components/LocationAstronomyWidget/LocationAstronomyWidget.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 

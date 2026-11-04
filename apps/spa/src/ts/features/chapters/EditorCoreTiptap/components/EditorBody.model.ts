@@ -1,5 +1,9 @@
 import type { Editor } from '@tiptap/vue-3'
-import type { PageSize, WordDocumentDTO } from '@worldwiki/word-vibe'
+export type PageSize = 'A4' | 'A5' | 'A3' | 'Letter';
+export interface WordDocumentDTO {
+  version?: number;
+  sections?: unknown[];
+}
 import type { SemanticDocument } from '@/services/document/ast/types'
 import type { DocumentBlock } from '../hooks/useTiptapSplitView'
 

@@ -1,5 +1,5 @@
 {
-  "name": "Исторические события",
+  "name": "Историческое событие",
   "icon": "fa-calendar-star",
   "iconEmoji": "📜",
   "photoField": "фото",
@@ -161,16 +161,7 @@
           "rows": 5
         }
       ],
-      "dynamicContainers": [
-        {
-          "id": "eventChain",
-          "type": "dynamic",
-          "title": "Причинно-следственные связи с другими событиями",
-          "emptyMessage": "Связанные события не добавлены",
-          "template": "eventEventRelTemplate",
-          "dataPath": "связанные_события"
-        }
-      ]
+      "dynamicContainers": []
     },
     {
       "id": "consequences",
@@ -204,60 +195,5 @@
       ],
       "dynamicContainers": []
     }
-  ],
-  "templates": {
-    "eventEventRelTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Связанное историческое событие",
-          "entityType": "event",
-          "placeholder": "Выберите событие..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Причинно-следственная связь",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "причина",
-              "label": "⬅️ Причина / Предпосылка (предшествует этому)"
-            },
-            {
-              "value": "следствие",
-              "label": "➡️ Прямое следствие (порождено этим)"
-            },
-            {
-              "value": "эскалация",
-              "label": "🔥 Эскалация / Обострение другого конфликта"
-            },
-            {
-              "value": "параллельное",
-              "label": "⚡ Параллельное / Синхронное событие"
-            },
-            {
-              "value": "реакция",
-              "label": "🛡️ Ответная реакция / Возмездие"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Как именно эти события связаны",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Связь событий (Причинно-следственная цепь)"
-    }
-  }
+  ]
 }

@@ -1,7 +1,15 @@
-import { ref, computed, type ComputedRef, type Ref } from 'vue';
-import { CalendarMath } from '../../../../services/Calendars/useCalendarEngine';
-import type { CalendarData, CalendarDate, WorldRegion, WorldTimezone, RegionSunStatus } from '../../../../services/Calendars/calendar.types';
+import { ref, computed, watch, type ComputedRef, type Ref } from 'vue';
+import * as api from '../../../../services/api.client';
+import type {
+  CalendarData,
+  CalendarDate,
+  WorldRegion,
+  WorldTimezone,
+} from '../../../../services/Calendars/calendar.types';
+import type { GeographyEntityRecord } from '../../../../services/Geography/locationHierarchy';
 import { useCalendarStore } from '../../../../stores/calendar.store';
+import type { WorldSliceFilter, WorldTimeSnapshotItem } from './tabs/TimeAtlasWorldTab.model';
+import { buildWorldTimeSnapshot } from './timeAtlasWorldTime.utils';
 
 export function useTimeAtlasWorldTime(
   masterCalendar: ComputedRef<CalendarData | null>,
@@ -10,19 +18,52 @@ export function useTimeAtlasWorldTime(
   projectId?: ComputedRef<string> | string | Ref<string>
 ) {
   const calendarStore = useCalendarStore();
+  const worldSliceFilter = ref<WorldSliceFilter>('all');
+  const projectEntities = ref<GeographyEntityRecord[]>([]);
+
+  const resolvedProjectId = computed(() => {
+    if (typeof projectId === 'object' && projectId !== null && 'value' in projectId) {
+      return (projectId as Ref<string>).value || '';
+    }
+    return typeof projectId === 'string' ? projectId : '';
+  });
+
+  const loadWorldGeographyEntities = async () => {
+    const proj = resolvedProjectId.value;
+    if (!proj) return;
+    try {
+      const [locations, states] = await Promise.all([
+        api.getEntities(proj, 'location'),
+        api.getEntities(proj, 'state'),
+      ]);
+      projectEntities.value = [
+        ...((locations as unknown as GeographyEntityRecord[]) || []),
+        ...((states as unknown as GeographyEntityRecord[]) || []),
+      ];
+    } catch (err) {
+      console.error('[useTimeAtlasWorldTime] Error loading project locations/states:', err);
+    }
+  };
+
+  watch(
+    resolvedProjectId,
+    (proj) => {
+      if (proj) void loadWorldGeographyEntities();
+    },
+    { immediate: true }
+  );
 
   const currentPlanet = computed(() => {
-    const proj = typeof projectId === 'object' && projectId !== null && 'value' in projectId
-      ? (projectId as Ref<string>).value
-      : (typeof projectId === 'string' ? projectId : '');
+    const proj = resolvedProjectId.value;
     if (!proj) return null;
     const planets = calendarStore.getPlanets(proj);
     const planetId = masterCalendar.value?.planet_id;
     if (planetId) {
       const found = planets.find(
-        (p) => String(p.id) === String(planetId) ||
-               String(p.id).endsWith(String(planetId)) ||
-               p.name === planetId
+        (p) =>
+          String(p.id) === String(planetId) ||
+          String(p.id).endsWith(String(planetId)) ||
+          p.name === planetId
       );
       if (found) return found;
     }
@@ -39,7 +80,7 @@ export function useTimeAtlasWorldTime(
         name: tz.name,
         code: (tz as { code?: string }).code || tz.name,
         base_offset_hours: tz.base_offset_hours ?? (tz as { offset_hours?: number }).offset_hours ?? 0,
-        historical_rules: tz.historical_rules
+        historical_rules: tz.historical_rules,
       }));
     }
     return [];
@@ -73,124 +114,31 @@ export function useTimeAtlasWorldTime(
     const dayMins = (settings.часов_в_сутках || 24) * (settings.минут_в_часе || 60);
     const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
     const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
-    return {
-      day_index: dayIndex,
-      day_fraction: dayMins > 0 ? remMins / dayMins : 0
-    };
+    return { day_index: dayIndex, day_fraction: dayMins > 0 ? remMins / dayMins : 0 };
   });
 
-  const worldTimeSnapshot = computed(() => {
-    const master = masterCalendar.value;
-    if (!master) return [];
-
-    const moment = currentWorldMoment.value;
-    const tzs = worldTimezones.value;
-    const regions = worldRegions.value;
-
-    const items: Array<{
-      region: WorldRegion;
-      timezone?: WorldTimezone;
-      offsetHours: number;
-      localTimeStr: string;
-      localDateFormatted: string;
-      sunStatus: RegionSunStatus;
-    }> = [];
-
-    const coveredTzKeys = new Set<string>();
-
-    // 1. Сначала добавляем все явно настроенные пользователем регионы
-    for (const region of regions) {
-      const tz = tzs.find(t =>
-        t.id === region.timezone_id ||
-        (t.code && t.code === region.timezone_id) ||
-        (region.timezone_id === 'tz_utc' && (t.code === 'UTC' || t.code === 'UTC+0' || t.base_offset_hours === 0)) ||
-        (region.timezone_id === 'tz_msk' && (t.code === 'MSK' || t.code === 'UTC+3' || t.base_offset_hours === 3))
-      );
-      if (tz) {
-        if (tz.id) coveredTzKeys.add(tz.id);
-        if (tz.code) coveredTzKeys.add(tz.code);
-      }
-
-      const offsetHours = tz ? CalendarMath.getTimezoneOffsetForDay(tz, moment.day_index) : 0;
-      const localInput = CalendarMath.worldMomentToDate(moment, master, offsetHours);
-      const localDateFormatted = CalendarMath.formatDate(master, {
-        absolute_minute: currentWorldMinute.value,
-        calendar_id: master._id || '',
-        original_input: localInput
-      });
-
-      const hh = String(localInput.hour ?? 0).padStart(2, '0');
-      const mm = String(localInput.minute ?? 0).padStart(2, '0');
-      const localTimeStr = `${hh}:${mm}`;
-
-      const sunStatus = CalendarMath.calculateSunForRegion(region, moment, master, tzs, offsetHours);
-
-      items.push({
-        region,
-        timezone: tz,
-        offsetHours,
-        localTimeStr,
-        localDateFormatted,
-        sunStatus
-      });
-    }
-
-    // 2. Для всех настроенных часовых поясов планеты, у которых еще нет отдельного города/региона, добавляем поясную карточку
-    for (const tz of tzs) {
-      if (coveredTzKeys.has(tz.id) || (tz.code && coveredTzKeys.has(tz.code))) {
-        continue;
-      }
-      const offsetHours = CalendarMath.getTimezoneOffsetForDay(tz, moment.day_index);
-      const localInput = CalendarMath.worldMomentToDate(moment, master, offsetHours);
-      const localDateFormatted = CalendarMath.formatDate(master, {
-        absolute_minute: currentWorldMinute.value,
-        calendar_id: master._id || '',
-        original_input: localInput
-      });
-
-      const hh = String(localInput.hour ?? 0).padStart(2, '0');
-      const mm = String(localInput.minute ?? 0).padStart(2, '0');
-      const localTimeStr = `${hh}:${mm}`;
-
-      const sign = offsetHours >= 0 ? '+' : '';
-      const synthRegion: WorldRegion = {
-        id: `reg_auto_${tz.id || tz.code}`,
-        name: tz.name || tz.code || `Пояс ${sign}${offsetHours}`,
-        timezone_id: tz.id,
-        latitude: 0,
-        longitude: offsetHours * 15,
-      };
-
-      const sunStatus = CalendarMath.calculateSunForRegion(synthRegion, moment, master, tzs, offsetHours);
-
-      items.push({
-        region: synthRegion,
-        timezone: tz,
-        offsetHours,
-        localTimeStr,
-        localDateFormatted,
-        sunStatus
-      });
-    }
-
-    // Сортируем все карточки по часовому смещению (от запада к востоку: -12ч ... +12ч)
-    return items.sort((a, b) => a.offsetHours - b.offsetHours);
-  });
+  const worldTimeSnapshot = computed<WorldTimeSnapshotItem[]>(() =>
+    buildWorldTimeSnapshot({
+      master: masterCalendar.value,
+      currentWorldMinute: currentWorldMinute.value,
+      moment: currentWorldMoment.value,
+      tzs: worldTimezones.value,
+      regions: worldRegions.value,
+      projectEntities: projectEntities.value,
+      filter: worldSliceFilter.value,
+    })
+  );
 
   const worldTimeSnippet = computed(() => {
     const snapshot = worldTimeSnapshot.value;
     if (snapshot.length === 0) {
-      return 'В мире ещё не настроены географические регионы. Добавьте их в Настройках Календаря Мира.';
+      return 'В мире ещё не настроены географические регионы. Добавьте их в Настройках Календаря Мира или в карточках локаций.';
     }
-
-    const parts = snapshot.map((item) => {
-      return `${item.region.name} (${item.localTimeStr}, ${item.sunStatus.phase_label})`;
-    });
-
+    const parts = snapshot.map((item) => `${item.region.name} (${item.localTimeStr}, ${item.sunStatus.phase_label})`);
     const master = masterCalendar.value;
     const masterDate = master ? getLocalDateForCal(master) : null;
-    const masterDateStr = master && masterDate ? `${masterDate.day} ${master.месяцы?.[masterDate.month]?.название || ''} ${masterDate.year} г.` : '';
-
+    const masterDateStr =
+      master && masterDate ? `${masterDate.day} ${master.месяцы?.[masterDate.month]?.название || ''} ${masterDate.year} г.` : '';
     return `В то время как шёл ${masterDateStr}, мир жил в разных ритмах: ${parts.join('; ')}.`;
   });
 
@@ -203,6 +151,11 @@ export function useTimeAtlasWorldTime(
     }
   };
 
+  const openLocationEntity = (entityId: string) => {
+    if (!entityId || typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('ww:open-floating-entity', { detail: { type: 'location', id: entityId } }));
+  };
+
   const masterCalendarName = computed(() => masterCalendar.value?.название || 'Календарь Мира');
   const masterTimeSettings = computed(() => {
     const m = masterCalendar.value;
@@ -213,43 +166,39 @@ export function useTimeAtlasWorldTime(
 
   const worldHour = computed({
     get: () => {
-      const hoursInDay = maxHours.value;
-      const minsInHour = maxMinutes.value;
-      const dayMins = hoursInDay * minsInHour;
+      const dayMins = maxHours.value * maxMinutes.value;
       const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
-      return Math.floor(remMins / minsInHour);
+      return Math.floor(remMins / maxMinutes.value);
     },
     set: (newHour: number) => {
-      const hoursInDay = maxHours.value;
-      const minsInHour = maxMinutes.value;
-      const dayMins = hoursInDay * minsInHour;
+      const dayMins = maxHours.value * maxMinutes.value;
       const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
-      const curMin = (((currentWorldMinute.value % dayMins) + dayMins) % dayMins) % minsInHour;
-      const hClamped = Math.max(0, Math.min(hoursInDay - 1, newHour));
-      currentWorldMinute.value = dayIndex * dayMins + hClamped * minsInHour + curMin;
-    }
+      const curMin = (((currentWorldMinute.value % dayMins) + dayMins) % dayMins) % maxMinutes.value;
+      const hClamped = Math.max(0, Math.min(maxHours.value - 1, newHour));
+      currentWorldMinute.value = dayIndex * dayMins + hClamped * maxMinutes.value + curMin;
+    },
   });
 
   const worldMinute = computed({
     get: () => {
-      const hoursInDay = maxHours.value;
-      const minsInHour = maxMinutes.value;
-      const dayMins = hoursInDay * minsInHour;
+      const dayMins = maxHours.value * maxMinutes.value;
       const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
-      return remMins % minsInHour;
+      return remMins % maxMinutes.value;
     },
     set: (newMin: number) => {
-      const hoursInDay = maxHours.value;
-      const minsInHour = maxMinutes.value;
-      const dayMins = hoursInDay * minsInHour;
+      const dayMins = maxHours.value * maxMinutes.value;
       const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
-      const curHour = Math.floor((((currentWorldMinute.value % dayMins) + dayMins) % dayMins) / minsInHour);
-      const mClamped = Math.max(0, Math.min(minsInHour - 1, newMin));
-      currentWorldMinute.value = dayIndex * dayMins + curHour * minsInHour + mClamped;
-    }
+      const curHour = Math.floor((((currentWorldMinute.value % dayMins) + dayMins) % dayMins) / maxMinutes.value);
+      const mClamped = Math.max(0, Math.min(maxMinutes.value - 1, newMin));
+      currentWorldMinute.value = dayIndex * dayMins + curHour * maxMinutes.value + mClamped;
+    },
   });
 
   return {
+    worldSliceFilter,
+    projectEntities,
+    loadWorldGeographyEntities,
+    openLocationEntity,
     worldTimezones,
     worldRegions,
     currentWorldMoment,
@@ -261,6 +210,6 @@ export function useTimeAtlasWorldTime(
     maxHours,
     maxMinutes,
     worldHour,
-    worldMinute
+    worldMinute,
   };
 }

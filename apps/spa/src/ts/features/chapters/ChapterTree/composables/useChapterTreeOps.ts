@@ -31,17 +31,13 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
             'Вы уверены, что хотите полностью удалить этот тип сущностей (и все связанные данные)? Это действие необратимо!',
             'Удаление схемы'
         );
-
-        if (confirmed) {
-            try {
-                await api.deleteEntitySchema(options.project, sectionId);
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            } catch (e) {
-                console.error('Failed to delete schema:', e);
-                appAlert('Ошибка при удалении схемы. Проверьте консоль.');
-            }
+        if (!confirmed) return;
+        try {
+            await api.deleteEntitySchema(options.project, sectionId);
+            setTimeout(() => window.location.reload(), 500);
+        } catch (e) {
+            console.error('Failed to delete schema:', e);
+            appAlert('Ошибка при удалении схемы. Проверьте консоль.');
         }
     };
 
@@ -50,12 +46,8 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
             if (!parentId) {
                 const tempId = '__new_volume__';
                 options.hierarchy.value.volumes.push({
-                    id: tempId,
-                    project_id: options.project,
-                    title: 'Новый том',
-                    sort_order: 999,
-                    description: null,
-                    created_at: null
+                    id: tempId, project_id: options.project, title: 'Новый том',
+                    sort_order: 999, description: null, created_at: null
                 });
                 await nextTick();
                 const node = options.findNodeById(tempId);
@@ -66,14 +58,9 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
         } else if (sectionId === 'calendars') {
             const calendarStore = useCalendarStore();
             if (!parentId) {
-                // Создание новой планеты
                 const newId = `planet_${Date.now()}`;
                 const newName = name?.trim() || 'Новая планета';
-                const newPlanet = {
-                    ...getDefaultPlanet(options.project),
-                    id: newId,
-                    name: newName,
-                };
+                const newPlanet = { ...getDefaultPlanet(options.project), id: newId, name: newName };
                 calendarStore.savePlanet(options.project, newPlanet);
                 await options.load();
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
@@ -81,11 +68,8 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.emit('open-entity', { ...newPlanet, entityType: 'planet', id: newId, name: newName, title: newName });
                 await nextTick();
                 const pNode = options.findNodeById(`entity:planet:${newId}`) || options.findNodeById(newId);
-                if (pNode && options.explorerTreeRef.value) {
-                    options.explorerTreeRef.value.startRename(pNode);
-                }
+                if (pNode) options.explorerTreeRef.value?.startRename(pNode);
             } else {
-                // Создание календаря на планете без системных prompt-окон
                 const planetId = parentId.replace(/^(entity:)?planets?:/, '');
                 const calName = name?.trim() || 'Новый календарь';
                 const defaultCalData = CalendarMath.getDefaultCalendar();
@@ -93,20 +77,14 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 defaultCalData.название = calName;
                 defaultCalData.is_master = false;
                 const saved = await calendarStore.saveCalendar(options.project, {
-                    ...defaultCalData,
-                    planet_id: planetId,
-                    name: calName,
-                    is_master: false,
-                    is_default: false,
+                    ...defaultCalData, planet_id: planetId, name: calName, is_master: false, is_default: false,
                 } as unknown as CalendarData);
                 if (!saved) {
                     await appAlert('Не удалось сохранить календарь на планете', 'Ошибка сохранения');
                     return;
                 }
                 await options.load();
-                if (options.explorerTreeRef.value) {
-                    options.explorerTreeRef.value.expandNode(`entity:planet:${planetId}`);
-                }
+                options.explorerTreeRef.value?.expandNode(`entity:planet:${planetId}`);
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 const cals = await calendarStore.getCalendars(options.project);
                 const created = cals.find(c => c.name === calName) || cals[cals.length - 1];
@@ -115,9 +93,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                     options.emit('open-entity', { ...created, entityType: 'calendar', id: cleanCalId, name: created.name, title: created.name });
                     await nextTick();
                     const node = options.findNodeById(`entity:calendar:${cleanCalId}`) || options.findNodeById(cleanCalId);
-                    if (node && options.explorerTreeRef.value) {
-                        options.explorerTreeRef.value.startRename(node);
-                    }
+                    if (node) options.explorerTreeRef.value?.startRename(node);
                 }
             }
         } else if (name) {
@@ -127,17 +103,9 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
 
     const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string; parentId?: string }) => {
         if (sectionId === 'manuscript') {
-            if (parentId) {
-                options.emit('create-chapter-in', { volumeId: parentId });
-            } else {
-                options.emit('create-chapter-in', { volumeId: null });
-            }
-        } else if (sectionId === 'calendars') {
-            if (parentId) {
-                await handleCreate({ sectionId: 'calendars', parentId });
-            } else {
-                options.explorerTreeRef.value?.startCreate(sectionId);
-            }
+            options.emit('create-chapter-in', { volumeId: parentId || null });
+        } else if (sectionId === 'calendars' && parentId) {
+            await handleCreate({ sectionId: 'calendars', parentId });
         } else {
             options.explorerTreeRef.value?.startCreate(sectionId);
         }
@@ -160,10 +128,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const chId = String(data.original.id);
                 const ch = options.hierarchy.value.chapters.find((c) => String(c.id) === chId);
                 if (ch) ch.title = newName;
-                options.hierarchy.value = {
-                    ...options.hierarchy.value,
-                    chapters: [...options.hierarchy.value.chapters]
-                };
+                options.hierarchy.value = { ...options.hierarchy.value, chapters: [...options.hierarchy.value.chapters] };
                 document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
                 options.emit('rename-chapter', data.original, newName);
             } else if (data?.type === 'planet' && data.original) {
@@ -177,10 +142,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const calendarStore = useCalendarStore();
                 const cal = data.original as { id?: string; name?: string; data?: Record<string, unknown>; [key: string]: unknown };
                 cal.name = newName;
-                if (cal.data) {
-                    cal.data.название = newName;
-                    cal.data.name = newName;
-                }
+                if (cal.data) { cal.data.название = newName; cal.data.name = newName; }
                 await calendarStore.saveCalendar(options.project, { ...(cal.data || {}), id: cal.id, name: newName } as unknown as CalendarData);
                 document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: cal.id, name: newName } }));
                 await options.load();
@@ -188,17 +150,13 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const entityType = data.type || '';
                 const originalId = data.original.id;
                 const idToUpdate = String(originalId).split(':').pop()!;
-
                 if (options.entities.value[entityType]) {
-                    const ent = options.entities.value[entityType].find(
-                        (en) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate)
-                    );
+                    const ent = options.entities.value[entityType].find((en) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate));
                     if (ent) {
                         const titleField = Object.keys(ent).find((k) => k.toLowerCase() === 'name') || Object.keys(ent)[0];
                         if (titleField) ent[titleField] = newName;
                     }
                 }
-
                 options.emit('rename-entity', entityType, idToUpdate, newName);
             }
         } catch (e) {
@@ -208,9 +166,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
     };
 
     const handleCancelRename = async (node: { id: string }) => {
-        if (String(node.id).startsWith('__new_volume__')) {
-            await options.load();
-        }
+        if (String(node.id).startsWith('__new_volume__')) await options.load();
     };
 
     const handleDelete = async (ids: string[]) => {
@@ -218,7 +174,6 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
         for (const id of ids) {
             const node = options.findNodeById(id);
             if (!node || !node.data) continue;
-
             const data = node.data as ExplorerNodeData;
             const type = data.type;
             const original = (data.original || {}) as { id?: unknown };
@@ -230,9 +185,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.hierarchy.value = {
                     ...options.hierarchy.value,
                     volumes: options.hierarchy.value.volumes.filter((v) => !options.compareIds(v.id, original.id)),
-                    chapters: options.hierarchy.value.chapters.filter(
-                        (c) => !options.compareIds((c as { volumeId?: string }).volumeId || c.volume_id, original.id)
-                    )
+                    chapters: options.hierarchy.value.chapters.filter((c) => !options.compareIds((c as { volumeId?: string }).volumeId || c.volume_id, original.id))
                 };
                 options.emit('delete-volume', original, chapters, ids.length > 1);
             } else if (type === 'chapter') {
@@ -245,11 +198,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const calendarStore = useCalendarStore();
                 const plId = String(original.id || id).replace(/^planet:/, '');
                 const plName = (original as { name?: string }).name || id;
-                const confirmed = await appConfirm(
-                    `Удалить планету "${plName}"?`,
-                    'Удаление планеты'
-                );
-                if (confirmed) {
+                if (await appConfirm(`Удалить планету "${plName}"?`, 'Удаление планеты')) {
                     calendarStore.deletePlanet(options.project, plId);
                     document.dispatchEvent(new CustomEvent('ww:planet-deleted', { detail: { id: plId } }));
                     needsDirectReload = true;
@@ -258,11 +207,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 const calendarStore = useCalendarStore();
                 const calId = String(original.id || id).replace(/^calendar:/, '');
                 const calName = (original as { name?: string }).name || id;
-                const confirmed = await appConfirm(
-                    `Удалить календарь "${calName}"?`,
-                    'Удаление календаря'
-                );
-                if (confirmed) {
+                if (await appConfirm(`Удалить календарь "${calName}"?`, 'Удаление календаря')) {
                     await calendarStore.deleteCalendar(calId);
                     document.dispatchEvent(new CustomEvent('ww:calendar-deleted', { detail: { id: calId } }));
                     needsDirectReload = true;
@@ -271,18 +216,8 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.emit('delete-entity', options.entityKey(type, String(original.id)), type, ids.length > 1);
             }
         }
-        if (needsDirectReload) {
-            await options.load();
-        }
+        if (needsDirectReload) await options.load();
     };
 
-    return {
-        startRename,
-        handleDeleteSection,
-        handleCreate,
-        handleCreateInline,
-        handleRename,
-        handleCancelRename,
-        handleDelete
-    };
+    return { startRename, handleDeleteSection, handleCreate, handleCreateInline, handleRename, handleCancelRename, handleDelete };
 }

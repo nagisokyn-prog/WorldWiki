@@ -5,6 +5,7 @@ import * as apiClient from '@/services/api.client';
 
 vi.mock('@/services/api.client', () => ({
   getTimelineInspectorData: vi.fn(),
+  getEntities: vi.fn().mockResolvedValue([]),
 }));
 
 describe('useTimelineInspector Composable', () => {
@@ -150,5 +151,59 @@ describe('useTimelineInspector Composable', () => {
     // Событие с ключевым словом "Воспоминание" определилось как флешбэк и осталось, а обычное скрылось
     expect(filteredEvents.value).toHaveLength(1);
     expect(filteredEvents.value[0].id).toBe('ev:flashback_1');
+  });
+
+  it('resolves location name and computes local time badge with timezone discrepancy hint', async () => {
+    vi.mocked(apiClient.getEntities).mockImplementation(async (_proj, type) => {
+      if (type === 'location') {
+        return [
+          {
+            id: 'entities:city_west',
+            entity_type: 'location',
+            name: 'Западный Бастион',
+            attributes: {
+              scale_level: 'settlement',
+              широта: 40,
+              долгота: -150,
+              часовой_пояс: '-10',
+            },
+          },
+          {
+            id: 'entities:tavern_west',
+            entity_type: 'location',
+            name: 'Таверна «У Заката»',
+            attributes: {
+              scale_level: 'building',
+              родительская_локация: 'entities:city_west',
+            },
+          },
+        ] as never;
+      }
+      return [] as never;
+    });
+
+    vi.mocked(apiClient.getTimelineInspectorData).mockResolvedValueOnce({
+      chapters: [{ id: 'ch:1', title: 'Глава 1', sort_order: 1 }],
+      events: [
+        {
+          id: 'scene:1',
+          title: 'Встреча в таверне',
+          m_abs: 720, // 12:00 UTC -> 02:00 в Западном Бастионе (UTC-10)
+          location_id: 'entities:tavern_west',
+          reveals: [{ chapter_id: 'ch:1', chapter_title: 'Глава 1', kind: 'direct' }],
+          participants: [],
+        },
+      ],
+    });
+
+    const { formattedEvents, refresh } = useTimelineInspector('test_proj');
+    await refresh();
+
+    expect(formattedEvents.value).toHaveLength(1);
+    const ev = formattedEvents.value[0];
+    expect(ev.locationName).toBe('Таверна «У Заката»');
+    expect(ev.localTimeBadge).toContain('02:00');
+    expect(ev.hasTimezoneDiscrepancy).toBe(true);
+    expect(ev.localTimeHint).toContain('Таверна «У Заката»');
   });
 });

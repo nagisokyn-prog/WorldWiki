@@ -42,7 +42,7 @@ import type { EditorModalsProps, EditorModalsEmits } from './EditorModals.model'
 import EntityLinkSelector from '../EntityLinkSelector.vue';
 import PromiseContextMenu from '../PromiseContextMenu.vue';
 import { DocumentExportModal } from '../../../documents';
-import { ParagraphFormatModal } from '@worldwiki/word-vibe';
+import ParagraphFormatModal from '../stubs/ParagraphFormatModalStub.vue';
 
 defineProps<EditorModalsProps>();
 

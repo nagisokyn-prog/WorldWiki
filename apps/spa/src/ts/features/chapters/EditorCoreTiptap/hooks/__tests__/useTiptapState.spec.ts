@@ -50,10 +50,10 @@ describe('useTiptapState', () => {
     state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
     expect(state.editorMode.value).toBe('markdown');
 
-    // Valid saved word mode
+    // Saved backlog word mode falls back to wysiwyg
     localStorage.setItem(key, JSON.stringify({ mode: 'word' }));
     state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
-    expect(state.editorMode.value).toBe('word');
+    expect(state.editorMode.value).toBe('wysiwyg');
 
     // Nothing in storage
     localStorage.clear();

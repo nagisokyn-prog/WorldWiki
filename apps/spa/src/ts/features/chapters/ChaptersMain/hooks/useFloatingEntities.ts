@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 
 export function useFloatingEntities(project: string) {
   const floatingEditors = ref<Array<{ id: string; project: string; type: string; entityId: string }>>([]);
@@ -17,6 +17,22 @@ export function useFloatingEntities(project: string) {
       console.error('Ошибка открытия редактора сущности:', e);
     }
   };
+
+  const onWindowOpenEntity = (e: Event) => {
+    const detail = (e as CustomEvent<{ type?: string; id?: string }>).detail;
+    if (detail?.type && detail?.id) {
+      handleOpenEntity({ type: detail.type, id: detail.id });
+    }
+  };
+
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      window.addEventListener('ww:open-floating-entity', onWindowOpenEntity);
+    });
+    onUnmounted(() => {
+      window.removeEventListener('ww:open-floating-entity', onWindowOpenEntity);
+    });
+  }
 
   const closeFloatingEditor = (editorId: string) => {
     const idx = floatingEditors.value.findIndex(e => e.id === editorId);

@@ -1,6 +1,5 @@
 <template>
   <div class="inspector-container">
-    <!-- Тулбар управления -->
     <TimelineInspectorToolbar
       :filters="filters"
       :filtered-events-count="filteredEvents.length"
@@ -11,7 +10,6 @@
       @refresh="refresh"
     />
 
-    <!-- Область визуализации осей -->
     <div class="inspector-viewport">
       <div v-if="isLoading && !filteredEvents.length" class="inspector-empty">
         <div class="empty-spinner">⏳</div>
@@ -25,13 +23,10 @@
       </div>
 
       <div v-else class="dual-axis-canvas" :style="{ minWidth: canvasMinWidth }">
-        <!-- Верхняя Нарративная Ось (Порядок глав) -->
+        <!-- Верхняя Нарративная Ось -->
         <div class="axis-track-wrapper narrative-wrapper">
-          <div class="axis-badge axis-badge-narrative">
-            <span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)
-          </div>
+          <div class="axis-badge axis-badge-narrative"><span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)</div>
 
-          <!-- Скобки томов над главами (Volume Brackets) -->
           <div
             v-for="seg in volumeSegments"
             :key="'vol-seg-' + seg.volumeId + '-' + seg.startIndex"
@@ -47,7 +42,6 @@
             <div class="bracket-arm bracket-arm-right"></div>
           </div>
 
-          <!-- Разделители томов на рельсе (Volume Boundary Divider) -->
           <div
             v-for="seg in volumeSegments.filter(s => s.boundaryLeftPx !== undefined)"
             :key="'vol-bound-' + seg.volumeId"
@@ -60,7 +54,7 @@
           </div>
 
           <div class="axis-rail axis-rail-narrative"></div>
-          
+
           <TimelineChapterNode
             v-for="(ch, idx) in filteredChapters"
             :key="'ch-node-' + ch.id"
@@ -84,7 +78,6 @@
               <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--warning)" />
             </marker>
           </defs>
-
           <g v-for="line in connectionLines" :key="line.id">
             <path
               :d="`M ${line.x1} ${line.y1} C ${line.x1} ${(line.y1 + line.y2) / 2}, ${line.x2} ${(line.y1 + line.y2) / 2}, ${line.x2} ${line.y2}`"
@@ -99,11 +92,9 @@
           </g>
         </svg>
 
-        <!-- Нижняя Диегетическая Ось (Время мира) -->
+        <!-- Нижняя Диегетическая Ось -->
         <div class="axis-track-wrapper diegetic-wrapper">
-          <div class="axis-badge axis-badge-diegetic">
-            <span>⏳</span> ВРЕМЯ МИРА (ХРОНОЛОГИЯ LORE)
-          </div>
+          <div class="axis-badge axis-badge-diegetic"><span>⏳</span> ВРЕМЯ МИРА (ХРОНОЛОГИЯ LORE)</div>
           <div class="axis-rail axis-rail-diegetic"></div>
 
           <div v-if="!formattedEvents.length" class="axis-empty-hint p-4 text-xs text-muted italic">
@@ -128,54 +119,28 @@
             @click="navigateToScene(ev)"
           >
             <div class="event-pin-top"></div>
-            
             <div class="event-header">
-              <span class="event-kind-badge" :class="ev.kindMeta.badgeClass">
-                {{ ev.kindMeta.icon }} {{ ev.kindMeta.label }}
-              </span>
-              <span v-if="ev.isFlashback" class="flashback-tag" title="Сцена разворачивается как воспоминание / ретроспектива">
-                ⏪ Флешбэк
-              </span>
+              <span class="event-kind-badge" :class="ev.kindMeta.badgeClass">{{ ev.kindMeta.icon }} {{ ev.kindMeta.label }}</span>
+              <span v-if="ev.isFlashback" class="flashback-tag" title="Сцена разворачивается как воспоминание / ретроспектива">⏪ Флешбэк</span>
             </div>
-
-            <div class="event-node-title" :title="ev.title">
-              {{ ev.title }}
-            </div>
-
+            <div class="event-node-title" :title="ev.title">{{ ev.title }}</div>
             <div class="event-meta-row">
-              <span class="event-date-chip">
-                <span class="date-icon">📅</span>
-                <span class="date-text">{{ ev.formattedDate }}</span>
+              <span class="event-date-chip"><span class="date-icon">📅</span><span class="date-text">{{ ev.formattedDate }}</span></span>
+              <span v-if="ev.location_id" class="event-location-chip" :title="ev.localTimeHint || ev.locationName || ev.location_id">
+                📍 {{ ev.locationName || ev.location_id.replace(/^(entities|locations):/, '') }}
               </span>
-              <span v-if="ev.location_id" class="event-location-chip" :title="ev.location_id">
-                📍 {{ ev.location_id.replace(/^(entities|locations):/, '') }}
+              <span v-if="ev.localTimeBadge" class="event-date-chip" :title="ev.localTimeHint || ''">
+                <span>{{ ev.localTimeBadge }}</span>
+                <span v-if="ev.hasTimezoneDiscrepancy" title="Разница часового пояса локации с мировым временем">⚠️</span>
               </span>
             </div>
-
             <div v-if="ev.cleanParticipants.length" class="event-participants-list">
-              <span
-                v-for="p in ev.cleanParticipants.slice(0, 2)"
-                :key="p.id"
-                class="participant-chip"
-                :title="p.name"
-              >
-                👤 {{ p.name }}
-              </span>
-              <span v-if="ev.cleanParticipants.length > 2" class="participant-more">
-                +{{ ev.cleanParticipants.length - 2 }}
-              </span>
+              <span v-for="p in ev.cleanParticipants.slice(0, 2)" :key="p.id" class="participant-chip" :title="p.name">👤 {{ p.name }}</span>
+              <span v-if="ev.cleanParticipants.length > 2" class="participant-more">+{{ ev.cleanParticipants.length - 2 }}</span>
             </div>
-
-            <!-- Кнопка возврата к нарративу главы -->
-            <div
-              v-if="ev.primaryChapterId"
-              class="event-jump-back"
-              :title="`Показать главу на верхней оси`"
-              @click.stop="scrollToChapter(ev.primaryChapterId)"
-            >
+            <div v-if="ev.primaryChapterId" class="event-jump-back" title="Показать главу на верхней оси" @click.stop="scrollToChapter(ev.primaryChapterId)">
               <span>Верхняя ось: {{ ev.primaryChapterTitle || ('Гл. #' + ev.primaryChapterId) }} ⏩</span>
             </div>
-
             <div class="event-pin-bottom"></div>
           </div>
         </div>
@@ -190,35 +155,14 @@ import TimelineInspectorToolbar from './components/TimelineInspectorToolbar.vue'
 import TimelineChapterNode from './components/TimelineChapterNode.vue';
 import type { TimelineInspectorProps, TimelineInspectorEmits } from './TimelineInspector.model';
 
-const props = withDefaults(defineProps<TimelineInspectorProps>(), {
-  projectId: '',
-  project: '',
-});
+const props = withDefaults(defineProps<TimelineInspectorProps>(), { projectId: '', project: '' });
 const emit = defineEmits<TimelineInspectorEmits>();
 
 const {
-  filters,
-  volumeOptions,
-  volumeSegments,
-  filteredChapters,
-  formattedEvents,
-  filteredEvents,
-  connectionLines,
-  canvasMinWidth,
-  isLoading,
-  activeChapterId,
-  hoveredChapterId,
-  hoveredEventId,
-  pingedEventId,
-  refresh,
-  navigateToChapter,
-  navigateToScene,
-  selectChapter,
-  jumpToFlashback,
-  scrollToChapter,
-  isEventHighlighted,
-  isEventDimmed,
-  normalizeId,
+  filters, volumeOptions, volumeSegments, filteredChapters, formattedEvents, filteredEvents,
+  connectionLines, canvasMinWidth, isLoading, activeChapterId, hoveredChapterId, hoveredEventId,
+  pingedEventId, refresh, navigateToChapter, navigateToScene, selectChapter, jumpToFlashback,
+  scrollToChapter, isEventHighlighted, isEventDimmed, normalizeId,
 } = useTimelineInspector(props, emit);
 </script>
 

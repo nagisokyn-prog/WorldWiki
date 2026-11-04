@@ -1,8 +1,36 @@
 <template>
   <div class="atlas-tab-pane tab-pane">
     <div class="world-time-intro flex justify-between items-center flex-wrap gap-3">
-      <p class="m-0">Синхронный срез физического времени и астрономического солнца по всем регионам планеты в этот момент:</p>
-      
+      <div class="flex items-center gap-2 flex-wrap">
+        <p class="m-0">Синхронный срез физического времени и солнца по локациям и поясам:</p>
+        <div class="atlas-tabs">
+          <button
+            type="button"
+            class="atlas-tab-btn interactive-el"
+            :class="{ active: (worldSliceFilter || 'all') === 'all' }"
+            @click="$emit('update:worldSliceFilter', 'all')"
+          >
+            🌐 Все пояса
+          </button>
+          <button
+            type="button"
+            class="atlas-tab-btn interactive-el"
+            :class="{ active: worldSliceFilter === 'settlements' }"
+            @click="$emit('update:worldSliceFilter', 'settlements')"
+          >
+            🏙️ Локации книги
+          </button>
+          <button
+            type="button"
+            class="atlas-tab-btn interactive-el"
+            :class="{ active: worldSliceFilter === 'capitals' }"
+            @click="$emit('update:worldSliceFilter', 'capitals')"
+          >
+            👑 Столицы государств
+          </button>
+        </div>
+      </div>
+
       <div class="world-time-controls flex items-center gap-2 glass-panel p-2">
         <label class="text-xs text-muted">Время: {{ masterCalendarName || 'Календарь Мира' }}:</label>
         <input
@@ -27,7 +55,7 @@
       </div>
     </div>
 
-    <!-- Сетка регионов мира -->
+    <!-- Сетка регионов и локаций мира -->
     <div class="world-regions-grid">
       <div
         v-for="item in worldTimeSnapshot"
@@ -36,14 +64,36 @@
       >
         <div class="region-card-header">
           <div class="region-info">
-            <span class="region-name">{{ item.region.name }}</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="region-name">{{ item.region.name }}</span>
+              <span v-if="item.isStateCapital" class="region-tz-badge">
+                👑 Столица{{ item.stateName ? ` (${item.stateName})` : '' }}
+              </span>
+              <span v-else-if="item.stateName" class="region-tz-badge">
+                🏛️ {{ item.stateName }}
+              </span>
+            </div>
             <span class="region-tz-badge">
               {{ item.timezone?.name || 'Пояс' }} ({{ item.offsetHours >= 0 ? '+' : '' }}{{ item.offsetHours }} ч)
+              <template v-if="item.isInherited && item.inheritedFromName">
+                · 🔗 от {{ item.inheritedFromName }}
+              </template>
             </span>
           </div>
-          <span class="phase-pill" :class="item.sunStatus.phase">
-            {{ item.sunStatus.phase_label }}
-          </span>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="item.entityId && openLocationEntity"
+              type="button"
+              class="copy-btn interactive-el text-xs"
+              title="Открыть карточку локации в Энциклопедии"
+              @click="openLocationEntity(item.entityId)"
+            >
+              📖
+            </button>
+            <span class="phase-pill" :class="item.sunStatus.phase">
+              {{ item.sunStatus.phase_label }}
+            </span>
+          </div>
         </div>
 
         <div class="region-time-display">
@@ -65,8 +115,10 @@
 
       <div v-if="worldTimeSnapshot.length === 0" class="empty-world-panel glass-panel">
         <i class="fas fa-compass fa-2x mb-2 text-muted"></i>
-        <p>В мире ещё не настроены регионы и часовые пояса.</p>
-        <p class="text-sm text-muted">Перейдите в настройки Календаря Мира, чтобы добавить города, пояса, широту и долготу.</p>
+        <p>По выбранному фильтру не найдено локаций или часовых поясов.</p>
+        <p class="text-sm text-muted">
+          Задайте координаты или часовой пояс в карточках локаций/государств либо в настройках Календаря Мира.
+        </p>
       </div>
     </div>
 

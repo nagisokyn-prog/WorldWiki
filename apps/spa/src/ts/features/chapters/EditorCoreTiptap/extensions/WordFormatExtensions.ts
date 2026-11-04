@@ -1,4 +1,39 @@
 import { Extension, Mark, Node, mergeAttributes } from '@tiptap/core';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+
+export const TABLE_CAPTION_RE = /^Таблица (\d+) — /;
+export function countTableCaptions(doc: ProseMirrorNode): number {
+  let count = 0;
+  doc.descendants((node: ProseMirrorNode) => {
+    if (node.type.name === 'paragraph' && TABLE_CAPTION_RE.test((node.textContent || '').trim())) {
+      count += 1;
+    }
+  });
+  return count;
+}
+export function nextTableCaptionNumber(doc: ProseMirrorNode): number {
+  return countTableCaptions(doc) + 1;
+}
+export function buildTableCaptionText(number: number, title?: string): string {
+  return `Таблица ${number} — ${title && title.trim() ? title.trim() : '(название таблицы)'}`;
+}
+
+export const FIGURE_CAPTION_RE = /^Рисунок (\d+) — /;
+export function countFigureCaptions(doc: ProseMirrorNode): number {
+  let count = 0;
+  doc.descendants((node: ProseMirrorNode) => {
+    if (node.type.name === 'paragraph' && FIGURE_CAPTION_RE.test((node.textContent || '').trim())) {
+      count += 1;
+    }
+  });
+  return count;
+}
+export function nextFigureCaptionNumber(doc: ProseMirrorNode): number {
+  return countFigureCaptions(doc) + 1;
+}
+export function buildFigureCaptionText(number: number, title?: string): string {
+  return `Рисунок ${number} — ${title && title.trim() ? title.trim() : '(описание рисунка)'}`;
+}
 
 // 1. Mark: Семейство шрифтов (применяется строго к выделенному тексту)
 export const CustomFontFamily = Mark.create({

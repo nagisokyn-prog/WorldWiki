@@ -1,12 +1,7 @@
 import { type Ref } from 'vue';
 import * as api from '@/services/api.client';
 import { appAlert, appConfirm } from '@worldwiki/components';
-import type {
-  TapestryChapterNode,
-  TapestryTodo,
-  TodoStatus,
-  PlanningPanelEmitFn
-} from './PlanningPanel.model';
+import type { TapestryChapterNode, TapestryTodo, TodoStatus, PlanningPanelEmitFn } from './PlanningPanel.model';
 import {
   getCleanId,
   getQualifiedOwnerId,
@@ -27,13 +22,11 @@ export function usePlanningTodos(
   emit?: PlanningPanelEmitFn
 ) {
   async function toggleTodoStatus(todo: TapestryTodo) {
-    const nextStatus = NEXT_STATUS_MAP[todo.status] || 'planned';
-    await applyStatus(todo, nextStatus);
+    await applyStatus(todo, NEXT_STATUS_MAP[todo.status] || 'planned');
   }
 
   async function cycleStatus(todo: TapestryTodo, targetStatus?: TodoStatus) {
-    const nextStatus = targetStatus || CYCLE_STATUS_MAP[todo.status] || 'planned';
-    await applyStatus(todo, nextStatus);
+    await applyStatus(todo, targetStatus || CYCLE_STATUS_MAP[todo.status] || 'planned');
   }
 
   async function setTodoSpecificStatus(todo: TapestryTodo, status: TodoStatus) {
@@ -48,30 +41,20 @@ export function usePlanningTodos(
 
     try {
       await api.setTodoStatus(todo.id, nextStatus);
-
       if (nextStatus === 'done') {
         const unblocked = cascadeUnblockDependencies(chaptersList.value, todo.id);
         if (unblocked.length === 1) {
           const target = unblocked[0];
-          const confirmTake = await appConfirm(
-            `🔓 Разблокирована следующая сцена:\n"${target.text}"\n\nВзять её в работу прямо сейчас?`
-          );
-          if (confirmTake) {
+          if (await appConfirm(`🔓 Разблокирована следующая сцена:\n"${target.text}"\n\nВзять её в работу прямо сейчас?`)) {
             await applyStatus(target, 'in_progress');
           }
         } else if (unblocked.length > 1) {
           const list = unblocked.map(t => `• ${t.text}`).join('\n');
-          const confirmTake = await appConfirm(
-            `🔓 Разблокированы сцены (${unblocked.length} шт.):\n${list}\n\nВзять их в работу прямо сейчас?`
-          );
-          if (confirmTake) {
-            for (const t of unblocked) {
-              await applyStatus(t, 'in_progress');
-            }
+          if (await appConfirm(`🔓 Разблокированы сцены (${unblocked.length} шт.):\n${list}\n\nВзять их в работу прямо сейчас?`)) {
+            for (const t of unblocked) await applyStatus(t, 'in_progress');
           }
         }
       }
-
       emit?.('change');
     } catch (e) {
       todo.status = oldStatus;
@@ -85,13 +68,7 @@ export function usePlanningTodos(
     const text = todo.text.trim();
     if (!text) return;
     try {
-      await api.createTodo(
-        todo.owner_id,
-        text,
-        todo.sort_order,
-        todo.arc_id || null,
-        todo.depends_on || null
-      );
+      await api.createTodo(todo.owner_id, text, todo.sort_order, todo.arc_id || null, todo.depends_on || null);
       emit?.('change');
     } catch (e) {
       appAlert('Ошибка при сохранении задачи');
@@ -115,10 +92,7 @@ export function usePlanningTodos(
         const p = ch.standaloneTodos.find(t => getCleanId(t.id) === getCleanId(parentId));
         if (p && (p.status === 'done' || p.done)) isParentDone = true;
       }
-      if (!isParentDone) {
-        todo.status = 'blocked';
-        todo.done = false;
-      }
+      if (!isParentDone) { todo.status = 'blocked'; todo.done = false; }
     } else if (todo.status === 'blocked') {
       todo.status = 'planned';
     }
@@ -151,40 +125,16 @@ export function usePlanningTodos(
       payload.ownerId.startsWith('volumes:') ||
       Boolean(cleanVolume && cleanPayloadOwner === cleanVolume);
 
-    const ownerId = getQualifiedOwnerId(
-      payload.ownerId,
-      isVolume ? 'volume' : 'chapter'
-    );
+    const ownerId = getQualifiedOwnerId(payload.ownerId, isVolume ? 'volume' : 'chapter');
     try {
       const nextOrder = Math.floor(Date.now() / 1000);
-      const createdId = await api.createTodo(
-        ownerId,
-        payload.text,
-        nextOrder,
-        payload.arcId || null,
-        payload.dependsOn || null
-      );
-
+      const createdId = await api.createTodo(ownerId, payload.text, nextOrder, payload.arcId || null, payload.dependsOn || null);
       const newTapestryTodo = mapToTapestryTodo({
-        id: createdId,
-        owner_id: ownerId,
-        text: payload.text,
-        sort_order: nextOrder,
-        arc_id: payload.arcId || null,
-        depends_on: payload.dependsOn || null,
-        status: 'planned' as unknown as string,
-        is_done: false,
-        project_id: ''
+        id: createdId, owner_id: ownerId, text: payload.text, sort_order: nextOrder,
+        arc_id: payload.arcId || null, depends_on: payload.dependsOn || null,
+        status: 'planned' as unknown as string, is_done: false, project_id: ''
       });
-
-      insertTodoIntoState(
-        chaptersList.value,
-        backlogTodos.value,
-        newTapestryTodo,
-        ownerId,
-        payload.arcId,
-        resolvedVolumeId.value
-      );
+      insertTodoIntoState(chaptersList.value, backlogTodos.value, newTapestryTodo, ownerId, payload.arcId, resolvedVolumeId.value);
       emit?.('change');
     } catch (e) {
       appAlert('Не удалось добавить задачу');
@@ -193,19 +143,12 @@ export function usePlanningTodos(
   }
 
   async function addBacklog(payload: { ownerId?: string; text: string }) {
-    const targetVolumeId =
-      payload.ownerId ||
-      resolvedVolumeId.value ||
-      '';
+    const targetVolumeId = payload.ownerId || resolvedVolumeId.value || '';
     if (!targetVolumeId) {
       appAlert('Не выбран том для сохранения мысли в бэклог');
       return;
     }
-    await addTodo({
-      ownerId: targetVolumeId,
-      text: payload.text,
-      ownerType: 'volume'
-    });
+    await addTodo({ ownerId: targetVolumeId, text: payload.text, ownerType: 'volume' });
   }
 
   async function deleteTodo(todoOrId: TapestryTodo | string) {
@@ -227,7 +170,6 @@ export function usePlanningTodos(
   ) {
     let todoId: string;
     let targetChId = targetChapterIdParam;
-
     if (typeof todoOrIdOrPayload === 'object' && todoOrIdOrPayload !== null) {
       if ('todoId' in todoOrIdOrPayload) {
         todoId = todoOrIdOrPayload.todoId;
@@ -244,7 +186,6 @@ export function usePlanningTodos(
       appAlert('Не выбрана глава для переноса задачи');
       return;
     }
-
     const todo = backlogTodos.value.find(t => getCleanId(t.id) === getCleanId(todoId));
     if (!todo) return;
 
@@ -252,30 +193,10 @@ export function usePlanningTodos(
     try {
       await api.deleteTodo(todo.id);
       removeTodoFromState(chaptersList.value, backlogTodos.value, todo.id, todo.done);
-
       const nextOrder = Math.floor(Date.now() / 1000);
-      const createdId = await api.createTodo(
-        qualifiedTarget,
-        todo.text,
-        nextOrder,
-        todo.arc_id || null,
-        todo.depends_on || null
-      );
-
-      const updatedTodo: TapestryTodo = {
-        ...todo,
-        id: createdId,
-        owner_id: qualifiedTarget
-      };
-
-      insertTodoIntoState(
-        chaptersList.value,
-        backlogTodos.value,
-        updatedTodo,
-        qualifiedTarget,
-        todo.arc_id,
-        resolvedVolumeId.value
-      );
+      const createdId = await api.createTodo(qualifiedTarget, todo.text, nextOrder, todo.arc_id || null, todo.depends_on || null);
+      const updatedTodo: TapestryTodo = { ...todo, id: createdId, owner_id: qualifiedTarget };
+      insertTodoIntoState(chaptersList.value, backlogTodos.value, updatedTodo, qualifiedTarget, todo.arc_id, resolvedVolumeId.value);
       emit?.('change');
     } catch (e) {
       appAlert('Не удалось перенести задачу в главу');
@@ -284,14 +205,7 @@ export function usePlanningTodos(
   }
 
   return {
-    toggleTodoStatus,
-    cycleStatus,
-    setTodoSpecificStatus,
-    saveTodo,
-    setDependency,
-    addTodo,
-    addBacklog,
-    deleteTodo,
-    moveBacklogToChapter
+    toggleTodoStatus, cycleStatus, setTodoSpecificStatus, saveTodo,
+    setDependency, addTodo, addBacklog, deleteTodo, moveBacklogToChapter
   };
 }

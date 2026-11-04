@@ -1,5 +1,5 @@
 {
-  "name": "Персонажи",
+  "name": "Персонаж",
   "icon": "fa-user",
   "iconEmoji": "👤",
   "photoField": "фото",
@@ -37,7 +37,7 @@
           "path": "прозвище",
           "isSystem": true,
           "preventDelete": true,
-          "hint": "Алиасы для авто-поиска меншенов ((Имя)) в рукописи"
+          "hint": "Второе имя или прозвище персонажа"
         },
         {
           "id": "characterRole",
@@ -76,7 +76,7 @@
           "label": "Статус",
           "options": [
             {
-              "value": "",
+              "value": "Не указано",
               "label": "Не указано"
             },
             {
@@ -90,20 +90,14 @@
             {
               "value": "Пропал без вести",
               "label": "🟡 Пропал без вести"
-            },
-            {
-              "value": "В коме / плену",
-              "label": "🟣 В коме / плену"
-            },
-            {
-              "value": "Воскрес / Вернулся",
-              "label": "✨ Воскрес / Вернулся"
             }
           ],
           "placeholder": "Текущий статус (по умолчанию Жив)",
           "path": "статус_категория",
           "isSystem": true,
-          "preventDelete": true
+          "preventDelete": true,
+          "required": true,
+          "preventHide": true
         },
         {
           "id": "characterBirthdate",
@@ -123,7 +117,8 @@
           "path": "дата_смерти",
           "hint": "Для динамической хронологии статусов используйте блок ниже",
           "isSystem": true,
-          "hidden": true
+          "hidden": true,
+          "preventDelete": true
         },
         {
           "id": "characterTags",

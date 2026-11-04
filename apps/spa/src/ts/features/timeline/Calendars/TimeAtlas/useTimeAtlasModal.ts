@@ -63,6 +63,9 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
   } = useTimeAtlasMatrix(getCalendarById, masterCalendar, currentWorldMinute, getDateMeta);
 
   const {
+    worldSliceFilter,
+    loadWorldGeographyEntities,
+    openLocationEntity,
     worldTimezones,
     worldRegions,
     currentWorldMoment,
@@ -99,7 +102,10 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
   };
 
   watch(() => props.isOpen, (open) => {
-    if (open) loadCalendars();
+    if (open) {
+      loadCalendars();
+      void loadWorldGeographyEntities();
+    }
   }, { immediate: true });
 
   const activeAlignments = computed(() => {
@@ -190,6 +196,8 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     localCalendarRecords,
     currentWorldMinute,
     currentWorldMoment,
+    worldSliceFilter,
+    openLocationEntity,
     worldTimezones,
     worldRegions,
     worldTimeSnapshot,

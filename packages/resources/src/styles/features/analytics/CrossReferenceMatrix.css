@@ -279,7 +279,7 @@
   font-weight: 700;
   font-size: 11px;
   color: var(--accent);
-  background-color: rgba(124, 58, 237, 0.08);
+  background-color: var(--bg-selected);
   border-radius: var(--radius-xs);
   letter-spacing: 0.5px;
 }

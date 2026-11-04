@@ -6,7 +6,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const SCHEMAS_DIR = path.join(ROOT_DIR, 'apps', 'spa', 'public', 'struct', 'editor');
+const SCHEMAS_DIRS = [
+  path.join(ROOT_DIR, 'apps', 'spa', 'public', 'struct', 'editor'),
+  path.join(ROOT_DIR, 'apps', 'spa', 'src', 'ts', 'struct', 'editor')
+];
+const SCHEMAS_DIR = SCHEMAS_DIRS[0];
+
+function readSchema(fileName) {
+  for (const dir of SCHEMAS_DIRS) {
+    const p = path.join(dir, fileName);
+    if (fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, 'utf8'));
+    }
+  }
+  return null;
+}
+
+function writeSchema(fileName, data) {
+  const content = JSON.stringify(data, null, 2) + '\n';
+  for (const dir of SCHEMAS_DIRS) {
+    if (fs.existsSync(dir)) {
+      fs.writeFileSync(path.join(dir, fileName), content, 'utf8');
+    }
+  }
+}
 
 console.log('🚀 Запуск генератора и валидатора системных схем WorldWiki...');
 
@@ -40,9 +63,8 @@ function createField(cfg) {
 // -----------------------------------------------------------------------------
 
 function patchCharacterSchema() {
-  const filePath = path.join(SCHEMAS_DIR, 'character.json');
-  if (!fs.existsSync(filePath)) return;
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const data = readSchema('character.json');
+  if (!data) return;
 
   data.name = 'Персонаж';
   data.icon = 'fa-user';
@@ -148,14 +170,13 @@ function patchCharacterSchema() {
     }
   }
 
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  writeSchema('character.json', data);
   console.log('✅ character.json успешно обновлен со всеми системными полями!');
 }
 
 function patchOrganizationSchema() {
-  const filePath = path.join(SCHEMAS_DIR, 'organization.json');
-  if (!fs.existsSync(filePath)) return;
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const data = readSchema('organization.json');
+  if (!data) return;
 
   data.name = 'Организация';
   data.icon = 'fa-building';
@@ -193,14 +214,13 @@ function patchOrganizationSchema() {
     }
   }
 
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  writeSchema('organization.json', data);
   console.log('✅ organization.json успешно обновлен со всеми системными полями!');
 }
 
 function patchStateSchema() {
-  const filePath = path.join(SCHEMAS_DIR, 'state.json');
-  if (!fs.existsSync(filePath)) return;
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const data = readSchema('state.json');
+  if (!data) return;
 
   data.name = 'Государство';
   data.icon = 'fa-flag';
@@ -237,9 +257,70 @@ function patchStateSchema() {
         { value: 'Автономное', label: '⚪ Автономное образование' }
       ];
     }
+
+    // 1. Столица как сущность location (Issue #49)
+    let capitalField = basicSec.fields.find(f => f.path === 'столица' || f.id === 'stateCapital');
+    if (capitalField) {
+      capitalField.id = 'stateCapital';
+      capitalField.type = 'select';
+      capitalField.entityType = 'location';
+      capitalField.label = 'Столица государства';
+      capitalField.placeholder = 'Выберите город-столицу...';
+      capitalField.hint = 'Связывает государство со столичной локацией, часовым поясом и координатами';
+    } else {
+      basicSec.fields.push(createField({
+        id: 'stateCapital',
+        type: 'select',
+        entityType: 'location',
+        label: 'Столица государства',
+        placeholder: 'Выберите город-столицу...',
+        hint: 'Связывает государство со столичной локацией, часовым поясом и координатами',
+        path: 'столица'
+      }));
+    }
+
+    // 2. Государственное летоисчисление / Календарь (Issue #49)
+    let calendarField = basicSec.fields.find(f => f.path === 'официальный_календарь' || f.id === 'stateOfficialCalendar');
+    if (!calendarField) {
+      basicSec.fields.push(createField({
+        id: 'stateOfficialCalendar',
+        type: 'text',
+        label: 'Государственное летоисчисление / Календарь',
+        placeholder: 'Выберите официальный календарь...',
+        path: 'официальный_календарь',
+        hint: 'Официальная календарная система для датировок законов и хроник'
+      }));
+    }
+
+    // 3. Столичное / Официальное время (Issue #49)
+    let tzField = basicSec.fields.find(f => f.path === 'официальный_часовой_пояс' || f.id === 'stateOfficialTimezone');
+    if (!tzField) {
+      basicSec.fields.push(createField({
+        id: 'stateOfficialTimezone',
+        type: 'text',
+        label: 'Официальное столичное время (Часовой пояс)',
+        placeholder: 'Например, UTC+0 или UTC+3',
+        path: 'официальный_часовой_пояс',
+        hint: 'Часовой пояс правительства и госаппарата'
+      }));
+    }
+
+    // 4. Территориальные регионы / Провинции (Issue #49)
+    let regionsField = basicSec.fields.find(f => f.path === 'территориальные_регионы' || f.id === 'stateTerritorialRegions');
+    if (!regionsField) {
+      basicSec.fields.push(createField({
+        id: 'stateTerritorialRegions',
+        type: 'textarea',
+        label: 'Административно-территориальное деление (Регионы / Провинции)',
+        rows: 3,
+        placeholder: 'Перечислите провинции или наместничества...',
+        path: 'территориальные_регионы',
+        hint: 'Провинции, области и волости под юрисдикцией государства'
+      }));
+    }
   }
 
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  writeSchema('state.json', data);
   console.log('✅ state.json успешно обновлен со всеми системными полями!');
 }
 
@@ -279,12 +360,26 @@ function generateLocationSchema() {
             path: 'фото'
           }),
           createField({
+            id: 'locScale',
+            type: 'select',
+            label: 'Масштаб объекта (Иерархический уровень)',
+            required: true,
+            path: 'scale_level',
+            isSystem: true,
+            options: [
+              { value: 'interior', label: '🚪 Помещение / Интерьер (комната, палата, каюта, зал)' },
+              { value: 'building', label: '🏰 Здание / Сооружение (частный дом, школа, больница, бар, цех, бункер, маяк)' },
+              { value: 'district', label: '📍 Район / Квартал / Улица / Площадь' },
+              { value: 'settlement', label: '🏘️ Поселение / Город (деревня, мегаполис, станция)' },
+              { value: 'region', label: '🗺️ Географический регион (долина, провинция, остров, пустошь)' },
+              { value: 'macro', label: '🪐 Макро-объект (планета, континент, измерение)' }
+            ]
+          }),
+          createField({
             id: 'locType',
             type: 'select',
             label: 'Тип локации (Масштаб сцены)',
-            required: true,
             path: 'тип_локации',
-            isSystem: true,
             options: [
               { value: 'интерьер', label: '🚪 Помещение / Интерьер (комната, тронный зал, каюта)' },
               { value: 'здание', label: '🏰 Здание / Сооружение (замок, трактир, бункер, маяк)' },
@@ -296,12 +391,29 @@ function generateLocationSchema() {
             ]
           }),
           createField({
+            id: 'locBuildingSubtype',
+            type: 'select',
+            label: 'Специализация здания / заведения',
+            path: 'тип_заведения',
+            options: [
+              { value: 'residential', label: '🏡 Жилое (частный дом, усадьба, поместье, вилла)' },
+              { value: 'hospitality', label: '🍺 Общепит и ночлег (бар, таверна, гостиница, ресторан, трактир)' },
+              { value: 'medical', label: '🏥 Медицинское (больница, лечебница, лазарет, аптека)' },
+              { value: 'educational', label: '🎓 Образовательное (школа, академия, университет, пансион)' },
+              { value: 'administrative', label: '🏛️ Административное / Государственное (ратуша, суд, полиция, посольство)' },
+              { value: 'military', label: '⚔️ Военное / Оборонительное (казарма, форт, сторожевая башня, бункер)' },
+              { value: 'religious', label: '⛪ Религиозное (храм, святилище, монастырь, часовня)' },
+              { value: 'commercial', label: '💰 Торговое (рынок, лавка, торговый центр, фактория)' },
+              { value: 'industrial', label: '⚒️ Производственное (кузница, шахта, верфь, завод, фабрика)' }
+            ]
+          }),
+          createField({
             id: 'locParent',
             type: 'select',
             label: 'Входит в локацию (Родитель)',
             placeholder: 'Выберите родительскую локацию...',
             entityType: 'location',
-            hint: 'Формирует географическую иерархию (Комната ⊂ Здание ⊂ Город ⊂ Регион)',
+            hint: 'Формирует географическую иерархию (Комната ⊂ Здание ⊂ Город ⊂ Регион). Координаты и время наследуются вверх!',
             path: 'родительская_локация',
             isSystem: true
           }),
@@ -313,10 +425,12 @@ function generateLocationSchema() {
             path: 'статус_категория',
             isSystem: true,
             options: [
-              { value: 'Существует', label: '🟢 Существует / Доступна' },
+              { value: 'Действует', label: '🟢 Действует / Существует / Доступна' },
               { value: 'Разрушена / Руины', label: '🔴 Разрушена / В руинах' },
               { value: 'Заброшена', label: '🟡 Заброшена' },
-              { value: 'Скрыта / Затоплена', label: '⚪ Скрыта / Затоплена / Недоступна' }
+              { value: 'Закрыта на карантин', label: '🟠 Закрыта на карантин' },
+              { value: 'Строится', label: '⚪ Строится / В процессе возведения' },
+              { value: 'Скрыта / Затоплена', label: '🟣 Скрыта / Затоплена / Недоступна' }
             ]
           }),
           createField({
@@ -325,7 +439,17 @@ function generateLocationSchema() {
             label: 'Государство / Держава (Юрисдикция)',
             placeholder: 'Выберите государство...',
             entityType: 'state',
+            hint: 'Наследуется от родительской локации, если не указано явно',
             path: 'принадлежность_государству',
+            isSystem: true
+          }),
+          createField({
+            id: 'locOwner',
+            type: 'select',
+            label: 'Владелец / Управляющий / Директор',
+            placeholder: 'Выберите персонажа...',
+            entityType: 'character',
+            path: 'владелец_управляющий',
             isSystem: true
           }),
           createField({
@@ -356,14 +480,54 @@ function generateLocationSchema() {
         dynamicContainers: []
       },
       {
+        id: 'building_details',
+        title: 'Специфика здания и заведения',
+        icon: '🚪',
+        fields: [
+          createField({ id: 'locAddress', type: 'text', label: 'Почтовый адрес / Ориентир', placeholder: 'Например, ул. Вязов, д. 13 или Северный тракт у развилки', path: 'адрес' }),
+          createField({ id: 'locCapacity', type: 'number', label: 'Вместимость (человек / мест / коек)', min: 0, placeholder: 'Например, 120', path: 'вместимость' }),
+          createField({
+            id: 'locAccessMode',
+            type: 'select',
+            label: 'Режим доступа',
+            path: 'режим_доступа',
+            options: [
+              { value: 'public', label: '🟢 Публичный доступ' },
+              { value: 'service', label: '🟡 Служебный доступ' },
+              { value: 'private', label: '🔵 Приватный / Частный' },
+              { value: 'secret', label: '🟣 Секретный объект' },
+              { value: 'closed', label: '🔴 Закрыто' }
+            ]
+          }),
+          createField({ id: 'locOperatingHours', type: 'text', label: 'Часы работы / Режим дня', placeholder: 'Например, Круглосуточно или с 08:00 до 20:00 или От заката до рассвета', path: 'режим_работы' })
+        ],
+        dynamicContainers: []
+      },
+      {
         id: 'geography',
-        title: 'География и природа',
+        title: 'География, Координаты и Астрономия',
         icon: '🌲',
         fields: [
-          createField({ id: 'locClimate', type: 'text', label: 'Климат и погода', placeholder: 'Например, суровый северный, тропический влажный', path: 'климат' }),
+          createField({ id: 'locPlanetId', type: 'text', label: 'Планета размещения (ID или Master-планета)', placeholder: 'Оставьте пустым для автоопределения или укажите ID планеты', path: 'планета_id', hint: 'Планета размещения локации (по умолчанию планета мира)' }),
+          createField({ id: 'locTimezone', type: 'text', label: 'Часовой пояс локации', placeholder: 'Например, UTC+3 или оставьте пустым для наследования', path: 'часовой_пояс', hint: 'При пустом значении наследуется от родительского города или государства' }),
+          createField({ id: 'locLatitude', type: 'number', label: 'Широта (градусы -90 .. +90)', min: -90, max: 90, placeholder: '54.5', path: 'широта' }),
+          createField({ id: 'locLongitude', type: 'number', label: 'Долгота (градусы -180 .. +180)', min: -180, max: 180, placeholder: '37.6', path: 'долгота' }),
+          createField({
+            id: 'locClimateZone',
+            type: 'select',
+            label: 'Климатический пояс',
+            path: 'климатический_пояс',
+            options: [
+              { value: 'equatorial', label: '🌴 Экваториальный' },
+              { value: 'tropical', label: '☀️ Тропический' },
+              { value: 'temperate', label: '🍂 Умеренный' },
+              { value: 'subarctic', label: '❄️ Субарктический' },
+              { value: 'polar', label: '🧊 Полярный / Арктический' }
+            ]
+          }),
+          createField({ id: 'locClimate', type: 'text', label: 'Особенности климата и погоды', placeholder: 'Например, суровый северный, частые дожди', path: 'климат' }),
           createField({ id: 'locLandscape', type: 'text', label: 'Ландшафт и рельеф', placeholder: 'Например, скалистые горы, густые хвойные леса', path: 'ландшафт' }),
           createField({ id: 'locArea', type: 'text', label: 'Площадь / Протяженность', placeholder: 'Например, 150 кв. км', path: 'площадь' }),
-          createField({ id: 'locCoordinates', type: 'text', label: 'Координаты / Положение на карте', placeholder: 'Например, 54°N, 12°E или Сектор 7G', path: 'координаты' }),
           createField({ id: 'locDangerLevel', type: 'range', label: 'Уровень опасности (0-100)', min: 0, max: 100, value: 10, path: 'уровень_опасности' }),
           createField({ id: 'locResources', type: 'textarea', label: 'Природные ресурсы и флора/фауна', rows: 3, placeholder: 'Добываемые минералы, редкие травы, опасные хищники...', path: 'ресурсы' })
         ],
@@ -451,8 +615,7 @@ function generateLocationSchema() {
     ]
   };
 
-  const filePath = path.join(SCHEMAS_DIR, 'location.json');
-  fs.writeFileSync(filePath, JSON.stringify(schema, null, 2) + '\n', 'utf8');
+  writeSchema('location.json', schema);
   console.log('✅ location.json успешно создан со всеми секциями и системными полями!');
 }
 
@@ -607,8 +770,7 @@ function generateItemSchema() {
     ]
   };
 
-  const filePath = path.join(SCHEMAS_DIR, 'item.json');
-  fs.writeFileSync(filePath, JSON.stringify(schema, null, 2) + '\n', 'utf8');
+  writeSchema('item.json', schema);
   console.log('✅ item.json успешно создан со всеми секциями и системными полями!');
 }
 
@@ -743,8 +905,7 @@ function generateEventSchema() {
     ]
   };
 
-  const filePath = path.join(SCHEMAS_DIR, 'event.json');
-  fs.writeFileSync(filePath, JSON.stringify(schema, null, 2) + '\n', 'utf8');
+  writeSchema('event.json', schema);
   console.log('✅ event.json успешно создан со всеми секциями и системными полями!');
 }
 

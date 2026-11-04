@@ -1,0 +1,109 @@
+
+ FAIL  apps\spa\src\ts\features\ai\__tests__\useAiAutoApproveModal.spec.ts [ apps\spa\src\ts\features\ai\__tests__\useAiAutoApproveModal.spec.ts ]
+ FAIL  apps\spa\src\ts\features\ai\__tests__\useAiModeSelector.spec.ts [ apps\spa\src\ts\features\ai\__tests__\useAiModeSelector.spec.ts ]
+ FAIL  apps\spa\src\ts\features\ai\__tests__\useAiSkillAutocomplete.spec.ts [ apps\spa\src\ts\features\ai\__tests__\useAiSkillAutocomplete.spec.ts ]
+ FAIL  apps\spa\src\ts\features\ai\__tests__\useAiToolInspector.spec.ts [ apps\spa\src\ts\features\ai\__tests__\useAiToolInspector.spec.ts ]
+ FAIL  apps\spa\src\ts\features\ai\components\chat\AiChatInput\useAiChatInput.spec.ts [ apps\spa\src\ts\features\ai\components\chat\AiChatInput\useAiChatInput.spec.ts ]
+ FAIL  apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\AiGhostTextExtension.spec.ts [ apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\AiGhostTextExtension.spec.ts ]
+ FAIL  apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\wordFormatting.spec.ts [ apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\wordFormatting.spec.ts ]
+ FAIL  apps\spa\src\ts\features\documents\DocumentProcessor\__tests__\useDocumentProcessor.spec.ts [ apps\spa\src\ts\features\documents\DocumentProcessor\__tests__\useDocumentProcessor.spec.ts ]
+ FAIL  apps\spa\src\ts\features\documents\extensions\__tests__\extensions.spec.ts [ apps\spa\src\ts\features\documents\extensions\__tests__\extensions.spec.ts ]
+TypeError: __export is not a function
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/23]⎯
+
+ FAIL  apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\useTiptapEditor.spec.ts [ apps\spa\src\ts\features\chapters\EditorCoreTiptap\__tests__\useTiptapEditor.spec.ts ]
+Error: [vitest] There was an error when mocking a module. If you are using "vi.mock" factory, make sure there are no top level variables inside, since this call is hoisted to top of the file. Read more: https://vitest.dev/api/vi.html#vi-mock Caused by: TypeError: __export is not a function
+    at <anonymous>:17:1
+    at <anonymous>:13:82
+    at <anonymous>:6349:18
+    at req (<anonymous>:3655:28)
+    at <anonymous>:32:21
+    at <anonymous>:13:82
+    at <anonymous>:602:18
+    at importOriginal (<anonymous>:5527:80)
+    at <anonymous>:30:24
+    at __ttMock (<anonymous>:5541:53)
+Caused by: TypeError: __export is not a function
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/23]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps\spa\src\ts\stores\__tests__\shell.spec.ts > shell store > Entity and Chapter CRUD Operations > deleteEntity calls api.deleteEntity and closes editor
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/23]⎯
+
+ FAIL  apps\spa\src\ts\utils\__tests__\ui-helpers.spec.ts > ui-helpers > CSS Variables > sets and gets CSS variable on element
+AssertionError: expected 'rgb(255, 0, 0)' to be '#ff0000' // Object.is equality
+
+Expected: "#ff0000"
+Received: "rgb(255, 0, 0)"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/23]⎯
+
+ FAIL  apps\spa\src\ts\utils\__tests__\ui-helpers.spec.ts > ui-helpers > Animations (without GSAP) > initializes interactive elements with CSS transition fallback
+AssertionError: expected 'transform 0.2s' to contain 'transform 0.2s ease'
+
+Expected: "transform 0.2s ease"
+Received: "transform 0.2s"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Rendering > should render sidebar with categories
+AssertionError: expected 0 to be greater than 0
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Rendering > should render settings title
+AssertionError: expected '' to match /Категории|Settings|Настройки|appearan…/
+
+- Expected:
+/Категории|Settings|Настройки|appearance/
+
++ Received:
+""
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Rendering > should render ThemeSwitcher component
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Category Navigation > should have "appearance" as active category by default
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Notification Settings > should have duration slider
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Font Options > should display all font options
+AssertionError: expected 0 to be greater than or equal to 5
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Notification Settings > should have notification position radio buttons
+AssertionError: expected 0 to be greater than or equal to 4
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/23]⎯
+
+ FAIL  packages\components\test\component\Settings.test.ts > Settings.vue > Editor Settings > should have auto-save interval slider
+AssertionError: expected 0 to be greater than or equal to 3
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/23]⎯
+
+ FAIL  packages\components\test\unit\app\settings.test.ts > packages/components app/settings.ts > handles missing settingsContent container gracefully
+Error: Cannot find package 'hey-listen' imported from \\?\C:\Users\Kuzma\Desktop\WorldWiki\node_modules\.pnpm\popmotion@11.0.5\node_modules\popmotion\dist\es\animations\utils\find-spring.mjs
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/23]⎯
+
+ FAIL  packages\components\test\unit\app\settings.test.ts > packages/components app/settings.ts > mounts app, tests onClose / onBack navigation and handles save errors
+AssertionError: expected 'Save' to be '✅ Saved' // Object.is equality
+
+Expected: "✅ Saved"
+Received: "Save"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/23]⎯

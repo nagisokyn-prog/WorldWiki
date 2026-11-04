@@ -322,7 +322,7 @@ describe('shell store', () => {
     });
 
     it('deleteEntity calls api.deleteEntity and closes editor', async () => {
-      shell.openEntity({ id: 'c1', entityType: 'character', name: 'Hero' });
+      await shell.openEntity({ id: 'c1', entityType: 'character', name: 'Hero' });
       vi.mocked(api.deleteEntity).mockResolvedValue(undefined as any);
 
       await shell.deleteEntity('entity:character:c1', 'character', true);

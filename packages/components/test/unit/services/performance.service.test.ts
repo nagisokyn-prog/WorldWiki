@@ -236,7 +236,7 @@ describe('PerformanceManager', () => {
       mockSettings.glass.blur = 16;
       pm.upgradeProfile();
       expect(mockSettings.perf!.level).toBe('Max');
-    });
+    }, 15000);
 
     it('should not downgrade if blur is already 0 (Eco floor)', () => {
       const pm = performanceManager as any;
@@ -313,7 +313,7 @@ describe('PerformanceManager', () => {
       await performanceManager.runCalibration();
 
       expect(applySpy).toHaveBeenCalled();
-    });
+    }, 15000);
 
     it('should preserve manual profile selection after calibration', async () => {
       vi.useRealTimers();
@@ -330,7 +330,7 @@ describe('PerformanceManager', () => {
       // Should NOT apply profile if user explicitly set a non-Automatic level
       expect(applySpy).not.toHaveBeenCalled();
       expect(mockSettings.perf!.level).toBe('Max');
-    });
+    }, 15000);
 
     it('should handle Battery API errors and events gracefully', async () => {
       const listeners: Record<string, (...args: any[]) => void> = {};

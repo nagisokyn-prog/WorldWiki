@@ -155,8 +155,8 @@ const emit = defineEmits<PlanItemRowEmits>();
 
 const {
   statusTooltip, isDepMenuOpen, isStatusMenuOpen, groupedCandidates, toggleDepMenu,
-  openStatusMenu, closeStatusMenu, onSelectStatus, onSelectDependency, onToggle,
-  onCycleStatus, onSave, onDelete, onNavigate
+  openStatusMenu, onSelectStatus, onSelectDependency, onToggle,
+  onSave, onDelete, onNavigate
 } = usePlanItemRow(props, emit);
 </script>
 

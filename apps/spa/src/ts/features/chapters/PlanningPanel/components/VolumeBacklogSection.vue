@@ -120,7 +120,6 @@ const {
   cancelAdd,
   submitAdd,
   toggleMoveMenu,
-  closeMoveMenu,
   moveToChapter
 } = useVolumeBacklogSection(props, emit);
 </script>

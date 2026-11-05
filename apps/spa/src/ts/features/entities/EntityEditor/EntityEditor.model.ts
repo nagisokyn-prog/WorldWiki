@@ -14,6 +14,10 @@ export interface SchemaField {
   max?: number;
   options?: Array<{ value: string; label: string }>;
   entityType?: string;
+  isSystem?: boolean;
+  preventDelete?: boolean;
+  preventHide?: boolean;
+  [key: string]: unknown;
 }
 
 export interface DynamicContainer {
@@ -22,7 +26,7 @@ export interface DynamicContainer {
   dataPath?: string;
   hidden?: boolean;
   template?: string;
-  fieldOverrides?: Record<string, unknown>;
+  fieldOverrides?: Record<string, Record<string, unknown>>;
   customChildContainers?: DynamicContainer[];
   emptyMessage?: string;
   isBidirectional?: boolean;

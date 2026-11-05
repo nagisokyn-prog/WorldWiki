@@ -81,13 +81,76 @@ pub const ALL_DDL_MODULES: &[(&str, &str)] = &[
     ),
 ];
 
+pub const CORE_ENTITY_SCHEMAS: &[(&str, &str)] = &[
+    (
+        "character",
+        include_str!("../../../apps/spa/public/struct/editor/character.json"),
+    ),
+    (
+        "location",
+        include_str!("../../../apps/spa/public/struct/editor/location.json"),
+    ),
+    (
+        "organization",
+        include_str!("../../../apps/spa/public/struct/editor/organization.json"),
+    ),
+    (
+        "state",
+        include_str!("../../../apps/spa/public/struct/editor/state.json"),
+    ),
+    (
+        "item",
+        include_str!("../../../apps/spa/public/struct/editor/item.json"),
+    ),
+    (
+        "event",
+        include_str!("../../../apps/spa/public/struct/editor/event.json"),
+    ),
+];
+
 pub fn compute_schema_hash() -> String {
     let mut hasher = DefaultHasher::new();
+    hasher.write(b"v3_schema_sync");
     for (name, ddl) in ALL_DDL_MODULES {
         hasher.write(name.as_bytes());
         hasher.write(ddl.as_bytes());
     }
+    for (type_key, json_str) in CORE_ENTITY_SCHEMAS {
+        hasher.write(type_key.as_bytes());
+        hasher.write(json_str.as_bytes());
+    }
     format!("{:016x}", hasher.finish())
+}
+
+pub async fn sync_builtin_entity_schemas(db: &Surreal<Db>) {
+    for (type_key, raw_json) in CORE_ENTITY_SCHEMAS {
+        if let Ok(full_val) = serde_json::from_str::<serde_json::Value>(raw_json) {
+            let q = "UPDATE entity_schemas SET full_schema = $full WHERE type_key = $tk";
+            match db
+                .query(q)
+                .bind(("full", full_val))
+                .bind(("tk", *type_key))
+                .await
+            {
+                Ok(mut res) => {
+                    let errors = res.take_errors();
+                    if !errors.is_empty() {
+                        eprintln!(
+                            "[DB WARNING] Statement error syncing builtin entity schema '{}': {:?}",
+                            type_key, errors
+                        );
+                    }
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[DB WARNING] Failed to sync builtin entity schema '{}': {}",
+                        type_key, e
+                    );
+                }
+            }
+        }
+    }
+    println!("[DB] Builtin JSON entity schemas synchronized across existing projects.");
 }
 
 pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> {
@@ -139,6 +202,8 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
             eprintln!("[CRITICAL] Schema pipeline failed to apply: {}", e);
             return Err(Box::new(std::io::Error::other(e.to_string())));
         }
+
+        sync_builtin_entity_schemas(&db).await;
 
         let save_hash_query = "UPSERT type::record('system_meta', 'schema_version') SET ddl_hash = $hash, updated_at = time::now()";
         match db.query(save_hash_query).bind(("hash", current_hash.as_str())).await {

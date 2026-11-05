@@ -3,10 +3,6 @@ import type { PlanItemRowProps, PlanItemRowEmits } from './PlanItemRow.model';
 import type { TodoStatus, DependencyCandidate } from '../PlanningPanel.model';
 import { getCleanId } from '../planningPanel.utils';
 
-function assertNever(x: never): never {
-  throw new Error(`Unexpected object: ${x}`);
-}
-
 export function usePlanItemRow(props: PlanItemRowProps, emit: PlanItemRowEmits) {
   const isDepMenuOpen = ref(false);
   const isStatusMenuOpen = ref(false);

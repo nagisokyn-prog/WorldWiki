@@ -45,8 +45,7 @@ export function buildWorldTimeSnapshot(params: {
       (t) =>
         t.id === region.timezone_id ||
         (t.code && t.code === region.timezone_id) ||
-        (region.timezone_id === 'tz_utc' && (t.code === 'UTC' || t.code === 'UTC+0' || t.base_offset_hours === 0)) ||
-        (region.timezone_id === 'tz_msk' && (t.code === 'MSK' || t.code === 'UTC+3' || t.base_offset_hours === 3))
+        t.name === region.timezone_id
     );
     if (tz) {
       if (tz.id) coveredTzKeys.add(tz.id);

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   normalizeId,
-  getEventId,
   checkIsFlashback,
   cleanParticipantsList,
   calculateConnectionLines
@@ -53,7 +52,7 @@ describe('timelineInspector.utils', () => {
         {
           chapter_id: 'chapters:c1',
           chapter_title: 'Chapter 1',
-          kind: 'scene'
+          kind: 'direct'
         }
       ],
       participants: []

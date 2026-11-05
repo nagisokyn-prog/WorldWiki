@@ -279,17 +279,35 @@ function patchStateSchema() {
       }));
     }
 
-    // 2. Государственное летоисчисление / Календарь (Issue #49)
+    // 2. Государственное летоисчисление / Календарь (Issue #49) - СТРОГО перед датой основания!
     let calendarField = basicSec.fields.find(f => f.path === 'официальный_календарь' || f.id === 'stateOfficialCalendar');
     if (!calendarField) {
-      basicSec.fields.push(createField({
+      calendarField = createField({
         id: 'stateOfficialCalendar',
-        type: 'text',
+        type: 'select',
+        entityType: 'calendar',
         label: 'Государственное летоисчисление / Календарь',
         placeholder: 'Выберите официальный календарь...',
         path: 'официальный_календарь',
         hint: 'Официальная календарная система для датировок законов и хроник'
-      }));
+      });
+      const foundedIdx = basicSec.fields.findIndex(f => f.path === 'дата_основания');
+      if (foundedIdx >= 0) {
+        basicSec.fields.splice(foundedIdx, 0, calendarField);
+      } else {
+        basicSec.fields.push(calendarField);
+      }
+    } else {
+      calendarField.type = 'select';
+      calendarField.entityType = 'calendar';
+      calendarField.label = 'Государственное летоисчисление / Календарь';
+      // Перемещаем перед датой основания, если она есть
+      const curIdx = basicSec.fields.indexOf(calendarField);
+      const foundedIdx = basicSec.fields.findIndex(f => f.path === 'дата_основания');
+      if (foundedIdx >= 0 && curIdx > foundedIdx) {
+        basicSec.fields.splice(curIdx, 1);
+        basicSec.fields.splice(foundedIdx, 0, calendarField);
+      }
     }
 
     // 3. Столичное / Официальное время (Issue #49)
@@ -297,28 +315,45 @@ function patchStateSchema() {
     if (!tzField) {
       basicSec.fields.push(createField({
         id: 'stateOfficialTimezone',
-        type: 'text',
+        type: 'select',
+        entityType: 'timezone',
         label: 'Официальное столичное время (Часовой пояс)',
-        placeholder: 'Например, UTC+0 или UTC+3',
+        placeholder: 'Выберите часовой пояс...',
         path: 'официальный_часовой_пояс',
         hint: 'Часовой пояс правительства и госаппарата'
       }));
+    } else {
+      tzField.type = 'select';
+      tzField.entityType = 'timezone';
+      tzField.placeholder = 'Выберите часовой пояс...';
     }
 
-    // 4. Территориальные регионы / Провинции (Issue #49)
+    // 4. Территориальные регионы / Провинции (Issue #49) - multiselect на location
     let regionsField = basicSec.fields.find(f => f.path === 'территориальные_регионы' || f.id === 'stateTerritorialRegions');
     if (!regionsField) {
       basicSec.fields.push(createField({
         id: 'stateTerritorialRegions',
-        type: 'textarea',
+        type: 'multiselect',
+        entityType: 'location',
         label: 'Административно-территориальное деление (Регионы / Провинции)',
-        rows: 3,
-        placeholder: 'Перечислите провинции или наместничества...',
         path: 'территориальные_регионы',
         hint: 'Провинции, области и волости под юрисдикцией государства'
       }));
+    } else {
+      regionsField.type = 'multiselect';
+      regionsField.entityType = 'location';
+      delete regionsField.rows;
     }
   }
+
+  // Удаляем дублирующий блок adminDivisions из секции governance (так как локации закрывают регионы)
+  const govSec = data.sections.find(s => s.id === 'governance');
+  if (govSec && govSec.dynamicContainers) {
+    govSec.dynamicContainers = govSec.dynamicContainers.filter(dc => dc.id !== 'adminDivisions');
+  }
+
+  // Удаляем дублирующую страницу regions из государства
+  data.sections = data.sections.filter(s => s.id !== 'regions');
 
   writeSchema('state.json', data);
   console.log('✅ state.json успешно обновлен со всеми системными полями!');
@@ -360,26 +395,12 @@ function generateLocationSchema() {
             path: 'фото'
           }),
           createField({
-            id: 'locScale',
-            type: 'select',
-            label: 'Масштаб объекта (Иерархический уровень)',
-            required: true,
-            path: 'scale_level',
-            isSystem: true,
-            options: [
-              { value: 'interior', label: '🚪 Помещение / Интерьер (комната, палата, каюта, зал)' },
-              { value: 'building', label: '🏰 Здание / Сооружение (частный дом, школа, больница, бар, цех, бункер, маяк)' },
-              { value: 'district', label: '📍 Район / Квартал / Улица / Площадь' },
-              { value: 'settlement', label: '🏘️ Поселение / Город (деревня, мегаполис, станция)' },
-              { value: 'region', label: '🗺️ Географический регион (долина, провинция, остров, пустошь)' },
-              { value: 'macro', label: '🪐 Макро-объект (планета, континент, измерение)' }
-            ]
-          }),
-          createField({
             id: 'locType',
             type: 'select',
-            label: 'Тип локации (Масштаб сцены)',
+            label: 'Масштаб и тип локации',
+            required: true,
             path: 'тип_локации',
+            isSystem: true,
             options: [
               { value: 'интерьер', label: '🚪 Помещение / Интерьер (комната, тронный зал, каюта)' },
               { value: 'здание', label: '🏰 Здание / Сооружение (замок, трактир, бункер, маяк)' },
@@ -509,7 +530,7 @@ function generateLocationSchema() {
         icon: '🌲',
         fields: [
           createField({ id: 'locPlanetId', type: 'text', label: 'Планета размещения (ID или Master-планета)', placeholder: 'Оставьте пустым для автоопределения или укажите ID планеты', path: 'планета_id', hint: 'Планета размещения локации (по умолчанию планета мира)' }),
-          createField({ id: 'locTimezone', type: 'text', label: 'Часовой пояс локации', placeholder: 'Например, UTC+3 или оставьте пустым для наследования', path: 'часовой_пояс', hint: 'При пустом значении наследуется от родительского города или государства' }),
+          createField({ id: 'locTimezone', type: 'select', entityType: 'timezone', label: 'Часовой пояс локации', placeholder: 'Выберите часовой пояс...', path: 'часовой_пояс', hint: 'При пустом значении наследуется от родительского города или государства' }),
           createField({ id: 'locLatitude', type: 'number', label: 'Широта (градусы -90 .. +90)', min: -90, max: 90, placeholder: '54.5', path: 'широта' }),
           createField({ id: 'locLongitude', type: 'number', label: 'Долгота (градусы -180 .. +180)', min: -180, max: 180, placeholder: '37.6', path: 'долгота' }),
           createField({

@@ -90,6 +90,9 @@ export function useTimeAtlasWorldTime(
     if (masterCalendar.value?.regions && masterCalendar.value.regions.length > 0) {
       return masterCalendar.value.regions;
     }
+    if (masterCalendar.value?.timezones && masterCalendar.value.timezones.length > 0 && !masterCalendar.value.planet_id) {
+      return masterCalendar.value.regions || [];
+    }
     if (currentPlanet.value?.regions && currentPlanet.value.regions.length > 0) {
       return currentPlanet.value.regions.map((r, idx) => {
         const raw = r as unknown as Record<string, unknown>;

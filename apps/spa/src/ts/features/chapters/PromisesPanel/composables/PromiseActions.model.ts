@@ -1,5 +1,4 @@
 import type { Ref } from 'vue';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
 import type { SceneArcItem } from '@/types/generated/SceneArcItem';
 import type { RichPlotPromise, PromiseMilestone } from '@/types/narrative';
 

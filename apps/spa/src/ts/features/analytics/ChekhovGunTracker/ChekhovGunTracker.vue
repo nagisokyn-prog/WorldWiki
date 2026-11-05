@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ChekhovGunTrackerProps, ChekhovGunTrackerEmits, LocatePromisePayload } from './ChekhovGunTracker.model';
+import type { ChekhovGunTrackerProps, ChekhovGunTrackerEmits } from './ChekhovGunTracker.model';
 import GunStatusColumn from './components/GunStatusColumn.vue';
 import GunJourneyModal from './components/GunJourneyModal.vue';
 import ChekhovTrackerToolbar from './components/ChekhovTrackerToolbar.vue';
@@ -146,7 +146,6 @@ const {
   loadData,
   openJourney,
   closeJourneyModal,
-  handleLocateNode,
   onLocateNode,
   setScope,
   resetFilter,

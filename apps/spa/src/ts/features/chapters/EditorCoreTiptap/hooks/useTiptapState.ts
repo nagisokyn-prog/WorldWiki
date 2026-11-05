@@ -37,6 +37,9 @@ export function useTiptapState(
         if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
           return mode;
         }
+        if (mode === 'word') {
+          return 'wysiwyg';
+        }
       } catch (err) {
         console.warn('[useTiptapState] Failed to parse saved editor mode from localStorage:', err);
       }

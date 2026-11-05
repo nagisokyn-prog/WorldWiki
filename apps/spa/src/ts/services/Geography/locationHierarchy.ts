@@ -75,17 +75,13 @@ export function parseTimezoneOffset(
     const lower = str.toLowerCase();
     const matched = timezones.find(
       (tz) =>
-        tz.id.toLowerCase() === lower ||
+        (tz.id && tz.id.toLowerCase() === lower) ||
         (tz.code && tz.code.toLowerCase() === lower) ||
-        tz.name.toLowerCase() === lower ||
-        (lower === 'tz_utc' && (tz.code === 'UTC' || tz.base_offset_hours === 0)) ||
-        (lower === 'tz_msk' && (tz.code === 'MSK' || tz.base_offset_hours === 3))
+        (tz.name && tz.name.toLowerCase() === lower)
     );
     if (matched) {
       return { timezoneId: matched.id, offsetHours: CalendarMath.getTimezoneOffsetForDay(matched, dayIndex), matchedTz: matched };
     }
-    if (['utc', 'gmt', 'z', 'tz_utc'].includes(lower)) return { timezoneId: 'tz_utc', offsetHours: 0 };
-    if (['msk', 'tz_msk'].includes(lower)) return { timezoneId: 'tz_msk', offsetHours: 3 };
 
     const offsetMatch = str.match(/^(?:utc|gmt)?\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?$/i);
     if (offsetMatch) {
@@ -109,15 +105,14 @@ export function parseTimezoneOffset(
 }
 
 export function mapLegacyScale(entity: GeographyEntityRecord): string {
-  const explicit = getEntityField(entity, 'scale_level');
-  if (explicit) return String(explicit);
-  const legacy = String(getEntityField(entity, 'тип_локации') ?? '').toLowerCase();
+  const explicit = getEntityField(entity, 'scale_level') ?? getEntityField(entity, 'тип_локации');
+  const legacy = String(explicit ?? '').toLowerCase();
   if (['interior', 'room', 'интерьер'].includes(legacy)) return 'interior';
   if (['building', 'здание'].includes(legacy)) return 'building';
-  if (['district', 'район'].includes(legacy)) return 'district';
-  if (['city', 'settlement', 'город'].includes(legacy)) return 'settlement';
-  if (['region', 'forest', 'mountain', 'sea'].includes(legacy)) return 'region';
-  if (['planet', 'macro', 'space'].includes(legacy)) return 'macro';
+  if (['district', 'район', 'микро_точка'].includes(legacy)) return 'district';
+  if (['city', 'settlement', 'город', 'поселение'].includes(legacy)) return 'settlement';
+  if (['region', 'forest', 'mountain', 'sea', 'природная_зона', 'гео_регион'].includes(legacy)) return 'region';
+  if (['planet', 'macro', 'space', 'макро_объект'].includes(legacy)) return 'macro';
   return 'settlement';
 }
 

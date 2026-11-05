@@ -3,13 +3,11 @@ import { useAnalyticsStore } from '@/stores/analytics.store';
 import { useChapterStore } from '@/stores/chapter.store';
 import { plotApi } from '@/services/api/plot.api';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { RichPlotPromise } from '@/types/narrative';
 import type {
   TrackedItem,
   GunTrackerFilterState,
   GunTrackerScope,
   ItemJourneyReport,
-  ItemJourneyNode,
   LocatePromisePayload,
   ChekhovGunTrackerProps,
   ChekhovGunTrackerEmits,

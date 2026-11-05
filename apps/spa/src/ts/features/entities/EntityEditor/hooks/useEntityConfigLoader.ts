@@ -6,8 +6,9 @@ import type {
   SchemaConfig,
   SchemaSection,
   SchemaField,
-  DynamicContainer
+  DynamicContainer,
 } from '../EntityEditor.model';
+import { patchEntityConfig, fetchSpecialRefData } from './entityConfigLoader.utils';
 
 export interface UseEntityConfigLoaderContext {
   props: EntityEditorProps;
@@ -24,102 +25,66 @@ export interface UseEntityConfigLoaderContext {
 }
 
 export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
+  let scrollElement: HTMLElement | null = null;
+
+  const onScroll = (e: Event) => {
+    ctx.emit('scroll-change', (e.target as HTMLElement).scrollTop);
+  };
+
+  const cleanupScroll = () => {
+    if (scrollElement) {
+      scrollElement.removeEventListener('scroll', onScroll);
+      scrollElement = null;
+    }
+  };
+
+  onUnmounted(() => {
+    cleanupScroll();
+  });
+
   const loadReferenceData = async () => {
     const entityTypesToLoad = new Set<string>();
 
-    if (ctx.props.entityType) {
-      entityTypesToLoad.add(ctx.props.entityType);
-    }
+    if (ctx.props.entityType) entityTypesToLoad.add(ctx.props.entityType);
 
-    if (ctx.config.value?.sections) {
-      ctx.config.value.sections.forEach((sec: SchemaSection) => {
-        if (sec.fields) {
-          sec.fields.forEach((f: SchemaField) => {
-            if (f.entityType) entityTypesToLoad.add(f.entityType);
-          });
-        }
-        if (sec.dynamicContainers) {
-          sec.dynamicContainers.forEach((dc: DynamicContainer) => {
-            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
-            const tplConf = dc.template && ctx.config.value?.templates ? ctx.config.value.templates[dc.template] : undefined;
-            if (tplConf?.foreign_type) entityTypesToLoad.add(tplConf.foreign_type);
-            if (dc.fields) {
-              dc.fields.forEach((f: SchemaField) => {
-                if (f.entityType) entityTypesToLoad.add(f.entityType);
-              });
-            }
-          });
-        }
+    const collectDcTypes = (dc: DynamicContainer) => {
+      if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
+      const tplConf =
+        dc.template && ctx.config.value?.templates
+          ? ctx.config.value.templates[dc.template]
+          : undefined;
+      if (tplConf?.foreign_type) entityTypesToLoad.add(tplConf.foreign_type);
+      dc.fields?.forEach((f: SchemaField) => {
+        if (f.entityType) entityTypesToLoad.add(f.entityType);
       });
-    }
+      if (dc.fieldOverrides) {
+        Object.values(dc.fieldOverrides).forEach((ovRaw) => {
+          const ov = ovRaw as Record<string, unknown>;
+          if (ov?.['entityType']) entityTypesToLoad.add(String(ov['entityType']));
+        });
+      }
+    };
+
+    ctx.config.value?.sections?.forEach((sec: SchemaSection) => {
+      sec.fields?.forEach((f: SchemaField) => {
+        if (f.entityType) entityTypesToLoad.add(f.entityType);
+      });
+      sec.dynamicContainers?.forEach(collectDcTypes);
+    });
 
     if (ctx.config.value?.templates) {
-      Object.keys(ctx.config.value.templates).forEach(tplKey => {
+      Object.keys(ctx.config.value.templates).forEach((tplKey) => {
         const tpl = ctx.config.value?.templates?.[tplKey];
         if (tpl?.foreign_type) entityTypesToLoad.add(tpl.foreign_type);
-        if (tpl?.fields) {
-          tpl.fields.forEach((f: SchemaField) => {
-            if (f.entityType) entityTypesToLoad.add(f.entityType);
-          });
-        }
-        if (tpl?.dynamicContainers) {
-          tpl.dynamicContainers.forEach((dc: DynamicContainer) => {
-            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
-            if (dc.fields) {
-              dc.fields.forEach((f: SchemaField) => {
-                if (f.entityType) entityTypesToLoad.add(f.entityType);
-              });
-            }
-          });
-        }
-      });
-    }
-
-    const newRefData: Record<string, Array<{ value: string; label: string }>> = { ...ctx.referenceData.value };
-    for (const type of entityTypesToLoad) {
-      try {
-        const entities = await api.getEntities(ctx.props.project, type);
-        const mapped = entities.map((e) => {
-          const item = e as Record<string, unknown>;
-          return {
-            value: String(item.id || ''),
-            label: String(item.name || item.title || item.label || 'Без названия')
-          };
+        tpl?.fields?.forEach((f: SchemaField) => {
+          if (f.entityType) entityTypesToLoad.add(f.entityType);
         });
-        newRefData[`${type}_list`] = mapped;
-        newRefData[type] = mapped;
-      } catch (e) {
-        console.error(`Error loading ref data for ${type}:`, e);
-      }
-    }
-    ctx.referenceData.value = newRefData;
-  };
-
-  const patchConfig = (cfg: SchemaConfig) => {
-    if (cfg?.sections) {
-      cfg.sections.forEach((sec: SchemaSection & { items?: Array<Record<string, unknown>> }) => {
-        if (sec.items && (!sec.fields || sec.fields.length === 0) && (!sec.dynamicContainers || sec.dynamicContainers.length === 0)) {
-          const fields: Array<SchemaField> = [];
-          const dynamicContainers: Array<DynamicContainer> = [];
-          sec.items.forEach((it: Record<string, unknown>) => {
-            if (it.template || it.dataPath || it.type === 'dynamic' || it.type === 'timeline') {
-              dynamicContainers.push(it as unknown as DynamicContainer);
-            } else {
-              fields.push(it as unknown as SchemaField);
-            }
-          });
-          sec.fields = fields;
-          sec.dynamicContainers = dynamicContainers;
-        }
-        if (sec.dynamicContainers) {
-          sec.dynamicContainers.forEach((dc: DynamicContainer, idx: number) => {
-            if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
-            if (!dc.dataPath) dc.dataPath = dc.id;
-          });
-        }
+        tpl?.dynamicContainers?.forEach(collectDcTypes);
       });
     }
-    return cfg;
+
+    const fetched = await fetchSpecialRefData(ctx.props.project, entityTypesToLoad);
+    ctx.referenceData.value = { ...ctx.referenceData.value, ...fetched };
   };
 
   const loadConfigAndData = async () => {
@@ -128,19 +93,31 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
     try {
       const sandboxConfig = sessionStorage.getItem('sandbox_preview_config');
       if (ctx.props.entityId === 'preview' && sandboxConfig) {
-        ctx.config.value = patchConfig(JSON.parse(sandboxConfig));
+        ctx.config.value = patchEntityConfig(JSON.parse(sandboxConfig), ctx.props.entityType);
       } else {
         const schemas = await api.getEntitySchemas(ctx.props.project);
         const foundSchema = schemas.find((s: EntitySchema) => s.type_key === ctx.props.entityType);
         if (foundSchema && foundSchema.full_schema) {
-          ctx.config.value = patchConfig(JSON.parse(JSON.stringify(foundSchema.full_schema)));
+          ctx.config.value = patchEntityConfig(
+            JSON.parse(JSON.stringify(foundSchema.full_schema)),
+            ctx.props.entityType
+          );
         } else {
           try {
-            const staticTypes = ['character', 'location', 'organization', 'state', 'item', 'event', 'fraction', 'ui_editor'];
+            const staticTypes = [
+              'character',
+              'location',
+              'organization',
+              'state',
+              'item',
+              'event',
+              'fraction',
+              'ui_editor',
+            ];
             if (staticTypes.includes(ctx.props.entityType)) {
               const res = await fetch(`/struct/editor/${ctx.props.entityType}.json`);
               if (res.ok) {
-                ctx.config.value = patchConfig(await res.json());
+                ctx.config.value = patchEntityConfig(await res.json(), ctx.props.entityType);
               }
             }
           } catch (e) {
@@ -168,8 +145,11 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
         console.warn('[EntityEditor] Failed to load ui_editor.json templates', e);
       }
 
-      if (ctx.config.value && ctx.config.value.sections && ctx.config.value.sections.length > 0) {
-        if (ctx.props.initialSection && ctx.config.value.sections.some((s: SchemaSection) => s.id === ctx.props.initialSection)) {
+      if (ctx.config.value?.sections?.length) {
+        if (
+          ctx.props.initialSection &&
+          ctx.config.value.sections.some((s: SchemaSection) => s.id === ctx.props.initialSection)
+        ) {
           ctx.activeSection.value = ctx.props.initialSection;
         } else {
           ctx.activeSection.value = ctx.config.value.sections[0].id;
@@ -177,29 +157,39 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
         ctx.emit('section-change', ctx.activeSection.value);
       }
 
-      const rawInitial = ctx.props.initialData ? JSON.parse(JSON.stringify(ctx.props.initialData)) : {};
-      const rawTags = rawInitial['теги'] ?? rawInitial.tags ?? (rawInitial.attributes && (rawInitial.attributes['теги'] ?? rawInitial.attributes.tags)) ?? [];
+      const rawInitial = ctx.props.initialData
+        ? JSON.parse(JSON.stringify(ctx.props.initialData))
+        : {};
+      const rawTags =
+        rawInitial['теги'] ??
+        rawInitial.tags ??
+        (rawInitial.attributes && (rawInitial.attributes['теги'] ?? rawInitial.attributes.tags)) ??
+        [];
       const cleanInitialTags = Array.isArray(rawTags)
         ? rawTags.map((t: unknown) => String(t).trim().replace(/^#/, '')).filter(Boolean)
         : typeof rawTags === 'string'
-          ? rawTags.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+          ? rawTags
+              .split(',')
+              .map((t: string) => t.trim().replace(/^#/, ''))
+              .filter(Boolean)
           : [];
       rawInitial['теги'] = cleanInitialTags;
       rawInitial.tags = cleanInitialTags;
-      
-      // Первое поле схемы по положению в первой секции (независимо от имени/пути поля)
+
       const firstSection = ctx.config.value?.sections?.[0];
       const firstField = firstSection?.fields?.[0];
-      const firstFieldPath = firstField?.path || firstField?.id || firstField?.class || ctx.config.value?.titleField;
+      const firstFieldPath =
+        firstField?.path || firstField?.id || firstField?.class || ctx.config.value?.titleField;
       if (firstFieldPath) {
-        const entityName = rawInitial.name || (ctx.props.initialData && (ctx.props.initialData as Record<string, unknown>).name);
+        const entityName =
+          rawInitial.name ||
+          (ctx.props.initialData && (ctx.props.initialData as Record<string, unknown>).name);
         if (entityName && !rawInitial[firstFieldPath]) {
           rawInitial[firstFieldPath] = entityName;
         }
       }
       ctx.formData.value = rawInitial;
       ctx.foreignUpdates.value = {};
-
       ctx.lastEmittedData.value = JSON.stringify({ ...ctx.formData.value, __foreignUpdates: {} });
 
       await loadReferenceData();
@@ -212,7 +202,8 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
 
       if ((ctx.props.initialScrollPos ?? 0) > 0) {
         setTimeout(() => {
-          if (ctx.scrollContainer.value) ctx.scrollContainer.value.scrollTop = ctx.props.initialScrollPos ?? 0;
+          if (ctx.scrollContainer.value)
+            ctx.scrollContainer.value.scrollTop = ctx.props.initialScrollPos ?? 0;
         }, 100);
       }
 
@@ -226,24 +217,8 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
     }
   };
 
-  let scrollElement: HTMLElement | null = null;
-  const onScroll = (e: Event) => {
-    ctx.emit('scroll-change', (e.target as HTMLElement).scrollTop);
-  };
-
-  const cleanupScroll = () => {
-    if (scrollElement) {
-      scrollElement.removeEventListener('scroll', onScroll);
-      scrollElement = null;
-    }
-  };
-
-  onUnmounted(() => {
-    cleanupScroll();
-  });
-
   return {
     loadReferenceData,
-    loadConfigAndData
+    loadConfigAndData,
   };
 }

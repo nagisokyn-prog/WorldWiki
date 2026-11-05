@@ -31,48 +31,12 @@
           "path": "фото"
         },
         {
-          "id": "locScale",
-          "type": "select",
-          "label": "Масштаб объекта (Иерархический уровень)",
-          "placeholder": "",
-          "path": "scale_level",
-          "required": true,
-          "options": [
-            {
-              "value": "interior",
-              "label": "🚪 Помещение / Интерьер (комната, палата, каюта, зал)"
-            },
-            {
-              "value": "building",
-              "label": "🏰 Здание / Сооружение (частный дом, школа, больница, бар, цех, бункер, маяк)"
-            },
-            {
-              "value": "district",
-              "label": "📍 Район / Квартал / Улица / Площадь"
-            },
-            {
-              "value": "settlement",
-              "label": "🏘️ Поселение / Город (деревня, мегаполис, станция)"
-            },
-            {
-              "value": "region",
-              "label": "🗺️ Географический регион (долина, провинция, остров, пустошь)"
-            },
-            {
-              "value": "macro",
-              "label": "🪐 Макро-объект (планета, континент, измерение)"
-            }
-          ],
-          "isSystem": true,
-          "preventDelete": true,
-          "preventHide": true
-        },
-        {
           "id": "locType",
           "type": "select",
-          "label": "Тип локации (Масштаб сцены)",
+          "label": "Масштаб и тип локации",
           "placeholder": "",
           "path": "тип_локации",
+          "required": true,
           "options": [
             {
               "value": "интерьер",
@@ -102,7 +66,10 @@
               "value": "макро_объект",
               "label": "🪐 Планета / Астрономический объект / Сектор"
             }
-          ]
+          ],
+          "isSystem": true,
+          "preventDelete": true,
+          "preventHide": true
         },
         {
           "id": "locBuildingSubtype",
@@ -324,11 +291,12 @@
         },
         {
           "id": "locTimezone",
-          "type": "text",
+          "type": "select",
           "label": "Часовой пояс локации",
-          "placeholder": "Например, UTC+3 или оставьте пустым для наследования",
+          "placeholder": "Выберите часовой пояс...",
           "path": "часовой_пояс",
-          "hint": "При пустом значении наследуется от родительского города или государства"
+          "hint": "При пустом значении наследуется от родительского города или государства",
+          "entityType": "timezone"
         },
         {
           "id": "locLatitude",

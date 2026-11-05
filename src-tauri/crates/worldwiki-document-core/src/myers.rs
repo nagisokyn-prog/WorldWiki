@@ -10,15 +10,11 @@ pub enum EditOp<T> {
     Delete(T),
 }
 
-/// Classic Myers difference algorithm on two slices of comparable items.
+/// Classic, robust Myers difference algorithm on two slices of comparable items.
 /// Returns the sequence of Keep, Insert, and Delete edit operations.
 pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> {
     let n = old.len();
     let m = new.len();
-
-    if n == 0 && m == 0 {
-        return Vec::new();
-    }
 
     if n == 0 {
         return new.iter().cloned().map(EditOp::Insert).collect();
@@ -33,7 +29,7 @@ pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> 
     let mut v = vec![0usize; 2 * max + 1];
     let mut trace: Vec<Vec<usize>> = Vec::new();
 
-    let mut found_d = None;
+    let mut found_d = 0;
 
     'outer: for d in 0..=max {
         trace.push(v.clone());
@@ -56,7 +52,7 @@ pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> 
             v[k_idx] = x;
 
             if x >= n && y >= m {
-                found_d = Some(d);
+                found_d = d;
                 break 'outer;
             }
 
@@ -64,22 +60,18 @@ pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> 
         }
     }
 
-    let d = match found_d {
-        Some(d) => d,
-        None => return Vec::new(),
-    };
-
     // Backtrack from (n, m) to (0, 0)
     let mut ops = Vec::new();
     let mut x = n;
     let mut y = m;
 
-    for (d_step, v_snap) in trace.iter().enumerate().take(d + 1).rev() {
+    for d in (1..=found_d).rev() {
+        let v_snap = &trace[d];
         let k = x as isize - y as isize;
         let k_idx = (k + offset as isize) as usize;
 
-        let prev_k = if k == -(d_step as isize)
-            || (k != d_step as isize && v_snap[k_idx - 1] < v_snap[k_idx + 1])
+        let prev_k = if k == -(d as isize)
+            || (k != d as isize && v_snap[k_idx - 1] < v_snap[k_idx + 1])
         {
             k + 1
         } else {
@@ -90,24 +82,29 @@ pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> 
         let prev_x = v_snap[prev_k_idx];
         let prev_y = (prev_x as isize - prev_k) as usize;
 
-        while x > prev_x && y > prev_y {
+        while x > prev_x && y > prev_y && x > 0 && y > 0 && old[x - 1] == new[y - 1] {
             x -= 1;
             y -= 1;
             ops.push(EditOp::Keep(old[x].clone()));
         }
 
-        if d_step > 0 {
-            if x == prev_x {
-                y -= 1;
-                ops.push(EditOp::Insert(new[y].clone()));
-            } else if y == prev_y {
-                x -= 1;
-                ops.push(EditOp::Delete(old[x].clone()));
-            }
+        if prev_k == k + 1 {
+            // Vertical transition => insertion from `new`
+            y -= 1;
+            ops.push(EditOp::Insert(new[y].clone()));
+        } else {
+            // Horizontal transition => deletion from `old`
+            x -= 1;
+            ops.push(EditOp::Delete(old[x].clone()));
         }
+    }
+
+    while x > 0 && y > 0 && old[x - 1] == new[y - 1] {
+        x -= 1;
+        y -= 1;
+        ops.push(EditOp::Keep(old[x].clone()));
     }
 
     ops.reverse();
     ops
 }
-

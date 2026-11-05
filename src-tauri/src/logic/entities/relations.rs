@@ -91,6 +91,27 @@ pub async fn delete_entity_relation_inner(
     id: &str,
 ) -> Result<(), EntityError> {
     let actual_id = id.split_once(':').map(|(_, b)| b).unwrap_or(id);
-    let _: Option<Value> = db.delete(("entity_rel", actual_id)).await?;
-    Ok(())
+    let mut attempts = 0;
+    loop {
+        match db.delete(("entity_rel", actual_id)).await {
+            Ok(deleted) => {
+                let _: Option<Value> = deleted;
+                return Ok(());
+            }
+            Err(e) => {
+                let err_str = e.to_string();
+                if attempts < 10
+                    && (err_str.contains("Transaction conflict")
+                        || err_str.contains("write conflict")
+                        || err_str.contains("can be retried")
+                        || err_str.contains("TransactionConflict"))
+                {
+                    attempts += 1;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                    continue;
+                }
+                return Err(EntityError::from(e));
+            }
+        }
+    }
 }

@@ -220,9 +220,9 @@ DEFINE EVENT OVERWRITE log_entity_rel_revision ON TABLE entity_rel
             commit_msg = NONE;
     };
 
--- 8. ЛОГИРОВАНИЕ УДАЛЕНИЯ СВЯЗИ СУЩНОСТЕЙ
+-- 8. ЛОГИРОВАНИЕ УДАЛЕНИЯ СВЯЗИ СУЩНОСТЕЙ (ТОЛЬКО ЕСЛИ ОБЕ СУЩНОСТИ ЕЩЁ СУЩЕСТВУЮТ)
 DEFINE EVENT OVERWRITE log_entity_rel_delete ON TABLE entity_rel 
-    WHEN $event = "DELETE" 
+    WHEN $event = "DELETE" AND $before.in.id != NONE AND $before.out.id != NONE
     THEN {
         CREATE entity_rel_revisions SET 
             target_id = $before.id, 

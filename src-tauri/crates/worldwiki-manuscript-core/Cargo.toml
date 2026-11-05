@@ -9,8 +9,7 @@ layer = "core"
 
 [dependencies]
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
-hashbrown = { version = "0.17.1", default-features = false, features = ["alloc"] }
-
+hashbrown = { version = "0.17.1", default-features = false, features = ["alloc", "default-hasher"] }
 [features]
 default = []
 serde = ["dep:serde"]

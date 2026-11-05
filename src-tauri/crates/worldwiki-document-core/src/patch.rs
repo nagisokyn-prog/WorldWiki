@@ -8,11 +8,15 @@ use crate::inline_diff::{apply_inline_changes, compute_inline_diff};
 use crate::model::{
     DiffOperation, DocumentDiffResult, PatchError, SemanticBlock, SemanticDocument,
 };
-use crate::myers::{myers_diff, EditOp};
+use crate::myers::{EditOp, myers_diff};
 
 /// Computes the structural and inline diff between two semantic documents.
-pub fn diff_documents(old_doc: &SemanticDocument, new_doc: &SemanticDocument) -> DocumentDiffResult {
-    let word_count_delta = (new_doc.total_word_count() as i64) - (old_doc.total_word_count() as i64);
+pub fn diff_documents(
+    old_doc: &SemanticDocument,
+    new_doc: &SemanticDocument,
+) -> DocumentDiffResult {
+    let word_count_delta =
+        (new_doc.total_word_count() as i64) - (old_doc.total_word_count() as i64);
 
     if old_doc.blocks == new_doc.blocks {
         return DocumentDiffResult {
@@ -23,13 +27,6 @@ pub fn diff_documents(old_doc: &SemanticDocument, new_doc: &SemanticDocument) ->
     }
 
     let old_id_map: hashbrown::HashMap<&str, (usize, &SemanticBlock)> = old_doc
-        .blocks
-        .iter()
-        .enumerate()
-        .map(|(idx, b)| (b.id.as_str(), (idx, b)))
-        .collect();
-
-    let new_id_map: hashbrown::HashMap<&str, (usize, &SemanticBlock)> = new_doc
         .blocks
         .iter()
         .enumerate()
@@ -59,7 +56,8 @@ pub fn diff_documents(old_doc: &SemanticDocument, new_doc: &SemanticDocument) ->
                     || old_block.block_type != new_block.block_type
                     || old_block.metadata != new_block.metadata
                 {
-                    let inline_changes = compute_inline_diff(&old_block.content, &new_block.content);
+                    let inline_changes =
+                        compute_inline_diff(&old_block.content, &new_block.content);
                     operations.push(DiffOperation::UpdateBlock {
                         index: new_idx,
                         block_id: id,
@@ -75,11 +73,10 @@ pub fn diff_documents(old_doc: &SemanticDocument, new_doc: &SemanticDocument) ->
                 raw_deletions.push((old_idx, id));
                 old_idx += 1;
             }
-            EditOp::Insert(id) => {
+            EditOp::Insert(_) => {
                 has_structural_changes = true;
-                if let Some((_, block)) = new_id_map.get(id.as_str()) {
-                    raw_insertions.push((new_idx, (*block).clone()));
-                }
+                let block = &new_doc.blocks[new_idx];
+                raw_insertions.push((new_idx, block.clone()));
                 new_idx += 1;
             }
         }
@@ -145,27 +142,54 @@ pub fn apply_patch(
 ) -> Result<SemanticDocument, PatchError> {
     let mut blocks = old_doc.blocks.clone();
 
-    // 1. First process UpdateBlock
+    // 1. Process UpdateBlock
     for op in &diff.operations {
-        if let DiffOperation::UpdateBlock { block_id, inline_changes, .. } = op {
+        if let DiffOperation::UpdateBlock {
+            block_id,
+            inline_changes,
+            ..
+        } = op
+        {
             let block = blocks
                 .iter_mut()
                 .find(|b| &b.id == block_id)
-                .ok_or_else(|| PatchError::BlockNotFound { id: block_id.clone() })?;
+                .ok_or_else(|| PatchError::BlockNotFound {
+                    id: block_id.clone(),
+                })?;
 
-            let updated_text = apply_inline_changes(&block.content, inline_changes)
-                .map_err(|_| PatchError::InlinePositionOutOfBounds {
-                    position: 0,
-                    len: block.content.len(),
+            let updated_text =
+                apply_inline_changes(&block.content, inline_changes).map_err(|_| {
+                    PatchError::InlinePositionOutOfBounds {
+                        position: 0,
+                        len: block.content.chars().count(),
+                    }
                 })?;
 
             block.content = updated_text;
         }
     }
 
-    // 2. Process MoveBlock
+    // 2. Process DeleteBlock (processed by block_id to be resilient to index shifts)
     for op in &diff.operations {
-        if let DiffOperation::MoveBlock { from_index, to_index, block_id } = op {
+        if let DiffOperation::DeleteBlock { block_id, .. } = op {
+            if let Some(pos) = blocks.iter().position(|b| &b.id == block_id) {
+                blocks.remove(pos);
+            } else {
+                return Err(PatchError::BlockNotFound {
+                    id: block_id.clone(),
+                });
+            }
+        }
+    }
+
+    // 3. Process MoveBlock (with validation)
+    for op in &diff.operations {
+        if let DiffOperation::MoveBlock {
+            from_index,
+            to_index,
+            block_id,
+        } = op
+        {
             if *from_index >= blocks.len() {
                 return Err(PatchError::IndexOutOfBounds {
                     index: *from_index,
@@ -173,27 +197,23 @@ pub fn apply_patch(
                 });
             }
 
-            if &blocks[*from_index].id != block_id {
+            let current_pos = blocks
+                .iter()
+                .position(|b| &b.id == block_id)
+                .ok_or_else(|| PatchError::BlockNotFound {
+                    id: block_id.clone(),
+                })?;
+
+            if current_pos != *from_index {
                 return Err(PatchError::MismatchedBlockId {
                     expected: block_id.clone(),
                     actual: blocks[*from_index].id.clone(),
                 });
             }
 
-            let block = blocks.remove(*from_index);
+            let block = blocks.remove(current_pos);
             let target_idx = (*to_index).min(blocks.len());
             blocks.insert(target_idx, block);
-        }
-    }
-
-    // 3. Process DeleteBlock (processed by block_id to be resilient to index shifts)
-    for op in &diff.operations {
-        if let DiffOperation::DeleteBlock { block_id, .. } = op {
-            if let Some(pos) = blocks.iter().position(|b| &b.id == block_id) {
-                blocks.remove(pos);
-            } else {
-                return Err(PatchError::BlockNotFound { id: block_id.clone() });
-            }
         }
     }
 

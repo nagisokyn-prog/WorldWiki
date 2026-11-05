@@ -20,12 +20,11 @@ pub fn extract_entity_mentions(text: &str) -> Vec<ExtractedEntityMention> {
     let mut byte_idx = 0usize;
     let mut char_idx = 0usize;
 
-    // Track character offsets corresponding to byte indices efficiently
-    // We compute character offsets on the fly
     let mut state = LexerState::Normal;
     let mut entity_byte_start = 0usize;
     let mut entity_char_start = 0usize;
     let mut content_byte_start = 0usize;
+    let mut paren_depth = 0usize;
 
     while byte_idx < len {
         let b = bytes[byte_idx];
@@ -33,14 +32,12 @@ pub fn extract_entity_mentions(text: &str) -> Vec<ExtractedEntityMention> {
         // Check if character is ASCII or UTF-8 leading byte
         let char_len = if b < 0x80 {
             1
-        } else if (b & 0xE0) == 0xC0 {
+        } else if b < 0xE0 {
             2
-        } else if (b & 0xF0) == 0xE0 {
+        } else if b < 0xF0 {
             3
-        } else if (b & 0xF8) == 0xF0 {
-            4
         } else {
-            1 // Fallback for invalid UTF-8 byte
+            4
         };
 
         match state {
@@ -58,6 +55,7 @@ pub fn extract_entity_mentions(text: &str) -> Vec<ExtractedEntityMention> {
                     entity_byte_start = byte_idx;
                     entity_char_start = char_idx;
                     content_byte_start = byte_idx + 2;
+                    paren_depth = 0;
                     state = LexerState::InsideEntity;
 
                     byte_idx += 2;
@@ -77,25 +75,46 @@ pub fn extract_entity_mentions(text: &str) -> Vec<ExtractedEntityMention> {
                     continue;
                 }
 
+                if b == b'(' {
+                    paren_depth += 1;
+                    byte_idx += 1;
+                    char_idx += 1;
+                    continue;
+                }
+
                 // Check for closing ))
                 if b == b')' && byte_idx + 1 < len && bytes[byte_idx + 1] == b')' {
-                    let raw_bytes = &bytes[content_byte_start..byte_idx];
-                    if let Ok(raw_name) = core::str::from_utf8(raw_bytes) {
-                        let trimmed = raw_name.trim();
-                        if !trimmed.is_empty() {
-                            mentions.push(ExtractedEntityMention {
-                                name: String::from(trimmed),
-                                byte_start: entity_byte_start,
-                                byte_end: byte_idx + 2,
-                                char_start: entity_char_start,
-                                char_end: char_idx + 2,
-                            });
-                        }
+                    // If there is an unclosed inner paren and a third ')' follows (e.g. `(Странник)))`),
+                    // then this first ')' belongs to the inner parenthesized text.
+                    if paren_depth > 0 && byte_idx + 2 < len && bytes[byte_idx + 2] == b')' {
+                        paren_depth = paren_depth.saturating_sub(1);
+                        byte_idx += 1;
+                        char_idx += 1;
+                        continue;
+                    }
+
+                    let raw_name = &text[content_byte_start..byte_idx];
+                    let trimmed = raw_name.trim();
+                    if !trimmed.is_empty() {
+                        mentions.push(ExtractedEntityMention {
+                            name: String::from(trimmed),
+                            byte_start: entity_byte_start,
+                            byte_end: byte_idx + 2,
+                            char_start: entity_char_start,
+                            char_end: char_idx + 2,
+                        });
                     }
 
                     byte_idx += 2;
                     char_idx += 2;
                     state = LexerState::Normal;
+                    continue;
+                }
+
+                if b == b')' {
+                    paren_depth = paren_depth.saturating_sub(1);
+                    byte_idx += 1;
+                    char_idx += 1;
                     continue;
                 }
 
@@ -107,4 +126,3 @@ pub fn extract_entity_mentions(text: &str) -> Vec<ExtractedEntityMention> {
 
     mentions
 }
-

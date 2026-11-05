@@ -137,13 +137,34 @@ pub async fn delete_entity_inner(
 
     eprintln!("[delete_entity_inner] Deleting entity raw='{}', parsed id='{}'", id, actual_id);
 
-    let deleted: Option<Value> = db.delete(("entities", actual_id)).await?;
-    if deleted.is_none() {
-        eprintln!("[delete_entity_inner] Entity 'entities:{}' not found in database for deletion (raw input: '{}')", actual_id, id);
-    } else {
-        eprintln!("[delete_entity_inner] Successfully deleted entity 'entities:{}'", actual_id);
+    let mut attempts = 0;
+    loop {
+        match db.delete(("entities", actual_id)).await {
+            Ok(deleted) => {
+                let deleted: Option<Value> = deleted;
+                if deleted.is_none() {
+                    eprintln!("[delete_entity_inner] Entity 'entities:{}' not found in database for deletion (raw input: '{}')", actual_id, id);
+                } else {
+                    eprintln!("[delete_entity_inner] Successfully deleted entity 'entities:{}'", actual_id);
+                }
+                return Ok(());
+            }
+            Err(e) => {
+                let err_str = e.to_string();
+                if attempts < 10
+                    && (err_str.contains("Transaction conflict")
+                        || err_str.contains("write conflict")
+                        || err_str.contains("can be retried")
+                        || err_str.contains("TransactionConflict"))
+                {
+                    attempts += 1;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                    continue;
+                }
+                return Err(EntityError::from(e));
+            }
+        }
     }
-    Ok(())
 }
 
 pub async fn search_entities_inner(

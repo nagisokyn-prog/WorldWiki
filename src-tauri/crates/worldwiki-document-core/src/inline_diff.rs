@@ -1,9 +1,9 @@
 extern crate alloc;
 
-use crate::model::InlineChange;
-use crate::myers::{EditOp, myers_diff};
 use alloc::string::String;
 use alloc::vec::Vec;
+use crate::model::InlineChange;
+use crate::myers::{myers_diff, EditOp};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InlineApplyError {
@@ -52,6 +52,8 @@ pub fn compute_inline_diff(old_text: &str, new_text: &str) -> Vec<InlineChange> 
                     change_start_pos = current_pos;
                 }
                 pending_delete_count += 1;
+                // Deleting consumes a character from old_text coordinates
+                current_pos += 1;
             }
             EditOp::Insert(c) => {
                 if !in_change {
@@ -59,6 +61,7 @@ pub fn compute_inline_diff(old_text: &str, new_text: &str) -> Vec<InlineChange> 
                     change_start_pos = current_pos;
                 }
                 pending_insert.push(c);
+                // Inserting does not advance old_text coordinates
             }
         }
     }
@@ -75,10 +78,7 @@ pub fn compute_inline_diff(old_text: &str, new_text: &str) -> Vec<InlineChange> 
 }
 
 /// Applies inline changes to a base string.
-pub fn apply_inline_changes(
-    base: &str,
-    changes: &[InlineChange],
-) -> Result<String, InlineApplyError> {
+pub fn apply_inline_changes(base: &str, changes: &[InlineChange]) -> Result<String, InlineApplyError> {
     let mut chars: Vec<char> = base.chars().collect();
 
     // Sort changes descending by position to prevent index shifting
@@ -94,11 +94,7 @@ pub fn apply_inline_changes(
             return Err(InlineApplyError::DeleteCountOutOfBounds);
         }
 
-        chars.drain(change.position..end);
-        let insert_chars: Vec<char> = change.insert_text.chars().collect();
-        for (offset, c) in insert_chars.into_iter().enumerate() {
-            chars.insert(change.position + offset, c);
-        }
+        chars.splice(change.position..end, change.insert_text.chars());
     }
 
     Ok(chars.into_iter().collect())

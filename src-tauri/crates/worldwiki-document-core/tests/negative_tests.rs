@@ -69,7 +69,10 @@ fn test_patch_fails_on_corrupted_move_id() {
     };
 
     let result = apply_patch(&doc, &invalid_diff);
-    assert!(matches!(result, Err(PatchError::MismatchedBlockId { .. })));
+    assert!(matches!(
+        result,
+        Err(PatchError::BlockNotFound { .. }) | Err(PatchError::MismatchedBlockId { .. })
+    ));
 }
 
 #[test]

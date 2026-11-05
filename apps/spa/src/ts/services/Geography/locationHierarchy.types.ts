@@ -70,3 +70,15 @@ export const LOCATION_SCALE_LABELS: Record<string, string> = {
   macro: '🪐 Макро-объект / Планета',
 };
 
+export const BUILDING_SUBTYPE_LABELS: Record<string, string> = {
+  residential: '🏡 Жилое',
+  hospitality: '🍺 Общепит / Ночлег',
+  medical: '🏥 Медицинское',
+  educational: '🎓 Образовательное',
+  administrative: '🏛️ Административное',
+  military: '⚔️ Военное / Оборонительное',
+  religious: '⛪ Религиозное',
+  commercial: '💰 Торговое',
+  industrial: '⚒️ Производственное',
+};
+

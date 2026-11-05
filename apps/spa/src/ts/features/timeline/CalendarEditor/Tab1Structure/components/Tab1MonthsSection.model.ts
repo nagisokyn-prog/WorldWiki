@@ -1,4 +1,4 @@
-import type { CalendarMonth } from '@/services/Calendars/calendar.types';
+import type { CalendarMonth, CalendarSeason } from '@/services/Calendars/calendar.types';
 
 export interface Tab1MonthsSectionProps {
   months: CalendarMonth[];
@@ -6,6 +6,7 @@ export interface Tab1MonthsSectionProps {
   firstMonthOfYear?: number;
   newYearDay?: number;
   isReadOnly?: boolean;
+  seasons?: CalendarSeason[];
 }
 
 export type Tab1MonthsSectionEmits = {

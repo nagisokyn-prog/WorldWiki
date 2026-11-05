@@ -18,11 +18,25 @@ describe('useTab1MonthsSection', () => {
     leapDaysCount: 1,
   };
 
-  it('computes seasonLabels correctly', () => {
+  it('returns placeholder when no seasons defined', () => {
     const { seasonLabels } = useTab1MonthsSection(defaultProps);
     expect(seasonLabels.value).toHaveLength(4);
+    expect(seasonLabels.value[0]).toBe('—');
+    expect(seasonLabels.value[1]).toBe('—');
+  });
+
+  it('computes seasonLabels from custom seasons correctly', () => {
+    const { seasonLabels } = useTab1MonthsSection({
+      ...defaultProps,
+      seasons: [
+        { название: 'Зима', месяцы: [0, 1, 3] },
+        { название: 'Весна', месяцы: [2] },
+      ],
+    });
     expect(seasonLabels.value[0]).toBe('❄️ Зима');
-    expect(seasonLabels.value[1]).toBe('🌸 Весна');
+    expect(seasonLabels.value[1]).toBe('❄️ Зима');
+    expect(seasonLabels.value[2]).toBe('🌸 Весна');
+    expect(seasonLabels.value[3]).toBe('❄️ Зима');
   });
 
   it('computes monthOptions correctly', () => {

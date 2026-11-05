@@ -28,11 +28,11 @@
       <template v-for="(crumb, idx) in resolvedGeo.breadcrumbs" :key="crumb.id">
         <span
           class="loc-astro-crumb"
-          :class="{ 'is-current': idx === resolvedGeo.breadcrumbs.length - 1 }"
+          :class="{ 'is-current': Number(idx) === resolvedGeo.breadcrumbs.length - 1 }"
         >
           {{ crumb.name }}
         </span>
-        <span v-if="idx < resolvedGeo.breadcrumbs.length - 1">→</span>
+        <span v-if="Number(idx) < resolvedGeo.breadcrumbs.length - 1">→</span>
       </template>
     </div>
 
@@ -83,16 +83,16 @@
         <span class="text-xs font-bold text-accent">{{ timeInfo.worldTimeStr }}</span>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div v-if="availableSeasons.length > 0" class="flex items-center gap-2 flex-wrap">
         <span class="text-xs text-muted">Сезон:</span>
-        <button type="button" class="loc-astro-tz-chip" @click="setSeasonDayPreset(80)">
-          🌱 Весна
-        </button>
-        <button type="button" class="loc-astro-tz-chip" @click="setSeasonDayPreset(172)">
-          ☀️ Лето
-        </button>
-        <button type="button" class="loc-astro-tz-chip" @click="setSeasonDayPreset(355)">
-          ❄️ Зима
+        <button
+          v-for="s in availableSeasons"
+          :key="s.name"
+          type="button"
+          class="loc-astro-tz-chip"
+          @click="setSeasonDayPreset(s.startDay)"
+        >
+          {{ s.icon }} {{ s.name }}
         </button>
       </div>
     </div>
@@ -107,7 +107,7 @@
         class="loc-astro-tz-chip interactive-el"
         @click="selectTimezonePreset(tz.code || tz.id)"
       >
-        {{ tz.name }} (UTC{{ tz.base_offset_hours >= 0 ? '+' : '' }}{{ tz.base_offset_hours }})
+        {{ formatTimezoneChipLabel(tz) }}
       </button>
     </div>
   </div>
@@ -127,6 +127,7 @@ const {
   previewWorldHour,
   maxHoursPerDay,
   availableTimezones,
+  availableSeasons,
   resolvedGeo,
   timeInfo,
   scaleLabel,
@@ -134,6 +135,7 @@ const {
   coordinatesLabel,
   selectTimezonePreset,
   setSeasonDayPreset,
+  formatTimezoneChipLabel,
 } = useLocationAstronomyWidget(props, emit);
 </script>
 

@@ -26,6 +26,7 @@
     <!-- СЕКЦИЯ 3: МЕСЯЦЫ ГОДА -->
     <Tab1MonthsSection
       :months="months"
+      :seasons="props.calendarData?.сезоны"
       :total-year-days="totalYearDays"
       :first-month-of-year="firstMonthOfYear"
       :new-year-day="newYearDay"

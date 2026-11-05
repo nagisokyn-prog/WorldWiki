@@ -23,9 +23,7 @@ export function normalizeId(id?: unknown): string {
   if (!id) return '';
   if (typeof id === 'object' && id !== null) {
     const obj = id as Record<string, unknown>;
-    if (obj.id) return normalizeId(obj.id);
-    if (obj.String) return normalizeId(obj.String);
-    return '';
+    return normalizeId(obj.id || obj.String || '');
   }
   return String(id).replace(/^⟨|⟩$/g, '').replace(/^[a-zA-Z0-9_-]+:/, '').replace(/^⟨|⟩$/g, '').trim();
 }
@@ -181,7 +179,8 @@ export function buildFormattedEvents(
   chapters: InspectorChapter[],
   cal: CalendarData | null,
   rawAllEvents?: InspectorEvent[],
-  projectEntities: GeographyEntityRecord[] = []
+  projectEntities: GeographyEntityRecord[] = [],
+  calendarsMap: Map<string, CalendarData> = new Map()
 ): FormattedInspectorEvent[] {
   const entitiesById = new Map<string, GeographyEntityRecord>();
   const entitiesByName = new Map<string, GeographyEntityRecord>();
@@ -194,12 +193,22 @@ export function buildFormattedEvents(
 
   return events.map((ev) => {
     const evId = getEventId(ev);
-    const formattedDate = formatEventDate(ev.m_abs, cal);
     const cleanParticipants = cleanParticipantsList(ev.participants);
     const kind = ev.kind || (evId.startsWith('timeline_events:') ? 'event' : 'scene');
     const kindMeta = getInspectorKindMeta(kind);
     const isFlashback = checkIsFlashback(ev, chapters, rawAllEvents);
     const primaryReveal = ev.reveals?.[0];
+
+    let targetCal: CalendarData | null = cal;
+    const evCalId = ev.calendar_id || (ev as unknown as { calendar?: string }).calendar;
+    if (evCalId) {
+      const cleanCal = normalizeId(evCalId);
+      targetCal =
+        calendarsMap.get(cleanCal) ||
+        calendarsMap.get(String(evCalId)) ||
+        calendarsMap.get(String(evCalId).toLowerCase()) ||
+        cal;
+    }
 
     let locationName: string | undefined;
     let localTimeBadge: string | undefined;
@@ -212,8 +221,19 @@ export function buildFormattedEvents(
       locationName = matchedLoc ? getEntityName(matchedLoc) || cleanLocId : cleanLocId;
 
       if (matchedLoc && ev.m_abs !== undefined && ev.m_abs !== null) {
-        const geo = resolveLocationGeography(matchedLoc, projectEntities, cal?.timezones || []);
-        const timeInfo = computeLocationLocalTime(ev.m_abs, geo, cal, cal?.timezones || []);
+        const geo = resolveLocationGeography(matchedLoc, projectEntities, (targetCal || cal)?.timezones || []);
+        if (!evCalId && geo.officialCalendarId) {
+          targetCal =
+            calendarsMap.get(normalizeId(geo.officialCalendarId)) ||
+            calendarsMap.get(String(geo.officialCalendarId).toLowerCase()) ||
+            targetCal;
+        }
+        const timeInfo = computeLocationLocalTime(
+          ev.m_abs,
+          geo,
+          targetCal,
+          targetCal?.timezones || cal?.timezones || []
+        );
         localTimeBadge = `${timeInfo.phaseEmoji} ${timeInfo.localTimeStr}`;
         hasTimezoneDiscrepancy = timeInfo.hasDiscrepancy;
         localTimeHint =
@@ -221,6 +241,8 @@ export function buildFormattedEvents(
           `Местное время в «${geo.entityName}»: ${timeInfo.localTimeStr} (${timeInfo.sunStatus.phase_label})`;
       }
     }
+
+    const formattedDate = formatEventDate(ev.m_abs, targetCal);
 
     return {
       ...ev,

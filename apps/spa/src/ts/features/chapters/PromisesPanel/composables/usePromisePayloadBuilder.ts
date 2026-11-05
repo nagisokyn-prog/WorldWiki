@@ -28,6 +28,9 @@ export function preparePromisePayload(
     arc_id: derivedArcId,
     arc_phase: derivedArcPhase,
     time_nature: item.time_nature || 'present',
+    title: item.title?.trim() || item.quote?.trim() || 'Сюжетное обещание',
+    quote: item.quote ?? '',
+    kind: item.kind || 'gun',
   };
 }
 
@@ -41,11 +44,15 @@ export function createNewPromiseRecord(
     block_id?: string | null;
   }
 ): RichPlotPromise {
+  const quoteStr = payload.quote ? String(payload.quote).trim() : '';
+  const titleStr = quoteStr || 'Сюжетное обещание';
+  const kindStr = payload.kind || 'gun';
+
   return {
     id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     project_id: project,
-    kind: payload.kind,
-    title: payload.quote,
+    kind: kindStr,
+    title: titleStr,
     note: null,
     status: 'planted',
     location_id: null,
@@ -60,7 +67,7 @@ export function createNewPromiseRecord(
       {
         milestone_id: `ms_${Date.now()}`,
         stage: 'plant',
-        quote: payload.quote,
+        quote: quoteStr,
         note: null,
         block_id: payload.block_id || '',
         chapter_id: chapterId || null,
@@ -68,7 +75,7 @@ export function createNewPromiseRecord(
       }
     ],
     chapter_id: chapterId || undefined,
-    quote: payload.quote,
+    quote: quoteStr,
     paragraph_index: payload.paragraph_index,
     block_id: payload.block_id || undefined,
     progressions: [],

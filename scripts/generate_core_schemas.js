@@ -529,7 +529,7 @@ function generateLocationSchema() {
         title: 'География, Координаты и Астрономия',
         icon: '🌲',
         fields: [
-          createField({ id: 'locPlanetId', type: 'text', label: 'Планета размещения (ID или Master-планета)', placeholder: 'Оставьте пустым для автоопределения или укажите ID планеты', path: 'планета_id', hint: 'Планета размещения локации (по умолчанию планета мира)' }),
+          createField({ id: 'locPlanetId', type: 'select', entityType: 'planet', label: 'Планета размещения', placeholder: 'Автоопределение (Главная планета мира)', path: 'планета_id', hint: 'Планета размещения локации (по умолчанию главная планета мира)' }),
           createField({ id: 'locTimezone', type: 'select', entityType: 'timezone', label: 'Часовой пояс локации', placeholder: 'Выберите часовой пояс...', path: 'часовой_пояс', hint: 'При пустом значении наследуется от родительского города или государства' }),
           createField({ id: 'locLatitude', type: 'number', label: 'Широта (градусы -90 .. +90)', min: -90, max: 90, placeholder: '54.5', path: 'широта' }),
           createField({ id: 'locLongitude', type: 'number', label: 'Долгота (градусы -180 .. +180)', min: -180, max: 180, placeholder: '37.6', path: 'долгота' }),

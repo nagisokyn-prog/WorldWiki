@@ -82,12 +82,12 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             chapter_id: $target_chap,
             paragraph_index: $target_para,
             block_id: $target_block,
-            kind: IF $data.kind != NONE { $data.kind } ELSE { 'gun' },
-            time_nature: IF $data.time_nature != NONE { $data.time_nature } ELSE { 'present' },
-            title: IF $data.title != NONE { $data.title } ELSE { '' },
-            note: IF $data.note != NONE { $data.note } ELSE { NONE },
-            status: IF $data.status != NONE { $data.status } ELSE { 'planted' },
-            location_id: IF $data.location_id != NONE { $data.location_id } ELSE { NONE },
+            kind: IF $data.kind != NONE AND $data.kind != NULL AND type::string($data.kind) != '' { type::string($data.kind) } ELSE { 'gun' },
+            time_nature: IF $data.time_nature != NONE AND $data.time_nature != NULL AND type::string($data.time_nature) != '' { type::string($data.time_nature) } ELSE { 'present' },
+            title: IF $data.title != NONE AND $data.title != NULL { type::string($data.title) } ELSE { '' },
+            note: IF $data.note != NONE AND $data.note != NULL { type::string($data.note) } ELSE { NONE },
+            status: IF $data.status != NONE AND $data.status != NULL AND type::string($data.status) != '' { type::string($data.status) } ELSE { 'planted' },
+            location_id: IF $data.location_id != NONE AND $data.location_id != NULL { $data.location_id } ELSE { NONE },
             timeline_event_id: $target_evt_id,
             updated_at: time::now()
         }
@@ -101,9 +101,9 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 LET $block_rec = type::record('text_blocks', type::string($m.block_id).replace('text_blocks:', ''));
                 RELATE $rec_id->promise_milestones->$block_rec SET
                     project_id = $p_rec,
-                    stage = IF $m.stage != NONE { $m.stage } ELSE { 'plant' },
-                    quote = IF $m.quote != NONE { $m.quote } ELSE { '' },
-                    note = IF $m.note != NONE { $m.note } ELSE { NONE },
+                    stage = IF $m.stage != NONE AND $m.stage != NULL AND type::string($m.stage) != '' { type::string($m.stage) } ELSE { 'plant' },
+                    quote = IF $m.quote != NONE AND $m.quote != NULL { type::string($m.quote) } ELSE { '' },
+                    note = IF $m.note != NONE AND $m.note != NULL { type::string($m.note) } ELSE { NONE },
                     created_at = time::now();
             };
         };

@@ -2,6 +2,7 @@ import { CalendarMath } from '../Calendars/useCalendarEngine';
 import type { WorldTimezone } from '../Calendars/calendar.types';
 import {
   LOCATION_SCALE_LABELS,
+  BUILDING_SUBTYPE_LABELS,
   type BuildingSubtype,
   type ComputedLocationTime,
   type GeographyEntityRecord,
@@ -13,6 +14,7 @@ import { computeLocationLocalTime, getSunPhaseEmoji } from './locationTime';
 
 export {
   LOCATION_SCALE_LABELS,
+  BUILDING_SUBTYPE_LABELS,
   computeLocationLocalTime,
   getSunPhaseEmoji,
   type BuildingSubtype,
@@ -105,7 +107,7 @@ export function parseTimezoneOffset(
 }
 
 export function mapLegacyScale(entity: GeographyEntityRecord): string {
-  const explicit = getEntityField(entity, 'scale_level') ?? getEntityField(entity, 'тип_локации');
+  const explicit = getEntityField(entity, 'тип_локации') ?? getEntityField(entity, 'scale_level');
   const legacy = String(explicit ?? '').toLowerCase();
   if (['interior', 'room', 'интерьер'].includes(legacy)) return 'interior';
   if (['building', 'здание'].includes(legacy)) return 'building';

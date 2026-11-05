@@ -38,6 +38,7 @@ export function useTimelineInspector(
   const calendarStore = useCalendarStore();
   const chapterStore = useChapterStore();
   const calendarData = ref<CalendarData | null>(null);
+  const allCalendars = ref<Map<string, CalendarData>>(new Map());
   const projectEntities = ref<GeographyEntityRecord[]>([]);
   const data = ref<TimelineInspectorData | null>(null);
   const isLoading = ref<boolean>(false);
@@ -77,13 +78,23 @@ export function useTimelineInspector(
         await chapterStore.loadChapters(proj);
       }
       const cals = await calendarStore.getCalendars(proj);
+      const calMap = new Map<string, CalendarData>();
       if (cals && cals.length > 0) {
+        for (const c of cals) {
+          const cData = (c.data as CalendarData) || (c as unknown as CalendarData);
+          if (c.id) {
+            calMap.set(c.id, cData);
+            calMap.set(normalizeId(c.id), cData);
+          }
+          if (c.name) calMap.set(c.name.toLowerCase(), cData);
+        }
         const master =
           cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_master) ||
           cals.find((c: { is_master?: boolean; is_default?: boolean }) => c.is_default) ||
           cals[0];
         calendarData.value = (master?.data as CalendarData) || null;
       }
+      allCalendars.value = calMap;
       if (typeof apiClient.getEntities === 'function') {
         const [locsRes, statesRes] = await Promise.allSettled([
           apiClient.getEntities(proj, 'location'),
@@ -136,7 +147,8 @@ export function useTimelineInspector(
       filteredChapters.value,
       calendarData.value,
       data.value?.events,
-      projectEntities.value
+      projectEntities.value,
+      allCalendars.value
     )
   );
 

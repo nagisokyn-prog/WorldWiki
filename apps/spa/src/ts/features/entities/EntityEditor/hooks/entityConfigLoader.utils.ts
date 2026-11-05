@@ -108,6 +108,12 @@ export function patchEntityConfig(cfg: SchemaConfig, entityType?: string): Schem
             tzField.type = 'select';
             tzField.entityType = 'timezone';
           }
+          const planetField = sec.fields.find((f) => f.path === 'планета_id' || f.id === 'locPlanetId');
+          if (planetField) {
+            planetField.type = 'select';
+            planetField.entityType = 'planet';
+            planetField.placeholder = 'Автоопределение (Главная планета мира)';
+          }
         }
       }
     }
@@ -156,6 +162,23 @@ export async function fetchSpecialRefData(
       console.error('Error loading calendar ref data:', e);
     }
     entityTypesToLoad.delete('calendar');
+  }
+
+  if (entityTypesToLoad.has('planet')) {
+    try {
+      const { useCalendarStore } = await import('@/stores/calendar.store');
+      const calStore = useCalendarStore();
+      const planets = calStore.getPlanets(project);
+      const mapped = planets.map((p) => ({
+        value: String(p.id || ''),
+        label: `🪐 ${String(p.name || 'Планета')}`,
+      }));
+      result['planet_list'] = mapped;
+      result['planet'] = mapped;
+    } catch (e) {
+      console.error('Error loading planet ref data:', e);
+    }
+    entityTypesToLoad.delete('planet');
   }
 
   if (entityTypesToLoad.has('timezone')) {

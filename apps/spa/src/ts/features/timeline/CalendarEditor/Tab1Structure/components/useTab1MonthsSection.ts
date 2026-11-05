@@ -1,16 +1,30 @@
 import { computed } from 'vue';
 import type { Tab1MonthsSectionProps } from './Tab1MonthsSection.model';
 
+function getSeasonIcon(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes('зим')) return '❄️';
+  if (lower.includes('весн')) return '🌸';
+  if (lower.includes('лет')) return '☀️';
+  if (lower.includes('осен')) return '🍂';
+  return '🌿';
+}
+
 export function useTab1MonthsSection(props: Tab1MonthsSectionProps) {
   const seasonLabels = computed(() => {
     const total = props.months.length;
+    if (total === 0) return [];
+
     return props.months.map((_, idx) => {
-      if (total === 0) return '—';
-      const quarter = Math.floor((idx / total) * 4);
-      if (quarter === 0) return '❄️ Зима';
-      if (quarter === 1) return '🌸 Весна';
-      if (quarter === 2) return '☀️ Лето';
-      return '🍂 Осень';
+      if (props.seasons && props.seasons.length > 0) {
+        const matched = props.seasons.find(
+          (s) => Array.isArray(s.месяцы) && s.месяцы.includes(idx)
+        );
+        if (matched && matched.название) {
+          return `${getSeasonIcon(matched.название)} ${matched.название}`;
+        }
+      }
+      return '—';
     });
   });
 

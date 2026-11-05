@@ -84,6 +84,10 @@ pub enum DiffOperation {
         index: usize,
         block_id: String,
         inline_changes: Vec<InlineChange>,
+        #[cfg_attr(feature = "serde", serde(default, skip_serializing_if = "Option::is_none"))]
+        new_block_type: Option<String>,
+        #[cfg_attr(feature = "serde", serde(default, skip_serializing_if = "Option::is_none"))]
+        new_metadata: Option<Option<String>>,
     },
     MoveBlock {
         from_index: usize,

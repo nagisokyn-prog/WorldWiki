@@ -61,8 +61,10 @@ fn test_fsm_edge_branches_and_lookahead_boundaries() {
     // 5. Unclosed entity ending with ')' at the end of input
     assert!(extract_entity_mentions("((Недописано)").is_empty());
 
-    // 6. Nested paren with paren_depth > 0 at end of input
-    assert!(extract_entity_mentions("((Воин (Ранг))").is_empty());
+    // 6. Nested paren with paren_depth > 0 at end of input (only 2 closing parens => closes entity)
+    let m = extract_entity_mentions("((Воин (Ранг))");
+    assert_eq!(m.len(), 1);
+    assert_eq!(m[0].name, "Воин (Ранг");
 
     // 7. Nested paren with paren_depth > 0, followed by non-paren token and closing
     let m = extract_entity_mentions("((Воин (Ранг)) конец))");

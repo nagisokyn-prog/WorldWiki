@@ -19,6 +19,8 @@ fn test_patch_fails_on_missing_block() {
                 delete_count: 0,
                 insert_text: "Х".to_string(),
             }],
+            new_block_type: None,
+            new_metadata: None,
         }],
         word_count_delta: 0,
         has_structural_changes: false,
@@ -94,5 +96,32 @@ fn test_patch_fails_on_move_index_out_of_bounds() {
 
     let result = apply_patch(&doc, &invalid_diff);
     assert!(matches!(result, Err(PatchError::IndexOutOfBounds { .. })));
+}
+
+#[test]
+fn test_patch_fails_on_move_deleted_block() {
+    let doc = SemanticDocument::new(
+        1,
+        vec![SemanticBlock::new("p1", "paragraph", "Текст")],
+    );
+
+    let invalid_diff = DocumentDiffResult {
+        operations: vec![
+            DiffOperation::DeleteBlock {
+                index: 0,
+                block_id: "p1".to_string(),
+            },
+            DiffOperation::MoveBlock {
+                from_index: 0,
+                to_index: 0,
+                block_id: "p1".to_string(),
+            },
+        ],
+        word_count_delta: 0,
+        has_structural_changes: true,
+    };
+
+    let result = apply_patch(&doc, &invalid_diff);
+    assert!(matches!(result, Err(PatchError::BlockNotFound { id }) if id == "p1"));
 }
 

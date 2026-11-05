@@ -55,6 +55,33 @@ fn test_inline_apply_errors() {
         apply_inline_changes("Короткий текст", &changes_del_oob),
         Err(InlineApplyError::DeleteCountOutOfBounds)
     );
+
+    let changes_overflow = vec![InlineChange {
+        position: 1,
+        delete_count: usize::MAX,
+        insert_text: "Тест".into(),
+    }];
+    assert_eq!(
+        apply_inline_changes("Короткий текст", &changes_overflow),
+        Err(InlineApplyError::DeleteCountOutOfBounds)
+    );
+
+    let changes_overlapping = vec![
+        InlineChange {
+            position: 2,
+            delete_count: 5,
+            insert_text: "А".into(),
+        },
+        InlineChange {
+            position: 4,
+            delete_count: 2,
+            insert_text: "Б".into(),
+        },
+    ];
+    assert_eq!(
+        apply_inline_changes("Короткий текст", &changes_overlapping),
+        Err(InlineApplyError::DeleteCountOutOfBounds)
+    );
 }
 
 #[test]
@@ -86,6 +113,34 @@ fn test_move_block_with_content_modifications() {
 }
 
 #[test]
+fn test_move_block_with_metadata_modification() {
+    let doc_a = SemanticDocument::new(
+        1,
+        vec![
+            SemanticBlock::new("b1", "p", "Абзац 1"),
+            SemanticBlock::new("b2", "p", "Текст").with_metadata("old"),
+            SemanticBlock::new("b3", "p", "Абзац 3"),
+        ],
+    );
+
+    let doc_b = SemanticDocument::new(
+        1,
+        vec![
+            SemanticBlock::new("b1", "p", "Абзац 1"),
+            SemanticBlock::new("b3", "p", "Абзац 3"),
+            SemanticBlock::new("b2", "heading", "Текст").with_metadata("new"),
+        ],
+    );
+
+    let diff = diff_documents(&doc_a, &doc_b);
+    let patched = apply_patch(&doc_a, &diff).expect("Must apply move + type/metadata cleanly");
+    assert_eq!(patched.blocks.len(), 3);
+    assert_eq!(patched.blocks[2].id, "b2");
+    assert_eq!(patched.blocks[2].block_type, "heading");
+    assert_eq!(patched.blocks[2].metadata.as_deref(), Some("new"));
+}
+
+#[test]
 fn test_patch_apply_inline_position_out_of_bounds_error() {
     let doc = SemanticDocument::new(
         1,
@@ -101,6 +156,8 @@ fn test_patch_apply_inline_position_out_of_bounds_error() {
                 delete_count: 10,
                 insert_text: "Х".into(),
             }],
+            new_block_type: None,
+            new_metadata: None,
         }],
         word_count_delta: 0,
         has_structural_changes: false,

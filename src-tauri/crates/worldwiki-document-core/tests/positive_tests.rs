@@ -109,3 +109,29 @@ fn test_move_block_roundtrip() {
     assert_eq!(patched.blocks[2].id, "p2");
 }
 
+#[test]
+fn test_delete_and_move_concurrent_roundtrip() {
+    let doc_a = SemanticDocument::new(
+        1,
+        vec![
+            SemanticBlock::new("b1", "paragraph", "Блок 1 (будет удален)"),
+            SemanticBlock::new("b2", "paragraph", "Блок 2"),
+            SemanticBlock::new("b3", "paragraph", "Блок 3 (будет перемещен в начало)"),
+        ],
+    );
+
+    let doc_b = SemanticDocument::new(
+        1,
+        vec![
+            SemanticBlock::new("b3", "paragraph", "Блок 3 (будет перемещен в начало)"),
+            SemanticBlock::new("b2", "paragraph", "Блок 2"),
+        ],
+    );
+
+    let diff = diff_documents(&doc_a, &doc_b);
+    let patched = apply_patch(&doc_a, &diff).expect("Must apply concurrent delete and move cleanly");
+    assert_eq!(patched.blocks.len(), 2);
+    assert_eq!(patched.blocks[0].id, "b3");
+    assert_eq!(patched.blocks[1].id, "b2");
+}
+

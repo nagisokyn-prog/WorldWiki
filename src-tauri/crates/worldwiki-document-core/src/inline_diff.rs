@@ -85,14 +85,26 @@ pub fn apply_inline_changes(base: &str, changes: &[InlineChange]) -> Result<Stri
     let mut sorted_changes = changes.to_vec();
     sorted_changes.sort_by_key(|a| core::cmp::Reverse(a.position));
 
+    let mut last_processed_pos: Option<usize> = None;
+
     for change in sorted_changes {
         if change.position > chars.len() {
             return Err(InlineApplyError::PositionOutOfBounds);
         }
-        let end = change.position + change.delete_count;
+        let end = change
+            .position
+            .checked_add(change.delete_count)
+            .ok_or(InlineApplyError::DeleteCountOutOfBounds)?;
         if end > chars.len() {
             return Err(InlineApplyError::DeleteCountOutOfBounds);
         }
+
+        if let Some(last_pos) = last_processed_pos {
+            if end > last_pos {
+                return Err(InlineApplyError::DeleteCountOutOfBounds);
+            }
+        }
+        last_processed_pos = Some(change.position);
 
         chars.splice(change.position..end, change.insert_text.chars());
     }

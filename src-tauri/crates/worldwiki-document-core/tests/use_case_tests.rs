@@ -155,6 +155,10 @@ fn test_use_case_block_type_and_metadata_transformation() {
     let patched = apply_patch(&doc_before, &diff).expect("Смена типа блоков должна применяться");
     assert_eq!(patched.blocks.len(), 2);
     assert_eq!(patched.blocks[0].id, "b1");
+    assert_eq!(patched.blocks[0].block_type, "heading");
+    assert_eq!(patched.blocks[0].metadata.as_deref(), Some(r#"{"level": 1, "toc": true}"#));
+    assert_eq!(patched.blocks[1].id, "b2");
+    assert_eq!(patched.blocks[1].block_type, "quote");
 }
 
 /// Реальный use-case 6: Комплексное комбинированное редактирование главы.

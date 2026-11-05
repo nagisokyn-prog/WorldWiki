@@ -1,10 +1,14 @@
 #![no_std]
+#![allow(unstable_features)]
 
 extern crate alloc;
 
 pub mod crossref;
 pub mod fsm_lexer;
 pub mod types;
+
+#[cfg(any(kani, feature = "kani"))]
+pub mod verify;
 
 pub use crossref::resolve_cross_references;
 pub use fsm_lexer::extract_entity_mentions;

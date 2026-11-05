@@ -1,0 +1,22 @@
+[package]
+name = "worldwiki-ast-diff-wasm"
+version = "0.85.0"
+edition = "2024"
+description = "WebAssembly bindings for WorldWiki high-performance AST Myers diff and patch engine"
+
+[package.metadata.cerberus]
+layer = "core"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+worldwiki-document-core = { path = "../worldwiki-document-core", features = ["serde"] }
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+[dev-dependencies]
+serde_json = "1.0"
+wasm-bindgen-test = "0.3"
+

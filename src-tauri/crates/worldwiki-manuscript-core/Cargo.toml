@@ -1,0 +1,19 @@
+[package]
+name = "worldwiki-manuscript-core"
+version = "1.0.0"
+edition = "2024"
+description = "Pure mathematical, no_std, high-performance manuscript FSM entity lexer and cross-reference engine for WorldWiki"
+
+[package.metadata.cerberus]
+layer = "core"
+
+[dependencies]
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
+hashbrown = { version = "0.17.1", default-features = false, features = ["alloc"] }
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[dev-dependencies]
+serde_json = "1.0"

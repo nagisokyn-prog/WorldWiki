@@ -260,15 +260,16 @@
 /* Global Form Input Base */
 .input-base {
     width: 100%;
-    padding: 10px 14px;
+    padding: 12px 14px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-input);
     color: var(--text-main);
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
+    min-height: 45px;
     outline: none;
-    transition: border-color var(--anim-speed, 0.2s) ease, 0.2s) ease, background var(--anim-speed, 0.2s) ease;
+    transition: border-color var(--anim-speed, 0.2s) ease, background var(--anim-speed, 0.2s) ease;
     box-sizing: border-box;
 }
 
@@ -279,6 +280,6 @@
 
 textarea.input-base {
     resize: vertical;
-    min-height: 72px;
+    min-height: 90px;
     line-height: 1.5;
 }

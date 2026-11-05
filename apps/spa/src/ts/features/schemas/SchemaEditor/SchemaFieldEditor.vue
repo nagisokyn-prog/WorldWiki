@@ -85,14 +85,63 @@
 
        <!-- OPTIONS EDITOR -->
        <div v-if="item.type === 'select' || item.type === 'multiselect'" class="border-t pt-3 mt-3">
-          <label class="form-label-micro">ВАРИАНТЫ ВЫБОРА</label>
-          <div class="multiselect-grid mb-2">
-             <div v-for="(opt, oIdx) in (item.options || [])" :key="oIdx" class="option-item-row">
-                <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
-                <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="removeOption(Number(oIdx))">✕</button>
+          <div class="flex items-center justify-between mb-2">
+             <label class="form-label-micro">ВАРИАНТЫ ВЫБОРА</label>
+             <div class="options-source-toggle flex gap-1">
+                <button
+                  type="button"
+                  class="source-toggle-btn interactive-el text-xs"
+                  :class="{ active: (item.optionsSource || (item.entityTypes?.length || item.entityType ? 'entities' : 'custom')) === 'custom' }"
+                  @click="setOptionsSource('custom')"
+                >
+                  📝 Свои варианты
+                </button>
+                <button
+                  type="button"
+                  class="source-toggle-btn interactive-el text-xs"
+                  :class="{ active: (item.optionsSource || (item.entityTypes?.length || item.entityType ? 'entities' : 'custom')) === 'entities' }"
+                  @click="setOptionsSource('entities')"
+                >
+                  🧩 Типы сущностей
+                </button>
              </div>
           </div>
-          <button class="btn-new btn-outline-new interactive-el text-xs" @click="addOption">+ ДОБАВИТЬ ВАРИАНТ</button>
+
+          <!-- Режим 1: Ручные текстовые варианты -->
+          <div v-if="(item.optionsSource || (item.entityTypes?.length || item.entityType ? 'entities' : 'custom')) === 'custom'">
+             <div class="multiselect-grid mb-2">
+                <div v-for="(opt, oIdx) in (item.options || [])" :key="oIdx" class="option-item-row">
+                   <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
+                   <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="removeOption(Number(oIdx))">✕</button>
+                </div>
+             </div>
+             <button class="btn-new btn-outline-new interactive-el text-xs" @click="addOption">+ ДОБАВИТЬ ВАРИАНТ</button>
+          </div>
+
+          <!-- Режим 2: Доступные типы сущностей -->
+          <div v-else class="entity-types-selector">
+             <div class="text-xs text-muted mb-2">Выберите один или несколько типов сущностей:</div>
+             <div class="flex flex-wrap gap-1.5 mb-2">
+                <button
+                  v-for="t in availableTypes"
+                  :key="t.value"
+                  type="button"
+                  class="entity-type-chip interactive-el text-xs"
+                  :class="{ active: isEntityTypeSelected(t.value) }"
+                  @click="toggleEntityType(t.value)"
+                >
+                  <span>{{ t.icon || '📄' }}</span>
+                  <span>{{ t.label }}</span>
+                  <span v-if="isEntityTypeSelected(t.value)" class="check-mark">✓</span>
+                </button>
+             </div>
+             <div v-if="!item.entityTypes || item.entityTypes.length === 0" class="text-xs text-warning">
+                ⚠️ Не выбрано ни одного типа. Выберите хотя бы один тип сущности.
+             </div>
+             <div v-else class="text-xs text-muted">
+                Выбрано типов: {{ item.entityTypes.length }}
+             </div>
+          </div>
        </div>
     </div>
   </div>
@@ -110,13 +159,17 @@ defineEmits<SchemaFieldEditorEmits>();
 const {
   typeOptions,
   monthsList,
+  availableTypes,
   updateLabel,
   toggleHidden,
   updateVal,
   setType,
   updatePlaceholder,
   addOption,
-  removeOption
+  removeOption,
+  setOptionsSource,
+  toggleEntityType,
+  isEntityTypeSelected
 } = useSchemaFieldEditor(props);
 </script>
 

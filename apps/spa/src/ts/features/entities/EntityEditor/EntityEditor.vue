@@ -60,7 +60,7 @@
             <div v-if="showHiddenManager" class="fixed inset-0 z-30" @click="showHiddenManager = false"></div>
 
             <!-- Дропдаун скрытых элементов -->
-            <div v-if="showHiddenManager" class="hidden-manager-menu glass-card z-50">
+            <div v-if="showHiddenManager" class="hidden-manager-menu dropdown-panel z-50">
               <div class="hidden-menu-header flex justify-between items-center pb-2 mb-2 border-b">
                 <span class="font-bold text-xs">Скрытые элементы</span>
                 <button type="button" class="text-xs text-accent hover:underline cursor-pointer" @click="unhideAll">
@@ -124,24 +124,24 @@
                     <div class="form-grid grid-dynamic">
                       <template v-for="field in section.fields" :key="field.id || field.class">
                         <div v-if="!field.hidden && !isFieldHidden(field.path || field.id || field.class || '')" class="form-group" :class="{ 'full-width': field.fullWidth || field.type === 'textarea' || field.type === 'tags' || field.type === 'multiselect' }">
-                          <label class="form-label flex justify-between items-center">
-                            <span>
-                              {{ field.label }} 
-                              <span v-if="field.required" class="text-accent">*</span>
-                            </span>
-                            <span class="flex items-center gap-1">
-                              <span v-if="isFieldChanged(field.path || field.id || field.class || '')" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+                          <div class="form-label-row flex items-center justify-between">
+                            <div class="form-label-title-wrap flex items-center gap-1.5">
+                              <span class="form-label-text">
+                                {{ field.label }}
+                                <span v-if="field.required" class="text-accent">*</span>
+                              </span>
                               <button
                                 v-if="canHideField(field)"
                                 type="button"
                                 class="field-hide-btn interactive-el"
                                 title="Скрыть поле для этой сущности"
-                                @click.stop="hideField(field.path || field.id || field.class || '')"
+                                @click.stop.prevent="hideField(field.path || field.id || field.class || '')"
                               >
                                 👁️‍🗨️
                               </button>
-                            </span>
-                          </label>
+                            </div>
+                            <span v-if="isFieldChanged(field.path || field.id || field.class || '')" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+                          </div>
                           
                           <textarea
                             v-if="field.type === 'textarea'" 
@@ -242,6 +242,15 @@
                       </h4>
                       <div class="flex items-center gap-2">
                         <button
+                          v-if="getDynamicList(container).length > 1"
+                          type="button"
+                          class="btn-new btn-outline-new text-xs interactive-el py-0.5 px-2"
+                          :title="areAllCollapsed(container.dataPath || container.id || '', getDynamicList(container).length) ? 'Развернуть все элементы' : 'Свернуть все элементы'"
+                          @click.stop="toggleAllCollapse(container.dataPath || container.id || '', getDynamicList(container).length)"
+                        >
+                          {{ areAllCollapsed(container.dataPath || container.id || '', getDynamicList(container).length) ? 'Развернуть все' : 'Свернуть все' }}
+                        </button>
+                        <button
                           v-if="canHideContainer(container)"
                           type="button"
                           class="container-hide-btn btn-new btn-outline-new text-xs interactive-el"
@@ -291,13 +300,38 @@
                       <!-- Обычные динамические элементы -->
                       <template v-else>
                         <div v-for="(item, idx) in getDynamicList(container)" :key="idx" class="glass-card mb-3 p-3 relative glass-card-stack" :style="{ '--z-item': 50 - idx }">
-                          <div class="flex justify-between mb-2 pb-2 border-b">
-                            <strong class="text-accent">Элемент #{{ idx + 1 }}</strong>
-                            <button class="btn-danger-icon interactive-el text-error cursor-pointer bg-transparent border-none" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
+                          <div
+                            class="flex justify-between items-center mb-2 pb-2 border-b cursor-pointer select-none"
+                            @click="toggleItemCollapse(container.dataPath || container.id || '', idx)"
+                          >
+                            <div class="flex items-center gap-2 min-w-0">
+                              <span class="text-xs text-accent">
+                                {{ isItemCollapsed(container.dataPath || container.id || '', idx) ? '▶' : '▼' }}
+                              </span>
+                              <strong class="text-accent text-xs whitespace-nowrap">Элемент #{{ idx + 1 }}</strong>
+                              <span
+                                v-if="getItemSummary(item, container)"
+                                class="text-xs text-muted truncate max-w-sm"
+                                :title="getItemSummary(item, container)"
+                              >
+                                — {{ getItemSummary(item, container) }}
+                              </span>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+                              <button
+                                type="button"
+                                class="btn-new btn-outline-new text-xs interactive-el py-0.5 px-2"
+                                :title="isItemCollapsed(container.dataPath || container.id || '', idx) ? 'Развернуть элемент' : 'Свернуть элемент'"
+                                @click="toggleItemCollapse(container.dataPath || container.id || '', idx)"
+                              >
+                                {{ isItemCollapsed(container.dataPath || container.id || '', idx) ? 'Развернуть' : 'Свернуть' }}
+                              </button>
+                              <button class="btn-danger-icon interactive-el text-error cursor-pointer bg-transparent border-none" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
+                            </div>
                           </div>
                           
                           <!-- Рендерим шаблон -->
-                          <div v-if="getResolvedTemplate(container)">
+                          <div v-if="!isItemCollapsed(container.dataPath || container.id || '', idx) && getResolvedTemplate(container)">
                             <div v-for="tField in getResolvedTemplate(container)?.fields || []" :key="tField.id || tField.class" class="form-group mb-2">
                               <label v-if="tField.label" class="form-label text-xs">{{ tField.label }}</label>
                               
@@ -435,7 +469,7 @@ import { UniversalDatePicker, RelationshipBlock, ManuscriptPointPicker, type Man
 import EntityHistoryBanner from './components/EntityHistoryBanner.vue';
 import LocationAstronomyWidget from './components/LocationAstronomyWidget/LocationAstronomyWidget.vue';
 import { useEntityEditor } from './useEntityEditor';
-import type { EntityEditorProps } from './EntityEditor.model';
+import type { EntityEditorProps, DynamicContainer } from './EntityEditor.model';
 
 const props = defineProps<EntityEditorProps>();
 const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change', 'update:modelValue']);
@@ -474,6 +508,10 @@ const {
     handleForeignUpdate,
     addDynamicItem,
     removeDynamicItem,
+    isItemCollapsed,
+    toggleItemCollapse,
+    areAllCollapsed,
+    toggleAllCollapse,
     triggerPhotoUpload,
     handlePhotoFile,
     handlePhotoDrop,
@@ -496,6 +534,29 @@ const {
     unhideAll,
     totalHiddenCount,
   } = useEntityEditor(props, emit as (event: string, ...args: unknown[]) => void);
+
+const getItemSummary = (item: Record<string, unknown>, container: DynamicContainer): string => {
+  if (!item || typeof item !== 'object') return '';
+  const resolved = getResolvedTemplate(container);
+  const fields = resolved?.fields || [];
+  for (const f of fields) {
+    const key = f.id || f.class || '';
+    const val = item[key];
+    if (val !== undefined && val !== null && val !== '') {
+      if (typeof val === 'string' && val.trim().length > 0) return val.trim();
+      if (typeof val === 'number') return String(val);
+      if (typeof val === 'object' && !Array.isArray(val)) {
+        const pt = val as { chapter_id?: string; title?: string };
+        if (pt.title) return pt.title;
+        if (pt.chapter_id) return `Глава: ${pt.chapter_id}`;
+        const dt = val as { год?: number; название?: string };
+        if (dt.год !== undefined) return `${dt.год} г.`;
+        if (dt.название) return dt.название;
+      }
+    }
+  }
+  return '';
+};
 
 const getFieldLabel = (key: string): string => {
   for (const sec of config.value?.sections || []) {

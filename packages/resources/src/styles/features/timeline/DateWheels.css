@@ -27,16 +27,114 @@
     flex: 0.8;
     min-width: 70px;
 }
+
+/* Semantic Groups for UniversalDatePicker */
+.date-wheel-group.wheel-group-calendar {
+    flex: 1;
+    min-width: 95px;
+}
+.date-wheel-group.wheel-group-era {
+    flex: 2;
+    min-width: 240px;
+}
+.date-wheel-group.wheel-group-year {
+    flex: 0.5;
+    min-width: 45px;
+}
+.date-wheel-group.wheel-group-month {
+    flex: 0.75;
+    min-width: 70px;
+}
+.date-wheel-group.wheel-group-day {
+    flex: 0.4;
+    min-width: 35px;
+}
+.date-wheel-group.wheel-group-hour {
+    flex: 0.4;
+    min-width: 35px;
+}
+.date-wheel-group.wheel-group-minute {
+    flex: 0.4;
+    min-width: 35px;
+}
+
+.date-wheel-group.wheel-group-hour .status-trigger,
+.date-wheel-group.wheel-group-minute .status-trigger,
+.date-wheel-group.wheel-group-day .status-trigger {
+    padding: 4px 6px;
+    justify-content: center;
+    gap: 4px;
+}
+
 .date-wheel-label {
     font-size: 10px;
     color: var(--text-muted);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     margin-bottom: 4px;
     text-transform: uppercase;
+    position: relative;
+    user-select: none;
 }
+
+.wheel-hide-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--anim-speed, 0.2s) ease, transform var(--anim-speed, 0.2s) ease;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--text-muted);
+}
+
+.date-wheel-group:hover .wheel-hide-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wheel-hide-btn:hover {
+    color: var(--accent);
+    transform: scale(1.15);
+}
+
+.restore-time-group {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 2px;
+}
+
+.btn-restore-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-input);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-dropdown);
+    cursor: pointer;
+    transition: all var(--anim-speed, 0.2s) ease;
+    min-height: 28px;
+    box-sizing: border-box;
+}
+
+.btn-restore-time:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--bg-hover);
+}
+
 .year-input-wheel {
     text-align: center;
-    height: 44px;
+    height: 28px;
+    min-height: 28px;
     padding: 0;
     box-sizing: border-box;
 }

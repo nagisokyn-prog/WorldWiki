@@ -7,7 +7,6 @@
       @click.stop="toggle"
       @mouseenter="$emit('hover-start')"
       @mouseleave="$emit('hover-end')"
-      @wheel.passive="onWheelClosed"
     >
 
       <span class="font-medium">{{ selectedLabel }}</span>
@@ -78,7 +77,6 @@ const {
   selectedLabel,
   toggle,
   onWheel,
-  onWheelClosed,
   onKeydown,
   select,
   getItemStyle

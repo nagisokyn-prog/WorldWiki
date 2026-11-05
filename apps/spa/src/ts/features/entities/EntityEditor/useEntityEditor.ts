@@ -72,12 +72,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     removePhoto
   } = useEntityPhoto((path, val) => helpers.setProp(path, val));
 
-  const {
-    handleForeignUpdate,
-    onDynamicUpdate,
-    addDynamicItem,
-    removeDynamicItem
-  } = useEntityDynamicOps({
+  const dynamicOps = useEntityDynamicOps({
     formData,
     foreignUpdates,
     config,
@@ -200,8 +195,26 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   });
 
   const getOptionsFor = (field: SchemaField) => {
-    if (field.entityType && referenceData.value[`${field.entityType}_list`]) {
-      return referenceData.value[`${field.entityType}_list`];
+    const types: string[] = Array.isArray(field.entityTypes) && field.entityTypes.length > 0
+      ? field.entityTypes
+      : (field.entityType ? [field.entityType] : []);
+
+    if (types.length > 0) {
+      const merged: Array<{ value: string; label: string }> = [];
+      const seen = new Set<string>();
+
+      for (const t of types) {
+        const list = referenceData.value[`${t}_list`] || referenceData.value[t] || [];
+        for (const opt of list) {
+          if (!seen.has(opt.value)) {
+            seen.add(opt.value);
+            merged.push(opt);
+          }
+        }
+      }
+      if (merged.length > 0 || field.optionsSource === 'entities') {
+        return merged;
+      }
     }
     return field.options || [];
   };
@@ -227,6 +240,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     showHiddenManager,
     ...hiddenHook,
     formData,
+    foreignUpdates,
     activeSection,
     referenceData,
     photoInputs,
@@ -237,17 +251,12 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     handlePhotoFile,
     handlePhotoDrop,
     removePhoto,
-    onDynamicUpdate,
-    lastEmittedData,
-    foreignUpdates,
     loadConfigAndData,
     loadReferenceData,
     getOptionsFor,
     markModified,
-    handleForeignUpdate,
-    addDynamicItem,
-    removeDynamicItem,
     isChapterField,
+    ...dynamicOps,
     ...historyHook,
     ...helpers
   };

@@ -78,20 +78,24 @@ export function parseTimezoneOffset(
     const matched = timezones.find(
       (tz) =>
         (tz.id && (tz.id.toLowerCase() === lower || tz.id.toLowerCase().endsWith(lower) || lower.endsWith(tz.id.toLowerCase()))) ||
-        (tz.code && (tz.code.toLowerCase() === lower || lower.includes(tz.code.toLowerCase()))) ||
-        (tz.name && (tz.name.toLowerCase() === lower || lower.includes(tz.name.toLowerCase())))
+        (tz.code && tz.code.toLowerCase() === lower) ||
+        (tz.name && tz.name.toLowerCase() === lower)
     );
     if (matched) {
       return { timezoneId: matched.id, offsetHours: CalendarMath.getTimezoneOffsetForDay(matched, dayIndex), matchedTz: matched };
     }
 
     const utcInStr =
-      str.match(/(?:utc|gmt)\s*([+-]?\d+(?:[.,]\d+)?)/i) ||
-      str.match(/([+-]\d+(?:[.,]\d+)?)\s*ч/i) ||
-      str.match(/^(?:utc|gmt)?\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?$/i);
+      str.match(/^(?:utc|gmt)?\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?$/i) ||
+      str.match(/(?:utc|gmt)\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?/i) ||
+      str.match(/([+-]\d+(?:[.,]\d+)?)\s*ч/i);
     if (utcInStr) {
-      const hoursPart = parseFloat(utcInStr[1].replace(',', '.'));
+      let hoursPart = parseFloat(utcInStr[1].replace(',', '.'));
       if (Number.isFinite(hoursPart)) {
+        if (utcInStr[2]) {
+          const mins = parseFloat(utcInStr[2]) / 60;
+          hoursPart = utcInStr[1].startsWith('-') ? hoursPart - mins : hoursPart + mins;
+        }
         const clamped = Math.max(-24, Math.min(24, hoursPart));
         const byOffset = timezones.find((tz) => tz.base_offset_hours === clamped);
         return { timezoneId: byOffset?.id || `UTC${clamped >= 0 ? '+' : ''}${clamped}`, offsetHours: clamped, matchedTz: byOffset };

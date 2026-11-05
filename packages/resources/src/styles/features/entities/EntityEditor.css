@@ -417,6 +417,27 @@
 }
 
 /* Field hide button */
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.form-label-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-label-text {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
 .field-hide-btn {
   background: transparent;
   border: none;
@@ -424,17 +445,21 @@
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity var(--anim-speed, 0.2s) ease;
+  pointer-events: none;
+  transition: opacity var(--anim-speed, 0.2s) ease, transform var(--anim-speed, 0.2s) ease;
   color: var(--text-muted);
+  padding: 0;
 }
 
-.form-group:hover .field-hide-btn {
-  opacity: 0.7;
+.form-label-title-wrap:hover .field-hide-btn {
+  opacity: 0.8;
+  pointer-events: auto;
 }
 
 .field-hide-btn:hover {
   opacity: 1;
   color: var(--accent);
+  transform: scale(1.15);
 }
 
 /* Container hide button */
@@ -459,11 +484,13 @@
   max-height: 360px;
   overflow-y: auto;
   z-index: 1000;
-  background: var(--bg-card);
+  background: var(--bg-panel);
+  backdrop-filter: blur(var(--glass-blur, 24px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px));
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-btn);
-  box-shadow: var(--shadow-glow);
-  padding: 10px 12px;
+  border-radius: var(--radius-dropdown);
+  box-shadow: var(--shadow-dropdown);
+  padding: 12px 14px;
 }
 
 .hidden-item {

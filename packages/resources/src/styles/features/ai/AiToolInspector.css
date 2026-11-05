@@ -73,7 +73,7 @@
   gap: 12px;
 }
 
-.form-label {
+.ai-tool-inspector .form-label {
   font-size: 12px;
   color: var(--text-muted);
   margin-bottom: 4px;

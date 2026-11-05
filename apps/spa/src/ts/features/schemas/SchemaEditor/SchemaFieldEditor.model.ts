@@ -1,4 +1,4 @@
-import type { SchemaFieldItem } from './useSchemaFiledEditor'
+import type { SchemaFieldItem } from './useSchemaFieldEditor';
 
 export interface SchemaFieldEditorProps {
   item: SchemaFieldItem;

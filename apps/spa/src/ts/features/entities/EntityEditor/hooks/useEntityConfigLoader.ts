@@ -47,6 +47,15 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
 
     if (ctx.props.entityType) entityTypesToLoad.add(ctx.props.entityType);
 
+    const collectFieldTypes = (f: SchemaField) => {
+      if (f.entityType) entityTypesToLoad.add(f.entityType);
+      if (Array.isArray(f.entityTypes)) {
+        f.entityTypes.forEach((t) => {
+          if (t) entityTypesToLoad.add(String(t));
+        });
+      }
+    };
+
     const collectDcTypes = (dc: DynamicContainer) => {
       if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
       const tplConf =
@@ -54,21 +63,22 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
           ? ctx.config.value.templates[dc.template]
           : undefined;
       if (tplConf?.foreign_type) entityTypesToLoad.add(tplConf.foreign_type);
-      dc.fields?.forEach((f: SchemaField) => {
-        if (f.entityType) entityTypesToLoad.add(f.entityType);
-      });
+      dc.fields?.forEach(collectFieldTypes);
       if (dc.fieldOverrides) {
         Object.values(dc.fieldOverrides).forEach((ovRaw) => {
           const ov = ovRaw as Record<string, unknown>;
           if (ov?.['entityType']) entityTypesToLoad.add(String(ov['entityType']));
+          if (Array.isArray(ov?.['entityTypes'])) {
+            (ov['entityTypes'] as unknown[]).forEach((t) => {
+              if (t) entityTypesToLoad.add(String(t));
+            });
+          }
         });
       }
     };
 
     ctx.config.value?.sections?.forEach((sec: SchemaSection) => {
-      sec.fields?.forEach((f: SchemaField) => {
-        if (f.entityType) entityTypesToLoad.add(f.entityType);
-      });
+      sec.fields?.forEach(collectFieldTypes);
       sec.dynamicContainers?.forEach(collectDcTypes);
     });
 
@@ -76,9 +86,7 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
       Object.keys(ctx.config.value.templates).forEach((tplKey) => {
         const tpl = ctx.config.value?.templates?.[tplKey];
         if (tpl?.foreign_type) entityTypesToLoad.add(tpl.foreign_type);
-        tpl?.fields?.forEach((f: SchemaField) => {
-          if (f.entityType) entityTypesToLoad.add(f.entityType);
-        });
+        tpl?.fields?.forEach(collectFieldTypes);
         tpl?.dynamicContainers?.forEach(collectDcTypes);
       });
     }

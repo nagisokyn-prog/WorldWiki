@@ -374,17 +374,21 @@
 }
 
 /* Увеличенные поля формы */
-.form-group .glass-input,
-.form-group .dropdown-container {
+.project-launcher .form-group .glass-input,
+.project-launcher .form-group .dropdown-container,
+.launcher-container .form-group .glass-input,
+.launcher-container .form-group .dropdown-container {
     min-height: 48px;
 }
 
-.form-group .glass-label {
+.project-launcher .form-group .glass-label,
+.launcher-container .form-group .glass-label {
     font-size: 14px;
 }
 
-/* Xbox Wheel для всех dropdown */
-.dropdown-container .status-trigger {
+/* Xbox Wheel для всех dropdown в лаунчере */
+.project-launcher .dropdown-container .status-trigger,
+.launcher-container .dropdown-container .status-trigger {
     min-height: 48px;
     padding: 16px 20px;
     font-size: 15px;

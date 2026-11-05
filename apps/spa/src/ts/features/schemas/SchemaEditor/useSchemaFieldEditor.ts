@@ -1,3 +1,5 @@
+import { useAvailableEntityTypes } from './hooks/useAvailableEntityTypes';
+
 export interface SchemaFieldItem {
     label?: string;
     hidden?: boolean;
@@ -7,11 +9,16 @@ export interface SchemaFieldItem {
     isSystem?: boolean;
     preventDelete?: boolean;
     preventHide?: boolean;
+    optionsSource?: 'custom' | 'entities';
+    entityTypes?: string[];
+    entityType?: string;
     options?: Array<{ value: string; label: string }>;
     [key: string]: unknown;
 }
 
 export function useSchemaFieldEditor(props: { item: SchemaFieldItem }) {
+    const { availableTypes, isLoading: isTypesLoading } = useAvailableEntityTypes();
+
     const typeOptions = [
         { val: 'text', icon: '📝', label: 'Текст' },
         { val: 'textarea', icon: '📄', label: 'Абзац' },
@@ -61,16 +68,46 @@ export function useSchemaFieldEditor(props: { item: SchemaFieldItem }) {
         props.item.options?.splice(idx, 1);
     };
 
+    const setOptionsSource = (source: 'custom' | 'entities') => {
+        props.item.optionsSource = source;
+        if (source === 'entities' && !props.item.entityTypes) {
+            props.item.entityTypes = props.item.entityType ? [props.item.entityType] : [];
+        }
+    };
+
+    const toggleEntityType = (typeKey: string) => {
+        if (!Array.isArray(props.item.entityTypes)) {
+            props.item.entityTypes = props.item.entityType ? [props.item.entityType] : [];
+        }
+        const idx = props.item.entityTypes.indexOf(typeKey);
+        if (idx >= 0) {
+            props.item.entityTypes.splice(idx, 1);
+        } else {
+            props.item.entityTypes.push(typeKey);
+        }
+        props.item.entityType = props.item.entityTypes[0] || '';
+    };
+
+    const isEntityTypeSelected = (typeKey: string): boolean => {
+        return Boolean(
+            props.item.entityTypes?.includes(typeKey) || props.item.entityType === typeKey
+        );
+    };
+
     return {
         typeOptions,
         monthsList,
+        availableTypes,
+        isTypesLoading,
         updateLabel,
         toggleHidden,
         updateVal,
         setType,
         updatePlaceholder,
         addOption,
-        removeOption
+        removeOption,
+        setOptionsSource,
+        toggleEntityType,
+        isEntityTypeSelected
     };
 }
-

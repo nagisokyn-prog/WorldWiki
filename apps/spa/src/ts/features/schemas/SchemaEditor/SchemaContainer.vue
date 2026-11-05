@@ -157,13 +157,56 @@
               </div>
               
               <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" class="mt-2 border-t pt-2">
-                <label class="form-label-micro">Варианты выбора</label>
-                <div class="flex-col gap-1 mt-1">
-                  <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="option-item-row">
-                    <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label">
-                    <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx), 1)">✕</button>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="form-label-micro">Варианты выбора</label>
+                  <div class="options-source-toggle flex gap-1">
+                    <button
+                      type="button"
+                      class="source-toggle-btn interactive-el text-xs"
+                      :class="{ active: (ensureFieldOverride(item, bField.class).optionsSource || (ensureFieldOverride(item, bField.class).entityTypes?.length || ensureFieldOverride(item, bField.class).entityType ? 'entities' : 'custom')) === 'custom' }"
+                      @click="setFieldOptionsSource(ensureFieldOverride(item, bField.class), 'custom')"
+                    >
+                      📝 Свои
+                    </button>
+                    <button
+                      type="button"
+                      class="source-toggle-btn interactive-el text-xs"
+                      :class="{ active: (ensureFieldOverride(item, bField.class).optionsSource || (ensureFieldOverride(item, bField.class).entityTypes?.length || ensureFieldOverride(item, bField.class).entityType ? 'entities' : 'custom')) === 'entities' }"
+                      @click="setFieldOptionsSource(ensureFieldOverride(item, bField.class), 'entities')"
+                    >
+                      🧩 Сущности
+                    </button>
                   </div>
-                  <button class="btn-new btn-outline-new interactive-el text-xs" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
+                </div>
+
+                <!-- Custom text options -->
+                <div v-if="(ensureFieldOverride(item, bField.class).optionsSource || (ensureFieldOverride(item, bField.class).entityTypes?.length || ensureFieldOverride(item, bField.class).entityType ? 'entities' : 'custom')) === 'custom'">
+                  <div class="flex-col gap-1 mt-1">
+                    <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="option-item-row">
+                      <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label">
+                      <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx), 1)">✕</button>
+                    </div>
+                    <button class="btn-new btn-outline-new interactive-el text-xs" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
+                  </div>
+                </div>
+
+                <!-- Entity types selector -->
+                <div v-else class="entity-types-selector">
+                  <div class="text-xs text-muted mb-2">Выберите типы сущностей:</div>
+                  <div class="flex flex-wrap gap-1.5 mb-1">
+                    <button
+                      v-for="t in availableEntityTypes"
+                      :key="t.value"
+                      type="button"
+                      class="entity-type-chip interactive-el text-xs"
+                      :class="{ active: isFieldEntityTypeSelected(ensureFieldOverride(item, bField.class), t.value) }"
+                      @click="toggleFieldEntityType(ensureFieldOverride(item, bField.class), t.value)"
+                    >
+                      <span>{{ t.icon || '📄' }}</span>
+                      <span>{{ t.label }}</span>
+                      <span v-if="isFieldEntityTypeSelected(ensureFieldOverride(item, bField.class), t.value)" class="check-mark">✓</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,13 +254,56 @@
               </div>
             </template>
             <template v-else>
-              <label class="form-label-micro">Варианты выбора</label>
-              <div class="flex-col gap-1 mt-1">
-                  <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" class="option-item-row">
-                    <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
-                    <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="cField.options?.splice(Number(oIdx), 1)">✕</button>
-                  </div>
-                  <button class="btn-new btn-outline-new interactive-el text-xs" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'Новый вариант', value:'Новый вариант'}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
+              <div class="flex items-center justify-between mb-2">
+                <label class="form-label-micro">Варианты выбора</label>
+                <div class="options-source-toggle flex gap-1">
+                  <button
+                    type="button"
+                    class="source-toggle-btn interactive-el text-xs"
+                    :class="{ active: (cField.optionsSource || (cField.entityTypes?.length || cField.entityType ? 'entities' : 'custom')) === 'custom' }"
+                    @click="setFieldOptionsSource(cField, 'custom')"
+                  >
+                    📝 Свои
+                  </button>
+                  <button
+                    type="button"
+                    class="source-toggle-btn interactive-el text-xs"
+                    :class="{ active: (cField.optionsSource || (cField.entityTypes?.length || cField.entityType ? 'entities' : 'custom')) === 'entities' }"
+                    @click="setFieldOptionsSource(cField, 'entities')"
+                  >
+                    🧩 Сущности
+                  </button>
+                </div>
+              </div>
+
+              <!-- Custom text options -->
+              <div v-if="(cField.optionsSource || (cField.entityTypes?.length || cField.entityType ? 'entities' : 'custom')) === 'custom'">
+                <div class="flex-col gap-1 mt-1">
+                    <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" class="option-item-row">
+                      <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
+                      <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="cField.options?.splice(Number(oIdx), 1)">✕</button>
+                    </div>
+                    <button class="btn-new btn-outline-new interactive-el text-xs" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'Новый вариант', value:'Новый вариант'}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
+                </div>
+              </div>
+
+              <!-- Entity types selector -->
+              <div v-else class="entity-types-selector">
+                <div class="text-xs text-muted mb-2">Выберите типы сущностей:</div>
+                <div class="flex flex-wrap gap-1.5 mb-1">
+                  <button
+                    v-for="t in availableEntityTypes"
+                    :key="t.value"
+                    type="button"
+                    class="entity-type-chip interactive-el text-xs"
+                    :class="{ active: isFieldEntityTypeSelected(cField, t.value) }"
+                    @click="toggleFieldEntityType(cField, t.value)"
+                  >
+                    <span>{{ t.icon || '📄' }}</span>
+                    <span>{{ t.label }}</span>
+                    <span v-if="isFieldEntityTypeSelected(cField, t.value)" class="check-mark">✓</span>
+                  </button>
+                </div>
               </div>
             </template>
         </div>
@@ -259,6 +345,9 @@ const {
   toggleFieldOverride,
   isProtectedField,
   addFieldOption,
+  setFieldOptionsSource,
+  toggleFieldEntityType,
+  isFieldEntityTypeSelected,
   isTimeline,
   updateTitle,
   updateEmptyMessage,

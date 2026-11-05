@@ -57,5 +57,27 @@ describe('useSchemaFieldEditor', () => {
     editorNoOpts.addOption();
     expect(propsNoOptions.item.options.length).toBe(1);
   });
+
+  it('manages options source toggle and entity types selection', () => {
+    const editor = useSchemaFieldEditor(props);
+
+    editor.setOptionsSource('entities');
+    expect(props.item.optionsSource).toBe('entities');
+    expect(props.item.entityTypes).toEqual([]);
+
+    editor.toggleEntityType('character');
+    expect(props.item.entityTypes).toContain('character');
+    expect(editor.isEntityTypeSelected('character')).toBe(true);
+    expect(props.item.entityType).toBe('character');
+
+    editor.toggleEntityType('location');
+    expect(props.item.entityTypes).toContain('location');
+    expect(props.item.entityTypes.length).toBe(2);
+
+    editor.toggleEntityType('character');
+    expect(props.item.entityTypes).not.toContain('character');
+    expect(editor.isEntityTypeSelected('character')).toBe(false);
+    expect(props.item.entityType).toBe('location');
+  });
 });
 

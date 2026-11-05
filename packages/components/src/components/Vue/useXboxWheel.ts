@@ -168,16 +168,6 @@ export function useXboxWheel(
     }
   };
 
-  const onWheelClosed = (e: WheelEvent) => {
-    if (isOpen.value) return;
-    wheelAcc.value += e.deltaY;
-    if (Math.abs(wheelAcc.value) > 30) {
-      if (wheelAcc.value > 0) next();
-      else prev();
-      wheelAcc.value = 0;
-    }
-  };
-
   const onKeydown = (e: KeyboardEvent) => {
     if (!isOpen.value) return;
     if (e.key === 'ArrowDown' || (props.horizontal && e.key === 'ArrowRight')) { e.preventDefault(); next(); }
@@ -268,7 +258,6 @@ export function useXboxWheel(
     selectedLabel,
     toggle,
     onWheel,
-    onWheelClosed,
     onKeydown,
     select,
     getItemStyle

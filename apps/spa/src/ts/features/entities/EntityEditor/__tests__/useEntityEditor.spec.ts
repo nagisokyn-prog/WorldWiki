@@ -237,10 +237,17 @@ describe('useEntityEditor', () => {
     const editor = useEntityEditor(props, emit);
     editor.referenceData.value = {
       faction_list: [{ value: 'f1', label: 'Knights' }],
+      character_list: [{ value: 'c1', label: 'Arthur' }],
     };
 
     const options = editor.getOptionsFor({ entityType: 'faction' } as any);
     expect(options).toEqual([{ value: 'f1', label: 'Knights' }]);
+
+    const multiOptions = editor.getOptionsFor({ entityTypes: ['faction', 'character'] } as any);
+    expect(multiOptions).toEqual([
+      { value: 'f1', label: 'Knights' },
+      { value: 'c1', label: 'Arthur' },
+    ]);
 
     const staticOptions = editor.getOptionsFor({ options: [{ value: '1', label: 'One' }] } as any);
     expect(staticOptions).toEqual([{ value: '1', label: 'One' }]);

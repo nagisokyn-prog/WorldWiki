@@ -1,4 +1,4 @@
-import { type Ref, type ShallowRef } from 'vue';
+import { ref, type Ref, type ShallowRef } from 'vue';
 import { useChapterStore } from '../../../../stores/chapter.store';
 import type { SchemaConfig, SchemaField } from '../EntityEditor.model';
 
@@ -109,7 +109,39 @@ export function useEntityDynamicOps(ctx: UseEntityDynamicOpsContext) {
     }
 
     ctx.setProp(ctx.formData.value, path, [...arr, newItem]);
+    // Новый добавленный элемент всегда развернут
+    delete collapsedItems.value[`${path}_${arr.length}`];
     ctx.markModified();
+  };
+
+  const collapsedItems = ref<Record<string, boolean>>({});
+
+  const isItemCollapsed = (containerPath: string, idx: number): boolean => {
+    return Boolean(collapsedItems.value[`${containerPath}_${idx}`]);
+  };
+
+  const toggleItemCollapse = (containerPath: string, idx: number) => {
+    const key = `${containerPath}_${idx}`;
+    collapsedItems.value[key] = !collapsedItems.value[key];
+  };
+
+  const areAllCollapsed = (containerPath: string, count: number): boolean => {
+    if (count <= 0) return false;
+    for (let i = 0; i < count; i++) {
+      if (!collapsedItems.value[`${containerPath}_${i}`]) return false;
+    }
+    return true;
+  };
+
+  const toggleAllCollapse = (containerPath: string, count: number) => {
+    const allCollapsed = areAllCollapsed(containerPath, count);
+    for (let i = 0; i < count; i++) {
+      if (allCollapsed) {
+        delete collapsedItems.value[`${containerPath}_${i}`];
+      } else {
+        collapsedItems.value[`${containerPath}_${i}`] = true;
+      }
+    }
   };
 
   const removeDynamicItem = (path: string, idx: number | string) => {
@@ -132,6 +164,10 @@ export function useEntityDynamicOps(ctx: UseEntityDynamicOpsContext) {
     handleForeignUpdate,
     onDynamicUpdate,
     addDynamicItem,
-    removeDynamicItem
+    removeDynamicItem,
+    isItemCollapsed,
+    toggleItemCollapse,
+    areAllCollapsed,
+    toggleAllCollapse,
   };
 }

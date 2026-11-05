@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { useAvailableEntityTypes } from './hooks/useAvailableEntityTypes';
 
 export interface SchemaCustomField {
     label?: string;
@@ -6,6 +7,9 @@ export interface SchemaCustomField {
     placeholder?: string;
     sourceType?: string;
     targetType?: string;
+    optionsSource?: 'custom' | 'entities';
+    entityTypes?: string[];
+    entityType?: string;
     options?: Array<{ value: string; label: string }>;
     [key: string]: unknown;
 }
@@ -40,6 +44,8 @@ export interface SchemaFieldOverride {
     label?: string;
     placeholder?: string;
     type?: string;
+    optionsSource?: 'custom' | 'entities';
+    entityTypes?: string[];
     entityType?: string;
     options?: Array<{ value: string; label: string }>;
     [key: string]: unknown;
@@ -59,6 +65,8 @@ export interface SchemaContainerItem {
 
 export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const isDraggedOver = ref(false);
+    const { availableTypes: availableEntityTypes } = useAvailableEntityTypes();
+
     const rawConfigs = import.meta.glob<Record<string, { default?: { templates?: Record<string, SchemaTemplateConfig> }; templates?: Record<string, SchemaTemplateConfig> }>>(
         '../../../struct/editor/ui_editor.json',
         { eager: true }
@@ -66,26 +74,6 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const uiMod = Object.values(rawConfigs)[0];
     const initialConfig = (uiMod && ('default' in uiMod ? uiMod.default : uiMod)) || {};
     const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(initialConfig as { templates?: Record<string, SchemaTemplateConfig> });
-
-
-
-    const availableEntityTypes = computed(() => {
-        let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>;
-        try {
-            rawSchemas = import.meta.glob<Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>>('../../../struct/editor/*.json', { eager: true });
-        } catch {
-            rawSchemas = {};
-        }
-        const types = [];
-        for (const path in rawSchemas) {
-            if (path.includes('ui_editor')) continue;
-            const data = rawSchemas[path]?.default || rawSchemas[path];
-            if (data && data.name) {
-                types.push({ value: data.entityType || data.name, label: data.name });
-            }
-        }
-        return types;
-    });
 
     const atomicBricks = [
         { value: 'text', label: 'Текст' },
@@ -174,6 +162,32 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
     };
 
+    const setFieldOptionsSource = (fieldObj: Record<string, unknown>, source: 'custom' | 'entities') => {
+        fieldObj.optionsSource = source;
+        if (source === 'entities' && !fieldObj.entityTypes) {
+            fieldObj.entityTypes = fieldObj.entityType ? [String(fieldObj.entityType)] : [];
+        }
+    };
+
+    const toggleFieldEntityType = (fieldObj: Record<string, unknown>, typeKey: string) => {
+        if (!Array.isArray(fieldObj.entityTypes)) {
+            fieldObj.entityTypes = fieldObj.entityType ? [String(fieldObj.entityType)] : [];
+        }
+        const arr = fieldObj.entityTypes as string[];
+        const idx = arr.indexOf(typeKey);
+        if (idx >= 0) {
+            arr.splice(idx, 1);
+        } else {
+            arr.push(typeKey);
+        }
+        fieldObj.entityType = arr[0] || '';
+    };
+
+    const isFieldEntityTypeSelected = (fieldObj: Record<string, unknown>, typeKey: string): boolean => {
+        const arr = fieldObj.entityTypes as string[] | undefined;
+        return Boolean(arr?.includes(typeKey) || fieldObj.entityType === typeKey);
+    };
+
     return {
         isDraggedOver,
         fullConfig,
@@ -185,6 +199,9 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         toggleFieldOverride,
         isProtectedField,
         addFieldOption,
+        setFieldOptionsSource,
+        toggleFieldEntityType,
+        isFieldEntityTypeSelected,
         isTimeline,
         updateTitle,
         updateEmptyMessage,

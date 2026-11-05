@@ -231,3 +231,64 @@
 .icon-dim-60 {
     opacity: 0.6;
 }
+
+/* Options Source Toggle & Entity Types Chips */
+.options-source-toggle {
+    background: var(--bg-sunken);
+    padding: 2px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-color);
+}
+
+.source-toggle-btn {
+    padding: 3px 8px;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--anim-speed) ease;
+}
+
+.source-toggle-btn.active {
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+}
+
+.entity-types-selector {
+    padding: 8px;
+    background: var(--bg-panel);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.entity-type-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all var(--anim-speed) ease;
+}
+
+.entity-type-chip:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+}
+
+.entity-type-chip.active {
+    background: var(--accent-subtle, var(--bg-selected));
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.entity-type-chip .check-mark {
+    font-weight: bold;
+    color: var(--accent);
+}

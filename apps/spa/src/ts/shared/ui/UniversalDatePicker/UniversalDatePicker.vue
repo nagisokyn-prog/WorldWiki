@@ -2,7 +2,7 @@
   <div v-if="allCalendars.length > 0" class="date-wheels-container">
     
     <!-- Календарь -->
-    <div class="date-wheel-group grow-md">
+    <div class="date-wheel-group wheel-group-calendar">
       <div class="date-wheel-label">Календарь</div>
       <XboxWheel
         v-model="currentCalendarId"
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Эпоха -->
-    <div class="date-wheel-group grow-sm">
+    <div class="date-wheel-group wheel-group-era">
       <div class="date-wheel-label">Эпоха</div>
       <XboxWheel
         v-model="currentEraIdx" 
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Год -->
-    <div class="date-wheel-group grow-xs">
+    <div class="date-wheel-group wheel-group-year">
       <div class="date-wheel-label">Год</div>
       <template v-if="yearInputMode">
         <input 
@@ -50,7 +50,7 @@
     </div>
 
     <!-- Месяц -->
-    <div class="date-wheel-group grow-md">
+    <div class="date-wheel-group wheel-group-month">
       <div class="date-wheel-label">Месяц</div>
       <XboxWheel
         v-model="currentMonthIdx" 
@@ -62,7 +62,7 @@
     </div>
 
     <!-- День -->
-    <div class="date-wheel-group grow-mini">
+    <div class="date-wheel-group wheel-group-day">
       <div class="date-wheel-label">День</div>
       <XboxWheel
         v-model="currentDay" 
@@ -76,8 +76,18 @@
     <!-- Время (Опционально) -->
     <template v-if="showTime">
       <!-- Час -->
-      <div class="date-wheel-group grow-mini">
-        <div class="date-wheel-label">Час</div>
+      <div v-if="!isHourHidden" class="date-wheel-group wheel-group-hour">
+        <div class="date-wheel-label">
+          <span>Час</span>
+          <button
+            type="button"
+            class="wheel-hide-btn"
+            title="Скрыть час"
+            @click.stop="isHourHidden = true"
+          >
+            👁️‍🗨️
+          </button>
+        </div>
         <XboxWheel
           v-model="currentHour" 
           :horizontal="wheelHorizontal"
@@ -87,11 +97,21 @@
         />
       </div>
 
-      <div class="time-separator">:</div>
+      <div v-if="!isHourHidden && !isMinuteHidden" class="time-separator">:</div>
 
       <!-- Минута -->
-      <div class="date-wheel-group grow-mini">
-        <div class="date-wheel-label">Мин</div>
+      <div v-if="!isMinuteHidden" class="date-wheel-group wheel-group-minute">
+        <div class="date-wheel-label">
+          <span>Мин</span>
+          <button
+            type="button"
+            class="wheel-hide-btn"
+            title="Скрыть минуты"
+            @click.stop="isMinuteHidden = true"
+          >
+            👁️‍🗨️
+          </button>
+        </div>
         <XboxWheel
           v-model="currentMinute" 
           :horizontal="wheelHorizontal"
@@ -100,6 +120,19 @@
           @update:model-value="onTimeChange"
         />
       </div>
+
+      <!-- Восстановление скрытого времени -->
+      <div v-if="isHourHidden || isMinuteHidden" class="date-wheel-group restore-time-group">
+        <button
+          type="button"
+          class="btn-restore-time"
+          :title="isHourHidden && isMinuteHidden ? 'Показать время (час и мин)' : isHourHidden ? 'Показать час' : 'Показать минуты'"
+          @click.stop="restoreTime"
+        >
+          <span>👁️‍🗨️</span>
+          <span>+{{ isHourHidden && isMinuteHidden ? 'Время' : isHourHidden ? 'Час' : 'Мин' }}</span>
+        </button>
+      </div>
     </template>
 
   </div>
@@ -107,6 +140,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import type { UniversalDatePickerProps, UniversalDatePickerEmits } from './UniversalDatePicker.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
@@ -117,6 +151,14 @@ const props = withDefaults(defineProps<UniversalDatePickerProps>(), {
 });
 
 const emit = defineEmits<UniversalDatePickerEmits>();
+
+const isHourHidden = ref(false);
+const isMinuteHidden = ref(false);
+
+const restoreTime = () => {
+  isHourHidden.value = false;
+  isMinuteHidden.value = false;
+};
 
 const {
   allCalendars,

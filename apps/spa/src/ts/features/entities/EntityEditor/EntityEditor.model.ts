@@ -14,6 +14,8 @@ export interface SchemaField {
   max?: number;
   options?: Array<{ value: string; label: string }>;
   entityType?: string;
+  entityTypes?: string[];
+  optionsSource?: 'custom' | 'entities';
   isSystem?: boolean;
   preventDelete?: boolean;
   preventHide?: boolean;

@@ -16,14 +16,14 @@
   align-items: center;
   cursor: pointer;
   user-select: none;
-  padding: 10px 16px;
+  padding: 6px 12px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-dropdown);
   color: var(--text-main);
-  font-size: 14px;
+  font-size: 13px;
   transition: border-color var(--anim-speed, 0.2s) var(--anim-ease, ease);
-  min-height: 40px;
+  min-height: 32px;
   box-sizing: border-box;
 }
 
@@ -121,7 +121,7 @@
 
 /* Horizontal Mode Overrides */
 .wheel-wrapper.is-horizontal {
-  height: 80px; 
+  height: 54px; 
 }
 .wheel-wrapper.is-horizontal::after {
   top: 10px;

@@ -30,16 +30,35 @@ export function getValueByPath(obj: Record<string, unknown> | null | undefined, 
 export function getEntityDisplayName(entity: Record<string, unknown>, schema?: SchemaInfo | null): string {
   if (!entity) return 'Без названия';
   
-  // 1. Check titleField from schema
-  if (schema && schema.titleField) {
-    const val = getValueByPath(entity, schema.titleField as string);
+  // 1. First field from schema or titleField
+  const firstField = (schema as { sections?: Array<{ fields?: Array<{ path?: string; id?: string; class?: string }> }> })?.sections?.[0]?.fields?.[0];
+  const rawPath = (schema?.titleField as string | undefined) || firstField?.path || firstField?.id || firstField?.class;
+  const path = typeof rawPath === 'string' && rawPath.trim().length > 0 ? rawPath.trim() : '';
+  if (path) {
+    const val = getValueByPath(entity, path) ?? (entity.attributes ? getValueByPath(entity.attributes as Record<string, unknown>, path) : undefined);
     if (val && String(val).trim().length > 0) {
       return String(val).trim();
     }
   }
 
-  // 2. Fallback to first property in object
-  const keys = Object.keys(entity);
+  // 2. Direct entity name
+  const explicitName = entity.name || entity.Name || entity.title || (entity['название'] as string);
+  if (explicitName && typeof explicitName === 'string' && explicitName.trim().length > 0) {
+    return explicitName.trim();
+  }
+
+  // 3. Inside attributes
+  const attrs = entity.attributes as Record<string, unknown> | undefined;
+  if (attrs && typeof attrs === 'object') {
+    const attrName = attrs.name || (attrs['название'] as string) || attrs.title || attrs.label;
+    if (attrName && typeof attrName === 'string' && attrName.trim().length > 0) {
+      return attrName.trim();
+    }
+  }
+
+  // 4. Fallback to first non-system property in object
+  const IGNORED = new Set(['id', 'project_id', 'schema_id', 'entity_type', 'type_key', 'created_at', 'updated_at', 'attributes', 'embedding', 'tags', 'теги']);
+  const keys = Object.keys(entity).filter((k) => !IGNORED.has(k));
   if (keys.length > 0) {
     const firstVal = entity[keys[0]];
     if (typeof firstVal === 'string' && firstVal.trim().length > 0) {

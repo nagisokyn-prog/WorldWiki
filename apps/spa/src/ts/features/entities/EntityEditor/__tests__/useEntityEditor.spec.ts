@@ -530,4 +530,81 @@ describe('useEntityEditor', () => {
 
     wrapper.unmount();
   });
+
+  it('filters out hidden sections from visibleSections and adjusts activeSection', async () => {
+    vi.mocked(api.getEntitySchemas).mockResolvedValue([
+      {
+        type_key: 'char',
+        full_schema: {
+          titleField: 'name',
+          sections: [
+            { id: 's1', title: 'Main', hidden: false, fields: [{ id: 'f1', path: 'name' }] },
+            { id: 's2', title: 'Secret', hidden: true, fields: [{ id: 'f2', path: 'secret' }] },
+          ],
+        },
+      } as any,
+    ]);
+
+    let editorState: any;
+    const Comp = defineComponent({
+      setup() {
+        editorState = useEntityEditor({ ...props, entityType: 'char', initialSection: 's2' }, emit);
+        return editorState;
+      },
+      template: '<div></div>',
+    });
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(editorState.visibleSections.value).toHaveLength(1);
+    expect(editorState.visibleSections.value[0].id).toBe('s1');
+    expect(editorState.activeSection.value).toBe('s1');
+
+    wrapper.unmount();
+  });
+
+  it('supports hiding and unhiding specific entity sections and fields', async () => {
+    vi.mocked(api.getEntitySchemas).mockResolvedValue([
+      {
+        type_key: 'char',
+        full_schema: {
+          titleField: 'name',
+          sections: [
+            { id: 'main', title: 'Main', fields: [{ id: 'fName', path: 'name' }, { id: 'fBio', path: 'bio' }] },
+            { id: 'lore', title: 'Lore', fields: [{ id: 'fLore', path: 'lore' }] },
+          ],
+        },
+      } as any,
+    ]);
+
+    let editorState: any;
+    const Comp = defineComponent({
+      setup() {
+        editorState = useEntityEditor({ ...props, entityType: 'char' }, emit);
+        return editorState;
+      },
+      template: '<div></div>',
+    });
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(editorState.visibleSections.value).toHaveLength(2);
+
+    // Hide non-system section 'lore'
+    editorState.hideSection('lore');
+    expect(editorState.visibleSections.value).toHaveLength(1);
+    expect(editorState.isSectionHidden('lore')).toBe(true);
+
+    // Hide field 'bio'
+    editorState.hideField('bio');
+    expect(editorState.isFieldHidden('bio')).toBe(true);
+    expect(editorState.totalHiddenCount.value).toBe(2);
+
+    // Unhide all
+    editorState.unhideAll();
+    expect(editorState.visibleSections.value).toHaveLength(2);
+    expect(editorState.totalHiddenCount.value).toBe(0);
+
+    wrapper.unmount();
+  });
 });

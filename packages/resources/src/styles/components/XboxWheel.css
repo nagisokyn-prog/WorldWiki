@@ -49,7 +49,7 @@
 .wheel-wrapper {
   position: fixed;
   margin: 0;
-  height: 240px;
+  height: 180px;
   overflow: hidden;
   pointer-events: auto;
   background: var(--bg-panel);

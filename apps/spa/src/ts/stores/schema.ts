@@ -59,20 +59,27 @@ export const useSchemaStore = defineStore('schema', () => {
 
   const getEntityDisplayName = (entity: Record<string, unknown>, entityType?: string): string => {
     if (!entity) return 'Без названия';
-    if (entityType === 'planet' || entityType === 'calendar') {
-      const explicitName = entity.name || entity.Name || entity.title || entity.название;
-      if (explicitName && typeof explicitName === 'string' && explicitName.trim().length > 0) {
-        return explicitName.trim();
+    const sch = entityType ? schemaCache.value[entityType] : null;
+    const firstField = sch?.sections?.[0]?.fields?.[0];
+    const rawPath = sch?.titleField || firstField?.path || firstField?.id || firstField?.class;
+    const path = typeof rawPath === 'string' && rawPath.trim().length > 0 ? rawPath.trim() : '';
+    if (path) {
+      const val = getValueByPath(entity, path) ?? (entity.attributes ? getValueByPath(entity.attributes as Record<string, unknown>, path) : undefined);
+      if (val && String(val).trim().length > 0) return String(val).trim();
+    }
+    const explicitName = entity.name || entity.Name || entity.title || (entity['название'] as string);
+    if (explicitName && typeof explicitName === 'string' && explicitName.trim().length > 0) {
+      return explicitName.trim();
+    }
+    const attrs = entity.attributes as Record<string, unknown> | undefined;
+    if (attrs && typeof attrs === 'object') {
+      const attrName = attrs.name || (attrs['название'] as string) || attrs.title || attrs.label;
+      if (attrName && typeof attrName === 'string' && attrName.trim().length > 0) {
+        return attrName.trim();
       }
     }
-    if (entityType && schemaCache.value[entityType]) {
-      const path = schemaCache.value[entityType].titleField;
-      if (path) {
-        const val = getValueByPath(entity, path);
-        if (val && String(val).trim().length > 0) return String(val).trim();
-      }
-    }
-    const keys = Object.keys(entity);
+    const IGNORED = new Set(['id', 'project_id', 'schema_id', 'entity_type', 'type_key', 'created_at', 'updated_at', 'attributes', 'embedding', 'tags', 'теги']);
+    const keys = Object.keys(entity).filter((k) => !IGNORED.has(k));
     if (keys.length > 0) {
       const firstVal = entity[keys[0]];
       if (typeof firstVal === 'string' && firstVal.trim().length > 0) return firstVal.trim();

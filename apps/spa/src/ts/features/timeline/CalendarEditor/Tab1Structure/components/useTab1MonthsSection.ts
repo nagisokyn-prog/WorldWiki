@@ -20,7 +20,7 @@ export function useTab1MonthsSection(props: Tab1MonthsSectionProps) {
     return props.months.map((_, idx) => {
       if (effectiveSeasons.value && effectiveSeasons.value.length > 0) {
         const matched = effectiveSeasons.value.find(
-          (s) => Array.isArray(s.месяцы) && (s.месяцы.map(Number).includes(idx) || s.месяцы.map(Number).includes(idx + 1))
+          (s) => Array.isArray(s.месяцы) && s.месяцы.map(Number).includes(idx)
         );
         if (matched && matched.название) {
           return { name: matched.название, color: matched.цвет || matched.color };

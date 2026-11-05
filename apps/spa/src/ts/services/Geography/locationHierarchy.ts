@@ -77,24 +77,24 @@ export function parseTimezoneOffset(
     const lower = str.toLowerCase();
     const matched = timezones.find(
       (tz) =>
-        (tz.id && tz.id.toLowerCase() === lower) ||
-        (tz.code && tz.code.toLowerCase() === lower) ||
-        (tz.name && tz.name.toLowerCase() === lower)
+        (tz.id && (tz.id.toLowerCase() === lower || tz.id.toLowerCase().endsWith(lower) || lower.endsWith(tz.id.toLowerCase()))) ||
+        (tz.code && (tz.code.toLowerCase() === lower || lower.includes(tz.code.toLowerCase()))) ||
+        (tz.name && (tz.name.toLowerCase() === lower || lower.includes(tz.name.toLowerCase())))
     );
     if (matched) {
       return { timezoneId: matched.id, offsetHours: CalendarMath.getTimezoneOffsetForDay(matched, dayIndex), matchedTz: matched };
     }
 
-    const offsetMatch = str.match(/^(?:utc|gmt)?\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?$/i);
-    if (offsetMatch) {
-      const hoursPart = parseFloat(offsetMatch[1].replace(',', '.'));
-      const minsPart = offsetMatch[2] ? parseInt(offsetMatch[2], 10) : 0;
-      const sign = hoursPart < 0 || offsetMatch[1].startsWith('-') ? -1 : 1;
-      const total = hoursPart + sign * (minsPart / 60);
-      if (Number.isFinite(total)) {
-        const clamped = Math.max(-24, Math.min(24, total));
+    const utcInStr =
+      str.match(/(?:utc|gmt)\s*([+-]?\d+(?:[.,]\d+)?)/i) ||
+      str.match(/([+-]\d+(?:[.,]\d+)?)\s*ч/i) ||
+      str.match(/^(?:utc|gmt)?\s*([+-]?\d+(?:[.,]\d+)?)(?::(\d{1,2}))?$/i);
+    if (utcInStr) {
+      const hoursPart = parseFloat(utcInStr[1].replace(',', '.'));
+      if (Number.isFinite(hoursPart)) {
+        const clamped = Math.max(-24, Math.min(24, hoursPart));
         const byOffset = timezones.find((tz) => tz.base_offset_hours === clamped);
-        return { timezoneId: byOffset?.id || str, offsetHours: clamped, matchedTz: byOffset };
+        return { timezoneId: byOffset?.id || `UTC${clamped >= 0 ? '+' : ''}${clamped}`, offsetHours: clamped, matchedTz: byOffset };
       }
     }
   }

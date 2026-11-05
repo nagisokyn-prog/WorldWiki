@@ -1,10 +1,11 @@
-import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef, computed } from 'vue';
 import { settingsService } from '@worldwiki/components';
 import { useEntityHistory } from './hooks/useEntityHistory';
 import { useEntityHelpers } from './hooks/useEntityHelpers';
 import { useEntityPhoto } from './hooks/useEntityPhoto';
 import { useEntityDynamicOps } from './hooks/useEntityDynamicOps';
 import { useEntityConfigLoader } from './hooks/useEntityConfigLoader';
+import { useEntityHiddenConfig } from './hooks/useEntityHiddenConfig';
 import type { EntityEditorProps, SchemaConfig, SchemaSection, SchemaField } from './EntityEditor.model';
 
 export function normalizeEntityFormData(data: Record<string, unknown> | undefined | null): Record<string, unknown> {
@@ -22,6 +23,10 @@ export function normalizeEntityFormData(data: Record<string, unknown> | undefine
   }
   if (!normalized.name && normalized['название']) {
     normalized.name = normalized['название'];
+  }
+  const rawHidden = normalized._hidden ?? (normalized.attributes && (normalized.attributes as Record<string, unknown>)._hidden);
+  if (rawHidden) {
+    normalized._hidden = JSON.parse(JSON.stringify(rawHidden));
   }
   return normalized;
 }
@@ -55,6 +60,9 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
       lastEmittedData.value = currentSerialized;
     }
   };
+
+  const hiddenHook = useEntityHiddenConfig(formData, config, markModified);
+  const showHiddenManager = ref(false);
 
   const {
     photoInputs,
@@ -149,11 +157,15 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
       if (firstFieldPath && formData.value.name && !formData.value[firstFieldPath]) {
         formData.value[firstFieldPath] = formData.value.name;
       }
-      if (newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
-        if (props.initialSection && newConfig.sections.some((s: SchemaSection) => s.id === props.initialSection)) {
+      const visible = (newConfig.sections || []).filter((s: SchemaSection) => !s.hidden);
+      const isCurrentVisible = visible.some((s: SchemaSection) => s.id === activeSection.value);
+      if (!isCurrentVisible) {
+        if (props.initialSection && visible.some((s: SchemaSection) => s.id === props.initialSection)) {
           activeSection.value = props.initialSection;
+        } else if (visible.length > 0) {
+          activeSection.value = visible[0].id;
         } else {
-          activeSection.value = newConfig.sections[0].id;
+          activeSection.value = '';
         }
         emit('section-change', activeSection.value);
       }
@@ -201,10 +213,19 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
   };
 
+  const visibleSections = computed(() => {
+    return (config.value?.sections || []).filter(
+      (s: SchemaSection) => !s.hidden && !hiddenHook.isSectionHidden(s.id)
+    );
+  });
+
   return {
     loading,
     isInitializing,
     config,
+    visibleSections,
+    showHiddenManager,
+    ...hiddenHook,
     formData,
     activeSection,
     referenceData,

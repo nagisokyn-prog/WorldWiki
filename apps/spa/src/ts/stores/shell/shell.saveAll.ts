@@ -222,7 +222,9 @@ export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
         }
       }
       const entityId = editor.rawId ? (editor.rawId.startsWith('entities:') ? editor.rawId : `entities:${editor.rawId}`) : `entities:${editor.entityType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const mainPayload = entityApi.formatEntityPayload(deps.projectName.value, editor.entityType, dataToSave, entityId, editor.title || 'Новая сущность');
+      const displayTitle = deps.getEntityDisplayName(dataToSave, editor.entityType);
+      const resolvedName = (!displayTitle.startsWith('[') && !displayTitle.startsWith('entities:') ? displayTitle : '') || (dataToSave.name as string) || (editor.title && !editor.title.startsWith('entities:') && !editor.title.startsWith('[') ? editor.title : 'Новая сущность');
+      const mainPayload = entityApi.formatEntityPayload(deps.projectName.value, editor.entityType, dataToSave, entityId, resolvedName);
 
       const savedEntity = await api.saveEntityWithRelations(deps.projectName.value, mainPayload as unknown as Entity, modifiedForeignEntities);
       if (savedEntity && savedEntity.id) {

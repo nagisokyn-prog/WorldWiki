@@ -146,11 +146,14 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
       }
 
       if (ctx.config.value?.sections?.length) {
+        const visible = ctx.config.value.sections.filter((s: SchemaSection) => !s.hidden);
         if (
           ctx.props.initialSection &&
-          ctx.config.value.sections.some((s: SchemaSection) => s.id === ctx.props.initialSection)
+          visible.some((s: SchemaSection) => s.id === ctx.props.initialSection)
         ) {
           ctx.activeSection.value = ctx.props.initialSection;
+        } else if (visible.length > 0) {
+          ctx.activeSection.value = visible[0].id;
         } else {
           ctx.activeSection.value = ctx.config.value.sections[0].id;
         }
@@ -175,6 +178,8 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
           : [];
       rawInitial['теги'] = cleanInitialTags;
       rawInitial.tags = cleanInitialTags;
+      const rawHidden = rawInitial._hidden ?? (rawInitial.attributes && (rawInitial.attributes as Record<string, unknown>)._hidden);
+      if (rawHidden) rawInitial._hidden = JSON.parse(JSON.stringify(rawHidden));
 
       const firstSection = ctx.config.value?.sections?.[0];
       const firstField = firstSection?.fields?.[0];

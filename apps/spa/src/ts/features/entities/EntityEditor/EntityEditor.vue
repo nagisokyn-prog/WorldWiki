@@ -17,17 +17,91 @@
       <!-- MAIN COLUMN -->
       <div class="entity-main-pane flex-1 flex-col overflow-hidden min-h-0">
         <!-- SECTIONS NAV (TABS - FIXED ON TOP) -->
-        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
-          <button
-            v-for="sec in config.sections" 
-            :key="sec.id"
-            class="section-tab-btn interactive-el"
-            :class="{ active: activeSection === sec.id }"
-            @click="activeSection = sec.id"
-          >
-            <span>{{ sec.icon || '📄' }}</span>
-            <span>{{ sec.title }}</span>
-          </button>
+        <div v-if="(visibleSections && visibleSections.length > 1) || totalHiddenCount > 0" class="sections-nav flex justify-between items-center border-b flex-shrink-0 pr-2">
+          <div class="flex gap-2 overflow-x-auto flex-1 py-1">
+            <div
+              v-for="(sec, sIdx) in visibleSections" 
+              :key="sec.id"
+              class="section-tab-wrapper relative flex items-center"
+            >
+              <button
+                class="section-tab-btn interactive-el"
+                :class="{ active: activeSection === sec.id }"
+                @click="activeSection = sec.id"
+              >
+                <span>{{ sec.icon || '📄' }}</span>
+                <span>{{ sec.title }}</span>
+              </button>
+              <button
+                v-if="canHideSection(sec, sIdx)"
+                type="button"
+                class="tab-hide-btn interactive-el"
+                title="Скрыть страницу для этой сущности"
+                @click.stop="hideSection(sec.id)"
+              >
+                👁️‍🗨️
+              </button>
+            </div>
+          </div>
+
+          <!-- Кнопка управления скрытыми элементами -->
+          <div v-if="totalHiddenCount > 0" class="hidden-manager-trigger relative flex-shrink-0 ml-2 z-40">
+            <button
+              type="button"
+              class="btn-new btn-outline-new text-xs interactive-el flex items-center gap-1"
+              :title="'Скрыто элементов: ' + totalHiddenCount"
+              @click="showHiddenManager = !showHiddenManager"
+            >
+              <span>👁️‍🗨️</span>
+              <span>Скрыто ({{ totalHiddenCount }})</span>
+            </button>
+
+            <!-- Подложка для закрытия по клику снаружи -->
+            <div v-if="showHiddenManager" class="fixed inset-0 z-30" @click="showHiddenManager = false"></div>
+
+            <!-- Дропдаун скрытых элементов -->
+            <div v-if="showHiddenManager" class="hidden-manager-menu glass-card z-50">
+              <div class="hidden-menu-header flex justify-between items-center pb-2 mb-2 border-b">
+                <span class="font-bold text-xs">Скрытые элементы</span>
+                <button type="button" class="text-xs text-accent hover:underline cursor-pointer" @click="unhideAll">
+                  Восстановить всё
+                </button>
+              </div>
+
+              <!-- Скрытые страницы -->
+              <div v-if="hiddenConfig.sections.length > 0" class="hidden-group mb-2">
+                <div class="text-xs text-muted font-semibold mb-1">Страницы:</div>
+                <div v-for="sId in hiddenConfig.sections" :key="sId" class="hidden-item flex justify-between items-center py-1 text-xs">
+                  <span>{{ config?.sections?.find(s => s.id === sId)?.title || sId }}</span>
+                  <button type="button" class="btn-restore-item text-accent cursor-pointer" @click="unhideSection(sId)">
+                    Показать
+                  </button>
+                </div>
+              </div>
+
+              <!-- Скрытые поля -->
+              <div v-if="hiddenConfig.fields.length > 0" class="hidden-group mb-2">
+                <div class="text-xs text-muted font-semibold mb-1">Поля:</div>
+                <div v-for="fKey in hiddenConfig.fields" :key="fKey" class="hidden-item flex justify-between items-center py-1 text-xs">
+                  <span>{{ getFieldLabel(fKey) }}</span>
+                  <button type="button" class="btn-restore-item text-accent cursor-pointer" @click="unhideField(fKey)">
+                    Показать
+                  </button>
+                </div>
+              </div>
+
+              <!-- Скрытые контейнеры -->
+              <div v-if="hiddenConfig.containers.length > 0" class="hidden-group">
+                <div class="text-xs text-muted font-semibold mb-1">Связи и блоки:</div>
+                <div v-for="cId in hiddenConfig.containers" :key="cId" class="hidden-item flex justify-between items-center py-1 text-xs">
+                  <span>{{ getContainerTitle(cId) }}</span>
+                  <button type="button" class="btn-restore-item text-accent cursor-pointer" @click="unhideContainer(cId)">
+                    Показать
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- MAIN FORM CONTAINER -->
@@ -35,7 +109,7 @@
           <!-- RENDER ACTIVE SECTION -->
           <transition name="fade-fast" mode="out-in">
             <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
-            <template v-for="section in config.sections" :key="section.id">
+            <template v-for="section in visibleSections" :key="section.id">
               <div v-if="section.id === activeSection">
                 <LocationAstronomyWidget
                   v-if="props.entityType === 'location' && section.id === 'geography'"
@@ -49,11 +123,24 @@
                 <div v-if="section.fields && section.fields.length > 0" class="glass-card mb-4 p-4">
                     <div class="form-grid grid-dynamic">
                       <template v-for="field in section.fields" :key="field.id || field.class">
-                        <div v-if="!field.hidden" class="form-group" :class="{ 'full-width': field.fullWidth || field.type === 'textarea' || field.type === 'tags' || field.type === 'multiselect' }">
+                        <div v-if="!field.hidden && !isFieldHidden(field.path || field.id || field.class || '')" class="form-group" :class="{ 'full-width': field.fullWidth || field.type === 'textarea' || field.type === 'tags' || field.type === 'multiselect' }">
                           <label class="form-label flex justify-between items-center">
-                            {{ field.label }} 
-                            <span v-if="field.required" class="text-accent">*</span>
-                            <span v-if="isFieldChanged(field.path || field.id || field.class || '')" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+                            <span>
+                              {{ field.label }} 
+                              <span v-if="field.required" class="text-accent">*</span>
+                            </span>
+                            <span class="flex items-center gap-1">
+                              <span v-if="isFieldChanged(field.path || field.id || field.class || '')" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+                              <button
+                                v-if="canHideField(field)"
+                                type="button"
+                                class="field-hide-btn interactive-el"
+                                title="Скрыть поле для этой сущности"
+                                @click.stop="hideField(field.path || field.id || field.class || '')"
+                              >
+                                👁️‍🗨️
+                              </button>
+                            </span>
                           </label>
                           
                           <textarea
@@ -144,7 +231,7 @@
                 <div v-if="section.dynamicContainers && section.dynamicContainers.length > 0" class="mt-4">
                   <template v-for="(container, cIdx) in section.dynamicContainers" :key="container.id">
                     <div
-                      v-if="!container.hidden" 
+                      v-if="!container.hidden && !isContainerHidden(container.dataPath || container.id || '')" 
                       :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id || '') }"
                       class="glass-card dynamic-container-card mb-4 p-4 relative" 
                       :style="{ '--z-stack': 100 - cIdx }">
@@ -153,7 +240,18 @@
                         {{ container.title || 'Дополнительно' }}
                         <span v-if="isFieldChanged(container.dataPath || container.id || '')" class="changed-indicator" title="Связи отличаются от текущей версии">Изменено</span>
                       </h4>
-                      <button class="btn btn-small btn-outline interactive-el" @click="addDynamicItem(container.dataPath || container.id || '', container.template || '')">➕ Добавить</button>
+                      <div class="flex items-center gap-2">
+                        <button
+                          v-if="canHideContainer(container)"
+                          type="button"
+                          class="container-hide-btn btn-new btn-outline-new text-xs interactive-el"
+                          title="Скрыть блок для этой сущности"
+                          @click.stop="hideContainer(container.dataPath || container.id || '')"
+                        >
+                          👁️‍🗨️ Скрыть
+                        </button>
+                        <button class="btn btn-small btn-outline interactive-el" @click="addDynamicItem(container.dataPath || container.id || '', container.template || '')">➕ Добавить</button>
+                      </div>
                     </div>
 
                     <div v-if="getDynamicList(container).length === 0" class="empty-timeline">
@@ -347,6 +445,7 @@ const {
     photoInputs,
     wheelHorizontal,
     config,
+    visibleSections,
     formData,
     foreignUpdates,
     activeSection,
@@ -380,7 +479,39 @@ const {
     handlePhotoDrop,
     removePhoto,
     isChapterField,
+    showHiddenManager,
+    hiddenConfig,
+    isSectionHidden,
+    isFieldHidden,
+    isContainerHidden,
+    canHideSection,
+    canHideField,
+    canHideContainer,
+    hideSection,
+    unhideSection,
+    hideField,
+    unhideField,
+    hideContainer,
+    unhideContainer,
+    unhideAll,
+    totalHiddenCount,
   } = useEntityEditor(props, emit as (event: string, ...args: unknown[]) => void);
+
+const getFieldLabel = (key: string): string => {
+  for (const sec of config.value?.sections || []) {
+    const f = sec.fields?.find(field => (field.path || field.id || field.class) === key);
+    if (f) return f.label;
+  }
+  return key;
+};
+
+const getContainerTitle = (key: string): string => {
+  for (const sec of config.value?.sections || []) {
+    const c = sec.dynamicContainers?.find(dc => (dc.dataPath || dc.id) === key);
+    if (c) return c.title || key;
+  }
+  return key;
+};
 
 defineExpose({
   toggleHistory,

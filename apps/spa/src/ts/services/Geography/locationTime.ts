@@ -59,6 +59,7 @@ export function computeLocationLocalTime(
       sunset_time: '18:00',
       zenith_time: '12:00',
     };
+    const hasDiscrepancy = !isLocalTime && Math.abs(geo.offsetHours) >= 1;
     return {
       offsetHours: geo.offsetHours,
       localTimeStr,
@@ -66,7 +67,7 @@ export function computeLocationLocalTime(
       worldTimeStr,
       sunStatus,
       phaseEmoji: getSunPhaseEmoji(phase),
-      hasDiscrepancy: false,
+      hasDiscrepancy,
       discrepancyHint: `Локация «${geo.entityName}» (UTC${sign}${geo.offsetHours}): ${localTimeStr} (${sunStatus.phase_label})`,
     };
   }
@@ -88,6 +89,7 @@ export function computeLocationLocalTime(
     longitude: geo.longitude ?? geo.offsetHours * 15,
   };
   const sunStatus = CalendarMath.calculateSunForRegion(synthRegion, moment, masterCalendar, timezones, effOffset);
+  const hasDiscrepancy = !isLocalTime && Math.abs(geo.offsetHours) >= 1;
 
   return {
     offsetHours: geo.offsetHours,
@@ -96,7 +98,7 @@ export function computeLocationLocalTime(
     worldTimeStr,
     sunStatus,
     phaseEmoji: getSunPhaseEmoji(sunStatus.phase),
-    hasDiscrepancy: false,
+    hasDiscrepancy,
     discrepancyHint: `Локация «${geo.entityName}» (UTC${sign}${geo.offsetHours}): ${localTimeStr} (${sunStatus.phase_label})`,
   };
 }

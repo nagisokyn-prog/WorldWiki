@@ -12,11 +12,12 @@ export function formatTimezoneChipLabel(tz: WorldTimezone): string {
 
 export function formatCoordinatesLabel(lat: number | null, lon: number | null): string {
   if (lat === null && lon === null) {
-    return 'Не заданы (экватор / нулевой меридиан по умолчанию)';
+    return '';
   }
-  const latStr = lat !== null ? `${Math.abs(lat)}° ${lat >= 0 ? 'с.ш.' : 'ю.ш.'}` : '0° ш.';
-  const lonStr = lon !== null ? `${Math.abs(lon)}° ${lon >= 0 ? 'в.д.' : 'з.д.'}` : '0° д.';
-  return `${latStr}, ${lonStr}`;
+  const latStr = lat !== null ? `${Math.abs(lat)}° ${lat >= 0 ? 'с.ш.' : 'ю.ш.'}` : '';
+  const lonStr = lon !== null ? `${Math.abs(lon)}° ${lon >= 0 ? 'в.д.' : 'з.д.'}` : '';
+  if (latStr && lonStr) return `${latStr}, ${lonStr}`;
+  return latStr || lonStr;
 }
 
 export function computeAvailableSeasons(

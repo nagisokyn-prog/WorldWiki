@@ -89,14 +89,14 @@ export function useSchemaData(
             const createDefaultSchema = (typeKey: string) => ({
                 name: typeKey,
                 entityType: typeKey,
-                titleField: 'name',
+                titleField: 'название',
                 sections: [
                     {
                         id: 'page_main',
                         title: 'Главное',
                         icon: '📄',
                         items: [
-                            { type: 'text', class: 'name', label: 'НАЗВАНИЕ', placeholder: '...', _isSystemName: true }
+                            { type: 'text', class: 'name', path: 'название', label: 'НАЗВАНИЕ', placeholder: '...', _isSystemName: true, required: true }
                         ]
                     }
                 ]
@@ -156,24 +156,33 @@ export function useSchemaData(
                 ];
             }
 
-            // Гарантируем, что в первой секции поле Имя всегда на 0-й позиции
+            // Гарантируем, что в первой секции первое поле является системным именем
             if (schema.value.sections && schema.value.sections.length > 0) {
                 const mainSec = schema.value.sections[0];
                 if (!mainSec.items) mainSec.items = [];
-                const nameIdx = mainSec.items.findIndex((it: Record<string, unknown>) => it.class === 'name' || it._isSystemName);
-                if (nameIdx === -1) {
-                    mainSec.items.unshift({
+                if (mainSec.items.length === 0) {
+                    mainSec.items.push({
                         type: 'text',
                         class: 'name',
+                        path: 'name',
                         label: 'ИМЯ СУЩНОСТИ',
                         placeholder: 'Введите имя...',
-                        _isSystemName: true
+                        _isSystemName: true,
+                        required: true
                     });
-                } else if (nameIdx > 0) {
-                    const nameItem = mainSec.items.splice(nameIdx, 1)[0];
-                    mainSec.items.unshift(nameItem);
+                } else {
+                    const nameIdx = mainSec.items.findIndex((it: Record<string, unknown>) =>
+                        it.class === 'name' || it._isSystemName || it.isSystem || it.path === 'name' || it.path === schema.value.titleField
+                    );
+                    if (nameIdx > 0) {
+                        const nameItem = mainSec.items.splice(nameIdx, 1)[0];
+                        mainSec.items.unshift(nameItem);
+                    }
                 }
-                (mainSec.items[0] as Record<string, unknown>)._isSystemName = true;
+                const first = mainSec.items[0] as Record<string, unknown> | undefined;
+                if (first) {
+                    first._isSystemName = true;
+                }
             }
             if (props.initialSection) {
                 const idx = schema.value.sections.findIndex((s: SchemaDataSection) => s.id === props.initialSection);

@@ -64,17 +64,34 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
     try {
       const detail = await entityApi.getEntity(deps.projectName.value, entityType, idToUpdate) as Record<string, unknown> | null;
       const sch = await deps.schema.loadSchema(entityType);
-      const schemaTitleField = sch?.titleField || (sch?.sections?.[0]?.fields as Array<{ isTitle?: boolean; path?: string }> | undefined)?.find((f: { isTitle?: boolean; path?: string }) => f.isTitle)?.path;
-      const titleField = schemaTitleField || (detail ? (Object.keys(detail).find((k) => k.toLowerCase() === 'name') || Object.keys(detail)[0]) : 'name');
+      const firstSection = sch?.sections?.[0];
+      const firstField = firstSection?.fields?.[0];
+      const rawField = sch?.titleField || firstField?.path || firstField?.id || firstField?.class;
+      const titleField: string = typeof rawField === 'string' && rawField.trim().length > 0 ? rawField.trim() : 'name';
 
-      if (titleField && detail) {
-        detail[titleField] = newName;
+      if (detail) {
+        const parts = titleField.split('.');
+        let current: Record<string, unknown> = detail;
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!current[parts[i]] || typeof current[parts[i]] !== 'object') {
+            current[parts[i]] = {};
+          }
+          current = current[parts[i]] as Record<string, unknown>;
+        }
+        current[parts[parts.length - 1]] = newName;
+        detail.name = newName;
+
+        if (detail.attributes && typeof detail.attributes === 'object') {
+          const attrs = detail.attributes as Record<string, unknown>;
+          if (titleField in attrs) attrs[titleField] = newName;
+          attrs.name = newName;
+        }
         await entityApi.saveEntity(deps.projectName.value, entityType, detail, idToUpdate, newName);
 
         const actualTabId = deps.eg.findTabGlobal(idToUpdate) ? idToUpdate : null;
         if (actualTabId) {
           deps.eg.updateTabData(actualTabId, { title: newName });
-          deps.handleUpdateData(actualTabId, { [titleField]: newName });
+          deps.handleUpdateData(actualTabId, { [titleField]: newName, name: newName });
         }
 
         if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();

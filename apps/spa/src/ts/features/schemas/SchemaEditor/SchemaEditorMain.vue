@@ -46,6 +46,7 @@
           >
             <span>{{ sec.icon || '📄' }}</span>
             <span>{{ sec.title || 'Страница ' + (Number(idx) + 1) }}</span>
+            <span v-if="sec.hidden" class="ml-1 text-xs" title="Страница скрыта">👁️‍🗨️</span>
             <span v-if="Number(idx) > 0" class="ml-2 text-xs text-muted cursor-pointer hover:text-error" @mousedown.stop="deleteSection(Number(idx))">✕</span>
           </button>
           <button class="section-tab-btn interactive-el btn-add-page" @click="addNewPage">

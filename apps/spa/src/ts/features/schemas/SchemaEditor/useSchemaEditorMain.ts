@@ -80,6 +80,8 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
             schemaCopy.type_name = targetTypeName;
             schemaCopy.type_key = targetTypeKey;
             schemaCopy.entityType = targetTypeKey;
+            const firstField = (schemaCopy.sections?.[0]?.fields?.[0] || schemaCopy.sections?.[0]?.items?.[0]) as Record<string, unknown> | undefined;
+            schemaCopy.titleField = String(firstField?.path || firstField?.id || firstField?.class || schemaCopy.titleField || 'name');
 
             schemaCopy.sections.forEach((sec: { fields?: unknown[]; dynamicContainers?: unknown[]; items?: unknown[] }) => {
                 sec.fields = [];

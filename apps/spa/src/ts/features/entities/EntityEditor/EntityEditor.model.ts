@@ -79,3 +79,9 @@ export type EntityHistoryBannerEmits = {
   (e: 'restore'): void;
   (e: 'exit'): void;
 };
+
+export interface EntityHiddenConfig {
+  sections: string[];
+  fields: string[];
+  containers: string[];
+}

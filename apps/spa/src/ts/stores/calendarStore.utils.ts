@@ -3,7 +3,7 @@
  * @description Вспомогательные функции, нормализаторы ID и базовые структуры данных календарей.
  */
 
-import type { CalendarData, PlanetEntity } from '../services/Calendars/calendar.types';
+import type { CalendarData, PlanetEntity } from '@/services/Calendars/calendar.types';
 
 export interface CalendarRecord {
   id?: string;

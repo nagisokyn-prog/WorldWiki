@@ -11,8 +11,8 @@ import type {
   JourneyFilterMode,
   MultiJourneyResponse,
 } from './CharacterJourney.model';
-import { buildTimelineItems, buildMultiJourneyTimelineItems } from './hooks/useJourneyItemsBuilder';
-import { useJourneyFiltersAndGroups } from './hooks/useJourneyFiltersAndGroups';
+import { buildTimelineItems, buildMultiJourneyTimelineItems } from './composables/useJourneyItemsBuilder';
+import { useJourneyFiltersAndGroups } from './composables/useJourneyFiltersAndGroups';
 
 export function useCharacterJourney(projectId: string, initialEntityId?: string) {
   const storyArcsStore = useStoryArcsStore();

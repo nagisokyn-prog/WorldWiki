@@ -10,29 +10,26 @@
 apps/spa/src/ts/features/chapters/
 ├── README_Chapters.md                  # Данная всеобъемлющая документация архитектуры рукописи
 ├── ChaptersView.vue                    # Корневой маршрутизируемый контейнер раздела «Рукопись»
+├── ChaptersView.model.ts               # Пропсы и события ChaptersView
 │
-├── ChapterTree/                        # Левая панель: Иерархическое дерево рукописи
-│   ├── ChapterTree.vue                 # UI дерева: тома, части, главы, сцены, драг-н-дроп, контекстное меню
-│   ├── ChapterTree.model.ts            # Пропсы и события дерева
-│   ├── useChapterTree.ts               # Управление деревом: создание, переименование, удаление, перенос, подсчет слов
-│   └── __tests__/                      # Тесты useChapterTree (добавление, сортировка, фильтрация)
-│
-├── ChaptersMain/                       # Главная рабочая область (3-панельный сплит-лейаут)
-│   ├── ChaptersMain.vue                # Главный контейнер: Левое дерево + Редактор + Правый инспектор сюжета
-│   ├── useChaptersMain.ts              # Composable координации панелей, автосохранения, смены активной главы
-│   ├── hooks/                          # Вспомогательные хуки лейаута и истории
-│   │   ├── useChapterLayout.ts         # Управление видимостью и шириной панелей (localStorage)
-│   │   ├── useChapterHistory.ts        # Undo / Redo стек снимков состояния главы
-│   │   ├── useFloatingEntities.ts      # Всплывающие карточки сущностей при наведении/клике
-│   │   └── __tests__/                  # Юнит-тесты хуков лейаута
-│   └── __tests__/
-│
-├── EditorCoreTiptap/                   # Центральный мультирежимный редактор рукописи
-│   ├── EditorCoreTiptap.vue            # Главный компонент переключения 4 режимов: WYSIWYG, Markdown, Split, Word
-│   ├── EditorCoreTiptap.model.ts       # Интерфейс пропсов и эмиттов редактора
-│   ├── useEditorCoreTiptap.ts          # Главный Composable оркестрации режимов, горячих клавиш и AST-синхронизации
-│   ├── EditorToolbar.vue               # Тулбар форматирования Tiptap v3 (жирный, курсив, заголовки, сноски, формулы)
-│   ├── useTiptapEditor.ts              # Фабрика экземпляра Tiptap v3 со всеми расширениями
+└── components/                         # Декомпозированные подсистемы глав
+    ├── workspace/                      # Рабочая область
+    │   └── ChaptersMain/               # Главный 3-панельный сплит-каркас (Vue, Composable, Model, Sidebar, Tabs, Composables)
+    ├── tree/                           # Дерево рукописи
+    │   └── ChapterTree/                # Иерархическое дерево томов/глав/сцен (Vue, Composable, Model, Composables)
+    ├── editor/                         # Текстовый процессор
+    │   └── EditorCoreTiptap/           # 4-режимный редактор Tiptap v3 (extensions/, composables/, stubs/, utils/, components/)
+    ├── panels/                         # Инспекторы сюжета
+    │   ├── PlanningPanel/              # План сцен, цели и статусы готовности
+    │   ├── PromisesPanel/              # Сюжетные обещания и Чеховские ружья
+    │   ├── ParticipantsPanel/          # Участники, локации и предметы сцены
+    │   └── StoryArcs/                  # Арки сюжета и доска ArcBoard
+    ├── modals/                         # Диалоговые окна
+    │   ├── CreateChapterModal/         # Модалка создания главы/тома
+    │   └── ExportModal/                # Экспорт книги в форматы DOCX, PDF, FB2, EPUB, MD, TXT
+    └── semantic/                       # Семантическая разметка
+        └── Semantic/                   # SemanticParagraph и SemanticParagraphNode
+```
 │   ├── EntityLinkSelector.vue          # Быстрый попап вставки ссылок на персонажей/локации (триггер '((')
 │   ├── useEntityLinkSelector.ts        # Поиск по базе сущностей проекта и вставка инлайн-тегов
 │   ├── PromiseContextMenu.vue          # Контекстное меню привязки фрагмента текста к Сюжетному обещанию

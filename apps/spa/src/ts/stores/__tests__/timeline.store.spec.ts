@@ -8,7 +8,7 @@ vi.mock('../../services/api/calendar.api', () => ({
   },
 }));
 
-import { calendarApi } from '../../services/api/calendar.api';
+import { calendarApi } from '@/services/api/calendar.api';
 
 describe('useTimelineStore', () => {
   let store: ReturnType<typeof useTimelineStore>;

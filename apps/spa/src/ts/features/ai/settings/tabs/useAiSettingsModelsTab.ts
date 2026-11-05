@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { AiModelInfo, AiProfile, AiProfileSettings, InstalledModelInfo } from '../../types/ai.types';
+import type { AiModelInfo, AiProfile, AiProfileSettings, InstalledModelInfo } from '@/features/ai/types/ai.types';
 
 export interface AiSettingsModelsTabProps {
   activeProfile: AiProfile | null;

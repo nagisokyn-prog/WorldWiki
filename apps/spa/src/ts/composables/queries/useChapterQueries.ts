@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
-import { chapterApi } from '../../services/api/chapter.api';
+import { chapterApi } from '@/services/api/chapter.api';
 
 export function useChapters(project: string) {
   return useQuery({
@@ -25,7 +25,7 @@ export function useHierarchy(project: string) {
   });
 }
 
-import type { Chapter } from '../../types/generated/Chapter';
+import type { Chapter } from '@/types/generated/Chapter';
 
 export function useSaveChapter() {
   const queryClient = useQueryClient();

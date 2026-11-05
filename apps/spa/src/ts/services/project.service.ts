@@ -5,8 +5,8 @@
  */
 
 import * as api from './api.client';
-import { getCached, setCache, invalidateCache } from '../utils/requestCache';
-import { purgeProjectStorage } from '../utils/storage.purge';
+import { getCached, setCache, invalidateCache } from '@/utils/requestCache';
+import { purgeProjectStorage } from '@/utils/storage.purge';
 
 export interface ProjectStats {
   chapters?: number;

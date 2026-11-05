@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { AcademicGOSTProfile, DEFAULT_PROFILES } from '../services/document/profiles/defaults';
-import type { DocumentProfile } from '../services/document/profiles/types';
+import { AcademicGOSTProfile, DEFAULT_PROFILES } from '@/services/document/profiles/defaults';
+import type { DocumentProfile } from '@/services/document/profiles/types';
 
 export const useDocumentProfilesStore = defineStore('documentProfiles', () => {
   const activeProfileId = ref<string>('gost_academic');

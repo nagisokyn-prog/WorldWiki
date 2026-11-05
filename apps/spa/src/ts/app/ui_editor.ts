@@ -11,11 +11,11 @@ import '@worldwiki/resources/styles/styles.css';
 
 import { settingsService, i18n } from '@worldwiki/components';
 import type { Plugin } from 'vue';
-import * as api from '../services/api.client';
-import { entityApi } from '../services/Entity/entity.api';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
 import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
 import type { EntityRevision } from '../features/entities/EntityEditor/EntityEditor.model';
-import type { Entity } from '../types/generated/Entity';
+import type { Entity } from '@/types/generated/Entity';
 
 // Глобальный доступ к Vue для legacy скриптов (если нужно)
 if (typeof window !== 'undefined') {

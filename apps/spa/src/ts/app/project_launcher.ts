@@ -14,13 +14,13 @@ import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
 import '@worldwiki/resources/styles/components/Settings.css';
 
 import { createApp, ref, computed, onMounted, onUnmounted, shallowRef } from 'vue';
-import { projectService, type ProjectStats } from '../services/project.service';
+import { projectService, type ProjectStats } from '@/services/project.service';
 import { settingsService, XboxWheel } from '@worldwiki/components';
-import CalendarsPanel from '../features/timeline/CalendarsPanel/CalendarsPanel.vue';
+import CalendarEditorVue from '../features/timeline/components/calendars/CalendarEditor/CalendarEditor.vue';
 import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
-import { projectTypes, genres } from '../features/shell/projectLauncher.constants';
+import { projectTypes, genres } from '../features/shell/components/launcher/ProjectLauncher/projectLauncher.constants';
 
 // Export Vue globally for components that use window.Vue
 if (typeof window !== 'undefined') {
@@ -212,7 +212,7 @@ const app = createApp({
 });
 
 // Register CalendarsPanel
-app.component('CalendarsPanel', CalendarsPanel);
+app.component('CalendarsPanel', CalendarEditorVue);
 app.component('VanillaXboxWheel', XboxWheel);
 app.component('CloudSyncModal', CloudSyncModalVue);
 

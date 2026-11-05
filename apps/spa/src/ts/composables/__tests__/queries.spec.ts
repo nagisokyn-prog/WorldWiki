@@ -5,12 +5,12 @@ import * as tagQueries from '../queries/useTagQueries';
 import * as chapterQueries from '../queries/useChapterQueries';
 import * as calendarQueries from '../queries/useCalendarQueries';
 import * as batchQueries from '../queries/useBatchQueries';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
-import { tagApi } from '../../services/api/tag.api';
-import { chapterApi } from '../../services/api/chapter.api';
-import { calendarApi } from '../../services/api/calendar.api';
-import { batchApi } from '../../services/api/batch.api';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
+import { tagApi } from '@/services/api/tag.api';
+import { chapterApi } from '@/services/api/chapter.api';
+import { calendarApi } from '@/services/api/calendar.api';
+import { batchApi } from '@/services/api/batch.api';
 
 vi.mock('@tanstack/vue-query', () => ({
   useQuery: vi.fn((opts) => opts),

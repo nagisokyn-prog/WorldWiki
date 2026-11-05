@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import type { ContextItem } from '../components';
-import type { ResearchProgress } from '../types/aiPanel.model';
+import type { ResearchProgress } from '@/features/ai/types/aiPanel.model';
 
 export function useAiContextSelection(options?: {
   onFocusInput?: () => void;

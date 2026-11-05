@@ -1,4 +1,4 @@
-import type { DocumentProfile } from '../../../../services/document/profiles/types'
+import type { DocumentProfile } from '@/services/document/profiles/types'
 
 export interface AcademicProfilesListProps {
   profiles: DocumentProfile[];

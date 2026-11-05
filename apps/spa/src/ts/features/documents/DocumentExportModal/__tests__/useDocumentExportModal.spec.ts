@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { normalizeSemanticDocument } from '../../../../services/document/ast/ASTNormalizer';
-import { DocumentExportService } from '../../../../services/document/export/DocumentExportService';
+import { normalizeSemanticDocument } from '@/services/document/ast/ASTNormalizer';
+import { DocumentExportService } from '@/services/document/export/DocumentExportService';
 import { useDocumentExportModal } from '../useDocumentExportModal';
 
 describe('useDocumentExportModal', () => {

@@ -1,4 +1,4 @@
-import type { AiProfileSettings } from '../../../types/ai.types'
+import type { AiProfileSettings } from '@/features/ai/types/ai.types'
 
 export interface AiInferenceParamsCardProps {
   localSettings: AiProfileSettings;

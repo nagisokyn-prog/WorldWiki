@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import type { ChaptersViewProps } from './ChaptersView.model';
-import ChaptersMain from './ChaptersMain/ChaptersMain.vue';
+import ChaptersMain from './components/workspace/ChaptersMain/ChaptersMain.vue';
 
 withDefaults(defineProps<ChaptersViewProps>(), {
   controlledChapterId: null

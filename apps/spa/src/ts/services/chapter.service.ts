@@ -7,8 +7,8 @@
 import * as api from './api.client';
 import { projectRecordId } from './api/project.api';
 
-import type { Chapter } from '../types/generated/Chapter';
-import type { ChapterWithHierarchy } from '../stores/chapter.store';
+import type { Chapter } from '@/types/generated/Chapter';
+import type { ChapterWithHierarchy } from '@/stores/chapter.store';
 
 class ChapterService {
   async list(project: string): Promise<Chapter[]> {

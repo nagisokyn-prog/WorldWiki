@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import type { AcademicProfilesListProps, AcademicProfilesListEmits } from './AcademicProfilesList.model';
-import type { DocumentProfile } from '../../../../services/document/profiles/types';
+import type { DocumentProfile } from '@/services/document/profiles/types';
 
 export type AcademicProfile = DocumentProfile;
 

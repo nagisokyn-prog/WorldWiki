@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { useDocumentProfilesStore } from '../../../stores/document_profiles.store';
+import { useDocumentProfilesStore } from '@/stores/document_profiles.store';
 import type { AcademicInspectorProps, InspectorItem, InspectorTab } from './AcademicInspector.model';
 
 export function useAcademicInspector(props: AcademicInspectorProps) {

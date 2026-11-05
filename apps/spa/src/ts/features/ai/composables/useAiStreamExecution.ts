@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { ChatMessage, MessageVariantGroup } from '../types/aiPanel.model';
+import type { ChatMessage, MessageVariantGroup } from '@/features/ai/types/aiPanel.model';
 import type { AiSkillItem } from '../skills/aiSkills.model';
 import { buildSkillContext } from '../skills/skillTriggerRouter';
 import { useAiStreamListener } from './useAiStreamListener';
@@ -10,7 +10,7 @@ import {
   cancelGeneration as cancelGenApi,
   regenerateChatMessage as regenChatMsgApi,
   aiRespondToolApproval,
-} from '../../../services/api.client';
+} from '@/services/api.client';
 
 export function useAiStreamExecution(options: {
   activeChatId: Ref<string>;

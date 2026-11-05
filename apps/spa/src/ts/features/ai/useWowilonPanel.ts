@@ -11,7 +11,7 @@ import { useAiStreamExecution } from './composables/useAiStreamExecution';
 import type { WowilonPanelProps, WowilonPanelEmits, ChatMessage, MessageVariantGroup } from './types/aiPanel.model';
 import type { AiSkillItem } from './skills/aiSkills.model';
 import { DEFAULT_BUILTIN_SKILLS } from './skills/defaultBuiltinSkills';
-import { projectRecordId } from '../../services/api/project.api';
+import { projectRecordId } from '@/services/api/project.api';
 
 export type { ChatMessage, MessageVariantGroup, WowilonPanelProps, WowilonPanelEmits };
 export type UseWowilonPanelReturn = ReturnType<typeof useWowilonPanel>;

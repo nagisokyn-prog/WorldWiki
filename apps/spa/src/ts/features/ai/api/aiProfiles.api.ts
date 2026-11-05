@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AiProfile } from '../types/ai.types';
+import type { AiProfile } from '@/features/ai/types/ai.types';
 
 export const aiProfilesApi = {
   async getProfiles(projectId: string): Promise<AiProfile[]> {

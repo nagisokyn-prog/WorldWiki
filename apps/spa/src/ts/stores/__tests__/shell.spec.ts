@@ -3,11 +3,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useShellStore } from '../shell';
 import { useZoomStore } from '../zoom';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
 import { useSchemaStore } from '../schema';
 import { settingsService } from '@worldwiki/components';
-import type { Chapter } from '../../types/generated/Chapter';
+import type { Chapter } from '@/types/generated/Chapter';
 
 vi.mock('../../services/api.client', () => ({
   getChapters: vi.fn(),

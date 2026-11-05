@@ -1,7 +1,7 @@
 import { triggerRef, type Ref } from 'vue';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
-import type { Entity } from '../../types/generated/Entity';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
+import type { Entity } from '@/types/generated/Entity';
 import type { EditorTab } from './shell.types';
 
 export interface SaveAllDeps {

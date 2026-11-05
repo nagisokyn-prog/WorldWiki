@@ -3,7 +3,7 @@ import Mathematics from '@tiptap/extension-mathematics';
 import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 import { PaginationPlus } from 'tiptap-pagination-plus';
-import type { PaginationRuntimeConfig } from '../../../services/document/layout/types';
+import type { PaginationRuntimeConfig } from '@/services/document/layout/types';
 import { CrossReferenceExtension } from '../nodes/CrossReference/CrossReferenceExtension';
 import { FigureExtension } from '../nodes/FigureNode/FigureExtension';
 import { FootnoteExtension } from '../nodes/FootnoteNode/FootnoteExtension';

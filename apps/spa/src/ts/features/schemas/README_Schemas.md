@@ -9,33 +9,40 @@
 ```
 apps/spa/src/ts/features/schemas/
 ├── README_Schemas.md                   # Данная всеобъемлющая документация конструктора схем
+├── SchemaEditorMain.vue                # Главный экран конструктора: список схем, палитра полей, холст
+├── useSchemaEditorMain.ts              # Composable верхнего уровня: создание, дублирование, удаление, сохранение
+├── SchemaEditorMain.model.ts           # DTO, Props, Emits главного экрана
+├── __tests__/                          # Тесты главного координатора
+│   └── useSchemaEditorMain.spec.ts
 │
-└── SchemaEditor/                       # Визуальный конструктор схем и шаблонов
-    ├── SchemaEditorMain.vue            # Главный экран конструктора: список схем, панель палитры полей, рабочая область
-    ├── useSchemaEditorMain.ts          # Composable верхнего уровня: создание, дублирование, удаление схем, экспорт
-    ├── SchemaContainer.vue             # Контейнер визуального отображения и упорядочивания модулей схемы
-    ├── useSchemaContainer.ts           # Composable управления секциями и группировкой полей
-    ├── SchemaFieldEditor.vue           # Инспектор настройки конкретного поля (тип, валидация, дефолтное значение)
-    ├── useSchemaFiledEditor.ts         # Composable реактивной валидации атрибутов поля
-    ├── RelationshipBlock.vue           # Модуль настройки графа связей и допустимых типов отношений
-    ├── ModuleHelpPreview.vue           # Интерактивная справка и предпросмотр готовой карточки по схеме
-    ├── useModuleHelpPreview.ts         # Composable режима превью карточки сущности
-    ├── useModuleReferenceData.ts       # Справочные данные и типы модулей
-    │
-    ├── hooks/                          # Хуки состояния конструктора
-    │   ├── useSchemaData.ts            # Управление реактивным объектом схемы, клонирование, сохранение
-    │   ├── useSchemaDnD.ts             # Drag & Drop сортировка полей и секций в конструкторе
-    │   ├── useSchemaHistory.ts         # Стек Undo / Redo правок схемы
-    │   ├── useSchemaTemplates.ts       # Библиотека готовых шаблонов (Фэнтези, Sci-Fi, Детектив, ГОСТ)
-    │   └── __tests__/                  # Юнит-тесты хуков схемы
-    │
-    ├── ManuscriptPointPicker/          # Компонент привязки временной точки рукописи/таймлайна
-    │   ├── ManuscriptPointPicker.vue   # Дропдаун/модалка выбора главы, сцены, абсолютной минуты таймлайна
-    │   ├── ManuscriptPointPicker.model.ts # Пропсы и события пикера точки рукописи
-    │   ├── useManuscriptPointPicker.ts # Реактивный расчет позиции в рукописи, авторасширение таймлайна
-    │   └── __tests__/                  # Тесты ManuscriptPointPicker
-    │
-    └── __tests__/                      # Интеграционные тесты конструктора схем
+├── types/                              # Строгая TypeScript-типизация
+│   └── schemaReference.types.ts        # Интерфейсы справочных данных и связей
+│
+├── utils/                              # Вспомогательные функции
+│   └── schemaReferenceMatcher.ts       # Утилиты сопоставления типов и опций
+│
+├── composables/                        # Специализированные сервисные композаблы
+│   ├── useAvailableEntityTypes.ts      # Загрузка и агрегация доступных типов сущностей (SurrealDB + System)
+│   ├── useModuleReferenceData.ts       # Справочные данные и типы модулей
+│   ├── useSchemaData.ts                # Управление реактивным объектом схемы, клонирование, сохранение
+│   ├── useSchemaDnD.ts                 # Drag & Drop сортировка полей и секций
+│   ├── useSchemaHistory.ts             # Стек Undo / Redo правок схемы
+│   ├── useSchemaTemplates.ts           # Библиотека готовых шаблонов (Фэнтези, Sci-Fi, Детектив, ГОСТ)
+│   └── __tests__/                      # Юнит-тесты композаблов
+│
+└── components/                         # UI-компоненты конструктора схем
+    ├── canvas/                         # Рабочая область
+    │   ├── SchemaContainer/            # Контейнер визуального отображения и упорядочивания секций
+    │   └── SchemaFieldEditor/          # Инспектор настройки конкретного поля (тип, валидация, дефолт)
+    ├── help/                           # Интерактивная справка и предпросмотр
+    │   ├── ModuleHelpPreview/          # Превью карточки
+    │   ├── ModuleHelpBidiCard/         # Карточка двусторонних отношений
+    │   └── ModuleHelpDynamicCard/      # Карточка динамических модулей
+    ├── sidebar/                        # Боковые панели
+    │   ├── SchemaCatalogSidebar/       # Каталог типов полей и палитра
+    │   └── SchemaHistoryDrawer/        # Панель истории версий схемы
+    └── toolbar/                        # Верхняя панель управления
+        └── SchemaEditorToolbar/        # Кнопки сохранения, экспорта, истории и превью
 ```
 
 ---

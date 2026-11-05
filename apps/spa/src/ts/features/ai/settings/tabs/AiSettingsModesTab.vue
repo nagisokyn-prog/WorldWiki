@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
-import type { AiProfile } from '../../types/ai.types';
+import type { AiProfile } from '@/features/ai/types/ai.types';
 import { 
   useAiSettingsModesTab, 
   type AiSettingsModesTabProps, 

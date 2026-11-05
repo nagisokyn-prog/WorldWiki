@@ -1,4 +1,4 @@
-import type { AiProfile, AiProfileSettings } from '../../../types/ai.types'
+import type { AiProfile, AiProfileSettings } from '@/features/ai/types/ai.types'
 
 export interface AiPrimaryModelCardProps {
   localSettings: AiProfileSettings;

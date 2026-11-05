@@ -5,7 +5,7 @@ import {
   getManuscriptStatistics,
   getItemTracker,
   getItemJourney,
-} from '../services/api.client';
+} from '@/services/api.client';
 
 export interface MatrixChapter {
   id: string;

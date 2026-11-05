@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, shallowRef, triggerRef } from 'vue';
 import { useEditorGroups } from '@worldwiki/components';
-import type { Chapter } from '../types/generated/Chapter';
+import type { Chapter } from '@/types/generated/Chapter';
 import { useSchemaStore } from './schema';
 import { useConsoleStore } from './console';
 import { useZoomStore } from './zoom';

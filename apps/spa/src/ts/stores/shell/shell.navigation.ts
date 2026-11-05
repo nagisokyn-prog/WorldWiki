@@ -1,7 +1,7 @@
 import type { Ref, ComputedRef, ShallowRef } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
-import { entityApi } from '../../services/Entity/entity.api';
-import type { Chapter } from '../../types/generated/Chapter';
+import { entityApi } from '@/services/Entity/entity.api';
+import type { Chapter } from '@/types/generated/Chapter';
 import type { useSchemaStore } from '../schema';
 import type { useShellLayout } from './shell.layout';
 import type { useShellPersistence } from './shell.persistence';

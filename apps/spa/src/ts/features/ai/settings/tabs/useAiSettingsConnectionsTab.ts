@@ -1,5 +1,5 @@
 import { ref, watch, computed } from 'vue';
-import type { AiProfile } from '../../types/ai.types';
+import type { AiProfile } from '@/features/ai/types/ai.types';
 
 export interface AiSettingsConnectionsTabProps {
   profiles: AiProfile[];

@@ -1,5 +1,5 @@
-import type { Volume } from '../../types/generated/Volume';
-import type { Chapter } from '../../types/generated/Chapter';
+import type { Volume } from '@/types/generated/Volume';
+import type { Chapter } from '@/types/generated/Chapter';
 
 export interface SearchResult<T> {
   entity: T;

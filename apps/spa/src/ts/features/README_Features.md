@@ -21,13 +21,8 @@ apps/spa/src/ts/features/
 │
 ├── 📖 chapters/                        # Рукопись и Редактор Глав
 │   ├── README_Chapters.md              # 📖 Иерархическое дерево, 4 режима редактора (WYSIWYG/MD/Split/Word), сюжет
-│   ├── ChapterTree/                    # Дерево томов, глав и сцен рукописи
-│   ├── ChaptersMain/                   # 3-панельный сплит-каркас рабочего стола
-│   ├── EditorCoreTiptap/               # Мультирежимный текстовый процессор (Tiptap v3 / AST)
-│   ├── PlanningPanel/                  # План сцен, цели и статусы готовности
-│   ├── ParticipantsPanel/              # Участники, локации и предметы сцены
-│   ├── PromisesPanel/                  # Сюжетные обещания и Чеховские ружья (Завязка -> Вехи -> Развязка)
-│   └── Export/                         # Экспорт книги в форматы DOCX, PDF, FB2, EPUB, MD, TXT
+│   ├── ChaptersView.vue                # Корневой маршрутизируемый контейнер раздела
+│   └── components/                     # Декомпозированные подсистемы: workspace/, tree/, editor/, panels/, modals/, semantic/
 │
 ├── 📑 documents/                       # Академические Документы и ГОСТ-Стандарты
 │   ├── README_Documents.md             # 📖 ГОСТ 7.32-2017, 5-вкладочный инспектор структуры, NodeViews, экспорт
@@ -41,24 +36,19 @@ apps/spa/src/ts/features/
 ├── 👤 entities/                        # База Сущностей и Энциклопедия Лора Мира
 │   ├── README_Entities.md              # 📖 Схемно-ориентированные поля, граф связей, плавающая карточка, теги
 │   ├── EntityEditor/                   # Полноэкранный редактор карточки сущности
-│   ├── FloatingEntityEditor.vue        # Плавающее окно быстрого редактирования по клику на '((Сущность))'
-│   └── TagsManagerModal.vue            # Глобальный менеджер тегов и цветовых категорий проекта
+│   ├── CharacterJourney/               # Хронология пути персонажа и встреч
+│   └── components/                     # Модальные окна: modals/ (FloatingEntityEditor, TagsManagerModal, CreateEntityModal)
 │
 ├── 📐 schemas/                         # Студия Схем и Конструктор Типов Сущностей
 │   ├── README_Schemas.md               # 📖 Schema Studio, Drag & Drop палитра полей, валидаторы, шаблоны миров
-│   ├── SchemaEditor/                   # Холст конструктора схем и редактор свойств полей
-│   │   ├── SchemaEditorMain.vue        # Главный экран Schema Studio
-│   │   ├── SchemaContainer.vue         # Рабочая область модулей и секций
-│   │   ├── RelationshipBlock.vue       # Матрица допустимых типов отношений
-│   │   └── ManuscriptPointPicker/      # Привязка изменений атрибутов сущности к таймлайну рукописи
-│   └── hooks/                          # Хуки useSchemaData, useSchemaDnD, useSchemaTemplates
+│   ├── SchemaEditorMain.vue            # Главный экран конструктора схем
+│   ├── composables/                    # Сервисные композаблы (useSchemaData, useSchemaDnD, useAvailableEntityTypes...)
+│   └── components/                     # Холст (canvas/), справка (help/), сайдбар (sidebar/), тулбар (toolbar/)
 │
 ├── 🚀 shell/                           # Оболочка Приложения и Лаунчер Проектов
 │   ├── README_Shell.md                 # 📖 Splash диагностика, лаунчер вселенных, навигационный хаб EditorView
-│   ├── Splash.vue                      # Стартовый экран загрузки и проверки миграций БД
-│   ├── ProjectLauncher.vue             # Лаунчер миров: шаблоны (Фэнтези, Sci-Fi, Детектив), недавние проекты
 │   ├── EditorView.vue                  # Главный полноэкранный рабочий каркас приложения
-│   └── AppSwitcher.vue                 # Быстрый селектор переключения активной вселенной
+│   └── components/                     # Подкомпоненты: launcher/ (ProjectLauncher), splash/ (Splash), switcher/ (AppSwitcher)
 │
 ├── ☁️ sync/                            # Облачная Синхронизация и Резервные Копии
 │   ├── README_Sync.md                  # 📖 WorldWiki Cloud, WebDAV, Git, E2EE Vault (AES-GCM-256), 3-Way Merge
@@ -67,12 +57,7 @@ apps/spa/src/ts/features/
 │
 └── ⏳ timeline/                        # Континуум Времени, Календари и Хронология
     ├── README_Timeline.md              # 📖 Главный путеводитель по континууму времени и шкале M_abs
-    ├── Calendars/                      # Конструктор календарей, астрономия (луны, солнце), Атлас Времени
-    │   └── README_Calendars.md         # 📖 Полная математика календарей, сдвиг культур Δ_offset
-    ├── CalendarsPanel/                 # Реестр календарей проекта и физические барабаны DateWheels
-    │   └── README_CalendarsPanel.md    # 📖 Атомарный saveAll(), защита data.data, кинетика колёс
-    └── UniversalDatePicker/            # Универсальный контрол выбора даты для форм и глав
-        └── README_UniversalDatePicker.md # 📖 Адаптивный ввод, day clamping, кросс-календарная конвертация
+    └── components/                     # Подсистемы: calendars/, planets/, atlas/, inspectors/
 ```
 
 ---

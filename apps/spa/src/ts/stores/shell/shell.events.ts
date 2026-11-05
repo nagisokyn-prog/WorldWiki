@@ -1,7 +1,7 @@
 import { onScopeDispose, type Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
 import type { useShellLayout } from './shell.layout';
 import type { useShellEntityOps } from './shell.entityOps';
 

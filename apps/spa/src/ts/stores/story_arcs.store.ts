@@ -11,8 +11,8 @@ import {
   getArcChapters,
   getArcEntities,
   getArcsForChapter
-} from '../services/api.client';
-import type { StoryArc as GeneratedStoryArc } from '../types/generated/StoryArc';
+} from '@/services/api.client';
+import type { StoryArc as GeneratedStoryArc } from '@/types/generated/StoryArc';
 
 export interface StoryArc {
   id: string | null;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, toRaw } from 'vue';
-import { calendarApi } from '../services/api/calendar.api';
+import { calendarApi } from '@/services/api/calendar.api';
 
 export interface TimelineEvent {
   [key: string]: unknown;

@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AiModelInfo, InstalledModelInfo } from '../types/ai.types';
+import type { AiModelInfo, InstalledModelInfo } from '@/features/ai/types/ai.types';
 
 export interface OpenRouterModelRaw {
   id: string;

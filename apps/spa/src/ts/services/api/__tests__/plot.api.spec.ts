@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { plotApi } from '../plot.api';
 import * as api from '../../api.client';
 import { processIds } from '@worldwiki/components';
-import type { PlotPromise } from '../../../types/generated/PlotPromise';
-import type { StoryArc } from '../../../types/generated/StoryArc';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { StoryArc } from '@/types/generated/StoryArc';
 
 vi.mock('@worldwiki/components', () => ({
   processIds: vi.fn((x) => x),

@@ -1,12 +1,12 @@
 import { Editor } from '@tiptap/vue-3';
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { ASTAdapter, type TiptapDocJson } from '../../../services/document/ast/ASTAdapter';
-import { normalizeSemanticDocument } from '../../../services/document/ast/ASTNormalizer';
-import type { SemanticDocument } from '../../../services/document/ast/types';
-import { LayoutEngineService } from '../../../services/document/layout/LayoutEngineService';
-import { NumberingEngine } from '../../../services/document/numbering/NumberingEngine';
-import type { NumberingContext } from '../../../services/document/numbering/types';
-import { useDocumentProfilesStore } from '../../../stores/document_profiles.store';
+import { ASTAdapter, type TiptapDocJson } from '@/services/document/ast/ASTAdapter';
+import { normalizeSemanticDocument } from '@/services/document/ast/ASTNormalizer';
+import type { SemanticDocument } from '@/services/document/ast/types';
+import { LayoutEngineService } from '@/services/document/layout/LayoutEngineService';
+import { NumberingEngine } from '@/services/document/numbering/NumberingEngine';
+import type { NumberingContext } from '@/services/document/numbering/types';
+import { useDocumentProfilesStore } from '@/stores/document_profiles.store';
 import { createDocumentEditorExtensions } from '../extensions';
 import type { DocumentProcessorProps } from './DocumentProcessor.model';
 

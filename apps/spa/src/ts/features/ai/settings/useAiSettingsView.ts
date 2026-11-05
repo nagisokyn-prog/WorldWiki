@@ -1,8 +1,8 @@
 import { ref, onMounted, watch } from 'vue';
-import type { AiProfile, AiProfileSettings } from '../types/ai.types';
+import type { AiProfile, AiProfileSettings } from '@/features/ai/types/ai.types';
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';
-import { projectRecordId } from '../../../services/api/project.api';
+import { projectRecordId } from '@/services/api/project.api';
 
 export type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions' | 'skills';
 

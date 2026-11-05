@@ -1,14 +1,14 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Chat } from '../../types/generated/Chat';
-import type { ChatMessage } from '../../types/generated/ChatMessage';
-import type { AiProfile } from '../../types/generated/AiProfile';
-import type { AutoApprovalSetting } from '../../types/generated/AutoApprovalSetting';
-import type { AiMode } from '../../types/generated/AiMode';
-import type { Artifact } from '../../types/generated/Artifact';
-import type { AiSkill } from '../../types/generated/AiSkill';
-import type { AgentMemory } from '../../types/generated/AgentMemory';
-import type { WebCache } from '../../types/generated/WebCache';
-import type { DictionaryWord } from '../../types/generated/DictionaryWord';
+import type { Chat } from '@/types/generated/Chat';
+import type { ChatMessage } from '@/types/generated/ChatMessage';
+import type { AiProfile } from '@/types/generated/AiProfile';
+import type { AutoApprovalSetting } from '@/types/generated/AutoApprovalSetting';
+import type { AiMode } from '@/types/generated/AiMode';
+import type { Artifact } from '@/types/generated/Artifact';
+import type { AiSkill } from '@/types/generated/AiSkill';
+import type { AgentMemory } from '@/types/generated/AgentMemory';
+import type { WebCache } from '@/types/generated/WebCache';
+import type { DictionaryWord } from '@/types/generated/DictionaryWord';
 import type { SearchResult } from './api.types';
 
 export async function getChatTree(projectId: string): Promise<Chat[]> {

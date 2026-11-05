@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useExport } from '../useExport';
-import * as api from '../../services/api.client';
+import * as api from '@/services/api.client';
 
 vi.mock('../../services/api.client', () => ({
   exportChapters: vi.fn(),

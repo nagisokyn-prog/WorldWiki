@@ -1,4 +1,4 @@
-import type { InstalledModelInfo, AiProfileSettings, ModelLifecycleState } from '../../../types/ai.types'
+import type { InstalledModelInfo, AiProfileSettings, ModelLifecycleState } from '@/features/ai/types/ai.types'
 
 export interface LocalAiLibraryProps {
   installedModels: InstalledModelInfo[];

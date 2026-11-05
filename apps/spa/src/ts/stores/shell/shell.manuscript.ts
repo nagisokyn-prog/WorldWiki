@@ -4,10 +4,10 @@
  */
 
 import { ref, type Ref } from 'vue';
-import * as api from '../../services/api.client';
-import { projectRecordId } from '../../services/api/project.api';
+import * as api from '@/services/api.client';
+import { projectRecordId } from '@/services/api/project.api';
 import { useChapterStore } from '../chapter.store';
-import type { Chapter } from '../../types/generated/Chapter';
+import type { Chapter } from '@/types/generated/Chapter';
 import type { EditorTab } from './shell.types';
 
 export interface ManuscriptDeps {

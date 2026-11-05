@@ -5,9 +5,9 @@
 
 import { ref, type Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
-import type { Chapter } from '../../types/generated/Chapter';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
+import type { Chapter } from '@/types/generated/Chapter';
 import type { useSchemaStore } from '../schema';
 
 export interface EntityCrudDeps {

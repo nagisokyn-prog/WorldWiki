@@ -5,8 +5,8 @@
 
 import { processIds, invoke, stringifyId } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
-import type { Chapter } from '../../types/generated/Chapter';
-import type { ChapterWithHierarchy } from '../../stores/chapter.store';
+import type { Chapter } from '@/types/generated/Chapter';
+import type { ChapterWithHierarchy } from '@/stores/chapter.store';
 import * as api from '../api.client';
 
 export const chapterApi = {

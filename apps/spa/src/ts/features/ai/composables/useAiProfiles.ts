@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { AiProfile } from '../types/ai.types';
+import type { AiProfile } from '@/features/ai/types/ai.types';
 import { aiProfilesApi } from '../api/aiProfiles.api';
 
 const profiles = ref<AiProfile[]>([]);

@@ -1,9 +1,9 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeSemanticDocument } from '../../../../services/document/ast/ASTNormalizer';
-import type { FigureNode, HeadingNode } from '../../../../services/document/ast/types';
-import { NumberingEngine } from '../../../../services/document/numbering/NumberingEngine';
-import { AcademicGOSTProfile } from '../../../../services/document/profiles/defaults';
+import { normalizeSemanticDocument } from '@/services/document/ast/ASTNormalizer';
+import type { FigureNode, HeadingNode } from '@/services/document/ast/types';
+import { NumberingEngine } from '@/services/document/numbering/NumberingEngine';
+import { AcademicGOSTProfile } from '@/services/document/profiles/defaults';
 import { useAcademicInspector } from '../useAcademicInspector';
 
 describe('useAcademicInspector', () => {

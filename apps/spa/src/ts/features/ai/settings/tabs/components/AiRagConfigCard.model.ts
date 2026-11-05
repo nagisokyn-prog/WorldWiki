@@ -1,7 +1,7 @@
 import type { 
   AiProfileSettings, 
   InstalledModelInfo 
-} from '../../../types/ai.types'
+} from '@/features/ai/types/ai.types'
 
 export interface AiRagConfigCardProps {
   localSettings: AiProfileSettings;

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import { useCloudSyncModal, type CloudSyncEmit } from '../useCloudSyncModal';
-import * as api from '../../../services/api.client';
+import * as api from '@/services/api.client';
 import { appConfirm } from '@worldwiki/components';
 import { invoke } from '@tauri-apps/api/core';
 

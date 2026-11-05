@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { reactive, nextTick, defineComponent } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { useEntityEditor } from '../useEntityEditor';
-import * as api from '../../../../services/api.client';
+import * as api from '@/services/api.client';
 import { appAlert } from '@worldwiki/components';
 
 vi.mock('../../../../services/api.client', () => ({

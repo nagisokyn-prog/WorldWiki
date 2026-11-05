@@ -6,7 +6,7 @@
 import { ref, computed } from 'vue';
 import { entityApi } from './entity.api';
 import * as api from '../api.client';
-import { getCached, setCache } from '../../utils/requestCache';
+import { getCached, setCache } from '@/utils/requestCache';
 import { useTreeSelection } from '@worldwiki/components';
 import type { SchemaInfo } from './entity.types';
 

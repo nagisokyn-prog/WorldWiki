@@ -1,11 +1,11 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef, computed } from 'vue';
 import { settingsService } from '@worldwiki/components';
-import { useEntityHistory } from './hooks/useEntityHistory';
-import { useEntityHelpers } from './hooks/useEntityHelpers';
-import { useEntityPhoto } from './hooks/useEntityPhoto';
-import { useEntityDynamicOps } from './hooks/useEntityDynamicOps';
-import { useEntityConfigLoader } from './hooks/useEntityConfigLoader';
-import { useEntityHiddenConfig } from './hooks/useEntityHiddenConfig';
+import { useEntityHistory } from './composables/useEntityHistory';
+import { useEntityHelpers } from './composables/useEntityHelpers';
+import { useEntityPhoto } from './composables/useEntityPhoto';
+import { useEntityDynamicOps } from './composables/useEntityDynamicOps';
+import { useEntityConfigLoader } from './composables/useEntityConfigLoader';
+import { useEntityHiddenConfig } from './composables/useEntityHiddenConfig';
 import type { EntityEditorProps, SchemaConfig, SchemaSection, SchemaField } from './EntityEditor.model';
 
 export function normalizeEntityFormData(data: Record<string, unknown> | undefined | null): Record<string, unknown> {

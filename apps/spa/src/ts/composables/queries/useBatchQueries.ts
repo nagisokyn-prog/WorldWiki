@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
-import { batchApi } from '../../services/api/batch.api';
+import { batchApi } from '@/services/api/batch.api';
 
 export function useSaveEntityWithRelations() {
   const queryClient = useQueryClient();

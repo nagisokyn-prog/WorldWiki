@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { chapterService } from '../services/chapter.service';
+import { chapterService } from '@/services/chapter.service';
 import { useTimelineStore } from './timeline.store';
-import * as api from '../services/api.client';
+import * as api from '@/services/api.client';
 import { useCalendarStore } from './calendar.store';
-import type { Chapter } from '../types/generated/Chapter';
-import type { TimelineEvent } from '@/features/timeline/TimelinePanel/useTimelinePanel';
-import type { ParticipantItem } from '@/features/chapters/ParticipantsPanel/useParticipantsPanel';
+import type { Chapter } from '@/types/generated/Chapter';
+import type { TimelineEvent } from '@/features/timeline/components/inspectors/TimelinePanel/useTimelinePanel';
+import type { ParticipantItem } from '@/features/chapters/components/panels/ParticipantsPanel/useParticipantsPanel';
 
 export type ChapterWithHierarchy = Omit<Chapter, 'timeline_events' | 'participants' | 'footnotes'> & {
   timeline_events?: TimelineEvent[] | null;

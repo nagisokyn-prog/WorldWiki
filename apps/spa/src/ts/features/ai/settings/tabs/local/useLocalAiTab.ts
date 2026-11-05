@@ -8,7 +8,7 @@ import type {
   InstalledModelInfo,
   ModelLifecycleState,
   RecommendedModelCard
-} from '../../../types/ai.types';
+} from '@/features/ai/types/ai.types';
 
 export interface HfGgufFile {
   filename: string;

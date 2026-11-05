@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue';
-import type { AiProfileSettings } from '../../../types/ai.types';
+import type { AiProfileSettings } from '@/features/ai/types/ai.types';
 
 export interface LocalAiRuntimeProps {
   localSettings: AiProfileSettings | null;

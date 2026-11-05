@@ -4,9 +4,9 @@
  */
 
 import { ref, shallowRef, type Ref } from 'vue';
-import * as api from '../../services/api.client';
-import type { Chapter } from '../../types/generated/Chapter';
-import type { StoryArc } from '../../types/generated/StoryArc';
+import * as api from '@/services/api.client';
+import type { Chapter } from '@/types/generated/Chapter';
+import type { StoryArc } from '@/types/generated/StoryArc';
 import type { useSchemaStore } from '../schema';
 import type { QuickOpenItem, SidebarItem } from './shell.types';
 import type { PaletteCommand } from '@worldwiki/components';

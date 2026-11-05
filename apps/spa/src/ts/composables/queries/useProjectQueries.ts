@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
-import * as api from '../../services/api.client';
-import type { ProjectConfig } from '../../services/api/project.api';
+import * as api from '@/services/api.client';
+import type { ProjectConfig } from '@/services/api/project.api';
 
 export function useProjects() {
   return useQuery({

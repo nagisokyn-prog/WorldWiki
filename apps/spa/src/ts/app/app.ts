@@ -12,17 +12,17 @@ import '@worldwiki/resources/styles/font-awesome.min.css';
 import '@worldwiki/resources/styles/styles.css';
 import '@worldwiki/resources/styles/base/glass-animations.css';
 
-import { entityApi } from '../services/Entity/entity.api';
+import { entityApi } from '@/services/Entity/entity.api';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
-import { setupGlass } from '../utils/v-glass';
+import { setupGlass } from '@/utils/v-glass';
 import { i18n, setLocale, settingsService } from '@worldwiki/components';
-import AppSwitcher from '../features/shell/AppSwitcher.vue';
+import AppSwitcher from '../features/shell/components/switcher/AppSwitcher/AppSwitcher.vue';
 import { router } from './router';
 
-import { ensureWasmInitialized } from '../services/Calendars/calendar.wasm-bridge';
-import ChapterTreeVue from '../features/chapters/ChapterTree/ChapterTree.vue';
-import ChaptersMainVue from '../features/chapters/ChaptersMain/ChaptersMain.vue';
+import { ensureWasmInitialized } from '@/services/Calendars/calendar.wasm-bridge';
+import ChapterTreeVue from '../features/chapters/components/tree/ChapterTree/ChapterTree.vue';
+import ChaptersMainVue from '../features/chapters/components/workspace/ChaptersMain/ChaptersMain.vue';
 import {
   QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue,
   EditorTabBar as EditorTabBarVue, EditorGroupPane as EditorGroupPaneVue,
@@ -31,16 +31,16 @@ import {
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт
 import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
 import ChaptersViewVue from '../features/chapters/ChaptersView.vue';
-import EditorCoreVue from '../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanelVue from '../features/timeline/TimelinePanel/TimelinePanel.vue';
-import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
-import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
-import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
+import EditorCoreVue from '../features/chapters/components/editor/EditorCoreTiptap/EditorCoreTiptap.vue';
+import TimelinePanelVue from '../features/timeline/components/inspectors/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanelVue from '../features/chapters/components/panels/ParticipantsPanel/ParticipantsPanel.vue';
+import PlanningPanelVue from '../features/chapters/components/panels/PlanningPanel/PlanningPanel.vue';
+import ExportModalVue from '../features/chapters/components/modals/ExportModal/ExportModal.vue';
 
-import TagsManagerModalVue from '../features/entities/TagsManagerModal.vue';
-import SchemaEditorMainVue from '../features/schemas/SchemaEditor/SchemaEditorMain.vue';
+import TagsManagerModalVue from '../features/entities/components/modals/TagsManagerModal/TagsManagerModal.vue';
+import SchemaEditorMainVue from '../features/schemas/SchemaEditorMain.vue';
 import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
-import GlobalCalendarWidgetVue from '../features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
+import GlobalCalendarWidgetVue from '../features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 
 // TagsField can stay async if it's not statically imported elsewhere
 const TagsField = defineAsyncComponent(() => import('@worldwiki/components').then(m => m.TagsField));

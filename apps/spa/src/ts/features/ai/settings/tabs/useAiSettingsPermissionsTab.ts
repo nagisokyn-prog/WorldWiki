@@ -1,6 +1,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { PermissionLevel, RiskLevel, ToolCategory, ToolPermissionConfig } from '../../types/ai.types';
+import type { PermissionLevel, RiskLevel, ToolCategory, ToolPermissionConfig } from '@/features/ai/types/ai.types';
 
 export interface AiSettingsPermissionsTabEmits {
   (e: 'save-permissions', permissions: Record<string, PermissionLevel>): void;

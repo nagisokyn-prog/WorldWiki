@@ -88,7 +88,7 @@ export function getWasmEngine(): WasmCalendarEngine | null {
             const cwd = typeof process.cwd === 'function' ? process.cwd() : '.';
             const dir = typeof __dirname !== 'undefined' ? __dirname : '';
             const candidates = [
-              dir ? path.resolve(dir, '../../../../../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm') : '',
+              dir ? path.resolve(dir, '../../../../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm') : '',
               path.resolve(cwd, 'packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
               path.resolve(cwd, '../../packages/calendar-wasm/pkg/worldwiki_calendar_wasm_bg.wasm'),
             ].filter(Boolean);

@@ -1,6 +1,6 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import uPlot from 'uplot';
-import type { HardwareInfo } from '../../types/ai.types';
+import type { HardwareInfo } from '@/features/ai/types/ai.types';
 
 export interface HardwareMonitorChartProps {
   hardware: HardwareInfo | null;

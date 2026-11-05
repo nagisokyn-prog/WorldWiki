@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { AiProfile, AiModelInfo } from '../../../types/ai.types';
+import type { AiProfile, AiModelInfo } from '@/features/ai/types/ai.types';
 import { useAiModels } from '../../../composables/useAiModels';
 
 export interface AiTopBarMode {

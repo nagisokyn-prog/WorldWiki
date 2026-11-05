@@ -3,7 +3,7 @@ import { useEntityTree } from '../entity.tree';
 import { entityApi } from '../entity.api';
 import * as api from '../../api.client';
 import { appConfirm } from '@worldwiki/components';
-import { setCache } from '../../../utils/requestCache';
+import { setCache } from '@/utils/requestCache';
 
 vi.mock('../entity.api', () => ({
   entityApi: {

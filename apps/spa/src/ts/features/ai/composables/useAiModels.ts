@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { AiModelInfo } from '../types/ai.types';
+import type { AiModelInfo } from '@/features/ai/types/ai.types';
 import { aiModelsApi } from '../api/aiModels.api';
 
 export function useAiModels() {

@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import type { ChatMessage, MessageVariantGroup } from '../types/aiPanel.model';
+import type { ChatMessage, MessageVariantGroup } from '@/features/ai/types/aiPanel.model';
 
 export function useAiStreamListener(options: {
   activeChatId: Ref<string>;

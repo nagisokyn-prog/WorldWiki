@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
-import { tagApi, type TagData } from '../../services/api/tag.api';
+import { tagApi, type TagData } from '@/services/api/tag.api';
 
 export function useTags(project: string) {
   return useQuery({

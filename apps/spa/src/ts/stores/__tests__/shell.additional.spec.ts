@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useShellStore } from '../shell';
-import { entityApi } from '../../services/Entity/entity.api';
+import { entityApi } from '@/services/Entity/entity.api';
 import { settingsService } from '@worldwiki/components';
 import { useConsoleStore } from '../console';
 

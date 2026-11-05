@@ -1,10 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Entity } from '../../types/generated/Entity';
-import type { EntitySchema } from '../../types/generated/EntitySchema';
-import type { EntityRel } from '../../types/generated/EntityRel';
-import type { RelationSchema } from '../../types/generated/RelationSchema';
-import type { Tag } from '../../types/generated/Tag';
-import type { Cites } from '../../types/generated/Cites';
+import type { Entity } from '@/types/generated/Entity';
+import type { EntitySchema } from '@/types/generated/EntitySchema';
+import type { EntityRel } from '@/types/generated/EntityRel';
+import type { RelationSchema } from '@/types/generated/RelationSchema';
+import type { Tag } from '@/types/generated/Tag';
+import type { Cites } from '@/types/generated/Cites';
 
 export async function getEntities(project: string, entityType: string | null): Promise<Entity[]> {
   return await invoke('get_entities', { project, entityType });

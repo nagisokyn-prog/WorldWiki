@@ -1,4 +1,4 @@
-import * as api from '../services/api.client';
+import * as api from '@/services/api.client';
 
 export interface ChapterExportData {
   id: string;

@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { DocumentExportService } from '../../../services/document/export/DocumentExportService';
-import type { ExportFormat } from '../../../services/document/profiles/types';
+import { DocumentExportService } from '@/services/document/export/DocumentExportService';
+import type { ExportFormat } from '@/services/document/profiles/types';
 import type { DocumentExportModalEmits, DocumentExportModalProps } from './DocumentExportModal.model';
 
 export function useDocumentExportModal(

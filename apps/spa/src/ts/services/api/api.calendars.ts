@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Calendar } from '../../types/generated/Calendar';
+import type { Calendar } from '@/types/generated/Calendar';
 
 export async function getCalendars(project: string): Promise<Calendar[]> {
   return await invoke('get_calendars', { project });

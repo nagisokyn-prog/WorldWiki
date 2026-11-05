@@ -5,8 +5,8 @@
 
 import type { Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
-import * as api from '../../services/api.client';
-import { entityApi } from '../../services/Entity/entity.api';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
 import type { useSchemaStore } from '../schema';
 import type { EditorGroup, EditorTab } from './shell.types';
 

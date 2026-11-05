@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { projectService } from '../project.service';
 import * as api from '../api.client';
-import { clearCache } from '../../utils/requestCache';
+import { clearCache } from '@/utils/requestCache';
 
 vi.mock('../api.client', () => ({
   getProjects: vi.fn(),

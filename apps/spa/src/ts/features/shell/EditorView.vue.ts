@@ -8,25 +8,25 @@ import { useEditorViewListeners } from './useEditorViewListeners';
 export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
 
 // Component imports for template
-import ChapterTreeVue from '@/features/chapters/ChapterTree/ChapterTree.vue';
+import ChapterTreeVue from '@/features/chapters/components/tree/ChapterTree/ChapterTree.vue';
 
 import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
-import ChaptersMainVue from '@/features/chapters/ChaptersMain/ChaptersMain.vue';
+import ChaptersMainVue from '@/features/chapters/components/workspace/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
-import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMain.vue';
+import SchemaEditorMainVue from '@/features/schemas/SchemaEditorMain.vue';
 import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue, Settings as SettingsVue } from '@worldwiki/components';
-import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
-import CreateChapterModalVue from '@/features/chapters/CreateChapterModal/CreateChapterModal.vue';
-import CreateEntityModalVue from '@/features/entities/CreateEntityModal/CreateEntityModal.vue';
+import TagsManagerModalVue from '@/features/entities/components/modals/TagsManagerModal/TagsManagerModal.vue';
+import CreateChapterModalVue from '@/features/chapters/components/modals/CreateChapterModal/CreateChapterModal.vue';
+import CreateEntityModalVue from '@/features/entities/components/modals/CreateEntityModal/CreateEntityModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
 import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue';
-import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
-import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
+import ArcBoardVue from '@/features/chapters/components/panels/StoryArcs/ArcBoard.vue';
+import TimelineInspectorVue from '@/features/timeline/components/inspectors/TimelineInspector/TimelineInspector.vue';
 import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
-import CalendarEditorVue from '@/features/timeline/CalendarEditor/CalendarEditor.vue';
-import PlanetEditorVue from '@/features/timeline/PlanetEditor/PlanetEditor.vue';
-import type { PlanetDto } from '@/features/timeline/PlanetEditor/PlanetEditor.model';
+import CalendarEditorVue from '@/features/timeline/components/calendars/CalendarEditor/CalendarEditor.vue';
+import PlanetEditorVue from '@/features/timeline/components/planets/PlanetEditor/PlanetEditor.vue';
+import type { PlanetDto } from '@/features/timeline/components/planets/PlanetEditor/PlanetEditor.model';
 
 export default defineComponent({
   name: 'EditorView',

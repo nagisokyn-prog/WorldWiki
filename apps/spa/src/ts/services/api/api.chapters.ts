@@ -1,9 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Chapter } from '../../types/generated/Chapter';
-import type { Volume } from '../../types/generated/Volume';
-import type { Plan } from '../../types/generated/Plan';
-import type { TextBlock } from '../../types/generated/TextBlock';
-import type { EntityRel } from '../../types/generated/EntityRel';
+import type { Chapter } from '@/types/generated/Chapter';
+import type { Volume } from '@/types/generated/Volume';
+import type { Plan } from '@/types/generated/Plan';
+import type { TextBlock } from '@/types/generated/TextBlock';
+import type { EntityRel } from '@/types/generated/EntityRel';
 import type { ChapterHierarchy, SearchResult } from './api.types';
 
 export async function getChapters(project: string): Promise<Chapter[]> {

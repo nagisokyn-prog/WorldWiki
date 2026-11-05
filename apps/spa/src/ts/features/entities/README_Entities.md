@@ -9,20 +9,35 @@
 ```
 apps/spa/src/ts/features/entities/
 ├── README_Entities.md                  # Данная всеобъемлющая документация подсистемы сущностей
-├── FloatingEntityEditor.vue            # Плавающее окно быстрого редактирования сущности (без ухода из рукописи)
-├── useFloatingEntityEditor.ts          # Composable позиционирования и фокуса плавающей карточки
-├── TagsManagerModal.vue                # Менеджер тегов проекта (цвета тегов, фильтрация, объединение)
-├── useTagsManagerModal.ts              # Composable управления глобальными тегами
-├── __tests__/                          # Тесты плавающего редактора и тегов
+│
+├── components/                         # Декомпозированные компоненты
+│   ├── modals/                         # Модальные и плавающие окна
+│   │   ├── FloatingEntityEditor/       # Плавающее окно быстрого редактирования (Vue, Composable, Model, Spec)
+│   │   ├── TagsManagerModal/           # Менеджер тегов проекта (Vue, Composable, Model, Spec)
+│   │   └── CreateEntityModal/          # Модалка создания сущности (Vue, Composable, Model, Spec)
+│   └── ...
+│
+├── CharacterJourney/                   # Инспектор пути персонажа и хронологии встреч
+│   ├── CharacterJourney.vue
+│   ├── useCharacterJourney.ts
+│   ├── CharacterJourney.model.ts
+│   ├── components/                     # Атомарные элементы таймлайна пути
+│   └── composables/                    # Композаблы фильтрации и хронологии пути
 │
 └── EntityEditor/                       # Главный полноэкранный редактор карточки сущности
     ├── EntityEditor.vue                # UI карточки: шапка (аватар, имя, теги), динамические поля, граф связей
     ├── EntityEditor.model.ts           # Интерфейс пропсов и эмиттов EntityEditor
     ├── useEntityEditor.ts              # Главный Composable: загрузка сущности по ID, автосохранение, валидация по схеме
-    ├── hooks/                          # Вспомогательные хуки
+    ├── components/                     # Подвиджеты (LocationAstronomyWidget, EntityHistoryBanner)
+    ├── composables/                    # Вспомогательные композаблы карточки сущности
+    │   ├── entityConfigLoader.utils.ts # Утилиты загрузки конфигураций
+    │   ├── useEntityConfigLoader.ts    # Загрузка и резолв референсных данных
+    │   ├── useEntityDynamicOps.ts      # Сворачивание и разворачивание динамических блоков
     │   ├── useEntityHelpers.ts         # Форматирование полей, вычисление возраста, титулов, статусов
+    │   ├── useEntityHiddenConfig.ts    # Управление скрытыми полями
     │   ├── useEntityHistory.ts         # Стек Undo / Redo изменений атрибутов карточки
-    │   └── __tests__/                  # Юнит-тесты хуков карточки сущности
+    │   ├── useEntityPhoto.ts           # Загрузка и кэширование аватаров
+    │   └── __tests__/                  # Юнит-тесты композаблов карточки
     └── __tests__/                      # Тесты useEntityEditor
 ```
 

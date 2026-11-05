@@ -5,8 +5,8 @@
 
 import { processIds } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
-import type { PlotPromise } from '../../types/generated/PlotPromise';
-import type { StoryArc } from '../../types/generated/StoryArc';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { StoryArc } from '@/types/generated/StoryArc';
 import * as api from '../api.client';
 
 export const plotApi = {

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import * as api from '../services/api.client';
-import { getCached, setCache, invalidateCache } from '../utils/requestCache';
+import * as api from '@/services/api.client';
+import { getCached, setCache, invalidateCache } from '@/utils/requestCache';
 
 export interface TagData {
   id?: string;

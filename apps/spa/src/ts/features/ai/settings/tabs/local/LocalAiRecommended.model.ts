@@ -1,4 +1,4 @@
-import type { RecommendedModelCard } from '../../../types/ai.types'
+import type { RecommendedModelCard } from '@/features/ai/types/ai.types'
 
 export interface LocalAiRecommendedProps {
   recommendedModels: RecommendedModelCard[];

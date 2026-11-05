@@ -5,13 +5,13 @@
  */
 
 import { createApp } from 'vue';
-import ChaptersMainVue from '../features/chapters/ChaptersMain/ChaptersMain.vue';
-import ChapterTreeVue from '../features/chapters/ChapterTree/ChapterTree.vue';
-import EditorCoreVue from '../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanelVue from '../features/timeline/TimelinePanel/TimelinePanel.vue';
-import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
-import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
-import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
+import ChaptersMainVue from '../features/chapters/components/workspace/ChaptersMain/ChaptersMain.vue';
+import ChapterTreeVue from '../features/chapters/components/tree/ChapterTree/ChapterTree.vue';
+import EditorCoreVue from '../features/chapters/components/editor/EditorCoreTiptap/EditorCoreTiptap.vue';
+import TimelinePanelVue from '../features/timeline/components/inspectors/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanelVue from '../features/chapters/components/panels/ParticipantsPanel/ParticipantsPanel.vue';
+import PlanningPanelVue from '../features/chapters/components/panels/PlanningPanel/PlanningPanel.vue';
+import ExportModalVue from '../features/chapters/components/modals/ExportModal/ExportModal.vue';
 
 
 let appInstance: ReturnType<typeof createApp> | null = null;

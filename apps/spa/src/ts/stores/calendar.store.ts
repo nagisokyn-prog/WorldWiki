@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { appAlert } from '@worldwiki/components';
-import * as api from '../services/api.client';
-import { calendarApi } from '../services/api/calendar.api';
-import { projectRecordId } from '../services/api/project.api';
-import { getCached, setCache, invalidateCache } from '../utils/requestCache';
-import type { CalendarData, PlanetEntity } from '../services/Calendars/calendar.types';
-import { CalendarMath } from '../services/Calendars/useCalendarEngine';
-import type { Calendar } from '../types/generated/Calendar';
+import * as api from '@/services/api.client';
+import { calendarApi } from '@/services/api/calendar.api';
+import { projectRecordId } from '@/services/api/project.api';
+import { getCached, setCache, invalidateCache } from '@/utils/requestCache';
+import type { CalendarData, PlanetEntity } from '@/services/Calendars/calendar.types';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
+import type { Calendar } from '@/types/generated/Calendar';
 
 import { getDefaultPlanet, normalizeCalendarId, type CalendarRecord } from './calendarStore.utils';
 export type { CalendarRecord } from './calendarStore.utils';

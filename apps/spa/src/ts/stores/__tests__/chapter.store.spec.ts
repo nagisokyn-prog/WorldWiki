@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useChapterStore } from '../chapter.store';
-import { chapterService } from '../../services/chapter.service';
+import { chapterService } from '@/services/chapter.service';
 import { useTimelineStore } from '../timeline.store';
 import { useCalendarStore } from '../calendar.store';
-import * as api from '../../services/api.client';
+import * as api from '@/services/api.client';
 
 vi.mock('../../services/api.client', () => ({
   getChapterHierarchy: vi.fn(),

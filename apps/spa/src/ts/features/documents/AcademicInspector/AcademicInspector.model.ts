@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/vue-3';
-import type { SemanticDocument } from '../../../services/document/ast/types';
-import type { NumberingContext } from '../../../services/document/numbering/types';
+import type { SemanticDocument } from '@/services/document/ast/types';
+import type { NumberingContext } from '@/services/document/numbering/types';
 
 export type InspectorTab = 'toc' | 'figures' | 'tables' | 'equations' | 'profiles';
 

@@ -1,13 +1,13 @@
 import { ref, computed, nextTick } from 'vue';
 import type { Ref } from 'vue';
-import type { ChatMessage, MessageVariantGroup } from '../types/aiPanel.model';
+import type { ChatMessage, MessageVariantGroup } from '@/features/ai/types/aiPanel.model';
 import {
   getChatMessages,
   deleteChatMessage as deleteChatMsgApi,
   editChatMessage as editChatMsgApi,
   switchMessageVariant as switchMsgVarApi,
   forkChat as forkChatApi,
-} from '../../../services/api.client';
+} from '@/services/api.client';
 
 export function useAiMessageTree(options: {
   activeChatId: Ref<string>;

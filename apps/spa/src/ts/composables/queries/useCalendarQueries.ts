@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
-import { calendarApi } from '../../services/api/calendar.api';
+import { calendarApi } from '@/services/api/calendar.api';
 
 export function useCalendars(project: string) {
   return useQuery({
@@ -17,7 +17,7 @@ export function useGlobalTimeline(project: string) {
   });
 }
 
-import type { Calendar } from '../../types/generated/Calendar';
+import type { Calendar } from '@/types/generated/Calendar';
 
 export function useSaveCalendar() {
   const queryClient = useQueryClient();

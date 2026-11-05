@@ -1,4 +1,4 @@
-import type { MessageVariantGroup, ChatMessage } from '../../../types/aiPanel.model';
+import type { MessageVariantGroup, ChatMessage } from '@/features/ai/types/aiPanel.model';
 import type { CitationItem } from '../../citations/AiCitation.model';
 
 export interface AiMessageItemProps {

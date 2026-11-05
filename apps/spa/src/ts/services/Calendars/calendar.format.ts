@@ -3,9 +3,10 @@
  * @description Форматирование, парсинг дат, праздники и лор-объяснения
  */
 
-import type {
-  CalendarData,
-  CalendarDate
+import {
+  DEFAULT_CALENDAR_SEASONS,
+  type CalendarData,
+  type CalendarDate
 } from './calendar.types';
 
 export class CalendarFormat {
@@ -121,7 +122,7 @@ export class CalendarFormat {
         широта: 45.0,
         учитывать_сезонную_длительность_дня: false
       },
-      сезоны: [],
+      сезоны: JSON.parse(JSON.stringify(DEFAULT_CALENDAR_SEASONS)),
       праздники: [],
       moons: [],
       weather_patterns: []

@@ -80,9 +80,15 @@
             />
           </td>
           <td>
-            <span class="status-chip" style="font-size: 11px;">
-              {{ seasonLabels[idx] }}
+            <span
+              v-if="seasonInfo[idx] && seasonInfo[idx].name !== '—'"
+              class="status-chip"
+              :style="seasonInfo[idx].color ? { borderColor: seasonInfo[idx].color } : {}"
+              style="font-size: 11px;"
+            >
+              {{ seasonInfo[idx].name }}
             </span>
+            <span v-else style="color: var(--text-dim);">—</span>
           </td>
           <td>
             <button
@@ -110,5 +116,5 @@ const props = defineProps<Tab1MonthsSectionProps>();
 
 defineEmits<Tab1MonthsSectionEmits>();
 
-const { seasonLabels, monthOptions, maxDaysInSelectedMonth } = useTab1MonthsSection(props);
+const { seasonLabels, seasonInfo, monthOptions, maxDaysInSelectedMonth } = useTab1MonthsSection(props);
 </script>

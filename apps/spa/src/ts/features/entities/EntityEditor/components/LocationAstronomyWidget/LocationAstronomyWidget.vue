@@ -92,7 +92,7 @@
           class="loc-astro-tz-chip"
           @click="setSeasonDayPreset(s.startDay)"
         >
-          {{ s.icon }} {{ s.name }}
+          {{ s.name }}
         </button>
       </div>
     </div>

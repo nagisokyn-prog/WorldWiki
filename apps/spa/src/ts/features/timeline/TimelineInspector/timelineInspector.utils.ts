@@ -37,15 +37,11 @@ export function checkIsFlashback(
   allChs: InspectorChapter[],
   allEvents?: InspectorEvent[]
 ): boolean {
-  if (ev.reveals?.some((r) => r.kind === 'flashback' || (r as unknown as { time_nature?: string }).time_nature === 'flashback')) {
-    return true;
-  }
+  if (ev.reveals?.some((r) => r.kind === 'flashback' || (r as unknown as { time_nature?: string }).time_nature === 'flashback')) return true;
   const rawObj = ev as unknown as { time_nature?: string; is_flashback?: boolean };
   if (rawObj.time_nature === 'flashback' || rawObj.is_flashback === true) return true;
   const text = `${ev.title} ${ev.description || ''}`.toLowerCase();
-  if (text.includes('флешбэк') || text.includes('флешбек') || text.includes('ретроспектив') || text.includes('воспоминани')) {
-    return true;
-  }
+  if (text.includes('флешбэк') || text.includes('флешбек') || text.includes('ретроспектив') || text.includes('воспоминани')) return true;
 
   const primaryRev = ev.reveals?.[0];
   if (primaryRev && ev.m_abs > 0 && allChs.length > 1 && allEvents) {
@@ -53,22 +49,37 @@ export function checkIsFlashback(
     const chIdx = allChs.findIndex((c) => normalizeId(c.id) === cleanChId);
     if (chIdx > 0) {
       const prevChIds = new Set(allChs.slice(0, chIdx).map((c) => normalizeId(c.id)));
-      const prevEvents = allEvents.filter(
-        (e) => e.m_abs > 0 && e.reveals?.some((r) => prevChIds.has(normalizeId(r.chapter_id)))
-      );
-      if (prevEvents.length > 0) {
-        const maxPrevMabs = Math.max(...prevEvents.map((e) => e.m_abs));
-        if (ev.m_abs < maxPrevMabs - 1440) return true;
-      }
+      const prevEvents = allEvents.filter((e) => e.m_abs > 0 && e.reveals?.some((r) => prevChIds.has(normalizeId(r.chapter_id))));
+      if (prevEvents.length > 0 && ev.m_abs < Math.max(...prevEvents.map((e) => e.m_abs)) - 1440) return true;
     }
   }
   return false;
 }
 
+export function resolveBestEraIndex(mAbs: number, cal: CalendarData): number {
+  if (!cal.эпохи?.length) return 0;
+  const isBCE = mAbs < 0;
+  const baseIdx = Math.max(0, cal.эпохи.findIndex((e) => !e.обратный_отсчет === !isBCE));
+  const rawDate = CalendarMath.getDateFromAbsolute(mAbs, cal, baseIdx);
+  let bestIdx = baseIdx, maxStart = -Infinity;
+  for (let i = 0; i < cal.эпохи.length; i++) {
+    const era = cal.эпохи[i];
+    if (!era.обратный_отсчет !== !isBCE) continue;
+    const s = era.год_начала ?? 1, e = era.год_конца ?? Infinity;
+    if (rawDate.year >= s && rawDate.year <= e && s > maxStart) {
+      maxStart = s;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
+}
+
 export function formatEventDate(mAbs: number, cal: CalendarData | null): string {
   if (!cal || mAbs === undefined || mAbs === null) return `M_abs: ${mAbs}`;
   try {
-    const dateInput = CalendarMath.getDateFromAbsolute(mAbs, cal);
+    const bestEra = resolveBestEraIndex(mAbs, cal);
+    const dateInput = CalendarMath.getDateFromAbsolute(mAbs, cal, bestEra);
+    dateInput.era_index = bestEra;
     const calDate: CalendarDate = {
       absolute_minute: mAbs,
       calendar_id: (cal as unknown as { id?: string; _id?: string }).id || (cal as unknown as { id?: string; _id?: string })._id || 'default',
@@ -99,10 +110,7 @@ export function buildFilteredChapters(
 ): InspectorChapter[] {
   let chs = [...rawChapters];
   if (readerHorizonOrder !== null) {
-    chs = chs.filter((c, idx) => {
-      const order = c.sort_order && Number(c.sort_order) > 0 ? Number(c.sort_order) : idx + 1;
-      return order <= (readerHorizonOrder ?? 999999);
-    });
+    chs = chs.filter((c, idx) => (c.sort_order && Number(c.sort_order) > 0 ? Number(c.sort_order) : idx + 1) <= (readerHorizonOrder ?? 999999));
   }
 
   return chs.map((ch, idx) => {
@@ -112,11 +120,7 @@ export function buildFilteredChapters(
     const cleanChId = normalizeId(ch.id);
     const chEvents = allEvents.filter((ev) => ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanChId));
 
-    const sceneCount = chEvents.length;
-    let flashbackCount = 0;
-    let earliestFlashbackEventId: string | null = null;
-    let minMabs = Infinity;
-
+    let flashbackCount = 0, earliestFlashbackEventId: string | null = null, minMabs = Infinity;
     chEvents.forEach((ev) => {
       if (checkIsFlashback(ev, chs, allEvents)) {
         flashbackCount++;
@@ -127,7 +131,7 @@ export function buildFilteredChapters(
       }
     });
 
-    return { ...ch, title, sort_order: order, sceneCount, flashbackCount, earliestFlashbackEventId };
+    return { ...ch, title, sort_order: order, sceneCount: chEvents.length, flashbackCount, earliestFlashbackEventId };
   });
 }
 
@@ -144,11 +148,7 @@ export function filterInspectorEvents(
     if (isolatedChId && !ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId)) return false;
     if (filters.selectedEntityId !== 'all') {
       const target = normalizeId(filters.selectedEntityId);
-      const hasParticipant = ev.participants.some((p: { id?: string } | string) => {
-        const pid = typeof p === 'string' ? p : p?.id;
-        return pid && normalizeId(pid) === target;
-      });
-      if (!hasParticipant) return false;
+      if (!ev.participants.some((p) => normalizeId(typeof p === 'string' ? p : p?.id) === target)) return false;
     }
     if (filters.selectedPovId !== 'all' && !ev.reveals.some((r) => r.pov_id === filters.selectedPovId)) return false;
     if (filters.showFlashbacksOnly && !checkIsFlashback(ev, chaptersList, rawEvents)) return false;
@@ -161,17 +161,14 @@ export function filterInspectorEvents(
 
   const sceneSignatures = new Set<string>();
   evs.forEach((ev) => {
-    const isScene = getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:');
-    if (isScene) sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
+    if (getEventId(ev).startsWith('plot_promises:') || !getEventId(ev).startsWith('timeline_events:')) {
+      sceneSignatures.add(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`);
+    }
   });
 
-  evs = evs.filter((ev) => {
-    const isPureEvent = getEventId(ev).startsWith('timeline_events:') && ev.kind === 'event';
-    if (isPureEvent && sceneSignatures.has(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`)) return false;
-    return true;
-  });
-
-  return evs.sort((a, b) => a.m_abs - b.m_abs);
+  return evs
+    .filter((ev) => !(getEventId(ev).startsWith('timeline_events:') && ev.kind === 'event' && sceneSignatures.has(`${ev.m_abs}_${ev.title.trim().toLowerCase()}`)))
+    .sort((a, b) => a.m_abs - b.m_abs);
 }
 
 export function buildFormattedEvents(
@@ -201,18 +198,12 @@ export function buildFormattedEvents(
 
     let targetCal: CalendarData | null = cal;
     const evCalId = ev.calendar_id || (ev as unknown as { calendar?: string }).calendar;
-    if (evCalId) {
+    if (evCalId && evCalId !== 'default') {
       const cleanCal = normalizeId(evCalId);
-      targetCal =
-        calendarsMap.get(cleanCal) ||
-        calendarsMap.get(String(evCalId)) ||
-        calendarsMap.get(String(evCalId).toLowerCase()) ||
-        cal;
+      targetCal = calendarsMap.get(cleanCal) || calendarsMap.get(String(evCalId)) || calendarsMap.get(String(evCalId).toLowerCase()) || cal;
     }
 
-    let locationName: string | undefined;
-    let localTimeBadge: string | undefined;
-    let localTimeHint: string | null = null;
+    let locationName: string | undefined, localTimeBadge: string | undefined, localTimeHint: string | null = null;
     let hasTimezoneDiscrepancy = false;
 
     if (ev.location_id) {
@@ -222,23 +213,13 @@ export function buildFormattedEvents(
 
       if (matchedLoc && ev.m_abs !== undefined && ev.m_abs !== null) {
         const geo = resolveLocationGeography(matchedLoc, projectEntities, (targetCal || cal)?.timezones || []);
-        if (!evCalId && geo.officialCalendarId) {
-          targetCal =
-            calendarsMap.get(normalizeId(geo.officialCalendarId)) ||
-            calendarsMap.get(String(geo.officialCalendarId).toLowerCase()) ||
-            targetCal;
+        if ((!evCalId || evCalId === 'default') && geo.officialCalendarId) {
+          targetCal = calendarsMap.get(normalizeId(geo.officialCalendarId)) || calendarsMap.get(String(geo.officialCalendarId).toLowerCase()) || targetCal;
         }
-        const timeInfo = computeLocationLocalTime(
-          ev.m_abs,
-          geo,
-          targetCal,
-          targetCal?.timezones || cal?.timezones || []
-        );
+        const timeInfo = computeLocationLocalTime(ev.m_abs, geo, targetCal, targetCal?.timezones || cal?.timezones || [], true);
         localTimeBadge = `${timeInfo.phaseEmoji} ${timeInfo.localTimeStr}`;
         hasTimezoneDiscrepancy = timeInfo.hasDiscrepancy;
-        localTimeHint =
-          timeInfo.discrepancyHint ||
-          `Местное время в «${geo.entityName}»: ${timeInfo.localTimeStr} (${timeInfo.sunStatus.phase_label})`;
+        localTimeHint = timeInfo.discrepancyHint || `Местное время в «${geo.entityName}»: ${timeInfo.localTimeStr} (${timeInfo.sunStatus.phase_label})`;
       }
     }
 

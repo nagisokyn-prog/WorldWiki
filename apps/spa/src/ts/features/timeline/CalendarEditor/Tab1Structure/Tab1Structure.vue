@@ -26,7 +26,7 @@
     <!-- СЕКЦИЯ 3: МЕСЯЦЫ ГОДА -->
     <Tab1MonthsSection
       :months="months"
-      :seasons="props.calendarData?.сезоны"
+      :seasons="seasons"
       :total-year-days="totalYearDays"
       :first-month-of-year="firstMonthOfYear"
       :new-year-day="newYearDay"
@@ -96,6 +96,7 @@ const emit = defineEmits<Tab1StructureEmits>();
 
 const {
   months,
+  seasons,
   weekdays,
   pauseOnHolidays,
   dialUnits,

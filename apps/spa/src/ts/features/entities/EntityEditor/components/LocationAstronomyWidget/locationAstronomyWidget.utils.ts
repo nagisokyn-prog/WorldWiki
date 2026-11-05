@@ -1,14 +1,5 @@
-import type { CalendarData, WorldTimezone } from '@/services/Calendars/calendar.types';
+import { DEFAULT_CALENDAR_SEASONS, type CalendarData, type WorldTimezone } from '@/services/Calendars/calendar.types';
 import type { LocationSeasonChip } from './LocationAstronomyWidget.model';
-
-export function getSeasonIcon(name: string): string {
-  const lower = name.toLowerCase();
-  if (lower.includes('зим')) return '❄️';
-  if (lower.includes('весн')) return '🌸';
-  if (lower.includes('лет')) return '☀️';
-  if (lower.includes('осен')) return '🍂';
-  return '🌿';
-}
 
 export function formatTimezoneChipLabel(tz: WorldTimezone): string {
   const name = String(tz.name || tz.code || tz.id || '').trim();
@@ -33,8 +24,11 @@ export function computeAvailableSeasons(
   masterCal: CalendarData | null
 ): LocationSeasonChip[] {
   const cal = activeCal || masterCal;
-  const seasons = cal?.сезоны;
   const months = cal?.месяцы;
+  const rawSeasons = cal?.сезоны;
+  const seasons = Array.isArray(rawSeasons) && rawSeasons.length > 0
+    ? rawSeasons
+    : (Array.isArray(months) && months.length === 12 ? DEFAULT_CALENDAR_SEASONS : []);
   if (!Array.isArray(seasons) || seasons.length === 0 || !Array.isArray(months) || months.length === 0) {
     return [];
   }
@@ -48,7 +42,6 @@ export function computeAvailableSeasons(
     }
     return {
       name: s.название,
-      icon: getSeasonIcon(s.название),
       startDay,
     };
   });

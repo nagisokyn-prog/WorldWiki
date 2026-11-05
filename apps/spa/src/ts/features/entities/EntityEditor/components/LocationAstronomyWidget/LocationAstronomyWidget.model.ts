@@ -17,7 +17,6 @@ export type LocationAstronomyWidgetEmits = {
 
 export interface LocationSeasonChip {
   name: string;
-  icon: string;
   startDay: number;
 }
 

@@ -19,7 +19,8 @@ export function computeLocationLocalTime(
   mAbs: number,
   geo: ResolvedLocationGeography,
   masterCalendar: CalendarData | null,
-  timezones: WorldTimezone[] = []
+  timezones: WorldTimezone[] = [],
+  isLocalTime: boolean = false
 ): ComputedLocationTime {
   const settings = masterCalendar?.настройки_времени || {
     часов_в_сутках: 24,
@@ -38,9 +39,13 @@ export function computeLocationLocalTime(
   const worldHour = Math.floor(remMins / minsPerHour);
   const worldMin = Math.floor(remMins % minsPerHour);
   const worldTimeStr = `${String(worldHour).padStart(2, '0')}:${String(worldMin).padStart(2, '0')}`;
+  const effOffset = isLocalTime ? 0 : geo.offsetHours;
+  const sign = geo.offsetHours >= 0 ? '+' : '';
 
   if (!masterCalendar) {
-    const shiftedMins = (((remMins + Math.round(geo.offsetHours * minsPerHour)) % dayMins) + dayMins) % dayMins;
+    const shiftedMins = isLocalTime
+      ? remMins
+      : (((remMins + Math.round(geo.offsetHours * minsPerHour)) % dayMins) + dayMins) % dayMins;
     const lHour = Math.floor(shiftedMins / minsPerHour);
     const lMin = Math.floor(shiftedMins % minsPerHour);
     const localTimeStr = `${String(lHour).padStart(2, '0')}:${String(lMin).padStart(2, '0')}`;
@@ -54,7 +59,6 @@ export function computeLocationLocalTime(
       sunset_time: '18:00',
       zenith_time: '12:00',
     };
-    const hasDisc = Math.abs(geo.offsetHours) >= 1;
     return {
       offsetHours: geo.offsetHours,
       localTimeStr,
@@ -62,14 +66,14 @@ export function computeLocationLocalTime(
       worldTimeStr,
       sunStatus,
       phaseEmoji: getSunPhaseEmoji(phase),
-      hasDiscrepancy: hasDisc,
-      discrepancyHint: hasDisc
-        ? `Местное время в «${geo.entityName}»: ${localTimeStr} (UTC${geo.offsetHours >= 0 ? '+' : ''}${geo.offsetHours}), мировое: ${worldTimeStr}`
-        : null,
+      hasDiscrepancy: false,
+      discrepancyHint: `Локация «${geo.entityName}» (UTC${sign}${geo.offsetHours}): ${localTimeStr} (${sunStatus.phase_label})`,
     };
   }
 
-  const localInput = CalendarMath.worldMomentToDate(moment, masterCalendar, geo.offsetHours);
+  const localInput = isLocalTime
+    ? { ...CalendarMath.getDateFromAbsolute(mAbs, masterCalendar), hour: worldHour, minute: worldMin }
+    : CalendarMath.worldMomentToDate(moment, masterCalendar, geo.offsetHours);
   const localDateFormatted = CalendarMath.formatDate(masterCalendar, {
     absolute_minute: mAbs,
     calendar_id: masterCalendar._id || 'master',
@@ -83,17 +87,7 @@ export function computeLocationLocalTime(
     latitude: geo.latitude ?? settings.широта ?? 0,
     longitude: geo.longitude ?? geo.offsetHours * 15,
   };
-  const sunStatus = CalendarMath.calculateSunForRegion(synthRegion, moment, masterCalendar, timezones, geo.offsetHours);
-  const worldRegion: WorldRegion = {
-    id: 'world_prime',
-    name: 'Нулевой меридиан',
-    timezone_id: 'tz_utc',
-    latitude: settings.широта ?? 0,
-    longitude: 0,
-  };
-  const worldSun = CalendarMath.calculateSunForRegion(worldRegion, moment, masterCalendar, timezones, 0);
-  const hasDiscrepancy = Math.abs(geo.offsetHours) >= 1 || sunStatus.phase !== worldSun.phase;
-  const sign = geo.offsetHours >= 0 ? '+' : '';
+  const sunStatus = CalendarMath.calculateSunForRegion(synthRegion, moment, masterCalendar, timezones, effOffset);
 
   return {
     offsetHours: geo.offsetHours,
@@ -102,10 +96,8 @@ export function computeLocationLocalTime(
     worldTimeStr,
     sunStatus,
     phaseEmoji: getSunPhaseEmoji(sunStatus.phase),
-    hasDiscrepancy,
-    discrepancyHint: hasDiscrepancy
-      ? `В локации «${geo.entityName}» (UTC${sign}${geo.offsetHours}) сейчас ${localTimeStr} (${sunStatus.phase_label}), тогда как по мировому времени ${worldTimeStr} (${worldSun.phase_label}).`
-      : null,
+    hasDiscrepancy: false,
+    discrepancyHint: `Локация «${geo.entityName}» (UTC${sign}${geo.offsetHours}): ${localTimeStr} (${sunStatus.phase_label})`,
   };
 }
 

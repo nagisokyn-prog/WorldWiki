@@ -1,32 +1,36 @@
 import { computed } from 'vue';
 import type { Tab1MonthsSectionProps } from './Tab1MonthsSection.model';
-
-function getSeasonIcon(name: string): string {
-  const lower = name.toLowerCase();
-  if (lower.includes('зим')) return '❄️';
-  if (lower.includes('весн')) return '🌸';
-  if (lower.includes('лет')) return '☀️';
-  if (lower.includes('осен')) return '🍂';
-  return '🌿';
-}
+import { DEFAULT_CALENDAR_SEASONS } from '@/services/Calendars/calendar.types';
 
 export function useTab1MonthsSection(props: Tab1MonthsSectionProps) {
-  const seasonLabels = computed(() => {
+  const effectiveSeasons = computed(() => {
+    if (props.seasons && props.seasons.length > 0) {
+      return props.seasons;
+    }
+    if (props.months.length === 12) {
+      return DEFAULT_CALENDAR_SEASONS;
+    }
+    return [];
+  });
+
+  const seasonInfo = computed(() => {
     const total = props.months.length;
     if (total === 0) return [];
 
     return props.months.map((_, idx) => {
-      if (props.seasons && props.seasons.length > 0) {
-        const matched = props.seasons.find(
-          (s) => Array.isArray(s.месяцы) && s.месяцы.includes(idx)
+      if (effectiveSeasons.value && effectiveSeasons.value.length > 0) {
+        const matched = effectiveSeasons.value.find(
+          (s) => Array.isArray(s.месяцы) && (s.месяцы.map(Number).includes(idx) || s.месяцы.map(Number).includes(idx + 1))
         );
         if (matched && matched.название) {
-          return `${getSeasonIcon(matched.название)} ${matched.название}`;
+          return { name: matched.название, color: matched.цвет || matched.color };
         }
       }
-      return '—';
+      return { name: '—', color: undefined };
     });
   });
+
+  const seasonLabels = computed(() => seasonInfo.value.map((s) => s.name));
 
   const monthOptions = computed(() =>
     props.months.map((m, idx) => ({
@@ -42,6 +46,7 @@ export function useTab1MonthsSection(props: Tab1MonthsSectionProps) {
 
   return {
     seasonLabels,
+    seasonInfo,
     monthOptions,
     maxDaysInSelectedMonth,
   };

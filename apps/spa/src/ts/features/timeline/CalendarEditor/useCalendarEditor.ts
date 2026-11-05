@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { CalendarEngine } from '@/services/Calendars/useCalendarEngine';
-import type { CalendarData } from '@/services/Calendars/calendar.types';
+import { DEFAULT_CALENDAR_SEASONS, type CalendarData } from '@/services/Calendars/calendar.types';
 import type { CalendarPreset } from '../Calendars/presets';
 import type {
   CalendarEditorProps,
@@ -88,17 +88,15 @@ export function useCalendarEditor(
       masterCalendarRecord.value = list.find((c) => c.is_master) || null;
 
       if (found) {
-        calendarRecord.value = JSON.parse(JSON.stringify(found));
-        if (!calendarRecord.value?.data) calendarRecord.value!.data = CalendarEngine.getDefaultCalendar();
+        const rec = JSON.parse(JSON.stringify(found)) as CalendarRecord;
+        if (!rec.data) rec.data = CalendarEngine.getDefaultCalendar();
+        if (rec.data.месяцы?.length === 12 && (!rec.data.сезоны || rec.data.сезоны.length === 0)) {
+          rec.data.сезоны = JSON.parse(JSON.stringify(DEFAULT_CALENDAR_SEASONS));
+        }
+        calendarRecord.value = rec;
       } else {
         const defaultData = CalendarEngine.getDefaultCalendar();
-        calendarRecord.value = {
-          id: props.calendarId || 'cal_new',
-          name: defaultData.название || 'Новый календарь',
-          is_default: false,
-          is_master: false,
-          data: defaultData,
-        };
+        calendarRecord.value = { id: props.calendarId || 'cal_new', name: defaultData.название || 'Новый календарь', is_default: false, is_master: false, data: defaultData };
       }
       hydrateFromStorage();
       if (hasUnsavedDraft.value && calendarRecord.value?.data) emit('update:calendar', calendarRecord.value.data as Record<string, unknown>);

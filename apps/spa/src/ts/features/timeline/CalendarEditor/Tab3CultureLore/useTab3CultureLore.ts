@@ -7,7 +7,7 @@ import type {
   CultureHolidayDto,
   CharacterAgeRuleDto,
 } from './Tab3CultureLore.model';
-import type { CalendarData, CalendarMonth, MoonPhaseNames, PlanetEntity, WorldRegion } from '@/services/Calendars/calendar.types';
+import { DEFAULT_CALENDAR_SEASONS, type CalendarData, type CalendarMonth, type MoonPhaseNames, type PlanetEntity, type WorldRegion } from '@/services/Calendars/calendar.types';
 
 export function useTab3CultureLore(
   props: Tab3CultureLoreProps,
@@ -24,12 +24,10 @@ export function useTab3CultureLore(
     if (Array.isArray(raw) && raw.length > 0) {
       return raw as CultureSeasonDto[];
     }
-    return [
-      { название: '❄️ Зима', цвет: 'var(--accent-primary)', hemisphere: 'northern', месяцы: [0, 1, 11] },
-      { название: '🌸 Весна', цвет: 'var(--accent-success)', hemisphere: 'northern', месяцы: [2, 3, 4] },
-      { название: '☀️ Лето', цвет: 'var(--accent-warning)', hemisphere: 'northern', месяцы: [5, 6, 7] },
-      { название: '🍂 Осень', цвет: 'var(--accent-danger)', hemisphere: 'northern', месяцы: [8, 9, 10] },
-    ];
+    if (months.value.length === 12) {
+      return DEFAULT_CALENDAR_SEASONS as CultureSeasonDto[];
+    }
+    return [];
   });
 
   const holidays = computed<CultureHolidayDto[]>(() => {

@@ -97,7 +97,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             'event' AS kind,
             location_id,
             m_abs,
-            IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { 'default' } AS calendar_id,
+            IF calendar_id != NONE { IF calendar_id.id != NONE { calendar_id.id } ELSE { type::string(calendar_id) } } ELSE { NONE } AS calendar_id,
             ->revealed_in.{
                 chapter_id: IF out.id != NONE { out.id } ELSE { type::string(out) },
                 chapter_title: out.title,
@@ -141,7 +141,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } ELSE {
                 0
             } AS m_abs,
-            IF attributes.calendar_id != NONE { type::string(attributes.calendar_id) } ELSE { 'default' } AS calendar_id,
+            IF attributes.calendar_id != NONE { type::string(attributes.calendar_id) } ELSE { NONE } AS calendar_id,
             [] AS reveals,
             [] AS participants
         FROM entities
@@ -189,7 +189,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 LET $oc_cal = array::first(->occurs_at.out.calendar_id);
                 IF $oc_cal.id != NONE { $oc_cal.id } ELSE { type::string($oc_cal) }
             } ELSE {
-                'default'
+                NONE
             } AS calendar_id,
             [
                 {

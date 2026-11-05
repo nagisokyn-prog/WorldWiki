@@ -94,7 +94,7 @@
 
         <!-- Нижняя Диегетическая Ось -->
         <div class="axis-track-wrapper diegetic-wrapper">
-          <div class="axis-badge axis-badge-diegetic"><span>⏳</span> ВРЕМЯ МИРА (ХРОНОЛОГИЯ LORE)</div>
+          <div class="axis-badge axis-badge-diegetic"><span>⏳</span> ВРЕМЯ МИРА</div>
           <div class="axis-rail axis-rail-diegetic"></div>
 
           <div v-if="!formattedEvents.length" class="axis-empty-hint p-4 text-xs text-muted italic">
@@ -131,7 +131,6 @@
               </span>
               <span v-if="ev.localTimeBadge" class="event-date-chip" :title="ev.localTimeHint || ''">
                 <span>{{ ev.localTimeBadge }}</span>
-                <span v-if="ev.hasTimezoneDiscrepancy" title="Разница часового пояса локации с мировым временем">⚠️</span>
               </span>
             </div>
             <div v-if="ev.cleanParticipants.length" class="event-participants-list">

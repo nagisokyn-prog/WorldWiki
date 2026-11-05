@@ -33,10 +33,10 @@ describe('useTab1MonthsSection', () => {
         { название: 'Весна', месяцы: [2] },
       ],
     });
-    expect(seasonLabels.value[0]).toBe('❄️ Зима');
-    expect(seasonLabels.value[1]).toBe('❄️ Зима');
-    expect(seasonLabels.value[2]).toBe('🌸 Весна');
-    expect(seasonLabels.value[3]).toBe('❄️ Зима');
+    expect(seasonLabels.value[0]).toBe('Зима');
+    expect(seasonLabels.value[1]).toBe('Зима');
+    expect(seasonLabels.value[2]).toBe('Весна');
+    expect(seasonLabels.value[3]).toBe('Зима');
   });
 
   it('computes monthOptions correctly', () => {

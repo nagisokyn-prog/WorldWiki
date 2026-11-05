@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import type { CalendarData, CalendarMonth, CalendarSettings } from '@/services/Calendars/calendar.types';
+import type { CalendarData, CalendarMonth, CalendarSettings, CalendarSeason } from '@/services/Calendars/calendar.types';
 import type {
   Tab1StructureProps,
   Tab1StructureEmits,
@@ -19,6 +19,11 @@ export function useTab1Structure(
   // Месяцы года
   const months = computed<CalendarMonth[]>(() => {
     return props.calendarData?.месяцы || [];
+  });
+
+  // Сезоны года
+  const seasons = computed<CalendarSeason[]>(() => {
+    return props.calendarData?.сезоны || [];
   });
 
   // Дни недели
@@ -212,6 +217,7 @@ export function useTab1Structure(
 
   return {
     months,
+    seasons,
     weekdays,
     pauseOnHolidays,
     dialUnits,

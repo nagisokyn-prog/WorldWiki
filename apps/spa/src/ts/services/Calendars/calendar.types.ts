@@ -56,6 +56,13 @@ export interface CalendarSeason {
   hemisphere?: 'northern' | 'southern';
 }
 
+export const DEFAULT_CALENDAR_SEASONS: CalendarSeason[] = [
+  { название: 'Зима', месяцы: [11, 0, 1], цвет: 'var(--accent-primary)', hemisphere: 'northern' },
+  { название: 'Весна', месяцы: [2, 3, 4], цвет: 'var(--accent-success)', hemisphere: 'northern' },
+  { название: 'Лето', месяцы: [5, 6, 7], цвет: 'var(--accent-warning)', hemisphere: 'northern' },
+  { название: 'Осень', месяцы: [8, 9, 10], цвет: 'var(--accent-danger)', hemisphere: 'northern' },
+];
+
 export interface CalendarHoliday {
   название: string;
   описание?: string;

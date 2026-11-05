@@ -188,7 +188,7 @@ describe('useTimelineInspector Composable', () => {
         {
           id: 'scene:1',
           title: 'Встреча в таверне',
-          m_abs: 720, // 12:00 UTC -> 02:00 в Западном Бастионе (UTC-10)
+          m_abs: 720,
           location_id: 'entities:tavern_west',
           reveals: [{ chapter_id: 'ch:1', chapter_title: 'Глава 1', kind: 'direct' }],
           participants: [],
@@ -202,8 +202,8 @@ describe('useTimelineInspector Composable', () => {
     expect(formattedEvents.value).toHaveLength(1);
     const ev = formattedEvents.value[0];
     expect(ev.locationName).toBe('Таверна «У Заката»');
-    expect(ev.localTimeBadge).toContain('02:00');
-    expect(ev.hasTimezoneDiscrepancy).toBe(true);
+    expect(ev.localTimeBadge).toContain('12:00');
+    expect(ev.hasTimezoneDiscrepancy).toBe(false);
     expect(ev.localTimeHint).toContain('Таверна «У Заката»');
   });
 });

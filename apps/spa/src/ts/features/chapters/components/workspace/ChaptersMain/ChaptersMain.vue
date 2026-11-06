@@ -12,6 +12,7 @@
         :project="project"
         :chapter-id="currentChapterId"
         :has-unsaved-changes="hasUnsavedChanges"
+        :is-locked="Boolean(previewingRevId)"
         :footnotes-data="currentChapter.footnotes || undefined"
         :changed-fields="changedFields"
         :existing-promises="rightSidebarRef?.promises || []"
@@ -67,8 +68,9 @@
         :revisions="revisions"
         :previewing-rev-id="previewingRevId"
         :get-diff-summary="getDiffSummary"
-        @close="showHistory = false"
+        @close="closeHistory"
         @preview="previewHistory"
+        @restore="restoreRevision"
         @toggle-pin="togglePin"
       />
     </div>
@@ -166,6 +168,7 @@ const {
   hasUnsavedChanges, localActiveTreeNode, debugError,
   isExportModalOpen, showQuickLinkHint, isZenMode, floatingEditors, showHistory,
   isLoadingHistory, revisions, previewingRevId, maxSaves, toggleHistory,
+  closeHistory, restoreRevision,
   previewHistory, togglePin, getDiffSummary, changedFields,
   rightPanelWidth, isRightPanelVisible, triggerSave,
   closeFloatingEditor, startResize,

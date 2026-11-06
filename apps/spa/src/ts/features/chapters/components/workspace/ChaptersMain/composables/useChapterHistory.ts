@@ -28,7 +28,8 @@ export interface ChapterRevision {
 export function useChapterHistory(
   project: string,
   currentChapterId: Ref<string | undefined>,
-  currentChapter: Ref<ChapterWithHierarchy | null>
+  currentChapter: Ref<ChapterWithHierarchy | null>,
+  onRestoreCallback?: () => Promise<void> | void
 ) {
   const showHistory = ref(false);
   const isLoadingHistory = ref(false);
@@ -38,10 +39,27 @@ export function useChapterHistory(
 
   const originalData = ref<{ content: string; title: string; footnotes: ChapterWithHierarchy['footnotes'] } | null>(null);
 
+  const closeHistory = () => {
+    showHistory.value = false;
+    if (previewingRevId.value) {
+      if (originalData.value && currentChapter.value) {
+        currentChapter.value.content = originalData.value.content;
+        currentChapter.value.title = originalData.value.title;
+        currentChapter.value.footnotes = originalData.value.footnotes;
+      }
+      originalData.value = null;
+      previewingRevId.value = null;
+    }
+  };
+
   const toggleHistory = () => {
-    showHistory.value = !showHistory.value;
-    if (showHistory.value && currentChapterId.value) {
-      loadHistory();
+    if (showHistory.value) {
+      closeHistory();
+    } else {
+      showHistory.value = true;
+      if (currentChapterId.value) {
+        loadHistory();
+      }
     }
   };
 
@@ -87,6 +105,23 @@ export function useChapterHistory(
     currentChapter.value.title = snap.title || snap.attributes?.title || '';
     currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
     previewingRevId.value = rev.id;
+  };
+
+  const restoreRevision = async (rev: ChapterRevision) => {
+    if (!currentChapter.value) return;
+    const snap = rev.content || {};
+    currentChapter.value.content = snap.content || snap.attributes?.content || '';
+    currentChapter.value.title = snap.title || snap.attributes?.title || '';
+    currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
+    originalData.value = null;
+    previewingRevId.value = null;
+    showHistory.value = false;
+    if (onRestoreCallback) {
+      await onRestoreCallback();
+    } else {
+      await api.saveChapter(currentChapter.value as unknown as Parameters<typeof api.saveChapter>[0]);
+    }
+    await loadHistory();
   };
 
   const togglePin = async (rev: ChapterRevision) => {
@@ -148,8 +183,10 @@ export function useChapterHistory(
     previewingRevId,
     maxSaves,
     toggleHistory,
+    closeHistory,
     loadHistory,
     previewHistory,
+    restoreRevision,
     togglePin,
     getDiffSummary,
     changedFields

@@ -31,8 +31,22 @@
           <SafeHtml v-if="getDiffSummary(rev, revisions[idx + 1])" as="span" :content="getDiffSummary(rev, revisions[idx + 1])" />
           <span v-else>Базовая версия</span>
         </div>
-        <div v-if="previewingRevId === rev.id" class="mt-1">
+        <div v-if="previewingRevId === rev.id" class="mt-2 flex flex-wrap gap-2 items-center">
           <span class="text-xs preview-badge-warning">Режим предпросмотра</span>
+          <button
+            type="button"
+            class="btn btn-small btn-primary cursor-pointer text-xs"
+            @click.stop="$emit('restore', rev)"
+          >
+            Восстановить
+          </button>
+          <button
+            type="button"
+            class="btn btn-small btn-secondary cursor-pointer text-xs"
+            @click.stop="$emit('preview', rev)"
+          >
+            Отмена
+          </button>
         </div>
       </div>
     </div>

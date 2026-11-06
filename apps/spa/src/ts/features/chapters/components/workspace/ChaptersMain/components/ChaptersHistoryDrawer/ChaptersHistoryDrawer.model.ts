@@ -11,7 +11,8 @@ export interface ChaptersHistoryDrawerProps {
 
 export type ChaptersHistoryDrawerEmits = {
   (e: 'close'): void;
-    (e: 'update:maxSaves', val: number): void;
-    (e: 'preview', rev: ChapterRevision): void;
-    (e: 'togglePin', rev: ChapterRevision): void;
+  (e: 'update:maxSaves', val: number): void;
+  (e: 'preview', rev: ChapterRevision): void;
+  (e: 'restore', rev: ChapterRevision): void;
+  (e: 'togglePin', rev: ChapterRevision): void;
 };

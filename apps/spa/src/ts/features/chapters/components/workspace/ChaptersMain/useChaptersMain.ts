@@ -45,7 +45,14 @@ export function useChaptersMain(
     createNewChapter, onRenameChapter, deleteChapter,
   } = store;
 
-  const historyHook = useChapterHistory(props.project, currentChapterId, currentChapter);
+  const historyHook = useChapterHistory(
+    props.project,
+    currentChapterId,
+    currentChapter,
+    async () => {
+      await saveChapter(props.project, emit);
+    }
+  );
   const layoutHook = useChapterLayout();
   const floatingHook = useFloatingEntities(props.project);
 
@@ -83,6 +90,7 @@ export function useChaptersMain(
   );
 
   const triggerSave = () => {
+    if (historyHook?.previewingRevId?.value) return;
     saveChapter(props.project, emit);
   };
 
@@ -102,6 +110,14 @@ export function useChaptersMain(
   const startedChapters = new Set<string>();
 
   const markUnsaved = () => {
+    if (historyHook?.previewingRevId?.value) {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+      }
+      return;
+    }
+
     hasUnsavedChanges.value = true;
     syncAutoParticipants();
     emit('chapter-unsaved');

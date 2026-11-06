@@ -7,6 +7,7 @@ export interface EditorCoreTiptapProps {
   title?: string;
   content?: string;
   hasUnsavedChanges?: boolean;
+  isLocked?: boolean;
   footnotesData?: Record<string, { id: string; text: string }>;
   initialScrollPos?: number;
   changedFields?: string[];

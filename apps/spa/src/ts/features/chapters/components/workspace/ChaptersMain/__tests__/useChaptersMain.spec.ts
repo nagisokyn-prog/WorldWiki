@@ -32,7 +32,22 @@ vi.mock('@worldwiki/components', () => ({
 }));
 
 vi.mock('../composables/useChapterHistory', () => ({
-  useChapterHistory: () => ({ history: ref([]) }),
+  useChapterHistory: () => ({
+    history: ref([]),
+    previewingRevId: ref<string | null>(null),
+    showHistory: ref(false),
+    isLoadingHistory: ref(false),
+    revisions: ref([]),
+    maxSaves: ref(20),
+    toggleHistory: vi.fn(),
+    closeHistory: vi.fn(),
+    loadHistory: vi.fn(),
+    previewHistory: vi.fn(),
+    restoreRevision: vi.fn(),
+    togglePin: vi.fn(),
+    getDiffSummary: vi.fn(),
+    changedFields: ref([]),
+  }),
 }));
 
 vi.mock('../composables/useFloatingEntities', () => ({
@@ -200,6 +215,18 @@ describe('useChaptersMain', () => {
 
     vi.advanceTimersByTime(2000);
     expect(mockStore.saveChapter).toHaveBeenCalledWith('proj_1', emit);
+  });
+
+  it('blocks autosave and triggerSave during history preview', () => {
+    const main = useChaptersMain(props, emit);
+    main.previewingRevId.value = 'rev_123';
+
+    main.markUnsaved();
+    vi.advanceTimersByTime(2000);
+    expect(mockStore.saveChapter).not.toHaveBeenCalled();
+
+    main.triggerSave();
+    expect(mockStore.saveChapter).not.toHaveBeenCalled();
   });
 
   it('handles tree node selection and opening chapter as tab', () => {

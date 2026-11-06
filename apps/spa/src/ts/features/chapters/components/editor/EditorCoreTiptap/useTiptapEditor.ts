@@ -36,7 +36,7 @@ export function useTiptapEditor(
       mdHook.syncMarkdownFromEditor();
     },
     onUpdate: () => {
-      if (stateHook.editorMode.value === 'word') return;
+      if (props.isLocked || stateHook.editorMode.value === 'word') return;
       if (editor.value) {
         emit('update:content', editor.value.getHTML());
         emit('change');
@@ -109,11 +109,19 @@ export function useTiptapEditor(
     (newContent) => {
       if (stateHook.editorMode.value === 'word') return;
       if (editor.value && editor.value.getHTML() !== newContent) {
-        editor.value.commands.setContent(newContent || '');
+        editor.value.commands.setContent(newContent || '', { emitUpdate: false });
         stateHook.updateStats();
         mdHook.syncMarkdownFromEditor();
       }
     }
+  );
+
+  watch(
+    () => props.isLocked,
+    (locked) => {
+      editor.value?.setEditable?.(!locked);
+    },
+    { immediate: true }
   );
 
   watch(

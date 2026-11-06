@@ -18,10 +18,11 @@
       <textarea 
         :ref="(el) => $emit('textarea-mounted', el as HTMLTextAreaElement | null)"
         :value="markdownContent" 
+        :readonly="isLocked"
         placeholder="# Напишите markdown..."
         class="markdown-editor-textarea"
-        @input="$emit('update:markdownContent', ($event.target as HTMLTextAreaElement).value); $emit('markdown-input', $event)"
-        @keydown="$emit('markdown-keydown', $event)"
+        @input="!isLocked && $emit('update:markdownContent', ($event.target as HTMLTextAreaElement).value); !isLocked && $emit('markdown-input', $event)"
+        @keydown="!isLocked && $emit('markdown-keydown', $event)"
         @contextmenu="$emit('contextmenu', $event)"
       ></textarea>
     </div>

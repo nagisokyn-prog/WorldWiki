@@ -22,6 +22,7 @@ export interface EditorBodyProps {
     title: string;
     isCurrentPageLandscape: boolean;
     currentPageSize: PageSize;
+    isLocked?: boolean;
 }
 
 export type EditorBodyEmits = {

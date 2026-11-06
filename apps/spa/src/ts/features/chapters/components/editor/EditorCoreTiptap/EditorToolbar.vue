@@ -18,7 +18,8 @@
           :value="title" 
           placeholder="Название главы..." 
           class="chapter-title-input-inline" 
-          @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
+          :readonly="isLocked"
+          @input="!isLocked && $emit('update:title', ($event.target as HTMLInputElement).value)"
         >
       </div>
 
@@ -81,8 +82,8 @@
       </button>
       <button 
         class="btn btn-small btn-primary interactive-el" 
-        :disabled="!hasUnsavedChanges"
-        @click="$emit('save')"
+        :disabled="isLocked || !hasUnsavedChanges"
+        @click="!isLocked && $emit('save')"
       >
         <i class="fas fa-save"></i> {{ hasUnsavedChanges ? 'Сохранить*' : 'Сохранено' }}
       </button>

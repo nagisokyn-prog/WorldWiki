@@ -6,6 +6,7 @@ import * as api from '@/services/api.client';
 vi.mock('@/services/api.client', () => ({
   getChapterRevisions: vi.fn(),
   toggleChapterHistoryPin: vi.fn(),
+  saveChapter: vi.fn(),
 }));
 
 describe('useChapterHistory', () => {
@@ -187,5 +188,39 @@ describe('useChapterHistory', () => {
     // Revision ID not found in list
     history.previewingRevId.value = 'unknown_rev';
     expect(history.changedFields.value).toEqual([]);
+  });
+
+  it('safely closes history and restores original data on closeHistory', () => {
+    const history = useChapterHistory('proj_1', currentChapterId, currentChapter);
+    history.showHistory.value = true;
+    history.previewHistory({
+      id: 'rev_1',
+      content: { title: 'Preview Title', content: 'Preview Content' },
+    } as any);
+
+    expect(currentChapter.value.title).toBe('Preview Title');
+    expect(history.previewingRevId.value).toBe('rev_1');
+
+    history.closeHistory();
+    expect(history.showHistory.value).toBe(false);
+    expect(currentChapter.value.title).toBe('Chapter 1');
+    expect(history.previewingRevId.value).toBeNull();
+  });
+
+  it('restores revision permanently via restoreRevision with callback', async () => {
+    const onRestore = vi.fn().mockResolvedValue(undefined);
+    const history = useChapterHistory('proj_1', currentChapterId, currentChapter, onRestore);
+    vi.mocked(api.getChapterRevisions).mockResolvedValueOnce([]);
+
+    await history.restoreRevision({
+      id: 'rev_restore',
+      content: { title: 'Restored Title', content: 'Restored Content' },
+    } as any);
+
+    expect(currentChapter.value.title).toBe('Restored Title');
+    expect(currentChapter.value.content).toBe('Restored Content');
+    expect(history.previewingRevId.value).toBeNull();
+    expect(history.showHistory.value).toBe(false);
+    expect(onRestore).toHaveBeenCalled();
   });
 });

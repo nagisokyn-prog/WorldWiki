@@ -492,7 +492,7 @@ describe('useTiptapEditor', () => {
       
       reactiveP.content = '<p>New Content Differs From GetHTML</p>';
       await nextTick();
-      expect(mockEditorInstance.commands.setContent).toHaveBeenCalledWith('<p>New Content Differs From GetHTML</p>');
+      expect(mockEditorInstance.commands.setContent).toHaveBeenCalledWith('<p>New Content Differs From GetHTML</p>', { emitUpdate: false });
 
       reactiveP.content = '';
       await nextTick();

@@ -33,5 +33,6 @@ export interface EditorToolbarProps {
   settings: AppSettings | null;
   commands: EditorCommands;
   title?: string;
+  isLocked?: boolean;
   changedFields?: string[];
 }

@@ -6,13 +6,15 @@ describe('useJourneyMultiSelector Composable', () => {
   const entity1: Entity = { id: 'entities:1', name: 'Раскольников', entity_type: 'character', project_id: 'p1', attributes: {}, tags: [] };
   const entity2: Entity = { id: 'entities:2', name: 'Сонечка', entity_type: 'character', project_id: 'p1', attributes: {}, tags: [] };
   const entity3: Entity = { id: 'entities:3', name: 'Свидригайлов', entity_type: 'character', project_id: 'p1', attributes: {}, tags: [] };
+  const locationEntity: Entity = { id: 'entities:loc1', name: 'Дом белых', entity_type: 'location', project_id: 'p1', attributes: {}, tags: [] };
+  const stateEntity: Entity = { id: 'entities:state1', name: 'ФР', entity_type: 'state', project_id: 'p1', attributes: {}, tags: [] };
 
-  it('filters out already selected entities from availableEntities', () => {
+  it('filters out already selected entities and non-character entities from availableEntities', () => {
     const emit = vi.fn();
     const { availableEntities } = useJourneyMultiSelector(
       {
         selectedEntities: [entity1],
-        entitiesList: [entity1, entity2, entity3],
+        entitiesList: [entity1, entity2, entity3, locationEntity, stateEntity],
       },
       emit
     );

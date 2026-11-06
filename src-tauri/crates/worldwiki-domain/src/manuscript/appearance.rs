@@ -15,7 +15,6 @@ pub struct EntityAppearance {
     pub entity_id: String,
     pub chapter_id: String,
     pub source: AppearanceSource,
-    pub role: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -29,7 +28,6 @@ impl EntityAppearance {
             entity_id: entity_id.into(),
             chapter_id: chapter_id.into(),
             source,
-            role: None,
             created_at: DateTime::UNIX_EPOCH,
         }
     }

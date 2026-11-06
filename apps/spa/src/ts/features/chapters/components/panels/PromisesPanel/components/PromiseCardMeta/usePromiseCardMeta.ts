@@ -174,8 +174,19 @@ export function usePromiseCardMeta(
     handleDateFieldsChange();
   };
 
+  const blockBadgeText = computed(() => {
+    if (props.item.block_ids && props.item.block_ids.length > 0) {
+      if (props.item.block_ids.length === 1) {
+        return props.item.block_ids[0];
+      }
+      return `${props.item.block_ids[0]}..${props.item.block_ids[props.item.block_ids.length - 1]} (${props.item.block_ids.length})`;
+    }
+    return props.item.block_id || null;
+  });
+
   return {
     isEditingMeta,
+    blockBadgeText,
     locationDraft: location.locationDraft,
     isLocationDropdownOpen: location.isLocationDropdownOpen,
     filteredLocations: location.filteredLocations,

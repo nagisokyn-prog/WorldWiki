@@ -152,13 +152,13 @@ async fn stress_high_concurrency_50_workers() {
                     id: None,
                     r#in: None,
                     out: None,
-                    project_id: None,
                     rel_type: "allies".into(),
                     description: None,
                     strength: Some(10),
                     attributes: json!({}),
-                    start_chapter: None,
-                    end_chapter: None,
+                    start_at: None,
+                    end_at: None,
+                    is_auto_extend: false,
                     created_at: None,
                 }).await.expect("concurrent create relation");
             } else {

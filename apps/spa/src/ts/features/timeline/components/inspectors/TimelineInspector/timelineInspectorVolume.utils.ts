@@ -231,32 +231,40 @@ export function calculateSceneHierarchyLines(params: {
   const lines: VisualizedSceneHierarchyLine[] = [];
   const eventPositions = new Map<string, number>();
 
+  const sanitizeId = (id?: unknown): string => {
+    if (!id) return '';
+    return String(id).replace(/["'`⟨⟩]/g, '').replace(/^[a-zA-Z0-9_-]+:/, '').trim();
+  };
+
   events.forEach((ev, idx) => {
     const evId = getEventId(ev);
-    const cleanId = normalizeId(evId);
-    const pinX = startX + idx * eventSpacing + 70;
+    const cleanId = sanitizeId(evId);
+    const pinX = startX + idx * eventSpacing;
     eventPositions.set(cleanId, pinX);
     eventPositions.set(evId, pinX);
+    if (ev.id) eventPositions.set(sanitizeId(ev.id), pinX);
   });
 
   events.forEach((ev) => {
     if (!ev.parent_id) return;
     const childId = getEventId(ev);
-    const cleanParentId = normalizeId(ev.parent_id);
-    const x1 = eventPositions.get(cleanParentId);
-    const x2 = eventPositions.get(normalizeId(childId)) ?? eventPositions.get(childId);
+    const cleanParentId = sanitizeId(ev.parent_id);
+    const cleanChildId = sanitizeId(childId);
 
-    if (x1 !== undefined && x2 !== undefined) {
-      const y1 = 305;
-      const y2 = 305;
+    const x1 = eventPositions.get(cleanParentId) ?? eventPositions.get(String(ev.parent_id));
+    const x2 = eventPositions.get(cleanChildId) ?? eventPositions.get(childId);
+
+    if (x1 !== undefined && x2 !== undefined && x1 !== x2) {
+      const y1 = 295;
+      const y2 = 295;
       const distance = Math.abs(x2 - x1);
-      const arcDepth = Math.min(65, Math.max(30, distance * 0.25));
+      const arcDepth = Math.min(65, Math.max(25, distance * 0.22));
       const yBottom = y1 + arcDepth;
 
       lines.push({
-        id: `scene-link-${cleanParentId}-${normalizeId(childId)}`,
+        id: `scene-link-${cleanParentId}-${cleanChildId}`,
         parentId: cleanParentId,
-        childId: normalizeId(childId),
+        childId: cleanChildId,
         x1,
         y1,
         x2,

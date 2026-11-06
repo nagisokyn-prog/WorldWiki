@@ -137,25 +137,19 @@ DEFINE FIELD OVERWRITE to_types   ON relation_schemas TYPE array<string> DEFAULT
 
 -- 13. ГРАФОВЫЕ СВЯЗИ МЕЖДУ СУЩНОСТЯМИ
 DEFINE TABLE OVERWRITE entity_rel TYPE RELATION IN entities OUT entities SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id     ON entity_rel TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE rel_type       ON entity_rel TYPE string;
 DEFINE FIELD OVERWRITE description    ON entity_rel TYPE option<string | null>;
 DEFINE FIELD OVERWRITE strength       ON entity_rel TYPE option<int | null>;
 DEFINE FIELD OVERWRITE attributes     ON entity_rel TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE start_volume   ON entity_rel TYPE option<record<volumes> | null>;
-DEFINE FIELD OVERWRITE start_chapter  ON entity_rel TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE end_volume     ON entity_rel TYPE option<record<volumes> | null>;
-DEFINE FIELD OVERWRITE end_chapter    ON entity_rel TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE start_at       ON entity_rel TYPE option<record<chapters | volumes> | null>;
+DEFINE FIELD OVERWRITE end_at         ON entity_rel TYPE option<record<chapters | volumes> | null>;
 DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
 -- 14. СИНТАКСИЧЕСКОЕ УЧАСТИЕ СУЩНОСТЕЙ В БЛОКАХ ТЕКСТА
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters | text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'
   ASSERT $value IN ['mention', 'manual', 'scene'];
-DEFINE FIELD OVERWRITE role       ON appears_in TYPE option<string | null>;
-DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now();
 
 -- 15. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА (ПЕРЕПЛЕТЁННАЯ ТКАНЬ СЮЖЕТА, 3NF)
@@ -182,7 +176,6 @@ DEFINE FIELD OVERWRITE created_at  ON timeline_events TYPE datetime DEFAULT time
 
 -- 17. РОЛЕВОЕ УЧАСТИЕ СУЩНОСТЕЙ В СОБЫТИЯХ ТАЙМЛАЙНА (ХРОНИКА ЛОРА)
 DEFINE TABLE OVERWRITE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON participates_in TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE role       ON participates_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE notes      ON participates_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time::now();
@@ -190,7 +183,6 @@ DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time:
 -- 18. РЕВИЗИИ СУЩНОСТЕЙ ЛОРА (БЕЗ ВЕКТОРОВ ЭМБЕДДИНГОВ)
 DEFINE TABLE OVERWRITE entity_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;
-DEFINE FIELD OVERWRITE project_id  ON entity_revisions TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE content     ON entity_revisions TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE commit_msg  ON entity_revisions TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at  ON entity_revisions TYPE datetime DEFAULT time::now();
@@ -199,7 +191,6 @@ DEFINE FIELD OVERWRITE is_pinned   ON entity_revisions TYPE bool DEFAULT false;
 -- 19. РЕВИЗИИ ГРАФОВЫХ СВЯЗЕЙ СУЩНОСТЕЙ
 DEFINE TABLE OVERWRITE entity_rel_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_rel_revisions TYPE record<entity_rel>;
-DEFINE FIELD OVERWRITE project_id  ON entity_rel_revisions TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE in_id       ON entity_rel_revisions TYPE record<entities>;
 DEFINE FIELD OVERWRITE out_id      ON entity_rel_revisions TYPE record<entities>;
 DEFINE FIELD OVERWRITE action      ON entity_rel_revisions TYPE string
@@ -211,7 +202,6 @@ DEFINE FIELD OVERWRITE created_at  ON entity_rel_revisions TYPE datetime DEFAULT
 -- 20. РЕВИЗИИ ТЕКСТА ГЛАВ РУКОПИСИ
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
-DEFINE FIELD OVERWRITE project_id  ON chapter_revisions TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
@@ -219,10 +209,7 @@ DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 
 -- 21. НАРРАТИВНЫЕ УЗЛЫ И СЮЖЕТНЫЕ ОБЕЩАНИЯ (ЧЕХОВСКИЕ РУЖЬЯ / СЦЕНАРНЫЕ ЕДИНИЦЫ)
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id        ON plot_promises TYPE record<projects> | string VALUE fn::normalize_project_id($value);
-DEFINE FIELD OVERWRITE chapter_id        ON plot_promises TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE paragraph_index   ON plot_promises TYPE option<int | null>;
-DEFINE FIELD OVERWRITE block_id          ON plot_promises TYPE option<string | null>;
+DEFINE FIELD OVERWRITE block_ids         ON plot_promises TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE kind              ON plot_promises TYPE string
   ASSERT $value IN ['gun', 'foreshadowing', 'mystery', 'question', 'conflict', 'scene'];
 DEFINE FIELD OVERWRITE time_nature       ON plot_promises TYPE string DEFAULT 'present'
@@ -237,31 +224,31 @@ DEFINE FIELD OVERWRITE timeline_event_id ON plot_promises TYPE option<record<tim
 DEFINE FIELD OVERWRITE created_at        ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at        ON plot_promises TYPE datetime DEFAULT time::now();
 
--- 21.1. ВЕХИ ЖИЗНЕННОГО ЦИКЛА РУЖЬЯ В ТЕКСТЕ РУКОПИСИ
+-- 21.1. ОХВАТ БЛОКОВ ТЕКСТА СЦЕНОЙ / НАРРАТИВНЫМ УЗЛОМ
+DEFINE TABLE OVERWRITE spans_blocks TYPE RELATION IN plot_promises OUT text_blocks SCHEMAFULL;
+DEFINE FIELD OVERWRITE created_at ON spans_blocks TYPE datetime DEFAULT time::now();
+
+-- 21.2. ВЕХИ ЖИЗНЕННОГО ЦИКЛА РУЖЬЯ В ТЕКСТЕ РУКОПИСИ
 DEFINE TABLE OVERWRITE promise_milestones TYPE RELATION IN plot_promises OUT text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON promise_milestones TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE stage      ON promise_milestones TYPE string
   ASSERT $value IN ['plant', 'progression', 'resolution'];
 DEFINE FIELD OVERWRITE quote      ON promise_milestones TYPE string;
 DEFINE FIELD OVERWRITE note       ON promise_milestones TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON promise_milestones TYPE datetime DEFAULT time::now();
 
--- 21.2. ДЕЙСТВУЮЩИЕ ЛИЦА НАРРАТИВНОГО УЗЛА (ПЕРСОНАЖИ, АРТЕФАКТЫ, ЛОКАЦИИ)
+-- 21.3. ДЕЙСТВУЮЩИЕ ЛИЦА НАРРАТИВНОГО УЗЛА (ПЕРСОНАЖИ, АРТЕФАКТЫ, ЛОКАЦИИ)
 DEFINE TABLE OVERWRITE participant_of TYPE RELATION IN entities OUT plot_promises SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON participant_of TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE role       ON participant_of TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON participant_of TYPE datetime DEFAULT time::now();
 
--- 21.3. ДИНАМИКА СЮЖЕТНЫХ АРОК В РАМКАХ НАРРАТИВНОГО УЗЛА И ГЛАВ
+-- 21.4. ДИНАМИКА СЮЖЕТНЫХ АРОК В РАМКАХ НАРРАТИВНОГО УЗЛА И ГЛАВ
 DEFINE TABLE OVERWRITE advances_arc TYPE RELATION IN chapters | plot_promises OUT story_arcs SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id ON advances_arc TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE phase      ON advances_arc TYPE string ASSERT $value IN ['setup', 'escalation', 'climax', 'resolution'];
 DEFINE FIELD OVERWRITE transition ON advances_arc TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON advances_arc TYPE datetime DEFAULT time::now();
 
--- 21.4. ДИЕГЕТИЧЕСКАЯ ПРИВЯЗКА НАРРАТИВНОГО УЗЛА К СОБЫТИЮ ШКАЛЫ ВРЕМЕНИ
+-- 21.5. ДИЕГЕТИЧЕСКАЯ ПРИВЯЗКА НАРРАТИВНОГО УЗЛА К СОБЫТИЮ ШКАЛЫ ВРЕМЕНИ
 DEFINE TABLE OVERWRITE occurs_at TYPE RELATION IN plot_promises OUT timeline_events SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON occurs_at TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE time_nature ON occurs_at TYPE string DEFAULT 'present'
   ASSERT $value IN ['present', 'flashback', 'flashforward', 'memory', 'dream'];
 DEFINE FIELD OVERWRITE created_at  ON occurs_at TYPE datetime DEFAULT time::now();

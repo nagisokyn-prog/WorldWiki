@@ -280,7 +280,7 @@ async fn retrieve_expands_relations_of_found_entities() {
 
     // Реляция: entity_rel.in/out — record<entities>
     let rel_sql = "RELATE entities:e_arthur->entity_rel->entities:morgana \
-                   SET project_id = projects:rel_p, rel_type = 'sibling', \
+                   SET rel_type = 'sibling', \
                    description = 'Единокровная сестра', strength = 1";
     let resp = db.query(rel_sql).await;
     let mut resp = match resp {

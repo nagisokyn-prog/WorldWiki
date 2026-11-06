@@ -21,6 +21,7 @@ export type RichPlotPromise = PlotPromise & {
   quote?: string;
   paragraph_index?: number;
   block_id?: string | null;
+  block_ids?: string[];
   progressions?: PromiseMilestone[] | null;
   resolution?: PromiseMilestone | null;
   resolved_in_volume?: string | null;

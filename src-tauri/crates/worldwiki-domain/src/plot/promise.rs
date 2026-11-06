@@ -65,7 +65,6 @@ fn default_datetime() -> DateTime<Utc> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlotPromise {
     pub id: String,
-    pub project_id: String,
     pub kind: PromiseKind,
     #[serde(default)]
     pub title: String,
@@ -74,29 +73,11 @@ pub struct PlotPromise {
     #[serde(default)]
     pub status: PromiseStatus,
     #[serde(default)]
-    pub milestones: Vec<PromiseMilestone>,
-    #[serde(default)]
-    pub chapter_id: Option<String>,
-    #[serde(default)]
-    pub paragraph_index: Option<i32>,
-    #[serde(default)]
-    pub block_id: Option<String>,
+    pub block_ids: Vec<String>,
     #[serde(default)]
     pub location_id: Option<String>,
     #[serde(default)]
     pub timeline_event_id: Option<String>,
-    #[serde(default)]
-    pub m_abs: Option<i64>,
-    #[serde(default)]
-    pub calendar_id: Option<String>,
-    #[serde(default)]
-    pub participant_ids: Vec<String>,
-    #[serde(default)]
-    pub arcs: Vec<SceneArcItem>,
-    #[serde(default)]
-    pub arc_id: Option<String>,
-    #[serde(default)]
-    pub arc_phase: Option<String>,
     #[serde(default)]
     pub parent_id: Option<String>,
     #[serde(default)]
@@ -105,37 +86,49 @@ pub struct PlotPromise {
     pub created_at: DateTime<Utc>,
     #[serde(default = "default_datetime")]
     pub updated_at: DateTime<Utc>,
+
+    // Graph projection fields (hydrated from relations, not stored on plot_promises record)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub milestones: Vec<PromiseMilestone>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub m_abs: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calendar_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub participant_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub arcs: Vec<SceneArcItem>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arc_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arc_phase: Option<String>,
 }
 
 impl PlotPromise {
     pub fn new(
-        project_id: impl Into<String>,
         kind: PromiseKind,
         title: impl Into<String>,
     ) -> Self {
         Self {
             id: String::new(),
-            project_id: project_id.into(),
             kind,
             title: title.into(),
             note: None,
             status: PromiseStatus::Planted,
-            milestones: Vec::new(),
-            chapter_id: None,
-            paragraph_index: None,
-            block_id: None,
+            block_ids: Vec::new(),
             location_id: None,
             timeline_event_id: None,
+            parent_id: None,
+            time_nature: None,
+            created_at: DateTime::UNIX_EPOCH,
+            updated_at: DateTime::UNIX_EPOCH,
+            milestones: Vec::new(),
             m_abs: None,
             calendar_id: None,
             participant_ids: Vec::new(),
             arcs: Vec::new(),
             arc_id: None,
             arc_phase: None,
-            parent_id: None,
-            time_nature: None,
-            created_at: DateTime::UNIX_EPOCH,
-            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 

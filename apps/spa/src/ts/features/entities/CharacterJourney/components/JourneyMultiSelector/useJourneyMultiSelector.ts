@@ -11,6 +11,18 @@ export interface UseJourneyMultiSelectorEmit {
   (e: 'remove', id: string): void;
 }
 
+export function isCharacterEntity(entity?: Entity | null): boolean {
+  if (!entity) return false;
+  const rawType = String(entity.entity_type || '').trim().toLowerCase();
+  return (
+    rawType === 'character' ||
+    rawType === 'characters' ||
+    rawType === 'person' ||
+    rawType.includes('персонаж') ||
+    rawType.includes('герой')
+  );
+}
+
 export function useJourneyMultiSelector(
   props: UseJourneyMultiSelectorProps,
   emit: UseJourneyMultiSelectorEmit
@@ -20,6 +32,7 @@ export function useJourneyMultiSelector(
       props.selectedEntities.map((e) => (e.id || '').replace(/^entities:/, ''))
     );
     return props.entitiesList.filter((e) => {
+      if (!isCharacterEntity(e)) return false;
       const cleanId = (e.id || '').replace(/^entities:/, '');
       return !selectedCleanIds.has(cleanId);
     });

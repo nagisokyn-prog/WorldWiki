@@ -1,6 +1,8 @@
 <template>
   <node-view-wrapper 
     class="semantic-paragraph-node" 
+    :data-block-id="node?.attrs?.block_id || node?.attrs?.id || undefined"
+    :data-id="node?.attrs?.id || node?.attrs?.block_id || undefined"
     :class="[node?.attrs?.semanticTag || 'desc', node?.attrs?.diffClass]"
     :style="{
       textIndent: node?.attrs?.textIndent || undefined,

@@ -70,8 +70,8 @@
         </div>
       </div>
 
-      <span v-if="item.block_id" class="badge-block font-mono text-xs text-muted py-1 px-2 bg-panel rounded border border-border flex-shrink-0" title="Идентификатор блока">
-        🧱 {{ item.block_id }}
+      <span v-if="blockBadgeText" class="badge-block font-mono text-xs text-muted py-1 px-2 bg-panel rounded border border-border flex-shrink-0" title="Идентификатор блока">
+        🧱 {{ blockBadgeText }}
       </span>
     </div>
 
@@ -144,6 +144,7 @@ const props = defineProps<PromiseCardMetaProps>();
 const emit = defineEmits<PromiseCardMetaEmits>();
 
 const {
+  blockBadgeText,
   locationDraft,
   isLocationDropdownOpen,
   filteredLocations,

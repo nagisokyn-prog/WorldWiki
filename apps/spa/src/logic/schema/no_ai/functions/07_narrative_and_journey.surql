@@ -32,6 +32,14 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         type::string(array::first($milestones).block_id)
     } ELSE { NONE };
 
+    LET $target_blocks = IF $data.block_ids != NONE AND type::is_array($data.block_ids) {
+        $data.block_ids
+    } ELSE IF $data.block_id != NONE AND type::string($data.block_id) != '' {
+        [type::string($data.block_id)]
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' {
+        [type::string(array::first($milestones).block_id)]
+    } ELSE { [] };
+
     -- Синхронизация времени и события таймлайна (timeline_events)
     LET $has_m_abs = $data.m_abs != NONE AND $data.m_abs != NULL;
     LET $existing_evt_id = IF $data.timeline_event_id != NONE AND $data.timeline_event_id != NULL AND type::string($data.timeline_event_id) != '' {
@@ -78,10 +86,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
 
     LET $promise = (
         UPSERT $rec_id MERGE {
-            project_id: $p_rec,
-            chapter_id: $target_chap,
-            paragraph_index: $target_para,
-            block_id: $target_block,
+            block_ids: $target_blocks,
             parent_id: IF $data.parent_id != NONE AND $data.parent_id != NULL AND type::string($data.parent_id) != '' {
                 IF string::starts_with(type::string($data.parent_id), 'plot_promises:') {
                     type::record($data.parent_id)
@@ -96,6 +101,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             status: IF $data.status != NONE AND $data.status != NULL AND type::string($data.status) != '' { type::string($data.status) } ELSE { 'planted' },
             location_id: IF $data.location_id != NONE AND $data.location_id != NULL { $data.location_id } ELSE { NONE },
             timeline_event_id: $target_evt_id,
+            is_flashback: IF $data.is_flashback != NONE { $data.is_flashback } ELSE { NONE },
             updated_at: time::now()
         }
     );
@@ -107,10 +113,22 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             IF $m.block_id != NONE {
                 LET $block_rec = type::record('text_blocks', type::string($m.block_id).replace('text_blocks:', ''));
                 RELATE $rec_id->promise_milestones->$block_rec SET
-                    project_id = $p_rec,
                     stage = IF $m.stage != NONE AND $m.stage != NULL AND type::string($m.stage) != '' { type::string($m.stage) } ELSE { 'plant' },
                     quote = IF $m.quote != NONE AND $m.quote != NULL { type::string($m.quote) } ELSE { '' },
                     note = IF $m.note != NONE AND $m.note != NULL { type::string($m.note) } ELSE { NONE },
+                    created_at = time::now();
+            };
+        };
+    };
+
+    -- Синхронизация охвата блоков текста (spans_blocks): plot_promises -> spans_blocks -> text_blocks
+    DELETE spans_blocks WHERE in = $rec_id;
+    IF array::len($target_blocks) > 0 {
+        FOR $b IN $target_blocks {
+            IF $b != NONE AND type::string($b) != '' {
+                LET $clean_b = type::string($b).replace('text_blocks:', '');
+                LET $blk_rec = type::record('text_blocks', $clean_b);
+                RELATE $rec_id->spans_blocks->$blk_rec SET
                     created_at = time::now();
             };
         };
@@ -126,7 +144,6 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 LET $found_ent = (SELECT VALUE id FROM entities WHERE schema_id.project_id = $p_rec AND (id = type::record('entities', $clean_id) OR name = type::string($pid) OR string::lowercase(name) = string::lowercase(type::string($pid))) LIMIT 1);
                 LET $ent_rec = IF array::len($found_ent) > 0 { $found_ent[0] } ELSE { type::record('entities', $clean_id) };
                 RELATE $ent_rec->participant_of->$rec_id SET
-                    project_id = $p_rec,
                     created_at = time::now();
             };
         };
@@ -146,7 +163,6 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             IF $a.arc_id != NONE AND $a.arc_id != NULL {
                 LET $arc_rec = type::record('story_arcs', type::string($a.arc_id).replace('story_arcs:', ''));
                 RELATE $rec_id->advances_arc->$arc_rec SET
-                    project_id = $p_rec,
                     phase = IF $a.arc_phase != NONE { $a.arc_phase } ELSE { 'setup' },
                     created_at = time::now();
             };
@@ -158,7 +174,6 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     IF $target_evt_id != NONE AND $target_evt_id != NULL {
         LET $tn = IF $data.time_nature != NONE AND $data.time_nature != NULL AND string::len(type::string($data.time_nature)) > 0 { type::string($data.time_nature) } ELSE { 'present' };
         RELATE $rec_id->occurs_at->$target_evt_id SET
-            project_id = $p_rec,
             time_nature = $tn,
             created_at = time::now();
     };
@@ -166,8 +181,8 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     RETURN (
         SELECT 
             id,
-            project_id,
             type::string(parent_id) AS parent_id,
+            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
             kind,
             title,
             note,
@@ -222,9 +237,9 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
     LET $appears_in_list = (
         SELECT 
-            in.id AS entity_id,
+            type::string(in) AS entity_id,
             in.name AS entity_name,
-            IF string::starts_with(type::string(out), 'text_blocks') { type::string(out.chapter_id) } ELSE { type::string(out.id) } AS chapter_id,
+            IF string::starts_with(type::string(out), 'text_blocks') { type::string(out.chapter_id) } ELSE { type::string(out) } AS chapter_id,
             IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.title } ELSE { out.title } AS chapter_title,
             IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.volume_id.title } ELSE IF out.volume_id.title != NONE { out.volume_id.title } ELSE { NONE } AS volume_title,
             IF string::starts_with(type::string(out), 'text_blocks') { out.chapter_id.sort_order } ELSE IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
@@ -238,7 +253,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
 
     LET $participant_list = (
         SELECT 
-            in.id AS entity_id,
+            type::string(in) AS entity_id,
             in.name AS entity_name,
             IF out.chapter_id != NONE { type::string(out.chapter_id) }
                ELSE IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) }
@@ -283,14 +298,14 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             kind,
             IF title != NONE { title } ELSE { '' } AS quote,
             status,
-            IF chapter_id != NONE { type::string(chapter_id) }
-               ELSE IF array::len(->promise_milestones) > 0 { type::string(array::first(->promise_milestones.out.chapter_id)) }
+            IF array::len(->promise_milestones) > 0 { type::string(array::first(->promise_milestones.out.chapter_id)) }
+               ELSE IF array::len(->spans_blocks) > 0 { type::string(array::first(->spans_blocks.out.chapter_id)) }
                ELSE { NONE } AS chapter_id,
-            IF chapter_id.title != NONE { chapter_id.title }
-               ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
+            IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
+               ELSE IF array::first(->spans_blocks.out.chapter_id.title) != NONE { array::first(->spans_blocks.out.chapter_id.title) }
                ELSE { 'Сцена' } AS chapter_title,
-            IF chapter_id.sort_order != NONE { chapter_id.sort_order }
-               ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
+            IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
+               ELSE IF array::first(->spans_blocks.out.chapter_id.sort_order) != NONE { array::first(->spans_blocks.out.chapter_id.sort_order) }
                ELSE { 0 } AS planted_order,
             ->advances_arc.{
                 arc_id: type::string(out.id),
@@ -305,7 +320,11 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } ELSE IF m_abs != NONE { m_abs } ELSE { NONE } AS m_abs,
             IF array::len(<-participant_of) > 0 { (SELECT VALUE type::string(id) FROM <-participant_of<-entities) } ELSE { [] } AS participant_ids
         FROM plot_promises 
-        WHERE project_id = $p_rec
+        WHERE (timeline_event_id.project_id = $p_rec 
+            OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->advances_arc.out.project_id CONTAINS $p_rec 
+            OR <-participant_of.in.schema_id.project_id CONTAINS $p_rec)
         LIMIT 2000
     );
 
@@ -347,12 +366,12 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            IF chapter_id != NONE AND chapter_id != NULL THEN type::string(chapter_id)
-               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
+            IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
+               ELSE IF array::first(->spans_blocks.out.chapter_id) != NONE THEN type::string(array::first(->spans_blocks.out.chapter_id))
                ELSE NONE END AS chapter_id, 
             IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
             IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
-               ELSE IF chapter_id.sort_order != NONE THEN chapter_id.sort_order * 1440
+               ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE THEN array::first(->promise_milestones.out.chapter_id.sort_order) * 1440
                ELSE NONE END AS m_abs, 
             IF <-participant_of.in.id != NONE AND <-participant_of.in.id != NULL THEN <-participant_of.in.id ELSE [] END AS participant_ids, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
@@ -360,7 +379,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
             IF kind != NONE AND kind != NULL THEN kind ELSE 'gun' END AS kind,
             IF status != NONE AND status != NULL THEN status ELSE 'planted' END AS status
         FROM plot_promises
-        WHERE project_id = $p_rec
+        WHERE (timeline_event_id.project_id = $p_rec 
+            OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->advances_arc.out.project_id CONTAINS $p_rec 
+            OR <-participant_of.in.schema_id.project_id CONTAINS $p_rec)
         LIMIT 5000
     );
 
@@ -429,12 +452,12 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
     LET $promises = (
         SELECT 
             type::string(id) AS id, 
-            IF chapter_id != NONE AND chapter_id != NULL THEN type::string(chapter_id)
-               ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
+            IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
+               ELSE IF array::first(->spans_blocks.out.chapter_id) != NONE THEN type::string(array::first(->spans_blocks.out.chapter_id))
                ELSE NONE END AS chapter_id, 
             IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
             IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
-               ELSE IF chapter_id.sort_order != NONE THEN chapter_id.sort_order * 1440
+               ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE THEN array::first(->promise_milestones.out.chapter_id.sort_order) * 1440
                ELSE NONE END AS m_abs, 
             IF <-participant_of.in.id != NONE AND <-participant_of.in.id != NULL THEN <-participant_of.in.id ELSE [] END AS participant_ids, 
             IF title != NONE AND title != NULL THEN title ELSE '' END AS title, 
@@ -442,7 +465,11 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
             IF kind != NONE AND kind != NULL THEN kind ELSE 'gun' END AS kind,
             IF status != NONE AND status != NULL THEN status ELSE 'planted' END AS status
         FROM plot_promises
-        WHERE project_id = $p_rec
+        WHERE (timeline_event_id.project_id = $p_rec 
+            OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->advances_arc.out.project_id CONTAINS $p_rec 
+            OR <-participant_of.in.schema_id.project_id CONTAINS $p_rec)
         LIMIT 5000
     );
 
@@ -474,11 +501,8 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
     LET $res = (
         SELECT 
             id,
-            project_id,
             type::string(parent_id) AS parent_id,
-            chapter_id,
-            paragraph_index,
-            block_id,
+            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
             kind,
             title,
             note,
@@ -515,11 +539,8 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
     RETURN (
         SELECT 
             id,
-            project_id,
             type::string(parent_id) AS parent_id,
-            chapter_id,
-            paragraph_index,
-            block_id,
+            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
             kind,
             title,
             note,
@@ -545,7 +566,11 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
                 arc_phase: phase
             } AS arcs
         FROM plot_promises 
-        WHERE project_id = $p_rec
+        WHERE (timeline_event_id.project_id = $p_rec 
+            OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->advances_arc.out.project_id CONTAINS $p_rec 
+            OR <-participant_of.in.schema_id.project_id CONTAINS $p_rec)
         LIMIT 500
     );
 };
@@ -556,11 +581,8 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
     RETURN (
         SELECT 
             id,
-            project_id,
             type::string(parent_id) AS parent_id,
-            chapter_id,
-            paragraph_index,
-            block_id,
+            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
             kind,
             title,
             note,
@@ -586,7 +608,8 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
                 arc_phase: phase
             } AS arcs
         FROM plot_promises 
-        WHERE chapter_id = $ch_rec OR ->promise_milestones.out.chapter_id CONTAINS $ch_rec
+        WHERE ->promise_milestones.out.chapter_id CONTAINS $ch_rec
+           OR ->spans_blocks.out.chapter_id CONTAINS $ch_rec
         LIMIT 200
     );
 };
@@ -598,10 +621,7 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
     RETURN (
         SELECT 
             id,
-            project_id,
-            chapter_id,
-            paragraph_index,
-            block_id,
+            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
             kind,
             title,
             note,
@@ -625,7 +645,8 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
                 arc_phase: phase
             } AS arcs
         FROM plot_promises
-        WHERE (chapter_id IN $chapters OR ->promise_milestones.out.chapter_id CONTAINSANY $chapters)
+        WHERE (->promise_milestones.out.chapter_id CONTAINSANY $chapters 
+            OR ->spans_blocks.out.chapter_id CONTAINSANY $chapters)
           AND status != 'resolved'
         LIMIT 500
     );
@@ -890,7 +911,7 @@ DEFINE FUNCTION OVERWRITE fn::link_chapter_to_arc($chapter_id: any, $arc_id: any
     DELETE advances_arc WHERE in = $c_rec AND out = $a_rec;
     RELATE $c_rec -> advances_arc -> $a_rec SET
         phase = $valid_phase,
-        project_id = $a_rec.project_id;
+        created_at = time::now();
 };
 
 -- 62. ОТВЯЗКА ГЛАВЫ ОТ СЮЖЕТНОЙ АРКИ

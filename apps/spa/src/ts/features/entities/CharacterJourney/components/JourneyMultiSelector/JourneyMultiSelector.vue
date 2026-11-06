@@ -32,7 +32,7 @@
         :key="ent.id || ent.name"
         :value="ent.id || ''"
       >
-        {{ ent.name }} ({{ ent.entity_type }})
+        {{ ent.name }}
       </option>
     </select>
   </div>

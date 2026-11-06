@@ -90,7 +90,28 @@ export function usePromisesPanel(
         if (pChapId !== cleanChapId) continue;
 
         const currentQuote = p.quote ?? '';
-        if (!currentQuote.trim()) continue;
+        if (!currentQuote.trim() && (!p.block_ids || p.block_ids.length === 0)) continue;
+
+        // ── Путь 0: block_ids (массив блоков сцены) ────────────────────────
+        if (p.block_ids && p.block_ids.length > 0) {
+          const matchedTexts: string[] = [];
+          for (const bId of p.block_ids) {
+            const cleanId = bId.replace(/^(text_blocks|blocks):/, '');
+            const blockEl = doc.querySelector(`[data-block-id="${bId}"], [data-block-id="${cleanId}"], [data-id="${bId}"], [data-id="${cleanId}"]`);
+            if (blockEl && blockEl.textContent?.trim()) {
+              matchedTexts.push(blockEl.textContent.trim());
+            }
+          }
+          if (matchedTexts.length > 0) {
+            const combinedText = matchedTexts.join(' ');
+            if (p.quote !== combinedText) {
+              p.quote = combinedText;
+              hasChanges = true;
+            }
+            if (p.is_orphaned) { p.is_orphaned = false; hasChanges = true; }
+            continue;
+          }
+        }
 
         // ── Путь 1: block_id ──────────────────────────────────────────────
         if (p.block_id) {

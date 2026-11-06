@@ -13,7 +13,7 @@ export interface PromiseCardProps {
 
 export type PromiseCardEmits = {
   remove: [item: RichPlotPromise];
-  locate: [payload: { chapter_id: string; paragraph_index: number; quote: string; block_id?: string | null }];
+  locate: [payload: { chapter_id: string; paragraph_index: number; quote: string; block_id?: string | null; block_ids?: string[] }];
   removeMilestone: [payload: { item: RichPlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }];
   promptAttachMilestone: [payload: { item: RichPlotPromise; stage: 'progression' | 'resolution' }];
   startEditNote: [item: RichPlotPromise];

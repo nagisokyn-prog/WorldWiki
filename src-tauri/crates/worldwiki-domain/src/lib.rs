@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_plot_promise_resolution() {
         let mut promise =
-            PlotPromise::new("proj_1", PromiseKind::Gun, "Старинный револьвер на стене");
+            PlotPromise::new(PromiseKind::Gun, "Старинный револьвер на стене");
         assert_eq!(promise.status, PromiseStatus::Planted);
         promise.resolve();
         assert_eq!(promise.status, PromiseStatus::Resolved);

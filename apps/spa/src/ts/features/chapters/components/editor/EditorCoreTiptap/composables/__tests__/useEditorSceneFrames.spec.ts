@@ -122,4 +122,52 @@ describe('useEditorSceneFrames', () => {
     expect(pConflict.classList.contains('narrative-kind-conflict')).toBe(true);
     expect(pConflict.getAttribute('data-narrative-kind')).toBe('conflict');
   });
+
+  it('re-renders frames automatically on editor update events (e.g. backspace / typing)', async () => {
+    const p1 = document.createElement('p');
+    p1.textContent = 'Новая сцена диалога.';
+    editorDom.appendChild(p1);
+
+    let updateCallback: (() => void) | null = null;
+    const mockEditor = {
+      view: { dom: editorDom },
+      on: (event: string, cb: () => void) => {
+        if (event === 'update') updateCallback = cb;
+      },
+      off: (event: string) => {
+        if (event === 'update') updateCallback = null;
+      }
+    };
+
+    const existingPromises = ref<PlotPromise[]>([
+      {
+        id: 'plot_promises:scene_dyn',
+        project_id: 'proj_1',
+        kind: 'scene',
+        title: 'Новая сцена диалога',
+        status: 'planted',
+        milestones: [
+          { milestone_id: 'm1', stage: 'setup', quote: 'Новая сцена диалога', block_id: null, chapter_id: 'ch_1', order_index: 1 }
+        ],
+        location_id: null,
+        timeline_event_id: null,
+        m_abs: null,
+        calendar_id: null,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      }
+    ]);
+
+    useEditorSceneFrames({
+      editor: ref(mockEditor as any),
+      existingPromises,
+      chapterId: ref('ch_1'),
+      editorMode: ref('wysiwyg')
+    });
+
+    expect(typeof updateCallback).toBe('function');
+    if (updateCallback) {
+      (updateCallback as () => void)();
+    }
+  });
 });

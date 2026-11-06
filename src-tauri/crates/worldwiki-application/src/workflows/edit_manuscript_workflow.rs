@@ -59,11 +59,6 @@ impl EditManuscriptAtomicWorkflow {
         self.manuscript_services.save_chapter(&chapter).await?;
 
         // 2. Plant new plot promises
-        let project_id = req
-            .project_id
-            .clone()
-            .unwrap_or_else(|| chapter.volume_id.clone());
-
         let mut promises_planted = 0;
         for p in req.planted_promises {
             let kind = match p.kind.as_str() {
@@ -73,7 +68,6 @@ impl EditManuscriptAtomicWorkflow {
                 _ => PromiseKind::Gun,
             };
             let mut promise = PlotPromise::new(
-                project_id.clone(),
                 kind,
                 p.quote.clone(),
             );

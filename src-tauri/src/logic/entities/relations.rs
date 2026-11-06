@@ -44,13 +44,13 @@ pub async fn create_entity_relation_inner(
         description,
         strength,
         attributes,
-        start_chapter,
-        end_chapter,
+        start_at,
+        end_at,
         ..
     } = rel;
 
-    let clean_start = start_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
-    let clean_end = end_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
+    let clean_start = start_at.filter(|s| !s.trim().is_empty());
+    let clean_end = end_at.filter(|s| !s.trim().is_empty());
 
     let query = r#"
         RETURN fn::create_entity_relation(
@@ -61,8 +61,20 @@ pub async fn create_entity_relation_inner(
             $desc,
             $strength,
             $attrs,
-            IF $start_chap != NONE { type::record('chapters', $start_chap) } ELSE { NONE },
-            IF $end_chap != NONE { type::record('chapters', $end_chap) } ELSE { NONE }
+            IF $start_chap != NONE { 
+                IF string::starts_with($start_chap, 'volumes:') OR string::starts_with($start_chap, 'chapters:') {
+                    type::record($start_chap)
+                } ELSE {
+                    type::record('chapters', $start_chap)
+                }
+            } ELSE { NONE },
+            IF $end_chap != NONE { 
+                IF string::starts_with($end_chap, 'volumes:') OR string::starts_with($end_chap, 'chapters:') {
+                    type::record($end_chap)
+                } ELSE {
+                    type::record('chapters', $end_chap)
+                }
+            } ELSE { NONE }
         );
     "#;
 

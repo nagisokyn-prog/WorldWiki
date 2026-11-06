@@ -143,7 +143,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
         LIMIT 100
     );
     LET $promises = (
-        SELECT id, project_id, kind, title, note, status, location_id, timeline_event_id,
+        SELECT id, kind, title, note, status, location_id, timeline_event_id,
             timeline_event_id.m_abs AS m_abs,
             timeline_event_id.calendar_id AS calendar_id,
             created_at,
@@ -155,7 +155,12 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
             <-participant_of.in.id AS participant_ids,
             ->advances_arc.out.id AS arc_ids
         FROM plot_promises 
-        WHERE ->promise_milestones.out.chapter_id CONTAINS $chapter OR (project_id = $chapter.volume_id.project_id AND status != 'resolved')
+        WHERE ->promise_milestones.out.chapter_id CONTAINS $chapter 
+           OR ((->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $chapter.volume_id.project_id 
+                OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $chapter.volume_id.project_id 
+                OR timeline_event_id.project_id = $chapter.volume_id.project_id 
+                OR ->advances_arc.out.project_id CONTAINS $chapter.volume_id.project_id) 
+               AND status != 'resolved')
         LIMIT 100
     );
     RETURN {

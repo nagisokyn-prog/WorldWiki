@@ -9,24 +9,26 @@ export interface UseEditorPromiseMenuOptions {
   editorMode: Ref<string>;
   editor: Ref<Editor | undefined>;
   markdownTextareaRef: Ref<HTMLTextAreaElement | null>;
-  onOpenPromiseCreateModal: (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => void;
-  onLinkMilestone: (payload: { promiseId: string; stage: 'progression' | 'resolution'; quote: string; paragraph_index: number; block_id?: string | null }) => void;
-  onLinkSubScene?: (payload: { parentPromiseId: string; quote: string; paragraph_index: number; block_id?: string | null }) => void;
+  onOpenPromiseCreateModal: (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }) => void;
+  onLinkMilestone: (payload: { promiseId: string; stage: 'progression' | 'resolution'; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }) => void;
+  onLinkSubScene?: (payload: { parentPromiseId: string; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }) => void;
 }
 
 export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
   const isPromiseMenuOpen = ref(false);
   const promiseMenuPos = ref({ x: 0, y: 0 });
-  const selectedPromiseData = ref<{ quote: string; paragraph_index: number; block_id?: string | null }>({
+  const selectedPromiseData = ref<{ quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }>({
     quote: '',
     paragraph_index: 1,
-    block_id: null
+    block_id: null,
+    block_ids: []
   });
 
   const handleContextMenu = (e: MouseEvent) => {
     let selectedText = '';
     let paragraphIndex = 1;
     let blockId: string | null = null;
+    let blockIds: string[] = [];
 
     if (options.editorMode.value === 'wysiwyg' || options.editorMode.value === 'split') {
       if (options.editor.value) {
@@ -36,15 +38,22 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
 
           let blockCount = 0;
           let foundIdx = 1;
+          const collectedBlockIds: string[] = [];
           doc.forEach((node, offset) => {
             blockCount++;
-            if (selection.from >= offset && selection.from <= offset + node.nodeSize) {
-              foundIdx = blockCount;
+            const nodeEnd = offset + node.nodeSize;
+            if (selection.to > offset && selection.from < nodeEnd) {
               const attrId = (node.attrs && (node.attrs.block_id || node.attrs.id)) as string | undefined;
-              blockId = attrId || `para-${blockCount}`;
+              const bId = attrId || `para-${blockCount}`;
+              collectedBlockIds.push(bId);
+              if (collectedBlockIds.length === 1) {
+                foundIdx = blockCount;
+                blockId = bId;
+              }
             }
           });
           paragraphIndex = Math.max(1, foundIdx);
+          blockIds = collectedBlockIds;
         }
       }
     }
@@ -56,9 +65,16 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       if (start !== end) {
         selectedText = ta.value.substring(start, end).trim();
         const beforeText = ta.value.substring(0, start);
-        const lines = beforeText.split('\n');
-        paragraphIndex = Math.max(1, lines.length);
+        const selectedBlock = ta.value.substring(start, end);
+        const startLine = beforeText.split('\n').length;
+        const lineSpan = Math.max(1, selectedBlock.split('\n').length);
+        paragraphIndex = Math.max(1, startLine);
+        const mBlockIds: string[] = [];
+        for (let l = 0; l < lineSpan; l++) {
+          mBlockIds.push(`para-${startLine + l}`);
+        }
         blockId = `para-${paragraphIndex}`;
+        blockIds = mBlockIds;
       }
     }
 
@@ -85,6 +101,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
                 paragraphIndex = count;
                 const attrId = (node.attrs && (node.attrs.block_id || node.attrs.id)) as string | undefined;
                 blockId = attrId || `para-${count}`;
+                blockIds = [blockId];
               }
             });
           }
@@ -98,6 +115,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       const curLine = lines[paragraphIndex - 1] || lines[0] || '';
       if (curLine.trim()) {
         selectedText = curLine.trim().substring(0, 140);
+        blockIds = [`para-${paragraphIndex}`];
       }
     }
 
@@ -105,11 +123,16 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       selectedText = 'Сцена';
     }
 
+    if (blockIds.length === 0) {
+      blockIds = [blockId || `para-${paragraphIndex}`];
+    }
+
     e.preventDefault();
     selectedPromiseData.value = {
       quote: selectedText,
       paragraph_index: paragraphIndex,
-      block_id: blockId || `para-${paragraphIndex}`
+      block_id: blockId || `para-${paragraphIndex}`,
+      block_ids: blockIds
     };
     promiseMenuPos.value = { x: e.clientX, y: e.clientY };
     isPromiseMenuOpen.value = true;
@@ -121,7 +144,8 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       kind: option.kind,
       quote: selectedPromiseData.value.quote,
       paragraph_index: selectedPromiseData.value.paragraph_index,
-      block_id: selectedPromiseData.value.block_id
+      block_id: selectedPromiseData.value.block_id,
+      block_ids: selectedPromiseData.value.block_ids
     });
   };
 
@@ -133,7 +157,8 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       stage: payload.stage,
       quote: selectedPromiseData.value.quote,
       paragraph_index: selectedPromiseData.value.paragraph_index,
-      block_id: selectedPromiseData.value.block_id
+      block_id: selectedPromiseData.value.block_id,
+      block_ids: selectedPromiseData.value.block_ids
     });
   };
 
@@ -144,7 +169,8 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       parentPromiseId: payload.promise.id,
       quote: selectedPromiseData.value.quote,
       paragraph_index: selectedPromiseData.value.paragraph_index,
-      block_id: selectedPromiseData.value.block_id
+      block_id: selectedPromiseData.value.block_id,
+      block_ids: selectedPromiseData.value.block_ids
     });
   };
 

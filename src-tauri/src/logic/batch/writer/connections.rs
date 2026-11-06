@@ -25,8 +25,8 @@ pub async fn upsert_connections_batch_inner(
             description,
             strength,
             attributes,
-            start_chapter,
-            end_chapter,
+            start_at,
+            end_at,
             ..
         } = rel;
 
@@ -41,8 +41,8 @@ pub async fn upsert_connections_batch_inner(
             .map(|s| s.split_once(':').map(|(_, b)| b).unwrap_or(s).trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string())
             .unwrap_or_else(|| from_clean.to_string());
 
-        let clean_start = start_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
-        let clean_end = end_chapter.filter(|s| !s.trim().is_empty()).map(|s| s.trim().replace("chapters:", ""));
+        let clean_start = start_at.filter(|s| !s.trim().is_empty());
+        let clean_end = end_at.filter(|s| !s.trim().is_empty());
 
         connection_objs.push(serde_json::json!({
             "source": src_clean,
@@ -51,8 +51,8 @@ pub async fn upsert_connections_batch_inner(
             "description": description.unwrap_or_default(),
             "strength": strength,
             "attributes": attributes,
-            "start_chapter": clean_start,
-            "end_chapter": clean_end,
+            "start_at": clean_start,
+            "end_at": clean_end,
         }));
     }
 

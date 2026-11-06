@@ -1,4 +1,4 @@
-import { watch, nextTick } from 'vue';
+import { watch, nextTick, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import type { Editor } from '@tiptap/vue-3';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
@@ -15,62 +15,111 @@ export function findSceneElements(
   editorDom: HTMLElement,
   quote?: string,
   blockId?: string,
-  paragraphIndex?: number
+  paragraphIndex?: number,
+  blockIds?: string[]
 ): HTMLElement[] {
-  const targetElements: HTMLElement[] = [];
+  const topBlocks = Array.from(
+    editorDom.querySelectorAll(':scope > p, :scope > blockquote, :scope > h1, :scope > h2, :scope > h3, :scope > div.semantic-paragraph-node, :scope > div')
+  ) as HTMLElement[];
 
-  // 1. Поиск по blockId (если указан)
-  if (blockId && blockId.trim()) {
-    const safeId = blockId.trim();
-    try {
-      const el = editorDom.querySelector(`[data-block-id="${safeId}"], [data-id="${safeId}"]`) as HTMLElement | null;
-      if (el) {
-        targetElements.push(el);
-      }
-    } catch (err) {
-      console.warn('[useEditorSceneFrames] Failed to query block selector for ID:', safeId, err);
+  if (topBlocks.length === 0) return [];
+
+  // 0. ПРЯМОЙ И СТАБИЛЬНЫЙ ПОИСК ПО blockIds (не зависит от изменения текста)
+  if (blockIds && blockIds.length > 0) {
+    const cleanTargetIds = blockIds.map((id) => (id.split(':').pop() || id).trim().toLowerCase());
+    const matchedByBlockIds = topBlocks.filter((el, idx) => {
+      const bId = (el.getAttribute('data-block-id') || el.getAttribute('data-id') || `para-${idx + 1}`).trim().toLowerCase();
+      const cleanBId = bId.split(':').pop() || bId;
+      return cleanTargetIds.includes(bId) || cleanTargetIds.includes(cleanBId);
+    });
+
+    if (matchedByBlockIds.length > 0) {
+      return matchedByBlockIds;
     }
   }
 
-  // 2. Поиск по цитате (поддержка многострочных сцен, диалогов, тире и кавычек)
-  if (targetElements.length === 0 && quote && quote.trim()) {
-    const cleanString = (s: string) => s.replace(/[«»""'']/g, '').replace(/[—–−-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-    const normQuote = cleanString(quote);
+  const cleanString = (s: string) =>
+    s
+      .replace(/[«»""''„“]/g, '')
+      .replace(/[—–−-]/g, ' ')
+      .replace(/[.,!?:;…()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
 
-    const quotePhrases = quote
-      .split(/[\r\n]+|[.!?—–]+\s+/)
-      .map(cleanString)
-      .filter(p => p.length > 5);
+  const extractText = (el: HTMLElement) => {
+    const clone = el.cloneNode(true) as HTMLElement;
+    const icons = clone.querySelectorAll('.entity-icon, .chip-icon, .mention-icon, .btn-icon');
+    icons.forEach((ic) => ic.remove());
+    return cleanString(clone.textContent || '');
+  };
 
-    const topBlocks = Array.from(editorDom.querySelectorAll(':scope > *, .semantic-paragraph-node, p, blockquote, h1, h2, h3')) as HTMLElement[];
-    const uniqueTopBlocks = Array.from(new Set(topBlocks));
+  const blockTexts = topBlocks.map((el) => extractText(el));
+  const trimmedQuote = (quote || '').trim();
 
-    for (const el of uniqueTopBlocks) {
-      const elText = cleanString(el.textContent || '');
-      if (!elText || elText.length < 3) continue;
+  // 1. Поиск начального блока по blockId (если указан)
+  let startIndex = -1;
+  if (blockId && blockId.trim()) {
+    const safeId = blockId.trim();
+    const cleanId = safeId.split(':').pop() || safeId;
+    startIndex = topBlocks.findIndex((el) => {
+      const bId = el.getAttribute('data-block-id') || el.getAttribute('data-id');
+      return bId === safeId || bId === cleanId;
+    });
+  }
 
-      const isExactMatch = normQuote.length > 5 && (normQuote.includes(elText) || elText.includes(normQuote));
-      const isPhraseMatch = quotePhrases.some(phrase => phrase.length > 5 && (elText.includes(phrase) || phrase.includes(elText)));
+  // 2. Если по blockId не найдено, ищем по началу цитаты
+  if (startIndex === -1 && trimmedQuote) {
+    const quoteChunks = trimmedQuote.split(/[\r\n]+|[.!?—–]+\s+/).map(cleanString).filter((s) => s.length > 5);
+    const startAnchor = quoteChunks[0] || cleanString(trimmedQuote.slice(0, 35));
 
-      if (isExactMatch || isPhraseMatch) {
-        if (!targetElements.includes(el)) {
-          targetElements.push(el);
+    if (startAnchor && startAnchor.length >= 4) {
+      startIndex = blockTexts.findIndex((text) => text.includes(startAnchor) || startAnchor.includes(text));
+    }
+  }
+
+  // 3. Fallback: по порядковому номеру абзаца
+  if (startIndex === -1 && typeof paragraphIndex === 'number' && paragraphIndex > 0) {
+    startIndex = Math.max(0, Math.min(topBlocks.length - 1, paragraphIndex - 1));
+  }
+
+  if (startIndex === -1) {
+    return [];
+  }
+
+  // 4. Определение конца диапазона (endIndex)
+  let endIndex = startIndex;
+
+  if (trimmedQuote) {
+    const quoteChunks = trimmedQuote.split(/[\r\n]+|[.!?—–]+\s+/).map(cleanString).filter((s) => s.length > 5);
+    const endAnchor = quoteChunks[quoteChunks.length - 1] || cleanString(trimmedQuote.slice(-35));
+
+    if (endAnchor && endAnchor.length >= 4) {
+      for (let i = topBlocks.length - 1; i >= startIndex; i--) {
+        const text = blockTexts[i];
+        if (text && (text.includes(endAnchor) || endAnchor.includes(text))) {
+          endIndex = i;
+          break;
+        }
+      }
+    }
+
+    // Если цитата охватывает несколько абзацев, проверяем последовательное включение
+    if (endIndex === startIndex) {
+      const normFullQuote = cleanString(trimmedQuote);
+      for (let i = startIndex; i < topBlocks.length; i++) {
+        const text = blockTexts[i];
+        if (!text || text.length < 4) continue;
+        if (normFullQuote.includes(text) || quoteChunks.some((c) => c.length > 6 && text.includes(c))) {
+          endIndex = i;
+        } else if (i > startIndex) {
+          break;
         }
       }
     }
   }
 
-  // 3. Fallback: по порядковому номеру абзаца
-  if (targetElements.length === 0 && typeof paragraphIndex === 'number' && paragraphIndex > 0) {
-    const topBlocks = Array.from(editorDom.children) as HTMLElement[];
-    if (topBlocks.length > 0) {
-      const idx = Math.max(0, Math.min(topBlocks.length - 1, paragraphIndex - 1));
-      const el = topBlocks[idx] || null;
-      if (el) targetElements.push(el);
-    }
-  }
-
-  return targetElements;
+  return topBlocks.slice(startIndex, endIndex + 1);
 }
 
 export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
@@ -120,20 +169,23 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
         return normalizeId(m.chapter_id) === currentChapterClean;
       });
 
+      const itemQuote = (item as unknown as { quote?: string }).quote || undefined;
       const itemsToMatch = relevantMilestones.length > 0 ? relevantMilestones : [{
         chapter_id: options.chapterId.value || '',
         order_index: 1,
         block_id: null,
-        quote: item.title,
+        quote: itemQuote || item.title,
         stage: 'setup' as const
       }];
 
       // Собираем все абзацы, принадлежащие этому узлу
       const matchedElements: HTMLElement[] = [];
+      const itemBlockIds = (item as unknown as { block_ids?: string[] }).block_ids;
       for (const m of itemsToMatch) {
-        const mObj = m as unknown as { block_id?: string | null; quote?: string | null; paragraph_index?: number; order_index?: number | null };
+        const mObj = m as unknown as { block_id?: string | null; block_ids?: string[]; quote?: string | null; paragraph_index?: number; order_index?: number | null };
         const pIdx = mObj.paragraph_index ?? (mObj.order_index ? Number(mObj.order_index) : 1);
-        const elements = findSceneElements(editorDom, m.quote || item.title, mObj.block_id || undefined, pIdx);
+        const bIds = mObj.block_ids && mObj.block_ids.length > 0 ? mObj.block_ids : itemBlockIds;
+        const elements = findSceneElements(editorDom, m.quote || itemQuote || item.title, mObj.block_id || undefined, pIdx, bIds);
         for (const el of elements) {
           if (!matchedElements.includes(el)) {
             matchedElements.push(el);
@@ -172,7 +224,7 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
     }
   };
 
-  const locateScene = (paragraphIndex: number, quote?: string, blockId?: string) => {
+  const locateScene = (paragraphIndex: number, quote?: string, blockId?: string, blockIds?: string[]) => {
     if (!options.editor.value || (options.editorMode.value !== 'wysiwyg' && options.editorMode.value !== 'split')) {
       return;
     }
@@ -180,7 +232,7 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
     const editorDom = options.editor.value.view.dom;
     if (!editorDom) return;
 
-    const targetElements = findSceneElements(editorDom, quote, blockId, paragraphIndex);
+    const targetElements = findSceneElements(editorDom, quote, blockId, paragraphIndex, blockIds);
     if (targetElements.length === 0) return;
 
     const firstTarget = targetElements[0];
@@ -236,6 +288,54 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
       });
     }
   );
+
+  let cleanupEditorListener: (() => void) | null = null;
+
+  const attachEditorListeners = (ed?: Editor) => {
+    if (cleanupEditorListener) {
+      cleanupEditorListener();
+      cleanupEditorListener = null;
+    }
+    if (!ed || typeof ed.on !== 'function') return;
+
+    let animFrameId: number | null = null;
+    const onUpdate = () => {
+      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(() => {
+        animFrameId = null;
+        renderSceneFrames();
+      });
+    };
+
+    ed.on('update', onUpdate);
+
+    cleanupEditorListener = () => {
+      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+      if (typeof ed.off === 'function') {
+        ed.off('update', onUpdate);
+      }
+    };
+  };
+
+  watch(
+    () => options.editor.value,
+    (ed) => {
+      attachEditorListeners(ed);
+      if (ed) {
+        nextTick(() => {
+          requestAnimationFrame(renderSceneFrames);
+        });
+      }
+    },
+    { immediate: true }
+  );
+
+  onUnmounted(() => {
+    if (cleanupEditorListener) {
+      cleanupEditorListener();
+      cleanupEditorListener = null;
+    }
+  });
 
   return {
     renderSceneFrames,

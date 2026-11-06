@@ -12,23 +12,29 @@
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $p_rec = fn::normalize_project_id($before.id);
     
-    -- 1. Графовые связи, нарративные узлы и ревизии лора
-    DELETE contains WHERE in = $p_rec;
-    DELETE entity_rel WHERE project_id = $p_rec;
-    DELETE appears_in WHERE project_id = $p_rec;
-    DELETE participates_in WHERE project_id = $p_rec;
-    DELETE participant_of WHERE project_id = $p_rec;
-    DELETE advances_arc WHERE project_id = $p_rec;
-    DELETE occurs_at WHERE project_id = $p_rec;
-    DELETE promise_milestones WHERE project_id = $p_rec;
-    DELETE plot_promises WHERE project_id = $p_rec;
-    DELETE entity_revisions WHERE project_id = $p_rec;
-    DELETE entity_rel_revisions WHERE project_id = $p_rec;
-
-    -- 2. Задачи планировщика (todos)
     LET $vols = (SELECT VALUE id FROM volumes WHERE project_id = $p_rec);
     LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id IN $vols);
     LET $arcs = (SELECT VALUE id FROM story_arcs WHERE project_id = $p_rec);
+    LET $schemas = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec);
+
+    -- 1. Графовые связи, нарративные узлы и ревизии лора
+    DELETE contains WHERE in = $p_rec;
+    DELETE chapter_revisions WHERE target_id IN $chaps;
+    DELETE entity_revisions WHERE target_id.schema_id IN $schemas;
+    DELETE entity_rel_revisions WHERE in_id.schema_id IN $schemas;
+    DELETE entity_rel WHERE in.schema_id IN $schemas;
+    DELETE appears_in WHERE in.schema_id IN $schemas;
+    DELETE participates_in WHERE in.schema_id IN $schemas;
+    DELETE participant_of WHERE in.schema_id IN $schemas;
+    DELETE advances_arc WHERE out IN $arcs;
+    LET $blks = (SELECT VALUE id FROM text_blocks WHERE chapter_id IN $chaps);
+    LET $p_from_blocks = (SELECT VALUE in FROM spans_blocks WHERE out IN $blks);
+    LET $p_from_milestones = (SELECT VALUE in FROM promise_milestones WHERE out IN $blks);
+    LET $p_from_arcs = (SELECT VALUE in FROM advances_arc WHERE out IN $arcs);
+    LET $all_promises = array::distinct(array::concat($p_from_blocks, $p_from_milestones, $p_from_arcs));
+    DELETE plot_promises WHERE id IN $all_promises;
+
+    -- 2. Задачи планировщика (todos)
     DELETE todos WHERE owner_id IN array::concat($vols, $chaps, $arcs) OR owner_id = $p_rec;
 
     -- 3. Сюжетные арки
@@ -36,12 +42,10 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 
     -- 4. Текст рукописи (блоки, ревизии, главы, тома)
     DELETE text_blocks WHERE chapter_id IN $chaps;
-    DELETE chapter_revisions WHERE project_id = $p_rec;
     DELETE chapters WHERE volume_id IN $vols;
     DELETE volumes WHERE project_id = $p_rec;
 
     -- 5. Сущности лора (каскад по мета-схемам проекта)
-    LET $schemas = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec);
     DELETE entities WHERE schema_id IN $schemas;
 
     -- 6. Таймлайн, календари и астрофизика
@@ -77,8 +81,8 @@ DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "D
     DELETE chapter_revisions WHERE target_id = $before.id;
 
     -- Разрыв временных границ связей
-    UPDATE entity_rel SET start_chapter = NONE WHERE start_chapter = $before.id;
-    UPDATE entity_rel SET end_chapter = NONE WHERE end_chapter = $before.id;
+    UPDATE entity_rel SET start_at = NONE WHERE start_at = $before.id;
+    UPDATE entity_rel SET end_at = NONE WHERE end_at = $before.id;
 };
 
 -- 2.1. КАСКАД СЮЖЕТНЫХ АРОК
@@ -90,11 +94,13 @@ DEFINE EVENT OVERWRITE cascade_story_arc_delete ON TABLE story_arcs WHEN $event 
 -- 2.2. КАСКАД БЛОКОВ ТЕКСТА
 DEFINE EVENT OVERWRITE cascade_text_block_delete ON TABLE text_blocks WHEN $event = "DELETE" THEN {
     DELETE promise_milestones WHERE out = $before.id;
+    DELETE spans_blocks WHERE out = $before.id;
     DELETE appears_in WHERE out = $before.id;
 };
 
 -- 2.3. КАСКАД СЮЖЕТНЫХ ОБЕЩАНИЙ
 DEFINE EVENT OVERWRITE cascade_plot_promise_delete ON TABLE plot_promises WHEN $event = "DELETE" THEN {
+    DELETE spans_blocks WHERE in = $before.id;
     DELETE promise_milestones WHERE in = $before.id;
     DELETE participant_of WHERE out = $before.id;
     DELETE advances_arc WHERE in = $before.id;
@@ -142,7 +148,6 @@ DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities
     THEN {
         CREATE entity_revisions SET 
             target_id = $before.id, 
-            project_id = $before.schema_id.project_id, 
             content = {
                 name: $before.name,
                 description: $before.description,
@@ -165,7 +170,6 @@ DEFINE EVENT OVERWRITE log_entity_rel_create ON TABLE entity_rel
     THEN {
         CREATE entity_rel_revisions SET 
             target_id = $after.id, 
-            project_id = $after.project_id, 
             in_id = $after.in, 
             out_id = $after.out, 
             action = "CREATE", 
@@ -174,10 +178,8 @@ DEFINE EVENT OVERWRITE log_entity_rel_create ON TABLE entity_rel
                 description: $after.description,
                 strength: $after.strength,
                 attributes: $after.attributes,
-                start_volume: $after.start_volume,
-                start_chapter: $after.start_chapter,
-                end_volume: $after.end_volume,
-                end_chapter: $after.end_chapter,
+                start_at: $after.start_at,
+                end_at: $after.end_at,
                 is_auto_extend: $after.is_auto_extend
             }, 
             created_at = time::now(), 
@@ -192,16 +194,13 @@ DEFINE EVENT OVERWRITE log_entity_rel_revision ON TABLE entity_rel
         OR $before.description != $after.description 
         OR $before.strength != $after.strength 
         OR $before.attributes != $after.attributes 
-        OR $before.start_volume != $after.start_volume 
-        OR $before.start_chapter != $after.start_chapter 
-        OR $before.end_volume != $after.end_volume 
-        OR $before.end_chapter != $after.end_chapter
+        OR $before.start_at != $after.start_at 
+        OR $before.end_at != $after.end_at 
         OR $before.is_auto_extend != $after.is_auto_extend
     ) 
     THEN {
         CREATE entity_rel_revisions SET 
             target_id = $before.id, 
-            project_id = $before.project_id, 
             in_id = $before.in, 
             out_id = $before.out, 
             action = "UPDATE", 
@@ -210,10 +209,8 @@ DEFINE EVENT OVERWRITE log_entity_rel_revision ON TABLE entity_rel
                 description: $before.description,
                 strength: $before.strength,
                 attributes: $before.attributes,
-                start_volume: $before.start_volume,
-                start_chapter: $before.start_chapter,
-                end_volume: $before.end_volume,
-                end_chapter: $before.end_chapter,
+                start_at: $before.start_at,
+                end_at: $before.end_at,
                 is_auto_extend: $before.is_auto_extend
             }, 
             created_at = time::now(), 
@@ -226,7 +223,6 @@ DEFINE EVENT OVERWRITE log_entity_rel_delete ON TABLE entity_rel
     THEN {
         CREATE entity_rel_revisions SET 
             target_id = $before.id, 
-            project_id = $before.project_id, 
             in_id = $before.in, 
             out_id = $before.out, 
             action = "DELETE", 
@@ -235,10 +231,8 @@ DEFINE EVENT OVERWRITE log_entity_rel_delete ON TABLE entity_rel
                 description: $before.description,
                 strength: $before.strength,
                 attributes: $before.attributes,
-                start_volume: $before.start_volume,
-                start_chapter: $before.start_chapter,
-                end_volume: $before.end_volume,
-                end_chapter: $before.end_chapter,
+                start_at: $before.start_at,
+                end_at: $before.end_at,
                 is_auto_extend: $before.is_auto_extend
             }, 
             created_at = time::now(), 
@@ -255,7 +249,6 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
     THEN {
         CREATE chapter_revisions SET 
             target_id = $after.id, 
-            project_id = $after.volume_id.project_id, 
             content = {
                 title: $after.title,
                 content: $after.content,

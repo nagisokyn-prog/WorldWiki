@@ -81,6 +81,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
   }) => {
     const project = getProject();
     const chapterId = getChapterId();
@@ -267,6 +268,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       quote: string;
       paragraph_index: number;
       block_id?: string | null;
+      block_ids?: string[];
       chapterId?: string | null;
     }
   ) => {
@@ -279,6 +281,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       quote: payload.quote,
       paragraph_index: payload.paragraph_index,
       block_id: payload.block_id,
+      block_ids: payload.block_ids,
       parent_id: parentItem.id,
       location_id: parentItem.location_id,
       participant_ids: parentItem.participant_ids ? [...parentItem.participant_ids] : [],

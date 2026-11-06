@@ -155,7 +155,6 @@ surreal_entity! {
 
 surreal_entity! {
     #[table = "text_blocks"]
-    #[project_scoped]
     #[tauri_commands]
     pub struct TextBlock {
         pub chapter_id: String,
@@ -163,11 +162,6 @@ surreal_entity! {
         pub order_index: i64,
         #[fulltext] pub content: String,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
-        pub arc_id: Option<String>,
-        pub arc_phase: Option<String>,
-        pub arc_transition: Option<String>,
-        pub timeline_event_id: Option<String>,
-        pub time_nature: Option<String>,
     }
 }
 
@@ -253,7 +247,6 @@ pub struct SceneArcItem {
 
 surreal_entity! {
     #[table = "plot_promises"]
-    #[project_scoped]
     #[tauri_commands]
     pub struct PlotPromise {
         pub kind: String,
@@ -269,6 +262,7 @@ surreal_entity! {
         #[serde(skip_serializing_if = "Option::is_none")] pub arc_phase: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")] pub time_nature: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")] pub is_flashback: Option<bool>,
+        #[serde(default)] pub block_ids: Vec<String>,
     }
 }
 
@@ -347,7 +341,6 @@ pub struct EntityRel {
     pub id: Option<String>,
     pub r#in: Option<String>,
     pub out: Option<String>,
-    pub project_id: Option<String>,
     pub rel_type: String,
     pub description: Option<String>,
     #[ts(type = "number")]
@@ -355,8 +348,10 @@ pub struct EntityRel {
     #[serde(default)]
     #[ts(type = "Record<string, unknown>")]
     pub attributes: serde_json::Value,
-    pub start_chapter: Option<String>,
-    pub end_chapter: Option<String>,
+    pub start_at: Option<String>,
+    pub end_at: Option<String>,
+    #[serde(default)]
+    pub is_auto_extend: bool,
     #[serde(skip_deserializing)]
     pub created_at: Option<String>,
 }
@@ -586,13 +581,13 @@ mod ts_export_tests {
             id: None,
             r#in: Some("entities:a".into()),
             out: Some("entities:b".into()),
-            project_id: Some("projects:p1".into()),
             rel_type: "friends".into(),
             description: Some("Друзья".into()),
             strength: Some(8),
             attributes: json!({ "kind": "strong" }),
-            start_chapter: Some("chapters:ch1".into()),
-            end_chapter: None,
+            start_at: Some("chapters:ch1".into()),
+            end_at: None,
+            is_auto_extend: false,
             created_at: None,
         };
 
@@ -604,5 +599,8 @@ mod ts_export_tests {
         assert_eq!(back.out.as_deref(), Some("entities:b"));
         assert_eq!(back.strength, Some(8));
         assert_eq!(back.attributes["kind"], "strong");
+        assert_eq!(back.start_at.as_deref(), Some("chapters:ch1"));
+        assert_eq!(back.end_at, None);
+        assert!(!back.is_auto_extend);
     }
 }

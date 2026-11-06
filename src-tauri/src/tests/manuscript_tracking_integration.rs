@@ -196,8 +196,6 @@ async fn create_scene_promise(
         LET $tb_rec = type::record('text_blocks', $id);
 
         UPSERT $prom_rec SET
-            project_id = $p_rec,
-            chapter_id = $c_rec,
             kind = 'scene',
             title = $quote,
             status = 'planted',
@@ -209,19 +207,16 @@ async fn create_scene_promise(
             content = $quote;
 
         RELATE $prom_rec -> promise_milestones -> $tb_rec SET
-            project_id = $p_rec,
             stage = 'plant',
             quote = $quote;
 
         IF $aid != NONE {
             RELATE $prom_rec -> advances_arc -> (type::record('story_arcs', $aid)) SET
-                project_id = $p_rec,
                 phase = 'setup';
         };
 
         IF $tid != NONE {
             RELATE $prom_rec -> occurs_at -> (type::record('timeline_events', $tid)) SET
-                project_id = $p_rec,
                 time_nature = 'present';
         };
     "#;
@@ -248,13 +243,11 @@ async fn create_scene_promise(
         for part in parts {
             let ent_raw = part.strip_prefix("entities:").unwrap_or(part);
             let part_sql = r#"
-                LET $p_rec = type::record('projects', $pid);
                 LET $e_rec = type::record('entities', $eid);
                 LET $prom_rec = type::record('plot_promises', $id);
-                RELATE $e_rec -> participant_of -> $prom_rec SET project_id = $p_rec, role = 'main';
+                RELATE $e_rec -> participant_of -> $prom_rec SET role = 'main';
             "#;
             let _ = db.query(part_sql)
-                .bind(("pid", proj_raw))
                 .bind(("eid", ent_raw))
                 .bind(("id", prom_raw))
                 .await;
@@ -432,7 +425,9 @@ async fn test_manuscript_story_arcs_and_flashback_tracking() {
             type::string(array::first(->advances_arc.out.id)) AS arc_id,
             array::first(->advances_arc.out.title) AS arc_title
         FROM plot_promises
-        WHERE project_id = type::record('projects', $pid)
+        WHERE (timeline_event_id.project_id = type::record('projects', $pid) 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS type::record('projects', $pid)
+            OR ->advances_arc.out.project_id CONTAINS type::record('projects', $pid))
     "#,
         )
         .bind(("pid", proj_key))
@@ -561,24 +556,22 @@ async fn test_timeline_inspector_dual_axis_and_reveals() {
         create_timeline_event(&db, proj_key, "ev_past", "Тайная дуэль в прошлом", 1).await;
 
     // Привязываем раскрытие события в главе 3 через ребро revealed_in (флэшбек)
-    let rev_sql = "RELATE (type::record('timeline_events', $ev)) -> revealed_in -> (type::record('chapters', $ch)) SET project_id = type::record('projects', $p), kind = 'flashback', pov_id = type::record('entities', $hero)";
+    let rev_sql = "RELATE (type::record('timeline_events', $ev)) -> revealed_in -> (type::record('chapters', $ch)) SET kind = 'flashback', pov_id = type::record('entities', $hero)";
     let mut rev_res = db
         .query(rev_sql)
         .bind(("ev", "ev_past"))
         .bind(("ch", "ch3"))
-        .bind(("p", proj_key))
         .bind(("hero", "hero"))
         .await
         .expect("relate revealed_in");
     assert!(rev_res.take_errors().is_empty());
 
     // Привязываем участие героя в событии через participates_in
-    let part_sql = "RELATE (type::record('entities', $hero)) -> participates_in -> (type::record('timeline_events', $ev)) SET project_id = type::record('projects', $p), role = 'duelist'";
+    let part_sql = "RELATE (type::record('entities', $hero)) -> participates_in -> (type::record('timeline_events', $ev)) SET role = 'duelist'";
     let mut part_res = db
         .query(part_sql)
         .bind(("hero", "hero"))
         .bind(("ev", "ev_past"))
-        .bind(("p", proj_key))
         .await
         .expect("relate participates_in");
     assert!(part_res.take_errors().is_empty());
@@ -626,12 +619,11 @@ async fn test_character_journey_and_cross_reference_matrix() {
     let _hero = create_test_entity(&db, proj_key, "hero", "Герой", "character").await;
 
     // Ребро появления appears_in
-    let app_sql = "RELATE (type::record('entities', $hero)) -> appears_in -> (type::record('chapters', $ch)) SET project_id = type::record('projects', $p), role = 'main', source = 'manual'";
+    let app_sql = "RELATE (type::record('entities', $hero)) -> appears_in -> (type::record('chapters', $ch)) SET source = 'manual'";
     let mut app_res = db
         .query(app_sql)
         .bind(("hero", "hero"))
         .bind(("ch", "ch1"))
-        .bind(("p", proj_key))
         .await
         .expect("create appears_in");
     assert!(app_res.take_errors().is_empty());
@@ -709,10 +701,9 @@ async fn test_chapter_mentions_sync_and_source_isolation() {
 
     // 2. Создаем главу и вручную привязываем Мерлина как source='manual'
     let _ch1 = create_test_chapter(&db, proj_key, "ch1", "Глава 1: Меч в камне", 1).await;
-    let _ = db.query("RELATE (type::record('entities', $m)) -> appears_in -> (type::record('chapters', $ch)) SET project_id = type::record('projects', $p), source = 'manual'")
+    let _ = db.query("RELATE (type::record('entities', $m)) -> appears_in -> (type::record('chapters', $ch)) SET source = 'manual'")
         .bind(("m", "merlin"))
         .bind(("ch", "ch1"))
-        .bind(("p", proj_key))
         .await
         .expect("relate manual merlin");
 
@@ -791,13 +782,11 @@ async fn test_granular_scenes_and_promise_lifecycle() {
 
     // 1. Создаем сцену, привязанную к абзацу block_id='para_042'
     let prom_sql = r#"
-        LET $p_rec = type::record('projects', $p);
         LET $c_rec = type::record('chapters', $ch);
         LET $prom_rec = type::record('plot_promises', 'scene_duel');
         LET $tb_rec = type::record('text_blocks', 'para_042');
 
         UPSERT $prom_rec SET
-            project_id = $p_rec,
             title = 'Герой обнажил клинок перед троном',
             kind = 'scene',
             status = 'planted',
@@ -809,16 +798,13 @@ async fn test_granular_scenes_and_promise_lifecycle() {
             content = 'Герой обнажил клинок перед троном';
 
         RELATE $prom_rec -> promise_milestones -> $tb_rec SET
-            project_id = $p_rec,
             stage = 'plant',
             quote = 'Герой обнажил клинок перед троном';
 
         RELATE $prom_rec -> occurs_at -> (type::record('timeline_events', 'ev_duel')) SET
-            project_id = $p_rec,
             time_nature = 'present';
     "#;
     let mut res = db.query(prom_sql)
-        .bind(("p", proj_key))
         .bind(("ch", "ch1"))
         .await
         .expect("upsert scene promise");
@@ -826,7 +812,6 @@ async fn test_granular_scenes_and_promise_lifecycle() {
 
     // 2. Переводим сцену/обещание в статус 'resolved' в Главе 5
     let resolve_sql = r#"
-        LET $p_rec = type::record('projects', $p);
         LET $c_rec = type::record('chapters', $ch_res);
         LET $prom_rec = type::record('plot_promises', 'scene_duel');
         LET $tb_rec = type::record('text_blocks', 'para_100');
@@ -837,14 +822,12 @@ async fn test_granular_scenes_and_promise_lifecycle() {
             content = 'Победа над тираном';
 
         RELATE $prom_rec -> promise_milestones -> $tb_rec SET
-            project_id = $p_rec,
             stage = 'resolution',
             quote = 'Победа над тираном';
 
         UPDATE $prom_rec SET status = 'resolved';
     "#;
     let mut res2 = db.query(resolve_sql)
-        .bind(("p", proj_key))
         .bind(("ch_res", "ch5"))
         .await
         .expect("resolve scene promise");
@@ -907,21 +890,18 @@ async fn test_cascade_delete_integrity_for_arcs_and_chapters() {
     let mut res_arc = db.query(arc_sql).bind(("p", proj_key)).await.expect("create arc");
     assert!(res_arc.take_errors().is_empty());
 
-    let prom_sql = "UPSERT type::record('plot_promises', 'prom_del') SET project_id = type::record('projects', $p), title = 'Обещание', kind = 'gun', status = 'planted'";
-    let _ = db.query(prom_sql).bind(("p", proj_key)).await.expect("create promise");
+    let prom_sql = "UPSERT type::record('plot_promises', 'prom_del') SET title = 'Обещание', kind = 'gun', status = 'planted'";
+    let _ = db.query(prom_sql).await.expect("create promise");
 
-    let _ = db.query("RELATE (type::record('plot_promises', 'prom_del')) -> advances_arc -> (type::record('story_arcs', 'arc_del')) SET project_id = type::record('projects', $p), phase = 'setup'")
-        .bind(("p", proj_key))
+    let _ = db.query("RELATE (type::record('plot_promises', 'prom_del')) -> advances_arc -> (type::record('story_arcs', 'arc_del')) SET phase = 'setup'")
         .await
         .expect("relate advances_arc");
 
-    let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> participant_of -> (type::record('plot_promises', 'prom_del')) SET project_id = type::record('projects', $p)")
-        .bind(("p", proj_key))
+    let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> participant_of -> (type::record('plot_promises', 'prom_del'))")
         .await
         .expect("relate participant_of");
 
-    let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> appears_in -> (type::record('chapters', 'ch_del')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key))
+    let _ = db.query("RELATE (type::record('entities', 'ent_del')) -> appears_in -> (type::record('chapters', 'ch_del')) SET source = 'manual'")
         .await
         .expect("relate appears_in");
 
@@ -1084,17 +1064,17 @@ async fn test_multi_character_journey_union_and_intersection() {
     // 3. Создаем появления:
     // hero_a появляется в ch1, ch2, ch5
     // hero_b появляется в ch1, ch5 (пропускает ch2, ch3, ch4)
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key)).await.expect("a in ch1");
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch2')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key)).await.expect("a in ch2");
-    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key)).await.expect("a in ch5");
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch1')) SET source = 'manual'")
+        .await.expect("a in ch1");
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch2')) SET source = 'manual'")
+        .await.expect("a in ch2");
+    let _ = db.query("RELATE (type::record('entities', 'hero_a')) -> appears_in -> (type::record('chapters', 'ch5')) SET source = 'manual'")
+        .await.expect("a in ch5");
 
-    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch1')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key)).await.expect("b in ch1");
-    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch5')) SET project_id = type::record('projects', $p), source = 'manual'")
-        .bind(("p", proj_key)).await.expect("b in ch5");
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch1')) SET source = 'manual'")
+        .await.expect("b in ch1");
+    let _ = db.query("RELATE (type::record('entities', 'hero_b')) -> appears_in -> (type::record('chapters', 'ch5')) SET source = 'manual'")
+        .await.expect("b in ch5");
 
     // Создаем событие для сцены с датой m_abs = 10_512_000 (20 лет от нуля)
     let ev_sql = "UPSERT type::record('timeline_events', 'ev_ch1') SET project_id = type::record('projects', $p), calendar_id = type::record('calendars', 'default'), title = 'Событие 1', m_abs = 10512000";

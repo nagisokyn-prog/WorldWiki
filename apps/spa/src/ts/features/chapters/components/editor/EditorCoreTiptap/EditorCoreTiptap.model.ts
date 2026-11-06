@@ -27,7 +27,7 @@ export interface EditorCoreTiptapEmits {
   (e: 'toggle-history'): void;
   (e: 'open-entity-selector'): void;
   (e: 'add-participant', payload: { type: string; id: string; name?: string }): void;
-  (e: 'create-promise', payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }): void;
-  (e: 'link-milestone', payload: { promiseId: string; stage: 'progression' | 'resolution'; quote: string; paragraph_index: number; block_id?: string | null }): void;
-  (e: 'link-subscene', payload: { parentPromiseId: string; quote: string; paragraph_index: number; block_id?: string | null }): void;
+  (e: 'create-promise', payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }): void;
+  (e: 'link-milestone', payload: { promiseId: string; stage: 'progression' | 'resolution'; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }): void;
+  (e: 'link-subscene', payload: { parentPromiseId: string; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }): void;
 }

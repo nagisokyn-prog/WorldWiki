@@ -309,8 +309,8 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             out.name AS target_name,
             rel_type,
             strength,
-            start_chapter.sort_order AS start_order,
-            end_chapter.sort_order AS end_order
+            start_at.sort_order AS start_order,
+            end_at.sort_order AS end_order
         FROM entity_rel 
         WHERE in = $entity OR out = $entity
         LIMIT 1000
@@ -419,7 +419,6 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
         FOR $ent_id IN $targets {
             RELATE $ent_id->appears_in->$chap CONTENT {
                 source: 'mention',
-                project_id: $p_rec,
                 created_at: time::now()
             };
         };

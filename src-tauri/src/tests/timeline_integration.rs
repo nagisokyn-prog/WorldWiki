@@ -4,11 +4,11 @@
 //! поверх реальной in-memory SurrealDB + продовой схемы `surreal_schema.surql`.
 //! Каждый тест создаёт изолированную БД и авто-очищается после завершения.
 
+use super::common::create_test_db;
 use crate::logic::chapters::{get_chapter_revisions_inner, toggle_chapter_history_pin_inner};
 use crate::logic::models::Chapter;
 use serde_json::json;
 use surreal_domain::SurrealRepository;
-use super::common::create_test_db;
 
 /// Хелпер: создаёт проект и возвращает проектный id `projects:<key>`.
 async fn seed_project(db: &surrealdb::Surreal<surrealdb::engine::local::Db>, key: &str) {
@@ -113,7 +113,10 @@ async fn delete_project_cascades_chapters() {
     create_chapter(&db, "p1", "Epilogue", "b").await;
 
     assert_eq!(
-        Chapter::find_all(&db, "projects:p1").await.expect("pre").len(),
+        Chapter::find_all(&db, "projects:p1")
+            .await
+            .expect("pre")
+            .len(),
         2
     );
 
@@ -161,7 +164,10 @@ async fn save_global_timeline_roundtrip() {
     assert_eq!(res["success"], true);
     assert_eq!(res["updated"], 1);
 
-    let mut q_res = db.query("SELECT * FROM chapters:ch1").await.expect("query chapter");
+    let mut q_res = db
+        .query("SELECT * FROM chapters:ch1")
+        .await
+        .expect("query chapter");
     let ch_raw: Option<serde_json::Value> = q_res.take(0).expect("take chapter");
     let ch_val = ch_raw.expect("ch1 exists");
     assert_eq!(ch_val["title"], "Intro Updated");
@@ -205,10 +211,16 @@ async fn get_chapter_revisions_returns_snapshot_after_update() {
     let db = create_test_db().await;
     seed_project(&db, "p1").await;
 
-    db.query("CREATE volumes:v_rev SET project_id = type::record('projects','p1'), title = 'Том 1'").await.unwrap();
-    db.query("CREATE chapters:ch_rev SET volume_id = volumes:v_rev, title = 'Начало', content = 'v1'")
-        .await
-        .expect("create chapter");
+    db.query(
+        "CREATE volumes:v_rev SET project_id = type::record('projects','p1'), title = 'Том 1'",
+    )
+    .await
+    .unwrap();
+    db.query(
+        "CREATE chapters:ch_rev SET volume_id = volumes:v_rev, title = 'Начало', content = 'v1'",
+    )
+    .await
+    .expect("create chapter");
 
     // UPDATE триггерит DDL-событие log_chapter_revision → создаётся снапшот
     db.query("UPDATE chapters:ch_rev SET title = 'Продолжение', content = 'v2'")
@@ -219,7 +231,11 @@ async fn get_chapter_revisions_returns_snapshot_after_update() {
         .await
         .expect("get revisions");
 
-    assert_eq!(revisions.len(), 1, "после одного UPDATE должен быть 1 снапшот");
+    assert_eq!(
+        revisions.len(),
+        1,
+        "после одного UPDATE должен быть 1 снапшот"
+    );
     assert_eq!(
         revisions[0]["content"]["title"], "Продолжение",
         "снапшот хранит сохранённое состояние после изменения"
@@ -233,7 +249,7 @@ async fn toggle_chapter_history_pin_marks_revision_pinned() {
 
     // Создаём ревизию с явным ID, чтобы детерминированно проверить toggle pin
     db.query(
-        "CREATE chapter_revisions:my_rev SET target_id = type::record('chapters:ch1'), project_id = type::record('projects','p1'), content = {}, is_pinned = false",
+        "CREATE chapter_revisions:my_rev SET target_id = type::record('chapters', 'ch1'), content = {}, is_pinned = false",
     )
     .await
     .expect("create revision");
@@ -247,7 +263,11 @@ async fn toggle_chapter_history_pin_marks_revision_pinned() {
         .await
         .expect("query pin");
     let pinned: Option<bool> = res.take(0).expect("take is_pinned");
-    assert_eq!(pinned, Some(true), "после toggle ревизия должна быть закреплена");
+    assert_eq!(
+        pinned,
+        Some(true),
+        "после toggle ревизия должна быть закреплена"
+    );
 }
 
 #[tokio::test]
@@ -311,9 +331,15 @@ async fn multiple_revisions_ordered_desc_with_after_content() {
 
     assert_eq!(revisions.len(), 3, "3 UPDATE → 3 ревизии");
     // По убыванию времени: от последнего сохранения к более ранним ($after)
-    assert_eq!(revisions[0]["content"]["content"], "текст-4", "первая в списке — последнее сохранённое состояние");
+    assert_eq!(
+        revisions[0]["content"]["content"], "текст-4",
+        "первая в списке — последнее сохранённое состояние"
+    );
     assert_eq!(revisions[1]["content"]["content"], "текст-3");
-    assert_eq!(revisions[2]["content"]["content"], "текст-2", "последняя — первое сохранённое состояние обновления");
+    assert_eq!(
+        revisions[2]["content"]["content"], "текст-2",
+        "последняя — первое сохранённое состояние обновления"
+    );
 }
 
 #[tokio::test]
@@ -372,4 +398,3 @@ async fn test_stored_functions_planet_and_calendar_lifecycle() {
     let del_planet: Option<serde_json::Value> = res.take(0).expect("take del_planet");
     assert!(del_planet.is_some());
 }
-

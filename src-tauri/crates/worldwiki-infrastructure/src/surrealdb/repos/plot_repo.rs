@@ -28,27 +28,13 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
         let clean = clean_id("plot_promises", &promise.id);
-        let proj_clean = clean_id("projects", &promise.project_id);
-        let raw_ch = promise
-            .chapter_id
-            .as_deref()
-            .or_else(|| {
-                promise
-                    .milestones
-                    .first()
-                    .and_then(|m| m.chapter_id.as_deref())
-            })
-            .unwrap_or("");
-        let ch_clean = clean_raw_id!(raw_ch, "chapters");
         let data = prepare_data_for_upsert(
             serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
         );
         surreal_exec!(
             self.db,
-            "RETURN fn::upsert_plot_promise($id, $p_id, $c_id, $data);",
+            "RETURN fn::upsert_plot_promise($id, $data);",
             ("id", clean),
-            ("p_id", proj_clean),
-            ("c_id", ch_clean),
             ("data", data),
         )
     }

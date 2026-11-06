@@ -85,6 +85,16 @@ export const EnterHandler = Extension.create({
 export const SemanticParagraph = Paragraph.extend({
   addAttributes() {
     return {
+      id: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-id') || element.getAttribute('data-block-id'),
+        renderHTML: (attributes) => (attributes.id ? { 'data-id': attributes.id } : {})
+      },
+      block_id: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-block-id') || element.getAttribute('data-id'),
+        renderHTML: (attributes) => (attributes.block_id ? { 'data-block-id': attributes.block_id } : {})
+      },
       semanticTag: {
         default: 'desc',
         parseHTML: (element) => element.getAttribute('data-semantic-tag'),

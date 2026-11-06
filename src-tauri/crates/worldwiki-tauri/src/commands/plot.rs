@@ -53,18 +53,11 @@ bridge_command!(
 
 #[tauri::command]
 pub async fn save_plot_promise(
-    project: String,
+    _project: String,
     data: PlotPromise,
     state: State<'_, AppState>,
 ) -> Result<PlotPromise, IpcError> {
-    let mut promise = data;
-    // Normalize project_id to ensure it satisfies SurrealDB SCHEMAFULL requirement (record<projects>)
-    let project_normalized = if project.starts_with("projects:") {
-        project
-    } else {
-        format!("projects:{}", project)
-    };
-    promise.project_id = project_normalized;
+    let promise = data;
     state
         .services
         .plot

@@ -33,9 +33,12 @@ impl RelationRepository for SurrealRelationRepository {
         };
         let from_clean = clean_raw_id!(&rel.from_entity_id, "entities");
         let to_clean = clean_raw_id!(&rel.to_entity_id, "entities");
-        let p_clean = clean_raw_id!(&rel.project_id, "projects");
-        let start_chap = rel.start_chapter_id.as_deref().map(|s| clean_raw_id!(s, "chapters"));
-        let end_chap = rel.end_chapter_id.as_deref().map(|s| clean_raw_id!(s, "chapters"));
+        let start_at = rel.start_at.as_deref().map(|s| {
+            if s.contains(':') { s.to_string() } else { format!("chapters:{s}") }
+        });
+        let end_at = rel.end_at.as_deref().map(|s| {
+            if s.contains(':') { s.to_string() } else { format!("chapters:{s}") }
+        });
         let attrs = if rel.attributes.is_object() {
             rel.attributes.clone()
         } else {
@@ -44,17 +47,16 @@ impl RelationRepository for SurrealRelationRepository {
 
         surreal_exec!(
             self.db,
-            "RETURN fn::save_entity_relation($id, $p, $from, $to, $rel_type, $desc, $strength, $attrs, $start, $end);",
+            "RETURN fn::save_entity_relation($id, $from, $to, $rel_type, $desc, $strength, $attrs, $start, $end);",
             ("id", clean),
-            ("p", p_clean),
             ("from", from_clean),
             ("to", to_clean),
             ("rel_type", rel.rel_type.clone()),
-            ("desc", None::<String>),
+            ("desc", rel.description.clone()),
             ("strength", rel.strength),
             ("attrs", attrs),
-            ("start", start_chap),
-            ("end", end_chap),
+            ("start", start_at),
+            ("end", end_at),
         )
     }
 
@@ -70,7 +72,7 @@ impl RelationRepository for SurrealRelationRepository {
         let clean_target = clean_raw_id!(entity_id, "entities");
         surreal_take_list!(
             self.db,
-            "RETURN fn::get_entity_relations(projects:default, type::record('entities', $target));",
+            "RETURN fn::get_entity_relations(type::record('entities', $target));",
             ("target", clean_target),
         )
     }

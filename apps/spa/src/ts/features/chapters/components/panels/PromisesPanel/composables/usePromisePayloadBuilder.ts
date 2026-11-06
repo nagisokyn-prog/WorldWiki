@@ -25,6 +25,7 @@ export function preparePromisePayload(
     chapter_id: chapId || undefined,
     paragraph_index: item.paragraph_index ?? 1,
     block_id: item.block_id || null,
+    block_ids: item.block_ids && item.block_ids.length > 0 ? item.block_ids : (item.block_id ? [item.block_id] : []),
     arcs: finalArcs,
     arc_id: derivedArcId,
     arc_phase: derivedArcPhase,
@@ -43,6 +44,7 @@ export function createNewPromiseRecord(
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
     parent_id?: string | null;
     location_id?: string | null;
     participant_ids?: string[];
@@ -88,6 +90,7 @@ export function createNewPromiseRecord(
     quote: quoteStr,
     paragraph_index: payload.paragraph_index,
     block_id: payload.block_id || undefined,
+    block_ids: payload.block_ids && payload.block_ids.length > 0 ? payload.block_ids : (payload.block_id ? [payload.block_id] : []),
     progressions: [],
     resolution: null,
     resolved_in_volume: null,

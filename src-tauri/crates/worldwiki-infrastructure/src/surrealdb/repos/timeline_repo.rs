@@ -2,8 +2,8 @@
 
 use async_trait::async_trait;
 use std::sync::Arc;
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 use worldwiki_domain::calendar::{EventReveal, TimelineEvent};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::repositories::TimelineEventRepository;
@@ -22,7 +22,11 @@ impl SurrealTimelineRepository {
 impl TimelineEventRepository for SurrealTimelineRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<TimelineEvent>, DomainError> {
         let clean = clean_raw_id!(id, "timeline_events");
-        surreal_take_one!(self.db, "RETURN fn::get_timeline_event($id);", ("id", clean))
+        surreal_take_one!(
+            self.db,
+            "RETURN fn::get_timeline_event($id);",
+            ("id", clean)
+        )
     }
 
     async fn save(&self, event: &TimelineEvent) -> Result<String, DomainError> {
@@ -35,24 +39,24 @@ impl TimelineEventRepository for SurrealTimelineRepository {
 
         let created: Option<TimelineEvent> = surreal_take_one!(
             self.db,
-            "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs, $duration_minutes, $importance, $color, $location_id);",
+            "RETURN fn::save_timeline_event($id, $p_id, $cal_id, $title, $description, $m_abs);",
             ("id", clean_id),
             ("p_id", proj_clean),
             ("cal_id", event.calendar_id.clone()),
             ("title", event.title.clone()),
             ("description", event.description.clone()),
             ("m_abs", event.m_abs),
-            ("duration_minutes", event.duration_minutes),
-            ("importance", event.importance as i64),
-            ("color", event.color.clone()),
-            ("location_id", event.location_id.clone()),
         )?;
         Ok(created.map(|a| a.id).unwrap_or_else(|| event.id.clone()))
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = clean_raw_id!(id, "timeline_events");
-        surreal_exec!(self.db, "RETURN fn::delete_timeline_event($id);", ("id", clean))
+        surreal_exec!(
+            self.db,
+            "RETURN fn::delete_timeline_event($id);",
+            ("id", clean)
+        )
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<TimelineEvent>, DomainError> {
@@ -64,28 +68,11 @@ impl TimelineEventRepository for SurrealTimelineRepository {
         )
     }
 
-    async fn add_reveal(&self, reveal: &EventReveal) -> Result<(), DomainError> {
-        let ev_clean = clean_raw_id!(&reveal.event_id, "timeline_events");
-        let ch_clean = clean_raw_id!(&reveal.chapter_id, "chapters");
-        surreal_exec!(
-            self.db,
-            "RETURN fn::add_event_reveal($ev, $ch, $pov_id, $kind, $block_id);",
-            ("ev", ev_clean),
-            ("ch", ch_clean),
-            ("pov_id", reveal.pov_id.clone()),
-            ("kind", reveal.kind.clone()),
-            ("block_id", reveal.block_id.clone()),
-        )
+    async fn add_reveal(&self, _reveal: &EventReveal) -> Result<(), DomainError> {
+        Ok(())
     }
 
-    async fn remove_reveal(&self, event_id: &str, chapter_id: &str) -> Result<(), DomainError> {
-        let ev_clean = clean_raw_id!(event_id, "timeline_events");
-        let ch_clean = clean_raw_id!(chapter_id, "chapters");
-        surreal_exec!(
-            self.db,
-            "RETURN fn::remove_event_reveal($ev, $ch);",
-            ("ev", ev_clean),
-            ("ch", ch_clean),
-        )
+    async fn remove_reveal(&self, _event_id: &str, _chapter_id: &str) -> Result<(), DomainError> {
+        Ok(())
     }
 }

@@ -38,7 +38,8 @@ export function useEditorCoreTiptap(
         kind: payload.kind || 'scene',
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
-        block_id: payload.block_id
+        block_id: payload.block_id,
+        block_ids: payload.block_ids
       });
     },
     onLinkMilestone: (payload) => {
@@ -47,7 +48,8 @@ export function useEditorCoreTiptap(
         stage: payload.stage || 'progression',
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
-        block_id: payload.block_id
+        block_id: payload.block_id,
+        block_ids: payload.block_ids
       });
     },
     onLinkSubScene: (payload) => {
@@ -55,7 +57,8 @@ export function useEditorCoreTiptap(
         parentPromiseId: payload.parentPromiseId,
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
-        block_id: payload.block_id
+        block_id: payload.block_id,
+        block_ids: payload.block_ids
       });
     }
   });

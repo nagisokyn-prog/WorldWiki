@@ -9,12 +9,7 @@ pub struct TimelineEvent {
     pub title: String,
     pub description: Option<String>,
     pub m_abs: i64,
-    pub duration_minutes: Option<i64>,
-    pub importance: i32,
-    pub color: Option<String>,
-    pub location_id: Option<String>,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
 
 impl TimelineEvent {
@@ -31,12 +26,7 @@ impl TimelineEvent {
             title: title.into(),
             description: None,
             m_abs,
-            duration_minutes: None,
-            importance: 1,
-            color: None,
-            location_id: None,
             created_at: DateTime::UNIX_EPOCH,
-            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 }

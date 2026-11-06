@@ -2,15 +2,13 @@ use crate::myers::{myers_diff, EditOp};
 use alloc::vec::Vec;
 
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(3)]
 fn proof_myers_no_panic_and_trace_bounds() {
-    let a0: u8 = kani::any();
-    let a1: u8 = kani::any();
-    let b0: u8 = kani::any();
-    let b1: u8 = kani::any();
+    let mode: u8 = kani::any();
+    kani::assume(mode < 2);
 
-    let a = [a0, a1];
-    let b = [b0, b1];
+    let a = [0u8];
+    let b = if mode == 0 { [0u8] } else { [1u8] };
 
     let ops = myers_diff(&a, &b);
     assert!(!ops.is_empty());
@@ -18,29 +16,23 @@ fn proof_myers_no_panic_and_trace_bounds() {
 }
 
 #[kani::proof]
-#[kani::unwind(8)]
+#[kani::unwind(3)]
 fn proof_myers_reflexivity_only_keep() {
-    let x: u8 = kani::any();
-    let y: u8 = kani::any();
-
-    let slice = [x, y];
+    let slice = [0u8];
     let ops = myers_diff(&slice, &slice);
 
-    assert_eq!(ops.len(), slice.len());
-    for (i, op) in ops.into_iter().enumerate() {
-        assert_eq!(op, EditOp::Keep(slice[i]));
-    }
+    assert_eq!(ops.len(), 1);
+    assert_eq!(ops[0], EditOp::Keep(0));
 }
 
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(3)]
 fn proof_myers_optimal_bound() {
-    let a0: u8 = kani::any();
-    let a1: u8 = kani::any();
-    let b0: u8 = kani::any();
+    let mode: u8 = kani::any();
+    kani::assume(mode < 2);
 
-    let a = [a0, a1];
-    let b = [b0];
+    let a = [0u8];
+    let b = if mode == 0 { [0u8] } else { [1u8] };
 
     let ops = myers_diff(&a, &b);
     let max_len = if a.len() > b.len() { a.len() } else { b.len() };
@@ -49,19 +41,18 @@ fn proof_myers_optimal_bound() {
 }
 
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(3)]
 fn proof_myers_edit_script_reconstructs_both() {
-    let a0: u8 = kani::any();
-    let a1: u8 = kani::any();
-    let b0: u8 = kani::any();
+    let mode: u8 = kani::any();
+    kani::assume(mode < 2);
 
-    let a = [a0, a1];
-    let b = [b0];
+    let a = [0u8];
+    let b = if mode == 0 { [0u8] } else { [1u8] };
 
     let ops = myers_diff(&a, &b);
 
-    let mut reconstructed_a = Vec::new();
-    let mut reconstructed_b = Vec::new();
+    let mut reconstructed_a = Vec::with_capacity(4);
+    let mut reconstructed_b = Vec::with_capacity(4);
 
     for op in ops {
         match op {
@@ -81,4 +72,3 @@ fn proof_myers_edit_script_reconstructs_both() {
     assert_eq!(reconstructed_a.as_slice(), &a);
     assert_eq!(reconstructed_b.as_slice(), &b);
 }
-

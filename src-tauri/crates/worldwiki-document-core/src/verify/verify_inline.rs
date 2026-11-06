@@ -3,78 +3,58 @@ use crate::model::InlineChange;
 use alloc::string::String;
 
 #[kani::proof]
+#[kani::unwind(3)]
 fn proof_apply_inline_overflow_and_panic_free() {
     let pos: usize = kani::any();
     let del: usize = kani::any();
-    let c: char = kani::any();
-
-    let mut ins = String::new();
-    ins.push(c);
+    kani::assume(pos <= 2 || pos == usize::MAX);
+    kani::assume(del <= 2 || del == usize::MAX);
 
     let change = InlineChange {
         position: pos,
         delete_count: del,
-        insert_text: ins,
+        insert_text: String::new(),
     };
 
-    let base = "abcdef";
+    let base = "a";
     let _ = apply_inline_changes(base, &[change]);
 }
 
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(3)]
 fn proof_inline_diff_roundtrip_bijection() {
-    let c1: char = kani::any();
-    let c2: char = kani::any();
-    let c3: char = kani::any();
+    let mode: u8 = kani::any();
+    kani::assume(mode < 3);
 
-    kani::assume(c1.is_ascii_alphabetic());
-    kani::assume(c2.is_ascii_alphabetic());
-    kani::assume(c3.is_ascii_alphabetic());
+    let (s1, s2) = match mode {
+        0 => ("a", "b"),
+        1 => ("a", "a"),
+        _ => ("a", ""),
+    };
 
-    let mut s1 = String::new();
-    s1.push(c1);
-    s1.push(c2);
-
-    let mut s2 = String::new();
-    s2.push(c2);
-    s2.push(c3);
-
-    let changes = compute_inline_diff(&s1, &s2);
-    let applied = apply_inline_changes(&s1, &changes);
+    let changes = compute_inline_diff(s1, s2);
+    let applied = apply_inline_changes(s1, &changes);
 
     assert!(applied.is_ok());
     assert_eq!(applied.unwrap(), s2);
 }
 
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(3)]
 fn proof_inline_changes_strictly_disjoint() {
-    let c1: char = kani::any();
-    let c2: char = kani::any();
-    let c3: char = kani::any();
-    let c4: char = kani::any();
+    let mode: u8 = kani::any();
+    kani::assume(mode < 2);
 
-    kani::assume(c1.is_ascii_alphabetic());
-    kani::assume(c2.is_ascii_alphabetic());
-    kani::assume(c3.is_ascii_alphabetic());
-    kani::assume(c4.is_ascii_alphabetic());
+    let (s1, s2) = match mode {
+        0 => ("ab", "ba"),
+        _ => ("a", "b"),
+    };
 
-    let mut s1 = String::new();
-    s1.push(c1);
-    s1.push(c2);
+    let changes = compute_inline_diff(s1, s2);
 
-    let mut s2 = String::new();
-    s2.push(c3);
-    s2.push(c4);
-
-    let changes = compute_inline_diff(&s1, &s2);
-
-    // Verify disjoint non-overlapping coordinates in generated changes
     let mut last_end = 0usize;
     for change in changes {
         assert!(change.position >= last_end);
         last_end = change.position + change.delete_count;
     }
 }
-

@@ -68,14 +68,14 @@ fn test_inline_apply_errors() {
 
     let changes_overlapping = vec![
         InlineChange {
-            position: 2,
-            delete_count: 5,
-            insert_text: "А".into(),
-        },
-        InlineChange {
             position: 4,
             delete_count: 2,
             insert_text: "Б".into(),
+        },
+        InlineChange {
+            position: 2,
+            delete_count: 5,
+            insert_text: "А".into(),
         },
     ];
     assert_eq!(
@@ -249,4 +249,28 @@ fn test_myers_diff_prefix_suffix_and_alternating() {
     let a = &[1];
     let b = &[2];
     assert_eq!(myers_diff(a, b), vec![EditOp::Delete(1), EditOp::Insert(2)]);
+}
+
+#[test]
+fn test_unordered_insert_operations_sorted_by_patch() {
+    let doc = SemanticDocument::empty();
+    let diff = DocumentDiffResult {
+        operations: vec![
+            DiffOperation::InsertBlock {
+                index: 1,
+                block: SemanticBlock::new("b2", "p", "Второй"),
+            },
+            DiffOperation::InsertBlock {
+                index: 0,
+                block: SemanticBlock::new("b1", "p", "Первый"),
+            },
+        ],
+        word_count_delta: 2,
+        has_structural_changes: true,
+    };
+
+    let patched = apply_patch(&doc, &diff).unwrap();
+    assert_eq!(patched.blocks.len(), 2);
+    assert_eq!(patched.blocks[0].id, "b1");
+    assert_eq!(patched.blocks[1].id, "b2");
 }

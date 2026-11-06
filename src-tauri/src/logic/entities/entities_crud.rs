@@ -6,6 +6,100 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 // =====================================================
+// ID SANITIZATION HELPERS
+// =====================================================
+
+#[inline]
+fn sanitize_record_id<'a>(raw: &'a str, table_prefix: &str) -> &'a str {
+    let clean = raw
+        .trim()
+        .trim_matches('⟨')
+        .trim_matches('⟩')
+        .trim_matches('`')
+        .trim_matches('"')
+        .trim_matches('\'');
+    let unwrapped = if let Some((_, rest)) = clean.rsplit_once(table_prefix) {
+        rest
+    } else if let Some((_, rest)) = clean.rsplit_once(':') {
+        rest
+    } else {
+        clean
+    };
+    unwrapped
+        .trim_matches('⟨')
+        .trim_matches('⟩')
+        .trim_matches('`')
+        .trim_matches('"')
+        .trim_matches('\'')
+}
+
+#[inline]
+fn clean_project_id(project: &str) -> String {
+    sanitize_record_id(project, "projects:").to_string()
+}
+
+#[inline]
+fn clean_entity_id(entity_id: &str) -> String {
+    sanitize_record_id(entity_id, "entities:").to_string()
+}
+
+#[inline]
+fn parse_entity_value(mut val: Value, entity_id: &str) -> Result<Option<Entity>, EntityError> {
+    if val.is_null() {
+        return Ok(None);
+    }
+    flatten_thing(&mut val);
+    serde_json::from_value(val).map(Some).map_err(|e| {
+        eprintln!(
+            "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}",
+            entity_id, e
+        );
+        EntityError::Serialization(e)
+    })
+}
+
+async fn execute_delete_with_retry(
+    db: &Surreal<Db>,
+    actual_id: &str,
+    raw_id: &str,
+) -> Result<(), EntityError> {
+    let mut attempts = 0;
+    loop {
+        match db.delete(("entities", actual_id)).await {
+            Ok(deleted) => {
+                let deleted: Option<Value> = deleted;
+                if deleted.is_none() {
+                    eprintln!(
+                        "[delete_entity_inner] Entity 'entities:{}' not found for deletion (raw input: '{}')",
+                        actual_id, raw_id
+                    );
+                } else {
+                    eprintln!(
+                        "[delete_entity_inner] Successfully deleted entity 'entities:{}'",
+                        actual_id
+                    );
+                }
+                return Ok(());
+            }
+            Err(e) => {
+                let err_str = e.to_string();
+                let is_retryable = err_str.contains("Transaction conflict")
+                    || err_str.contains("write conflict")
+                    || err_str.contains("can be retried")
+                    || err_str.contains("TransactionConflict");
+
+                if attempts < 10 && is_retryable {
+                    attempts += 1;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                    continue;
+                }
+                return Err(EntityError::from(e));
+            }
+        }
+    }
+}
+
+// =====================================================
 // ENTITY CORE CRUD
 // =====================================================
 
@@ -14,7 +108,7 @@ pub async fn get_entities_inner(
     project: &str,
     entity_type: Option<String>,
 ) -> Result<Vec<Entity>, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
+    let clean_pid = clean_project_id(project);
     let query = "RETURN fn::get_entities(type::record('projects', $p), $et);";
     let mut res = db
         .query(query)
@@ -30,40 +124,19 @@ pub async fn get_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<Option<Entity>, EntityError> {
-    let clean_str = id.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
-    let actual_id = if let Some((_, rest)) = clean_str.rsplit_once("entities:") {
-        rest
-    } else if let Some((_, rest)) = clean_str.rsplit_once(':') {
-        rest
-    } else {
-        clean_str
-    };
-    let actual_id = actual_id.trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
-
+    let actual_id = clean_entity_id(id);
     let query = "RETURN fn::get_entity(type::record('entities', $id));";
     let mut res = db
         .query(query)
-        .bind(("id", actual_id.to_string()))
+        .bind(("id", actual_id.clone()))
         .await?;
 
     let val: Option<Value> = res.take(0)?;
-    if let Some(mut val) = val {
-        if val.is_null() {
-            return Ok(None);
-        }
-        flatten_thing(&mut val);
-        match serde_json::from_value(val.clone()) {
-            Ok(e) => return Ok(Some(e)),
-            Err(e) => {
-                eprintln!(
-                    "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}\nRaw JSON: {:?}",
-                    actual_id, e, val
-                );
-                return Err(EntityError::Serialization(e));
-            }
-        }
+    if let Some(v) = val {
+        parse_entity_value(v, &actual_id)
+    } else {
+        Ok(None)
     }
-    Ok(None)
 }
 
 pub async fn save_entity_inner(
@@ -71,19 +144,8 @@ pub async fn save_entity_inner(
     project: &str,
     entity: Entity,
 ) -> Result<Entity, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
-
-    let id_opt = entity.id.map(|id_str| {
-        let clean = id_str.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
-        let raw = if let Some((_, rest)) = clean.rsplit_once("entities:") {
-            rest
-        } else if let Some((_, rest)) = clean.rsplit_once(':') {
-            rest
-        } else {
-            clean
-        };
-        raw.trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string()
-    });
+    let clean_pid = clean_project_id(project);
+    let id_opt = entity.id.as_deref().map(clean_entity_id);
 
     let Entity {
         entity_type,
@@ -110,7 +172,6 @@ pub async fn save_entity_inner(
         .await?;
 
     let saved: Option<Value> = res.take(0)?;
-
     match saved {
         Some(mut v) => {
             flatten_thing(&mut v);
@@ -125,46 +186,12 @@ pub async fn delete_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<(), EntityError> {
-    let clean = id.trim().trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
-    let actual_id = if let Some((_, rest)) = clean.rsplit_once("entities:") {
-        rest
-    } else if let Some((_, rest)) = clean.rsplit_once(':') {
-        rest
-    } else {
-        clean
-    };
-    let actual_id = actual_id.trim_matches('⟨').trim_matches('⟩').trim_matches('`').trim_matches('"').trim_matches('\'');
-
-    eprintln!("[delete_entity_inner] Deleting entity raw='{}', parsed id='{}'", id, actual_id);
-
-    let mut attempts = 0;
-    loop {
-        match db.delete(("entities", actual_id)).await {
-            Ok(deleted) => {
-                let deleted: Option<Value> = deleted;
-                if deleted.is_none() {
-                    eprintln!("[delete_entity_inner] Entity 'entities:{}' not found in database for deletion (raw input: '{}')", actual_id, id);
-                } else {
-                    eprintln!("[delete_entity_inner] Successfully deleted entity 'entities:{}'", actual_id);
-                }
-                return Ok(());
-            }
-            Err(e) => {
-                let err_str = e.to_string();
-                if attempts < 10
-                    && (err_str.contains("Transaction conflict")
-                        || err_str.contains("write conflict")
-                        || err_str.contains("can be retried")
-                        || err_str.contains("TransactionConflict"))
-                {
-                    attempts += 1;
-                    tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
-                    continue;
-                }
-                return Err(EntityError::from(e));
-            }
-        }
-    }
+    let actual_id = clean_entity_id(id);
+    eprintln!(
+        "[delete_entity_inner] Deleting entity raw='{}', parsed id='{}'",
+        id, actual_id
+    );
+    execute_delete_with_retry(db, &actual_id, id).await
 }
 
 pub async fn search_entities_inner(
@@ -173,7 +200,7 @@ pub async fn search_entities_inner(
     query: &str,
     entity_type: Option<String>,
 ) -> Result<Vec<Entity>, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
+    let clean_pid = clean_project_id(project);
     let sql = "RETURN fn::search_entities(type::record('projects', $p), $q, $et);";
 
     let mut res = db
@@ -194,11 +221,8 @@ pub async fn get_entities_cursor_inner(
     cursor_id: Option<String>,
     limit: i64,
 ) -> Result<Vec<Entity>, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
-    let clean_cursor = cursor_id.map(|c| {
-        let raw = c.split_once(':').map(|(_, rest)| rest).unwrap_or(&c);
-        raw.trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string()
-    });
+    let clean_pid = clean_project_id(project);
+    let clean_cursor = cursor_id.as_deref().map(clean_entity_id);
 
     let sql = "RETURN fn::get_entities_cursor(type::record('projects', $p), $et, IF $cursor != NONE { type::record('entities', $cursor) } ELSE { NONE }, $limit);";
     let mut res = db
@@ -218,7 +242,7 @@ pub async fn get_entities_batch_inner(
     project: &str,
     types: Vec<String>,
 ) -> Result<Vec<Entity>, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
+    let clean_pid = clean_project_id(project);
     let sql = "RETURN fn::get_entities_batch(type::record('projects', $p), $types);";
 
     let mut res = db
@@ -230,4 +254,3 @@ pub async fn get_entities_batch_inner(
     let values: Vec<Value> = res.take(0)?;
     Ok(deserialize_list(values))
 }
-

@@ -3,6 +3,7 @@
 
 extern crate alloc;
 
+pub mod diff;
 pub mod inline_diff;
 pub mod model;
 pub mod myers;

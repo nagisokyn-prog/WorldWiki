@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, toRaw } from 'vue';
 import { calendarApi } from '@/services/api/calendar.api';
+import { extractEntityMentions } from '@/services/Manuscript/manuscript.wasm-bridge';
 
 export interface TimelineEvent {
   [key: string]: unknown;
@@ -199,6 +200,16 @@ export const useTimelineStore = defineStore('timeline', () => {
         return (p.id === id || (rawId && pRawId === rawId)) || (rawName && p.name === rawName);
       })) {
         participants.push({ type, id, name: rawName });
+      }
+    }
+
+    // 4. Высокоскоростное FSM-извлечение ((Сущность)) через WebAssembly-движок
+    const mentions = extractEntityMentions(text);
+    for (const m of mentions) {
+      const rawName = m.name.trim();
+      if (!rawName) continue;
+      if (!participants.some(p => p.name.toLowerCase() === rawName.toLowerCase())) {
+        participants.push({ type: 'entity', id: rawName, name: rawName });
       }
     }
 

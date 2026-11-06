@@ -438,12 +438,18 @@ importers:
       '@vueuse/motion':
         specifier: ^3.0.3
         version: 3.0.3(magicast@0.5.4)(vue@3.5.39(typescript@6.0.3))
+      '@worldwiki/ast-diff-wasm':
+        specifier: workspace:*
+        version: link:../../packages/ast-diff-wasm
       '@worldwiki/calendar-wasm':
         specifier: workspace:*
         version: link:../../packages/calendar-wasm
       '@worldwiki/components':
         specifier: workspace:*
         version: link:../../packages/components
+      '@worldwiki/manuscript-wasm':
+        specifier: workspace:*
+        version: link:../../packages/manuscript-wasm
       '@worldwiki/resources':
         specifier: workspace:*
         version: link:../../packages/resources
@@ -527,6 +533,8 @@ importers:
         specifier: ^3.3.7
         version: 3.3.7(typescript@6.0.3)
 
+  packages/ast-diff-wasm: {}
+
   packages/calendar-wasm: {}
 
   packages/components:
@@ -577,6 +585,8 @@ importers:
       vue:
         specifier: ^3.5.0
         version: 3.5.39(typescript@6.0.3)
+
+  packages/manuscript-wasm: {}
 
   packages/resources:
     devDependencies:

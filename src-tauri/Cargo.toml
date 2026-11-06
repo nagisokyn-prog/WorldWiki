@@ -106,4 +106,20 @@ opt-level = 2
 [profile.dev.package.flate2]
 opt-level = 2
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.release.package.worldwiki-manuscript-wasm]
+opt-level = "s"
+
+[profile.release.package.worldwiki-ast-diff-wasm]
+opt-level = "s"
+
+[profile.release.package.worldwiki-calendar-wasm]
+opt-level = "s"
+
 

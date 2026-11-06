@@ -33,6 +33,8 @@
     "@vueuse/motion": "^3.0.3",
     "@worldwiki/components": "workspace:*",
     "@worldwiki/calendar-wasm": "workspace:*",
+    "@worldwiki/manuscript-wasm": "workspace:*",
+    "@worldwiki/ast-diff-wasm": "workspace:*",
     "@worldwiki/resources": "workspace:*",
     "@worldwiki/word-vibe": "workspace:*",
     "katex": "^0.18.5",

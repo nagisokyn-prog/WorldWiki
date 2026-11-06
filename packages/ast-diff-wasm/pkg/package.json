@@ -1,0 +1,16 @@
+{
+  "name": "worldwiki-ast-diff-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for WorldWiki high-performance AST Myers diff and patch engine",
+  "version": "0.85.0",
+  "files": [
+    "worldwiki_ast_diff_wasm_bg.wasm",
+    "worldwiki_ast_diff_wasm.js",
+    "worldwiki_ast_diff_wasm.d.ts"
+  ],
+  "main": "worldwiki_ast_diff_wasm.js",
+  "types": "worldwiki_ast_diff_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

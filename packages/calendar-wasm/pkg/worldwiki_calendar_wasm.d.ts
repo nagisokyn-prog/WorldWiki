@@ -47,7 +47,7 @@ export class WasmCalendarEngine {
     /**
      * Преобразует тик суток в показания циферблата (floor)
      */
-    day_tick_to_units(day_tick: bigint, subdivisions: BigInt64Array, ticks_per_day: bigint): BigInt64Array;
+    day_tick_to_units(day_tick: bigint, subdivisions: BigInt64Array | bigint[], ticks_per_day: bigint): BigInt64Array;
     /**
      * Число дней в году
      */
@@ -95,11 +95,11 @@ export class WasmCalendarEngine {
     /**
      * Климатический детектор конфликта сезона солнцестояния
      */
-    is_season_conflicting_with_solstice(season_months: Uint32Array, is_summer_season: boolean, winter_solstice_month: number, total_months: number): boolean;
+    is_season_conflicting_with_solstice(season_months: Uint32Array | number[], is_summer_season: boolean, winter_solstice_month: number, total_months: number): boolean;
     /**
      * Климатический детектор конфликта с учетом полушария
      */
-    is_season_conflicting_with_solstice_hemisphere(season_months: Uint32Array, is_summer_season: boolean, winter_solstice_month: number, total_months: number, hemisphere: string): boolean;
+    is_season_conflicting_with_solstice_hemisphere(season_months: Uint32Array | number[], is_summer_season: boolean, winter_solstice_month: number, total_months: number, hemisphere: string): boolean;
     /**
      * Преобразует локальный момент планеты обратно в галактическое t_abs
      */
@@ -140,7 +140,7 @@ export class WasmCalendarEngine {
     /**
      * Преобразует показания циферблата (единицы от старшей к младшей) в тик суток (ceil)
      */
-    units_to_day_tick(unit_values: BigInt64Array, subdivisions: BigInt64Array, ticks_per_day: bigint): bigint;
+    units_to_day_tick(unit_values: BigInt64Array | bigint[], subdivisions: BigInt64Array | bigint[], ticks_per_day: bigint): bigint;
     /**
      * Валидация набора гармоник по наименьшему общему кратному LCM
      */
@@ -195,11 +195,11 @@ export interface InitOutput {
     readonly wasmcalendarengine_year_from_days: (a: number, b: bigint, c: bigint, d: any, e: bigint) => [number, number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __externref_table_dealloc: (a: number) => void;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }
 

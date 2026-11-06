@@ -1,6 +1,7 @@
 import { ref, shallowRef, computed, type Ref } from 'vue';
 import * as api from '@/services/api.client';
 import type { ChapterWithHierarchy } from '@/stores/chapter.store';
+import { computeInlineDiff } from '@/services/AstDiff/ast-diff.wasm-bridge';
 
 export interface ChapterRevisionContent {
   content?: string;
@@ -105,7 +106,16 @@ export function useChapterHistory(
 
     const changes: string[] = [];
     if (currSnap.title !== prevSnap.title) changes.push('Название');
-    if (currSnap.content !== prevSnap.content) changes.push('Текст');
+    if (currSnap.content !== prevSnap.content) {
+      if (typeof currSnap.content === 'string' && typeof prevSnap.content === 'string') {
+        const inlineChanges = computeInlineDiff(prevSnap.content, currSnap.content);
+        const ins = inlineChanges.reduce((acc, c) => acc + (c.insert_text ? c.insert_text.length : 0), 0);
+        const del = inlineChanges.reduce((acc, c) => acc + (c.delete_count || 0), 0);
+        changes.push(ins > 0 || del > 0 ? `Текст (+${ins}/-${del})` : 'Текст');
+      } else {
+        changes.push('Текст');
+      }
+    }
     if (JSON.stringify(currSnap.footnotes) !== JSON.stringify(prevSnap.footnotes)) changes.push('Сноски');
 
     if (changes.length > 0) {

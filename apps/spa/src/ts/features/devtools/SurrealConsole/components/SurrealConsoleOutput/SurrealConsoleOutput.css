@@ -1,0 +1,61 @@
+.surreal-output-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.output-toolbar {
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-panel);
+}
+
+.status-pill {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.status-ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.status-err {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.output-viewer {
+  background: var(--bg-main);
+  line-height: 1.5;
+  user-select: text;
+}
+
+.output-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-main);
+}
+
+.text-danger {
+  color: var(--error);
+}
+
+.loading-spinner {
+  display: inline-block;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+}
+

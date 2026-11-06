@@ -8,32 +8,32 @@ export interface SearchResult<T> { entity: T; score: number; kind: string; }
 export interface AutoExtendResult { chapter_id?: string | null; volume_id?: string | null; updated_count?: number; }
 export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }
 export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }
-import type { Volume } from '@/types/generated/Volume';
-import type { Chapter } from '@/types/generated/Chapter';
-import type { Entity } from '@/types/generated/Entity';
-import type { EntitySchema } from '@/types/generated/EntitySchema';
-import type { EntityRel } from '@/types/generated/EntityRel';
-import type { RelationSchema } from '@/types/generated/RelationSchema';
-import type { Chat } from '@/types/generated/Chat';
-import type { ChatMessage } from '@/types/generated/ChatMessage';
-import type { AiProfile } from '@/types/generated/AiProfile';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
-import type { Todo } from '@/types/generated/Todo';
-import type { StoryArc } from '@/types/generated/StoryArc';
-import type { Calendar } from '@/types/generated/Calendar';
-import type { AutoApprovalSetting } from '@/types/generated/AutoApprovalSetting';
-import type { AiMode } from '@/types/generated/AiMode';
-import type { Artifact } from '@/types/generated/Artifact';
-import type { AiSkill } from '@/types/generated/AiSkill';
-import type { TextBlock } from '@/types/generated/TextBlock';
-import type { AgentMemory } from '@/types/generated/AgentMemory';
-import type { WebCache } from '@/types/generated/WebCache';
-import type { DictionaryWord } from '@/types/generated/DictionaryWord';
-import type { Cites } from '@/types/generated/Cites';
-import type { ParticipantOf } from '@/types/generated/ParticipantOf';
-import type { AdvancesArc } from '@/types/generated/AdvancesArc';
-import type { OccursAt } from '@/types/generated/OccursAt';
-import type { RevealedIn } from '@/types/generated/RevealedIn';
+import type { Volume } from '../types/generated/Volume';
+import type { Chapter } from '../types/generated/Chapter';
+import type { Entity } from '../types/generated/Entity';
+import type { EntitySchema } from '../types/generated/EntitySchema';
+import type { EntityRel } from '../types/generated/EntityRel';
+import type { RelationSchema } from '../types/generated/RelationSchema';
+import type { Chat } from '../types/generated/Chat';
+import type { ChatMessage } from '../types/generated/ChatMessage';
+import type { AiProfile } from '../types/generated/AiProfile';
+import type { PlotPromise } from '../types/generated/PlotPromise';
+import type { Todo } from '../types/generated/Todo';
+import type { StoryArc } from '../types/generated/StoryArc';
+import type { Calendar } from '../types/generated/Calendar';
+import type { AutoApprovalSetting } from '../types/generated/AutoApprovalSetting';
+import type { AiMode } from '../types/generated/AiMode';
+import type { Artifact } from '../types/generated/Artifact';
+import type { AiSkill } from '../types/generated/AiSkill';
+import type { TextBlock } from '../types/generated/TextBlock';
+import type { AgentMemory } from '../types/generated/AgentMemory';
+import type { WebCache } from '../types/generated/WebCache';
+import type { DictionaryWord } from '../types/generated/DictionaryWord';
+import type { Cites } from '../types/generated/Cites';
+import type { ParticipantOf } from '../types/generated/ParticipantOf';
+import type { AdvancesArc } from '../types/generated/AdvancesArc';
+import type { OccursAt } from '../types/generated/OccursAt';
+import type { RevealedIn } from '../types/generated/RevealedIn';
 
 // --- Normal Commands ---
 export async function getProjects(): Promise<ProjectSummary[]> {

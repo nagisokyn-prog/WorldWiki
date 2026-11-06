@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import PromisesPanel from '@/features/chapters/components/panels/PromisesPanel/PromisesPanel.vue';
-import PlanningMatrixTab from './tabs/PlanningMatrixTab.vue';
+import PlanningMatrixTab from '../tabs/PlanningMatrixTab.vue';
 import type { ChapterRightSidebarProps, ChapterRightSidebarEmits } from './ChapterRightSidebar.model';
 import { useChapterRightSidebar } from './useChapterRightSidebar';
 

@@ -1,13 +1,8 @@
 <template>
   <div 
     class="editor-container" 
-    :class="{ 'history-changed': changedFields.includes('content') }"
     @contextmenu="$emit('contextmenu', $event)"
   >
-    <div v-if="changedFields.includes('content')" class="changed-indicator changed-indicator-content" title="Текст был изменен">
-      <span class="badge badge-accent">Изменено</span>
-    </div>
-    
     <!-- WYSIWYG Mode -->
     <div v-if="editorMode === 'wysiwyg'" class="editor-wrapper">
       <EditorContent :editor="editor || undefined" class="editor-content" @scroll="$emit('scroll', $event)" />

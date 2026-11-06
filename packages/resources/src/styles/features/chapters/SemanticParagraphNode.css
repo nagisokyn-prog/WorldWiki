@@ -37,3 +37,46 @@
 .content-wrapper {
     display: block;
 }
+
+/* Дифф блоков в стиле VS Code */
+.semantic-paragraph-node.diff-block-mod-del {
+    background-color: var(--error-bg);
+    border-left: 3px solid var(--error-border);
+    border-radius: var(--radius-xs);
+    padding: 4px 8px 4px 28px;
+    margin-bottom: 2px;
+    opacity: 0.85;
+}
+
+.semantic-paragraph-node.diff-block-mod-ins {
+    background-color: var(--success-bg);
+    border-left: 3px solid var(--success-border);
+    border-radius: var(--radius-xs);
+    padding: 4px 8px 4px 28px;
+    margin-bottom: 6px;
+}
+
+.semantic-paragraph-node.diff-block-ins {
+    background-color: var(--success-border);
+    border-left: 4px solid var(--success);
+    border-radius: var(--radius-xs);
+    padding: 4px 8px 4px 28px;
+    margin-bottom: 6px;
+}
+
+.semantic-paragraph-node.diff-block-del {
+    background-color: var(--error-border);
+    border-left: 4px solid var(--error);
+    border-radius: var(--radius-xs);
+    padding: 4px 8px 4px 28px;
+    margin-bottom: 6px;
+    opacity: 0.8;
+}
+
+.semantic-paragraph-node.diff-block-mod-del .semantic-tag-badge,
+.semantic-paragraph-node.diff-block-mod-ins .semantic-tag-badge,
+.semantic-paragraph-node.diff-block-ins .semantic-tag-badge,
+.semantic-paragraph-node.diff-block-del .semantic-tag-badge {
+    left: 4px;
+    top: 6px;
+}

@@ -2,6 +2,7 @@ import { ref, shallowRef, computed, type Ref } from 'vue';
 import * as api from '@/services/api.client';
 import type { ChapterWithHierarchy } from '@/stores/chapter.store';
 import { computeInlineDiff } from '@/services/AstDiff/ast-diff.wasm-bridge';
+import { buildDiffHtml } from '@/services/AstDiff/diffHtmlBuilder';
 
 export interface ChapterRevisionContent {
   content?: string;
@@ -101,7 +102,11 @@ export function useChapterHistory(
     }
 
     const snap = rev.content || {};
-    currentChapter.value.content = snap.content || snap.attributes?.content || '';
+    const oldSnapshotContent = snap.content || snap.attributes?.content || '';
+    const currentWorkingContent = originalData.value.content || '';
+    // Сравниваем: Было (старый снимок) -> Стало (текущий текст)
+    // Добавленный в текущей версии текст будет зелёным (<ins>), а удалённый из снимка — красным (<del>)
+    currentChapter.value.content = buildDiffHtml(oldSnapshotContent, currentWorkingContent);
     currentChapter.value.title = snap.title || snap.attributes?.title || '';
     currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
     previewingRevId.value = rev.id;

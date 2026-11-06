@@ -254,12 +254,12 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
     ) 
     THEN {
         CREATE chapter_revisions SET 
-            target_id = $before.id, 
-            project_id = $before.volume_id.project_id, 
+            target_id = $after.id, 
+            project_id = $after.volume_id.project_id, 
             content = {
-                title: $before.title,
-                content: $before.content,
-                word_count: $before.word_count
+                title: $after.title,
+                content: $after.content,
+                word_count: $after.word_count
             }, 
             created_at = time::now(), 
             commit_msg = NONE;

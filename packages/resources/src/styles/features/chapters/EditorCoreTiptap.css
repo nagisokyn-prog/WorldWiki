@@ -535,6 +535,59 @@
   z-index: 5;
 }
 
+/* Inline & Block Diff Styles (Variant A) */
+ins.diff-ins, .diff-ins {
+  background-color: var(--success-bg);
+  color: var(--success);
+  text-decoration: none;
+  border-radius: var(--radius-xs);
+  padding: 1px 3px;
+  font-weight: 500;
+}
+
+del.diff-del, .diff-del {
+  background-color: var(--error-bg);
+  color: var(--error);
+  text-decoration: line-through;
+  opacity: 0.85;
+  border-radius: var(--radius-xs);
+  padding: 1px 3px;
+}
+
+.diff-block-mod-del {
+  background-color: var(--error-bg);
+  border-left: 3px solid var(--error-border);
+  padding: 4px 8px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+.diff-block-mod-ins {
+  background-color: var(--success-bg);
+  border-left: 3px solid var(--success-border);
+  padding: 4px 8px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  margin-bottom: 6px;
+}
+
+.diff-block-ins {
+  background-color: var(--success-border);
+  border-left: 4px solid var(--success);
+  padding: 4px 8px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  margin-bottom: 6px;
+}
+
+.diff-block-del {
+  background-color: var(--error-border);
+  border-left: 4px solid var(--error);
+  padding: 4px 8px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
 
 .split-panel-header-structure {
   background: var(--bg-hover);

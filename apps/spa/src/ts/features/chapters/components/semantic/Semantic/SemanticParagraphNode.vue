@@ -1,7 +1,7 @@
 <template>
   <node-view-wrapper 
     class="semantic-paragraph-node" 
-    :class="node?.attrs?.semanticTag || 'desc'"
+    :class="[node?.attrs?.semanticTag || 'desc', node?.attrs?.diffClass]"
     :style="{
       textIndent: node?.attrs?.textIndent || undefined,
       paddingLeft: node?.attrs?.leftIndent || undefined,

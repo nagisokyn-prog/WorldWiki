@@ -221,8 +221,8 @@ async fn get_chapter_revisions_returns_snapshot_after_update() {
 
     assert_eq!(revisions.len(), 1, "после одного UPDATE должен быть 1 снапшот");
     assert_eq!(
-        revisions[0]["content"]["title"], "Начало",
-        "снапшот хранит состояние ДО изменения"
+        revisions[0]["content"]["title"], "Продолжение",
+        "снапшот хранит сохранённое состояние после изменения"
     );
 }
 

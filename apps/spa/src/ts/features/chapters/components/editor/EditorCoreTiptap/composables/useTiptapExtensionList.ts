@@ -20,6 +20,7 @@ import {
   WordParagraphCommands
 } from '../extensions/WordFormatExtensions';
 import { EnterHandler, SemanticParagraph } from '../extensions/SemanticExtensions';
+import { DiffInsertion, DiffDeletion } from '../extensions/DiffMarks';
 import type { AnyExtension } from '@tiptap/core';
 
 export function createTiptapExtensions(project: string): AnyExtension[] {
@@ -32,6 +33,8 @@ export function createTiptapExtensions(project: string): AnyExtension[] {
     }),
     SemanticParagraph,
     EnterHandler,
+    DiffInsertion,
+    DiffDeletion,
     Image.configure({ inline: true }),
     Link.configure({
       openOnClick: false,

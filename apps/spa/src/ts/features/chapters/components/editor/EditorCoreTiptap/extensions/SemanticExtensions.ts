@@ -116,6 +116,11 @@ export const SemanticParagraph = Paragraph.extend({
         default: null,
         parseHTML: (element) => element.style.textAlign || null,
         renderHTML: (attributes) => (attributes.textAlign ? { style: `text-align: ${attributes.textAlign}` } : {})
+      },
+      diffClass: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-diff') || (element.className?.match(/diff-block-[a-z-]+/)?.[0] ?? null),
+        renderHTML: (attributes) => (attributes.diffClass ? { 'data-diff': attributes.diffClass, class: attributes.diffClass } : {})
       }
     };
   },

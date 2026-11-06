@@ -38,6 +38,7 @@ export type EditorModalsEmits = {
     (e: 'close-promise-menu'): void;
     (e: 'select-promise', option: PromiseTypeOption): void;
     (e: 'link-milestone', payload: { promise: PlotPromise | RichPlotPromise; stage: 'progression' | 'resolution' }): void;
+    (e: 'link-subscene', payload: { promise: PlotPromise | RichPlotPromise }): void;
     (e: 'close-export-modal'): void;
     (e: 'close-paragraph-modal'): void;
     (e: 'apply-paragraph-format', format: ParagraphFormatData): void;

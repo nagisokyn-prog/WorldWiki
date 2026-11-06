@@ -288,7 +288,7 @@ async fn timeline_duplicate_chapter_ids_updates_same_row_twice() {
 }
 
 #[tokio::test]
-async fn multiple_revisions_ordered_desc_with_before_content() {
+async fn multiple_revisions_ordered_desc_with_after_content() {
     let db = create_test_db().await;
     seed_project(&db, "p1").await;
 
@@ -310,11 +310,10 @@ async fn multiple_revisions_ordered_desc_with_before_content() {
         .expect("get revisions");
 
     assert_eq!(revisions.len(), 3, "3 UPDATE → 3 ревизии");
-    // По убыванию времени: самая первая ревизия хранит самое старое состояние (v1),
-    // но идут они от последнего изменения к первому.
-    assert_eq!(revisions[0]["content"]["content"], "текст-3", "первая в списке — предпоследнее состояние");
-    assert_eq!(revisions[1]["content"]["content"], "текст-2");
-    assert_eq!(revisions[2]["content"]["content"], "текст-1", "последняя — исходное состояние ($before)");
+    // По убыванию времени: от последнего сохранения к более ранним ($after)
+    assert_eq!(revisions[0]["content"]["content"], "текст-4", "первая в списке — последнее сохранённое состояние");
+    assert_eq!(revisions[1]["content"]["content"], "текст-3");
+    assert_eq!(revisions[2]["content"]["content"], "текст-2", "последняя — первое сохранённое состояние обновления");
 }
 
 #[tokio::test]

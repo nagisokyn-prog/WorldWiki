@@ -92,6 +92,7 @@ DEFINE INDEX OVERWRITE idx_promise_project          ON plot_promises FIELDS proj
 DEFINE INDEX OVERWRITE idx_promise_status           ON plot_promises FIELDS project_id, status;
 DEFINE INDEX OVERWRITE idx_promise_kind             ON plot_promises FIELDS project_id, kind;
 DEFINE INDEX OVERWRITE idx_promise_location         ON plot_promises FIELDS location_id;
+DEFINE INDEX OVERWRITE idx_promise_parent           ON plot_promises FIELDS parent_id;
 DEFINE INDEX OVERWRITE idx_promise_chapter          ON plot_promises FIELDS chapter_id;
 DEFINE INDEX OVERWRITE idx_promise_event            ON plot_promises FIELDS timeline_event_id;
 DEFINE INDEX OVERWRITE idx_promise_title_ft         ON plot_promises COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;

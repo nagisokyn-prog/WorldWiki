@@ -68,11 +68,11 @@
           </div>
         </div>
 
-        <!-- 2. 🌿 ТОЧКИ РАЗВИТИЯ (PROGRESSIONS) -->
-        <div v-if="item.progressions && item.progressions.length > 0" class="timeline-group-progressions">
+        <!-- 2. 🌿 ТОЧКИ РАЗВИТИЯ (PROGRESSIONS) - ТОЛЬКО ДЛЯ РУЖЕЙ -->
+        <div v-if="item.kind !== 'scene' && item.progressions && item.progressions.length > 0" class="timeline-group-progressions">
           <div class="group-header">
             <span class="step-icon">🌿</span>
-            <span class="group-title">{{ item.kind === 'scene' ? 'Моменты сцены' : 'Развитие' }} ({{ item.progressions.length }}):</span>
+            <span class="group-title">Развитие ({{ item.progressions.length }}):</span>
           </div>
 
           <div 
@@ -105,11 +105,11 @@
           </div>
         </div>
 
-        <!-- 3. 🎯 ТОЧКА ВЫСТРЕЛА / РАЗВЯЗКИ (RESOLUTION) / 🏁 ЗАВЕРШЕНИЕ СЦЕНЫ -->
-        <div v-if="item.resolution" class="timeline-step step-resolution">
+        <!-- 3. 🎯 ТОЧКА ВЫСТРЕЛА / РАЗВЯЗКИ (RESOLUTION) - ТОЛЬКО ДЛЯ РУЖЕЙ -->
+        <div v-if="item.kind !== 'scene' && item.resolution" class="timeline-step step-resolution">
           <div class="step-badge">
-            <span class="step-icon">{{ item.kind === 'scene' ? '🏁' : '🎯' }}</span>
-            <span class="step-name font-bold text-success">{{ item.kind === 'scene' ? 'Завершение сцены:' : 'Отстреляно:' }}</span>
+            <span class="step-icon">🎯</span>
+            <span class="step-name font-bold text-success">Отстреляно:</span>
             <span class="step-location font-semibold">{{ getChapterTitle(item.resolution.chapter_id || '') }} · абз. {{ item.resolution.paragraph_index ?? 1 }}</span>
             <span v-if="isCurrentChapterPromise(item.resolution.chapter_id || '')" class="badge-current-chapter">текущая</span>
             <button 
@@ -127,9 +127,40 @@
 
           <div class="step-actions">
             <button class="btn-locate-step" @click="$emit('locate', { chapter_id: item.resolution?.chapter_id || '', paragraph_index: item.resolution?.paragraph_index ?? 1, quote: item.resolution?.quote || '' })">
-              {{ item.kind === 'scene' ? '📍 Перейти к финалу сцены' : '📍 Перейти к финалу' }}
+              📍 Перейти к финалу
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- 4. ДРЕВОВИДНЫЕ СВЯЗАННЫЕ ПОД-СЦЕНЫ -->
+      <div v-if="item.children && item.children.length > 0" class="subscenes-tree-container mt-2">
+        <div class="tree-header text-xs text-muted font-medium mb-1.5 flex items-center gap-1">
+          <span>🎬 Связанные сцены ({{ item.children.length }}):</span>
+        </div>
+        <div class="tree-branches pl-2.5 border-l-2 border-dashed border-border-subtle flex flex-col gap-2">
+          <PromiseCard
+            v-for="child in item.children"
+            :key="child.id || child.quote"
+            :project="project"
+            :item="child"
+            :kind-info="kindInfo"
+            :editing-note-id="editingNoteId"
+            :note-draft="noteDraft"
+            :get-chapter-title="getChapterTitle"
+            :is-current-chapter-promise="isCurrentChapterPromise"
+            :level="(level || 0) + 1"
+            @update:item="$emit('update:item', $event)"
+            @update:note-draft="$emit('update:noteDraft', $event)"
+            @remove="$emit('remove', $event)"
+            @locate="$emit('locate', $event)"
+            @remove-milestone="$emit('removeMilestone', $event)"
+            @prompt-attach-milestone="$emit('promptAttachMilestone', $event)"
+            @start-edit-note="$emit('startEditNote', $event)"
+            @cancel-edit-note="$emit('cancelEditNote')"
+            @save-note="$emit('saveNote', $event)"
+            @change="$emit('change')"
+          />
         </div>
       </div>
 
@@ -168,6 +199,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'PromiseCard' });
 import PromiseCardMeta from '../PromiseCardMeta/PromiseCardMeta.vue';
 import PromiseCardNote from '../PromiseCardNote/PromiseCardNote.vue';
 import { usePromiseCard } from './usePromiseCard';

@@ -82,6 +82,13 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             chapter_id: $target_chap,
             paragraph_index: $target_para,
             block_id: $target_block,
+            parent_id: IF $data.parent_id != NONE AND $data.parent_id != NULL AND type::string($data.parent_id) != '' {
+                IF string::starts_with(type::string($data.parent_id), 'plot_promises:') {
+                    type::record($data.parent_id)
+                } ELSE {
+                    type::record('plot_promises', $data.parent_id)
+                }
+            } ELSE { NONE },
             kind: IF $data.kind != NONE AND $data.kind != NULL AND type::string($data.kind) != '' { type::string($data.kind) } ELSE { 'gun' },
             time_nature: IF $data.time_nature != NONE AND $data.time_nature != NULL AND type::string($data.time_nature) != '' { type::string($data.time_nature) } ELSE { 'present' },
             title: IF $data.title != NONE AND $data.title != NULL { type::string($data.title) } ELSE { '' },
@@ -149,9 +156,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     -- Синхронизация таймлайна (occurs_at): plot_promises -> occurs_at -> timeline_events
     DELETE occurs_at WHERE in = $rec_id;
     IF $target_evt_id != NONE AND $target_evt_id != NULL {
+        LET $tn = IF $data.time_nature != NONE AND $data.time_nature != NULL AND string::len(type::string($data.time_nature)) > 0 { type::string($data.time_nature) } ELSE { 'present' };
         RELATE $rec_id->occurs_at->$target_evt_id SET
             project_id = $p_rec,
-            time_nature = IF $data.time_nature != NONE { $data.time_nature } ELSE { 'present' },
+            time_nature = $tn,
             created_at = time::now();
     };
 
@@ -159,6 +167,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         SELECT 
             id,
             project_id,
+            type::string(parent_id) AS parent_id,
             kind,
             title,
             note,
@@ -466,6 +475,7 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
         SELECT 
             id,
             project_id,
+            type::string(parent_id) AS parent_id,
             chapter_id,
             paragraph_index,
             block_id,
@@ -506,6 +516,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
         SELECT 
             id,
             project_id,
+            type::string(parent_id) AS parent_id,
             chapter_id,
             paragraph_index,
             block_id,
@@ -546,6 +557,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
         SELECT 
             id,
             project_id,
+            type::string(parent_id) AS parent_id,
             chapter_id,
             paragraph_index,
             block_id,

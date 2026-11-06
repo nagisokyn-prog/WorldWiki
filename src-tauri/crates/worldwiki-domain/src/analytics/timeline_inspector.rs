@@ -12,6 +12,14 @@ pub struct TimelineRevealLink {
     pub is_anachronism: bool, // Раскрыто до момента свершения события
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TimelineParticipantDto {
+    pub id: String,
+    pub name: String,
+    #[serde(default)]
+    pub entity_type: Option<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TimelineInspectorEventNode {
     pub event_id: String,
@@ -19,12 +27,14 @@ pub struct TimelineInspectorEventNode {
     pub description: Option<String>,
     pub m_abs: i64,
     pub calendar_id: String,
-    pub participants: Vec<String>,
+    pub participants: Vec<TimelineParticipantDto>,
     pub reveals: Vec<TimelineRevealLink>,
     #[serde(default)]
     pub kind: Option<String>,
     #[serde(default)]
     pub location_id: Option<String>,
+    #[serde(default)]
+    pub parent_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

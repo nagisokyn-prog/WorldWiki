@@ -15,6 +15,8 @@ export interface PromiseMilestone {
 }
 
 export type RichPlotPromise = PlotPromise & {
+  parent_id?: string | null;
+  children?: RichPlotPromise[];
   chapter_id?: string;
   quote?: string;
   paragraph_index?: number;

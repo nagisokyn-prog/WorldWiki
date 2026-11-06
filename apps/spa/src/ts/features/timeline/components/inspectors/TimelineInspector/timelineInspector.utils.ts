@@ -15,9 +15,9 @@ import {
   type TimelineInspectorFilterState,
   getInspectorKindMeta,
 } from './TimelineInspector.model';
-import { calculateConnectionLines } from './timelineInspectorVolume.utils';
+import { calculateConnectionLines, calculateSceneHierarchyLines } from './timelineInspectorVolume.utils';
 
-export { calculateConnectionLines };
+export { calculateConnectionLines, calculateSceneHierarchyLines };
 
 export function normalizeId(id?: unknown): string {
   if (!id) return '';

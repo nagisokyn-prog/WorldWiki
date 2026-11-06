@@ -90,6 +90,18 @@
               :class="{ 'connection-path--flashback': line.isFlashback }"
             />
           </g>
+
+          <!-- Нижние линии иерархии связанных сцен (от пина к пину) -->
+          <g v-for="sline in sceneHierarchyLines" :key="sline.id" class="scene-hierarchy-group">
+            <path
+              :d="`M ${sline.x1} ${sline.y1} C ${sline.x1} ${sline.yBottom}, ${sline.x2} ${sline.yBottom}, ${sline.x2} ${sline.y2}`"
+              fill="none"
+              stroke="var(--warning)"
+              stroke-width="2.5"
+              stroke-dasharray="4 3"
+              class="scene-hierarchy-path"
+            />
+          </g>
         </svg>
 
         <!-- Нижняя Диегетическая Ось -->
@@ -159,7 +171,7 @@ const emit = defineEmits<TimelineInspectorEmits>();
 
 const {
   filters, volumeOptions, volumeSegments, filteredChapters, formattedEvents, filteredEvents,
-  connectionLines, canvasMinWidth, isLoading, activeChapterId, hoveredChapterId, hoveredEventId,
+  connectionLines, sceneHierarchyLines, canvasMinWidth, isLoading, activeChapterId, hoveredChapterId, hoveredEventId,
   pingedEventId, refresh, navigateToChapter, navigateToScene, selectChapter, jumpToFlashback,
   scrollToChapter, isEventHighlighted, isEventDimmed, normalizeId,
 } = useTimelineInspector(props, emit);

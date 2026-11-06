@@ -103,6 +103,7 @@ const {
   loadPromises,
   addPromise,
   addNewScene,
+  addSubScene,
   updatePromise,
   addMilestone,
   removeMilestone,
@@ -121,6 +122,7 @@ defineExpose({
   promises,
   addPromise,
   addNewScene,
+  addSubScene,
   updatePromise,
   addMilestone,
   loadPromises

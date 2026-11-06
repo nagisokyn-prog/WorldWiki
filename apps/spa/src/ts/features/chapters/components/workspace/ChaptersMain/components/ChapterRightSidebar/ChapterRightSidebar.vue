@@ -98,6 +98,7 @@ const {
   selectArc,
   addPromise,
   addMilestone,
+  addSubScene,
   loadPromises,
   promises
 } = useChapterRightSidebar(props);
@@ -111,6 +112,7 @@ defineExpose({
   setSidebarTab,
   addPromise,
   addMilestone,
+  addSubScene,
   loadPromises,
   promises
 });

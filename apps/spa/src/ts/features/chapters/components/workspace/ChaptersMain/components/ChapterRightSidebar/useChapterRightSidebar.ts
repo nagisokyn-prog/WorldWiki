@@ -159,6 +159,16 @@ export function useChapterRightSidebar(props?: { project?: string }) {
     return promisesPanelRef.value?.addMilestone(payload);
   };
 
+  const addSubScene = (parentItem: any, payload: {
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+    chapterId?: string;
+  }) => {
+    setSidebarTab('promises');
+    return promisesPanelRef.value?.addSubScene(parentItem, payload);
+  };
+
   const loadPromises = () => {
     return promisesPanelRef.value?.loadPromises();
   };
@@ -211,6 +221,7 @@ export function useChapterRightSidebar(props?: { project?: string }) {
     startVerticalResize,
     addPromise,
     addMilestone,
+    addSubScene,
     loadPromises,
     promises
   };

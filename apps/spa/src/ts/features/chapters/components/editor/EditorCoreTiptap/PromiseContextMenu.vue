@@ -61,20 +61,31 @@
         </div>
         
         <div class="milestone-action-buttons">
-          <button 
-            class="btn-milestone btn-progress" 
-            title="Добавить как этап развития / напоминания"
-            @click="selectMilestone(p, 'progression')"
-          >
-            🌿 Развить
-          </button>
-          <button 
-            class="btn-milestone btn-resolve" 
-            title="Отметить как развязку / выстрел ружья"
-            @click="selectMilestone(p, 'resolution')"
-          >
-            🎯 Отстрелять
-          </button>
+          <template v-if="p.kind === 'scene'">
+            <button 
+              class="btn-milestone btn-progress" 
+              title="Привязать как дочернюю сцену"
+              @click="selectSubScene(p)"
+            >
+              🎬 Привязать под-сцену
+            </button>
+          </template>
+          <template v-else>
+            <button 
+              class="btn-milestone btn-progress" 
+              title="Добавить как этап развития / напоминания"
+              @click="selectMilestone(p, 'progression')"
+            >
+              🌿 Развить
+            </button>
+            <button 
+              class="btn-milestone btn-resolve" 
+              title="Отметить как развязку / выстрел ружья"
+              @click="selectMilestone(p, 'resolution')"
+            >
+              🎯 Отстрелять
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -102,7 +113,8 @@ const {
   promiseTypes,
   activeExistingPromises,
   selectItem,
-  selectMilestone
+  selectMilestone,
+  selectSubScene
 } = usePromiseContextMenu(props, emit);
 </script>
 

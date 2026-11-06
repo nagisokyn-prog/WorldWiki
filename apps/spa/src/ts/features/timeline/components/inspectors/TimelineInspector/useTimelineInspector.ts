@@ -22,6 +22,7 @@ import {
   resolveChaptersWithVolumes,
   buildVolumeSegments,
   calculateConnectionLines,
+  calculateSceneHierarchyLines,
 } from './timelineInspectorVolume.utils';
 import { useTimelineInspectorNavigation } from './useTimelineInspectorNavigation';
 
@@ -166,6 +167,14 @@ export function useTimelineInspector(
     })
   );
 
+  const sceneHierarchyLines = computed(() =>
+    calculateSceneHierarchyLines({
+      events: filteredEvents.value,
+      startX,
+      eventSpacing,
+    })
+  );
+
   const canvasMinWidth = computed(() => {
     const chWidth = startX + filteredChapters.value.length * chapterSpacing + 120;
     const evWidth = startX + filteredEvents.value.length * eventSpacing + 120;
@@ -183,6 +192,7 @@ export function useTimelineInspector(
     filteredEvents,
     formattedEvents,
     connectionLines,
+    sceneHierarchyLines,
     canvasMinWidth,
     isLoading,
     error,

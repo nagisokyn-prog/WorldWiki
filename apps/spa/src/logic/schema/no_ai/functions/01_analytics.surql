@@ -163,6 +163,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
     LET $scene_events = (
         SELECT 
             id,
+            type::string(parent_id) AS parent_id,
             IF title != NONE AND string::len(title) > 0 { title }
                ELSE IF quote != NONE AND string::len(quote) > 0 { quote }
                ELSE IF kind == 'conflict' { 'Конфликт' }
@@ -220,10 +221,12 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                     is_anachronism: false
                 }
             ] AS reveals,
-            <-participant_of<-entities.{
-                id: IF id.id != NONE { id.id } ELSE { type::string(id) },
-                name: name,
-                entity_type: schema_id.type_key
+            IF array::len(<-participant_of<-entities) > 0 {
+                (SELECT id, name, schema_id.type_key AS entity_type FROM <-participant_of<-entities)
+            } ELSE IF participant_ids != NONE AND array::len(participant_ids) > 0 {
+                (SELECT id, name, schema_id.type_key AS entity_type FROM entities WHERE id IN $parent.participant_ids OR type::string(id) IN $parent.participant_ids)
+            } ELSE {
+                []
             } AS participants
         FROM plot_promises
         WHERE project_id = $p_rec

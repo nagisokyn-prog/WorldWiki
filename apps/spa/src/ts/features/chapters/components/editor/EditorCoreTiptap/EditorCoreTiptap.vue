@@ -80,6 +80,7 @@
       @close-promise-menu="isPromiseMenuOpen = false"
       @select-promise="handlePromiseSelect"
       @link-milestone="handleMilestoneSelect"
+      @link-subscene="handleSubSceneSelect"
       @close-export-modal="isExportModalOpen = false"
       @close-paragraph-modal="isParagraphModalOpen = false"
       @apply-paragraph-format="handleParagraphFormatApply"
@@ -156,6 +157,7 @@ const {
   handleEntityInsert,
   handlePromiseSelect,
   handleMilestoneSelect,
+  handleSubSceneSelect,
   handleParagraphFormatApply,
   onWordContentUpdate,
   onWordDocumentUpdate,

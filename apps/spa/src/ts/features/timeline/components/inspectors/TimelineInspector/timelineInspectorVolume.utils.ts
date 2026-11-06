@@ -4,6 +4,7 @@ import type {
   InspectorReveal,
   TimelineVolumeSegment,
   VisualizedConnectionLine,
+  VisualizedSceneHierarchyLine,
 } from './TimelineInspector.model';
 import { checkIsFlashback, getEventId, normalizeId } from './timelineInspector.utils';
 
@@ -214,6 +215,55 @@ export function calculateConnectionLines(params: {
         });
       }
     });
+  });
+
+  return lines;
+}
+
+export function calculateSceneHierarchyLines(params: {
+  events: InspectorEvent[];
+  startX?: number;
+  eventSpacing?: number;
+}): VisualizedSceneHierarchyLine[] {
+  const { events, startX = 60, eventSpacing = 160 } = params;
+  if (!events.length) return [];
+
+  const lines: VisualizedSceneHierarchyLine[] = [];
+  const eventPositions = new Map<string, number>();
+
+  events.forEach((ev, idx) => {
+    const evId = getEventId(ev);
+    const cleanId = normalizeId(evId);
+    const pinX = startX + idx * eventSpacing + 70;
+    eventPositions.set(cleanId, pinX);
+    eventPositions.set(evId, pinX);
+  });
+
+  events.forEach((ev) => {
+    if (!ev.parent_id) return;
+    const childId = getEventId(ev);
+    const cleanParentId = normalizeId(ev.parent_id);
+    const x1 = eventPositions.get(cleanParentId);
+    const x2 = eventPositions.get(normalizeId(childId)) ?? eventPositions.get(childId);
+
+    if (x1 !== undefined && x2 !== undefined) {
+      const y1 = 305;
+      const y2 = 305;
+      const distance = Math.abs(x2 - x1);
+      const arcDepth = Math.min(65, Math.max(30, distance * 0.25));
+      const yBottom = y1 + arcDepth;
+
+      lines.push({
+        id: `scene-link-${cleanParentId}-${normalizeId(childId)}`,
+        parentId: cleanParentId,
+        childId: normalizeId(childId),
+        x1,
+        y1,
+        x2,
+        y2,
+        yBottom,
+      });
+    }
   });
 
   return lines;

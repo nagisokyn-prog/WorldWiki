@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub enum PromiseStatus {
     #[default]
     Planted,
-    #[serde(alias = "developed")]
+    #[serde(rename = "developed", alias = "in_progress")]
     InProgress,
     Resolved,
     Abandoned,
@@ -98,6 +98,8 @@ pub struct PlotPromise {
     #[serde(default)]
     pub arc_phase: Option<String>,
     #[serde(default)]
+    pub parent_id: Option<String>,
+    #[serde(default)]
     pub time_nature: Option<String>,
     #[serde(default = "default_datetime")]
     pub created_at: DateTime<Utc>,
@@ -130,6 +132,7 @@ impl PlotPromise {
             arcs: Vec::new(),
             arc_id: None,
             arc_phase: None,
+            parent_id: None,
             time_nature: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,

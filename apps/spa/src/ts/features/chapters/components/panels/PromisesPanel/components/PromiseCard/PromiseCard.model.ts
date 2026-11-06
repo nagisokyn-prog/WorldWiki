@@ -8,6 +8,7 @@ export interface PromiseCardProps {
   noteDraft: string;
   getChapterTitle: (chapterId: string) => string;
   isCurrentChapterPromise: (chapterId: string) => boolean;
+  level?: number;
 }
 
 export type PromiseCardEmits = {

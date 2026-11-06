@@ -61,6 +61,23 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     });
   };
 
+  const handleLinkSubScene = (payload: {
+    parentPromiseId: string;
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+  }) => {
+    const parent = rightSidebarRef.value?.promises?.find((p: { id?: string | null }) => p.id === payload.parentPromiseId);
+    if (parent && rightSidebarRef.value?.addSubScene) {
+      rightSidebarRef.value.addSubScene(parent, {
+        quote: payload.quote,
+        paragraph_index: payload.paragraph_index,
+        block_id: payload.block_id,
+        chapterId: currentChapter.value?.id || undefined
+      });
+    }
+  };
+
   const handleLocatePromise = (payload: {
     chapterId: string;
     paragraphIndex: number;
@@ -158,6 +175,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     closeJourney,
     handleCreatePromise,
     handleLinkMilestone,
+    handleLinkSubScene,
     handleLocatePromise,
     handleJourneySelectScene,
   };

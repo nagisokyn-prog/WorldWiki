@@ -49,6 +49,14 @@ export function useEditorCoreTiptap(
         paragraph_index: payload.paragraph_index,
         block_id: payload.block_id
       });
+    },
+    onLinkSubScene: (payload) => {
+      emit('link-subscene', {
+        parentPromiseId: payload.parentPromiseId,
+        quote: payload.quote,
+        paragraph_index: payload.paragraph_index,
+        block_id: payload.block_id
+      });
     }
   });
 

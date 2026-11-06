@@ -286,6 +286,7 @@ export function usePromisesPanel(
     loadPromises,
     addPromise: actions.addPromise,
     addNewScene: actions.addNewScene,
+    addSubScene: actions.addSubScene,
     updatePromise: actions.updatePromise,
     addMilestone: actions.addMilestone,
     removeMilestone: actions.removeMilestone,

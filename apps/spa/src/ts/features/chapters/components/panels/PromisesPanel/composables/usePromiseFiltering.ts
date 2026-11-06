@@ -30,14 +30,14 @@ export function cleanId(id: unknown): string {
   return (parts[parts.length - 1] || String(s)).replace(/["'`]/g, '').trim();
 }
 
-export interface UsePromiseFilteringOptions<T extends { chapter_id?: string | null; status: string; quote?: string | null; id?: string | null } = PlotPromise> {
+export interface UsePromiseFilteringOptions<T extends { chapter_id?: string | null; status: string; quote?: string | null; id?: string | null; parent_id?: string | null; children?: T[] } = PlotPromise> {
   promises: Ref<T[]>;
   chapterId?: string | null;
   chapterTitle?: string | null;
   allChapters?: ChapterMetaItem[];
 }
 
-export function usePromiseFiltering<T extends { chapter_id?: string | null; status: string; quote?: string | null; kind?: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
+export function usePromiseFiltering<T extends { chapter_id?: string | null; status: string; quote?: string | null; kind?: string; id?: string | null; parent_id?: string | null; children?: T[] } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
   const scopeFilter = ref<'all' | 'current'>('all');
   const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
   const categoryFilter = ref<'all' | 'scenes' | 'promises'>('all');
@@ -69,7 +69,30 @@ export function usePromiseFiltering<T extends { chapter_id?: string | null; stat
       list = list.filter((p) => p.status === statusFilter.value);
     }
 
-    return list;
+    const itemMap = new Map<string, T>();
+    const roots: T[] = [];
+
+    for (const p of list) {
+      const cId = cleanId(p.id);
+      itemMap.set(cId, { ...p, children: [] });
+    }
+
+    for (const p of list) {
+      const cId = cleanId(p.id);
+      const current = itemMap.get(cId);
+      if (!current) continue;
+
+      const pParentId = p.parent_id ? cleanId(p.parent_id) : null;
+      if (pParentId && itemMap.has(pParentId)) {
+        const parent = itemMap.get(pParentId)!;
+        parent.children = parent.children || [];
+        parent.children.push(current);
+      } else {
+        roots.push(current);
+      }
+    }
+
+    return roots;
   });
 
   const getChapterTitle = (chapterId: string) => {

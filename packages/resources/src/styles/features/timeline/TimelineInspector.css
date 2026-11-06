@@ -543,6 +543,12 @@
   transition: opacity 0.15s ease;
 }
 
+.scene-hierarchy-path {
+  opacity: 0.9;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  transition: stroke-width 0.15s ease, opacity 0.15s ease;
+}
+
 .line-direct {
   stroke: var(--accent);
   stroke-width: 2.5px;

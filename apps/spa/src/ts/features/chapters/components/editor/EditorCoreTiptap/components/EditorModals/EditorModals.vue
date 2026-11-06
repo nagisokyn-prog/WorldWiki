@@ -17,6 +17,7 @@
       @close="$emit('close-promise-menu')"
       @select="$emit('select-promise', $event)"
       @link-milestone="$emit('link-milestone', $event)"
+      @link-subscene="$emit('link-subscene', $event)"
     />
 
     <!-- Document Export Modal -->

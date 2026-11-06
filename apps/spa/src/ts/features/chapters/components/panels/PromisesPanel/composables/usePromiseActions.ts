@@ -261,12 +261,54 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     });
   };
 
+  const addSubScene = async (
+    parentItem: RichPlotPromise,
+    payload: {
+      quote: string;
+      paragraph_index: number;
+      block_id?: string | null;
+      chapterId?: string | null;
+    }
+  ) => {
+    const project = getProject();
+    const chapterId = payload.chapterId || getChapterId() || parentItem.chapter_id || null;
+    if (!project || !chapterId) return;
+
+    const newSubScene = createNewPromiseRecord(project, chapterId, {
+      kind: 'scene',
+      quote: payload.quote,
+      paragraph_index: payload.paragraph_index,
+      block_id: payload.block_id,
+      parent_id: parentItem.id,
+      location_id: parentItem.location_id,
+      participant_ids: parentItem.participant_ids ? [...parentItem.participant_ids] : [],
+      arcs: parentItem.arcs ? [...parentItem.arcs] : [],
+      time_nature: parentItem.time_nature || 'present',
+      m_abs: parentItem.m_abs,
+      calendar_id: parentItem.calendar_id
+    });
+
+    try {
+      const created = await plotApi.savePlotPromise(project, newSubScene as unknown as PlotPromise);
+      promises.value.push({
+        ...newSubScene,
+        ...((created as unknown as Partial<RichPlotPromise>) || {})
+      });
+    } catch (err) {
+      console.warn('[usePromiseActions] Failed to persist sub-scene to backend:', err);
+      promises.value.push(newSubScene);
+    }
+    syncLocalBackup();
+    emit('change');
+  };
+
   return {
     editingNoteId,
     noteDraft,
     syncLocalBackup,
     addPromise,
     addNewScene,
+    addSubScene,
     updatePromise,
     addMilestone,
     removeMilestone,

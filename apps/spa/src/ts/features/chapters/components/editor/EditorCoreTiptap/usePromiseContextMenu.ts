@@ -58,6 +58,7 @@ export interface PromiseContextMenuEmits {
   (e: 'close'): void;
   (e: 'select', item: PromiseTypeOption): void;
   (e: 'link-milestone', payload: { promise: PlotPromise | RichPlotPromise; stage: 'progression' | 'resolution' }): void;
+  (e: 'link-subscene', payload: { promise: PlotPromise | RichPlotPromise }): void;
 }
 
 export function usePromiseContextMenu(
@@ -100,6 +101,11 @@ export function usePromiseContextMenu(
 
   const selectMilestone = (promise: PlotPromise | RichPlotPromise, stage: 'progression' | 'resolution') => {
     emit('link-milestone', { promise, stage });
+    emit('close');
+  };
+
+  const selectSubScene = (promise: PlotPromise | RichPlotPromise) => {
+    emit('link-subscene', { promise });
     emit('close');
   };
 
@@ -171,6 +177,7 @@ export function usePromiseContextMenu(
     getKindIcon,
     getKindLabel,
     selectItem,
-    selectMilestone
+    selectMilestone,
+    selectSubScene
   };
 }

@@ -25,6 +25,7 @@ export interface InspectorEvent {
   participants: InspectorParticipant[];
   kind?: string;
   location_id?: string | null;
+  parent_id?: string | null;
 }
 
 export interface InspectorKindMeta {
@@ -122,6 +123,17 @@ export interface VisualizedConnectionLine {
   y1: number; // chapter Y
   x2: number; // event X on diegetic axis
   y2: number; // event Y
+}
+
+export interface VisualizedSceneHierarchyLine {
+  id: string;
+  parentId: string;
+  childId: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  yBottom: number;
 }
 
 export interface TimelineInspectorProps {

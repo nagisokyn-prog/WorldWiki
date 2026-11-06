@@ -11,6 +11,7 @@ export interface UseEditorPromiseMenuOptions {
   markdownTextareaRef: Ref<HTMLTextAreaElement | null>;
   onOpenPromiseCreateModal: (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => void;
   onLinkMilestone: (payload: { promiseId: string; stage: 'progression' | 'resolution'; quote: string; paragraph_index: number; block_id?: string | null }) => void;
+  onLinkSubScene?: (payload: { parentPromiseId: string; quote: string; paragraph_index: number; block_id?: string | null }) => void;
 }
 
 export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
@@ -136,12 +137,24 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
     });
   };
 
+  const handleSubSceneSelect = (payload: { promise: PlotPromise | RichPlotPromise }) => {
+    isPromiseMenuOpen.value = false;
+    if (!payload.promise.id) return;
+    options.onLinkSubScene?.({
+      parentPromiseId: payload.promise.id,
+      quote: selectedPromiseData.value.quote,
+      paragraph_index: selectedPromiseData.value.paragraph_index,
+      block_id: selectedPromiseData.value.block_id
+    });
+  };
+
   return {
     isPromiseMenuOpen,
     promiseMenuPos,
     selectedPromiseData,
     handleContextMenu,
     handlePromiseSelect,
-    handleMilestoneSelect
+    handleMilestoneSelect,
+    handleSubSceneSelect
   };
 }

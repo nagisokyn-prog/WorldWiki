@@ -230,7 +230,8 @@ DEFINE FIELD OVERWRITE time_nature       ON plot_promises TYPE string DEFAULT 'p
 DEFINE FIELD OVERWRITE title             ON plot_promises TYPE string;
 DEFINE FIELD OVERWRITE note              ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE status            ON plot_promises TYPE string DEFAULT 'planted'
-  ASSERT $value IN ['planted', 'developed', 'resolved'];
+  ASSERT $value IN ['planted', 'developed', 'in_progress', 'resolved', 'abandoned'];
+DEFINE FIELD OVERWRITE parent_id         ON plot_promises TYPE option<record<plot_promises> | null>;
 DEFINE FIELD OVERWRITE location_id       ON plot_promises TYPE option<record<entities> | string | null>;
 DEFINE FIELD OVERWRITE timeline_event_id ON plot_promises TYPE option<record<timeline_events> | null>;
 DEFINE FIELD OVERWRITE created_at        ON plot_promises TYPE datetime DEFAULT time::now();

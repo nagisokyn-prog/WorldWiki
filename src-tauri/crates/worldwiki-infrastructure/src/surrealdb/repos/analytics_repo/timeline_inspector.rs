@@ -3,7 +3,7 @@
 use super::matrix::RawChapterHeader;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
-use worldwiki_domain::analytics::{TimelineInspectorDto, TimelineInspectorEventNode, TimelineRevealLink};
+use worldwiki_domain::analytics::{TimelineInspectorDto, TimelineInspectorEventNode, TimelineParticipantDto, TimelineRevealLink};
 use worldwiki_domain::errors::DomainError;
 
 #[derive(serde::Deserialize)]
@@ -16,6 +16,8 @@ struct TimelineRaw {
 struct RawTimelineEventNode {
     id: String,
     title: String,
+    #[serde(default)]
+    parent_id: Option<String>,
     #[serde(default)]
     description: Option<String>,
     #[serde(default)]
@@ -74,21 +76,32 @@ enum RawParticipant {
         id: Option<String>,
         #[serde(default)]
         name: Option<String>,
+        #[serde(default)]
+        entity_type: Option<String>,
     },
     String(String),
 }
 
 impl RawParticipant {
-    fn into_id(self) -> String {
+    fn into_dto(self) -> TimelineParticipantDto {
         match self {
-            RawParticipant::Object { id, name } => {
-                if let Some(i) = id.filter(|i| !i.trim().is_empty()) {
-                    i
-                } else {
-                    name.unwrap_or_default()
+            RawParticipant::Object { id, name, entity_type } => {
+                let clean_id = id.clone().unwrap_or_default();
+                let fallback = clean_id.replace("entities:", "");
+                TimelineParticipantDto {
+                    id: clean_id,
+                    name: name.filter(|n| !n.trim().is_empty()).unwrap_or(fallback),
+                    entity_type,
                 }
             }
-            RawParticipant::String(s) => s,
+            RawParticipant::String(s) => {
+                let fallback = s.replace("entities:", "");
+                TimelineParticipantDto {
+                    id: s,
+                    name: fallback,
+                    entity_type: Some("character".to_string()),
+                }
+            }
         }
     }
 }
@@ -124,10 +137,11 @@ pub(crate) async fn get_timeline_inspector_data_impl(
             description: ev.description,
             m_abs: ev.m_abs.unwrap_or(0),
             calendar_id: ev.calendar_id.unwrap_or_default(),
-            participants: ev.participants.into_iter().map(|p| p.into_id()).collect(),
+            participants: ev.participants.into_iter().map(|p| p.into_dto()).collect(),
             reveals: reveals_dto,
             kind: ev.kind,
             location_id: ev.location_id,
+            parent_id: ev.parent_id,
         });
     }
 

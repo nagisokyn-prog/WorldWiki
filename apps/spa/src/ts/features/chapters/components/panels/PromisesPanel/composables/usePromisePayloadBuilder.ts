@@ -20,6 +20,7 @@ export function preparePromisePayload(
 
   return {
     ...(item as unknown as PlotPromise),
+    parent_id: item.parent_id || null,
     is_flashback: item.is_flashback ? true : false,
     chapter_id: chapId || undefined,
     paragraph_index: item.paragraph_index ?? 1,
@@ -42,6 +43,13 @@ export function createNewPromiseRecord(
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    parent_id?: string | null;
+    location_id?: string | null;
+    participant_ids?: string[];
+    arcs?: RichPlotPromise['arcs'];
+    time_nature?: string | null;
+    m_abs?: number | null;
+    calendar_id?: string | null;
   }
 ): RichPlotPromise {
   const quoteStr = payload.quote ? String(payload.quote).trim() : '';
@@ -51,18 +59,20 @@ export function createNewPromiseRecord(
   return {
     id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     project_id: project,
+    parent_id: payload.parent_id || null,
     kind: kindStr,
     title: titleStr,
     note: null,
     status: 'planted',
-    location_id: null,
+    time_nature: payload.time_nature || 'present',
+    location_id: payload.location_id || null,
     timeline_event_id: null,
-    m_abs: null,
-    calendar_id: null,
-    participant_ids: [],
-    arcs: [],
-    arc_id: null,
-    arc_phase: null,
+    m_abs: payload.m_abs ?? null,
+    calendar_id: payload.calendar_id || null,
+    participant_ids: payload.participant_ids ? [...payload.participant_ids] : [],
+    arcs: payload.arcs ? [...payload.arcs] : [],
+    arc_id: payload.arcs && payload.arcs[0]?.arc_id ? String(payload.arcs[0].arc_id) : null,
+    arc_phase: payload.arcs && payload.arcs[0]?.arc_phase ? String(payload.arcs[0].arc_phase) : null,
     milestones: [
       {
         milestone_id: `ms_${Date.now()}`,

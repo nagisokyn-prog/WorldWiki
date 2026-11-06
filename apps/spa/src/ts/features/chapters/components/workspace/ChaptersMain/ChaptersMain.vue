@@ -27,6 +27,7 @@
         @add-participant="handleAddParticipant"
         @create-promise="handleCreatePromise"
         @link-milestone="handleLinkMilestone"
+        @link-subscene="handleLinkSubScene"
       />
 
       <!-- Right Panel Resizer -->
@@ -177,7 +178,7 @@ const {
   handleExport, handleScrollChange, handleAddParticipant,
   editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
   isJourneyOpen, openJourney, closeJourney, handleJourneySelectScene,
-  handleCreatePromise, handleLinkMilestone, handleLocatePromise
+  handleCreatePromise, handleLinkMilestone, handleLinkSubScene, handleLocatePromise
 } = useChaptersMain({
   project: props.project,
   controlledChapterId: props.controlledChapterId || undefined,

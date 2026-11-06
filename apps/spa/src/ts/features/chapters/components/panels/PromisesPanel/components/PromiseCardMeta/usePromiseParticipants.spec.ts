@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
 import { usePromiseParticipants } from './usePromiseParticipants';
-import type { RichPlotPromise } from '../usePromisesPanel';
+import type { RichPlotPromise } from '../../usePromisesPanel';
 
 describe('usePromiseParticipants', () => {
   const baseItem: RichPlotPromise = {

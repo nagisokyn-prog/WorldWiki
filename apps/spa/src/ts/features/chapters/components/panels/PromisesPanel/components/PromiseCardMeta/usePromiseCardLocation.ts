@@ -1,5 +1,5 @@
 import { ref, computed, watch, type Ref } from 'vue';
-import type { PromiseCardMetaProps, PromiseCardMetaEmits, ProjectEntityOption } from './PromiseCardMeta/PromiseCardMeta.model';
+import type { PromiseCardMetaProps, PromiseCardMetaEmits, ProjectEntityOption } from './PromiseCardMeta.model';
 
 export function usePromiseCardLocation(
   props: PromiseCardMetaProps,

@@ -3,6 +3,7 @@ import type { Ref, ShallowRef } from 'vue';
 import type { Editor } from '@tiptap/vue-3';
 import TurndownService from 'turndown';
 import MarkdownIt from 'markdown-it';
+import { detectActiveEntityQuery } from '@/services/Manuscript/manuscript.wasm-bridge';
 
 export function useTiptapMarkdown(
   editor: ShallowRef<Editor | null | undefined> | Ref<Editor | null | undefined>,
@@ -114,11 +115,11 @@ export function useTiptapMarkdown(
           }));
         } else {
           const textBefore = target.value.substring(0, target.selectionStart);
-          const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
-          if (match) {
+          const trigger = detectActiveEntityQuery(textBefore);
+          if (trigger) {
             e.preventDefault();
             document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
-              detail: { target: 'markdown', query: match[1]?.trim() || '' }
+              detail: { target: 'markdown', query: trigger.query }
             }));
           } else {
             e.preventDefault();

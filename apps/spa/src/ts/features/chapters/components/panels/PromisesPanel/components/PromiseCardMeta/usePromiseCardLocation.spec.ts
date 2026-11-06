@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
 import { usePromiseCardLocation } from './usePromiseCardLocation';
-import type { ProjectEntityOption } from './PromiseCardMeta/PromiseCardMeta.model';
-import type { RichPlotPromise } from '../usePromisesPanel';
+import type { ProjectEntityOption } from './PromiseCardMeta.model';
+import type { RichPlotPromise } from '../../usePromisesPanel';
 
 describe('usePromiseCardLocation', () => {
   const baseItem: RichPlotPromise = {

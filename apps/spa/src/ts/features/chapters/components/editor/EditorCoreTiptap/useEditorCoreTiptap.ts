@@ -5,6 +5,7 @@ import { ASTAdapter, type TiptapDocJson } from '@/services/document/ast/ASTAdapt
 import { normalizeSemanticDocument } from '@/services/document/ast/ASTNormalizer';
 import type { SemanticDocument } from '@/services/document/ast/types';
 import { openEntityEditorWindow } from '@/utils/windowManager';
+import { detectActiveEntityQuery } from '@/services/Manuscript/manuscript.wasm-bridge';
 import { useEditorPromiseMenu } from './composables/useEditorPromiseMenu';
 import { useEditorWordBridge } from './composables/useEditorWordBridge';
 import { useEditorSceneFrames } from './composables/useEditorSceneFrames';
@@ -92,11 +93,11 @@ export function useEditorCoreTiptap(
         const { state } = tiptap.editor.value;
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
-        if (match) {
-          const start = $from.pos - match[0].length;
+        const trigger = detectActiveEntityQuery(textBefore);
+        if (trigger) {
+          const start = $from.pos - trigger.length;
           const end = $from.pos;
-          const finalName = match[1]?.trim() || displayName;
+          const finalName = trigger.query || displayName;
           tiptap.editor.value.chain().focus()
             .deleteRange({ from: start, to: end })
             .insertContent(`<a href="/${url}">${finalName}</a>`)
@@ -117,22 +118,16 @@ export function useEditorCoreTiptap(
         const before = val.substring(0, selStart);
         const after = val.substring(selEnd);
         
-        let match = /\(\(([^)]*)\)\)$/.exec(before);
+        const trigger = detectActiveEntityQuery(before);
         let replaceStart = selStart;
         let replaceEnd = selEnd;
         let finalName = displayName;
 
-        if (match) {
-          replaceStart = selStart - match[0].length;
-          finalName = match[1]?.trim() || displayName;
-        } else {
-          match = /\(\(([^)]*)$/.exec(before);
-          if (match) {
-            replaceStart = selStart - match[0].length;
-            finalName = match[1]?.trim() || displayName;
-            if (after.startsWith('))')) {
-              replaceEnd = selEnd + 2;
-            }
+        if (trigger) {
+          replaceStart = selStart - trigger.length;
+          finalName = trigger.query || displayName;
+          if (!trigger.isClosed && after.startsWith('))')) {
+            replaceEnd = selEnd + 2;
           }
         }
 

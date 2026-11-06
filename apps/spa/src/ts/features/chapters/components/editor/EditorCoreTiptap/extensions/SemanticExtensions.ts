@@ -1,6 +1,7 @@
 import { Extension, VueNodeViewRenderer } from '@tiptap/vue-3';
 import Paragraph from '@tiptap/extension-paragraph';
 import SemanticParagraphNode from '@/features/chapters/components/semantic/Semantic/SemanticParagraphNode.vue';
+import { detectActiveEntityQuery } from '@/services/Manuscript/manuscript.wasm-bridge';
 
 export const EnterHandler = Extension.create({
   name: 'enterHandler',
@@ -42,10 +43,10 @@ export const EnterHandler = Extension.create({
         }
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
-        if (match) {
+        const trigger = detectActiveEntityQuery(textBefore);
+        if (trigger) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
-            detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }
+            detail: { target: 'wysiwyg', query: trigger.query }
           }));
           return true;
         }
@@ -67,10 +68,10 @@ export const EnterHandler = Extension.create({
         }
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = /\(\(([^)]*)\)\)$/.exec(textBefore) || /\(\(([^)]*)$/.exec(textBefore);
-        if (match) {
+        const trigger = detectActiveEntityQuery(textBefore);
+        if (trigger) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', {
-            detail: { target: 'wysiwyg', query: match[1]?.trim() || '' }
+            detail: { target: 'wysiwyg', query: trigger.query }
           }));
           return true;
         }

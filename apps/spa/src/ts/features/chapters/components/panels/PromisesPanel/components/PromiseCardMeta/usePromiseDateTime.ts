@@ -3,7 +3,7 @@ import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import type { CalendarData, CalendarMonth, CalendarEra } from '@/services/Calendars/calendar.types';
 import type { CalendarRecord } from '@/stores/calendar.store';
 import type { DatePickerModelValue } from '@/shared/ui/UniversalDatePicker/useUniversalDatePicker';
-import type { TimelineEventOption } from './PromiseCardMeta/PromiseCardMeta.model';
+import type { TimelineEventOption } from './PromiseCardMeta.model';
 import { usePromiseDateHelpers } from './usePromiseDateHelpers';
 
 export function usePromiseDateTime(

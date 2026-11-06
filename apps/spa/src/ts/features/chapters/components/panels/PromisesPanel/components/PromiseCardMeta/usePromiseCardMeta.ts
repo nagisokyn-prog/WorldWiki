@@ -1,10 +1,10 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
-import { usePromiseDateTime } from '../usePromiseDateTime';
-import { usePromiseParticipants } from '../usePromiseParticipants';
-import { usePromiseCardLocation } from '../usePromiseCardLocation';
-import { fetchPromiseCardEntities } from '../usePromiseCardEntitiesLoader';
+import { usePromiseDateTime } from './usePromiseDateTime';
+import { usePromiseParticipants } from './usePromiseParticipants';
+import { usePromiseCardLocation } from './usePromiseCardLocation';
+import { fetchPromiseCardEntities } from './usePromiseCardEntitiesLoader';
 import type { RichPlotPromise } from '../../usePromisesPanel';
 import type { SceneArcItem } from '../PromiseCardArcTags/PromiseCardArcTags.model';
 import type {

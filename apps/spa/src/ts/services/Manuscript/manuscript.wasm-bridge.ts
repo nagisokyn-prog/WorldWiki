@@ -164,6 +164,27 @@ export function resolveCrossReferences(
   });
 }
 
+/**
+ * Определяет активный триггер ввода сущности ((...)) перед курсором.
+ * Заменяет сырые регулярные выражения в редакторе единой FSM-детекцией.
+ */
+export function detectActiveEntityQuery(textBefore: string): { query: string; length: number; isClosed: boolean } | null {
+  if (!textBefore) return null;
+  const mentions = extractEntityMentions(textBefore);
+  const last = mentions[mentions.length - 1];
+  if (last && last.char_end === textBefore.length) {
+    return { query: last.name, length: last.char_end - last.char_start, isClosed: true };
+  }
+  const lastDoubleParen = textBefore.lastIndexOf('((');
+  if (lastDoubleParen !== -1) {
+    const candidate = textBefore.slice(lastDoubleParen + 2);
+    if (!candidate.includes(')')) {
+      return { query: candidate.trim(), length: candidate.length + 2, isClosed: false };
+    }
+  }
+  return null;
+}
+
 export type {
   ExtractedEntityMention,
   CrossReference,

@@ -6,7 +6,7 @@
 import type {
   ParagraphFormatModalStubProps,
   ParagraphFormatModalStubEmits,
-} from '../components/EditorModals.model';
+} from '../components/EditorModals/EditorModals.model';
 
 defineProps<ParagraphFormatModalStubProps>();
 defineEmits<ParagraphFormatModalStubEmits>();

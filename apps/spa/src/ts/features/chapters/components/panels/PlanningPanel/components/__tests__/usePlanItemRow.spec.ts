@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { usePlanItemRow } from '../usePlanItemRow';
+import { usePlanItemRow } from '../PlanItemRow/usePlanItemRow';
 import type { TapestryTodo } from '../../PlanningPanel.model';
 
 describe('usePlanItemRow', () => {

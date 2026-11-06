@@ -167,8 +167,8 @@
 <script setup lang="ts">
 import type { CrossReferenceMatrixProps } from './CrossReferenceMatrix.model';
 import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
-import MatrixToolbar from './components/MatrixToolbar.vue';
-import MatrixLegend from './components/MatrixLegend.vue';
+import MatrixToolbar from './components/MatrixToolbar/MatrixToolbar.vue';
+import MatrixLegend from './components/MatrixLegend/MatrixLegend.vue';
 
 const props = withDefaults(
   defineProps<CrossReferenceMatrixProps>(),

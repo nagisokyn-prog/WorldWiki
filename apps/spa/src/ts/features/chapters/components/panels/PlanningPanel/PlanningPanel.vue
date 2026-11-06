@@ -127,9 +127,9 @@
 <script setup lang="ts">
 import type { PlanningPanelProps, PlanningPanelEmits } from './PlanningPanel.model';
 import { usePlanningPanel } from './usePlanningPanel';
-import PlanVolumeHeader from './components/PlanVolumeHeader.vue';
-import TapestryChapterCard from './components/TapestryChapterCard.vue';
-import VolumeBacklogSection from './components/VolumeBacklogSection.vue';
+import PlanVolumeHeader from './components/PlanVolumeHeader/PlanVolumeHeader.vue';
+import TapestryChapterCard from './components/TapestryChapterCard/TapestryChapterCard.vue';
+import VolumeBacklogSection from './components/VolumeBacklogSection/VolumeBacklogSection.vue';
 
 const props = withDefaults(defineProps<PlanningPanelProps>(), {
   project: undefined, volumeId: null, volumeTitle: '', currentChapterId: null,

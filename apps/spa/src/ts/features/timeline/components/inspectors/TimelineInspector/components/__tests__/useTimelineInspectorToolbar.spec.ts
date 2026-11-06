@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useTimelineInspectorToolbar } from '../useTimelineInspectorToolbar';
-import type { TimelineInspectorToolbarProps } from '../TimelineInspectorToolbar.model';
+import { useTimelineInspectorToolbar } from '../TimelineInspectorToolbar/useTimelineInspectorToolbar';
+import type { TimelineInspectorToolbarProps } from '../TimelineInspectorToolbar/TimelineInspectorToolbar.model';
 
 describe('useTimelineInspectorToolbar', () => {
   it('emits refresh event on click', () => {

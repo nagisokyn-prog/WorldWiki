@@ -148,7 +148,7 @@
 <script setup lang="ts">
 import type { Tab4PlaygroundProps, Tab4PlaygroundEmits } from './Tab4Playground.model';
 import { useTab4Playground } from './useTab4Playground';
-import Tab4MatrixSection from './components/Tab4MatrixSection.vue';
+import Tab4MatrixSection from './components/Tab4MatrixSection/Tab4MatrixSection.vue';
 
 const props = defineProps<Tab4PlaygroundProps>();
 const emit = defineEmits<Tab4PlaygroundEmits>();

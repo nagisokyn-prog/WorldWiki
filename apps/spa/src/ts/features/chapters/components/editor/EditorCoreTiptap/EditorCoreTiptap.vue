@@ -87,9 +87,9 @@
 
 <script setup lang="ts">
 import EditorToolbar from './EditorToolbar.vue';
-import EditorBody from './components/EditorBody.vue';
-import EditorStatusBar from './components/EditorStatusBar.vue';
-import EditorModals from './components/EditorModals.vue';
+import EditorBody from './components/EditorBody/EditorBody.vue';
+import EditorStatusBar from './components/EditorStatusBar/EditorStatusBar.vue';
+import EditorModals from './components/EditorModals/EditorModals.vue';
 import { useEditorCoreTiptap } from './useEditorCoreTiptap';
 import type { EditorCoreTiptapProps, EditorCoreTiptapEmits } from './EditorCoreTiptap.model';
 

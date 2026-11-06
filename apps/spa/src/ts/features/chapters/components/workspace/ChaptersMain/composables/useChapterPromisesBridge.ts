@@ -3,7 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { openCharacterJourneyWindow } from '@/utils/windowManager';
 import type { ChapterWithHierarchy, ChapterHierarchy } from '@/stores/chapter.store';
 import type { ChapterTreeNode } from '../useChaptersMain';
-import type ChapterRightSidebar from '../components/ChapterRightSidebar.vue';
+import type ChapterRightSidebar from '../components/ChapterRightSidebar/ChapterRightSidebar.vue';
 
 interface PromiseBridgeDeps {
   project: string;

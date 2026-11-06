@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useChekhovTrackerToolbar } from '../useChekhovTrackerToolbar';
-import type { ChekhovTrackerToolbarProps } from '../ChekhovTrackerToolbar.model';
+import { useChekhovTrackerToolbar } from '../ChekhovTrackerToolbar/useChekhovTrackerToolbar';
+import type { ChekhovTrackerToolbarProps } from '../ChekhovTrackerToolbar/ChekhovTrackerToolbar.model';
 
 describe('useChekhovTrackerToolbar', () => {
   it('emits scope click and reset filter', () => {

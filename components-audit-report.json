@@ -1,0 +1,745 @@
+[
+  {
+    "featureName": "analytics",
+    "issues": [],
+    "components": [
+      {
+        "name": "ChekhovTrackerToolbar",
+        "path": "features/analytics/ChekhovGunTracker/components/ChekhovTrackerToolbar/ChekhovTrackerToolbar.vue",
+        "sloc": 89,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "GunItemCard",
+        "path": "features/analytics/ChekhovGunTracker/components/GunItemCard/GunItemCard.vue",
+        "sloc": 59,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "GunJourneyModal",
+        "path": "features/analytics/ChekhovGunTracker/components/GunJourneyModal/GunJourneyModal.vue",
+        "sloc": 108,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "GunStatusColumn",
+        "path": "features/analytics/ChekhovGunTracker/components/GunStatusColumn/GunStatusColumn.vue",
+        "sloc": 35,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "MatrixLegend",
+        "path": "features/analytics/CrossReferenceMatrix/components/MatrixLegend/MatrixLegend.vue",
+        "sloc": 25,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "MatrixToolbar",
+        "path": "features/analytics/CrossReferenceMatrix/components/MatrixToolbar/MatrixToolbar.vue",
+        "sloc": 56,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  },
+  {
+    "featureName": "chapters",
+    "issues": [
+      {
+        "type": "SLOC_LIMIT",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCard/PromiseCard.vue",
+        "message": "Компонент 'PromiseCard.vue' имеет 168 SLOC (> 165 рекомендуемых строк). Необходима дальнейшая декомпозиция."
+      },
+      {
+        "type": "SLOC_LIMIT",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardMeta/PromiseCardMeta.vue",
+        "message": "Компонент 'PromiseCardMeta.vue' имеет 176 SLOC (> 165 рекомендуемых строк). Необходима дальнейшая декомпозиция."
+      }
+    ],
+    "components": [
+      {
+        "name": "ChapterArcTags",
+        "path": "features/chapters/components/editor/EditorCoreTiptap/components/ChapterArcTags/ChapterArcTags.vue",
+        "sloc": 104,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EditorBody",
+        "path": "features/chapters/components/editor/EditorCoreTiptap/components/EditorBody/EditorBody.vue",
+        "sloc": 67,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EditorModals",
+        "path": "features/chapters/components/editor/EditorCoreTiptap/components/EditorModals/EditorModals.vue",
+        "sloc": 44,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EditorSplitView",
+        "path": "features/chapters/components/editor/EditorCoreTiptap/components/EditorSplitView/EditorSplitView.vue",
+        "sloc": 81,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EditorStatusBar",
+        "path": "features/chapters/components/editor/EditorCoreTiptap/components/EditorStatusBar/EditorStatusBar.vue",
+        "sloc": 23,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanArcGroup",
+        "path": "features/chapters/components/panels/PlanningPanel/components/PlanArcGroup/PlanArcGroup.vue",
+        "sloc": 76,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanItemRow",
+        "path": "features/chapters/components/panels/PlanningPanel/components/PlanItemRow/PlanItemRow.vue",
+        "sloc": 150,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanVolumeHeader",
+        "path": "features/chapters/components/panels/PlanningPanel/components/PlanVolumeHeader/PlanVolumeHeader.vue",
+        "sloc": 97,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "TapestryChapterCard",
+        "path": "features/chapters/components/panels/PlanningPanel/components/TapestryChapterCard/TapestryChapterCard.vue",
+        "sloc": 154,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "VolumeBacklogSection",
+        "path": "features/chapters/components/panels/PlanningPanel/components/VolumeBacklogSection/VolumeBacklogSection.vue",
+        "sloc": 119,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCard",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCard/PromiseCard.vue",
+        "sloc": 168,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardArcTags",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardArcTags/PromiseCardArcTags.vue",
+        "sloc": 136,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardDateTimeWheels",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardDateTimeWheels/PromiseCardDateTimeWheels.vue",
+        "sloc": 92,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardMeta",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardMeta/PromiseCardMeta.vue",
+        "sloc": 176,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardNote",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardNote/PromiseCardNote.vue",
+        "sloc": 35,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardParticipants",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardParticipants/PromiseCardParticipants.vue",
+        "sloc": 81,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseCardTimeline",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseCardTimeline/PromiseCardTimeline.vue",
+        "sloc": 89,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PromiseFilterBar",
+        "path": "features/chapters/components/panels/PromisesPanel/components/PromiseFilterBar/PromiseFilterBar.vue",
+        "sloc": 68,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "ArcCard",
+        "path": "features/chapters/components/panels/StoryArcs/components/ArcCard/ArcCard.vue",
+        "sloc": 104,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "ArcCreateModal",
+        "path": "features/chapters/components/panels/StoryArcs/components/ArcCreateModal/ArcCreateModal.vue",
+        "sloc": 54,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "ChapterRightSidebar",
+        "path": "features/chapters/components/workspace/ChaptersMain/components/ChapterRightSidebar/ChapterRightSidebar.vue",
+        "sloc": 111,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "ChaptersHistoryDrawer",
+        "path": "features/chapters/components/workspace/ChaptersMain/components/ChaptersHistoryDrawer/ChaptersHistoryDrawer.vue",
+        "sloc": 43,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "QuickLinkHint",
+        "path": "features/chapters/components/workspace/ChaptersMain/components/QuickLinkHint/QuickLinkHint.vue",
+        "sloc": 31,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  },
+  {
+    "featureName": "devtools",
+    "issues": [],
+    "components": [
+      {
+        "name": "SurrealConsoleOutput",
+        "path": "features/devtools/SurrealConsole/components/SurrealConsoleOutput/SurrealConsoleOutput.vue",
+        "sloc": 46,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "SurrealConsolePresets",
+        "path": "features/devtools/SurrealConsole/components/SurrealConsolePresets/SurrealConsolePresets.vue",
+        "sloc": 20,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  },
+  {
+    "featureName": "documents",
+    "issues": [],
+    "components": [
+      {
+        "name": "AcademicItemList",
+        "path": "features/documents/AcademicInspector/components/AcademicItemList/AcademicItemList.vue",
+        "sloc": 42,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "AcademicProfilesList",
+        "path": "features/documents/AcademicInspector/components/AcademicProfilesList/AcademicProfilesList.vue",
+        "sloc": 25,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  },
+  {
+    "featureName": "entities",
+    "issues": [
+      {
+        "type": "SLOC_LIMIT",
+        "path": "features/entities/CharacterJourney/components/JourneyArcGroups/JourneyArcGroups.vue",
+        "message": "Компонент 'JourneyArcGroups.vue' имеет 199 SLOC (> 165 рекомендуемых строк). Необходима дальнейшая декомпозиция."
+      }
+    ],
+    "components": [
+      {
+        "name": "JourneyArcGroups",
+        "path": "features/entities/CharacterJourney/components/JourneyArcGroups/JourneyArcGroups.vue",
+        "sloc": 199,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "JourneyMeetingGapDivider",
+        "path": "features/entities/CharacterJourney/components/JourneyMeetingGapDivider/JourneyMeetingGapDivider.vue",
+        "sloc": 14,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "JourneyModeToggle",
+        "path": "features/entities/CharacterJourney/components/JourneyModeToggle/JourneyModeToggle.vue",
+        "sloc": 28,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "JourneyMultiSelector",
+        "path": "features/entities/CharacterJourney/components/JourneyMultiSelector/JourneyMultiSelector.vue",
+        "sloc": 46,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "JourneyTimelineList",
+        "path": "features/entities/CharacterJourney/components/JourneyTimelineList/JourneyTimelineList.vue",
+        "sloc": 135,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "JourneyToolbar",
+        "path": "features/entities/CharacterJourney/components/JourneyToolbar/JourneyToolbar.vue",
+        "sloc": 100,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntityDynamicContainers",
+        "path": "features/entities/EntityEditor/components/EntityDynamicContainers/EntityDynamicContainers.vue",
+        "sloc": 106,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntityDynamicItemCard",
+        "path": "features/entities/EntityEditor/components/EntityDynamicItemCard/EntityDynamicItemCard.vue",
+        "sloc": 130,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntityHiddenManager",
+        "path": "features/entities/EntityEditor/components/EntityHiddenManager/EntityHiddenManager.vue",
+        "sloc": 61,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntityHistoryAside",
+        "path": "features/entities/EntityEditor/components/EntityHistoryAside/EntityHistoryAside.vue",
+        "sloc": 54,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntityHistoryBanner",
+        "path": "features/entities/EntityEditor/components/EntityHistoryBanner/EntityHistoryBanner.vue",
+        "sloc": 17,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "EntitySectionFields",
+        "path": "features/entities/EntityEditor/components/EntitySectionFields/EntitySectionFields.vue",
+        "sloc": 135,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "LocationAstronomyWidget",
+        "path": "features/entities/EntityEditor/components/LocationAstronomyWidget/LocationAstronomyWidget.vue",
+        "sloc": 59,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  },
+  {
+    "featureName": "schemas",
+    "issues": [],
+    "components": []
+  },
+  {
+    "featureName": "shell",
+    "issues": [],
+    "components": []
+  },
+  {
+    "featureName": "sync",
+    "issues": [],
+    "components": []
+  },
+  {
+    "featureName": "timeline",
+    "issues": [],
+    "components": [
+      {
+        "name": "Tab1DialSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1DialSection/Tab1DialSection.vue",
+        "sloc": 105,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1ExtraDaysTape",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1ExtraDaysTape/Tab1ExtraDaysTape.vue",
+        "sloc": 102,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1LeapPresets",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1LeapPresets/Tab1LeapPresets.vue",
+        "sloc": 128,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1LeapRulesInspector",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1LeapRulesInspector/Tab1LeapRulesInspector.vue",
+        "sloc": 147,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1LeapSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1LeapSection/Tab1LeapSection.vue",
+        "sloc": 105,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1MonthsSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1MonthsSection/Tab1MonthsSection.vue",
+        "sloc": 114,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab1WeekdaysSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab1Structure/components/Tab1WeekdaysSection/Tab1WeekdaysSection.vue",
+        "sloc": 145,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2AnchorEventRow",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventRow/Tab2AnchorEventRow.vue",
+        "sloc": 71,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2AnchorEventsSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2AnchorEventsSection/Tab2AnchorEventsSection.vue",
+        "sloc": 129,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2ErasSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2ErasSection/Tab2ErasSection.vue",
+        "sloc": 143,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2SyncCalendarForm",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2SyncCalendarForm/Tab2SyncCalendarForm.vue",
+        "sloc": 36,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2SyncEraForm",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2SyncEraForm/Tab2SyncEraForm.vue",
+        "sloc": 62,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2SyncEventForm",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2SyncEventForm/Tab2SyncEventForm.vue",
+        "sloc": 101,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab2SyncSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab2ErasSync/components/Tab2SyncSection/Tab2SyncSection.vue",
+        "sloc": 147,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab3AgeTimezoneSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab3CultureLore/components/Tab3AgeTimezoneSection/Tab3AgeTimezoneSection.vue",
+        "sloc": 128,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab3HolidaysSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab3CultureLore/components/Tab3HolidaysSection/Tab3HolidaysSection.vue",
+        "sloc": 116,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab3MoonPhasesSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab3CultureLore/components/Tab3MoonPhasesSection/Tab3MoonPhasesSection.vue",
+        "sloc": 70,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab3SeasonsSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab3CultureLore/components/Tab3SeasonsSection/Tab3SeasonsSection.vue",
+        "sloc": 105,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab4MatrixSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab4Playground/components/Tab4MatrixSection/Tab4MatrixSection.vue",
+        "sloc": 106,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab5DstSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab5ReformsDst/components/Tab5DstSection/Tab5DstSection.vue",
+        "sloc": 123,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab5DstSimulatorCard",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab5ReformsDst/components/Tab5DstSimulatorCard/Tab5DstSimulatorCard.vue",
+        "sloc": 117,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab5DstTransitionRules",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab5ReformsDst/components/Tab5DstTransitionRules/Tab5DstTransitionRules.vue",
+        "sloc": 100,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab5DualDatingCard",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab5ReformsDst/components/Tab5DualDatingCard/Tab5DualDatingCard.vue",
+        "sloc": 52,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "Tab5ReformsSection",
+        "path": "features/timeline/components/calendars/CalendarEditor/Tab5ReformsDst/components/Tab5ReformsSection/Tab5ReformsSection.vue",
+        "sloc": 149,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "TimelineChapterNode",
+        "path": "features/timeline/components/inspectors/TimelineInspector/components/TimelineChapterNode/TimelineChapterNode.vue",
+        "sloc": 62,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "TimelineInspectorToolbar",
+        "path": "features/timeline/components/inspectors/TimelineInspector/components/TimelineInspectorToolbar/TimelineInspectorToolbar.vue",
+        "sloc": 79,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanetAstrophysicsTab",
+        "path": "features/timeline/components/planets/PlanetEditor/components/PlanetAstrophysicsTab/PlanetAstrophysicsTab.vue",
+        "sloc": 124,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanetMoonsTab",
+        "path": "features/timeline/components/planets/PlanetEditor/components/PlanetMoonsTab/PlanetMoonsTab.vue",
+        "sloc": 50,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      },
+      {
+        "name": "PlanetTimezonesTab",
+        "path": "features/timeline/components/planets/PlanetEditor/components/PlanetTimezonesTab/PlanetTimezonesTab.vue",
+        "sloc": 160,
+        "hasHook": true,
+        "hasModel": true,
+        "hasSpec": true,
+        "isImported": true
+      }
+    ]
+  }
+]

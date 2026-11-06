@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { usePlanArcGroup } from '../usePlanArcGroup';
+import { usePlanArcGroup } from '../PlanArcGroup/usePlanArcGroup';
 import type { TapestryArcGroup } from '../../PlanningPanel.model';
 
 describe('usePlanArcGroup', () => {

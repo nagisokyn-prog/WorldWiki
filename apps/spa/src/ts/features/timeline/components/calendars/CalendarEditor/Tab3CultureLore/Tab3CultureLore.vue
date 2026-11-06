@@ -47,10 +47,10 @@
 <script setup lang="ts">
 import type { Tab3CultureLoreProps, Tab3CultureLoreEmits } from './Tab3CultureLore.model';
 import { useTab3CultureLore } from './useTab3CultureLore';
-import Tab3SeasonsSection from './components/Tab3SeasonsSection.vue';
-import Tab3HolidaysSection from './components/Tab3HolidaysSection.vue';
-import Tab3MoonPhasesSection from './components/Tab3MoonPhasesSection.vue';
-import Tab3AgeTimezoneSection from './components/Tab3AgeTimezoneSection.vue';
+import Tab3SeasonsSection from './components/Tab3SeasonsSection/Tab3SeasonsSection.vue';
+import Tab3HolidaysSection from './components/Tab3HolidaysSection/Tab3HolidaysSection.vue';
+import Tab3MoonPhasesSection from './components/Tab3MoonPhasesSection/Tab3MoonPhasesSection.vue';
+import Tab3AgeTimezoneSection from './components/Tab3AgeTimezoneSection/Tab3AgeTimezoneSection.vue';
 
 const props = defineProps<Tab3CultureLoreProps>();
 const emit = defineEmits<Tab3CultureLoreEmits>();

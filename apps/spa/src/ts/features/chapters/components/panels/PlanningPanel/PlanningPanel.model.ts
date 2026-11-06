@@ -1,6 +1,6 @@
 import type { StoryArc } from '@/stores/story_arcs.store';
-import type { PlanVolumeStats } from './components/PlanVolumeHeader.model';
-import type { BacklogChapterOption } from './components/VolumeBacklogSection.model';
+import type { PlanVolumeStats } from './components/PlanVolumeHeader/PlanVolumeHeader.model';
+import type { BacklogChapterOption } from './components/VolumeBacklogSection/VolumeBacklogSection.model';
 
 export type TodoStatus = 'planned' | 'in_progress' | 'done' | 'blocked';
 

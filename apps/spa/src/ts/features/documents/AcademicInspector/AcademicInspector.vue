@@ -116,8 +116,8 @@
 <script setup lang="ts">
 import type { AcademicInspectorProps } from './AcademicInspector.model';
 import { useAcademicInspector } from './useAcademicInspector';
-import AcademicItemList from './components/AcademicItemList.vue';
-import AcademicProfilesList from './components/AcademicProfilesList.vue';
+import AcademicItemList from './components/AcademicItemList/AcademicItemList.vue';
+import AcademicProfilesList from './components/AcademicProfilesList/AcademicProfilesList.vue';
 
 const props = defineProps<AcademicInspectorProps>();
 

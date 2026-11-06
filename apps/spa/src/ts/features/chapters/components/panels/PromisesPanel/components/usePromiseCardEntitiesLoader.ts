@@ -1,7 +1,7 @@
 import * as api from '@/services/api.client';
 import type { useCalendarStore, CalendarRecord } from '@/stores/calendar.store';
 import type { useStoryArcsStore } from '@/stores/story_arcs.store';
-import type { ProjectEntityOption, TimelineEventOption } from './PromiseCardMeta.model';
+import type { ProjectEntityOption, TimelineEventOption } from './PromiseCardMeta/PromiseCardMeta.model';
 
 export interface PromiseCardEntitiesResult {
   locations: ProjectEntityOption[];

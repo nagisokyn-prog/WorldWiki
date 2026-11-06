@@ -1,5 +1,5 @@
 import type { ChapterWithHierarchy } from '@/stores/chapter.store'
-import type { PanelResizeType, ChapterTimelineEvents } from '../ChapterRightSidebar.model'
+import type { PanelResizeType, ChapterTimelineEvents } from '../ChapterRightSidebar/ChapterRightSidebar.model'
 import type { ParticipantItem } from '@/features/chapters/components/panels/ParticipantsPanel/useParticipantsPanel'
 
 export interface SceneInspectorTabProps {

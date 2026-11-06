@@ -10,7 +10,7 @@ import { useChapterPromisesBridge } from './composables/useChapterPromisesBridge
 import { useTimelineStore } from '@/stores/timeline.store';
 import type { ExportPayload } from '@/features/chapters/components/modals/ExportModal/useExportModal';
 import type { Chapter } from '@/types/generated/Chapter';
-import type ChapterRightSidebar from './components/ChapterRightSidebar.vue';
+import type ChapterRightSidebar from './components/ChapterRightSidebar/ChapterRightSidebar.vue';
 
 export interface ChapterTreeNode {
   id?: string;

@@ -69,8 +69,8 @@ import type {
   Tab5ReformsDstEmits,
   Tab5ReformsDstProps,
 } from './Tab5ReformsDst.model';
-import Tab5ReformsSection from './components/Tab5ReformsSection.vue';
-import Tab5DstSection from './components/Tab5DstSection.vue';
+import Tab5ReformsSection from './components/Tab5ReformsSection/Tab5ReformsSection.vue';
+import Tab5DstSection from './components/Tab5DstSection/Tab5DstSection.vue';
 import { useTab5ReformsDst } from './useTab5ReformsDst';
 
 const props = defineProps<Tab5ReformsDstProps>();

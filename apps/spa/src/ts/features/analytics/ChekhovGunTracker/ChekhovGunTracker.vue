@@ -112,9 +112,9 @@
 
 <script setup lang="ts">
 import type { ChekhovGunTrackerProps, ChekhovGunTrackerEmits } from './ChekhovGunTracker.model';
-import GunStatusColumn from './components/GunStatusColumn.vue';
-import GunJourneyModal from './components/GunJourneyModal.vue';
-import ChekhovTrackerToolbar from './components/ChekhovTrackerToolbar.vue';
+import GunStatusColumn from './components/GunStatusColumn/GunStatusColumn.vue';
+import GunJourneyModal from './components/GunJourneyModal/GunJourneyModal.vue';
+import ChekhovTrackerToolbar from './components/ChekhovTrackerToolbar/ChekhovTrackerToolbar.vue';
 import { useChekhovGunTracker } from './useChekhovGunTracker';
 
 const props = withDefaults(

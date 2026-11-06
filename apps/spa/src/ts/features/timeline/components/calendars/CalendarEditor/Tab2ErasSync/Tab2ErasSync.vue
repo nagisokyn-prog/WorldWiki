@@ -56,9 +56,9 @@
 <script setup lang="ts">
 import type { Tab2ErasSyncProps, Tab2ErasSyncEmits } from './Tab2ErasSync.model';
 import { useTab2ErasSync } from './useTab2ErasSync';
-import Tab2SyncSection from './components/Tab2SyncSection.vue';
-import Tab2ErasSection from './components/Tab2ErasSection.vue';
-import Tab2AnchorEventsSection from './components/Tab2AnchorEventsSection.vue';
+import Tab2SyncSection from './components/Tab2SyncSection/Tab2SyncSection.vue';
+import Tab2ErasSection from './components/Tab2ErasSection/Tab2ErasSection.vue';
+import Tab2AnchorEventsSection from './components/Tab2AnchorEventsSection/Tab2AnchorEventsSection.vue';
 
 const props = defineProps<Tab2ErasSyncProps>();
 const emit = defineEmits<Tab2ErasSyncEmits>();

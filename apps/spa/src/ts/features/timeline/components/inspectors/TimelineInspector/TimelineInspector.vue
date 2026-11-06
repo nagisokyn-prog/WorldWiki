@@ -150,8 +150,8 @@
 
 <script setup lang="ts">
 import { useTimelineInspector } from './useTimelineInspector';
-import TimelineInspectorToolbar from './components/TimelineInspectorToolbar.vue';
-import TimelineChapterNode from './components/TimelineChapterNode.vue';
+import TimelineInspectorToolbar from './components/TimelineInspectorToolbar/TimelineInspectorToolbar.vue';
+import TimelineChapterNode from './components/TimelineChapterNode/TimelineChapterNode.vue';
 import type { TimelineInspectorProps, TimelineInspectorEmits } from './TimelineInspector.model';
 
 const props = withDefaults(defineProps<TimelineInspectorProps>(), { projectId: '', project: '' });

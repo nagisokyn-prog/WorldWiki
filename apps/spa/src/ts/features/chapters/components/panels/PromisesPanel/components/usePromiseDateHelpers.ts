@@ -3,7 +3,7 @@ import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import { CalendarFormat } from '@/services/Calendars/calendar.format';
 import type { CalendarData, CalendarMonth, CalendarEra } from '@/services/Calendars/calendar.types';
 import type { CalendarRecord } from '@/stores/calendar.store';
-import type { DiegeticDateBadgeInfo } from './PromiseCardMeta.model';
+import type { DiegeticDateBadgeInfo } from './PromiseCardMeta/PromiseCardMeta.model';
 
 export function usePromiseDateHelpers(
   activeCalendar: Ref<CalendarRecord | null>,

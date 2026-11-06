@@ -1,6 +1,6 @@
 import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store'
 import type { StoryArc } from '@/stores/story_arcs.store'
-import type { PlanScopeType } from '../ChapterRightSidebar.model'
+import type { PlanScopeType } from '../ChapterRightSidebar/ChapterRightSidebar.model'
 
 export interface PlanningMatrixTabProps {
   project: string;

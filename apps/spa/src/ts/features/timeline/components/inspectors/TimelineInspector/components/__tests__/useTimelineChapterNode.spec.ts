@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useTimelineChapterNode } from '../useTimelineChapterNode';
-import type { TimelineChapterNodeProps } from '../TimelineChapterNode.model';
+import { useTimelineChapterNode } from '../TimelineChapterNode/useTimelineChapterNode';
+import type { TimelineChapterNodeProps } from '../TimelineChapterNode/TimelineChapterNode.model';
 
 describe('useTimelineChapterNode', () => {
   it('handles clicks, navigation and hover events', () => {

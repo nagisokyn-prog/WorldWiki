@@ -150,7 +150,7 @@ describe('useStoryArcs Composable', () => {
   });
 
   it('useArcCard computes phase counts correctly for the 4-phase stepper', async () => {
-    const { useArcCard } = await import('./components/useArcCard');
+    const { useArcCard } = await import('./components/ArcCard/useArcCard');
     const arc = { id: 'arc:main', project_id: 'test_proj', title: 'Главная арка', arc_type: 'character', status: 'in_progress' } as any;
     const linkedBlocks = [
       { id: 'b1', chapter_id: 'chapters:1', paragraph_index: 2, arc_phase: 'setup', quote: 'Завязка' },

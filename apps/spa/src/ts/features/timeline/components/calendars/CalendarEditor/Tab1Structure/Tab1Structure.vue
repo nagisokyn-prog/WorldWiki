@@ -86,10 +86,10 @@
 <script setup lang="ts">
 import type { Tab1StructureProps, Tab1StructureEmits } from './Tab1Structure.model';
 import { useTab1Structure } from './useTab1Structure';
-import Tab1DialSection from './components/Tab1DialSection.vue';
-import Tab1WeekdaysSection from './components/Tab1WeekdaysSection.vue';
-import Tab1MonthsSection from './components/Tab1MonthsSection.vue';
-import Tab1LeapSection from './components/Tab1LeapSection.vue';
+import Tab1DialSection from './components/Tab1DialSection/Tab1DialSection.vue';
+import Tab1WeekdaysSection from './components/Tab1WeekdaysSection/Tab1WeekdaysSection.vue';
+import Tab1MonthsSection from './components/Tab1MonthsSection/Tab1MonthsSection.vue';
+import Tab1LeapSection from './components/Tab1LeapSection/Tab1LeapSection.vue';
 
 const props = defineProps<Tab1StructureProps>();
 const emit = defineEmits<Tab1StructureEmits>();

@@ -144,9 +144,9 @@
 <script setup lang="ts">
 import type { PlanetEditorProps, PlanetEditorEmits } from './PlanetEditor.model';
 import { usePlanetEditor } from './usePlanetEditor';
-import PlanetAstrophysicsTab from './components/PlanetAstrophysicsTab.vue';
-import PlanetTimezonesTab from './components/PlanetTimezonesTab.vue';
-import PlanetMoonsTab from './components/PlanetMoonsTab.vue';
+import PlanetAstrophysicsTab from './components/PlanetAstrophysicsTab/PlanetAstrophysicsTab.vue';
+import PlanetTimezonesTab from './components/PlanetTimezonesTab/PlanetTimezonesTab.vue';
+import PlanetMoonsTab from './components/PlanetMoonsTab/PlanetMoonsTab.vue';
 import PlanetPresetsModal from './PlanetPresetsModal/PlanetPresetsModal.vue';
 
 const props = defineProps<PlanetEditorProps>();

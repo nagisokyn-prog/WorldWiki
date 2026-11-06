@@ -95,8 +95,8 @@
 
 <script setup lang="ts">
 import type { ArcBoardProps, ArcBoardEmits } from './ArcBoard.model';
-import ArcCard from './components/ArcCard.vue';
-import ArcCreateModal from './components/ArcCreateModal.vue';
+import ArcCard from './components/ArcCard/ArcCard.vue';
+import ArcCreateModal from './components/ArcCreateModal/ArcCreateModal.vue';
 import { useArcBoard } from './useArcBoard';
 
 const props = withDefaults(

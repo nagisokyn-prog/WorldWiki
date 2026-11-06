@@ -145,9 +145,9 @@ import type { ChaptersMainProps, ChaptersMainEmits } from './ChaptersMain.model'
 import { FloatingWindow } from '@worldwiki/components';
 import EditorCore from '@/features/chapters/components/editor/EditorCoreTiptap/EditorCoreTiptap.vue';
 import ExportModal from '@/features/chapters/components/modals/ExportModal/ExportModal.vue';
-import ChapterRightSidebar from './components/ChapterRightSidebar.vue';
-import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer.vue';
-import QuickLinkHint from './components/QuickLinkHint.vue';
+import ChapterRightSidebar from './components/ChapterRightSidebar/ChapterRightSidebar.vue';
+import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer/ChaptersHistoryDrawer.vue';
+import QuickLinkHint from './components/QuickLinkHint/QuickLinkHint.vue';
 import { useChaptersMain } from './useChaptersMain';
 
 

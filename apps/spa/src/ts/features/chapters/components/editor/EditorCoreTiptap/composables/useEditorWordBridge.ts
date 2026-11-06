@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import type { PageSize, WordDocumentDTO } from '../components/EditorBody.model';
-import type { ParagraphFormatData } from '../components/EditorModals.model';
+import type { PageSize, WordDocumentDTO } from '../components/EditorBody/EditorBody.model';
+import type { ParagraphFormatData } from '../components/EditorModals/EditorModals.model';
 import type { Editor } from '@tiptap/vue-3';
 
 export interface UseEditorWordBridgeOptions {

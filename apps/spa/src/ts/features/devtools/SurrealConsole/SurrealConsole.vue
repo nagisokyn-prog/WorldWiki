@@ -59,8 +59,8 @@
 import './SurrealConsole.css';
 import type { SurrealConsoleProps } from './SurrealConsole.model';
 import { useSurrealConsole } from './useSurrealConsole';
-import SurrealConsolePresets from './components/SurrealConsolePresets.vue';
-import SurrealConsoleOutput from './components/SurrealConsoleOutput.vue';
+import SurrealConsolePresets from './components/SurrealConsolePresets/SurrealConsolePresets.vue';
+import SurrealConsoleOutput from './components/SurrealConsoleOutput/SurrealConsoleOutput.vue';
 
 const props = defineProps<SurrealConsoleProps>();
 

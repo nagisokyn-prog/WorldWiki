@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useTapestryChapterCard } from '../useTapestryChapterCard';
+import { useTapestryChapterCard } from '../TapestryChapterCard/useTapestryChapterCard';
 import type { TapestryChapterNode } from '../../PlanningPanel.model';
 
 describe('useTapestryChapterCard', () => {

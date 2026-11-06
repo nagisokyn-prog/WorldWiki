@@ -1,10 +1,1 @@
-[
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (230) exceeds recommended limit (165)",
-    "fingerprint": "73c07fdf5285561ebc9ac556c748c25fbf85385ed421b7431869c2bcd0830111"
-  }
-]
+[]

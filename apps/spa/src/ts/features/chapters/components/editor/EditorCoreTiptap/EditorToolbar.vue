@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
-import ChapterArcTags from './components/ChapterArcTags.vue';
+import ChapterArcTags from './components/ChapterArcTags/ChapterArcTags.vue';
 import type { EditorToolbarProps } from './EditorToolbar.model';
 
 defineProps<EditorToolbarProps>();

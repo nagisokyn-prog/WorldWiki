@@ -1,7 +1,7 @@
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { Todo } from '@/types/generated/Todo';
 import type { TapestryTodo, TodoStatus, TapestryChapterNode, TapestryArcGroup } from './PlanningPanel.model';
-import type { PlanVolumeStats } from './components/PlanVolumeHeader.model';
+import type { PlanVolumeStats } from './components/PlanVolumeHeader/PlanVolumeHeader.model';
 
 export function calculateVolumeStats(chapters: TapestryChapterNode[], backlog: TapestryTodo[]): PlanVolumeStats {
   let total = backlog.length;

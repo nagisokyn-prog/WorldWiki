@@ -12,3 +12,5 @@ export type SchemaHistoryDrawerEmits = {
     (e: 'preview', item: SchemaHistoryRecord): void;
     (e: 'toggle-pin', item: SchemaHistoryRecord): void;
 };
+
+export type SchemaHistoryItem = SchemaHistoryRecord;

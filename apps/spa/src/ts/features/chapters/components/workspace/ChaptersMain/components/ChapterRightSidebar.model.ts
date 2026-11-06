@@ -1,7 +1,8 @@
 import type { ActiveTreeNode } from '../useChaptersMain';
 import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store';
-import type { TimelineEvent } from '@/features/timeline/components/inspectors/TimelinePanel/useTimelinePanel';
 import type { ParticipantItem } from '@/features/chapters/components/panels/ParticipantsPanel/useParticipantsPanel';
+
+export type ChapterTimelineEvents = NonNullable<ChapterWithHierarchy['timeline_events']>;
 
 export type SidebarTabType = 'promises' | 'plans';
 export type PlanScopeType = 'volume' | 'arc' | 'chapter';
@@ -30,7 +31,7 @@ export interface ChapterRightSidebarEmits {
   (e: 'addVolumePlanItem'): void;
   (e: 'addChapterPlanItem'): void;
   (e: 'markUnsaved'): void;
-  (e: 'update:timeline-events', val: TimelineEvent[]): void;
+  (e: 'update:timeline-events', val: ChapterTimelineEvents): void;
   (e: 'update:participants', val: ParticipantItem[]): void;
   (e: 'locatePromise', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
   (e: 'openJourney'): void;

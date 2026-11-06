@@ -8,7 +8,7 @@ vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
 }));
 
-vi.mock('../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getCalendars: vi.fn(),
   saveCalendar: vi.fn(),
   deleteCalendar: vi.fn(),

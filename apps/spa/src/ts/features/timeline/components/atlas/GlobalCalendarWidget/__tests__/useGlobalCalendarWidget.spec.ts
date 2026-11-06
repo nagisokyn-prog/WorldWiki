@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import { useGlobalCalendarWidget } from '../useGlobalCalendarWidget';
 import { useCalendarStore } from '@/stores/calendar.store';
 
-vi.mock('../../../../../stores/calendar.store', () => ({
+vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: vi.fn().mockResolvedValue([
       {
@@ -33,6 +34,8 @@ describe('useGlobalCalendarWidget', () => {
   let props: any;
 
   beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
     props = { project: 'my-proj' };
   });
 

@@ -31,3 +31,4 @@ pub fn myers_diff<T: Clone + PartialEq>(old: &[T], new: &[T]) -> Vec<EditOp<T>> 
     let (trace, found_d) = find_edit_trace(old, new, max, offset, stride);
     backtrack_edit_script(old, new, &trace, found_d, max, offset, stride)
 }
+

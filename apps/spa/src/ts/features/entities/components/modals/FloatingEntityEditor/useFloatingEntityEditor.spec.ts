@@ -4,7 +4,7 @@ import { useFloatingEntityEditor } from './useFloatingEntityEditor';
 import * as api from '@/services/api.client';
 import { entityApi } from '@/services/Entity/entity.api';
 
-vi.mock('../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn()
 }));
 

@@ -4,7 +4,7 @@ import { useSchemaData } from '../useSchemaData';
 import * as api from '@/services/api.client';
 import { appConfirm } from '@worldwiki/components';
 
-vi.mock('../../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn(),
 }));
 

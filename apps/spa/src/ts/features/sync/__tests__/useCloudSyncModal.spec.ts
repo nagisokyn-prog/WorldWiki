@@ -11,7 +11,7 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
-vi.mock('../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   createCloudBackup: vi.fn(),
 }));
 

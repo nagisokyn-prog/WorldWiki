@@ -120,7 +120,7 @@
     border: 1px dashed var(--border-color);
     border-radius: var(--radius-dropdown);
     cursor: pointer;
-    transition: all var(--anim-speed, 0.2s) ease;
+    transition: color var(--anim-speed, 0.2s) ease, border-color var(--anim-speed, 0.2s) ease, background-color var(--anim-speed, 0.2s) ease;
     min-height: 28px;
     box-sizing: border-box;
 }

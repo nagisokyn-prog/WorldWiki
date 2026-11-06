@@ -7,9 +7,7 @@ import { useChapterStore } from '@/stores/chapter.store';
 import {
   type TimelineInspectorData,
   type TimelineInspectorFilterState,
-  type InspectorChapter,
   type TimelineVolumeSegment,
-  type FormattedInspectorEvent,
   type TimelineInspectorProps,
   type TimelineInspectorEmits,
 } from './TimelineInspector.model';
@@ -25,6 +23,7 @@ import {
   buildVolumeSegments,
   calculateConnectionLines,
 } from './timelineInspectorVolume.utils';
+import { useTimelineInspectorNavigation } from './useTimelineInspectorNavigation';
 
 export function useTimelineInspector(
   propsOrProjectId: TimelineInspectorProps | string,
@@ -43,11 +42,6 @@ export function useTimelineInspector(
   const data = ref<TimelineInspectorData | null>(null);
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
-
-  const activeChapterId = ref<string | null>(null);
-  const hoveredChapterId = ref<string | null>(null);
-  const hoveredEventId = ref<string | null>(null);
-  const pingedEventId = ref<string | null>(null);
 
   const filters = ref<TimelineInspectorFilterState>({
     searchQuery: '',
@@ -152,6 +146,8 @@ export function useTimelineInspector(
     )
   );
 
+  const navigation = useTimelineInspectorNavigation(filteredChapters, formattedEvents, emit);
+
   const chapterSpacing = 140;
   const eventSpacing = 160;
   const startX = 60;
@@ -161,9 +157,9 @@ export function useTimelineInspector(
       linkMode: filters.value.linkMode,
       chapters: filteredChapters.value,
       events: filteredEvents.value,
-      activeChapterId: activeChapterId.value,
-      hoveredChapterId: hoveredChapterId.value,
-      hoveredEventId: hoveredEventId.value,
+      activeChapterId: navigation.activeChapterId.value,
+      hoveredChapterId: navigation.hoveredChapterId.value,
+      hoveredEventId: navigation.hoveredEventId.value,
       startX,
       chapterSpacing,
       eventSpacing,
@@ -175,95 +171,6 @@ export function useTimelineInspector(
     const evWidth = startX + filteredEvents.value.length * eventSpacing + 120;
     return `${Math.max(600, Math.max(chWidth, evWidth))}px`;
   });
-
-  const scrollToEvent = (eventId: string) => {
-    const cleanId = normalizeId(eventId);
-    pingedEventId.value = cleanId;
-    setTimeout(() => {
-      const el = document.querySelector(`[data-event-id="${cleanId}"]`) as HTMLElement | null;
-      if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }, 50);
-    setTimeout(() => {
-      if (pingedEventId.value === cleanId) pingedEventId.value = null;
-    }, 2500);
-  };
-
-  const scrollToChapter = (chapterId: string) => {
-    const cleanId = normalizeId(chapterId);
-    setTimeout(() => {
-      const el = document.querySelector(`[data-chapter-id="${cleanId}"]`) as HTMLElement | null;
-      if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }, 50);
-  };
-
-  const selectChapter = (ch: InspectorChapter) => {
-    const cleanId = normalizeId(ch.id);
-    if (activeChapterId.value === cleanId) {
-      activeChapterId.value = null;
-    } else {
-      activeChapterId.value = cleanId;
-      const targetEv = formattedEvents.value.find((ev) =>
-        ev.reveals?.some((r) => normalizeId(r.chapter_id) === cleanId)
-      );
-      if (targetEv) scrollToEvent(targetEv.id);
-    }
-  };
-
-  const jumpToFlashback = (ch: InspectorChapter, e?: Event) => {
-    if (e) e.stopPropagation();
-    if (ch.earliestFlashbackEventId) {
-      activeChapterId.value = normalizeId(ch.id);
-      scrollToEvent(ch.earliestFlashbackEventId);
-    }
-  };
-
-  const getTargetChId = () =>
-    activeChapterId.value
-      ? normalizeId(activeChapterId.value)
-      : hoveredChapterId.value
-        ? normalizeId(hoveredChapterId.value)
-        : null;
-
-  const isEventHighlighted = (ev: FormattedInspectorEvent): boolean => {
-    if (hoveredEventId.value && normalizeId(ev.id) === normalizeId(hoveredEventId.value)) return true;
-    const targetChId = getTargetChId();
-    return targetChId ? ev.reveals?.some((r) => normalizeId(r.chapter_id) === targetChId) || false : false;
-  };
-
-  const isEventDimmed = (ev: FormattedInspectorEvent): boolean => {
-    const targetChId = getTargetChId();
-    return targetChId ? !ev.reveals?.some((r) => normalizeId(r.chapter_id) === targetChId) : false;
-  };
-
-  const navigateToChapter = (chapterIdOrObj: string | InspectorChapter) => {
-    const chId = typeof chapterIdOrObj === 'string' ? chapterIdOrObj : chapterIdOrObj.id;
-    const cleanId = normalizeId(chId);
-    const title =
-      typeof chapterIdOrObj === 'string'
-        ? filteredChapters.value.find((c) => normalizeId(c.id) === cleanId)?.title || `Глава ${cleanId}`
-        : chapterIdOrObj.title;
-    if (emit) emit('open-chapter', { id: cleanId, title });
-  };
-
-  const navigateToScene = (ev: FormattedInspectorEvent) => {
-    const reveal = ev.reveals?.[0];
-    if (!reveal?.chapter_id) return;
-    const cleanChId = normalizeId(reveal.chapter_id);
-    const title = reveal.chapter_title || `Глава ${cleanChId}`;
-    if (emit) emit('open-chapter', { id: cleanChId, title });
-    setTimeout(() => {
-      document.dispatchEvent(
-        new CustomEvent('ww:locate-promise', {
-          detail: {
-            chapterId: cleanChId,
-            paragraphIndex: 1,
-            quote: ev.title,
-            blockId: reveal.block_id || undefined,
-          },
-        })
-      );
-    }, 150);
-  };
 
   watch(() => [getProjectId(), filters.value.readerHorizonChapterOrder], loadInspectorData);
   onMounted(loadInspectorData);
@@ -279,19 +186,19 @@ export function useTimelineInspector(
     canvasMinWidth,
     isLoading,
     error,
-    activeChapterId,
-    hoveredChapterId,
-    hoveredEventId,
-    pingedEventId,
+    activeChapterId: navigation.activeChapterId,
+    hoveredChapterId: navigation.hoveredChapterId,
+    hoveredEventId: navigation.hoveredEventId,
+    pingedEventId: navigation.pingedEventId,
     refresh: loadInspectorData,
-    navigateToChapter,
-    navigateToScene,
-    selectChapter,
-    jumpToFlashback,
-    scrollToEvent,
-    scrollToChapter,
-    isEventHighlighted,
-    isEventDimmed,
+    navigateToChapter: navigation.navigateToChapter,
+    navigateToScene: navigation.navigateToScene,
+    selectChapter: navigation.selectChapter,
+    jumpToFlashback: navigation.jumpToFlashback,
+    scrollToEvent: navigation.scrollToEvent,
+    scrollToChapter: navigation.scrollToChapter,
+    isEventHighlighted: navigation.isEventHighlighted,
+    isEventDimmed: navigation.isEventDimmed,
     normalizeId,
   };
 }

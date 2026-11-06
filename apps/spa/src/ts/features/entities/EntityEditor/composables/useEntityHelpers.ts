@@ -105,7 +105,7 @@ export function useEntityHelpers(
     current[parts[parts.length - 1]] = val;
   };
 
-  const getResolvedTemplate = (container: DynamicContainer & { fields?: SchemaField[] }) => {
+  const getResolvedTemplate = (container: DynamicContainer): DynamicContainer | null => {
     let baseTpl: { fields?: SchemaField[]; dynamicContainers?: DynamicContainer[] } | undefined;
     if (container.fields && !container.template) {
       baseTpl = container;
@@ -130,7 +130,7 @@ export function useEntityHelpers(
       ...container,
       ...baseTpl,
       dataPath: container.dataPath || (baseTpl as { dataPath?: string }).dataPath,
-      id: container.id || (baseTpl as { id?: string }).id,
+      id: container.id || (baseTpl as { id?: string }).id || '',
       fields: resolvedFields
     };
   };
@@ -169,12 +169,54 @@ export function useEntityHelpers(
     return [];
   };
 
+  const getItemSummary = (item: Record<string, unknown>, container: DynamicContainer): string => {
+    if (!item || typeof item !== 'object') return '';
+    const resolved = getResolvedTemplate(container);
+    const fields = resolved?.fields || [];
+    for (const f of fields) {
+      const key = f.id || f.class || '';
+      const val = item[key];
+      if (val !== undefined && val !== null && val !== '') {
+        if (typeof val === 'string' && val.trim().length > 0) return val.trim();
+        if (typeof val === 'number') return String(val);
+        if (typeof val === 'object' && !Array.isArray(val)) {
+          const pt = val as { chapter_id?: string; title?: string };
+          if (pt.title) return pt.title;
+          if (pt.chapter_id) return `Глава: ${pt.chapter_id}`;
+          const dt = val as { год?: number; название?: string };
+          if (dt.год !== undefined) return `${dt.год} г.`;
+          if (dt.название) return dt.название;
+        }
+      }
+    }
+    return '';
+  };
+
+  const getFieldLabel = (key: string): string => {
+    for (const sec of config.value?.sections || []) {
+      const f = sec.fields?.find(field => (field.path || field.id || field.class) === key);
+      if (f) return f.label;
+    }
+    return key;
+  };
+
+  const getContainerTitle = (key: string): string => {
+    for (const sec of config.value?.sections || []) {
+      const c = sec.dynamicContainers?.find(dc => (dc.dataPath || dc.id) === key);
+      if (c) return c.title || key;
+    }
+    return key;
+  };
+
   return {
     getPhotoUrl,
     getProp,
     setProp,
     getDynamicList,
     getResolvedTemplate,
+    getItemSummary,
+    getFieldLabel,
+    getContainerTitle,
     isAtomicField,
     photoUrlCache
   };

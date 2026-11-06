@@ -54,8 +54,10 @@
 <script setup lang="ts">
 import type { SchemaCatalogSidebarProps, SchemaCatalogSidebarEmits } from './SchemaCatalogSidebar.model';
 import ModuleHelpPreview from '@/features/schemas/components/help/ModuleHelpPreview/ModuleHelpPreview.vue';
+import { useSchemaCatalogSidebar } from './useSchemaCatalogSidebar';
 
-defineProps<SchemaCatalogSidebarProps>();
+const props = defineProps<SchemaCatalogSidebarProps>();
+const emit = defineEmits<SchemaCatalogSidebarEmits>();
 
-defineEmits<SchemaCatalogSidebarEmits>();
+const { onStartResize, onDragStartPalette } = useSchemaCatalogSidebar(props, emit);
 </script>

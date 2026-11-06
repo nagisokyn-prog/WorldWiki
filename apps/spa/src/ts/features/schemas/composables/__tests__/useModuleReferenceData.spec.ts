@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { useModuleReferenceData } from '../useModuleReferenceData';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn(),
 }));
 

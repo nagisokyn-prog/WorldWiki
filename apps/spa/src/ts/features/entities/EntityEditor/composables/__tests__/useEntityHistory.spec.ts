@@ -8,7 +8,7 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
-vi.mock('../../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   toggleEntityHistoryPin: vi.fn(),
 }));
 

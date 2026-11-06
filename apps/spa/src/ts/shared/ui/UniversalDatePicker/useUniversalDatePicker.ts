@@ -45,6 +45,14 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
   const currentHour = ref(12);
   const currentMinute = ref(0);
 
+  const isHourHidden = ref(false);
+  const isMinuteHidden = ref(false);
+
+  const restoreTime = () => {
+    isHourHidden.value = false;
+    isMinuteHidden.value = false;
+  };
+
   const {
     calendar,
     calendarOptions,
@@ -162,6 +170,9 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
     currentEra,
     yearInputMode,
     wheelHorizontal,
+    isHourHidden,
+    isMinuteHidden,
+    restoreTime,
     onCalendarChange,
     onEraChange,
     onYearChange,

@@ -13,7 +13,8 @@
         class="panel-body-box"
         :style="{ height: timelineHeight + 'px' }"
       >
-        <TimelinePanel
+        <component
+          :is="'TimelinePanelVue'"
           :events="currentChapter?.timeline_events || undefined"
           :project="project"
           @update:events="$emit('update:timeline-events', $event)"
@@ -62,7 +63,6 @@
 
 <script setup lang="ts">
 import type { SceneInspectorTabProps, SceneInspectorTabEmits } from './SceneInspectorTab.model';
-import TimelinePanel from '@/features/timeline/components/inspectors/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '@/features/chapters/components/panels/ParticipantsPanel/ParticipantsPanel.vue';
 
 defineProps<SceneInspectorTabProps>();

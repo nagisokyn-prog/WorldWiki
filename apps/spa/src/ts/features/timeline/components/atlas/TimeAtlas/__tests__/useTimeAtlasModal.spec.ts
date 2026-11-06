@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { useTimeAtlasModal } from '../useTimeAtlasModal';
 import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 
-vi.mock('../../../../../stores/calendar.store', () => ({
+vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: vi.fn().mockResolvedValue([
       {
@@ -38,6 +39,10 @@ vi.mock('../../../../../stores/calendar.store', () => ({
 }));
 
 describe('useTimeAtlasModal', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
   it('loads calendars and provides cross-calendar synchronization in converter and matrix', async () => {
     const emit = vi.fn();
     const atlas = useTimeAtlasModal({ project: 'test-proj', isOpen: true }, emit);

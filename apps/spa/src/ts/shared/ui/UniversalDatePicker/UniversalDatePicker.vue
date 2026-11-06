@@ -140,7 +140,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { UniversalDatePickerProps, UniversalDatePickerEmits } from './UniversalDatePicker.model';
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
@@ -151,14 +150,6 @@ const props = withDefaults(defineProps<UniversalDatePickerProps>(), {
 });
 
 const emit = defineEmits<UniversalDatePickerEmits>();
-
-const isHourHidden = ref(false);
-const isMinuteHidden = ref(false);
-
-const restoreTime = () => {
-  isHourHidden.value = false;
-  isMinuteHidden.value = false;
-};
 
 const {
   allCalendars,
@@ -179,6 +170,9 @@ const {
   currentEra,
   yearInputMode,
   wheelHorizontal,
+  isHourHidden,
+  isMinuteHidden,
+  restoreTime,
   onCalendarChange,
   onEraChange,
   onYearChange,

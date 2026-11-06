@@ -49,3 +49,4 @@ pub fn push_delete<T: Clone>(ops: &mut Vec<EditOp<T>>, slice: &[T], idx: usize) 
         ops.push(EditOp::Delete(item.clone()));
     }
 }
+

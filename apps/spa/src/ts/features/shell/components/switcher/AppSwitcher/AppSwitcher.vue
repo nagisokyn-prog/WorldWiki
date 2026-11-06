@@ -7,5 +7,7 @@
 </template>
 
 <script setup lang="ts">
-// empty shell
+import { useAppSwitcher } from './useAppSwitcher';
+
+useAppSwitcher();
 </script>

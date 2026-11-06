@@ -90,6 +90,8 @@
 import type { ModuleHelpDynamicCardProps } from './ModuleHelpDynamicCard.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
+import { useModuleHelpDynamicCard } from './useModuleHelpDynamicCard';
 
-defineProps<ModuleHelpDynamicCardProps>();
+const props = defineProps<ModuleHelpDynamicCardProps>();
+const { isChapterField, isEntityOrChapterSelect, getSelectOptions } = useModuleHelpDynamicCard(props);
 </script>

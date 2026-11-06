@@ -21,7 +21,7 @@ vi.mock('@tanstack/vue-query', () => ({
   })),
 }));
 
-vi.mock('../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getProjects: vi.fn(),
   getProjectConfig: vi.fn(),
   createProject: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
 }));
 
-vi.mock('../../services/Entity/entity.api', () => ({
+vi.mock('@/services/Entity/entity.api', () => ({
   entityApi: {
     getEntityList: vi.fn(),
     getEntity: vi.fn(),
@@ -40,7 +40,7 @@ vi.mock('../../services/Entity/entity.api', () => ({
   },
 }));
 
-vi.mock('../../services/api/tag.api', () => ({
+vi.mock('@/services/api/tag.api', () => ({
   tagApi: {
     getTags: vi.fn(),
     saveTag: vi.fn(),
@@ -48,7 +48,7 @@ vi.mock('../../services/api/tag.api', () => ({
   },
 }));
 
-vi.mock('../../services/api/chapter.api', () => ({
+vi.mock('@/services/api/chapter.api', () => ({
   chapterApi: {
     getChaptersList: vi.fn(),
     getChapter: vi.fn(),
@@ -58,7 +58,7 @@ vi.mock('../../services/api/chapter.api', () => ({
   },
 }));
 
-vi.mock('../../services/api/calendar.api', () => ({
+vi.mock('@/services/api/calendar.api', () => ({
   calendarApi: {
     getCalendars: vi.fn(),
     getGlobalTimeline: vi.fn(),
@@ -68,7 +68,7 @@ vi.mock('../../services/api/calendar.api', () => ({
   },
 }));
 
-vi.mock('../../services/api/batch.api', () => ({
+vi.mock('@/services/api/batch.api', () => ({
   batchApi: {
     getEntitiesBatch: vi.fn(),
     upsertConnectionsBatch: vi.fn(),

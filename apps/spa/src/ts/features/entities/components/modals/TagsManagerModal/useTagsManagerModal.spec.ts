@@ -3,7 +3,7 @@ import { useTagsManagerModal } from './useTagsManagerModal';
 import * as api from '@/services/api.client';
 import { appConfirm } from '@worldwiki/components';
 
-vi.mock('../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntities: vi.fn(),
   deleteEntity: vi.fn(),
 }));

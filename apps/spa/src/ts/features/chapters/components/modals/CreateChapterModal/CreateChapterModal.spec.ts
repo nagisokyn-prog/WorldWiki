@@ -3,7 +3,7 @@ import { useCreateChapterModal } from './useCreateChapterModal';
 import type { CreateChapterModalEmits } from './CreateChapterModal.model';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getChapterHierarchy: vi.fn(),
 }));
 

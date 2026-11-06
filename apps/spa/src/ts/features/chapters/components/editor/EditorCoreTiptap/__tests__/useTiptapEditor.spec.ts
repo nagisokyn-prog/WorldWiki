@@ -30,11 +30,11 @@ vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
 }));
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   searchEntities: vi.fn(),
 }));
 
-vi.mock('../../../../utils/windowManager', () => ({
+vi.mock('@/utils/windowManager', () => ({
   openEntityEditorWindow: vi.fn(),
 }));
 

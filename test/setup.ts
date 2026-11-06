@@ -1,5 +1,12 @@
+import { beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+
 // Import all Tauri and DOM mocks
 import './mocks/tauri';
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+});
 
 if (typeof window !== 'undefined') {
   if (!window.print) {

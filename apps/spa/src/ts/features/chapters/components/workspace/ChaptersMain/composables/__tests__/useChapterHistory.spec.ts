@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useChapterHistory } from '../useChapterHistory';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getChapterRevisions: vi.fn(),
   toggleChapterHistoryPin: vi.fn(),
 }));

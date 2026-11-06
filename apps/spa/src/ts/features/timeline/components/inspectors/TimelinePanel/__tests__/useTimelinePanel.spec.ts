@@ -6,7 +6,7 @@ import { useTimelinePanel } from '../useTimelinePanel';
 let mockGetCalendars: any;
 let mockSettingsCb: any;
 
-vi.mock('../../../../stores/calendar.store', () => ({
+vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: (...args: any[]) => mockGetCalendars(...args),
     isValidCalendar: () => true,

@@ -97,7 +97,8 @@
     />
 
     <!-- Floating Entity Editors -->
-    <FloatingEntityEditor
+    <component
+      :is="'FloatingEntityEditor'"
       v-for="editor in floatingEditors"
       :key="editor.id"
       :project="editor.project"
@@ -117,7 +118,8 @@
       @close="closeJourney"
     >
       <div class="journey-modal-wrapper" style="width: 100%; height: 100%; min-width: 760px; min-height: 540px; display: flex; flex-direction: column; overflow: hidden;">
-        <CharacterJourney
+        <component
+          :is="'CharacterJourney'"
           :project-id="project"
           class="flex-1"
           @select-scene="handleJourneySelectScene"
@@ -143,8 +145,6 @@ import type { ChaptersMainProps, ChaptersMainEmits } from './ChaptersMain.model'
 import { FloatingWindow } from '@worldwiki/components';
 import EditorCore from '@/features/chapters/components/editor/EditorCoreTiptap/EditorCoreTiptap.vue';
 import ExportModal from '@/features/chapters/components/modals/ExportModal/ExportModal.vue';
-import FloatingEntityEditor from '@/features/entities/components/modals/FloatingEntityEditor/FloatingEntityEditor.vue';
-import CharacterJourney from '@/features/entities/CharacterJourney/CharacterJourney.vue';
 import ChapterRightSidebar from './components/ChapterRightSidebar.vue';
 import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer.vue';
 import QuickLinkHint from './components/QuickLinkHint.vue';

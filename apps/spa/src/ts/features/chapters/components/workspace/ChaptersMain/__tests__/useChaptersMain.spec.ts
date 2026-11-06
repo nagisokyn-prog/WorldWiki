@@ -8,11 +8,11 @@ import { appAlert } from '@worldwiki/components';
 let mockStore: any;
 let mockTimelineInit: any;
 
-vi.mock('../../../../stores/chapter.store', () => ({
+vi.mock('@/stores/chapter.store', () => ({
   useChapterStore: () => mockStore,
 }));
 
-vi.mock('../../../../stores/timeline.store', () => ({
+vi.mock('@/stores/timeline.store', () => ({
   useTimelineStore: () => ({
     init: mockTimelineInit,
     parseParticipants: vi.fn().mockReturnValue([]),

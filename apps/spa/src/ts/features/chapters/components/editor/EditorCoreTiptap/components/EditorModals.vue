@@ -20,7 +20,8 @@
     />
 
     <!-- Document Export Modal -->
-    <DocumentExportModal
+    <component
+      :is="'DocumentExportModal'"
       v-if="isExportModalOpen"
       :is-open="isExportModalOpen"
       :project-name="project"
@@ -41,7 +42,6 @@
 import type { EditorModalsProps, EditorModalsEmits } from './EditorModals.model';
 import EntityLinkSelector from '../EntityLinkSelector.vue';
 import PromiseContextMenu from '../PromiseContextMenu.vue';
-import { DocumentExportModal } from '@/features/documents';
 import ParagraphFormatModal from '../stubs/ParagraphFormatModalStub.vue';
 
 defineProps<EditorModalsProps>();

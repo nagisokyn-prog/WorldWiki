@@ -11,7 +11,7 @@ vi.mock('@worldwiki/components', () => ({
   appConfirm: vi.fn(),
 }));
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getTodos: vi.fn(),
   createTodo: vi.fn(),
   updateTodo: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../services/api.client', () => ({
   getStoryArcs: vi.fn(),
 }));
 
-vi.mock('../../../../services/chapter.service', () => ({
+vi.mock('@/services/chapter.service', () => ({
   chapterService: {
     createNew: vi.fn().mockImplementation((title) => ({
       id: 'chapters:ch_new',

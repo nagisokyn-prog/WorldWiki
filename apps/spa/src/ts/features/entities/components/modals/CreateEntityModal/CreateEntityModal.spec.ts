@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCreateEntityModal } from './useCreateEntityModal';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn(),
 }));
 
-vi.mock('../../../services/Entity/entity.api', () => ({
+vi.mock('@/services/Entity/entity.api', () => ({
   entityApi: {
     getSchemas: vi.fn().mockResolvedValue({}),
   },

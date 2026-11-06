@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useAiMessageTree } from '../useAiMessageTree';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getChatMessages: vi.fn(),
   deleteChatMessage: vi.fn(),
   editChatMessage: vi.fn(),

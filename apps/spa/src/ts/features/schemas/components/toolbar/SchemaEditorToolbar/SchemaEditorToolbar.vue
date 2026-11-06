@@ -26,7 +26,10 @@
 
 <script setup lang="ts">
 import type { SchemaEditorToolbarProps, SchemaEditorToolbarEmits } from './SchemaEditorToolbar.model';
-defineProps<SchemaEditorToolbarProps>();
+import { useSchemaEditorToolbar } from './useSchemaEditorToolbar';
 
-defineEmits<SchemaEditorToolbarEmits>();
+const props = defineProps<SchemaEditorToolbarProps>();
+const emit = defineEmits<SchemaEditorToolbarEmits>();
+
+useSchemaEditorToolbar(props, emit);
 </script>

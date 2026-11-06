@@ -11,7 +11,7 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   createVolume: vi.fn().mockResolvedValue({ id: 'vol_new' }),
   updateVolume: vi.fn().mockResolvedValue({}),
   updateChapter: vi.fn().mockResolvedValue({}),
@@ -28,14 +28,14 @@ let mockHierarchy: any;
 const mockLoadChapters = vi.fn().mockResolvedValue([]);
 const mockLoadEntities = vi.fn().mockResolvedValue([]);
 
-vi.mock('../../../../stores/chapter.store', () => ({
+vi.mock('@/stores/chapter.store', () => ({
   useChapterStore: () => ({
     loadChapters: mockLoadChapters,
     hierarchy: mockHierarchy,
   }),
 }));
 
-vi.mock('../../../../stores/calendar.store', () => ({
+vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     loadCalendars: vi.fn().mockResolvedValue([]),
     getCalendars: vi.fn().mockResolvedValue([]),
@@ -44,7 +44,7 @@ vi.mock('../../../../stores/calendar.store', () => ({
   }),
 }));
 
-vi.mock('../../../../services/Entity/entity.tree', () => ({
+vi.mock('@/services/Entity/entity.tree', () => ({
   useEntityTree: () => ({
     entities: ref({ character: [{ id: 'char_1', name: 'Arthur' }] }),
     entitySections: ref([{ type: 'character', title: 'Персонажи', icon: 'user', emoji: '👤' }]),
@@ -185,7 +185,7 @@ describe('useChapterTree', () => {
     expect(msSection?.nodes?.[0]?.children?.length).toBe(1);
 
     // 2. Load catch error
-    const { useChapterStore } = await import('../../../../stores/chapter.store');
+    const { useChapterStore } = await import('@/stores/chapter.store');
     const store = useChapterStore();
     vi.mocked(store.loadChapters).mockRejectedValueOnce(new Error('Load chapters error'));
     await tree.load();

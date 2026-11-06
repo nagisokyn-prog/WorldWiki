@@ -5,7 +5,7 @@ import { useEntityEditor } from '../useEntityEditor';
 import * as api from '@/services/api.client';
 import { appAlert } from '@worldwiki/components';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn(),
   getEntities: vi.fn(),
   toggleEntityHistoryPin: vi.fn(),

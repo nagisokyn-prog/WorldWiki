@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { useEntityLinkSelector } from '../useEntityLinkSelector';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn(),
   getEntities: vi.fn(),
   saveEntity: vi.fn()

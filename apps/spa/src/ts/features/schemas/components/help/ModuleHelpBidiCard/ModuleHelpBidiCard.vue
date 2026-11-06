@@ -128,6 +128,8 @@
 import type { ModuleHelpBidiCardProps } from './ModuleHelpBidiCard.model';
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
+import { useModuleHelpBidiCard } from './useModuleHelpBidiCard';
 
-defineProps<ModuleHelpBidiCardProps>();
+const props = defineProps<ModuleHelpBidiCardProps>();
+const { isChapterField, isEntityOrChapterSelect, getSelectOptions } = useModuleHelpBidiCard(props);
 </script>

@@ -6,7 +6,7 @@ import { useSchemaEditorMain } from '../useSchemaEditorMain';
 import * as api from '@/services/api.client';
 import { appAlert } from '@worldwiki/components';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntitySchemas: vi.fn().mockResolvedValue([]),
   saveEntitySchema: vi.fn(),
   getSchemaHistory: vi.fn().mockResolvedValue([]),
@@ -134,7 +134,7 @@ describe('useSchemaEditorMain', () => {
     expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения');
 
     // Save with schemaCache delete fallback (covers lines 112-113)
-    const { useSchemaStore } = await import('../../../../stores/schema');
+    const { useSchemaStore } = await import('@/stores/schema');
     const schemaStore = useSchemaStore() as any;
     schemaStore.invalidateSchema = undefined;
     const cacheMap: Record<string, unknown> = { character: { some: 'cached' } };

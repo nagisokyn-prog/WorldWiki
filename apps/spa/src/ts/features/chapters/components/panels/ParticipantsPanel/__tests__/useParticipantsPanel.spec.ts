@@ -4,7 +4,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { useParticipantsPanel } from '../useParticipantsPanel';
 import * as api from '@/services/api.client';
 
-vi.mock('../../../../services/api.client', () => ({
+vi.mock('@/services/api.client', () => ({
   getEntities: vi.fn().mockResolvedValue([]),
   getSchemas: vi.fn().mockResolvedValue([]),
   getEntitiesBatch: vi.fn().mockResolvedValue({}),

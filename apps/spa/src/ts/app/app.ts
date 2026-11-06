@@ -36,6 +36,9 @@ import TimelinePanelVue from '../features/timeline/components/inspectors/Timelin
 import ParticipantsPanelVue from '../features/chapters/components/panels/ParticipantsPanel/ParticipantsPanel.vue';
 import PlanningPanelVue from '../features/chapters/components/panels/PlanningPanel/PlanningPanel.vue';
 import ExportModalVue from '../features/chapters/components/modals/ExportModal/ExportModal.vue';
+import DocumentExportModalVue from '../features/documents/DocumentExportModal/DocumentExportModal.vue';
+import FloatingEntityEditorVue from '../features/entities/components/modals/FloatingEntityEditor/FloatingEntityEditor.vue';
+import CharacterJourneyVue from '../features/entities/CharacterJourney/CharacterJourney.vue';
 
 import TagsManagerModalVue from '../features/entities/components/modals/TagsManagerModal/TagsManagerModal.vue';
 import SchemaEditorMainVue from '../features/schemas/SchemaEditorMain.vue';
@@ -81,6 +84,9 @@ async function init() {
   app.component('ParticipantsPanelVue', ParticipantsPanelVue);
   app.component('PlanningPanelVue', PlanningPanelVue);
   app.component('ExportModalVue', ExportModalVue);
+  app.component('DocumentExportModal', DocumentExportModalVue);
+  app.component('FloatingEntityEditor', FloatingEntityEditorVue);
+  app.component('CharacterJourney', CharacterJourneyVue);
 
   app.component('QuickOpenVue', QuickOpenVue);
   app.component('CommandPaletteVue', CommandPaletteVue);

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
 import { useGlobalTimeViewer } from '../useGlobalTimeViewer';
 
-vi.mock('../../../../../stores/calendar.store', () => ({
+vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: vi.fn().mockResolvedValue([
       { id: 'cal1', name: 'Cal 1', data: { name: 'Cal 1' } },
@@ -134,7 +134,7 @@ describe('useGlobalTimeViewer', () => {
   });
 
   it('handles calendar without data property directly using cal', async () => {
-    const { useCalendarStore } = await import('../../../../../stores/calendar.store');
+    const { useCalendarStore } = await import('@/stores/calendar.store');
     const store = useCalendarStore();
     vi.mocked(store.getCalendars).mockResolvedValueOnce([
       { id: 'cal_bare', name: 'Bare Cal' } as any,

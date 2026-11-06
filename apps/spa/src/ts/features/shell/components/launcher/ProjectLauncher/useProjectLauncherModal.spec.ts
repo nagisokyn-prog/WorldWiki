@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { useProjectLauncherModal } from './useProjectLauncherModal';
 import { projectService } from '@/services/project.service';
 
-vi.mock('../../../services/project.service', () => ({
+vi.mock('@/services/project.service', () => ({
   projectService: {
     getProjectConfig: vi.fn(),
     saveProjectConfig: vi.fn(),

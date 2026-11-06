@@ -1,6 +1,5 @@
 import { ref, onMounted } from 'vue';
 import * as api from '@/services/api.client';
-import { useShellStore } from '@/stores/shell';
 
 export interface EntityTypeOption {
   value: string;
@@ -28,7 +27,10 @@ export function useAvailableEntityTypes(project?: string) {
   const loadTypes = async () => {
     isLoading.value = true;
     try {
-      const proj = project || useShellStore().projectName || 'default';
+      const urlProject = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('project')
+        : null;
+      const proj = project || urlProject || 'default';
       const schemas = await api.getEntitySchemas(proj);
       const existing = new Set(availableTypes.value.map((t) => t.value));
 

@@ -44,11 +44,10 @@
 
 <script setup lang="ts">
 import type { SchemaHistoryDrawerProps, SchemaHistoryDrawerEmits } from './SchemaHistoryDrawer.model';
-import type { SchemaHistoryRecord } from '@/features/schemas/composables/useSchemaHistory';
+import { useSchemaHistoryDrawer } from './useSchemaHistoryDrawer';
 
-export type SchemaHistoryItem = SchemaHistoryRecord;
+const props = defineProps<SchemaHistoryDrawerProps>();
+const emit = defineEmits<SchemaHistoryDrawerEmits>();
 
-defineProps<SchemaHistoryDrawerProps>();
-
-defineEmits<SchemaHistoryDrawerEmits>();
+useSchemaHistoryDrawer(props, emit);
 </script>

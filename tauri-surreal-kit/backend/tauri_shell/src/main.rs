@@ -38,48 +38,27 @@ impl surreal_domain::SurrealDb for AppState {
 async fn init_database(
     ns: &str, // e.g. "my_app"
     db: &str, // e.g. "my_app"
-              // Optionally pass a DDL schema string:
-              // schema_sql: Option<&str>,
-) -> Surreal<Db> {
+) -> Result<Surreal<Db>, Box<dyn std::error::Error>> {
     let db_path = logic::system_core::get_data_dir().join("surreal_db");
-    fs::create_dir_all(&db_path).ok();
+    fs::create_dir_all(&db_path)?;
 
-    let conn = match Surreal::new::<SurrealKv>(db_path).await {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Failed to start SurrealDB: {:?}", e);
-            std::process::exit(1);
-        }
-    };
-    if let Err(e) = conn.use_ns(ns).use_db(db).await {
-        eprintln!("Failed to use NS/DB: {:?}", e);
-        std::process::exit(1);
-    }
-
-    // ── Apply DDL schema if you have one ──────────────────────────────────
-    // Uncomment and customise:
-    //
-    // let sql = include_str!("../../src/logic/your_schema.surql");
-    // match conn.query(sql).await {
-    //     Ok(mut res) => {
-    //         if let Some(err) = res.take_errors().into_iter().next() {
-    //             eprintln!("DDL Error: {:?}", err);
-    //         } else {
-    //             println!("DDL Schema applied successfully.");
-    //         }
-    //     }
-    //     Err(e) => eprintln!("Failed to execute DDL: {:?}", e),
-    // }
-
-    conn
+    let conn = Surreal::new::<SurrealKv>(db_path).await?;
+    conn.use_ns(ns).use_db(db).await?;
+    Ok(conn)
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-fn main() {
+pub fn setup_app<R: tauri::Runtime>(app: &mut tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
+    let db = tauri::async_runtime::block_on(init_database("my_app", "my_app"))?;
+    app.manage(AppState { db });
+    Ok(())
+}
+
+pub fn build_app() -> tauri::Builder<tauri::test::MockRuntime> {
     use logic::system::*;
 
-    if let Err(e) = tauri::Builder::<tauri::test::MockRuntime>::default()
+    tauri::Builder::<tauri::test::MockRuntime>::default()
         .invoke_handler(surreal_domain::entity_commands![
             // ── System commands (always included) ──────────────────────────
             upload_photo,
@@ -94,22 +73,77 @@ fn main() {
             load_theme,
             save_custom_theme,
             // ── ADD YOUR DOMAIN COMMANDS HERE ─────────────────────────────
-            // Example:
-            //   get_projects, create_project, delete_project,
-            //   get_entities, save_entity, delete_entity,
-            //   @entities:  [Chapter, Volume, Tag],
-            //   @searchable: [TextBlock],
-            //   @relations:  [Cites],
         ])
-        .setup(|app| {
-            // Change "my_app" to your own namespace / database name.
-            let db = tauri::async_runtime::block_on(init_database("my_app", "my_app"));
-            app.manage(AppState { db });
-            Ok(())
-        })
-        .run(tauri::generate_context!())
-    {
+        .setup(|app| setup_app(app))
+}
+
+#[cfg(not(test))]
+fn main() {
+    if let Err(e) = build_app().run(tauri::generate_context!()) {
         eprintln!("error while running tauri application: {:?}", e);
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use surreal_domain::SurrealDb;
+
+    #[tokio::test]
+    async fn test_app_state_and_surreal_db() {
+        let temp = tempfile::TempDir::new().expect("temp dir");
+        let kv_db = Surreal::new::<SurrealKv>(temp.path().join("db")).await.expect("create kv db");
+        kv_db.use_ns("test").use_db("test").await.expect("use ns/db");
+        let state = AppState { db: kv_db };
+        let retrieved = state.surreal_db();
+        assert!(retrieved.health().await.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_init_database() {
+        let temp = tempfile::TempDir::new().expect("temp dir");
+        let data_dir = temp.path().join("data");
+        std::fs::create_dir_all(&data_dir).expect("create data dir");
+        tauri_shell::logic::system_core::set_data_dir_provider(Box::new(TestProvider(data_dir)));
+
+        let db = init_database("test_ns", "test_db").await.expect("init db");
+        assert!(db.health().await.is_ok());
+
+        tauri_shell::logic::system_core::clear_data_dir_provider();
+    }
+
+    #[test]
+    fn test_build_app_setup_and_handlers() {
+        let temp = tempfile::TempDir::new().expect("temp dir");
+        let data_dir = temp.path().join("data");
+        std::fs::create_dir_all(&data_dir).expect("create data dir");
+        tauri_shell::logic::system_core::set_data_dir_provider(Box::new(TestProvider(data_dir)));
+
+        let app = build_app()
+            .build(tauri::generate_context!())
+            .expect("build mock app");
+
+        let exit_code = app.run_return(|app_handle, event| {
+            if let tauri::RunEvent::Ready = event {
+                let retrieved = app_handle.state::<AppState>();
+                let health = tauri::async_runtime::block_on(async {
+                    retrieved.inner().surreal_db().health().await
+                });
+                assert!(health.is_ok());
+                app_handle.exit(0);
+            }
+        });
+        assert_eq!(exit_code, 0);
+
+        tauri_shell::logic::system_core::clear_data_dir_provider();
+    }
+
+    #[derive(Debug)]
+    struct TestProvider(std::path::PathBuf);
+    impl tauri_shell::logic::system_core::DataDirProvider for TestProvider {
+        fn get_data_dir(&self) -> std::path::PathBuf {
+            self.0.clone()
+        }
     }
 }

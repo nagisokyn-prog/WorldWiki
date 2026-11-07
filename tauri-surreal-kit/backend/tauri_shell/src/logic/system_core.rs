@@ -12,30 +12,37 @@ pub trait DataDirProvider: std::fmt::Debug + Send + Sync {
     fn get_data_dir(&self) -> PathBuf;
 }
 
+/// Вычисляет путь к data/ на основе опциональной переменной окружения и пути исполняемого файла.
+pub fn resolve_data_dir_path(custom_env: Option<&str>, exe_path: Option<&std::path::Path>) -> PathBuf {
+    if let Some(custom_dir) = custom_env
+        && !custom_dir.is_empty()
+    {
+        return PathBuf::from(custom_dir);
+    }
+    if let Some(exe) = exe_path {
+        let mut curr = exe.parent();
+        while let Some(dir) = curr {
+            if dir.file_name().map(|n| n == "target").unwrap_or(false)
+                && let Some(root) = dir.parent()
+            {
+                return root.join("data");
+            }
+            curr = dir.parent();
+        }
+    }
+    // Prod or fallback
+    env::current_dir().unwrap_or_default().join("data")
+}
+
 /// Дефолтный провайдер: ищет `target/.../data` (dev) или `cwd/data` (prod).
 #[derive(Debug)]
 pub struct DefaultDataDirProvider;
 
 impl DataDirProvider for DefaultDataDirProvider {
     fn get_data_dir(&self) -> PathBuf {
-        if let Ok(custom_dir) = env::var("SURREAL_DATA_DIR")
-            && !custom_dir.is_empty()
-        {
-            return PathBuf::from(custom_dir);
-        }
-        if let Ok(exe) = env::current_exe() {
-            let mut curr = exe.parent();
-            while let Some(dir) = curr {
-                if dir.file_name().map(|n| n == "target").unwrap_or(false)
-                    && let Some(root) = dir.parent()
-                {
-                    return root.join("data");
-                }
-                curr = dir.parent();
-            }
-        }
-        // Prod or fallback
-        env::current_dir().unwrap_or_default().join("data")
+        let custom = env::var("SURREAL_DATA_DIR").ok();
+        let exe = env::current_exe().ok();
+        resolve_data_dir_path(custom.as_deref(), exe.as_deref())
     }
 }
 
@@ -120,10 +127,9 @@ pub async fn get_local_file_core(path: String) -> Result<Vec<u8>, SystemError> {
 /// Persist app settings JSON to data/settings.json
 pub async fn save_settings_core(settings: Value) -> Result<(), SystemError> {
     let path = get_data_dir().join("settings.json");
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let serialized = serde_json::to_string_pretty(&settings)?;
+    let parent = path.parent().unwrap_or_else(|| std::path::Path::new(""));
+    fs::create_dir_all(parent)?;
+    let serialized = serde_json::to_string_pretty(&settings).unwrap_or_else(|_| "{}".to_string());
     fs::write(&path, serialized)?;
     Ok(())
 }
@@ -145,4 +151,84 @@ pub async fn load_settings_core() -> Result<Value, SystemError> {
 
 // Re-export theme operations
 pub use crate::logic::theme::*;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_resolve_data_dir_path_variations() {
+        // 1. Valid custom env
+        let p1 = resolve_data_dir_path(Some("/custom/data"), None);
+        assert_eq!(p1, PathBuf::from("/custom/data"));
+
+        // 2. Empty custom env falls through
+        let p2 = resolve_data_dir_path(Some(""), Some(Path::new("/workspace/project/target/debug/app")));
+        assert_eq!(p2, PathBuf::from("/workspace/project/data"));
+
+        // 3. Exe path containing target directory
+        let p3 = resolve_data_dir_path(None, Some(Path::new("/home/user/code/target/release/binary")));
+        assert_eq!(p3, PathBuf::from("/home/user/code/data"));
+
+        // 4. Exe path without target directory
+        let p4 = resolve_data_dir_path(None, Some(Path::new("/usr/local/bin/app")));
+        assert_eq!(p4, env::current_dir().unwrap_or_default().join("data"));
+
+        // 5. Exe path None
+        let p5 = resolve_data_dir_path(None, None);
+        assert_eq!(p5, env::current_dir().unwrap_or_default().join("data"));
+    }
+
+    #[tokio::test]
+    async fn test_upload_photo_core_negative_io_error() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let data_dir = temp.path().join("data");
+        fs::create_dir_all(&data_dir).unwrap();
+        set_data_dir_provider(Box::new(TestProvider(data_dir.clone())));
+
+        let err = upload_photo_core(vec![1, 2, 3], "nonexistent_sub/dir/img.png".to_string()).await;
+        assert!(err.is_err(), "upload with invalid path should return Err");
+
+        clear_data_dir_provider();
+    }
+
+    #[tokio::test]
+    async fn test_copy_background_file_core_negative_create_dir_err() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let data_dir = temp.path().join("data");
+        fs::create_dir_all(&data_dir).unwrap();
+        let file_blocking_dir = data_dir.join("user_images");
+        fs::write(&file_blocking_dir, b"block").unwrap();
+
+        set_data_dir_provider(Box::new(TestProvider(data_dir)));
+
+        let err = copy_background_file_core("dummy.png".to_string()).await;
+        assert!(err.is_err(), "copy when user_images is a file should return Err");
+
+        clear_data_dir_provider();
+    }
+
+    #[tokio::test]
+    async fn test_save_settings_core_negative_parent_dir_err() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let file_blocking_data = temp.path().join("data_file");
+        fs::write(&file_blocking_data, b"block").unwrap();
+
+        set_data_dir_provider(Box::new(TestProvider(file_blocking_data.join("nested"))));
+
+        let err = save_settings_core(serde_json::json!({"test": 1})).await;
+        assert!(err.is_err(), "save_settings when parent is blocked should return Err");
+
+        clear_data_dir_provider();
+    }
+
+    #[derive(Debug)]
+    struct TestProvider(PathBuf);
+    impl DataDirProvider for TestProvider {
+        fn get_data_dir(&self) -> PathBuf {
+            self.0.clone()
+        }
+    }
+}
 

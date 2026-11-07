@@ -172,24 +172,27 @@ mod tests {
     #[test]
     fn test_is_not_found_branches() {
         // Syntax and Parse errors should return false
-        let parse_err = surrealdb::Error::query("Parse error at 1:1".to_string(), None);
-        assert!(!is_not_found(&parse_err));
+        let parse_lower_err = surrealdb::Error::query("failed to parse statement".to_string(), None);
+        assert!(!is_not_found(&parse_lower_err));
 
-        let syntax_err = surrealdb::Error::query("Syntax error in query".to_string(), None);
-        assert!(!is_not_found(&syntax_err));
+        let parse_caps_err = surrealdb::Error::query("Parse error at 1:1".to_string(), None);
+        assert!(!is_not_found(&parse_caps_err));
+
+        let syntax_lower_err = surrealdb::Error::query("syntax error near end".to_string(), None);
+        assert!(!is_not_found(&syntax_lower_err));
 
         let syntax_caps_err = surrealdb::Error::query("SurrealDB Syntax error".to_string(), None);
         assert!(!is_not_found(&syntax_caps_err));
 
         // Not found variants should return true
-        let not_found_err = surrealdb::Error::query("Record not found".to_string(), None);
-        assert!(is_not_found(&not_found_err));
+        let does_not_exist_err = surrealdb::Error::query("table does not exist".to_string(), None);
+        assert!(is_not_found(&does_not_exist_err));
+
+        let not_found_lower_err = surrealdb::Error::query("record not found".to_string(), None);
+        assert!(is_not_found(&not_found_lower_err));
 
         let not_found_camel = surrealdb::Error::query("RecordNotFound in table".to_string(), None);
         assert!(is_not_found(&not_found_camel));
-
-        let does_not_exist_err = surrealdb::Error::query("table does not exist".to_string(), None);
-        assert!(is_not_found(&does_not_exist_err));
 
         // Generic error returns false
         let generic_err = surrealdb::Error::query("Connection timed out".to_string(), None);
@@ -204,7 +207,10 @@ mod tests {
         assert_eq!(extract_target_id("entities", "entities:''"), None);
         assert_eq!(extract_target_id("entities", "entities:"), None);
         assert_eq!(extract_target_id("entities", "entities"), None);
+        assert_eq!(extract_target_id("entities", "entities123"), None);
+        assert_eq!(extract_target_id("entities", "entities_xyz:123"), None);
         assert_eq!(extract_target_id("entities", "other:123"), None);
         assert_eq!(extract_target_id("entities", "entities:⟨abc⟩"), Some("abc"));
+        assert_eq!(extract_target_id("entities", "entities:plain_id"), Some("plain_id"));
     }
 }

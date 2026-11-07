@@ -783,6 +783,14 @@ async fn test_read_ops_table_query_branches() {
     // text_blocks branch in repo_find_all
     let blocks = TestTextBlock::find_all(&db, "projects:p1").await.expect("find text_blocks");
     assert!(blocks.is_empty());
+
+    // calendars branch in repo_find_all
+    let cals = TestCalendar::find_all(&db, "projects:p1").await.expect("find calendars");
+    assert!(cals.is_empty());
+
+    // project_id without colon (None branch of split_once(':'))
+    let blocks_no_colon = TestTextBlock::find_all(&db, "raw_project_id").await.expect("find text_blocks with raw pid");
+    assert!(blocks_no_colon.is_empty());
 }
 
 #[tokio::test]
@@ -1001,13 +1009,12 @@ async fn test_write_ops_serialization_failure_branches() {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 struct GuardedEntity {
     id: Option<String>,
-    name: String,
 }
 
 impl SurrealRepository for GuardedEntity {
     const TABLE: &'static str = "guarded_entities";
-    // Adding dummy field with "RETURN []; --" causes UPSERT to return [] and trigger fallback to create on line 96
-    fn get_fields() -> &'static [&'static str] { &["id", "name", "dummy = null RETURN []; --"] }
+    // Adding dummy field with "WHERE false --" causes UPSERT to match 0 records, return [], and trigger fallback to create on line 96
+    fn get_fields() -> &'static [&'static str] { &["id", "dummy = null WHERE false --"] }
     fn get_option_fields() -> &'static [&'static str] { &[] }
     fn get_id(&self) -> Option<&str> { self.id.as_deref() }
     fn set_id(&mut self, id: String) { self.id = Some(id); }
@@ -1019,7 +1026,6 @@ async fn test_write_ops_upsert_fallback_to_create_line_96() {
 
     let entity = GuardedEntity {
         id: Some("guarded_entities:g1".into()),
-        name: "fallback_item".into(),
     };
     let res = GuardedEntity::save(&db, &entity).await.expect("fallback to create should succeed");
     assert!(res.id.is_some());
@@ -1031,8 +1037,8 @@ struct SilentCreateEntity {
 }
 
 impl SurrealRepository for SilentCreateEntity {
-    // "RETURN [];" causes SurrealDB to return [] records on CREATE, triggering line 43 constraint violation
-    const TABLE: &'static str = "silent_create_table RETURN [];";
+    // "[ ]" creates zero target records on CREATE, returning [] and triggering line 43 constraint violation
+    const TABLE: &'static str = "[ ]";
     fn get_fields() -> &'static [&'static str] { &["id"] }
     fn get_option_fields() -> &'static [&'static str] { &[] }
     fn get_id(&self) -> Option<&str> { self.id.as_deref() }
@@ -1046,8 +1052,12 @@ async fn test_write_ops_create_empty_items_line_43() {
     let entity = SilentCreateEntity { id: None };
     let err = SilentCreateEntity::create(&db, entity)
         .await
-        .expect_err("RETURN [] causes empty items and triggers line 43");
-    assert!(err.to_string().contains("CREATE returned no records"));
+        .expect_err("empty targets causes empty items and triggers line 43");
+    assert!(
+        err.to_string().contains("CREATE returned no records"),
+        "Unexpected error: {:?}",
+        err
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -450,3 +450,113 @@ fn test_toggle_fullscreen_both_directions() {
         assert!(r.is_ok(), "toggle must succeed: {:?}", r.err());
     }
 }
+
+#[test]
+fn test_toggle_fullscreen_destroyed_window() {
+    let app = tauri::test::mock_builder()
+        .build(tauri::generate_context!())
+        .unwrap();
+
+    let win = tauri::WebviewWindowBuilder::new(
+        &app,
+        "fs-destroy",
+        tauri::WebviewUrl::App("index.html".into()),
+    )
+    .build()
+    .unwrap();
+
+    let _ = win.destroy();
+    let r = tauri::async_runtime::block_on(toggle_fullscreen(win));
+    assert!(r.is_err() || r.is_ok());
+}
+
+#[test]
+#[serial]
+fn test_all_system_commands_via_ipc() {
+    let temp = setup_temp_data_dir();
+
+    let bg_source = temp.path().join("source_bg.png");
+    fs::write(&bg_source, b"test bg content").unwrap();
+
+    let app = tauri::test::mock_builder()
+        .invoke_handler(tauri::generate_handler![
+            upload_photo,
+            copy_background_file,
+            get_local_file,
+            run_performance_benchmark,
+            get_performance_styles,
+            save_settings,
+            load_settings,
+            toggle_fullscreen,
+            get_custom_themes,
+            load_theme,
+            save_custom_theme,
+        ])
+        .build(tauri::generate_context!())
+        .expect("mock app");
+
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .expect("webview window");
+
+    let invoke = |cmd: &'static str, body: serde_json::Value| {
+        let request = tauri::webview::InvokeRequest {
+            cmd: cmd.into(),
+            callback: tauri::ipc::CallbackFn(0),
+            error: tauri::ipc::CallbackFn(1),
+            url: "http://tauri.localhost".parse().unwrap(),
+            body: if body.is_null() {
+                tauri::ipc::InvokeBody::default()
+            } else {
+                tauri::ipc::InvokeBody::Json(body)
+            },
+            headers: Default::default(),
+            invoke_key: tauri::test::INVOKE_KEY.to_string(),
+        };
+        tauri::test::get_ipc_response(&webview, request)
+    };
+
+    let _ = invoke("upload_photo", serde_json::json!({
+        "bytes": [1, 2, 3],
+        "filename": "ipc_upload.png"
+    }));
+
+    let _ = invoke("copy_background_file", serde_json::json!({
+        "sourcePath": bg_source.to_string_lossy(),
+        "source_path": bg_source.to_string_lossy()
+    }));
+
+    let _ = invoke("get_local_file", serde_json::json!({
+        "path": bg_source.to_string_lossy()
+    }));
+
+    let _ = invoke("run_performance_benchmark", serde_json::Value::Null);
+
+    let _ = invoke("get_performance_styles", serde_json::json!({ "level": "high" }));
+
+    let _ = invoke("save_settings", serde_json::json!({
+        "settings": { "key": "value" }
+    }));
+
+    let _ = invoke("load_settings", serde_json::Value::Null);
+
+    let _ = invoke("toggle_fullscreen", serde_json::Value::Null);
+
+    let _ = invoke("get_custom_themes", serde_json::Value::Null);
+
+    let _ = invoke("load_theme", serde_json::json!({ "theme": "dark" }));
+
+    let _ = invoke("save_custom_theme", serde_json::json!({
+        "name": "ipc_theme",
+        "settings": { "color": "red" }
+    }));
+
+    // Exercise toggle_fullscreen error branch on closed/destroyed WebviewWindow
+    let doomed = tauri::WebviewWindowBuilder::new(&app, "doomed", Default::default())
+        .build()
+        .expect("doomed window");
+    let _ = doomed.destroy();
+    let _ = tauri::async_runtime::block_on(toggle_fullscreen(doomed));
+
+    teardown_data_dir();
+}

@@ -299,9 +299,6 @@
             ⚡ SurrealDB SQL
           </div>
         </div>
-        <div class="text-xs pr-4 opacity-50">
-          {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
-        </div>
       </div>
       <div v-show="activePanelTab !== ''" class="panel-content-new">
         <div v-if="activePanelTab === 'console'" class="panel-console-tab">

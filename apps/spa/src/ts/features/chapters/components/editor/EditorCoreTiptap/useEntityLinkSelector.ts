@@ -28,11 +28,33 @@ export function useEntityLinkSelector(
   const rawEntities = ref<EntitySelectorItem[]>([]);
 
   const entityTypes = computed<EntityTypeItem[]>(() => {
-    return loadedSchemas.value.map((s) => ({
-      id: s.type_key,
-      name: s.type_name,
-      icon: (s as { icon?: string }).icon || '📌'
-    }));
+    const map = new Map<string, EntityTypeItem>();
+    for (const s of loadedSchemas.value) {
+      if (!s.type_key) continue;
+      const full = s.full_schema as Record<string, unknown> | undefined | null;
+      const resolvedIcon =
+        (typeof full?.iconEmoji === 'string' && full.iconEmoji.trim()) ||
+        (typeof full?.icon === 'string' && full.icon.trim()) ||
+        (s as { icon?: string }).icon ||
+        '📌';
+      const resolvedName = s.type_name || (typeof full?.name === 'string' && full.name.trim()) || s.type_key;
+
+      const existing = map.get(s.type_key);
+      if (!existing) {
+        map.set(s.type_key, {
+          id: s.type_key,
+          name: resolvedName,
+          icon: resolvedIcon
+        });
+      } else if (full && (!existing.icon || existing.icon === '📌') && resolvedIcon !== '📌') {
+        map.set(s.type_key, {
+          id: s.type_key,
+          name: resolvedName,
+          icon: resolvedIcon
+        });
+      }
+    }
+    return Array.from(map.values());
   });
 
   const schemaMap = computed(() => {
@@ -50,13 +72,7 @@ export function useEntityLinkSelector(
   const cleanSearchQuery = computed(() => computeCleanSearchQuery(searchQuery.value));
 
   const availableCreationTypes = computed<EntityTypeItem[]>(() => {
-    if (entityTypes.value.length > 0) return entityTypes.value;
-    return [
-      { id: 'character', name: 'Персонаж', icon: '👤' },
-      { id: 'location', name: 'Локация', icon: '📍' },
-      { id: 'item', name: 'Предмет', icon: '⚔️' },
-      { id: 'faction', name: 'Фракция', icon: '🛡️' }
-    ];
+    return entityTypes.value;
   });
 
   const matchingEntities = computed(() => {

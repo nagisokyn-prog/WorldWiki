@@ -77,9 +77,6 @@
       <button class="btn btn-small btn-outline interactive-el" title="История изменений главы" @click="$emit('toggle-history')">
         <i class="fas fa-history"></i>
       </button>
-      <button class="btn btn-small btn-outline interactive-el" title="Анализ текста" @click="commands.analyzeText?.()">
-        <i class="fas fa-chart-bar"></i>
-      </button>
       <button 
         class="btn btn-small btn-primary interactive-el" 
         :disabled="isLocked || !hasUnsavedChanges"

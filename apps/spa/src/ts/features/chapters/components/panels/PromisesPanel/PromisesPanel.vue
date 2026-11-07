@@ -1,6 +1,6 @@
 <template>
   <div class="tool-section promises-section flex-1 min-h-0 flex flex-col">
-    <div class="section-header" @click="isCollapsed = !isCollapsed">
+    <div class="section-header">
       <div class="flex items-center gap-2">
         <span class="font-bold text-sm">🎯 Сцены & Блоки</span>
         <span v-if="promises.length > 0" class="badge badge-subtle">

@@ -209,9 +209,6 @@
                     <div class="panel-tab-new interactive-el" :class="{ active: activePanelTab === 'console' }" @click.stop="activePanelTab = 'console'">💻 Терминал Системы</div>
                     <div class="panel-tab-new interactive-el" :class="{ active: activePanelTab === 'stats' }" @click.stop="activePanelTab = 'stats'">📊 Аналитика</div>
                 </div>
-                <div style="font-size:11px; padding-right:16px; opacity:0.5;">
-                    {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
-                </div>
             </div>
             <div class="panel-content-new" v-show="activePanelTab !== ''">
                 <div v-if="activePanelTab === 'console'">

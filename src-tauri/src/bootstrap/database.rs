@@ -118,7 +118,7 @@ pub const CORE_ENTITY_SCHEMAS: &[(&str, &str)] = &[
 
 pub fn compute_schema_hash() -> String {
     let mut hasher = DefaultHasher::new();
-    hasher.write(b"v7_event_journey_mentions");
+    hasher.write(b"v8_entity_schemas_unique_dedup");
     for (name, ddl) in ALL_DDL_MODULES {
         hasher.write(name.as_bytes());
         hasher.write(ddl.as_bytes());
@@ -128,6 +128,56 @@ pub fn compute_schema_hash() -> String {
         hasher.write(json_str.as_bytes());
     }
     format!("{:016x}", hasher.finish())
+}
+
+pub async fn deduplicate_entity_schemas(db: &Surreal<Db>) {
+    let q = "SELECT id, project_id, type_key, full_schema FROM entity_schemas;";
+    if let Ok(mut res) = db.query(q).await {
+        let rows: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+        let mut seen = std::collections::HashSet::new();
+        let mut to_delete = Vec::new();
+
+        let mut sorted_rows = rows;
+        sorted_rows.sort_by(|a, b| {
+            let a_has_full = a.get("full_schema").map_or(false, |v| !v.is_null());
+            let b_has_full = b.get("full_schema").map_or(false, |v| !v.is_null());
+            b_has_full.cmp(&a_has_full)
+        });
+
+        for row in sorted_rows {
+            let pid = row
+                .get("project_id")
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+            let tk = row
+                .get("type_key")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            let id = row
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+
+            if pid.is_empty() || tk.is_empty() || id.is_empty() {
+                continue;
+            }
+
+            let key = (pid, tk);
+            if seen.contains(&key) {
+                to_delete.push(id);
+            } else {
+                seen.insert(key);
+            }
+        }
+
+        for id_str in to_delete {
+            let clean_id = id_str.strip_prefix("entity_schemas:").unwrap_or(&id_str);
+            let del_q = "DELETE type::record('entity_schemas', $id)";
+            let _ = db.query(del_q).bind(("id", clean_id)).await;
+        }
+    }
 }
 
 pub async fn sync_builtin_entity_schemas(db: &Surreal<Db>) {
@@ -206,6 +256,7 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
             "[DB] Schema changed or missing (hash: {}), applying DDL pipeline...",
             &current_hash[..8]
         );
+        deduplicate_entity_schemas(&db).await;
         if let Err(e) = apply_schema_pipeline(&db).await {
             eprintln!("[CRITICAL] Schema pipeline failed to apply: {}", e);
             return Err(Box::new(std::io::Error::other(e.to_string())));

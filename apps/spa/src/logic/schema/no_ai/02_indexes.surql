@@ -46,6 +46,10 @@ DEFINE INDEX OVERWRITE idx_entity_schema_id    ON entities FIELDS schema_id;
 DEFINE INDEX OVERWRITE idx_entity_name_ft      ON entities FIELDS name FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 DEFINE INDEX OVERWRITE idx_entity_desc_ft      ON entities FIELDS description FULLTEXT ANALYZER ru_en_analyzer BM25 HIGHLIGHTS;
 
+-- 5.1. СХЕМЫ СУЩНОСТЕЙ
+DEFINE INDEX OVERWRITE idx_entity_schemas_project ON entity_schemas FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_entity_schemas_unique  ON entity_schemas FIELDS project_id, type_key UNIQUE;
+
 -- 6. СВЯЗИ И ОТНОШЕНИЯ
 DEFINE INDEX OVERWRITE idx_rel_schema_project ON relation_schemas FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_rel_type           ON entity_rel FIELDS rel_type;

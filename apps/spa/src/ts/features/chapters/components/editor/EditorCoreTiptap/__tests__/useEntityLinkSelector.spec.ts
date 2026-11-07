@@ -310,6 +310,28 @@ describe('useEntityLinkSelector', () => {
         })
       }));
     });
+
+    it('deduplicates schemas by type_key and extracts iconEmoji from full_schema without hardcoded types', async () => {
+      vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+        { type_key: 'event', type_name: 'Историческое событие', full_schema: { iconEmoji: '📜' } },
+        { type_key: 'event', type_name: 'Историческое событие', full_schema: null },
+        { type_key: 'event', type_name: 'Историческое событие', full_schema: {} },
+        { type_key: 'custom_magic', type_name: 'Магическая школа', full_schema: { iconEmoji: '✨' } }
+      ] as never);
+
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector({ project: 'test_prj', isOpen: true }, emit);
+      await flushPromises();
+
+      expect(selector.entityTypes.value).toEqual([
+        { id: 'event', name: 'Историческое событие', icon: '📜' },
+        { id: 'custom_magic', name: 'Магическая школа', icon: '✨' }
+      ]);
+      expect(selector.availableCreationTypes.value).toEqual([
+        { id: 'event', name: 'Историческое событие', icon: '📜' },
+        { id: 'custom_magic', name: 'Магическая школа', icon: '✨' }
+      ]);
+    });
   });
 });
 

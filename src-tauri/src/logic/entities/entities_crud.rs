@@ -159,26 +159,64 @@ pub async fn save_entity_inner(
 
     let query = "RETURN fn::save_entity(IF $id != NONE { type::record('entities', $id) } ELSE { NONE }, type::record('projects', $p), $etype, $name, $desc, $attrs, $tags, $embeds);";
 
-    let mut res = db
-        .query(query)
-        .bind(("id", id_opt))
-        .bind(("p", clean_pid))
-        .bind(("etype", entity_type))
-        .bind(("name", name))
-        .bind(("desc", description))
-        .bind(("attrs", attributes))
-        .bind(("tags", tags))
-        .bind(("embeds", embeddings))
-        .await?;
+    let mut attempts = 0;
+    loop {
+        let res = db
+            .query(query)
+            .bind(("id", id_opt.as_deref()))
+            .bind(("p", clean_pid.as_str()))
+            .bind(("etype", entity_type.as_str()))
+            .bind(("name", name.as_str()))
+            .bind(("desc", description.as_deref()))
+            .bind(("attrs", attributes.clone()))
+            .bind(("tags", tags.clone()))
+            .bind(("embeds", embeddings.clone()))
+            .await;
 
-    let saved: Option<Value> = res.take(0)?;
-    match saved {
-        Some(mut v) => {
-            flatten_thing(&mut v);
-            let parsed: Entity = serde_json::from_value(v)?;
-            Ok(parsed)
+        match res {
+            Ok(mut query_res) => {
+                let saved_res: Result<Option<Value>, _> = query_res.take(0);
+                match saved_res {
+                    Ok(Some(mut v)) => {
+                        flatten_thing(&mut v);
+                        let parsed: Entity = serde_json::from_value(v)?;
+                        return Ok(parsed);
+                    }
+                    Ok(None) => {
+                        return Err(EntityError::OperationFailed("Entity not saved".to_string()))
+                    }
+                    Err(e) => {
+                        let err_str = e.to_string();
+                        let is_retryable = err_str.contains("Transaction conflict")
+                            || err_str.contains("write conflict")
+                            || err_str.contains("can be retried")
+                            || err_str.contains("TransactionConflict");
+
+                        if attempts < 10 && is_retryable {
+                            attempts += 1;
+                            tokio::time::sleep(tokio::time::Duration::from_millis(20 * attempts))
+                                .await;
+                            continue;
+                        }
+                        return Err(EntityError::from(e));
+                    }
+                }
+            }
+            Err(e) => {
+                let err_str = e.to_string();
+                let is_retryable = err_str.contains("Transaction conflict")
+                    || err_str.contains("write conflict")
+                    || err_str.contains("can be retried")
+                    || err_str.contains("TransactionConflict");
+
+                if attempts < 10 && is_retryable {
+                    attempts += 1;
+                    tokio::time::sleep(tokio::time::Duration::from_millis(20 * attempts)).await;
+                    continue;
+                }
+                return Err(EntityError::from(e));
+            }
         }
-        None => Err(EntityError::OperationFailed("Entity not saved".to_string())),
     }
 }
 

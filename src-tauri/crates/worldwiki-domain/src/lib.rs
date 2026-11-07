@@ -1,3 +1,5 @@
+#![allow(unstable_features)]
+
 pub mod ai;
 pub mod analytics;
 pub mod calendar;
@@ -7,6 +9,9 @@ pub mod knowledge;
 pub mod manuscript;
 pub mod plot;
 pub mod storage;
+
+#[cfg(any(kani, feature = "kani"))]
+pub mod verify;
 
 pub use errors::DomainError;
 
@@ -28,7 +33,7 @@ mod tests {
     fn test_extract_entity_mentions() {
         let text = "Встретились ((Алиса)) и ((Боб)), а потом пришел ((Алиса)).";
         let mentions = TextBlock::extract_entity_mentions(text);
-        assert_eq!(mentions, vec!["Алиса", "Боб"]);
+        assert_eq!(mentions, vec!["Алиса", "Боб", "Алиса"]);
     }
 
     #[test]

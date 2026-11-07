@@ -17,10 +17,8 @@ fn extract_thing_string(v: &Value) -> Option<String> {
 pub fn normalize_embedded_things(val: &mut Value) {
     let Some(obj) = val.as_object_mut() else { return };
     for v in obj.values_mut() {
-        if v.is_object() {
-            if let Some(thing_str) = extract_thing_string(v) {
-                *v = Value::String(thing_str);
-            }
+        if let Some(thing_str) = extract_thing_string(v) {
+            *v = Value::String(thing_str);
         }
     }
 }

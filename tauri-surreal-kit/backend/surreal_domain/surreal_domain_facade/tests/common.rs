@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use surrealdb::engine::local::{Db, SurrealKv};
+use surrealdb::engine::local::{Db, Mem};
 use surrealdb::Surreal;
 use surreal_domain::SurrealDb;
 use tempfile::TempDir;
@@ -15,10 +15,10 @@ use tempfile::TempDir;
 #[cfg(feature = "full-db")]
 use surrealdb::engine::local::SurrealRocksDb;
 
-/// Test database wrapper keeping TempDir alive for the lifetime of the test.
+/// Test database wrapper keeping TempDir alive for the lifetime of the test (if using on-disk backend).
 pub struct TestDb {
     pub db: Surreal<Db>,
-    _dir: TempDir,
+    _dir: Option<TempDir>,
 }
 
 impl std::ops::Deref for TestDb {
@@ -42,27 +42,25 @@ impl SurrealDb for MockAppState {
     }
 }
 
-/// Creates an isolated temporary directory test database using SurrealKV.
+/// Creates an isolated in-memory test database using SurrealDB Mem engine.
 pub async fn create_test_db() -> TestDb {
-    let dir = TempDir::new().expect("Failed to create temporary directory for test db");
-    let db = Surreal::new::<SurrealKv>(dir.path())
+    let db = Surreal::new::<Mem>(())
         .await
-        .expect("Failed to create test database");
+        .expect("Failed to create in-memory test database");
 
     db.use_ns("test")
         .use_db("test")
         .await
         .expect("Failed to set namespace/database");
 
-    TestDb { db, _dir: dir }
+    TestDb { db, _dir: None }
 }
 
-/// Creates a MockAppState with an isolated test database.
+/// Creates a MockAppState with an isolated in-memory test database.
 pub async fn create_test_app_state() -> MockAppState {
-    let dir = TempDir::new().expect("Failed to create tempdir for AppState");
-    let db = Surreal::new::<SurrealKv>(dir.path())
+    let db = Surreal::new::<Mem>(())
         .await
-        .expect("Failed to create test database");
+        .expect("Failed to create in-memory test database");
 
     db.use_ns("test")
         .use_db("test")
@@ -71,7 +69,7 @@ pub async fn create_test_app_state() -> MockAppState {
 
     MockAppState {
         db,
-        _dir: Some(dir),
+        _dir: None,
     }
 }
 

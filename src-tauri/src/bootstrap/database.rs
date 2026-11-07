@@ -139,8 +139,8 @@ pub async fn deduplicate_entity_schemas(db: &Surreal<Db>) {
 
         let mut sorted_rows = rows;
         sorted_rows.sort_by(|a, b| {
-            let a_has_full = a.get("full_schema").map_or(false, |v| !v.is_null());
-            let b_has_full = b.get("full_schema").map_or(false, |v| !v.is_null());
+            let a_has_full = a.get("full_schema").is_some_and(|v| !v.is_null());
+            let b_has_full = b.get("full_schema").is_some_and(|v| !v.is_null());
             b_has_full.cmp(&a_has_full)
         });
 

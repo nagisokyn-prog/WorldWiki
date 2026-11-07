@@ -1,3 +1,5 @@
+use crate::manuscript::mention_parser::{find_ascii, split_once_ascii};
+
 pub struct IdExtractor;
 
 impl IdExtractor {
@@ -13,28 +15,52 @@ impl IdExtractor {
     }
 
     fn check_data_entity_id(decoded: &str) -> Option<String> {
-        let (_, after) = decoded.split_once("data-entity-id=")?;
-        let val = after.trim_start_matches(['"', '\''])
+        let (_, after) = split_once_ascii(decoded, b"data-entity-id=")?;
+        let val = after
+            .trim_start_matches(['"', '\''])
             .split(['"', '\'', ' ', '>'])
             .next()?
-            .trim();
+            .trim_ascii();
         (!val.is_empty()).then(|| Self::normalize_record_id(val))
     }
 
     fn check_query_param_id(decoded: &str) -> Option<String> {
-        let (_, after) = decoded.split_once("id=")?;
-        let val = after.split(['&', ']', ')', '"', '\'', ' '])
+        let (_, after) = split_once_ascii(decoded, b"id=")?;
+        let val = after
+            .split(['&', ']', ')', '"', '\'', ' '])
             .next()?
-            .trim();
+            .trim_ascii();
         (!val.is_empty()).then(|| Self::normalize_record_id(val))
     }
 
     fn check_direct_prefix(decoded: &str) -> Option<String> {
-        for prefix in &["entities:", "characters:", "locations:", "items:", "events:"] {
-            if let Some(idx) = decoded.find(prefix) {
+        const PREFIXES: &[&[u8]] = &[
+            b"entities:",
+            b"characters:",
+            b"locations:",
+            b"items:",
+            b"events:",
+        ];
+        for &prefix in PREFIXES {
+            if let Some(idx) = find_ascii(decoded, prefix) {
                 let after = decoded.get(idx..)?;
-                let end_idx = after.find(|c: char| c.is_whitespace() || ['&', ']', ')', '"', '\''].contains(&c))
-                    .unwrap_or(after.len());
+                let after_bytes = after.as_bytes();
+                let mut end_idx = after_bytes.len();
+                let mut i = 0;
+                while i < after_bytes.len() {
+                    let b = after_bytes[i];
+                    if b.is_ascii_whitespace()
+                        || b == b'&'
+                        || b == b']'
+                        || b == b')'
+                        || b == b'"'
+                        || b == b'\''
+                    {
+                        end_idx = i;
+                        break;
+                    }
+                    i += 1;
+                }
                 let id = after.get(..end_idx)?;
                 if !id.is_empty() {
                     return Some(id.to_string());
@@ -45,8 +71,8 @@ impl IdExtractor {
     }
 
     fn normalize_record_id(raw_id: &str) -> String {
-        let clean = raw_id.trim_matches(|c| c == '"' || c == '\'' || c == '`');
-        if clean.contains(':') {
+        let clean = raw_id.trim_matches(['"', '\'', '`']);
+        if find_ascii(clean, b":").is_some() {
             clean.to_string()
         } else {
             format!("entities:{}", clean)
@@ -54,24 +80,38 @@ impl IdExtractor {
     }
 
     fn url_decode(s: &str) -> String {
-        let mut result = String::with_capacity(s.len());
-        let mut chars = s.chars().peekable();
-        while let Some(c) = chars.next() {
-            if c == '%'
-                && let (Some(c1), Some(c2)) = (chars.next(), chars.next())
-            {
-                let hex = format!("{}{}", c1, c2);
-                if let Ok(byte) = u8::from_str_radix(&hex, 16) {
-                    result.push(byte as char);
-                    continue;
-                }
-                result.push('%');
-                result.push(c1);
-                result.push(c2);
-                continue;
-            }
-            result.push(c);
+        if find_ascii(s, b"%").is_none() {
+            return s.to_string();
         }
-        result
+        let mut bytes = Vec::with_capacity(s.len());
+        let mut chars = s.as_bytes().iter().copied().peekable();
+        while let Some(b) = chars.next() {
+            if b == b'%' {
+                let c1 = chars.next();
+                let c2 = chars.next();
+                if let (Some(h1), Some(h2)) = (c1, c2) {
+                    let hex = [h1, h2];
+                    if let Ok(hex_str) = core::str::from_utf8(&hex)
+                        && let Ok(val) = u8::from_str_radix(hex_str, 16)
+                    {
+                        bytes.push(val);
+                        continue;
+                    }
+                    bytes.push(b'%');
+                    bytes.push(h1);
+                    bytes.push(h2);
+                    continue;
+                } else {
+                    bytes.push(b'%');
+                    if let Some(h1) = c1 {
+                        bytes.push(h1);
+                    }
+                    break;
+                }
+            } else {
+                bytes.push(b);
+            }
+        }
+        String::from_utf8_lossy(&bytes).into_owned()
     }
 }

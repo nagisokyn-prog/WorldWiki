@@ -9,9 +9,18 @@ pub(crate) async fn repo_find_by_id<T, Db: surrealdb::Connection>(
 where
     T: serde::de::DeserializeOwned,
 {
-    let actual_id = match extract_target_id(table, id) {
-        Some(aid) => aid,
-        None => return Ok(None),
+    let actual_id = if id.contains(':') {
+        match extract_target_id(table, id) {
+            Some(aid) => aid,
+            None => return Ok(None),
+        }
+    } else {
+        id.strip_prefix('⟨')
+            .or_else(|| id.strip_prefix(['`', '"', '\'']))
+            .unwrap_or(id)
+            .strip_suffix('⟩')
+            .or_else(|| id.strip_suffix(['`', '"', '\'']))
+            .unwrap_or(id)
     };
     match db.select((table, actual_id)).await {
         Ok(res) => Ok(res.and_then(|v| serde_json::from_value(v).ok())),
@@ -33,19 +42,21 @@ pub(crate) async fn repo_find_all<T, Db: surrealdb::Connection>(
 where
     T: serde::de::DeserializeOwned,
 {
-    let pid_raw = match project_id.split_once(':') {
-        Some((_, raw)) => raw.trim_matches('`'),
-        None => project_id.trim_matches('`'),
+    let clean = project_id.replace(['⟨', '⟩', '`'], "");
+    let pid_raw = match clean.split_once(':') {
+        Some((_, raw)) => raw,
+        None => &clean,
     };
     let pid_str = format!("projects:{}", pid_raw);
+    let pid_bracketed = format!("projects:⟨{}⟩", pid_raw);
     let pid_backticked = format!("projects:`{}`", pid_raw);
 
     let query_str = match table {
-        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = fn::normalize_project_id($pid_str) OR volume_id.project_id = $pid",
-        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = fn::normalize_project_id($pid_str) OR schema_id.project_id = $pid",
-        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = fn::normalize_project_id($pid_str) OR planet_id.project_id = $pid",
-        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = fn::normalize_project_id($pid_str) OR chapter_id.volume_id.project_id = $pid",
-        _ => "SELECT * FROM type::table($table) WHERE project_id = fn::normalize_project_id($pid_str) OR project_id = $pid",
+        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_bracketed",
+        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_bracketed",
+        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_bracketed",
+        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_bracketed",
+        _ => "SELECT * FROM type::table($table) WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed",
     };
 
     let mut res = db
@@ -53,6 +64,7 @@ where
         .bind(("table", table.to_string()))
         .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
         .bind(("pid_str", pid_str))
+        .bind(("pid_bracketed", pid_bracketed))
         .bind(("pid_backticked", pid_backticked))
         .await?;
 

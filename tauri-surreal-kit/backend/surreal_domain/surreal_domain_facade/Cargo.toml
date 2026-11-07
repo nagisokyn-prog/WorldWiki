@@ -18,13 +18,13 @@ surreal_domain_macros = { path = "../surreal_domain_macros" }
 ts-rs = { version = "12.0.1", features = ["serde-compat", "serde-json-impl", "uuid-impl", "chrono-impl", "no-serde-warnings"] }
 
 [dev-dependencies]
-surrealdb  = { version = "3.2.4", features = ["kv-surrealkv"] }
-tokio      = { version = "1.53.1", features = ["full"] }
+surrealdb  = { version = "3", features = ["kv-surrealkv", "kv-mem"] }
+tokio      = { version = "1", features = ["full"] }
 serde      = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono     = { version = "0.4", features = ["serde"] }
 tempfile   = "3"
-tauri      = { version = "2.11.5", default-features = false, features = ["test"] }
+tauri      = { version = "2", default-features = false, features = ["test"] }
 ts-rs      = { version = "12.0.1", features = ["serde-compat", "serde-json-impl", "uuid-impl", "chrono-impl", "no-serde-warnings"] }
 trybuild   = "1.0"
 serial_test = "4.0.1"

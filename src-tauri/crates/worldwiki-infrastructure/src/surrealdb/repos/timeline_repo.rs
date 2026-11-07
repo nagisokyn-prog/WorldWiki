@@ -68,11 +68,29 @@ impl TimelineEventRepository for SurrealTimelineRepository {
         )
     }
 
-    async fn add_reveal(&self, _reveal: &EventReveal) -> Result<(), DomainError> {
-        Ok(())
+    async fn add_reveal(&self, reveal: &EventReveal) -> Result<(), DomainError> {
+        let clean_ev = clean_raw_id!(&reveal.event_id, "timeline_events");
+        let clean_ch = clean_raw_id!(&reveal.chapter_id, "chapters");
+        let pov = reveal.pov_id.as_deref().map(|p| clean_raw_id!(p, "entities"));
+        surreal_exec!(
+            self.db,
+            "RETURN fn::add_event_reveal($ev, $ch, $pov, $kind, $block);",
+            ("ev", clean_ev),
+            ("ch", clean_ch),
+            ("pov", pov),
+            ("kind", reveal.kind.clone()),
+            ("block", reveal.block_id.clone()),
+        )
     }
 
-    async fn remove_reveal(&self, _event_id: &str, _chapter_id: &str) -> Result<(), DomainError> {
-        Ok(())
+    async fn remove_reveal(&self, event_id: &str, chapter_id: &str) -> Result<(), DomainError> {
+        let clean_ev = clean_raw_id!(event_id, "timeline_events");
+        let clean_ch = clean_raw_id!(chapter_id, "chapters");
+        surreal_exec!(
+            self.db,
+            "RETURN fn::remove_event_reveal($ev, $ch);",
+            ("ev", clean_ev),
+            ("ch", clean_ch),
+        )
     }
 }

@@ -4,20 +4,21 @@
 -- 40. СОХРАНЕНИЕ / ОБНОВЛЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ (PLOT PROMISE / NARRATIVE HUB)
 DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     $id: string,
-    $proj: any,
-    $chap: option<record<chapters> | string | null>,
     $data: object
 ) {
-    LET $p_rec = fn::normalize_project_id($proj);
     LET $rec_id = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
     LET $milestones = IF $data.milestones != NONE { $data.milestones } ELSE { [] };
     
-    LET $target_chap = IF $chap != NONE AND $chap != NULL AND type::string($chap) != '' {
-        type::record('chapters', type::string($chap).replace('chapters:', ''))
-    } ELSE IF $data.chapter_id != NONE AND $data.chapter_id != NULL AND type::string($data.chapter_id) != '' {
+    LET $target_chap = IF $data.chapter_id != NONE AND $data.chapter_id != NULL AND type::string($data.chapter_id) != '' {
         type::record('chapters', type::string($data.chapter_id).replace('chapters:', ''))
     } ELSE IF array::len($milestones) > 0 AND array::first($milestones).chapter_id != NONE AND type::string(array::first($milestones).chapter_id) != '' {
         type::record('chapters', type::string(array::first($milestones).chapter_id).replace('chapters:', ''))
+    } ELSE { NONE };
+
+    LET $p_rec = IF $data.project_id != NONE AND $data.project_id != NULL AND type::string($data.project_id) != '' {
+        fn::normalize_project_id($data.project_id)
+    } ELSE IF $target_chap != NONE AND $target_chap != NULL {
+        $target_chap.volume_id.project_id
     } ELSE { NONE };
 
     LET $target_para = IF $data.paragraph_index != NONE { 
@@ -182,7 +183,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         SELECT 
             id,
             type::string(parent_id) AS parent_id,
-            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
+            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -194,17 +195,17 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             created_at,
             updated_at,
             ->promise_milestones.{
-                milestone_id: id,
+                milestone_id: type::string(id),
                 stage: stage,
                 quote: quote,
                 note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
+                block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
+                chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            <-participant_of.in.id AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
             ->advances_arc.{
-                arc_id: type::string(out.id),
+                arc_id: type::string(out),
                 arc_title: out.title,
                 arc_color: out.color,
                 arc_phase: phase
@@ -502,7 +503,7 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
         SELECT 
             id,
             type::string(parent_id) AS parent_id,
-            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
+            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -514,17 +515,17 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
             created_at,
             updated_at,
             ->promise_milestones.{
-                milestone_id: id,
+                milestone_id: type::string(id),
                 stage: stage,
                 quote: quote,
                 note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
+                block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
+                chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            <-participant_of.in.id AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
             ->advances_arc.{
-                arc_id: out.id,
+                arc_id: type::string(out),
                 arc_phase: phase
             } AS arcs
         FROM $rec
@@ -540,7 +541,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
         SELECT 
             id,
             type::string(parent_id) AS parent_id,
-            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
+            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -552,17 +553,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
             created_at,
             updated_at,
             ->promise_milestones.{
-                milestone_id: id,
+                milestone_id: type::string(id),
                 stage: stage,
                 quote: quote,
                 note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
+                block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
+                chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            <-participant_of.in.id AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
             ->advances_arc.{
-                arc_id: out.id,
+                arc_id: type::string(out),
                 arc_phase: phase
             } AS arcs
         FROM plot_promises 
@@ -582,7 +583,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
         SELECT 
             id,
             type::string(parent_id) AS parent_id,
-            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
+            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -594,17 +595,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
             created_at,
             updated_at,
             ->promise_milestones.{
-                milestone_id: id,
+                milestone_id: type::string(id),
                 stage: stage,
                 quote: quote,
                 note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
+                block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
+                chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            <-participant_of.in.id AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
             ->advances_arc.{
-                arc_id: out.id,
+                arc_id: type::string(out),
                 arc_phase: phase
             } AS arcs
         FROM plot_promises 
@@ -621,7 +622,7 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
     RETURN (
         SELECT 
             id,
-            (->spans_blocks.out.id ?? block_ids ?? []) AS block_ids,
+            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -631,17 +632,17 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
             created_at,
             updated_at,
             ->promise_milestones.{
-                milestone_id: id,
+                milestone_id: type::string(id),
                 stage: stage,
                 quote: quote,
                 note: note,
-                block_id: out.id,
-                chapter_id: out.chapter_id,
-                order_index: out.order_index
+                block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
+                chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            <-participant_of.in.id AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
             ->advances_arc.{
-                arc_id: out.id,
+                arc_id: type::string(out),
                 arc_phase: phase
             } AS arcs
         FROM plot_promises

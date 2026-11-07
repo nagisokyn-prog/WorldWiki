@@ -250,10 +250,13 @@ DEFINE FUNCTION OVERWRITE fn::add_event_reveal(
 ) {
     LET $ev_rec = IF string::starts_with(type::string($event_id), 'timeline_events:') { type::record($event_id) } ELSE { type::record('timeline_events', $event_id) };
     LET $ch_rec = IF string::starts_with(type::string($chapter_id), 'chapters:') { type::record($chapter_id) } ELSE { type::record('chapters', $chapter_id) };
+    LET $pov_rec = IF $pov_id != NONE AND $pov_id != NULL AND type::string($pov_id) != '' {
+        IF string::starts_with(type::string($pov_id), 'entities:') { type::record($pov_id) } ELSE { type::record('entities', $pov_id) }
+    } ELSE { NONE };
     RELATE $ev_rec->revealed_in->$ch_rec CONTENT {
-        pov_id: $pov_id,
-        kind: $kind,
-        block_id: $block_id,
+        pov_id: $pov_rec,
+        kind: IF $kind != NONE AND $kind != NULL AND type::string($kind) != '' { type::string($kind) } ELSE { 'direct' },
+        block_id: IF $block_id != NONE AND $block_id != NULL { type::string($block_id) } ELSE { NONE },
         created_at: time::now()
     };
 };

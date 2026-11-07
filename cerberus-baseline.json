@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/components/editor/EditorCoreTiptap/composables/useEditorSceneFrames.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (283) exceeds recommended limit (265)",
+    "fingerprint": "2fb7729cc414d2d9aa51c642f7eca48bcc1409ead0b85aa5109c32c245e3d4e3"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/components/panels/PromisesPanel/components/PromiseCard/PromiseCard.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (177) exceeds recommended limit (165)",
+    "fingerprint": "5f25a9120115618e25f15a3933a536f77ecd4b7fa7334f74bc1a8a9dc82569b5"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/components/panels/PromisesPanel/composables/usePromiseActions.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (297) exceeds recommended limit (265)",
+    "fingerprint": "a2a2be8582fc90af64d1b6f7c8676efdc6897b0aae8509079cc2c75db49a355a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/ast-diff-wasm/pkg/worldwiki_ast_diff_wasm.js",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (499) exceeds recommended limit (315)",
+    "fingerprint": "8568f004f7b79248311efd4b30cba62e94aa295b5f23832ea94c2751ab5b4560"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/manuscript-wasm/pkg/worldwiki_manuscript_wasm.js",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (453) exceeds recommended limit (315)",
+    "fingerprint": "ab7111ba2b5abeafff31bc5960918ba7e5575a9bab92a0494a96c9438dd2e8ac"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 548,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "42f429421cc5e5af0fe044cef7c83c53dff3332eb2f99f174e5ecd16cf5e4fd2"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 549,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "6fa88d49ef8712a1b8b798f3a16205e856a2321a67dd97d898de8ef1200accc3"
+  },
+  {
+    "rule": "SURQL-004",
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql",
+    "line": 25,
+    "symbol": "fn::save_text_blocks",
+    "message": "Stored function 'fn::save_text_blocks' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "583059aa3cbda47562e7e4b8e24d75bbb0831c6f2c891563e67cd939d7b30e98"
+  }
+]

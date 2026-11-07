@@ -180,6 +180,14 @@ DEFINE FIELD OVERWRITE role       ON participates_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE notes      ON participates_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time::now();
 
+-- 17.1. НЕЛИНЕЙНОЕ РАСКРЫТИЕ СОБЫТИЙ ТАЙМЛАЙНА В ГЛАВАХ РУКОПИСИ
+DEFINE TABLE OVERWRITE revealed_in TYPE RELATION IN timeline_events OUT chapters SCHEMAFULL;
+DEFINE FIELD OVERWRITE pov_id     ON revealed_in TYPE option<record<entities> | null>;
+DEFINE FIELD OVERWRITE kind       ON revealed_in TYPE string DEFAULT 'direct'
+  ASSERT $value IN ['direct', 'flashback', 'mention', 'rumor'];
+DEFINE FIELD OVERWRITE block_id   ON revealed_in TYPE option<string | null>;
+DEFINE FIELD OVERWRITE created_at ON revealed_in TYPE datetime DEFAULT time::now();
+
 -- 18. РЕВИЗИИ СУЩНОСТЕЙ ЛОРА (БЕЗ ВЕКТОРОВ ЭМБЕДДИНГОВ)
 DEFINE TABLE OVERWRITE entity_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;

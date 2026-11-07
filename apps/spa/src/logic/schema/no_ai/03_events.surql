@@ -27,6 +27,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE participates_in WHERE in.schema_id IN $schemas;
     DELETE participant_of WHERE in.schema_id IN $schemas;
     DELETE advances_arc WHERE out IN $arcs;
+    DELETE revealed_in WHERE out IN $chaps;
     LET $blks = (SELECT VALUE id FROM text_blocks WHERE chapter_id IN $chaps);
     LET $p_from_blocks = (SELECT VALUE in FROM spans_blocks WHERE out IN $blks);
     LET $p_from_milestones = (SELECT VALUE in FROM promise_milestones WHERE out IN $blks);
@@ -79,6 +80,7 @@ DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "D
     UPDATE todos SET depends_on = NONE WHERE depends_on IN $del_todos;
     DELETE todos WHERE id IN $del_todos;
     DELETE chapter_revisions WHERE target_id = $before.id;
+    DELETE revealed_in WHERE out = $before.id;
 
     -- Разрыв временных границ связей
     UPDATE entity_rel SET start_at = NONE WHERE start_at = $before.id;
@@ -132,6 +134,7 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
 DEFINE EVENT OVERWRITE cascade_timeline_event_delete ON TABLE timeline_events WHEN $event = "DELETE" THEN {
     DELETE participates_in WHERE out = $before.id;
     DELETE occurs_at WHERE out = $before.id;
+    DELETE revealed_in WHERE in = $before.id;
     UPDATE plot_promises SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
 };
 

@@ -1,6 +1,7 @@
+use crate::bind_helpers::{bind_map_values, bind_tuple_values, build_upsert_clauses};
 use crate::calendar_ops::{delete_calendar_record, save_calendar_record};
 use crate::error::SurrealDomainError;
-use crate::id_helpers::{is_not_found, normalize_map_record_ids};
+use crate::id_helpers::{is_not_found, normalize_embedded_things, normalize_map_record_ids};
 
 pub(crate) async fn repo_create<T, Db: surrealdb::Connection>(
     db: &surrealdb::Surreal<Db>,
@@ -26,16 +27,21 @@ where
         return Ok(created);
     }
 
-    let mut res = db
-        .query("CREATE type::table($table) CONTENT $data")
-        .bind(("table", table.to_string()))
-        .bind(("data", serde_json::Value::Object(map)))
-        .await?;
+    let assign_clauses: Vec<String> = map.keys().map(|k| format!("{k} = ${k}")).collect();
+    let query_str = if assign_clauses.is_empty() {
+        format!("CREATE {table}")
+    } else {
+        format!("CREATE {table} SET {}", assign_clauses.join(", "))
+    };
+
+    let q = bind_map_values(db.query(&query_str), map);
+    let mut res = q.await?;
     let items: Vec<serde_json::Value> = res.take(0)?;
-    let res_val = items
+    let mut res_val = items
         .into_iter()
         .next()
         .ok_or_else(|| SurrealDomainError::constraint_violation("CREATE returned no records"))?;
+    normalize_embedded_things(&mut res_val);
     let created: T = serde_json::from_value(res_val)?;
     if let Some(id) = created.get_id() {
         entity.set_id(id.to_string());
@@ -46,8 +52,8 @@ where
 pub(crate) async fn repo_save<T, Db: surrealdb::Connection>(
     db: &surrealdb::Surreal<Db>,
     table: &'static str,
-    _fields: &[&str],
-    _option_fields: &[&str],
+    fields: &[&str],
+    option_fields: &[&str],
     entity: &T,
 ) -> Result<T, SurrealDomainError>
 where
@@ -73,16 +79,23 @@ where
         return save_calendar_record(db, Some(actual_id), &map).await;
     }
 
-    let mut res = db
-        .query("UPSERT $__record_id MERGE $data")
-        .bind(("__record_id", surrealdb::types::RecordId::new(table, actual_id)))
-        .bind(("data", serde_json::Value::Object(map)))
-        .await?;
+    let (assign_clauses, bind_values) = build_upsert_clauses(fields, option_fields, map);
+    let set_clause = if assign_clauses.is_empty() {
+        String::new()
+    } else {
+        format!(" SET {}", assign_clauses.join(", "))
+    };
+    let query_str = format!("UPSERT type::record($__tb, $__id){set_clause}");
+    let q = db
+        .query(&query_str)
+        .bind(("__tb", table.to_string()))
+        .bind(("__id", actual_id.to_string()));
+    let mut res = bind_tuple_values(q, bind_values).await?;
     let items: Vec<serde_json::Value> = res.take(0)?;
-    let saved_val = items
-        .into_iter()
-        .next()
-        .ok_or_else(|| SurrealDomainError::constraint_violation("UPSERT returned no records"))?;
+    let Some(mut saved_val) = items.into_iter().next() else {
+        return T::create(db, entity.clone()).await;
+    };
+    normalize_embedded_things(&mut saved_val);
     Ok(serde_json::from_value(saved_val)?)
 }
 

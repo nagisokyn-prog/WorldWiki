@@ -98,3 +98,37 @@ fn parse_relation_fields(data: &Data) -> Vec<TokenStream2> {
 
     struct_fields
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_parse_relation_config_enum_and_tuple_struct_fallback() {
+        // Data::Enum -> returns empty struct_fields (line 72)
+        let enum_input: DeriveInput = parse_quote!(pub enum MyRelationEnum { A, B });
+        let config_enum = parse_relation_config(&enum_input);
+        assert!(config_enum.struct_fields.is_empty());
+
+        // Data::Struct with Fields::Unnamed -> returns empty struct_fields (line 70)
+        let tuple_input: DeriveInput = parse_quote!(pub struct MyRelationTuple(u32););
+        let config_tuple = parse_relation_config(&tuple_input);
+        assert!(config_tuple.struct_fields.is_empty());
+
+        // Data::Struct with Fields::Unit -> returns empty struct_fields (line 70)
+        let unit_input: DeriveInput = parse_quote!(pub struct MyRelationUnit;);
+        let config_unit = parse_relation_config(&unit_input);
+        assert!(config_unit.struct_fields.is_empty());
+
+        // Struct with #[flexible] field (line 85-90)
+        let flex_input: DeriveInput = parse_quote! {
+            pub struct MyRelationWithFlex {
+                #[flexible]
+                pub data: Option<serde_json::Value>,
+            }
+        };
+        let config_flex = parse_relation_config(&flex_input);
+        assert_eq!(config_flex.struct_fields.len(), 1);
+    }
+}

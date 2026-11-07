@@ -55,3 +55,36 @@ pub(crate) fn parse_field_flags(attrs: &[syn::Attribute]) -> (Vec<&syn::Attribut
 
     (filtered, is_fulltext, is_hnsw, is_flexible)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_macro_helpers_attribute_branches() {
+        // 1. get_str_attr: non-string literal value (line 11)
+        let attr_non_str: syn::Attribute = parse_quote!(#[table = 123]);
+        assert_eq!(get_str_attr(&attr_non_str, "table"), None);
+
+        // 2. get_str_attr: Meta::List instead of NameValue (line 13)
+        let attr_list: syn::Attribute = parse_quote!(#[table(something)]);
+        assert_eq!(get_str_attr(&attr_list, "table"), None);
+
+        // 3. get_str_attr: valid string
+        let attr_valid: syn::Attribute = parse_quote!(#[table = "my_table"]);
+        assert_eq!(get_str_attr(&attr_valid, "table"), Some("my_table".to_string()));
+
+        // 4. get_path_first_ident: Meta::List instead of NameValue (line 27)
+        let attr_path_list: syn::Attribute = parse_quote!(#[from(Author)]);
+        assert_eq!(get_path_first_ident(&attr_path_list, "from"), None);
+
+        // 5. get_path_first_ident: non-path literal
+        let attr_path_lit: syn::Attribute = parse_quote!(#[from = 456]);
+        assert_eq!(get_path_first_ident(&attr_path_lit, "from"), None);
+
+        // 6. get_path_first_ident: valid path
+        let attr_path_valid: syn::Attribute = parse_quote!(#[from = Author]);
+        assert_eq!(get_path_first_ident(&attr_path_valid, "from"), Some("Author".to_string()));
+    }
+}

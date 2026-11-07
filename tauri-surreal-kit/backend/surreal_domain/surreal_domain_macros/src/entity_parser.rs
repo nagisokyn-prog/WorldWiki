@@ -130,3 +130,37 @@ fn resolve_skip_attr(
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_parse_entity_config_enum_and_tuple_struct_fallback() {
+        // Data::Enum -> returns cols (line 67)
+        let enum_input: DeriveInput = parse_quote!(pub enum MyEnum { A, B });
+        let config_enum = parse_entity_config(&enum_input);
+        assert!(config_enum.struct_fields.is_empty());
+
+        // Data::Struct with Fields::Unnamed (tuple struct) -> returns cols (line 65)
+        let tuple_input: DeriveInput = parse_quote!(pub struct MyTuple(u32, String););
+        let config_tuple = parse_entity_config(&tuple_input);
+        assert!(config_tuple.struct_fields.is_empty());
+
+        // Data::Struct with Fields::Unit -> returns cols (line 65)
+        let unit_input: DeriveInput = parse_quote!(pub struct MyUnit;);
+        let config_unit = parse_entity_config(&unit_input);
+        assert!(config_unit.struct_fields.is_empty());
+
+        // Bare Value flexible field (line 127-128)
+        let bare_val_input: DeriveInput = parse_quote! {
+            pub struct BareValStruct {
+                #[flexible]
+                pub flex_val: serde_json::Value,
+            }
+        };
+        let config_bare = parse_entity_config(&bare_val_input);
+        assert_eq!(config_bare.struct_fields.len(), 1);
+    }
+}

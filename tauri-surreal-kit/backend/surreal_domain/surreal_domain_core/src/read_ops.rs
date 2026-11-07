@@ -23,7 +23,10 @@ where
             .unwrap_or(id)
     };
     match db.select((table, actual_id)).await {
-        Ok(res) => Ok(res.and_then(|v| serde_json::from_value(v).ok())),
+        Ok(res) => Ok(res.and_then(|mut v| {
+            normalize_embedded_things(&mut v);
+            serde_json::from_value(v).ok()
+        })),
         Err(e) => {
             if is_not_found(&e) {
                 Ok(None)
@@ -52,20 +55,20 @@ where
     let pid_backticked = format!("projects:`{}`", pid_raw);
 
     let query_str = match table {
-        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_bracketed",
-        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_bracketed",
-        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_bracketed",
-        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_bracketed",
-        _ => "SELECT * FROM type::table($table) WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed",
+        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_bracketed OR volume_id.project_id = $pid_raw".to_string(),
+        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_bracketed OR schema_id.project_id = $pid_raw".to_string(),
+        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_bracketed OR planet_id.project_id = $pid_raw".to_string(),
+        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_bracketed OR chapter_id.volume_id.project_id = $pid_raw".to_string(),
+        _ => format!("SELECT * FROM {table} WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed OR project_id = $pid_raw"),
     };
 
     let mut res = db
-        .query(query_str)
-        .bind(("table", table.to_string()))
+        .query(&query_str)
         .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
         .bind(("pid_str", pid_str))
         .bind(("pid_bracketed", pid_bracketed))
         .bind(("pid_backticked", pid_backticked))
+        .bind(("pid_raw", pid_raw.to_string()))
         .await?;
 
     let entities: Vec<serde_json::Value> = match res.take(0) {

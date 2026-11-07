@@ -54,6 +54,7 @@ pub(crate) fn build_tauri_commands_module(
         pub mod #mod_name {
             use super::*;
             use surreal_domain::SurrealRepository;
+            use surreal_domain::SurrealDb;
 
             #[tauri::command]
             pub async fn #get_all_fn(

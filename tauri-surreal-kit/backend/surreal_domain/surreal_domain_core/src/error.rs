@@ -44,3 +44,31 @@ impl serde::Serialize for SurrealDomainError {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_constructors_and_serialization() {
+        let err_nf = SurrealDomainError::not_found("entities", "e123");
+        assert_eq!(err_nf.to_string(), "Entity not found: table 'entities', id 'e123'");
+        let json_nf = serde_json::to_string(&err_nf).unwrap();
+        assert_eq!(json_nf, "\"Entity not found: table 'entities', id 'e123'\"");
+
+        let err_inv = SurrealDomainError::invalid_parameter("invalid format");
+        assert_eq!(err_inv.to_string(), "Invalid parameter: invalid format");
+        let json_inv = serde_json::to_string(&err_inv).unwrap();
+        assert_eq!(json_inv, "\"Invalid parameter: invalid format\"");
+
+        let err_con = SurrealDomainError::constraint_violation("duplicate name");
+        assert_eq!(err_con.to_string(), "Constraint violation: duplicate name");
+        let json_con = serde_json::to_string(&err_con).unwrap();
+        assert_eq!(json_con, "\"Constraint violation: duplicate name\"");
+
+        let err_serde: SurrealDomainError = serde_json::from_str::<i32>("not_a_number").unwrap_err().into();
+        assert!(err_serde.to_string().starts_with("Serialization error:"));
+        let json_serde = serde_json::to_string(&err_serde).unwrap();
+        assert!(json_serde.contains("Serialization error:"));
+    }
+}
+

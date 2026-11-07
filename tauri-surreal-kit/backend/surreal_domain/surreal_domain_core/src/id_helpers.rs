@@ -2,7 +2,11 @@ pub use crate::json_helpers::{normalize_embedded_things, normalize_map_record_id
 
 /// Helper to check if a surrealdb error indicates a non-existent table/record.
 pub fn is_not_found(e: &surrealdb::Error) -> bool {
-    e.to_string().contains("does not exist")
+    let msg = e.to_string();
+    if msg.contains("parse") || msg.contains("syntax") || msg.contains("Parse") || msg.contains("Syntax") {
+        return false;
+    }
+    msg.contains("does not exist") || msg.contains("not found") || msg.contains("NotFound")
 }
 
 pub use is_not_found as is_record_not_found;
@@ -31,8 +35,8 @@ pub fn parse_record_id_ref(s: &str) -> Option<(&str, &str)> {
     if idx == 0 || idx + 1 >= bytes.len() {
         return None;
     }
-    let tb = s.get(..idx)?;
-    let id = s.get(idx + 1..)?;
+    let tb = &s[..idx];
+    let id = &s[idx + 1..];
     Some((tb, id))
 }
 
@@ -41,13 +45,13 @@ pub fn parse_record_id_ref(s: &str) -> Option<(&str, &str)> {
 pub fn extract_target_id<'a>(table: &str, id: &'a str) -> Option<&'a str> {
     let bytes = id.as_bytes();
     let t_bytes = table.as_bytes();
-    if bytes.len() <= t_bytes.len() || bytes.get(t_bytes.len()) != Some(&b':') {
+    if bytes.len() <= t_bytes.len() + 1 || bytes.get(t_bytes.len()) != Some(&b':') {
         return None;
     }
     if bytes.get(..t_bytes.len()) != Some(t_bytes) {
         return None;
     }
-    let r = id.get(t_bytes.len() + 1..)?;
+    let r = &id[t_bytes.len() + 1..];
     let r = r
         .strip_prefix('⟨')
         .or_else(|| r.strip_prefix(['`', '"', '\'']))
@@ -56,6 +60,9 @@ pub fn extract_target_id<'a>(table: &str, id: &'a str) -> Option<&'a str> {
         .strip_suffix('⟩')
         .or_else(|| r.strip_suffix(['`', '"', '\'']))
         .unwrap_or(r);
+    if r.is_empty() {
+        return None;
+    }
     Some(r)
 }
 
@@ -160,5 +167,44 @@ mod tests {
             }
         }
         assert_eq!(parse_record_id_ref("entities:valid_42"), Some(("entities", "valid_42")));
+    }
+
+    #[test]
+    fn test_is_not_found_branches() {
+        // Syntax and Parse errors should return false
+        let parse_err = surrealdb::Error::query("Parse error at 1:1".to_string(), None);
+        assert!(!is_not_found(&parse_err));
+
+        let syntax_err = surrealdb::Error::query("Syntax error in query".to_string(), None);
+        assert!(!is_not_found(&syntax_err));
+
+        let syntax_caps_err = surrealdb::Error::query("SurrealDB Syntax error".to_string(), None);
+        assert!(!is_not_found(&syntax_caps_err));
+
+        // Not found variants should return true
+        let not_found_err = surrealdb::Error::query("Record not found".to_string(), None);
+        assert!(is_not_found(&not_found_err));
+
+        let not_found_camel = surrealdb::Error::query("RecordNotFound in table".to_string(), None);
+        assert!(is_not_found(&not_found_camel));
+
+        let does_not_exist_err = surrealdb::Error::query("table does not exist".to_string(), None);
+        assert!(is_not_found(&does_not_exist_err));
+
+        // Generic error returns false
+        let generic_err = surrealdb::Error::query("Connection timed out".to_string(), None);
+        assert!(!is_not_found(&generic_err));
+    }
+
+    #[test]
+    fn test_extract_target_id_empty_after_quotes_or_brackets() {
+        assert_eq!(extract_target_id("entities", "entities:⟨⟩"), None);
+        assert_eq!(extract_target_id("entities", "entities:``"), None);
+        assert_eq!(extract_target_id("entities", "entities:\"\""), None);
+        assert_eq!(extract_target_id("entities", "entities:''"), None);
+        assert_eq!(extract_target_id("entities", "entities:"), None);
+        assert_eq!(extract_target_id("entities", "entities"), None);
+        assert_eq!(extract_target_id("entities", "other:123"), None);
+        assert_eq!(extract_target_id("entities", "entities:⟨abc⟩"), Some("abc"));
     }
 }

@@ -55,10 +55,6 @@ pub(crate) fn build_search_methods(
 
     let vec_query = if let Some(v_field) = vector_fields.first() {
         let v_field_str = v_field.to_string();
-        let q_str = format!(
-            "SELECT *, vector::distance::knn() AS _sim FROM {} WHERE {} <|$k, COSINE|> $emb ORDER BY _sim",
-            table_name, v_field_str
-        );
 
         quote! {
             pub async fn search_similar<Db: surrealdb::Connection>(
@@ -66,18 +62,25 @@ pub(crate) fn build_search_methods(
                 embedding: Vec<f32>,
                 k: i64,
             ) -> Result<Vec<surreal_domain::SimilarResult<Self>>, surreal_domain::SurrealDomainError> {
+                let k_clamped = k.max(1);
+                let q_str = format!(
+                    "SELECT *, (1.0 - vector::distance::knn()) AS _sim FROM {} WHERE {} <|{k_clamped}, COSINE|> $emb ORDER BY _sim DESC",
+                    #table_name, #v_field_str
+                );
                 let mut res = db
-                    .query(#q_str)
+                    .query(&q_str)
                     .bind(("emb", embedding))
-                    .bind(("k", k))
                     .await?;
                 let items: Vec<serde_json::Value> = res.take(0)?;
                 let mapped = items
                     .into_iter()
-                    .filter_map(|v| serde_json::from_value::<Self>(v).ok())
-                    .map(|e| surreal_domain::SimilarResult {
-                        entity: e,
-                        similarity: 1.0,
+                    .filter_map(|mut v| {
+                        let sim = v.get("_sim").and_then(|s| s.as_f64()).unwrap_or(1.0);
+                        surreal_domain::normalize_embedded_things(&mut v);
+                        serde_json::from_value::<Self>(v).ok().map(|e| surreal_domain::SimilarResult {
+                            entity: e,
+                            similarity: sim,
+                        })
                     })
                     .collect();
                 Ok(mapped)

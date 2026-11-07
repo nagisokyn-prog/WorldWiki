@@ -56,10 +56,60 @@ surreal_relation! {
     }
 }
 
+// Mock AppState matching what generated commands expect in crate root
+pub struct AppState {
+    pub db: surrealdb::Surreal<surrealdb::engine::local::Db>,
+}
+
+impl surreal_domain::SurrealDb for AppState {
+    type Connection = surrealdb::engine::local::Db;
+
+    fn surreal_db(&self) -> &surrealdb::Surreal<surrealdb::engine::local::Db> {
+        &self.db
+    }
+}
+
 // 6. Schema validation macro
 surreal_schema! {
     entities: [CustomBook, Author, Article],
     relations: [WroteEdge, TaggedRelation]
+}
+
+// 7. Entity with vector search only (no fulltext) - covers entity_search.rs:53
+surreal_entity! {
+    #[table = "vector_only_items"]
+    pub struct VectorOnlyItem {
+        pub title: String,
+        #[hnsw]
+        pub embedding: Option<Vec<f32>>,
+    }
+}
+
+// 8. Entity with tauri_commands but no fulltext - covers entity_tauri.rs:50
+surreal_entity! {
+    #[tauri_commands]
+    #[table = "simple_commands"]
+    pub struct SimpleCommandEntity {
+        pub title: String,
+        #[flexible]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub explicit_skip: Option<serde_json::Value>,
+        #[flexible]
+        pub fallback_flex: std::collections::HashMap<String, String>,
+    }
+}
+
+#[tauri::command]
+fn my_custom_command() -> &'static str {
+    "ok"
+}
+
+#[test]
+fn unit_entity_commands_with_normal_command() {
+    let _builder = tauri::test::mock_builder().invoke_handler(surreal_domain::entity_commands![
+        my_custom_command,
+        @entities: [SimpleCommandEntity]
+    ]);
 }
 
 #[test]

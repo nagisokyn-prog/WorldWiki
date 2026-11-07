@@ -1,15 +1,14 @@
 use super::errors::ChapterError;
-use surrealdb::{engine::local::Db, Surreal};
+use surrealdb::{Surreal, engine::local::Db};
 
 pub async fn save_text_blocks_inner(
     db: &Surreal<Db>,
-    project: &str,
+    _project: &str,
     chapter_id: &str,
     html: &str,
 ) -> Result<(), ChapterError> {
     use scraper::{Html, Selector};
 
-    let clean_pid = project.trim().replace("projects:", "");
     let clean_cid = chapter_id.trim().replace("chapters:", "");
 
     let blocks = {
@@ -25,7 +24,7 @@ pub async fn save_text_blocks_inner(
                 "dialog" => "dialogue",
                 _ => tag,
             };
-            let block_id = p
+            let raw_block_id = p
                 .value()
                 .attr("data-block-id")
                 .or_else(|| p.value().attr("data-id"))
@@ -33,10 +32,14 @@ pub async fn save_text_blocks_inner(
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| format!("para-{}", i + 1));
 
+            let block_id = if raw_block_id.starts_with("blk_") {
+                raw_block_id
+            } else {
+                format!("blk_{}_{}", clean_cid, raw_block_id)
+            };
+
             let content = p.text().collect::<Vec<_>>().join("").trim().to_string();
-            if !content.is_empty() {
-                blocks.push((block_id, btype.to_string(), content));
-            }
+            blocks.push((block_id, btype.to_string(), content));
         }
         blocks
     };
@@ -55,8 +58,7 @@ pub async fn save_text_blocks_inner(
         .collect();
 
     let mut res = db
-        .query("fn::save_text_blocks(type::record('projects', $p), type::record('chapters', $c), $blocks);")
-        .bind(("p", clean_pid))
+        .query("fn::save_text_blocks(type::record('chapters', $c), $blocks);")
         .bind(("c", clean_cid))
         .bind(("blocks", block_objects))
         .await?;

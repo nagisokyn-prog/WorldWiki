@@ -37,7 +37,9 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
           ? item.allArcIds
           : (item.arc_id ? [item.arc_id] : []);
 
-        if (selectedArcFilter.value === 'UNASSIGNED') {
+        if (selectedArcFilter.value === 'ALL_ARCS') {
+          if (itemArcs.length === 0) return false;
+        } else if (selectedArcFilter.value === 'UNASSIGNED') {
           if (itemArcs.length > 0) return false;
         } else {
           const cleanFilter = selectedArcFilter.value.replace(/^story_arcs:/, '');
@@ -55,7 +57,11 @@ export function useJourneyFiltersAndGroups(deps: FilterDeps) {
       items = [...items].sort((a, b) => {
         const mAbsA = a.m_abs ?? (a.chapter_order ? a.chapter_order * 1000 : 0);
         const mAbsB = b.m_abs ?? (b.chapter_order ? b.chapter_order * 1000 : 0);
-        return mAbsA - mAbsB;
+        if (mAbsA !== mAbsB) return mAbsA - mAbsB;
+        const orderA = a.chapter_order ?? 0;
+        const orderB = b.chapter_order ?? 0;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.paragraph_index ?? 0) - (b.paragraph_index ?? 0);
       });
     } else {
       items = [...items].sort((a, b) => {

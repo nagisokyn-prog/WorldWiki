@@ -1,5 +1,5 @@
 <template>
-  <div class="schema-resizer" @mousedown="$emit('start-resize', $event)"></div>
+  <div class="schema-resizer" @mousedown="onStartResize($event)"></div>
   <aside class="schema-catalog" :style="{ '--catalog-w': catalogWidth + 'px' }">
     <div class="catalog-section-title">БАЗОВЫЕ ПОЛЯ</div>
     <div class="flex-col gap-2 p-2">
@@ -8,7 +8,7 @@
         :key="brick.val"
         class="catalog-item interactive-el"
         draggable="true"
-        @dragstart="$emit('drag-start-palette', $event, 'atomic', brick.val, brick.label)"
+        @dragstart="onDragStartPalette($event, 'atomic', brick.val, brick.label)"
       >
         <span class="text-lg">{{ brick.icon }}</span>
         <span class="text-xs font-bold">{{ brick.label }}</span>
@@ -22,7 +22,7 @@
         :key="key"
         class="catalog-item interactive-el flex justify-between items-center"
         draggable="true"
-        @dragstart="$emit('drag-start-palette', $event, 'module', String(key), String(key))"
+        @dragstart="onDragStartPalette($event, 'module', String(key), String(key))"
       >
         <div class="flex items-center gap-2">
           <span class="text-lg">⏱️</span>
@@ -39,7 +39,7 @@
         :key="key"
         class="catalog-item interactive-el flex justify-between items-center"
         draggable="true"
-        @dragstart="$emit('drag-start-palette', $event, 'module', String(key), String(key))"
+        @dragstart="onDragStartPalette($event, 'module', String(key), String(key))"
       >
         <div class="flex items-center gap-2">
           <span class="text-lg">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>

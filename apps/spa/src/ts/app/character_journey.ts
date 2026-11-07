@@ -48,6 +48,8 @@ async function init() {
             chapterId: item.chapter_id,
             paragraphIndex: item.paragraph_index,
             blockId: item.block_id,
+            quote: item.fullText || item.title || '',
+            item,
           }, '*');
         }
       };

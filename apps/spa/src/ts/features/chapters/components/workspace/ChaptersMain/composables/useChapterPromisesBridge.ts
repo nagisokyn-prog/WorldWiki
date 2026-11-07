@@ -44,6 +44,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
   }) => {
     rightSidebarRef.value?.addPromise(payload);
   };
@@ -54,6 +55,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
   }) => {
     rightSidebarRef.value?.addMilestone({
       ...payload,
@@ -66,6 +68,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
   }) => {
     const parent = rightSidebarRef.value?.promises?.find((p: { id?: string | null }) => p.id === payload.parentPromiseId);
     if (parent && rightSidebarRef.value?.addSubScene) {
@@ -73,6 +76,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
         block_id: payload.block_id,
+        block_ids: payload.block_ids,
         chapterId: currentChapter.value?.id || undefined
       });
     }
@@ -106,29 +110,37 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
         } as unknown as ChapterTreeNode;
 
         void openChapterFromTree(chNode);
-        setTimeout(() => {
+        const tryLocate = (attempts = 0) => {
           document.dispatchEvent(new CustomEvent('ww:locate-promise', {
             detail: payload,
           }));
-        }, 450);
+          if (attempts < 3) {
+            setTimeout(() => tryLocate(attempts + 1), 250);
+          }
+        };
+        setTimeout(() => tryLocate(0), 100);
         return;
       }
     }
 
     editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote, payload.blockId);
+    document.dispatchEvent(new CustomEvent('ww:locate-promise', {
+      detail: payload,
+    }));
   };
 
   const handleJourneySelectScene = (item: {
     chapter_id?: string;
     paragraph_index?: number | null;
     title?: string;
+    fullText?: string;
     block_id?: string | null;
   }) => {
     if (item.chapter_id) {
       handleLocatePromise({
         chapterId: item.chapter_id,
         paragraphIndex: item.paragraph_index ?? 0,
-        quote: item.title || '',
+        quote: item.fullText || item.title || '',
         blockId: item.block_id || undefined,
       });
     }
@@ -136,14 +148,32 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
 
   let unlistenFn: UnlistenFn | null = null;
 
+  const onWindowMessage = (event: MessageEvent) => {
+    if (event.data?.type === 'JOURNEY_SELECT_SCENE') {
+      const data = event.data;
+      const chapterId = data.chapterId || data.item?.chapter_id;
+      if (chapterId) {
+        handleLocatePromise({
+          chapterId,
+          paragraphIndex: data.paragraphIndex ?? data.item?.paragraph_index ?? 0,
+          quote: data.quote || data.item?.fullText || data.item?.title || '',
+          blockId: data.blockId || data.item?.block_id || undefined,
+        });
+      }
+    }
+  };
+
   onMounted(async () => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', onWindowMessage);
+    }
     if (typeof window !== 'undefined' && window.__TAURI__) {
       try {
         unlistenFn = await listen<{
           chapterId?: string;
           paragraphIndex?: number;
           blockId?: string;
-          item?: { chapter_id?: string; paragraph_index?: number; block_id?: string; title?: string };
+          item?: { chapter_id?: string; paragraph_index?: number; block_id?: string; title?: string; fullText?: string };
         }>('ww-journey-select-scene', (event) => {
           const payload = event.payload;
           const chapterId = payload.chapterId || payload.item?.chapter_id;
@@ -151,7 +181,7 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
             handleLocatePromise({
               chapterId,
               paragraphIndex: payload.paragraphIndex ?? payload.item?.paragraph_index ?? 0,
-              quote: payload.item?.title || '',
+              quote: payload.item?.fullText || payload.item?.title || '',
               blockId: payload.blockId || payload.item?.block_id || undefined,
             });
           }
@@ -163,6 +193,9 @@ export function useChapterPromisesBridge(deps: PromiseBridgeDeps) {
   });
 
   onUnmounted(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('message', onWindowMessage);
+    }
     if (unlistenFn) {
       unlistenFn();
       unlistenFn = null;

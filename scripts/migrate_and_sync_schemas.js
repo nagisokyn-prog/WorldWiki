@@ -6,14 +6,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const SCHEMAS_DIR = path.join(ROOT_DIR, 'apps', 'spa', 'public', 'struct', 'editor');
+const SCHEMAS_DIRS = [
+  path.join(ROOT_DIR, 'apps', 'spa', 'public', 'struct', 'editor'),
+  path.join(ROOT_DIR, 'apps', 'spa', 'src', 'ts', 'struct', 'editor')
+];
+const SCHEMAS_DIR = SCHEMAS_DIRS[0];
 const SKILL_PATH = path.join(ROOT_DIR, 'apps', 'spa', 'public', 'skills', 'Конструктор_типов_сущностей.md');
 
 console.log('🔄 Начинаем обновление схем и руководства навыка...');
 
 // 1. Обновление ui_editor.json
-const uiEditorPath = path.join(SCHEMAS_DIR, 'ui_editor.json');
-if (fs.existsSync(uiEditorPath)) {
+for (const sDir of SCHEMAS_DIRS) {
+  const uiEditorPath = path.join(sDir, 'ui_editor.json');
+  if (fs.existsSync(uiEditorPath)) {
     const uiData = JSON.parse(fs.readFileSync(uiEditorPath, 'utf8'));
 
     // Обновляем шаблоны
@@ -38,9 +43,80 @@ if (fs.existsSync(uiEditorPath)) {
                         allowAutoExtend: true
                     };
                 }
+                if (f.class === 'начальная_дата' || f.id === 'начальная_дата') {
+                    return {
+                        type: 'calendar_datetime',
+                        class: 'начальная_дата',
+                        label: 'Дата и время начала (по календарю мира)',
+                        placeholder: 'Выберите дату...'
+                    };
+                }
+                if (f.class === 'конечная_дата' || f.id === 'конечная_дата') {
+                    return {
+                        type: 'calendar_datetime',
+                        class: 'конечная_дата',
+                        label: 'Дата и время окончания (по календарю мира)',
+                        placeholder: 'Выберите дату...',
+                        allowOngoing: true
+                    };
+                }
                 return f;
             });
         }
+
+        uiData.templates['eventTimelineStageTemplate'] = {
+          type: 'timeline',
+          headerTitle: 'Этап',
+          fields: [
+            {
+              type: 'select',
+              class: 'статус_категория',
+              label: 'Статус / Фаза события',
+              options: [
+                { value: 'Активно / В процессе', label: '🟢 Активно / В процессе' },
+                { value: 'Кульминация / Разгар', label: '🔥 Кульминация / Разгар' },
+                { value: 'Завершено / В прошлом', label: '🛑 Завершено / В прошлом' },
+                { value: 'Завязка / Предпосылки', label: '🌱 Завязка / Предпосылки' },
+                { value: 'Последствия / Лоро-эхо', label: '🍂 Последствия / Лоро-эхо' }
+              ],
+              default: 'Активно / В процессе'
+            },
+            {
+              type: 'manuscript_point',
+              class: 'начальная_глава',
+              label: 'Начало в рукописи (Том / Глава)',
+              placeholder: 'Выберите том и главу...'
+            },
+            {
+              type: 'manuscript_point',
+              class: 'конечная_глава',
+              label: 'Окончание в рукописи (Том / Глава)',
+              placeholder: 'Выберите том и главу...',
+              allowAutoExtend: true
+            },
+            {
+              type: 'calendar_datetime',
+              class: 'начальная_дата',
+              label: 'Дата и время начала (по календарю мира)',
+              placeholder: 'Выберите дату...'
+            },
+            {
+              type: 'calendar_datetime',
+              class: 'конечная_дата',
+              label: 'Дата и время окончания (по календарю мира)',
+              placeholder: 'Выберите дату...',
+              allowOngoing: true
+            },
+            {
+              type: 'textarea',
+              class: 'описание_1',
+              label: 'Обстоятельства / Причина смены статуса',
+              placeholder: 'Например, подписание мирного договора, штурм крепости...',
+              rows: 2
+            }
+          ],
+          itemClass: 'timeline-item'
+        };
 
         // Двунаправленная связь -> relationshipStates
         if (uiData.templates['Двунаправленная связь'] && uiData.templates['Двунаправленная связь'].dynamicContainers) {
@@ -72,11 +148,12 @@ if (fs.existsSync(uiEditorPath)) {
     }
 
     fs.writeFileSync(uiEditorPath, JSON.stringify(uiData, null, 2) + '\n', 'utf8');
-    console.log('✅ ui_editor.json успешно обновлен!');
+    console.log(`✅ ui_editor.json успешно обновлен в ${sDir}!`);
+  }
 }
 
-// 2. Рекурсивное обновление всех файлов схем (character, organization, state)
-const schemaFiles = ['character.json', 'organization.json', 'state.json'];
+// 2. Рекурсивное обновление всех файлов схем (character, organization, state, event, item, location)
+const schemaFiles = ['character.json', 'organization.json', 'state.json', 'event.json', 'item.json', 'location.json'];
 
 function upgradeField(f) {
     if (!f || typeof f !== 'object') return f;
@@ -101,6 +178,15 @@ function upgradeField(f) {
         f.placeholder = 'Выберите том и главу...';
         f.allowAutoExtend = true;
         delete f.entityType;
+    } else if (cls === 'начальная_дата' || f.path === 'начальная_дата') {
+        f.type = 'calendar_datetime';
+        f.label = 'Дата и время начала (по календарю мира)';
+        if (!f.placeholder) f.placeholder = 'Выберите дату и время...';
+    } else if (cls === 'конечная_дата' || f.path === 'конечная_дата') {
+        f.type = 'calendar_datetime';
+        f.label = 'Дата и время окончания (по календарю мира)';
+        f.allowOngoing = true;
+        if (!f.placeholder) f.placeholder = 'Выберите дату и время...';
     }
 
     return f;
@@ -133,12 +219,14 @@ function processContainerOrSection(obj) {
 }
 
 for (const sFile of schemaFiles) {
-    const sPath = path.join(SCHEMAS_DIR, sFile);
-    if (fs.existsSync(sPath)) {
-        const data = JSON.parse(fs.readFileSync(sPath, 'utf8'));
-        processContainerOrSection(data);
-        fs.writeFileSync(sPath, JSON.stringify(data, null, 2) + '\n', 'utf8');
-        console.log(`✅ ${sFile} успешно проверен и обновлен!`);
+    for (const sDir of SCHEMAS_DIRS) {
+        const sPath = path.join(sDir, sFile);
+        if (fs.existsSync(sPath)) {
+            const data = JSON.parse(fs.readFileSync(sPath, 'utf8'));
+            processContainerOrSection(data);
+            fs.writeFileSync(sPath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+            console.log(`✅ ${sFile} успешно проверен и обновлен в ${sDir}!`);
+        }
     }
 }
 

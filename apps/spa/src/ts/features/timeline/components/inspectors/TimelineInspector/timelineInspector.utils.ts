@@ -143,7 +143,7 @@ export function filterInspectorEvents(
   const q = filters.searchQuery.toLowerCase().trim();
   const isolatedChId = filters.isolatedChapterId ? normalizeId(filters.isolatedChapterId) : null;
 
-  let evs = rawEvents.filter((ev: InspectorEvent) => {
+  const evs = rawEvents.filter((ev: InspectorEvent) => {
     if (q && !ev.title.toLowerCase().includes(q) && !(ev.description || '').toLowerCase().includes(q)) return false;
     if (isolatedChId && !ev.reveals?.some((r) => normalizeId(r.chapter_id) === isolatedChId)) return false;
     if (filters.selectedEntityId !== 'all') {

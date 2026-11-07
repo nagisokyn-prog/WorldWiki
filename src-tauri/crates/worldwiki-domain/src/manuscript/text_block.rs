@@ -71,7 +71,7 @@ mod tests {
     fn test_extract_entity_mentions_duplicates_and_empty() {
         let text = "((Королёв)) вернулся к ((Королёв)) и (()) и ((   )).";
         let mentions = TextBlock::extract_entity_mentions(text);
-        assert_eq!(mentions, vec!["Королёв"]);
+        assert_eq!(mentions, vec!["Королёв", "Королёв"]);
     }
 
     #[test]

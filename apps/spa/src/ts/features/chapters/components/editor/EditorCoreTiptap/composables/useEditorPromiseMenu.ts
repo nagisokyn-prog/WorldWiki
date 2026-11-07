@@ -34,7 +34,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       if (options.editor.value) {
         const { selection, doc } = options.editor.value.state;
         if (!selection.empty) {
-          selectedText = doc.textBetween(selection.from, selection.to, ' ').trim();
+          selectedText = doc.textBetween(selection.from, selection.to, '\n').trim();
 
           let blockCount = 0;
           let foundIdx = 1;

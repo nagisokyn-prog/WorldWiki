@@ -23,7 +23,21 @@
                 👁️‍🗨️
               </button>
             </div>
-            <span v-if="isFieldChanged(getFieldKey(field))" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+            <div class="flex items-center gap-2">
+              <label
+                v-if="field.allowOngoing || (field.class || field.id || '').toLowerCase().includes('конечная_дата')"
+                class="ongoing-checkbox-label flex items-center gap-1 text-xs text-muted cursor-pointer select-none"
+              >
+                <input
+                  type="checkbox"
+                  class="checkbox-accent"
+                  :checked="isFieldOngoing(field)"
+                  @change="toggleFieldOngoing(field, $event)"
+                />
+                По настоящее время
+              </label>
+              <span v-if="isFieldChanged(getFieldKey(field))" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+            </div>
           </div>
 
           <textarea
@@ -89,13 +103,22 @@
             </label>
           </div>
 
-          <UniversalDatePicker
-            v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base' || field.type === 'calendar_datetime'"
-            :show-time="field.type === 'calendar_datetime'"
-            :model-value="getDatePickerValue(field)"
-            :project="project"
-            @update:model-value="handleFieldUpdate(getFieldKey(field), $event)"
-          />
+          <template v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base' || field.type === 'calendar_datetime'">
+            <div
+              v-if="(field.allowOngoing || (field.class || field.id || '').toLowerCase().includes('конечная_дата')) && isFieldOngoing(field)"
+              class="text-xs text-muted ongoing-placeholder"
+              style="padding: 6px 0; font-style: italic; opacity: 0.8;"
+            >
+              {{ (field.ongoingPlaceholder as string) || 'Событие продолжается (без даты окончания)' }}
+            </div>
+            <UniversalDatePicker
+              v-else
+              :show-time="field.type === 'calendar_datetime'"
+              :model-value="getDatePickerValue(field)"
+              :project="project"
+              @update:model-value="handleFieldUpdate(getFieldKey(field), $event)"
+            />
+          </template>
 
           <TagsField
             v-else-if="field.type === 'tags'"
@@ -143,5 +166,7 @@ const {
   handleTextInput,
   handleMultiselectEvent,
   handleFieldUpdate,
+  isFieldOngoing,
+  toggleFieldOngoing,
 } = useEntitySectionFields(props, emit);
 </script>

@@ -9,13 +9,16 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     LET $rec_id = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
     LET $milestones = IF $data.milestones != NONE { $data.milestones } ELSE { [] };
     
-    LET $target_chap = IF $data.chapter_id != NONE AND $data.chapter_id != NULL AND type::string($data.chapter_id) != '' {
-        type::record('chapters', type::string($data.chapter_id).replace('chapters:', ''))
-    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).chapter_id != NONE AND type::string(array::first($milestones).chapter_id) != '' {
-        type::record('chapters', type::string(array::first($milestones).chapter_id).replace('chapters:', ''))
-    } ELSE { NONE };
+    LET $target_chap = IF $data.chapter_id != NONE AND $data.chapter_id != NULL AND type::string($data.chapter_id) != '' AND type::string($data.chapter_id) != 'NONE' {
+        type::record('chapters', string::trim(string::replace(string::replace(string::replace(string::replace(type::string($data.chapter_id), 'chapters:', ''), '`', ''), '⟨', ''), '⟩', '')))
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).chapter_id != NONE AND type::string(array::first($milestones).chapter_id) != '' AND type::string(array::first($milestones).chapter_id) != 'NONE' {
+        type::record('chapters', string::trim(string::replace(string::replace(string::replace(string::replace(type::string(array::first($milestones).chapter_id), 'chapters:', ''), '`', ''), '⟨', ''), '⟩', '')))
+    } ELSE {
+        array::first(SELECT VALUE out.chapter_id FROM spans_blocks WHERE in = $rec_id LIMIT 1)
+            ?? array::first(SELECT VALUE out.chapter_id FROM promise_milestones WHERE in = $rec_id LIMIT 1)
+    };
 
-    LET $p_rec = IF $data.project_id != NONE AND $data.project_id != NULL AND type::string($data.project_id) != '' {
+    LET $p_rec = IF $data.project_id != NONE AND $data.project_id != NULL AND type::string($data.project_id) != '' AND type::string($data.project_id) != 'NONE' {
         fn::normalize_project_id($data.project_id)
     } ELSE IF $target_chap != NONE AND $target_chap != NULL {
         $target_chap.volume_id.project_id
@@ -27,33 +30,33 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         array::first($milestones).order_index
     } ELSE { NONE };
 
-    LET $target_block = IF $data.block_id != NONE AND type::string($data.block_id) != '' {
+    LET $target_block = IF $data.block_id != NONE AND type::string($data.block_id) != '' AND type::string($data.block_id) != 'NONE' {
         type::string($data.block_id)
-    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' {
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' AND type::string(array::first($milestones).block_id) != 'NONE' {
         type::string(array::first($milestones).block_id)
     } ELSE { NONE };
 
     LET $target_blocks = IF $data.block_ids != NONE AND type::is_array($data.block_ids) {
         $data.block_ids
-    } ELSE IF $data.block_id != NONE AND type::string($data.block_id) != '' {
+    } ELSE IF $data.block_id != NONE AND type::string($data.block_id) != '' AND type::string($data.block_id) != 'NONE' {
         [type::string($data.block_id)]
-    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' {
+    } ELSE IF array::len($milestones) > 0 AND array::first($milestones).block_id != NONE AND type::string(array::first($milestones).block_id) != '' AND type::string(array::first($milestones).block_id) != 'NONE' {
         [type::string(array::first($milestones).block_id)]
     } ELSE { [] };
 
     -- Синхронизация времени и события таймлайна (timeline_events)
     LET $has_m_abs = $data.m_abs != NONE AND $data.m_abs != NULL;
-    LET $existing_evt_id = IF $data.timeline_event_id != NONE AND $data.timeline_event_id != NULL AND type::string($data.timeline_event_id) != '' {
+    LET $existing_evt_id = IF $data.timeline_event_id != NONE AND $data.timeline_event_id != NULL AND type::string($data.timeline_event_id) != '' AND type::string($data.timeline_event_id) != 'NONE' {
         type::record('timeline_events', type::string($data.timeline_event_id).replace('timeline_events:', ''))
     } ELSE {
-        (SELECT VALUE out FROM occurs_at WHERE in = $rec_id LIMIT 1)[0]
+        array::first(SELECT VALUE out FROM occurs_at WHERE in = $rec_id LIMIT 1)
     };
 
     LET $target_evt_id = IF $has_m_abs {
-        LET $cal_rec = IF $data.calendar_id != NONE AND $data.calendar_id != NULL AND type::string($data.calendar_id) != '' {
+        LET $cal_rec = IF $data.calendar_id != NONE AND $data.calendar_id != NULL AND type::string($data.calendar_id) != '' AND type::string($data.calendar_id) != 'NONE' {
             type::record('calendars', type::string($data.calendar_id).replace('calendars:', ''))
         } ELSE {
-            (SELECT VALUE id FROM calendars WHERE fn::normalize_project_id(planet_id.project_id) = $p_rec OR fn::normalize_project_id(project_id) = $p_rec ORDER BY is_default DESC, is_master DESC LIMIT 1)[0]
+            array::first(SELECT VALUE id FROM calendars WHERE fn::normalize_project_id(planet_id.project_id) = $p_rec OR fn::normalize_project_id(project_id) = $p_rec ORDER BY is_default DESC, is_master DESC LIMIT 1)
         };
         LET $evt_title = IF $data.title != NONE AND $data.title != '' { $data.title } ELSE { 'Сцена' };
         LET $evt_desc = IF $data.note != NONE { $data.note } ELSE { NONE };
@@ -77,7 +80,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 calendar_id = $cal_rec,
                 created_at = time::now()
             );
-            $new_evt[0].id
+            array::first($new_evt).id
         }
     } ELSE IF $existing_evt_id != NONE AND $existing_evt_id != NULL {
         $existing_evt_id
@@ -85,22 +88,23 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         NONE
     };
 
+    LET $raw_parent = IF $data.parent_id != NONE AND $data.parent_id != NULL {
+        string::trim(string::replace(string::replace(string::replace(string::replace(type::string($data.parent_id), 'plot_promises:', ''), '`', ''), '⟨', ''), '⟩', ''))
+    } ELSE { '' };
+    LET $parent_rec = IF $raw_parent != '' AND $raw_parent != 'NONE' AND $raw_parent != 'NULL' {
+        type::record('plot_promises', $raw_parent)
+    } ELSE { NONE };
+
     LET $promise = (
         UPSERT $rec_id MERGE {
             block_ids: $target_blocks,
-            parent_id: IF $data.parent_id != NONE AND $data.parent_id != NULL AND type::string($data.parent_id) != '' {
-                IF string::starts_with(type::string($data.parent_id), 'plot_promises:') {
-                    type::record($data.parent_id)
-                } ELSE {
-                    type::record('plot_promises', $data.parent_id)
-                }
-            } ELSE { NONE },
+            parent_id: $parent_rec,
             kind: IF $data.kind != NONE AND $data.kind != NULL AND type::string($data.kind) != '' { type::string($data.kind) } ELSE { 'gun' },
             time_nature: IF $data.time_nature != NONE AND $data.time_nature != NULL AND type::string($data.time_nature) != '' { type::string($data.time_nature) } ELSE { 'present' },
             title: IF $data.title != NONE AND $data.title != NULL { type::string($data.title) } ELSE { '' },
             note: IF $data.note != NONE AND $data.note != NULL { type::string($data.note) } ELSE { NONE },
             status: IF $data.status != NONE AND $data.status != NULL AND type::string($data.status) != '' { type::string($data.status) } ELSE { 'planted' },
-            location_id: IF $data.location_id != NONE AND $data.location_id != NULL { $data.location_id } ELSE { NONE },
+            location_id: IF $data.location_id != NONE AND $data.location_id != NULL AND type::string($data.location_id) != 'NONE' { $data.location_id } ELSE { NONE },
             timeline_event_id: $target_evt_id,
             is_flashback: IF $data.is_flashback != NONE { $data.is_flashback } ELSE { NONE },
             updated_at: time::now()
@@ -109,10 +113,30 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
 
     DELETE promise_milestones WHERE in = $rec_id;
 
+    LET $clean_chap_str = IF $target_chap != NONE AND $target_chap != NULL {
+        string::trim(string::replace(string::replace(string::replace(string::replace(type::string($target_chap), 'chapters:', ''), '`', ''), '⟨', ''), '⟩', ''))
+    } ELSE { '' };
+
     IF array::len($milestones) > 0 {
         FOR $m IN $milestones {
             IF $m.block_id != NONE {
-                LET $block_rec = type::record('text_blocks', type::string($m.block_id).replace('text_blocks:', ''));
+                LET $clean_mb = string::trim(string::replace(string::replace(string::replace(string::replace(type::string($m.block_id), 'text_blocks:', ''), '`', ''), '⟨', ''), '⟩', ''));
+                LET $mb_id = IF string::starts_with($clean_mb, 'blk_') {
+                    $clean_mb
+                } ELSE IF $clean_chap_str != '' {
+                    string::concat('blk_', $clean_chap_str, '_', $clean_mb)
+                } ELSE {
+                    $clean_mb
+                };
+                LET $block_rec = type::record('text_blocks', $mb_id);
+                IF $target_chap != NONE AND $target_chap != NULL {
+                    UPSERT $block_rec SET
+                        chapter_id = $target_chap,
+                        block_type = block_type ?? 'description',
+                        order_index = order_index ?? ($m.order_index ?? 0),
+                        content = content ?? ($m.quote ?? ''),
+                        created_at = created_at ?? time::now();
+                };
                 RELATE $rec_id->promise_milestones->$block_rec SET
                     stage = IF $m.stage != NONE AND $m.stage != NULL AND type::string($m.stage) != '' { type::string($m.stage) } ELSE { 'plant' },
                     quote = IF $m.quote != NONE AND $m.quote != NULL { type::string($m.quote) } ELSE { '' },
@@ -126,9 +150,24 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     DELETE spans_blocks WHERE in = $rec_id;
     IF array::len($target_blocks) > 0 {
         FOR $b IN $target_blocks {
-            IF $b != NONE AND type::string($b) != '' {
-                LET $clean_b = type::string($b).replace('text_blocks:', '');
-                LET $blk_rec = type::record('text_blocks', $clean_b);
+            IF $b != NONE AND type::string($b) != '' AND type::string($b) != 'NONE' {
+                LET $clean_b = string::trim(string::replace(string::replace(string::replace(string::replace(type::string($b), 'text_blocks:', ''), '`', ''), '⟨', ''), '⟩', ''));
+                LET $b_id = IF string::starts_with($clean_b, 'blk_') {
+                    $clean_b
+                } ELSE IF $clean_chap_str != '' {
+                    string::concat('blk_', $clean_chap_str, '_', $clean_b)
+                } ELSE {
+                    $clean_b
+                };
+                LET $blk_rec = type::record('text_blocks', $b_id);
+                IF $target_chap != NONE AND $target_chap != NULL {
+                    UPSERT $blk_rec SET
+                        chapter_id = $target_chap,
+                        block_type = block_type ?? 'description',
+                        order_index = order_index ?? 0,
+                        content = content ?? '',
+                        created_at = created_at ?? time::now();
+                };
                 RELATE $rec_id->spans_blocks->$blk_rec SET
                     created_at = time::now();
             };
@@ -140,10 +179,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     LET $participants = IF $data.participant_ids != NONE { $data.participant_ids } ELSE { [] };
     IF array::len($participants) > 0 {
         FOR $pid IN $participants {
-            IF $pid != NONE AND $pid != NULL {
+            IF $pid != NONE AND $pid != NULL AND type::string($pid) != 'NONE' {
                 LET $clean_id = type::string($pid).replace('characters:', '').replace('character:', '').replace('entities:', '');
                 LET $found_ent = (SELECT VALUE id FROM entities WHERE schema_id.project_id = $p_rec AND (id = type::record('entities', $clean_id) OR name = type::string($pid) OR string::lowercase(name) = string::lowercase(type::string($pid))) LIMIT 1);
-                LET $ent_rec = IF array::len($found_ent) > 0 { $found_ent[0] } ELSE { type::record('entities', $clean_id) };
+                LET $ent_rec = IF array::len($found_ent) > 0 { array::first($found_ent) } ELSE { type::record('entities', $clean_id) };
                 RELATE $ent_rec->participant_of->$rec_id SET
                     created_at = time::now();
             };
@@ -154,14 +193,14 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     DELETE advances_arc WHERE in = $rec_id;
     LET $arcs = IF $data.arcs != NONE AND array::len($data.arcs) > 0 {
         $data.arcs
-    } ELSE IF $data.arc_id != NONE AND $data.arc_id != NULL {
+    } ELSE IF $data.arc_id != NONE AND $data.arc_id != NULL AND type::string($data.arc_id) != 'NONE' {
         [{ arc_id: $data.arc_id, arc_phase: IF $data.arc_phase != NONE { $data.arc_phase } ELSE { 'setup' } }]
     } ELSE {
         []
     };
     IF array::len($arcs) > 0 {
         FOR $a IN $arcs {
-            IF $a.arc_id != NONE AND $a.arc_id != NULL {
+            IF $a.arc_id != NONE AND $a.arc_id != NULL AND type::string($a.arc_id) != 'NONE' {
                 LET $arc_rec = type::record('story_arcs', type::string($a.arc_id).replace('story_arcs:', ''));
                 RELATE $rec_id->advances_arc->$arc_rec SET
                     phase = IF $a.arc_phase != NONE { $a.arc_phase } ELSE { 'setup' },
@@ -179,11 +218,22 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             created_at = time::now();
     };
 
-    RETURN (
+    RETURN array::first(
         SELECT 
             id,
-            type::string(parent_id) AS parent_id,
-            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
+            (
+                IF array::first(->spans_blocks.out.chapter_id) != NONE THEN
+                    type::string(array::first(->spans_blocks.out.chapter_id))
+                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN
+                    type::string(array::first(->promise_milestones.out.chapter_id))
+                ELSE IF $target_chap != NONE AND $target_chap != NULL THEN
+                    type::string($target_chap)
+                ELSE
+                    NONE
+                END
+            ) AS chapter_id,
+            IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
+            (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -191,7 +241,13 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
+            IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
+                type::string(timeline_event_id.calendar_id)
+            ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
+                type::string(array::first(->occurs_at.out.calendar_id))
+            ELSE
+                NONE
+            END AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -203,7 +259,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
                 order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
                 arc_id: type::string(out),
                 arc_title: out.title,
@@ -212,7 +268,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             } AS arcs
         FROM $rec_id
         LIMIT 1
-    )[0];
+    );
 };
 
 -- 41. СБОР МУЛЬТИ-ПЕРСОНАЖНОГО ПУТИ (MULTI-CHARACTER JOURNEY & CROSS-ARC NAVIGATOR)
@@ -308,6 +364,8 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(->promise_milestones.out.chapter_id.sort_order) }
                ELSE IF array::first(->spans_blocks.out.chapter_id.sort_order) != NONE { array::first(->spans_blocks.out.chapter_id.sort_order) }
                ELSE { 0 } AS planted_order,
+            (IF block_ids != NONE AND array::len(block_ids) > 0 THEN array::first(block_ids) ELSE (string::replace(type::string(array::first(->spans_blocks.out)), 'text_blocks:', '') ?? NONE) END) AS block_id,
+            (IF array::first(->spans_blocks.out.order_index) != NONE THEN (array::first(->spans_blocks.out.order_index) + 1) ELSE 1 END) AS paragraph_index,
             ->advances_arc.{
                 arc_id: type::string(out.id),
                 arc_title: out.title,
@@ -319,7 +377,7 @@ DEFINE FUNCTION OVERWRITE fn::get_multi_character_journey($proj: record<projects
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.phase) } ELSE { NONE } AS arc_phase,
             IF array::len(->advances_arc) > 0 { array::first(->advances_arc.out.color) } ELSE { NONE } AS arc_color,
             IF timeline_event_id.m_abs != NONE { timeline_event_id.m_abs } ELSE IF m_abs != NONE { m_abs } ELSE { NONE } AS m_abs,
-            IF array::len(<-participant_of) > 0 { (SELECT VALUE type::string(id) FROM <-participant_of<-entities) } ELSE { [] } AS participant_ids
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids
         FROM plot_promises 
         WHERE (timeline_event_id.project_id = $p_rec 
             OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
@@ -370,7 +428,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_tracker($proj: record<projects>) {
             IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
                ELSE IF array::first(->spans_blocks.out.chapter_id) != NONE THEN type::string(array::first(->spans_blocks.out.chapter_id))
                ELSE NONE END AS chapter_id, 
-            IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
+            IF array::first(->promise_milestones[WHERE stage = 'resolution'].out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones[WHERE stage = 'resolution'].out.chapter_id)) ELSE NONE END AS resolved_at_chapter_id,
             IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
                ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE THEN array::first(->promise_milestones.out.chapter_id.sort_order) * 1440
                ELSE NONE END AS m_abs, 
@@ -456,7 +514,7 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
             IF array::first(->promise_milestones.out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones.out.chapter_id))
                ELSE IF array::first(->spans_blocks.out.chapter_id) != NONE THEN type::string(array::first(->spans_blocks.out.chapter_id))
                ELSE NONE END AS chapter_id, 
-            IF (SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0] != NONE THEN type::string((SELECT VALUE out.chapter_id FROM ->promise_milestones WHERE stage = 'resolution' LIMIT 1)[0]) ELSE NONE END AS resolved_at_chapter_id,
+            IF array::first(->promise_milestones[WHERE stage = 'resolution'].out.chapter_id) != NONE THEN type::string(array::first(->promise_milestones[WHERE stage = 'resolution'].out.chapter_id)) ELSE NONE END AS resolved_at_chapter_id,
             IF timeline_event_id.m_abs != NONE THEN timeline_event_id.m_abs
                ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE THEN array::first(->promise_milestones.out.chapter_id.sort_order) * 1440
                ELSE NONE END AS m_abs, 
@@ -499,11 +557,20 @@ DEFINE FUNCTION OVERWRITE fn::get_item_journey($proj: record<projects>, $item: r
 -- 45. ПОЛУЧЕНИЕ СЮЖЕТНОГО ОБЕЩАНИЯ ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
     LET $rec = IF string::starts_with(type::string($id), 'plot_promises:') { type::record($id) } ELSE { type::record('plot_promises', $id) };
-    LET $res = (
+    RETURN array::first(
         SELECT 
             id,
-            type::string(parent_id) AS parent_id,
-            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
+            (
+                IF array::first(->spans_blocks.out.chapter_id) != NONE THEN
+                    type::string(array::first(->spans_blocks.out.chapter_id))
+                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN
+                    type::string(array::first(->promise_milestones.out.chapter_id))
+                ELSE
+                    NONE
+                END
+            ) AS chapter_id,
+            IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
+            (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -511,7 +578,13 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
+            IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
+                type::string(timeline_event_id.calendar_id)
+            ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
+                type::string(array::first(->occurs_at.out.calendar_id))
+            ELSE
+                NONE
+            END AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -523,7 +596,7 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
                 order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
                 arc_id: type::string(out),
                 arc_phase: phase
@@ -531,7 +604,6 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
         FROM $rec
         LIMIT 1
     );
-    RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
 -- 46. СПИСОК СЮЖЕТНЫХ ОБЕЩАНИЙ ПРОЕКТА
@@ -540,8 +612,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
     RETURN (
         SELECT 
             id,
-            type::string(parent_id) AS parent_id,
-            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
+            (
+                IF array::first(->spans_blocks.out.chapter_id) != NONE THEN
+                    type::string(array::first(->spans_blocks.out.chapter_id))
+                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN
+                    type::string(array::first(->promise_milestones.out.chapter_id))
+                ELSE
+                    NONE
+                END
+            ) AS chapter_id,
+            IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
+            (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -549,7 +630,13 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
+            IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
+                type::string(timeline_event_id.calendar_id)
+            ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
+                type::string(array::first(->occurs_at.out.calendar_id))
+            ELSE
+                NONE
+            END AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -561,7 +648,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
                 order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
                 arc_id: type::string(out),
                 arc_phase: phase
@@ -582,8 +669,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
     RETURN (
         SELECT 
             id,
-            type::string(parent_id) AS parent_id,
-            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
+            (
+                IF array::first(->spans_blocks.out.chapter_id) != NONE THEN
+                    type::string(array::first(->spans_blocks.out.chapter_id))
+                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN
+                    type::string(array::first(->promise_milestones.out.chapter_id))
+                ELSE
+                    NONE
+                END
+            ) AS chapter_id,
+            IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
+            (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -591,7 +687,13 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
-            type::string(timeline_event_id.calendar_id ?? array::first(->occurs_at.out.calendar_id)) AS calendar_id,
+            IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
+                type::string(timeline_event_id.calendar_id)
+            ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
+                type::string(array::first(->occurs_at.out.calendar_id))
+            ELSE
+                NONE
+            END AS calendar_id,
             created_at,
             updated_at,
             ->promise_milestones.{
@@ -603,7 +705,7 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
                 order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
                 arc_id: type::string(out),
                 arc_phase: phase
@@ -622,7 +724,17 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
     RETURN (
         SELECT 
             id,
-            (IF array::len(->spans_blocks) > 0 THEN (SELECT VALUE string::replace(type::string(out), 'text_blocks:', '') FROM ->spans_blocks) ELSE IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
+            (
+                IF array::first(->spans_blocks.out.chapter_id) != NONE THEN
+                    type::string(array::first(->spans_blocks.out.chapter_id))
+                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE THEN
+                    type::string(array::first(->promise_milestones.out.chapter_id))
+                ELSE
+                    NONE
+                END
+            ) AS chapter_id,
+            IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
+            (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
             title,
             note,
@@ -640,7 +752,7 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
                 order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
             } AS milestones,
-            (IF array::len(<-participant_of) > 0 THEN (SELECT VALUE string::replace(type::string(in), 'entities:', '') FROM <-participant_of) ELSE [] END) AS participant_ids,
+            (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
                 arc_id: type::string(out),
                 arc_phase: phase

@@ -10,6 +10,7 @@ import type {
   JourneyPromise,
 } from '../CharacterJourney.model';
 import { formatDiegeticDate, computeMabsFromDateFields, calculateDiegeticAge } from './useJourneyChronology';
+import { isAbstractPlaceholder } from './useJourneyManuscriptEnricher';
 
 export function getPhaseLabel(phase?: string | null): string {
   switch (phase) {
@@ -50,11 +51,90 @@ export function buildTimelineItems(
   // 0. Chapter / Scene Appearances
   if (Array.isArray(data.appearances)) {
     data.appearances.forEach((app: JourneyAppearance) => {
+      // If an appearance is a scene that is already present in promises, skip to prevent duplicates
+      if (app.source === 'scene') {
+        const hasMatchingPromise = Array.isArray(data.promises) && data.promises.some(p => {
+          const pChap = (p.chapter_id || '').split(':').pop() || '';
+          const aChap = (app.chapter_id || '').split(':').pop() || '';
+          if (pChap && aChap && pChap !== aChap) return false;
+          return (p.paragraph_index && p.paragraph_index === app.paragraph_index) ||
+                 (p.block_id && app.block_id && p.block_id === app.block_id);
+        });
+        if (hasMatchingPromise) return;
+      }
       const isScene = (app.source as string) === 'scene';
       const appTitle = app.chapter_title ? `Глава «${app.chapter_title}»` : `Глава #${app.chapter_order ?? '?'}`;
-      const appFullText = app.role
-        ? `Роль: ${app.role}`
-        : (isScene ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`);
+      const appFullText = app.quote?.trim()
+        || (app.role ? `Роль: ${app.role}` : (isScene ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`));
+
+      const boundArcs: Array<{
+        arcId: string;
+        arcTitle: string;
+        arcColor?: string;
+        phase: string;
+        phaseLabel: string;
+      }> = [];
+      const allArcIds: string[] = [];
+
+      if (Array.isArray(app.arcs) && app.arcs.length > 0) {
+        app.arcs.forEach((rawEntry: unknown) => {
+          if (!rawEntry) return;
+          let entryArcId = '';
+          let entryPhase = 'setup';
+
+          if (typeof rawEntry === 'string') {
+            entryArcId = rawEntry;
+          } else if (typeof rawEntry === 'object' && rawEntry !== null) {
+            const obj = rawEntry as { arc_id?: string; arc_phase?: string };
+            entryArcId = obj.arc_id || '';
+            entryPhase = obj.arc_phase || 'setup';
+          }
+
+          if (entryArcId) {
+            const cleanId = entryArcId.replace(/^story_arcs:/, '');
+            const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanId);
+            const resolvedId = arc?.id || entryArcId;
+            const resolvedTitle = arc?.title || 'Сюжетная арка';
+            const resolvedColor = (arc as { color?: string })?.color || undefined;
+
+            if (!allArcIds.includes(resolvedId)) {
+              allArcIds.push(resolvedId);
+            }
+
+            boundArcs.push({
+              arcId: resolvedId,
+              arcTitle: resolvedTitle,
+              arcColor: resolvedColor,
+              phase: entryPhase,
+              phaseLabel: getPhaseLabel(entryPhase),
+            });
+          }
+        });
+      }
+
+      if (boundArcs.length === 0 && app.arc_id) {
+        const cleanArcId = (app.arc_id as string).replace(/^story_arcs:/, '');
+        const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanArcId);
+        const resolvedId = arc?.id || (app.arc_id as string);
+        const resolvedTitle = arc?.title || (app.arc_title as string) || 'Сюжетная арка';
+        const resolvedColor = (arc as { color?: string })?.color || (app.arc_color as string) || undefined;
+        const phase = (app.arc_phase as string) || 'setup';
+
+        allArcIds.push(resolvedId);
+        boundArcs.push({
+          arcId: resolvedId,
+          arcTitle: resolvedTitle,
+          arcColor: resolvedColor,
+          phase,
+          phaseLabel: getPhaseLabel(phase),
+        });
+      }
+
+      const primaryArc = boundArcs[0];
+      const combinedArcTitle = boundArcs.length > 0
+        ? boundArcs.map((b) => b.arcTitle).join(' & ')
+        : (app.arc_title as string | undefined);
+
       items.push({
         id: `app-${app.chapter_id}-${app.source || 'mention'}-${app.created_at || Math.random()}`,
         type: 'appearance',
@@ -66,9 +146,18 @@ export function buildTimelineItems(
         chapter_id: app.chapter_id,
         chapter_title: app.chapter_title,
         chapter_order: app.chapter_order,
+        paragraph_index: app.paragraph_index,
+        block_id: app.block_id,
         phaseLabel: '📖 Появление',
         badge: isScene ? 'Сцена' : 'Упоминание',
-        badgeType: 'accent',
+        badgeType: isScene ? 'accent' : 'accent',
+        arc_id: primaryArc?.arcId,
+        arc_title: combinedArcTitle,
+        arc_color: primaryArc?.arcColor,
+        arc_phase: primaryArc?.phase,
+        boundArcs,
+        allArcIds,
+        m_abs: (app.m_abs as number | undefined),
       });
     });
   }
@@ -78,12 +167,14 @@ export function buildTimelineItems(
     data.events.forEach((ev: JourneyEvent) => {
       const formattedDate = formatDiegeticDate(ev.m_abs, null, activeCal);
       const ageInfo = calculateDiegeticAge(birthMabs, ev.m_abs, activeCal);
+      const eventQuote = ev.quote && !isAbstractPlaceholder(ev.quote) ? ev.quote : (ev.event_desc || `Событие «${ev.event_title}»`);
+      const roleDescription = ev.role && ev.role !== 'Участник события' ? `Участие: ${ev.role}` : undefined;
       items.push({
         id: `ev-${ev.event_id}`,
         type: 'event',
         title: `Событие мира: ${ev.event_title}`,
         subtitle: formattedDate,
-        fullText: ev.event_desc || ev.role || `Событие: ${ev.event_title}`,
+        fullText: eventQuote,
         timeLabel: formattedDate,
         phaseLabel: '⏳ Событие',
         m_abs: ev.m_abs,
@@ -92,7 +183,12 @@ export function buildTimelineItems(
         isBeforeBirth: ageInfo?.isBeforeBirth,
         badge: 'Событие мира',
         badgeType: 'warning',
-        description: ev.event_desc || (ev.role ? `Участие: ${ev.role}` : undefined),
+        description: ev.event_desc || roleDescription,
+        chapter_id: ev.chapter_id,
+        chapter_title: ev.chapter_title,
+        chapter_order: ev.chapter_order,
+        block_id: ev.block_id,
+        paragraph_index: ev.paragraph_index,
       });
     });
   }
@@ -196,6 +292,14 @@ export function buildTimelineItems(
     const rawQuote = p.quote || (p as unknown as { title?: string }).title || 'Сюжетная сцена';
     const quoteSnippet = rawQuote.length > 45 ? `${rawQuote.slice(0, 45)}...` : rawQuote;
 
+    let sceneParaIdx = p.paragraph_index;
+    if ((sceneParaIdx === undefined || sceneParaIdx === null) && p.block_id) {
+      const m = p.block_id.match(/para-(\d+)/);
+      if (m) {
+        sceneParaIdx = parseInt(m[1], 10);
+      }
+    }
+
     items.push({
       id: `prom-${p.id}`,
       type: 'promise',
@@ -210,7 +314,7 @@ export function buildTimelineItems(
       chapter_id: p.chapter_id || undefined,
       chapter_title: p.chapter_title || undefined,
       chapter_order: p.planted_order,
-      paragraph_index: p.paragraph_index,
+      paragraph_index: sceneParaIdx,
       block_id: p.block_id || undefined,
       m_abs: computedMabs,
       birth_m_abs: birthMabs,

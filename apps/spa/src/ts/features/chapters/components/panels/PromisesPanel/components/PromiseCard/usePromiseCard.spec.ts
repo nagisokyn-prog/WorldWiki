@@ -54,7 +54,8 @@ describe('usePromiseCard', () => {
       chapter_id: 'ch1',
       paragraph_index: 3,
       quote: 'Тестовая цитата',
-      block_id: 'b1'
+      block_id: 'b1',
+      block_ids: ['b1']
     });
   });
 

@@ -10,6 +10,12 @@ pub struct JourneyAppearanceDto {
     pub role: Option<String>,
     #[serde(default)]
     pub created_at: String,
+    #[serde(default)]
+    pub quote: Option<String>,
+    #[serde(default)]
+    pub block_id: Option<String>,
+    #[serde(default)]
+    pub paragraph_index: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -154,6 +160,12 @@ pub struct MultiJourneySceneDto {
     pub present_entities: Vec<JourneyParticipantDto>,
     #[serde(default)]
     pub meeting_gap: Option<JourneyMeetingGapDto>,
+    #[serde(default)]
+    pub quote: Option<String>,
+    #[serde(default)]
+    pub block_id: Option<String>,
+    #[serde(default)]
+    pub paragraph_index: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

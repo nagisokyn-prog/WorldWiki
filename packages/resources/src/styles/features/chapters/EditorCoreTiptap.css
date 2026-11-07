@@ -612,55 +612,65 @@ del.diff-del, .diff-del {
   animation: promisePulse 2.2s ease-out forwards;
 }
 
+.editor-core .narrative-kind-scene,
 .editor-core-tiptap .narrative-kind-scene,
 .narrative-kind-scene {
   --narrative-accent: var(--accent);
 }
 
+.editor-core .narrative-kind-conflict,
 .editor-core-tiptap .narrative-kind-conflict,
 .narrative-kind-conflict {
   --narrative-accent: var(--color-danger, var(--accent));
 }
 
+.editor-core .narrative-kind-gun,
 .editor-core-tiptap .narrative-kind-gun,
 .narrative-kind-gun {
   --narrative-accent: var(--color-warning, var(--accent));
 }
 
+.editor-core .narrative-kind-foreshadowing,
 .editor-core-tiptap .narrative-kind-foreshadowing,
 .narrative-kind-foreshadowing {
   --narrative-accent: var(--accent-secondary, var(--accent));
 }
 
+.editor-core .narrative-kind-mystery,
 .editor-core-tiptap .narrative-kind-mystery,
 .narrative-kind-mystery {
-  --narrative-accent: var(--color-primary, var(--accent));
+  --narrative-accent: var(--color-success, var(--accent));
 }
 
+.editor-core .narrative-kind-question,
 .editor-core-tiptap .narrative-kind-question,
 .narrative-kind-question {
   --narrative-accent: var(--color-info, var(--accent));
 }
 
 /* Одиночный абзац — полная плашка */
+.editor-core .narrative-frame-single,
 .editor-core-tiptap .narrative-frame-single,
 .narrative-frame-single,
+.editor-core .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last),
 .editor-core-tiptap .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last),
 .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last) {
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle, var(--border-color));
   border-left: 3px solid var(--narrative-accent, var(--accent));
   background-color: var(--bg-hover);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   margin: 6px 0;
+  min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Первый абзац многострочного нарративного блока */
+.editor-core .narrative-frame-first,
 .editor-core-tiptap .narrative-frame-first,
 .narrative-frame-first {
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle, var(--border-color));
   border-bottom: none;
   border-left: 3px solid var(--narrative-accent, var(--accent));
   background-color: var(--bg-hover);
@@ -670,31 +680,35 @@ del.diff-del, .diff-del {
   border-bottom-right-radius: 0;
   padding: 6px 10px 2px 10px;
   margin-top: 6px;
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
+  min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Промежуточные абзацы (непрерывное тело без внутренних разрывов) */
+.editor-core .narrative-frame-middle,
 .editor-core-tiptap .narrative-frame-middle,
 .narrative-frame-middle {
   border-left: 3px solid var(--narrative-accent, var(--accent));
-  border-right: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle, var(--border-color));
   border-top: none;
   border-bottom: none;
   background-color: var(--bg-hover);
   border-radius: 0;
   padding: 2px 10px;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Последний абзац многострочного нарративного блока */
+.editor-core .narrative-frame-last,
 .editor-core-tiptap .narrative-frame-last,
 .narrative-frame-last {
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle, var(--border-color));
   border-top: none;
   border-left: 3px solid var(--narrative-accent, var(--accent));
   background-color: var(--bg-hover);
@@ -703,17 +717,21 @@ del.diff-del, .diff-del {
   border-bottom-left-radius: var(--radius-sm);
   border-bottom-right-radius: var(--radius-sm);
   padding: 2px 10px 6px 10px;
-  margin-top: 0;
+  margin-top: 0 !important;
   margin-bottom: 6px;
+  min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
+.editor-core .narrative-frame:hover,
 .editor-core-tiptap .narrative-frame:hover,
 .narrative-frame:hover {
   border-left-color: var(--narrative-accent, var(--accent));
 }
 
+.editor-core .scene-selected-frame,
+.editor-core .promise-highlight-target,
 .editor-core-tiptap .scene-selected-frame,
 .editor-core-tiptap .promise-highlight-target,
 .scene-selected-frame,
@@ -722,6 +740,140 @@ del.diff-del, .diff-del {
   background-color: var(--bg-selected);
   position: relative;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Вложенные микро-единицы внутри сцен (Чеховские ружья, тайны, предзнаменования) */
+.editor-core [class*="narrative-embedded-"],
+.editor-core-tiptap [class*="narrative-embedded-"],
+[class*="narrative-embedded-"] {
+  position: relative;
+  border-radius: var(--radius-xs);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.editor-core .narrative-embedded-gun,
+.editor-core-tiptap .narrative-embedded-gun,
+.narrative-embedded-gun {
+  border-left: 3px solid var(--color-warning, var(--accent)) !important;
+  background-color: var(--warning-bg, var(--bg-selected));
+}
+
+.editor-core .narrative-embedded-gun::after,
+.editor-core-tiptap .narrative-embedded-gun::after,
+.narrative-embedded-gun::after,
+.editor-core .narrative-kind-gun.narrative-frame-single::after,
+.editor-core .narrative-kind-gun.narrative-frame-first::after,
+.editor-core-tiptap .narrative-kind-gun.narrative-frame-single::after,
+.editor-core-tiptap .narrative-kind-gun.narrative-frame-first::after,
+.narrative-kind-gun.narrative-frame-single::after,
+.narrative-kind-gun.narrative-frame-first::after {
+  content: '🔫';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.editor-core .narrative-embedded-mystery,
+.editor-core-tiptap .narrative-embedded-mystery,
+.narrative-embedded-mystery {
+  border-left: 3px solid var(--color-success, var(--accent)) !important;
+  background-color: var(--success-bg, var(--bg-selected));
+}
+
+.editor-core .narrative-embedded-mystery::after,
+.editor-core-tiptap .narrative-embedded-mystery::after,
+.narrative-embedded-mystery::after,
+.editor-core .narrative-kind-mystery.narrative-frame-single::after,
+.editor-core .narrative-kind-mystery.narrative-frame-first::after,
+.editor-core-tiptap .narrative-kind-mystery.narrative-frame-single::after,
+.editor-core-tiptap .narrative-kind-mystery.narrative-frame-first::after,
+.narrative-kind-mystery.narrative-frame-single::after,
+.narrative-kind-mystery.narrative-frame-first::after {
+  content: '🗝️';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.editor-core .narrative-embedded-foreshadowing,
+.editor-core-tiptap .narrative-embedded-foreshadowing,
+.narrative-embedded-foreshadowing {
+  border-left: 3px solid var(--accent-secondary, var(--accent)) !important;
+  background-color: var(--bg-selected);
+}
+
+.editor-core .narrative-embedded-foreshadowing::after,
+.editor-core-tiptap .narrative-embedded-foreshadowing::after,
+.narrative-embedded-foreshadowing::after,
+.editor-core .narrative-kind-foreshadowing.narrative-frame-single::after,
+.editor-core .narrative-kind-foreshadowing.narrative-frame-first::after,
+.editor-core-tiptap .narrative-kind-foreshadowing.narrative-frame-single::after,
+.editor-core-tiptap .narrative-kind-foreshadowing.narrative-frame-first::after,
+.narrative-kind-foreshadowing.narrative-frame-single::after,
+.narrative-kind-foreshadowing.narrative-frame-first::after {
+  content: '🔮';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.editor-core .narrative-embedded-question,
+.editor-core-tiptap .narrative-embedded-question,
+.narrative-embedded-question {
+  border-left: 3px solid var(--color-info, var(--accent)) !important;
+  background-color: var(--info-bg, var(--bg-selected));
+}
+
+.editor-core .narrative-embedded-question::after,
+.editor-core-tiptap .narrative-embedded-question::after,
+.narrative-embedded-question::after,
+.editor-core .narrative-kind-question.narrative-frame-single::after,
+.editor-core .narrative-kind-question.narrative-frame-first::after,
+.editor-core-tiptap .narrative-kind-question.narrative-frame-single::after,
+.editor-core-tiptap .narrative-kind-question.narrative-frame-first::after,
+.narrative-kind-question.narrative-frame-single::after,
+.narrative-kind-question.narrative-frame-first::after {
+  content: '❓';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.editor-core .narrative-embedded-conflict,
+.editor-core-tiptap .narrative-embedded-conflict,
+.narrative-embedded-conflict {
+  border-left: 3px solid var(--color-danger, var(--accent)) !important;
+  background-color: var(--error-bg, var(--bg-selected));
+}
+
+.editor-core .narrative-embedded-conflict::after,
+.editor-core-tiptap .narrative-embedded-conflict::after,
+.narrative-embedded-conflict::after,
+.editor-core .narrative-kind-conflict.narrative-frame-single::after,
+.editor-core .narrative-kind-conflict.narrative-frame-first::after,
+.editor-core-tiptap .narrative-kind-conflict.narrative-frame-single::after,
+.editor-core-tiptap .narrative-kind-conflict.narrative-frame-first::after,
+.narrative-kind-conflict.narrative-frame-single::after,
+.narrative-kind-conflict.narrative-frame-first::after {
+  content: '⚔️';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  pointer-events: none;
 }
 
 .scene-selected-frame:first-of-type::before {

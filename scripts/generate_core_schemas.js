@@ -42,6 +42,10 @@ function createField(cfg) {
     placeholder: cfg.placeholder || '',
     path: cfg.path || cfg.id
   };
+  if (cfg.class) f.class = cfg.class;
+  if (cfg.allowAutoExtend) f.allowAutoExtend = cfg.allowAutoExtend;
+  if (cfg.allowOngoing) f.allowOngoing = cfg.allowOngoing;
+  if (cfg.ongoingPlaceholder) f.ongoingPlaceholder = cfg.ongoingPlaceholder;
   if (cfg.required) f.required = true;
   if (cfg.hint) f.hint = cfg.hint;
   if (cfg.rows) f.rows = cfg.rows;
@@ -50,6 +54,7 @@ function createField(cfg) {
   if (cfg.value !== undefined) f.value = cfg.value;
   if (cfg.options) f.options = cfg.options;
   if (cfg.entityType) f.entityType = cfg.entityType;
+  if (cfg.entityTypes) f.entityTypes = cfg.entityTypes;
   if (cfg.isSystem) {
     f.isSystem = true;
     f.preventDelete = true;
@@ -827,22 +832,6 @@ function generateEventSchema() {
             path: 'фото'
           }),
           createField({
-            id: 'eventDate',
-            type: 'calendar_datetime',
-            label: 'Дата начала события',
-            required: true,
-            path: 'дата_события',
-            isSystem: true
-          }),
-          createField({
-            id: 'eventDuration',
-            type: 'number',
-            label: 'Длительность (в абсолютных минутах / днях)',
-            placeholder: 'Длительность...',
-            path: 'длительность',
-            isSystem: true
-          }),
-          createField({
             id: 'eventScale',
             type: 'select',
             label: 'Масштаб события',
@@ -878,8 +867,8 @@ function generateEventSchema() {
             id: 'eventFactions',
             type: 'multiselect',
             label: 'Затронутые фракции и стороны',
-            placeholder: 'Выберите организации...',
-            entityType: 'organization',
+            placeholder: 'Выберите организации или государства...',
+            entityTypes: ['organization', 'state'],
             path: 'затронутые_фракции',
             isSystem: true
           }),
@@ -899,7 +888,16 @@ function generateEventSchema() {
             path: 'описание'
           })
         ],
-        dynamicContainers: []
+        dynamicContainers: [
+          {
+            id: 'eventTimelineStages',
+            type: 'timeline',
+            title: 'Линия жизни и статуса',
+            emptyMessage: 'Этапы события не добавлены (по умолчанию событие считается одномоментным)',
+            template: 'eventTimelineStageTemplate',
+            dataPath: 'хронология_события'
+          }
+        ]
       },
       {
         id: 'causes_and_stages',
@@ -923,7 +921,62 @@ function generateEventSchema() {
         ],
         dynamicContainers: []
       }
-    ]
+    ],
+    templates: {
+      eventTimelineStageTemplate: {
+        type: 'timeline',
+        headerTitle: 'Этап',
+        fields: [
+          {
+            type: 'select',
+            class: 'статус_категория',
+            label: 'Статус / Фаза события',
+            options: [
+              { value: 'Активно / В процессе', label: '🟢 Активно / В процессе' },
+              { value: 'Кульминация / Разгар', label: '🔥 Кульминация / Разгар' },
+              { value: 'Завершено / В прошлом', label: '🛑 Завершено / В прошлом' },
+              { value: 'Завязка / Предпосылки', label: '🌱 Завязка / Предпосылки' },
+              { value: 'Последствия / Лоро-эхо', label: '🍂 Последствия / Лоро-эхо' }
+            ],
+            default: 'Активно / В процессе'
+          },
+          {
+            type: 'manuscript_point',
+            class: 'начальная_глава',
+            label: 'Начало в рукописи (Том / Глава)',
+            placeholder: 'Выберите том и главу...'
+          },
+          {
+            type: 'manuscript_point',
+            class: 'конечная_глава',
+            label: 'Окончание в рукописи (Том / Глава)',
+            placeholder: 'Выберите том и главу...',
+            allowAutoExtend: true
+          },
+          {
+            type: 'calendar_datetime',
+            class: 'начальная_дата',
+            label: 'Дата и время начала (по календарю мира)',
+            placeholder: 'Выберите дату...'
+          },
+          {
+            type: 'calendar_datetime',
+            class: 'конечная_дата',
+            label: 'Дата и время окончания (по календарю мира)',
+            placeholder: 'Выберите дату...',
+            allowOngoing: true
+          },
+          {
+            type: 'textarea',
+            class: 'описание_1',
+            label: 'Обстоятельства / Причина смены статуса',
+            placeholder: 'Например, подписание мирного договора, штурм крепости...',
+            rows: 2
+          }
+        ],
+        itemClass: 'timeline-item'
+      }
+    }
   };
 
   writeSchema('event.json', schema);

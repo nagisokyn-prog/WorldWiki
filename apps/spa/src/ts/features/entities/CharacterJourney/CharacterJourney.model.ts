@@ -17,6 +17,9 @@ export interface JourneyAppearance {
   source?: string;
   role?: string;
   created_at?: string | number;
+  quote?: string;
+  block_id?: string;
+  paragraph_index?: number;
   [key: string]: unknown;
 }
 
@@ -26,6 +29,13 @@ export interface JourneyEvent {
   event_desc?: string;
   m_abs: number;
   role?: string;
+  calendar_id?: string;
+  chapter_id?: string;
+  chapter_title?: string;
+  chapter_order?: number;
+  quote?: string;
+  block_id?: string;
+  paragraph_index?: number;
   [key: string]: unknown;
 }
 
@@ -94,6 +104,9 @@ export interface MultiJourneyScene {
   scene_m_abs?: number;
   present_entities: MultiJourneySceneEntity[];
   meeting_gap?: JourneyMeetingGap;
+  quote?: string;
+  block_id?: string;
+  paragraph_index?: number;
   [key: string]: unknown;
 }
 
@@ -101,6 +114,7 @@ export interface MultiJourneyResponse {
   entities: Entity[];
   scenes: MultiJourneyScene[];
   timelines?: Record<string, CharacterJourneyData>;
+  appearances?: JourneyAppearance[];
   [key: string]: unknown;
 }
 

@@ -76,6 +76,10 @@ export function useEntityHiddenConfig(
 
   const canHideField = (field: SchemaField): boolean => {
     if (!field) return false;
+    const cls = (field.class || field.id || field.path || '').toLowerCase();
+    if (cls.includes('глава') || cls.includes('дата') || cls.includes('время') || cls.includes('manuscript')) {
+      return true;
+    }
     if (field.isSystem || field._isSystemName || field.preventHide || field.required) return false;
     const firstSection = config.value?.sections?.[0];
     const firstField = firstSection?.fields?.[0];

@@ -48,6 +48,12 @@ struct RawJourneyAppearance {
     role: Option<String>,
     #[serde(default)]
     created_at: Option<String>,
+    #[serde(default)]
+    quote: Option<String>,
+    #[serde(default)]
+    block_id: Option<String>,
+    #[serde(default)]
+    paragraph_index: Option<i64>,
 }
 
 impl RawJourneyAppearance {
@@ -59,6 +65,9 @@ impl RawJourneyAppearance {
             source: self.source.unwrap_or_else(|| "mention".to_string()),
             role: self.role,
             created_at: self.created_at.unwrap_or_default(),
+            quote: self.quote,
+            block_id: self.block_id,
+            paragraph_index: self.paragraph_index,
         }
     }
 }

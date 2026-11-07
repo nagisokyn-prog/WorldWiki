@@ -60,8 +60,9 @@
         class="journey-filter-select"
         @change="$emit('update:selectedArcFilter', ($event.target as HTMLSelectElement).value)"
       >
-        <option value="ALL">Все арки</option>
-        <option value="UNASSIGNED">Вне арок</option>
+        <option value="ALL">Все (с арками и без)</option>
+        <option value="ALL_ARCS">Все сюжетные арки</option>
+        <option value="UNASSIGNED">Вне сюжетных арок</option>
         <option
           v-for="arc in storyArcs"
           :key="arc.id || arc.title"

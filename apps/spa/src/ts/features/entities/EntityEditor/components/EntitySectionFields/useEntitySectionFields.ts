@@ -64,6 +64,28 @@ export function useEntitySectionFields(
     emit('modified');
   };
 
+  const isFieldOngoing = (field: SchemaField): boolean => {
+    const val = props.getProp(getFieldKey(field));
+    if (val === null || val === undefined) return true;
+    if (typeof val === 'object' && val !== null) {
+      if ('ongoing' in val) return Boolean((val as Record<string, unknown>).ongoing);
+      if ('m_abs' in val || 'год' in val || 'calendar_id' in val) return false;
+      return false;
+    }
+    return false;
+  };
+
+  const toggleFieldOngoing = (field: SchemaField, event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const key = getFieldKey(field);
+    if (target.checked) {
+      props.setProp(key, null);
+    } else {
+      props.setProp(key, { ongoing: false });
+    }
+    emit('modified');
+  };
+
   return {
     getFieldKey,
     getFieldValue,
@@ -76,6 +98,8 @@ export function useEntitySectionFields(
     handleTextInput,
     handleMultiselectEvent,
     handleFieldUpdate,
+    isFieldOngoing,
+    toggleFieldOngoing,
   };
 }
 

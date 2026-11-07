@@ -444,15 +444,15 @@
   font-size: 11px;
   line-height: 1;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0.7;
+  pointer-events: auto;
   transition: opacity var(--anim-speed, 0.2s) ease, transform var(--anim-speed, 0.2s) ease;
   color: var(--text-muted);
   padding: 0;
 }
 
 .form-label-title-wrap:hover .field-hide-btn {
-  opacity: 0.8;
+  opacity: 0.9;
   pointer-events: auto;
 }
 

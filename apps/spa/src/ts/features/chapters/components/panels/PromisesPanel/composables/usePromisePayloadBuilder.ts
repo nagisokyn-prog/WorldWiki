@@ -1,6 +1,25 @@
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import type { RichPlotPromise } from './PromiseActions.model';
 
+function sanitizeBlockId(raw?: string | null): string {
+  if (!raw || typeof raw !== 'string') return '';
+  const stripped = raw
+    .replace(/^(text_blocks|blocks):/i, '')
+    .replace(/[`⟨⟩"']/g, '')
+    .trim();
+  if (!stripped || stripped === 'NONE' || stripped === 'NULL') return '';
+  const paraMatch = stripped.match(/(para-\d+)$/i);
+  if (paraMatch) return paraMatch[1];
+  return stripped.replace(/^blk_[^_]+_/, '');
+}
+
+function sanitizeParentId(raw?: string | null): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  const cleaned = raw.replace(/^plot_promises:/i, '').replace(/[`⟨⟩"']/g, '').trim();
+  if (!cleaned || cleaned === 'NONE' || cleaned === 'NULL') return null;
+  return `plot_promises:${cleaned}`;
+}
+
 export function preparePromisePayload(
   item: RichPlotPromise,
   fallbackChapterId: string | null
@@ -18,14 +37,22 @@ export function preparePromisePayload(
     ? arcsArr
     : (derivedArcId ? [{ arc_id: derivedArcId, arc_phase: derivedArcPhase || 'setup' }] : []);
 
+  const rawBlocks = item.block_ids && item.block_ids.length > 0
+    ? item.block_ids
+    : (item.block_id ? [item.block_id] : []);
+  const cleanBlocks = rawBlocks
+    .map((b) => sanitizeBlockId(b))
+    .filter((b): b is string => b.length > 0);
+  const cleanPrimaryBlock = sanitizeBlockId(item.block_id) || cleanBlocks[0] || null;
+
   return {
     ...(item as unknown as PlotPromise),
-    parent_id: item.parent_id || null,
+    parent_id: sanitizeParentId(item.parent_id),
     is_flashback: item.is_flashback ? true : false,
     chapter_id: chapId || undefined,
     paragraph_index: item.paragraph_index ?? 1,
-    block_id: item.block_id || null,
-    block_ids: item.block_ids && item.block_ids.length > 0 ? item.block_ids : (item.block_id ? [item.block_id] : []),
+    block_id: cleanPrimaryBlock,
+    block_ids: cleanBlocks,
     arcs: finalArcs,
     arc_id: derivedArcId,
     arc_phase: derivedArcPhase,

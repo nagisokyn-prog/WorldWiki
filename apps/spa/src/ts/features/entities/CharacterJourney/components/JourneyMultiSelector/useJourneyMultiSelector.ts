@@ -13,11 +13,17 @@ export interface UseJourneyMultiSelectorEmit {
 
 export function isCharacterEntity(entity?: Entity | null): boolean {
   if (!entity) return false;
-  const rawType = String(entity.entity_type || '').trim().toLowerCase();
+  const rawType = String(
+    entity.entity_type ||
+    (entity as { schema_id?: { type_key?: string } | string }).schema_id ||
+    (entity as { schema_type?: string }).schema_type ||
+    ''
+  ).trim().toLowerCase();
   return (
     rawType === 'character' ||
     rawType === 'characters' ||
     rawType === 'person' ||
+    rawType.includes('character') ||
     rawType.includes('персонаж') ||
     rawType.includes('герой')
   );

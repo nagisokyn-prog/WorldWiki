@@ -32,8 +32,53 @@
 
     <!-- Рендерим шаблон -->
     <div v-if="!isCollapsed && templateFields.length > 0">
-      <div v-for="tField in templateFields" :key="tField.id || tField.class" class="form-group mb-2">
-        <label v-if="tField.label" class="form-label text-xs">{{ tField.label }}</label>
+      <template v-for="tField in templateFields" :key="tField.id || tField.class">
+        <!-- Скрытое поле: плашка для восстановления -->
+        <div
+          v-if="isFieldHidden(tField.id || tField.class || '')"
+          class="hidden-field-placeholder flex items-center justify-between py-1 px-2.5 mb-2 rounded border border-dashed border-border text-xs text-muted select-none"
+        >
+          <span class="flex items-center gap-1.5 opacity-80">
+            <span>👁️‍🗨️</span>
+            <span>{{ tField.label || tField.class }} (скрыто для этой записи)</span>
+          </span>
+          <button
+            type="button"
+            class="btn-new btn-outline-new text-xs py-0.5 px-2 interactive-el"
+            title="Восстановить поле"
+            @click.stop="unhideField(tField.id || tField.class || '')"
+          >
+            Показать
+          </button>
+        </div>
+
+        <div v-else class="form-group mb-2">
+          <div class="flex justify-between items-center mb-1">
+            <div class="form-label-title-wrap flex items-center gap-1.5">
+              <span v-if="tField.label" class="form-label-text text-xs mb-0">{{ tField.label }}</span>
+              <button
+                v-if="canHideField(tField)"
+                type="button"
+                class="field-hide-btn interactive-el"
+                title="Скрыть поле для этой сущности"
+                @click.stop.prevent="hideField(tField.id || tField.class || '')"
+              >
+                👁️‍🗨️
+              </button>
+            </div>
+            <label
+              v-if="tField.allowOngoing || (tField.class || tField.id || '').toLowerCase().includes('конечная_дата')"
+              class="ongoing-checkbox-label flex items-center gap-1 text-xs text-muted cursor-pointer select-none"
+            >
+              <input
+                type="checkbox"
+                class="checkbox-accent"
+                :checked="isFieldOngoing(tField.id || tField.class || '')"
+                @change="toggleFieldOngoing(tField.id || tField.class || '', $event)"
+              />
+              По настоящее время
+            </label>
+          </div>
 
         <textarea
           v-if="tField.type === 'textarea'"
@@ -85,13 +130,22 @@
           <span class="text-xs text-accent font-bold range-val-badge">{{ getFieldValue(tField.id || tField.class || '') || 0 }}</span>
         </div>
 
-        <UniversalDatePicker
-          v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base' || tField.type === 'calendar_datetime'"
-          :show-time="tField.type === 'calendar_datetime'"
-          :model-value="getFieldProp(tField.id || tField.class || '')"
-          :project="project"
-          @update:model-value="updateProp(tField.id || tField.class || '', $event)"
-        />
+        <template v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base' || tField.type === 'calendar_datetime'">
+          <div
+            v-if="(tField.allowOngoing || (tField.class || tField.id || '').toLowerCase().includes('конечная_дата')) && isFieldOngoing(tField.id || tField.class || '')"
+            class="text-xs text-muted ongoing-placeholder"
+            style="padding: 6px 0; font-style: italic; opacity: 0.8;"
+          >
+            {{ (tField.ongoingPlaceholder as string) || 'Действует по настоящее время (без даты окончания)' }}
+          </div>
+          <UniversalDatePicker
+            v-else
+            :show-time="tField.type === 'calendar_datetime'"
+            :model-value="getFieldProp(tField.id || tField.class || '')"
+            :project="project"
+            @update:model-value="updateProp(tField.id || tField.class || '', $event)"
+          />
+        </template>
 
         <input
           v-else-if="tField.type === 'number'"
@@ -111,8 +165,9 @@
           @input="onTextInput(tField.id || tField.class || '', $event)"
         />
       </div>
-    </div>
+    </template>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -138,5 +193,11 @@ const {
   onTextInput,
   onNumberInput,
   onCheckboxChange,
+  isFieldOngoing,
+  toggleFieldOngoing,
+  isFieldHidden,
+  canHideField,
+  hideField,
+  unhideField,
 } = useEntityDynamicItemCard(props, emit);
 </script>

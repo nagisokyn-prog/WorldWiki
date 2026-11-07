@@ -52,16 +52,18 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
                         type::string(out)
                     },
                     source: IF source != NONE { source } ELSE { 'mention' },
-                    role: role
+                    count: IF count != NONE { count } ELSE { 1 }
                 }),
                 (->participant_of.{
                     chapter_id: IF out.chapter_id != NONE {
                         type::string(out.chapter_id)
+                    } ELSE IF array::len(out->spans_blocks) > 0 {
+                        type::string(array::first(out->spans_blocks.out.chapter_id))
                     } ELSE IF array::len(out->promise_milestones) > 0 {
-                        LET $first_ch = array::first(out->promise_milestones.out.chapter_id);
-                        type::string($first_ch)
+                        type::string(array::first(out->promise_milestones.out.chapter_id))
                     } ELSE { NONE },
                     source: 'scene',
+                    count: 1,
                     role: role
                 }),
                 (->participates_in.{
@@ -70,6 +72,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: any) {
                         type::string($first_rev)
                     } ELSE { NONE },
                     source: 'scene',
+                    count: 1,
                     role: role
                 })
             ) AS appearances
@@ -128,7 +131,11 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             description,
             'event' AS kind,
             IF attributes.location_id != NONE { attributes.location_id } ELSE { NONE } AS location_id,
-            IF attributes['дата_события']['m_abs'] != NONE {
+            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE {
+                attributes['хронология_события'][0]['начальная_дата']['m_abs']
+            } ELSE IF attributes['начальная_дата']['m_abs'] != NONE {
+                attributes['начальная_дата']['m_abs']
+            } ELSE IF attributes['дата_события']['m_abs'] != NONE {
                 attributes['дата_события']['m_abs']
             } ELSE IF attributes.m_abs != NONE {
                 attributes.m_abs
@@ -179,8 +186,10 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 timeline_event_id.m_abs
             } ELSE IF array::first(->occurs_at.out.m_abs) != NONE {
                 array::first(->occurs_at.out.m_abs)
-            } ELSE IF chapter_id.sort_order != NONE {
-                chapter_id.sort_order * 1440
+            } ELSE IF array::first(->spans_blocks.out.chapter_id.sort_order) != NONE {
+                array::first(->spans_blocks.out.chapter_id.sort_order) * 1440
+            } ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE {
+                array::first(->promise_milestones.out.chapter_id.sort_order) * 1440
             } ELSE {
                 1440
             } AS m_abs,
@@ -194,30 +203,31 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             } AS calendar_id,
             [
                 {
-                    chapter_id: IF chapter_id != NONE {
-                        IF chapter_id.id != NONE { chapter_id.id } ELSE { type::string(chapter_id) }
+                    chapter_id: IF array::first(->spans_blocks.out.chapter_id) != NONE {
+                        LET $sb_ch = array::first(->spans_blocks.out.chapter_id);
+                        IF $sb_ch.id != NONE { $sb_ch.id } ELSE { type::string($sb_ch) }
                     } ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE {
                         LET $pm_ch = array::first(->promise_milestones.out.chapter_id);
                         IF $pm_ch.id != NONE { $pm_ch.id } ELSE { type::string($pm_ch) }
                     } ELSE { '' },
-                    chapter_title: IF chapter_id.title != NONE {
-                        chapter_id.title
+                    chapter_title: IF array::first(->spans_blocks.out.chapter_id.title) != NONE {
+                        array::first(->spans_blocks.out.chapter_id.title)
                     } ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE {
                         array::first(->promise_milestones.out.chapter_id.title)
                     } ELSE { 'Глава' },
-                    chapter_order: IF chapter_id.sort_order != NONE {
-                        chapter_id.sort_order
+                    chapter_order: IF array::first(->spans_blocks.out.chapter_id.sort_order) != NONE {
+                        array::first(->spans_blocks.out.chapter_id.sort_order)
                     } ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE {
                         array::first(->promise_milestones.out.chapter_id.sort_order)
                     } ELSE { 0 },
-                    chapter_sort_order: IF chapter_id.sort_order != NONE {
-                        chapter_id.sort_order
+                    chapter_sort_order: IF array::first(->spans_blocks.out.chapter_id.sort_order) != NONE {
+                        array::first(->spans_blocks.out.chapter_id.sort_order)
                     } ELSE IF array::first(->promise_milestones.out.chapter_id.sort_order) != NONE {
                         array::first(->promise_milestones.out.chapter_id.sort_order)
                     } ELSE { 0 },
                     pov_id: NONE,
                     kind: IF time_nature == 'flashback' OR is_flashback == true OR array::first(->occurs_at.time_nature) == 'flashback' { 'flashback' } ELSE { 'direct' },
-                    block_id: IF block_id != NONE { block_id } ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id } ELSE { NONE },
+                    block_id: IF array::first(->spans_blocks.out) != NONE { array::first(->spans_blocks.out).id } ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id } ELSE { NONE },
                     is_anachronism: false
                 }
             ] AS reveals,
@@ -229,7 +239,11 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
                 []
             } AS participants
         FROM plot_promises
-        WHERE project_id = $p_rec
+        WHERE (timeline_event_id.project_id = $p_rec 
+            OR ->spans_blocks.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->promise_milestones.out.chapter_id.volume_id.project_id CONTAINS $p_rec 
+            OR ->advances_arc.out.project_id CONTAINS $p_rec 
+            OR <-participant_of.in.schema_id.project_id CONTAINS $p_rec)
         LIMIT 2000
     );
 
@@ -267,31 +281,110 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
                ELSE IF out.sort_order != NONE { out.sort_order } ELSE { 0 } AS chapter_order,
             source,
             role,
-            created_at
+            created_at,
+            (
+                IF string::starts_with(type::string(out), 'text_blocks') THEN
+                    out.content
+                ELSE
+                    (
+                        (SELECT VALUE content FROM text_blocks 
+                        WHERE chapter_id = out 
+                          AND content != NONE 
+                          AND string::lowercase(type::string(content)) CONTAINS string::lowercase($info.name)
+                        ORDER BY order_index ASC LIMIT 1)[0]
+                        ??
+                        (SELECT VALUE content FROM text_blocks WHERE chapter_id = out ORDER BY order_index ASC LIMIT 1)[0]
+                        ?? ''
+                    )
+                END
+            ) AS quote,
+            (
+                IF string::starts_with(type::string(out), 'text_blocks') THEN
+                    string::replace(type::string(out), 'text_blocks:', '')
+                ELSE
+                    (
+                        (SELECT VALUE string::replace(type::string(id), 'text_blocks:', '') FROM text_blocks 
+                        WHERE chapter_id = out 
+                          AND content != NONE 
+                          AND string::lowercase(type::string(content)) CONTAINS string::lowercase($info.name)
+                        ORDER BY order_index ASC LIMIT 1)[0]
+                        ??
+                        (SELECT VALUE string::replace(type::string(id), 'text_blocks:', '') FROM text_blocks WHERE chapter_id = out ORDER BY order_index ASC LIMIT 1)[0]
+                        ?? NONE
+                    )
+                END
+            ) AS block_id,
+            (
+                IF string::starts_with(type::string(out), 'text_blocks') THEN
+                    (out.order_index + 1)
+                ELSE
+                    (
+                        (SELECT VALUE (order_index + 1) FROM text_blocks 
+                        WHERE chapter_id = out 
+                          AND content != NONE 
+                          AND string::lowercase(type::string(content)) CONTAINS string::lowercase($info.name)
+                        ORDER BY order_index ASC LIMIT 1)[0]
+                        ??
+                        (SELECT VALUE (order_index + 1) FROM text_blocks WHERE chapter_id = out ORDER BY order_index ASC LIMIT 1)[0]
+                        ?? 1
+                    )
+                END
+            ) AS paragraph_index
         FROM appears_in 
         WHERE in = $entity
         LIMIT 1000
     );
     LET $participant_list = (
         SELECT 
-            IF out.chapter_id != NONE { type::string(out.chapter_id) }
+            IF array::first(out->spans_blocks.out.chapter_id) != NONE { type::string(array::first(out->spans_blocks.out.chapter_id)) }
                ELSE IF array::first(out->promise_milestones.out.chapter_id) != NONE { type::string(array::first(out->promise_milestones.out.chapter_id)) }
                ELSE { '' } AS chapter_id,
-            IF out.chapter_id.title != NONE { out.chapter_id.title }
+            IF array::first(out->spans_blocks.out.chapter_id.title) != NONE { array::first(out->spans_blocks.out.chapter_id.title) }
                ELSE IF array::first(out->promise_milestones.out.chapter_id.title) != NONE { array::first(out->promise_milestones.out.chapter_id.title) }
                ELSE { 'Сцена' } AS chapter_title,
-            IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order }
+            IF array::first(out->spans_blocks.out.chapter_id.sort_order) != NONE { array::first(out->spans_blocks.out.chapter_id.sort_order) }
                ELSE IF array::first(out->promise_milestones.out.chapter_id.sort_order) != NONE { array::first(out->promise_milestones.out.chapter_id.sort_order) }
                ELSE { 0 } AS chapter_order,
             'scene' AS source,
             role,
-            IF created_at != NONE { type::string(created_at) } ELSE { '' } AS created_at
+            IF created_at != NONE { type::string(created_at) } ELSE { '' } AS created_at,
+            (
+                IF out.title != NONE AND out.title != '' THEN
+                    out.title
+                ELSE IF array::first(out->promise_milestones.quote) != NONE THEN
+                    array::first(out->promise_milestones.quote)
+                ELSE IF array::first(out->spans_blocks.out.content) != NONE THEN
+                    array::first(out->spans_blocks.out.content)
+                ELSE
+                    ''
+                END
+            ) AS quote,
+            (
+                IF array::first(out.block_ids) != NONE THEN
+                    array::first(out.block_ids)
+                ELSE IF array::first(out->spans_blocks.out) != NONE THEN
+                    string::replace(type::string(array::first(out->spans_blocks.out)), 'text_blocks:', '')
+                ELSE IF array::first(out->promise_milestones.out) != NONE THEN
+                    string::replace(type::string(array::first(out->promise_milestones.out)), 'text_blocks:', '')
+                ELSE
+                    NONE
+                END
+            ) AS block_id,
+            (
+                IF array::first(out->spans_blocks.out.order_index) != NONE THEN
+                    (array::first(out->spans_blocks.out.order_index) + 1)
+                ELSE IF array::first(out->promise_milestones.out.order_index) != NONE THEN
+                    (array::first(out->promise_milestones.out.order_index) + 1)
+                ELSE
+                    1
+                END
+            ) AS paragraph_index
         FROM participant_of 
-        WHERE in = $entity
+        WHERE in = $entity AND out != NONE AND out.id != NONE
         LIMIT 1000
     );
     LET $appearances = array::concat($appears_in_list, $participant_list);
-    LET $events = (
+    LET $timeline_events = (
         SELECT 
             out.id AS event_id,
             out.title AS event_title,
@@ -303,6 +396,116 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
         WHERE in = $entity
         LIMIT 1000
     );
+    LET $raw_entity_event_participants = (
+        SELECT 
+            type::string(id) AS event_id,
+            name AS event_title,
+            IF description != NONE AND description != '' THEN description
+               ELSE IF attributes['описание'] != NONE THEN attributes['описание']
+               ELSE IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['описание_1'] != NONE THEN attributes['хронология_события'][0]['описание_1']
+               ELSE '' END AS event_desc,
+            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE THEN attributes['хронология_события'][0]['начальная_дата']['m_abs']
+               ELSE IF attributes['начальная_дата']['m_abs'] != NONE THEN attributes['начальная_дата']['m_abs']
+               ELSE IF attributes['дата_события']['m_abs'] != NONE THEN attributes['дата_события']['m_abs']
+               ELSE IF attributes.m_abs != NONE THEN attributes.m_abs
+               ELSE 0 END AS m_abs,
+            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['calendar_id'] != NONE THEN type::string(attributes['хронология_события'][0]['начальная_дата']['calendar_id'])
+               ELSE IF attributes['начальная_дата']['calendar_id'] != NONE THEN type::string(attributes['начальная_дата']['calendar_id'])
+               ELSE IF attributes.calendar_id != NONE THEN type::string(attributes.calendar_id)
+               ELSE NONE END AS calendar_id,
+            'Участник события' AS role,
+            (
+                SELECT 
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN type::string(out.chapter_id) ELSE type::string(out.id) END AS chapter_id,
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN out.chapter_id.title ELSE out.title END AS chapter_title,
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN (IF out.chapter_id.sort_order != NONE THEN out.chapter_id.sort_order ELSE 0 END)
+                    ELSE (IF out.sort_order != NONE THEN out.sort_order ELSE 0 END) END AS chapter_order,
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN string::replace(type::string(out), 'text_blocks:', '')
+                    ELSE (
+                        (SELECT VALUE string::replace(type::string(id), 'text_blocks:', '') FROM text_blocks 
+                         WHERE chapter_id = out 
+                           AND content != NONE 
+                           AND (
+                               string::lowercase(type::string(content)) CONTAINS string::lowercase($parent.name)
+                               OR type::string(content) CONTAINS '((' + $parent.name + '))'
+                           )
+                         ORDER BY order_index ASC LIMIT 1)[0]
+                         ?? NONE
+                    ) END AS block_id,
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN (out.order_index + 1)
+                    ELSE (
+                        (SELECT VALUE (order_index + 1) FROM text_blocks 
+                         WHERE chapter_id = out 
+                           AND content != NONE 
+                           AND (
+                               string::lowercase(type::string(content)) CONTAINS string::lowercase($parent.name)
+                               OR type::string(content) CONTAINS '((' + $parent.name + '))'
+                           )
+                         ORDER BY order_index ASC LIMIT 1)[0]
+                         ?? 1
+                    ) END AS paragraph_index,
+                    IF string::starts_with(type::string(out), 'text_blocks') THEN out.content
+                    ELSE (
+                        (SELECT VALUE content FROM text_blocks 
+                         WHERE chapter_id = out 
+                           AND content != NONE 
+                           AND (
+                               string::lowercase(type::string(content)) CONTAINS string::lowercase($parent.name)
+                               OR type::string(content) CONTAINS '((' + $parent.name + '))'
+                           )
+                         ORDER BY order_index ASC LIMIT 1)[0]
+                         ?? ''
+                    ) END AS quote
+                FROM appears_in 
+                WHERE in = $parent.id 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            )[0] AS mention,
+            (
+                IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_глава'] != NONE THEN
+                    attributes['хронология_события'][0]['начальная_глава']
+                ELSE IF attributes['начальная_глава'] != NONE THEN
+                    attributes['начальная_глава']
+                ELSE
+                    NONE
+                END
+            ) AS fallback_chapter
+        FROM entities
+        WHERE (project_id = $proj OR schema_id.project_id = $proj)
+          AND (schema_id.type_key = 'event' OR schema_id.type_key = 'events' OR schema_id.type_key = 'historical_event')
+          AND (
+            $entity IN attributes['участники'] 
+            OR $ent_clean IN attributes['участники'] 
+            OR $ent_prefixed IN attributes['участники']
+            OR (attributes['участники'] != NONE AND type::string(attributes['участники']) CONTAINS $ent_clean)
+          )
+        LIMIT 1000
+    );
+    LET $entity_event_participants = (
+        SELECT 
+            event_id,
+            event_title,
+            event_desc,
+            m_abs,
+            calendar_id,
+            role,
+            IF mention.chapter_id != NONE THEN mention.chapter_id
+               ELSE IF fallback_chapter.chapter_id != NONE THEN type::string(fallback_chapter.chapter_id)
+               ELSE NONE END AS chapter_id,
+            IF mention.chapter_title != NONE THEN mention.chapter_title
+               ELSE IF fallback_chapter.chapter_id != NONE THEN fallback_chapter.chapter_id.title
+               ELSE NONE END AS chapter_title,
+            IF mention.chapter_order != NONE THEN mention.chapter_order
+               ELSE IF fallback_chapter.chapter_id != NONE THEN fallback_chapter.chapter_id.sort_order
+               ELSE 0 END AS chapter_order,
+            IF mention.quote != NONE AND mention.quote != '' THEN mention.quote
+               ELSE IF event_desc != NONE AND event_desc != '' THEN event_desc
+               ELSE ('Событие «' + event_title + '»') END AS quote,
+            IF mention.block_id != NONE THEN mention.block_id ELSE NONE END AS block_id,
+            IF mention.paragraph_index != NONE THEN mention.paragraph_index ELSE 1 END AS paragraph_index
+        FROM $raw_entity_event_participants
+    );
+    LET $events = array::concat($timeline_events, $entity_event_participants);
     LET $relations = (
         SELECT 
             id,
@@ -328,14 +531,15 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             status,
             IF paragraph_index != NONE { paragraph_index }
                ELSE IF array::first(->promise_milestones.order_index) != NONE { array::first(->promise_milestones.order_index) }
-               ELSE { 1 } AS paragraph_index,
+               ELSE { NONE } AS paragraph_index,
             IF block_id != NONE { block_id }
+               ELSE IF array::first(->spans_blocks.out) != NONE { array::first(->spans_blocks.out).id }
                ELSE IF array::first(->promise_milestones.out) != NONE { array::first(->promise_milestones.out).id }
                ELSE { NONE } AS block_id,
-            IF chapter_id != NONE { type::string(chapter_id) } 
+            IF array::first(->spans_blocks.out.chapter_id) != NONE { type::string(array::first(->spans_blocks.out.chapter_id)) }
                ELSE IF array::first(->promise_milestones.out.chapter_id) != NONE { type::string(array::first(->promise_milestones.out.chapter_id)) }
                ELSE { NONE } AS chapter_id,
-            IF chapter_id.title != NONE { chapter_id.title }
+            IF array::first(->spans_blocks.out.chapter_id.title) != NONE { array::first(->spans_blocks.out.chapter_id.title) }
                ELSE IF array::first(->promise_milestones.out.chapter_id.title) != NONE { array::first(->promise_milestones.out.chapter_id.title) }
                ELSE { 'Сцена' } AS chapter_title,
             IF chapter_id.sort_order != NONE { chapter_id.sort_order }
@@ -401,7 +605,12 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
     IF array::len($names) > 0 {
         LET $lower_names = (SELECT VALUE string::lowercase($this) FROM $names LIMIT 500);
         LET $targets = (
-            SELECT VALUE id FROM entities 
+            SELECT 
+                id,
+                name,
+                attributes.aliases AS aliases,
+                attributes['псевдонимы'] AS pseudonyms
+            FROM entities 
             WHERE schema_id.project_id = $p_rec
               AND (
                   type::string(id) IN $names
@@ -416,15 +625,27 @@ DEFINE FUNCTION OVERWRITE fn::sync_chapter_mentions($chap: record<chapters>, $na
               )
             LIMIT 1000
         );
-        FOR $ent_id IN $targets {
+        FOR $ent IN $targets {
+            LET $ent_id = $ent.id;
+            LET $ent_str_id = type::string($ent.id);
+            LET $ent_name_lower = string::lowercase($ent.name);
+            LET $match_count = array::len(
+                (SELECT VALUE $this FROM $names WHERE 
+                    $this = $ent_str_id 
+                    OR $this = $ent.name 
+                    OR string::lowercase($this) = $ent_name_lower
+                )
+            );
+            LET $final_count = IF $match_count > 0 THEN $match_count ELSE 1 END;
             RELATE $ent_id->appears_in->$chap CONTENT {
                 source: 'mention',
+                count: $final_count,
                 created_at: time::now()
             };
         };
         RETURN {
             proj: $p_rec,
-            target_entities: $targets
+            target_entities: $targets.id
         };
     } ELSE {
         RETURN {

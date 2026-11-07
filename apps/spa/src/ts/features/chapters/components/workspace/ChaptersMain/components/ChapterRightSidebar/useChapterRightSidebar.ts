@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { PanelResizeType, SidebarTabType, PlanScopeType } from './ChapterRightSidebar.model';
+import type { RichPlotPromise } from '@/features/chapters/components/panels/PromisesPanel/usePromisesPanel';
 import PromisesPanel from '@/features/chapters/components/panels/PromisesPanel/PromisesPanel.vue';
 import PlanningPanel from '@/features/chapters/components/panels/PlanningPanel/PlanningPanel.vue';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
@@ -142,7 +143,7 @@ export function useChapterRightSidebar(props?: { project?: string }) {
     }
   };
 
-  const addPromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
+  const addPromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null; block_ids?: string[] }) => {
     setSidebarTab('promises');
     return promisesPanelRef.value?.addPromise(payload);
   };
@@ -153,16 +154,18 @@ export function useChapterRightSidebar(props?: { project?: string }) {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
     chapterId?: string;
   }) => {
     setSidebarTab('promises');
     return promisesPanelRef.value?.addMilestone(payload);
   };
 
-  const addSubScene = (parentItem: any, payload: {
+  const addSubScene = (parentItem: RichPlotPromise, payload: {
     quote: string;
     paragraph_index: number;
     block_id?: string | null;
+    block_ids?: string[];
     chapterId?: string;
   }) => {
     setSidebarTab('promises');

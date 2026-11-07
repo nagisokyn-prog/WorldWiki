@@ -84,6 +84,12 @@ pub(crate) struct MultiJourneyRawPromise {
     #[serde(default)]
     pub chapter_id: Option<String>,
     #[serde(default)]
+    pub quote: Option<String>,
+    #[serde(default)]
+    pub block_id: Option<String>,
+    #[serde(default)]
+    pub paragraph_index: Option<i64>,
+    #[serde(default)]
     pub arc_id: Option<String>,
     #[serde(default)]
     pub arc_title: Option<String>,
@@ -333,6 +339,9 @@ pub(crate) async fn get_multi_character_journey_impl(
             .collect();
 
         let scene_m_abs = ch_promises.iter().find_map(|p| p.m_abs);
+        let scene_quote = ch_promises.iter().find_map(|p| p.quote.clone());
+        let scene_block_id = ch_promises.iter().find_map(|p| p.block_id.clone());
+        let scene_para_idx = ch_promises.iter().find_map(|p| p.paragraph_index);
         let mut present_entities = Vec::with_capacity(grp.participants.len());
 
         for part in &grp.participants {
@@ -370,6 +379,9 @@ pub(crate) async fn get_multi_character_journey_impl(
                 scene_date_formatted: None,
                 present_entities,
                 meeting_gap: None,
+                quote: scene_quote,
+                block_id: scene_block_id,
+                paragraph_index: scene_para_idx,
             });
         }
     }

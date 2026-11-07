@@ -4,8 +4,8 @@
     "file": "./apps/spa/src/ts/features/chapters/components/editor/EditorCoreTiptap/composables/useEditorSceneFrames.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (283) exceeds recommended limit (265)",
-    "fingerprint": "2fb7729cc414d2d9aa51c642f7eca48bcc1409ead0b85aa5109c32c245e3d4e3"
+    "message": "Frontend file SLOC (329) exceeds recommended limit (265)",
+    "fingerprint": "c31215a5fa9274aa4ec057f2900e0fbfffcdd710c7eacdaa9f6650c5f40a5a9b"
   },
   {
     "rule": "ARCH-031",
@@ -58,7 +58,7 @@
   {
     "rule": "SURQL-004",
     "file": "./apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql",
-    "line": 25,
+    "line": 30,
     "symbol": "fn::save_text_blocks",
     "message": "Stored function 'fn::save_text_blocks' performs non-aggregating query on 'table' without LIMIT clause.",
     "fingerprint": "583059aa3cbda47562e7e4b8e24d75bbb0831c6f2c891563e67cd939d7b30e98"

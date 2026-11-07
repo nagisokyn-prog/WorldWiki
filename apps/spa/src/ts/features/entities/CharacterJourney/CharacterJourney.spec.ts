@@ -318,6 +318,138 @@ describe('useCharacterJourney Composable', () => {
     journey.setFilterMode('intersection');
     expect(journey.filterMode.value).toBe('intersection');
   });
+
+  it('preserves real paragraph quote, block_id, and paragraph_index in timeline items for editor jumping', async () => {
+    vi.mocked(apiClient.getEntities).mockResolvedValueOnce([
+      { id: 'ent:1', name: 'Алексей', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
+    ]);
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([]);
+    vi.mocked(apiClient.getCharacterJourney).mockResolvedValueOnce({
+      entity_id: 'ent:1',
+      entity_name: 'Алексей',
+      entity_type: 'character',
+      appearances: [
+        {
+          chapter_id: 'ch:1',
+          chapter_title: 'Глава 1. Дом?',
+          chapter_order: 1,
+          source: 'mention',
+          quote: 'Я достал из внутреннего кармана кителя своё слегка потрёпанное удостоверение...',
+          block_id: 'para-13',
+          paragraph_index: 13,
+        },
+      ],
+      events: [],
+      relations: [],
+      promises: [],
+    });
+
+    const journey = useCharacterJourney('test_proj', 'ent:1');
+    await journey.refresh();
+
+    expect(journey.timelineItems.value).toHaveLength(1);
+    const item = journey.timelineItems.value[0];
+    expect(item.fullText).toBe('Я достал из внутреннего кармана кителя своё слегка потрёпанное удостоверение...');
+    expect(item.paragraph_index).toBe(13);
+    expect(item.block_id).toBe('para-13');
+  });
+
+  it('includes manuscript mentions for all characters in multi-journey union mode and filters in intersection mode', async () => {
+    vi.mocked(apiClient.getEntities).mockResolvedValue([
+      { id: 'ent:kira', name: 'Кира', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
+      { id: 'ent:dmitry', name: 'Дмитрий', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
+    ]);
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValue([]);
+    vi.mocked(apiClient.getMultiCharacterJourney).mockResolvedValue({
+      total_scenes: 1,
+      filter_mode: 'union',
+      requested_entity_ids: ['ent:kira', 'ent:dmitry'],
+      entities: [
+        { id: 'ent:kira', name: 'Кира' },
+        { id: 'ent:dmitry', name: 'Дмитрий' },
+      ],
+      scenes: [
+        {
+          id: 'scene_return',
+          item_type: 'scene',
+          chapter_id: 'ch_1',
+          chapter_title: 'Глава 1. Дом?',
+          sort_order: 1,
+          present_entities: [
+            { entity_id: 'ent:kira', entity_name: 'Кира' },
+            { entity_id: 'ent:dmitry', entity_name: 'Дмитрий' },
+          ],
+        },
+      ],
+    });
+
+    vi.mocked(apiClient.getCharacterJourney).mockImplementation(async (_proj, entId) => {
+      if (entId === 'ent:kira') {
+        return {
+          entity_id: 'ent:kira',
+          entity_name: 'Кира',
+          appearances: [
+            {
+              chapter_id: 'ch_1',
+              chapter_title: 'Глава 1. Дом?',
+              source: 'mention',
+              quote: 'Палец вдавил кнопку звонка, и раздалась длинная трель...',
+              paragraph_index: 13,
+              block_id: 'para-13',
+            },
+            {
+              chapter_id: 'ch_1',
+              chapter_title: 'Глава 1. Дом?',
+              source: 'mention',
+              quote: 'Ника и Кира слегка отошли...',
+              paragraph_index: 27,
+              block_id: 'para-27',
+            },
+          ],
+          events: [],
+          relations: [],
+          promises: [],
+        };
+      }
+      return {
+        entity_id: 'ent:dmitry',
+        entity_name: 'Дмитрий',
+        appearances: [
+          {
+            chapter_id: 'ch_1',
+            chapter_title: 'Глава 1. Дом?',
+            source: 'mention',
+            quote: 'Палец вдавил кнопку звонка, и раздалась длинная трель...',
+            paragraph_index: 13,
+            block_id: 'para-13',
+          },
+        ],
+        events: [],
+        relations: [],
+        promises: [],
+      };
+    });
+
+    const journey = useCharacterJourney('test_proj', 'ent:kira');
+    journey.addEntity('ent:dmitry');
+    await journey.refresh();
+
+    // In union mode: 1 scene + 2 unique mentions (para 13 merged for Кира & Дмитрий, and para 27 for Кира) = 3 items
+    expect(journey.timelineItems.value).toHaveLength(3);
+    const para13Item = journey.timelineItems.value.find((i) => i.paragraph_index === 13);
+    expect(para13Item).toBeDefined();
+    expect(para13Item?.subtitle).toContain('Кира & Дмитрий');
+
+    const para27Item = journey.timelineItems.value.find((i) => i.paragraph_index === 27);
+    expect(para27Item).toBeDefined();
+    expect(para27Item?.subtitle).toContain('Кира');
+
+    // In intersection mode: para 27 is excluded (only Кира), para 13 is kept (both Кира & Дмитрий)
+    journey.setFilterMode('intersection');
+    await journey.refresh();
+    const para27InIntersection = journey.timelineItems.value.find((i) => i.paragraph_index === 27);
+    expect(para27InIntersection).toBeUndefined();
+  });
 });
 
 

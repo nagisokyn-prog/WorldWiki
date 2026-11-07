@@ -50,10 +50,26 @@ pub async fn create_chapter_inner(
         .await
         .map_err(ChapterError::Database)?;
     let raw: Option<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
-    let created = raw.and_then(|mut v| {
+    let created: Chapter = raw.and_then(|mut v| {
         surreal_domain::normalize_embedded_things(&mut v);
         serde_json::from_value(v).ok()
     }).ok_or_else(|| ChapterError::InvalidData("save_chapter returned no records".to_string()))?;
+
+    if let Some(ch_id) = &created.id {
+        let clean_ch = ch_id.trim_start_matches("chapters:");
+        if !created.content.trim().is_empty() {
+            super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &created.content)
+                .await
+                .map_err(|e| {
+                    eprintln!(
+                        "[CREATE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
+                        e
+                    );
+                    e
+                })?;
+        }
+    }
+
     Ok(created)
 }
 
@@ -103,6 +119,18 @@ pub async fn save_chapter_inner(
 
     if let Some(ch_id) = &saved.id {
         let clean_ch = ch_id.trim_start_matches("chapters:");
+
+        // Auto-sync semantic text_blocks for granular scene tracking, RAG, and stylometry
+        super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &saved.content)
+            .await
+            .map_err(|e| {
+                eprintln!(
+                    "[SAVE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
+                    e
+                );
+                e
+            })?;
+
         eprintln!(
             "[SAVE_CHAPTER] Calling fn::sync_chapter_mentions for chapter: {}",
             clean_ch

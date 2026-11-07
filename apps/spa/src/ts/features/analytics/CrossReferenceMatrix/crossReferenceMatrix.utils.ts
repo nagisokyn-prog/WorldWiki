@@ -163,6 +163,10 @@ export function buildEntityPresenceRow(
     };
 
     cells.set(ch.id, cellInfo);
+    const cleanIdOnly = normalizeCleanId(ch.id);
+    if (cleanIdOnly && cleanIdOnly !== ch.id) {
+      cells.set(cleanIdOnly, cellInfo);
+    }
     cellList.push({
       ...cellInfo,
       chapterId: ch.id,

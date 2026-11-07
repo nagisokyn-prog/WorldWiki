@@ -12,7 +12,13 @@ DEFINE ANALYZER OVERWRITE autocomplete_analyzer TOKENIZERS class, blank FILTERS 
 
 -- 3. БАЗОВАЯ НОРМАЛИЗАЦИЯ RECORD ID ПРОЕКТА (0ns Fast-Path)
 DEFINE FUNCTION OVERWRITE fn::normalize_project_id($p: any) {
+    IF $p = NONE OR $p = NULL {
+        RETURN NONE;
+    };
     LET $str = type::string($p);
+    IF $str = '' OR $str = 'NONE' OR $str = 'NULL' OR $str = 'projects:NONE' OR $str = 'projects:⟨NONE⟩' {
+        RETURN NONE;
+    };
     LET $clean = string::trim(string::replace(string::replace(string::replace(string::replace(string::replace($str, 'projects:', ''), '⟨', ''), '⟩', ''), '`', ''), '\\', ''));
     RETURN IF string::len($clean) == 0 THEN type::record('projects:⟨default⟩') ELSE type::record(string::concat('projects:⟨', $clean, '⟩')) END;
 };

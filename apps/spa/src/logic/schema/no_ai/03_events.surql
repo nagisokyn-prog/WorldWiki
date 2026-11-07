@@ -64,6 +64,16 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
     LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id = $before.id);
+    LET $block_ids = (SELECT VALUE id FROM text_blocks WHERE chapter_id IN $chaps);
+    LET $promise_ids = array::distinct(
+        array::concat(
+            (SELECT VALUE in FROM spans_blocks WHERE out IN $block_ids),
+            (SELECT VALUE in FROM promise_milestones WHERE out IN $block_ids)
+        )
+    );
+    IF array::len($promise_ids) > 0 {
+        DELETE $promise_ids;
+    };
     DELETE text_blocks WHERE chapter_id IN $chaps;
     DELETE chapter_revisions WHERE target_id IN $chaps;
     LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id OR owner_id IN $chaps);
@@ -74,6 +84,16 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
 };
 
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
+    LET $block_ids = (SELECT VALUE id FROM text_blocks WHERE chapter_id = $before.id);
+    LET $promise_ids = array::distinct(
+        array::concat(
+            (SELECT VALUE in FROM spans_blocks WHERE out IN $block_ids),
+            (SELECT VALUE in FROM promise_milestones WHERE out IN $block_ids)
+        )
+    );
+    IF array::len($promise_ids) > 0 {
+        DELETE $promise_ids;
+    };
     DELETE text_blocks WHERE chapter_id = $before.id;
     DELETE contains WHERE out = $before.id;
     LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id);

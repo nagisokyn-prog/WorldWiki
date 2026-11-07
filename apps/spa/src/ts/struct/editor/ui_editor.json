@@ -488,6 +488,74 @@
         }
       ],
       "itemClass": "dynamic-item"
+    },
+    "eventTimelineStageTemplate": {
+      "type": "timeline",
+      "headerTitle": "Этап",
+      "fields": [
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Фаза события",
+          "options": [
+            {
+              "value": "Активно / В процессе",
+              "label": "🟢 Активно / В процессе"
+            },
+            {
+              "value": "Кульминация / Разгар",
+              "label": "🔥 Кульминация / Разгар"
+            },
+            {
+              "value": "Завершено / В прошлом",
+              "label": "🛑 Завершено / В прошлом"
+            },
+            {
+              "value": "Завязка / Предпосылки",
+              "label": "🌱 Завязка / Предпосылки"
+            },
+            {
+              "value": "Последствия / Лоро-эхо",
+              "label": "🍂 Последствия / Лоро-эхо"
+            }
+          ],
+          "default": "Активно / В процессе"
+        },
+        {
+          "type": "manuscript_point",
+          "class": "начальная_глава",
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
+        },
+        {
+          "type": "manuscript_point",
+          "class": "конечная_глава",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
+          "allowAutoExtend": true
+        },
+        {
+          "type": "calendar_datetime",
+          "class": "начальная_дата",
+          "label": "Дата и время начала (по календарю мира)",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "calendar_datetime",
+          "class": "конечная_дата",
+          "label": "Дата и время окончания (по календарю мира)",
+          "placeholder": "Выберите дату...",
+          "allowOngoing": true
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Обстоятельства / Причина смены статуса",
+          "placeholder": "Например, подписание мирного договора, штурм крепости...",
+          "rows": 2
+        }
+      ],
+      "itemClass": "timeline-item"
     }
   },
   "api": {

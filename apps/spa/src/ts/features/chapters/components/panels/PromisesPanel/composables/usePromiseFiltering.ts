@@ -1,5 +1,5 @@
-import { ref, computed } from 'vue';
-import type { Ref } from 'vue';
+import { ref, computed, toValue } from 'vue';
+import type { Ref, MaybeRefOrGetter } from 'vue';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 
 export interface ChapterMetaItem {
@@ -32,9 +32,9 @@ export function cleanId(id: unknown): string {
 
 export interface UsePromiseFilteringOptions<T extends { chapter_id?: string | null; status: string; quote?: string | null; id?: string | null; parent_id?: string | null; children?: T[] } = PlotPromise> {
   promises: Ref<T[]>;
-  chapterId?: string | null;
-  chapterTitle?: string | null;
-  allChapters?: ChapterMetaItem[];
+  chapterId?: MaybeRefOrGetter<string | null | undefined>;
+  chapterTitle?: MaybeRefOrGetter<string | null | undefined>;
+  allChapters?: MaybeRefOrGetter<ChapterMetaItem[] | undefined>;
 }
 
 export function usePromiseFiltering<T extends { chapter_id?: string | null; status: string; quote?: string | null; kind?: string; id?: string | null; parent_id?: string | null; children?: T[] } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
@@ -42,13 +42,19 @@ export function usePromiseFiltering<T extends { chapter_id?: string | null; stat
   const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
   const categoryFilter = ref<'all' | 'scenes' | 'promises'>('all');
 
+  const getCurrentChapterId = () => toValue(options.chapterId);
+  const getCurrentChapterTitle = () => toValue(options.chapterTitle);
+  const getAllChapters = () => toValue(options.allChapters) || [];
+
   const isCurrentChapterPromise = (promiseChapterId: string) => {
-    if (!options.chapterId) return false;
-    return cleanId(options.chapterId) === cleanId(promiseChapterId);
+    const currentId = getCurrentChapterId();
+    if (!currentId) return false;
+    return cleanId(currentId) === cleanId(promiseChapterId);
   };
 
   const chapterPromises = computed(() => {
-    if (!options.chapterId) return [];
+    const currentId = getCurrentChapterId();
+    if (!currentId) return [];
     return options.promises.value.filter((p) => isCurrentChapterPromise(p.chapter_id || ''));
   });
 
@@ -97,11 +103,13 @@ export function usePromiseFiltering<T extends { chapter_id?: string | null; stat
 
   const getChapterTitle = (chapterId: string) => {
     if (!chapterId) return 'Глава';
-    if (options.chapterId && isCurrentChapterPromise(chapterId) && options.chapterTitle) {
-      return options.chapterTitle;
+    const currentId = getCurrentChapterId();
+    const currentTitle = getCurrentChapterTitle();
+    if (currentId && isCurrentChapterPromise(chapterId) && currentTitle) {
+      return currentTitle;
     }
     const targetClean = cleanId(chapterId);
-    const found = options.allChapters?.find((c) => {
+    const found = getAllChapters().find((c) => {
       return cleanId(c.id) === targetClean;
     });
     return found?.title || `Глава ${targetClean}`;

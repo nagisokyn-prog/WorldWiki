@@ -116,5 +116,5 @@ const props = defineProps<Tab1MonthsSectionProps>();
 
 defineEmits<Tab1MonthsSectionEmits>();
 
-const { seasonLabels, seasonInfo, monthOptions, maxDaysInSelectedMonth } = useTab1MonthsSection(props);
+const { seasonInfo, monthOptions, maxDaysInSelectedMonth } = useTab1MonthsSection(props);
 </script>

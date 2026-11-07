@@ -73,6 +73,8 @@ pub struct PlotPromise {
     #[serde(default)]
     pub status: PromiseStatus,
     #[serde(default)]
+    pub chapter_id: Option<String>,
+    #[serde(default)]
     pub block_ids: Vec<String>,
     #[serde(default)]
     pub location_id: Option<String>,
@@ -115,6 +117,7 @@ impl PlotPromise {
             title: title.into(),
             note: None,
             status: PromiseStatus::Planted,
+            chapter_id: None,
             block_ids: Vec::new(),
             location_id: None,
             timeline_event_id: None,

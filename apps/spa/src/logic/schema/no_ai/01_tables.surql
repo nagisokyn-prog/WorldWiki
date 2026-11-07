@@ -150,6 +150,7 @@ DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters | text_blocks SCHEMAFULL;
 DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'
   ASSERT $value IN ['mention', 'manual', 'scene'];
+DEFINE FIELD OVERWRITE count      ON appears_in TYPE option<int | null>;
 DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now();
 
 -- 15. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА (ПЕРЕПЛЕТЁННАЯ ТКАНЬ СЮЖЕТА, 3NF)
@@ -189,6 +190,7 @@ DEFINE FIELD OVERWRITE block_id   ON revealed_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON revealed_in TYPE datetime DEFAULT time::now();
 
 -- 18. РЕВИЗИИ СУЩНОСТЕЙ ЛОРА (БЕЗ ВЕКТОРОВ ЭМБЕДДИНГОВ)
+REMOVE FIELD IF EXISTS project_id ON entity_revisions;
 DEFINE TABLE OVERWRITE entity_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;
 DEFINE FIELD OVERWRITE content     ON entity_revisions TYPE object FLEXIBLE DEFAULT {};
@@ -197,6 +199,7 @@ DEFINE FIELD OVERWRITE created_at  ON entity_revisions TYPE datetime DEFAULT tim
 DEFINE FIELD OVERWRITE is_pinned   ON entity_revisions TYPE bool DEFAULT false;
 
 -- 19. РЕВИЗИИ ГРАФОВЫХ СВЯЗЕЙ СУЩНОСТЕЙ
+REMOVE FIELD IF EXISTS project_id ON entity_rel_revisions;
 DEFINE TABLE OVERWRITE entity_rel_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_rel_revisions TYPE record<entity_rel>;
 DEFINE FIELD OVERWRITE in_id       ON entity_rel_revisions TYPE record<entities>;
@@ -208,6 +211,7 @@ DEFINE FIELD OVERWRITE commit_msg  ON entity_rel_revisions TYPE option<string | 
 DEFINE FIELD OVERWRITE created_at  ON entity_rel_revisions TYPE datetime DEFAULT time::now();
 
 -- 20. РЕВИЗИИ ТЕКСТА ГЛАВ РУКОПИСИ
+REMOVE FIELD IF EXISTS project_id ON chapter_revisions;
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
 DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
@@ -216,6 +220,12 @@ DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT ti
 DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 
 -- 21. НАРРАТИВНЫЕ УЗЛЫ И СЮЖЕТНЫЕ ОБЕЩАНИЯ (ЧЕХОВСКИЕ РУЖЬЯ / СЦЕНАРНЫЕ ЕДИНИЦЫ)
+REMOVE FIELD IF EXISTS project_id ON plot_promises;
+REMOVE FIELD IF EXISTS chapter_id ON plot_promises;
+REMOVE FIELD IF EXISTS project_id ON todos;
+REMOVE FIELD IF EXISTS project_id ON spans_blocks;
+REMOVE FIELD IF EXISTS project_id ON promise_milestones;
+
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
 DEFINE FIELD OVERWRITE block_ids         ON plot_promises TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
 DEFINE FIELD OVERWRITE kind              ON plot_promises TYPE string

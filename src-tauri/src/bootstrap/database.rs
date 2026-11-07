@@ -1,7 +1,7 @@
 use std::fs;
 use std::hash::{DefaultHasher, Hasher};
-use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
+use surrealdb::engine::local::{Db, SurrealKv};
 use worldwiki_domain::errors::DomainError;
 
 pub const ALL_DDL_MODULES: &[(&str, &str)] = &[
@@ -35,11 +35,15 @@ pub const ALL_DDL_MODULES: &[(&str, &str)] = &[
     ),
     (
         "no_ai/functions/04_projects_and_entities",
-        include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/04_projects_and_entities.surql"),
+        include_str!(
+            "../../../apps/spa/src/logic/schema/no_ai/functions/04_projects_and_entities.surql"
+        ),
     ),
     (
         "no_ai/functions/05_revisions_and_blocks",
-        include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql"),
+        include_str!(
+            "../../../apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql"
+        ),
     ),
     (
         "no_ai/functions/06_schemas",
@@ -48,12 +52,16 @@ pub const ALL_DDL_MODULES: &[(&str, &str)] = &[
     (
         // Module 07: Narrative & Journey functions (v3)
         "no_ai/functions/07_narrative_and_journey",
-        include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql"),
+        include_str!(
+            "../../../apps/spa/src/logic/schema/no_ai/functions/07_narrative_and_journey.surql"
+        ),
     ),
     (
         // Module 08: Calendars & Planets functions (updated)
         "no_ai/functions/08_calendars_and_planets",
-        include_str!("../../../apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql"),
+        include_str!(
+            "../../../apps/spa/src/logic/schema/no_ai/functions/08_calendars_and_planets.surql"
+        ),
     ),
     (
         "ai/01_workspace_tables",
@@ -110,7 +118,7 @@ pub const CORE_ENTITY_SCHEMAS: &[(&str, &str)] = &[
 
 pub fn compute_schema_hash() -> String {
     let mut hasher = DefaultHasher::new();
-    hasher.write(b"v3_schema_sync");
+    hasher.write(b"v7_event_journey_mentions");
     for (name, ddl) in ALL_DDL_MODULES {
         hasher.write(name.as_bytes());
         hasher.write(ddl.as_bytes());
@@ -206,7 +214,11 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
         sync_builtin_entity_schemas(&db).await;
 
         let save_hash_query = "UPSERT type::record('system_meta', 'schema_version') SET ddl_hash = $hash, updated_at = time::now()";
-        match db.query(save_hash_query).bind(("hash", current_hash.as_str())).await {
+        match db
+            .query(save_hash_query)
+            .bind(("hash", current_hash.as_str()))
+            .await
+        {
             Ok(mut res) => {
                 let errors = res.take_errors();
                 if !errors.is_empty() {
@@ -264,11 +276,7 @@ pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), DomainError> 
     }
 }
 
-pub async fn apply_ddl_module(
-    db: &Surreal<Db>,
-    name: &str,
-    ddl: &str,
-) -> Result<(), DomainError> {
+pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result<(), DomainError> {
     if ddl.trim().is_empty() {
         return Ok(());
     }
@@ -298,4 +306,3 @@ pub async fn apply_ddl_module(
         }
     }
 }
-

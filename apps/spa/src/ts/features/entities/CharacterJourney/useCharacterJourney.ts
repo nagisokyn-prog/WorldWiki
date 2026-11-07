@@ -8,11 +8,14 @@ import type { Entity } from '@/types/generated/Entity';
 import type {
   CharacterJourneyData,
   CharacterJourneyViewMode,
+  JourneyAppearance,
   JourneyFilterMode,
   MultiJourneyResponse,
 } from './CharacterJourney.model';
 import { buildTimelineItems, buildMultiJourneyTimelineItems } from './composables/useJourneyItemsBuilder';
 import { useJourneyFiltersAndGroups } from './composables/useJourneyFiltersAndGroups';
+import { enrichJourneyAppearances, enrichMultiJourneyScenes, enrichJourneyEvents } from './composables/useJourneyManuscriptEnricher';
+import { isCharacterEntity } from './components/JourneyMultiSelector/useJourneyMultiSelector';
 
 export function useCharacterJourney(projectId: string, initialEntityId?: string) {
   const storyArcsStore = useStoryArcsStore();
@@ -64,7 +67,17 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
     if (!projectId) return;
     try {
       const res = await getEntities(projectId, null);
-      entitiesList.value = res || [];
+      const allEnts = res || [];
+      entitiesList.value = allEnts.filter(isCharacterEntity);
+
+      // Clean selected entities of any non-character entities
+      const validCharacterIds = new Set(
+        entitiesList.value.map((e) => (e.id || '').replace(/^entities:/, ''))
+      );
+      selectedEntityIds.value = selectedEntityIds.value.filter((id) =>
+        validCharacterIds.has(id.replace(/^entities:/, ''))
+      );
+
       if (selectedEntityIds.value.length === 0 && entitiesList.value.length > 0) {
         const firstId = entitiesList.value[0].id || '';
         if (firstId) {
@@ -89,18 +102,78 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
       await loadCalendars();
 
       if (selectedEntityIds.value.length > 1) {
-        const rawMulti = await getMultiCharacterJourney(projectId, selectedEntityIds.value, filterMode.value);
-        multiData.value = (rawMulti as MultiJourneyResponse) || null;
+        const [rawMulti, ...individualJourneys] = await Promise.all([
+          getMultiCharacterJourney(projectId, selectedEntityIds.value, filterMode.value),
+          ...selectedEntityIds.value.map((id) => Promise.resolve(getCharacterJourney(projectId, id)).catch(() => null)),
+        ]);
+        const resolvedMulti = (rawMulti as MultiJourneyResponse) || { entities: [], scenes: [] };
+        if (resolvedMulti && resolvedMulti.scenes && resolvedMulti.scenes.length > 0) {
+          resolvedMulti.scenes = await enrichMultiJourneyScenes(projectId, resolvedMulti.scenes);
+        }
+
+        const combinedAppearances: JourneyAppearance[] = [];
+        for (let i = 0; i < selectedEntityIds.value.length; i++) {
+          const singleId = selectedEntityIds.value[i];
+          const rawSingle = individualJourneys[i] as (CharacterJourneyData & { entity_name?: string }) | null;
+          if (rawSingle && rawSingle.appearances && rawSingle.appearances.length > 0) {
+            const cleanSingle = singleId.replace(/^entities:/, '');
+            const activeEntity = entitiesList.value.find((e) => (e.id || '').replace(/^entities:/, '') === cleanSingle);
+            const entityName = activeEntity?.name || rawSingle.entity?.name || rawSingle.entity_name || '';
+            const aliases = (activeEntity?.attributes?.aliases as string[]) || (rawSingle.attributes?.aliases as string[]) || [];
+
+            const enriched = await enrichJourneyAppearances(
+              projectId,
+              rawSingle.appearances,
+              singleId,
+              entityName,
+              aliases,
+              rawSingle.promises || []
+            );
+
+            for (const app of enriched) {
+              combinedAppearances.push({
+                ...app,
+                entity_id: singleId,
+                entity_name: entityName,
+              });
+            }
+          }
+        }
+
+        resolvedMulti.appearances = combinedAppearances;
+        multiData.value = resolvedMulti;
         data.value = null;
       } else {
         const singleId = selectedEntityIds.value[0];
         const raw = await getCharacterJourney(projectId, singleId);
-        data.value = (raw as CharacterJourneyData) || {
+        const resolvedData = (raw as CharacterJourneyData) || {
           appearances: [],
           events: [],
           relations: [],
           promises: [],
         };
+
+        const cleanSingle = singleId.replace(/^entities:/, '');
+        const activeEntity = entitiesList.value.find((e) => (e.id || '').replace(/^entities:/, '') === cleanSingle);
+        const entityName = activeEntity?.name || resolvedData.entity?.name || '';
+        const aliases = (activeEntity?.attributes?.aliases as string[]) || (resolvedData.attributes?.aliases as string[]) || [];
+
+        if (resolvedData.appearances && resolvedData.appearances.length > 0) {
+          resolvedData.appearances = await enrichJourneyAppearances(
+            projectId,
+            resolvedData.appearances,
+            singleId,
+            entityName,
+            aliases,
+            resolvedData.promises || []
+          );
+        }
+
+        if (resolvedData.events && resolvedData.events.length > 0) {
+          resolvedData.events = await enrichJourneyEvents(projectId, resolvedData.events);
+        }
+
+        data.value = resolvedData;
         multiData.value = null;
       }
     } catch (err: unknown) {
@@ -114,7 +187,7 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
 
   const allTimelineItems = computed(() => {
     if (selectedEntityIds.value.length > 1) {
-      return buildMultiJourneyTimelineItems(multiData.value, storyArcsStore.arcs);
+      return buildMultiJourneyTimelineItems(multiData.value, storyArcsStore.arcs, filterMode.value);
     }
     return buildTimelineItems(data.value, storyArcsStore.arcs, calendarData.value);
   });

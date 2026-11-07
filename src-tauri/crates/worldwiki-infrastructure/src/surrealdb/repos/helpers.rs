@@ -42,25 +42,27 @@ pub fn prepare_data_for_upsert(mut data: Value) -> Value {
 }
 
 pub fn normalize_surreal_value(val: &mut Value) {
-    if let Value::Object(map) = val {
-        for (_k, v) in map.iter_mut() {
-            if let Value::Object(inner) = v {
-                if let (Some(Value::String(tb)), Some(id_val)) = (inner.get("tb"), inner.get("id"))
-                {
-                    let id_str = match id_val {
-                        Value::String(s) => s.clone(),
-                        _ => id_val.to_string().trim_matches('"').to_string(),
-                    };
-                    *v = Value::String(format!("{tb}:{id_str}"));
-                } else {
-                    normalize_surreal_value(v);
-                }
-            } else if let Value::Array(arr) = v {
-                for item in arr {
-                    normalize_surreal_value(item);
-                }
+    match val {
+        Value::Object(map) => {
+            if let (Some(Value::String(tb)), Some(id_val)) = (map.get("tb"), map.get("id")) {
+                let id_str = match id_val {
+                    Value::String(s) => s.clone(),
+                    _ => id_val.to_string().trim_matches('"').to_string(),
+                };
+                *val = Value::String(format!("{tb}:{id_str}"));
+                return;
+            }
+            for (_k, v) in map.iter_mut() {
+                normalize_surreal_value(v);
             }
         }
+        Value::Array(arr) => {
+            arr.retain(|item| !item.is_null());
+            for item in arr.iter_mut() {
+                normalize_surreal_value(item);
+            }
+        }
+        _ => {}
     }
 }
 

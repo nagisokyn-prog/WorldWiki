@@ -68,6 +68,57 @@ export function useEntityDynamicItemCard(
     onMultiselectToggle(fieldKey, optValue, (e.target as HTMLInputElement).checked);
   };
 
+  const isFieldOngoing = (fieldKey: string): boolean => {
+    const val = props.getProp(props.item, fieldKey);
+    if (val === null || val === undefined) return true;
+    if (typeof val === 'object' && val !== null) {
+      if ('ongoing' in val) return Boolean((val as Record<string, unknown>).ongoing);
+      if ('m_abs' in val || 'год' in val || 'calendar_id' in val) return false;
+      return false;
+    }
+    return false;
+  };
+
+  const toggleFieldOngoing = (fieldKey: string, e: Event) => {
+    const checked = (e.target as HTMLInputElement).checked;
+    if (checked) {
+      updateProp(fieldKey, null);
+    } else {
+      updateProp(fieldKey, { ongoing: false });
+    }
+  };
+
+  const hiddenFields = computed<string[]>(() => {
+    const raw = props.item._hiddenFields || props.item.__hidden_fields;
+    return Array.isArray(raw) ? (raw as string[]) : [];
+  });
+
+  const isFieldHidden = (fieldKey: string): boolean => {
+    return hiddenFields.value.includes(fieldKey);
+  };
+
+  const canHideField = (field: SchemaField): boolean => {
+    const cls = (field.class || field.id || field.path || '').toLowerCase();
+    if (cls.includes('глава') || cls.includes('дата') || cls.includes('время') || cls.includes('manuscript')) {
+      return true;
+    }
+    if (field.preventHide || field.required) return false;
+    return true;
+  };
+
+  const hideField = (fieldKey: string) => {
+    const list = [...hiddenFields.value];
+    if (!list.includes(fieldKey)) {
+      list.push(fieldKey);
+      updateProp('_hiddenFields', list);
+    }
+  };
+
+  const unhideField = (fieldKey: string) => {
+    const list = hiddenFields.value.filter(k => k !== fieldKey);
+    updateProp('_hiddenFields', list);
+  };
+
   return {
     containerPath,
     isCollapsed,
@@ -84,5 +135,11 @@ export function useEntityDynamicItemCard(
     onTextInput,
     onNumberInput,
     onCheckboxChange,
+    isFieldOngoing,
+    toggleFieldOngoing,
+    isFieldHidden,
+    canHideField,
+    hideField,
+    unhideField,
   };
 }

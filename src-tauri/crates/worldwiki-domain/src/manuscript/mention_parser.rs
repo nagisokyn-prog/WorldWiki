@@ -10,8 +10,8 @@ impl MentionParser {
         results
     }
 
-    fn add_unique(results: &mut Vec<String>, val: String) {
-        if !val.is_empty() && !results.contains(&val) {
+    fn add_mention(results: &mut Vec<String>, val: String) {
+        if !val.is_empty() {
             results.push(val);
         }
     }
@@ -26,14 +26,14 @@ impl MentionParser {
     fn parse_one_bracket<'a>(text: &'a str, results: &mut Vec<String>) -> Option<&'a str> {
         let (_, after_open) = text.split_once("((")?;
         let (name_raw, mut after_close) = after_open.split_once("))")?;
-        Self::add_unique(results, Self::clean_entity_mention(name_raw));
+        Self::add_mention(results, Self::clean_entity_mention(name_raw));
 
         let trimmed = after_close.trim_start();
         if let Some(stripped) = trimmed.strip_prefix('[')
             && let Some((meta_raw, rest)) = stripped.split_once(']')
         {
             if let Some(id) = crate::manuscript::IdExtractor::extract_record_id_from_metadata(meta_raw) {
-                Self::add_unique(results, id);
+                Self::add_mention(results, id);
             }
             after_close = rest;
         }
@@ -54,8 +54,8 @@ impl MentionParser {
         let (url_raw, after_url) = stripped.split_once(')')?;
 
         if let Some(id) = crate::manuscript::IdExtractor::extract_record_id_from_metadata(url_raw) {
-            Self::add_unique(results, id);
-            Self::add_unique(results, Self::clean_entity_mention(link_text));
+            Self::add_mention(results, id);
+            Self::add_mention(results, Self::clean_entity_mention(link_text));
         }
         Some(after_url)
     }
@@ -85,9 +85,9 @@ impl MentionParser {
         let (tag_attrs, text_inside) = tag_and_body.split_once('>')?;
 
         if let Some(id) = crate::manuscript::IdExtractor::extract_record_id_from_metadata(tag_attrs) {
-            Self::add_unique(results, id);
+            Self::add_mention(results, id);
         }
-        Self::add_unique(results, Self::clean_entity_mention(text_inside));
+        Self::add_mention(results, Self::clean_entity_mention(text_inside));
         Some(after_close)
     }
 

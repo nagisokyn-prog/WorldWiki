@@ -24,10 +24,15 @@ DEFINE FUNCTION OVERWRITE fn::get_entity_revisions($target: record<entities>) {
 
 -- 25. СОХРАНЕНИЕ СЕМАНТИЧЕСКИХ ТЕКСТОВЫХ БЛОКОВ ГЛАВЫ (ИДЕМПОТЕНТНЫЙ UPSERT)
 DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
-    $proj: any,
-    $chap: record<chapters>,
+    $chap: any,
     $blocks: array<object>
 ) {
+    LET $c_rec = IF string::starts_with(type::string($chap), 'chapters:') {
+        type::record($chap)
+    } ELSE {
+        type::record('chapters', $chap)
+    };
+
     -- 1. Извлекаем список активных ID записей
     LET $active_ids = (
         SELECT VALUE IF id != NONE AND id != NULL {
@@ -41,6 +46,7 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
         }
         FROM $blocks
         WHERE id != NONE AND id != NULL
+        LIMIT 5000
     );
 
     -- 2. Обновляем существующие блоки или создаем новые с сохранением их ID и графовых связей
@@ -53,7 +59,7 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
             };
 
             UPSERT $bid SET
-                chapter_id = $chap,
+                chapter_id = $c_rec,
                 block_type = IF $b.block_type != NONE { $b.block_type } ELSE { 'description' },
                 order_index = IF $b.order_index != NONE { type::int($b.order_index) } ELSE { 0 },
                 content = IF $b.content != NONE { type::string($b.content) } ELSE { '' },
@@ -63,9 +69,9 @@ DEFINE FUNCTION OVERWRITE fn::save_text_blocks(
 
     -- 3. Удаляем исключительно те блоки, которые были стёрты из текста рукописи
     IF array::len($active_ids) > 0 {
-        DELETE text_blocks WHERE chapter_id = $chap AND id NOT IN $active_ids;
+        DELETE text_blocks WHERE chapter_id = $c_rec AND id NOT IN $active_ids;
     } ELSE {
-        DELETE text_blocks WHERE chapter_id = $chap;
+        DELETE text_blocks WHERE chapter_id = $c_rec;
     };
 };
 

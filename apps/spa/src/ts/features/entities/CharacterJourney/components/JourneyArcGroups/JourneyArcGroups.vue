@@ -189,7 +189,10 @@
                 🎂 {{ item.ageLabel }}
               </span>
 
-              <span class="jump-to-editor-hint">
+              <span
+                class="jump-to-editor-hint cursor-pointer"
+                @click.stop="$emit('select-scene', item)"
+              >
                 📍 Перейти к абзацу
               </span>
             </div>

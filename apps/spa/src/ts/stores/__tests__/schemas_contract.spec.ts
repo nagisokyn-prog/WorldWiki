@@ -96,15 +96,10 @@ describe('Entity Schemas Contract Audit (6 Core Entities)', () => {
     expect(historySec.dynamicContainers[0].dataPath).toBe('история_владения');
   });
 
-  it('event schema contains date, scale and location links', () => {
+  it('event schema contains dynamic container, scale, location and factions links', () => {
     const filePath = path.join(schemasDir, 'event.json');
     const schema = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const basicFields = schema.sections[0].fields;
-
-    const dateField = basicFields.find((f: any) => f.path === 'дата_события');
-    expect(dateField).toBeDefined();
-    expect(dateField.type).toBe('calendar_datetime');
-    expect(dateField.isSystem).toBe(true);
 
     const scaleField = basicFields.find((f: any) => f.path === 'масштаб_важность');
     expect(scaleField).toBeDefined();
@@ -113,5 +108,21 @@ describe('Entity Schemas Contract Audit (6 Core Entities)', () => {
     const locField = basicFields.find((f: any) => f.path === 'место_действия');
     expect(locField).toBeDefined();
     expect(locField.entityType).toBe('location');
+
+    const factionsField = basicFields.find((f: any) => f.path === 'затронутые_фракции');
+    expect(factionsField).toBeDefined();
+    expect(factionsField.entityTypes).toContain('organization');
+    expect(factionsField.entityTypes).toContain('state');
+
+    const basicDc = schema.sections[0].dynamicContainers;
+    expect(basicDc).toBeDefined();
+    expect(basicDc.length).toBeGreaterThan(0);
+    expect(basicDc[0].dataPath).toBe('хронология_события');
+
+    const tpl = schema.templates[basicDc[0].template];
+    expect(tpl).toBeDefined();
+    const dateField = tpl.fields.find((f: any) => f.class === 'начальная_дата');
+    expect(dateField).toBeDefined();
+    expect(dateField.type).toBe('calendar_datetime');
   });
 });

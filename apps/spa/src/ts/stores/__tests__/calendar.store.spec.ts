@@ -36,64 +36,28 @@ describe('calendar.store', () => {
       expect(result).toEqual(mockList);
     });
 
-    it('promotes default calendar to master if none has is_master', async () => {
+    it('promotes default calendar to master in memory if none has is_master', async () => {
       const mockList = [
         { id: 'cal_1', name: 'Standard Cal', is_default: true, data: { name: 'Standard Cal' } },
       ];
       vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
-      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
 
       const result = await store.getCalendars('project_1');
-      expect(api.saveCalendar).toHaveBeenCalledWith(
-        'project_1',
-        expect.objectContaining({ is_master: true })
-      );
       expect(result[0].is_master).toBe(true);
     });
 
-    it('creates default calendar when no calendars exist in project', async () => {
-      vi.mocked(api.getCalendars)
-        .mockResolvedValueOnce([]) // First fetch returns empty
-        .mockResolvedValueOnce([{ id: 'new_cal', name: 'Календарь Мира', is_master: true }] as any); // After save
-      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
+    it('returns empty array when no calendars exist without mutating DB', async () => {
+      vi.mocked(api.getCalendars).mockResolvedValueOnce([]);
 
       const result = await store.getCalendars('empty_proj');
-      expect(api.saveCalendar).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Календарь Мира');
+      expect(api.saveCalendar).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
 
     it('returns empty array on API error', async () => {
       vi.mocked(api.getCalendars).mockRejectedValue(new Error('Network error'));
       const result = await store.getCalendars('err_proj');
       expect(result).toEqual([]);
-    });
-
-    it('renames single calendar without master to Календарь Мира (covers line 39)', async () => {
-      const mockList = [
-        { id: 'c_single', is_default: false, data: { название: 'Old Name' } },
-      ];
-      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
-      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
-
-      const result = await store.getCalendars('proj_single');
-      expect((result[0].data as any).название).toBe('Календарь Мира');
-    });
-
-    it('returns immediately if re-entered while creating master (covers lines 31, 50)', async () => {
-      vi.mocked(api.getCalendars).mockResolvedValueOnce([
-        { id: 'c_no_master', is_default: true, data: { name: 'Test' } },
-      ] as any);
-
-      vi.mocked(api.saveCalendar).mockImplementationOnce(async () => {
-        // Re-entrant call while isCreatingMaster is true
-        const reentrantList = await store.getCalendars('reentrant_proj');
-        expect(reentrantList).toBeDefined();
-        return {} as any;
-      });
-
-      const res = await store.getCalendars('reentrant_proj');
-      expect(res).toBeDefined();
     });
   });
 
@@ -204,33 +168,6 @@ describe('calendar.store', () => {
       const second = await store.getCalendars('cached_project');
       expect(second).toEqual(first);
       expect(api.getCalendars).toHaveBeenCalledTimes(1); // from cache
-    });
-
-    it('handles parallel isCreatingMaster guard for both non-empty and empty lists', async () => {
-      // 1. Non-empty list with isCreatingMaster = true
-      (store as any).isCreatingMaster = true;
-      const list = [{ id: 'cal_1', is_master: false }];
-      vi.mocked(api.getCalendars).mockResolvedValueOnce(list as any);
-      const res1 = await store.getCalendars('proj_guard1');
-      expect(res1).toEqual(list);
-
-      // 2. Empty list with isCreatingMaster = true
-      vi.mocked(api.getCalendars).mockResolvedValueOnce([] as any);
-      const res2 = await store.getCalendars('proj_guard2');
-      expect(res2).toEqual([]);
-      (store as any).isCreatingMaster = false;
-    });
-
-    it('renames single calendar without master to Календарь Мира', async () => {
-      const singleList = [
-        { id: 'single_cal', is_master: false, data: { name: 'Old Single' } },
-      ];
-      vi.mocked(api.getCalendars).mockResolvedValueOnce(singleList as any);
-      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
-
-      const res = await store.getCalendars('single_proj');
-      expect(res[0].name).toBe('Календарь Мира');
-      expect(res[0].data.название).toBe('Календарь Мира');
     });
 
     it('handles loadCalendar catch path and list fallback without is_default', async () => {

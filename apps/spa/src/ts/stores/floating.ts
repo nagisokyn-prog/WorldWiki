@@ -19,7 +19,7 @@ export const useFloatingStore = defineStore('floating', () => {
       const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
       
       const win = new WebviewWindow(label, {
-        url: `/ui_editor.html?project=${encodeURIComponent(project)}&type=${encodeURIComponent(entityType)}&id=${encodeURIComponent(entityId)}`,
+        url: `ui_editor.html?project=${encodeURIComponent(project)}&type=${encodeURIComponent(entityType)}&id=${encodeURIComponent(entityId)}`,
         title: `Редактор: ${entityType}`,
         width: 1000,
         height: 800,

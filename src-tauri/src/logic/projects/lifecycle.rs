@@ -26,9 +26,11 @@ pub async fn create_project_inner(
         obj.remove("perfLevel");
     }
     let clean_name = name.trim().trim_start_matches("projects:").trim_matches(|c: char| c == '`' || c == '⟨' || c == '⟩' || c == '"' || c == '\'');
+    eprintln!("[DEBUG][create_project] Raw name: {:?}, clean_name: {:?}", name, clean_name);
     db.upsert::<Option<Value>>(("projects", clean_name))
         .content(data)
         .await?;
+    eprintln!("[DEBUG][create_project] Successfully created project in DB: {:?}", clean_name);
     Ok(clean_name.to_string())
 }
 

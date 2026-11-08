@@ -31,30 +31,29 @@ export const useCalendarStore = defineStore('calendar', () => {
         if (bundle?.calendars && bundle.calendars.length > 0) {
           rawList = bundle.calendars;
         }
-        if (bundle && Array.isArray(bundle.planets)) {
-          if (bundle.planets.length === 0) {
-            localStorage.removeItem(`worldwiki:planets:${projectName}`);
-          } else {
-            const mappedPlanets: PlanetEntity[] = bundle.planets.map((p) => ({
-              id: normalizeCalendarId(p.id).replace(/^planets:/, ''),
-              project_id: projectName,
-              name: (p.name as string) || 'Планета',
-              ticks_per_day: Number(p.ticks_per_day) || 86400,
-              orbit_days: Number(p.orbit_days_num && p.orbit_days_den ? (Number(p.orbit_days_num) / Number(p.orbit_days_den)) : (Number(p.orbit_days) || 365.2422)),
-              axial_tilt: Number(p.axial_tilt_mdeg ? (Number(p.axial_tilt_mdeg) / 1000) : (Number(p.axial_tilt) || 0)),
-              moons: Array.isArray(p.moons) ? p.moons : [],
-              timezones: Array.isArray(p.timezones) ? p.timezones : [],
-              regions: Array.isArray(p.regions) ? p.regions : [],
-            }));
-            localStorage.setItem(`worldwiki:planets:${projectName}`, JSON.stringify(mappedPlanets));
-          }
+        if (bundle && Array.isArray(bundle.planets) && bundle.planets.length > 0) {
+          const mappedPlanets: PlanetEntity[] = bundle.planets.map((p) => ({
+            id: normalizeCalendarId(p.id).replace(/^planets:/, ''),
+            project_id: projectName,
+            name: (p.name as string) || 'Планета',
+            ticks_per_day: Number(p.ticks_per_day) || 86400,
+            orbit_days: Number(p.orbit_days_num && p.orbit_days_den ? (Number(p.orbit_days_num) / Number(p.orbit_days_den)) : (Number(p.orbit_days) || 365.2422)),
+            axial_tilt: Number(p.axial_tilt_mdeg ? (Number(p.axial_tilt_mdeg) / 1000) : (Number(p.axial_tilt) || 0)),
+            moons: Array.isArray(p.moons) ? p.moons : [],
+            timezones: Array.isArray(p.timezones) ? p.timezones : [],
+            regions: Array.isArray(p.regions) ? p.regions : [],
+          }));
+          localStorage.setItem(`worldwiki:planets:${projectName}`, JSON.stringify(mappedPlanets));
         }
       } catch (err: unknown) {
         console.warn('[CalendarStore] Failed to load planet-calendar bundle fallback:', err);
       }
 
+      console.log('[CalendarStore][getCalendars] projectName:', projectName, 'bundle count:', rawList.length, rawList.map(c => ({ id: c.id, name: c.name, planet_id: c.planet_id })));
+
       if (rawList.length === 0) {
         const directList = (await api.getCalendars(projectName).catch(() => [])) as unknown as CalendarRecord[];
+        console.log('[CalendarStore][getCalendars] directList count:', directList?.length, (directList || []).map(c => ({ id: c.id, name: c.name, planet_id: c.planet_id })));
         if (directList && directList.length > 0) {
           rawList = directList;
         }
@@ -75,45 +74,12 @@ export const useCalendarStore = defineStore('calendar', () => {
       if (list && list.length > 0) {
         const hasMaster = list.some((c) => c.is_master);
         if (!hasMaster) {
-          if (isCreatingMaster.value) return list;
-          isCreatingMaster.value = true;
-          try {
-            const defaultCal = list.find((c) => c.is_default) || list[0];
-            defaultCal.is_master = true;
-            if (defaultCal.data) {
-              defaultCal.data.is_master = true;
-              defaultCal.data.calendar_type = 'master';
-              if (list.length === 1) {
-                defaultCal.data.название = 'Календарь Мира';
-                defaultCal.name = 'Календарь Мира';
-              }
-            }
-            await saveCalendar(projectName, { ...(defaultCal.data || {}), id: defaultCal.id, is_default: defaultCal.is_default, is_master: true } as unknown as CalendarData);
-          } finally {
-            isCreatingMaster.value = false;
+          const defaultCal = list.find((c) => c.is_default) || list[0];
+          defaultCal.is_master = true;
+          if (defaultCal.data) {
+            defaultCal.data.is_master = true;
+            defaultCal.data.calendar_type = 'master';
           }
-        }
-      } else {
-        if (isCreatingMaster.value) return [];
-        isCreatingMaster.value = true;
-        try {
-          const defaultCalData = CalendarMath.getDefaultCalendar();
-          defaultCalData.is_master = true;
-          defaultCalData.calendar_type = 'master';
-          defaultCalData.planet_id = 'earth';
-          defaultCalData.название = 'Григорианский';
-          await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as unknown as CalendarData);
-          const rawNewList = (await api.getCalendars(projectName)) as unknown as CalendarRecord[];
-          const newList = (rawNewList || []).map((c) => {
-            const item: CalendarRecord = { ...c, id: normalizeCalendarId(c.id) };
-            const pId = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
-            if (pId) item.planet_id = normalizeCalendarId(pId);
-            return item;
-          });
-          setCache(cacheKey, newList || []);
-          return newList || [];
-        } finally {
-          isCreatingMaster.value = false;
         }
       }
       setCache(cacheKey, list);
@@ -152,16 +118,17 @@ export const useCalendarStore = defineStore('calendar', () => {
       delete dataPayload.is_default;
       delete dataPayload.is_master;
 
-      let rawPlanetId = (calendar.planet_id as string) || (dataPayload.planet_id as string) || 'planets:earth';
-      if (!rawPlanetId || rawPlanetId === 'Земля') {
-        rawPlanetId = 'planets:earth';
+      const existingPlanets = getPlanets(projectName);
+      const defaultPl = getDefaultPlanet(projectName);
+      let rawPlanetId = (calendar.planet_id as string) || (dataPayload.planet_id as string);
+      if (!rawPlanetId || rawPlanetId === 'Земля' || rawPlanetId === 'planets:earth' || rawPlanetId === 'earth') {
+        rawPlanetId = existingPlanets[0]?.id || defaultPl.id;
       }
       const cleanPlanetId = rawPlanetId.startsWith('planets:') ? rawPlanetId : `planets:${rawPlanetId}`;
       const planetRawId = cleanPlanetId.replace(/^planets:/, '');
 
       // Ensure planet exists in DB first
-      const existingPlanets = getPlanets(projectName);
-      const targetPlanet = existingPlanets.find(p => String(p.id).replace(/^planets:/, '') === planetRawId) || getDefaultPlanet(projectName);
+      const targetPlanet = existingPlanets.find(p => String(p.id).replace(/^planets:/, '') === planetRawId) || defaultPl;
       try {
         await calendarApi.savePlanetDirect(projectName, planetRawId, targetPlanet.name, {
           ticks_per_day: targetPlanet.ticks_per_day,

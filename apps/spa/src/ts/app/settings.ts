@@ -17,6 +17,8 @@ import { settingsService, i18n, setLocale, Settings } from '@worldwiki/component
 
 let appInstance: ReturnType<typeof createApp> | null = null;
 let saveHandler: (() => Promise<void>) | null = null;
+let backHandler: (() => void) | null = null;
+let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
 async function init() {
   console.log('[settings] initializing...');
@@ -56,13 +58,38 @@ async function init() {
     }
   };
 
+  backHandler = () => {
+    console.log('[backBtn] clicked');
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = './app.html#/launcher';
+    }
+  };
+
+  keydownHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && backHandler) {
+      backHandler();
+    }
+  };
+
   document.getElementById('saveBtn')?.addEventListener('click', saveHandler);
+  document.getElementById('backBtn')?.addEventListener('click', backHandler);
+  window.addEventListener('keydown', keydownHandler);
 }
 
 export function disposeSettings(): void {
   if (saveHandler) {
     document.getElementById('saveBtn')?.removeEventListener('click', saveHandler);
     saveHandler = null;
+  }
+  if (backHandler) {
+    document.getElementById('backBtn')?.removeEventListener('click', backHandler);
+    backHandler = null;
+  }
+  if (keydownHandler) {
+    window.removeEventListener('keydown', keydownHandler);
+    keydownHandler = null;
   }
   if (appInstance) {
     appInstance.unmount();

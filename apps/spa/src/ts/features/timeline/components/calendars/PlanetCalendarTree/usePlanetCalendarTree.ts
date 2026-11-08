@@ -34,8 +34,11 @@ export function usePlanetCalendarTree(
       const planetCals: CalendarTreeItem[] = [];
 
       allCals.forEach((cal, originalIdx) => {
-        const calPlanetId = cal.data?.planet_id || 'earth';
-        if (calPlanetId === planet.id) {
+        const calPlanetId = cal.planet_id || cal.data?.planet_id;
+        const cleanCalPlanet = String(calPlanetId || '').replace(/^(entity:)?planets?:/, '');
+        const cleanPlanet = String(planet.id || '').replace(/^(entity:)?planets?:/, '');
+        const matchesPlanet = cleanCalPlanet === cleanPlanet || (!calPlanetId && (cleanPlanet.endsWith('earth') || planet.name === 'Земля'));
+        if (matchesPlanet) {
           // Планета и есть Календарь Мира — не дублируем его в дочерние культурные календари
           const isMaster = Boolean(cal.is_master || cal.data?.is_master || cal.data?.calendar_type === 'master' || cal.data?.название === 'Календарь Мира');
           if (isMaster) {

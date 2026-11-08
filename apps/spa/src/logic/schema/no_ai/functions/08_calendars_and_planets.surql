@@ -96,9 +96,15 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
     $is_master: bool,
     $data: object
 ) {
+    LET $p_rec = fn::normalize_project_id($proj);
     LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $clean_pl = IF $str_pl == NONE OR $str_pl == NULL OR $str_pl == '' OR $str_pl == 'NONE' { 'earth' } ELSE { $str_pl };
-    LET $pl_rec = type::record('planets', $clean_pl);
+    LET $has_pl = $str_pl != NONE AND $str_pl != NULL AND $str_pl != '' AND $str_pl != 'NONE';
+    LET $pl_rec = IF $has_pl { 
+        type::record('planets', $str_pl) 
+    } ELSE { 
+        LET $existing_p = (SELECT VALUE id FROM planets WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
+        IF array::len($existing_p) > 0 { $existing_p[0] } ELSE { type::record('planets', rand::uuid::v4()) }
+    };
     
     LET $str_id = string::replace(string::replace(string::replace(string::replace(type::string($id), 'calendars:', ''), '⟨', ''), '⟩', ''), '`', '');
     LET $has_id = $id != NONE AND $id != NULL AND $str_id != '' AND $str_id != 'NONE' AND $str_id != 'null';
@@ -139,9 +145,15 @@ DEFINE FUNCTION OVERWRITE fn::set_master_calendar(
     $cal_id: any
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
+    LET $p_rec = fn::normalize_project_id($proj);
     LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
-    LET $clean_pl = IF $str_pl == NONE OR $str_pl == NULL OR $str_pl == '' OR $str_pl == 'NONE' { 'earth' } ELSE { $str_pl };
-    LET $pl_rec = type::record('planets', $clean_pl);
+    LET $has_pl = $str_pl != NONE AND $str_pl != NULL AND $str_pl != '' AND $str_pl != 'NONE';
+    LET $pl_rec = IF $has_pl { 
+        type::record('planets', $str_pl) 
+    } ELSE { 
+        LET $existing_p = (SELECT VALUE id FROM planets WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
+        IF array::len($existing_p) > 0 { $existing_p[0] } ELSE { type::record('planets', rand::uuid::v4()) }
+    };
     LET $str_cal = string::replace(string::replace(string::replace(string::replace(type::string($cal_id), 'calendars:', ''), '⟨', ''), '⟩', ''), '`', '');
     LET $c_rec = type::record('calendars', $str_cal);
     

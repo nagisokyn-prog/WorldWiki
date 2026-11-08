@@ -34,7 +34,9 @@ export function useAppSwitcher() {
       return false;
     } catch (err: unknown) {
       console.error('Ошибка восстановления из .wwiki:', err);
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = typeof err === 'object' && err !== null && 'message' in err
+        ? String((err as { message: unknown }).message)
+        : err instanceof Error ? err.message : JSON.stringify(err);
       await appAlert(`Не удалось восстановить проект: ${msg}`, 'Ошибка восстановления');
       return false;
     } finally {

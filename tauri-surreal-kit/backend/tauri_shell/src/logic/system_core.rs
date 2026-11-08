@@ -30,7 +30,17 @@ pub fn resolve_data_dir_path(custom_env: Option<&str>, exe_path: Option<&std::pa
             curr = dir.parent();
         }
     }
-    // Prod or fallback
+    // Prod: use APPDATA on Windows, or fallback to cwd/data
+    #[cfg(target_os = "windows")]
+    if let Some(appdata) = std::env::var_os("APPDATA") {
+        return PathBuf::from(appdata).join("com.worldwiki.app").join("data");
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    if let Some(data_home) = std::env::var_os("XDG_DATA_HOME") {
+        return PathBuf::from(data_home).join("com.worldwiki.app").join("data");
+    }
+
     env::current_dir().unwrap_or_default().join("data")
 }
 

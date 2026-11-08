@@ -4,6 +4,7 @@
  */
 
 import { createApp, ref, onMounted } from 'vue';
+import { createPinia } from 'pinia';
 
 import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
@@ -262,6 +263,7 @@ async function init() {
     }
   });
 
+  app.use(createPinia());
   app.use(i18n as unknown as Plugin);
   app.mount('#app');
 }

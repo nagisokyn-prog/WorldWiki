@@ -14,9 +14,17 @@ export interface CalendarRecord {
   [key: string]: unknown;
 }
 
-export function getDefaultPlanet(projectName: string): PlanetEntity {
+function generatePlanetId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `planet_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+  }
+  return `planet_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
+}
+
+export function getDefaultPlanet(projectName: string, id?: string): PlanetEntity {
+  const planetId = id || generatePlanetId();
   return {
-    id: 'earth',
+    id: planetId,
     project_id: projectName,
     name: 'Земля',
     ticks_per_day: 86400,

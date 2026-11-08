@@ -58,7 +58,7 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
         } else if (sectionId === 'calendars') {
             const calendarStore = useCalendarStore();
             if (!parentId) {
-                const newId = `planet_${Date.now()}`;
+                const newId = `planet_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
                 const newName = name?.trim() || 'Новая планета';
                 const newPlanet = { ...getDefaultPlanet(options.project), id: newId, name: newName };
                 calendarStore.savePlanet(options.project, newPlanet);

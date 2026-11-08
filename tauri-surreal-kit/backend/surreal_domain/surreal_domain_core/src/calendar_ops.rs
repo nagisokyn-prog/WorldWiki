@@ -8,9 +8,9 @@ pub(crate) async fn save_calendar_record<T, Db: surrealdb::Connection>(
 where
     T: serde::de::DeserializeOwned,
 {
-    let pl_raw = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("earth");
-    let pl_str = if pl_raw.is_empty() || pl_raw == "NONE" || pl_raw == "planets:NONE" {
-        "earth"
+    let pl_raw = map.get("planet_id").and_then(|v| v.as_str()).unwrap_or("");
+    let pl_str = if pl_raw.is_empty() || pl_raw == "NONE" || pl_raw == "planets:NONE" || pl_raw == "earth" || pl_raw == "planets:earth" {
+        ""
     } else {
         pl_raw.trim_start_matches("planets:")
     };
@@ -19,20 +19,27 @@ where
     let pid_str = map.get("project_id").and_then(|v| v.as_str()).unwrap_or("default");
     let data_val = map.get("data").cloned().unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
 
+    let pl_clause = if pl_str.is_empty() {
+        "NONE".to_string()
+    } else {
+        format!("type::record('planets', '{}')", pl_str)
+    };
+
+    eprintln!("[DEBUG][save_calendar_record] cal_id={:?}, pid={:?}, pl_str={:?}, pl_clause={:?}, name={:?}, is_m={}", cal_id, pid_str, pl_str, pl_clause, name_str, is_m);
+
     let (query, has_cid) = match cal_id {
         Some(cid) => (
-            "RETURN fn::save_calendar(type::record('calendars', $cal_id), $pid, $plid, $name, $is_master, $data);",
+            format!("RETURN fn::save_calendar(type::record('calendars', $cal_id), $pid, {}, $name, $is_master, $data);", pl_clause),
             Some(cid.to_string()),
         ),
         None => (
-            "RETURN fn::save_calendar(NONE, $pid, $plid, $name, $is_master, $data);",
+            format!("RETURN fn::save_calendar(NONE, $pid, {}, $name, $is_master, $data);", pl_clause),
             None,
         ),
     };
 
-    let mut q = db.query(query)
+    let mut q = db.query(&query)
         .bind(("pid", pid_str.to_string()))
-        .bind(("plid", pl_str.to_string()))
         .bind(("name", name_str.to_string()))
         .bind(("is_master", is_m))
         .bind(("data", data_val));

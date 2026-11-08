@@ -76,14 +76,8 @@ export default defineConfig(({ command, mode }) => {
 
     resolve: {
       alias: [
-        // Для тестов нужен vue.esm-bundler.js с компилятором строк template,
-        // для продакшена — чистый runtime-only без компилятора (-45 КБ веса!)
-        { 
-          find: 'vue', 
-          replacement: isTest 
-            ? 'vue/dist/vue.esm-bundler.js' 
-            : 'vue/dist/vue.runtime.esm-bundler.js' 
-        },
+        // Для in-DOM шаблонов (ui_editor.html) необходим компилятор vue.esm-bundler.js
+        { find: 'vue', replacement: 'vue/dist/vue.esm-bundler.js' },
         { find: 'vue-i18n', replacement: 'vue-i18n/dist/vue-i18n.esm-bundler.js' },
         { find: '@worldwiki/components', replacement: resolve(__dirname, '../../packages/components/src') },
         { find: '@worldwiki/resources', replacement: resolve(__dirname, '../../packages/resources/src') },
@@ -103,7 +97,7 @@ export default defineConfig(({ command, mode }) => {
       outDir: '../../dist',
       emptyOutDir: true,
       target: 'esnext',              // 1. Нативный современный JS без даунгрейда и полифилов
-      cssMinify: 'lightningcss',     // 2. Rust-компрессор CSS (слияние селекторов, короткие токены)
+      cssMinify: 'esbuild',          // 2. Надежный компрессор CSS без искажения позиционирования и calc()
       minify: 'esbuild',
       sourcemap: isBuild ? 'hidden' : true, // 3. Карты скрыты в проде: не светятся в вебвью, но пригодны для отладки
       assetsInlineLimit: 4096,       // 4. Инлайн мелких иконок до 4 КБ в Base64 для исключения лишних IPC-запросов

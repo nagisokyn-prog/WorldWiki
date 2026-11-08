@@ -44,9 +44,8 @@ if (withAi) {
   inputEntries.ai = resolve(__dirname, 'ai.html');
 }
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
-  const isTest = mode === 'test' || Boolean(process.env.VITEST);
 
   return {
     define: {

@@ -34,10 +34,11 @@ export function usePlanetCalendarTree(
       const planetCals: CalendarTreeItem[] = [];
 
       allCals.forEach((cal, originalIdx) => {
-        const calPlanetId = cal.planet_id || cal.data?.planet_id;
-        const cleanCalPlanet = String(calPlanetId || '').replace(/^(entity:)?planets?:/, '');
+        const rawPlanetId = (cal.planet_id as string | undefined) ?? cal.data?.planet_id;
+        const calPlanetId = typeof rawPlanetId === 'string' && rawPlanetId.trim() !== '' ? rawPlanetId : planet.id;
+        const cleanCalPlanet = calPlanetId.replace(/^(entity:)?planets?:/, '');
         const cleanPlanet = String(planet.id || '').replace(/^(entity:)?planets?:/, '');
-        const matchesPlanet = cleanCalPlanet === cleanPlanet || (!calPlanetId && (cleanPlanet.endsWith('earth') || planet.name === 'Земля'));
+        const matchesPlanet = cleanCalPlanet === cleanPlanet || (!rawPlanetId && (cleanPlanet.endsWith('earth') || planet.name === 'Земля'));
         if (matchesPlanet) {
           // Планета и есть Календарь Мира — не дублируем его в дочерние культурные календари
           const isMaster = Boolean(cal.is_master || cal.data?.is_master || cal.data?.calendar_type === 'master' || cal.data?.название === 'Календарь Мира');

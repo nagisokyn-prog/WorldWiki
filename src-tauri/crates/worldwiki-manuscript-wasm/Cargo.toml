@@ -13,10 +13,10 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 worldwiki-manuscript-core = { path = "../worldwiki-manuscript-core", features = ["serde"] }
 wasm-bindgen = "0.2"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
-hashbrown = { version = "0.17.1", features = ["serde"] }
+hashbrown = { version = "0.17", features = ["serde"] }
 
 [dev-dependencies]
-serde_json = "1.0"
+serde_json = "1"
 wasm-bindgen-test = "0.3"

@@ -11,8 +11,8 @@ proc-macro = true
 
 [dependencies]
 syn = { version = "3", features = ["full"] }
-quote = "1.0"
-proc-macro2 = "1.0"
+quote = "1"
+proc-macro2 = "1"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

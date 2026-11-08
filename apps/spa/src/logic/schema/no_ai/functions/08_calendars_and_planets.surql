@@ -54,20 +54,41 @@ DEFINE FUNCTION OVERWRITE fn::save_planet(
     LET $pl_rec = IF $has_id { type::record('planets', $str_pl) } ELSE { NONE };
     
     IF $has_id {
-        LET $res = (
-            UPSERT $pl_rec SET
-                project_id = $p_rec,
-                name = $name,
-                ticks_per_day = $clean_ticks,
-                axial_tilt_mdeg = $axial_tilt_mdeg,
-                orbit_days_num = $orbit_days_num,
-                orbit_days_den = $orbit_days_den,
-                moons = $clean_moons,
-                timezones = $clean_timezones,
-                regions = $clean_regions,
-                updated_at = time::now()
-        );
-        RETURN $res[0];
+        -- Защита от угона планеты чужого проекта
+        LET $existing = (SELECT id, project_id FROM $pl_rec LIMIT 1);
+        IF array::len($existing) > 0 AND fn::normalize_project_id($existing[0].project_id) != $p_rec {
+            -- Планета с таким ID принадлежит другому проекту: создаём собственную планету для текущего проекта
+            LET $res = (
+                CREATE planets SET
+                    project_id = $p_rec,
+                    name = $name,
+                    ticks_per_day = $clean_ticks,
+                    axial_tilt_mdeg = $axial_tilt_mdeg,
+                    orbit_days_num = $orbit_days_num,
+                    orbit_days_den = $orbit_days_den,
+                    moons = $clean_moons,
+                    timezones = $clean_timezones,
+                    regions = $clean_regions,
+                    created_at = time::now(),
+                    updated_at = time::now()
+            );
+            RETURN $res[0];
+        } ELSE {
+            LET $res = (
+                UPSERT $pl_rec SET
+                    project_id = $p_rec,
+                    name = $name,
+                    ticks_per_day = $clean_ticks,
+                    axial_tilt_mdeg = $axial_tilt_mdeg,
+                    orbit_days_num = $orbit_days_num,
+                    orbit_days_den = $orbit_days_den,
+                    moons = $clean_moons,
+                    timezones = $clean_timezones,
+                    regions = $clean_regions,
+                    updated_at = time::now()
+            );
+            RETURN $res[0];
+        };
     } ELSE {
         LET $res = (
             CREATE planets SET
@@ -99,11 +120,38 @@ DEFINE FUNCTION OVERWRITE fn::save_calendar(
     LET $p_rec = fn::normalize_project_id($proj);
     LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
     LET $has_pl = $str_pl != NONE AND $str_pl != NULL AND $str_pl != '' AND $str_pl != 'NONE';
-    LET $pl_rec = IF $has_pl { 
-        type::record('planets', $str_pl) 
+    LET $pl_candidate = IF $has_pl { type::record('planets', $str_pl) } ELSE { NONE };
+
+    -- Проверяем, что кандидат-планета принадлежит ЭТОМУ проекту
+    LET $verified_pl = IF $has_pl {
+        LET $chk = (SELECT VALUE id FROM $pl_candidate WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
+        IF array::len($chk) > 0 { $chk[0] } ELSE { NONE }
+    } ELSE {
+        NONE
+    };
+
+    LET $pl_rec = IF $verified_pl != NONE { 
+        $verified_pl 
     } ELSE { 
         LET $existing_p = (SELECT VALUE id FROM planets WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
-        IF array::len($existing_p) > 0 { $existing_p[0] } ELSE { type::record('planets', rand::uuid::v4()) }
+        IF array::len($existing_p) > 0 { 
+            $existing_p[0] 
+        } ELSE { 
+            -- Автоматическое создание планеты для этого проекта по аналогии с первым томом
+            (CREATE planets SET
+                project_id = $p_rec,
+                name = 'Земля',
+                ticks_per_day = 86400,
+                axial_tilt_mdeg = 23440,
+                orbit_days_num = 3652422,
+                orbit_days_den = 10000,
+                moons = [],
+                timezones = [],
+                regions = [],
+                created_at = time::now(),
+                updated_at = time::now()
+                RETURN VALUE id)[0]
+        }
     };
     
     LET $str_id = string::replace(string::replace(string::replace(string::replace(type::string($id), 'calendars:', ''), '⟨', ''), '⟩', ''), '`', '');
@@ -145,11 +193,17 @@ DEFINE FUNCTION OVERWRITE fn::set_master_calendar(
     $cal_id: any
 ) {
     LET $p_rec = fn::normalize_project_id($proj);
-    LET $p_rec = fn::normalize_project_id($proj);
     LET $str_pl = string::replace(string::replace(string::replace(string::replace(type::string($planet_id), 'planets:', ''), '⟨', ''), '⟩', ''), '`', '');
     LET $has_pl = $str_pl != NONE AND $str_pl != NULL AND $str_pl != '' AND $str_pl != 'NONE';
-    LET $pl_rec = IF $has_pl { 
-        type::record('planets', $str_pl) 
+    LET $pl_candidate = IF $has_pl { type::record('planets', $str_pl) } ELSE { NONE };
+    LET $verified_pl = IF $has_pl {
+        LET $chk = (SELECT VALUE id FROM $pl_candidate WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
+        IF array::len($chk) > 0 { $chk[0] } ELSE { NONE }
+    } ELSE {
+        NONE
+    };
+    LET $pl_rec = IF $verified_pl != NONE { 
+        $verified_pl 
     } ELSE { 
         LET $existing_p = (SELECT VALUE id FROM planets WHERE fn::normalize_project_id(project_id) = $p_rec LIMIT 1);
         IF array::len($existing_p) > 0 { $existing_p[0] } ELSE { type::record('planets', rand::uuid::v4()) }

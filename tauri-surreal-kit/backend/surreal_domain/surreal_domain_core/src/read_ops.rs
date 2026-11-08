@@ -62,10 +62,6 @@ where
         _ => format!("SELECT * FROM {table} WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed OR project_id = $pid_raw"),
     };
 
-    if table == "calendars" {
-        eprintln!("[DEBUG][repo_find_all:calendars] project_id={:?}, pid_raw={:?}, pid_str={:?}, pid_bracketed={:?}", project_id, pid_raw, pid_str, pid_bracketed);
-    }
-
     let mut res = db
         .query(&query_str)
         .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
@@ -76,15 +72,7 @@ where
         .await?;
 
     let entities: Vec<serde_json::Value> = match res.take::<Vec<serde_json::Value>>(0) {
-        Ok(entities) => {
-            if table == "calendars" {
-                eprintln!("[DEBUG][repo_find_all:calendars] found {} calendars:", entities.len());
-                for c in &entities {
-                    eprintln!("   [repo_find_all cal] id={}, name={}, planet_id={}", c["id"], c["name"], c["planet_id"]);
-                }
-            }
-            entities
-        },
+        Ok(entities) => entities,
         Err(ref e) if is_not_found(e) => Vec::new(),
         Err(e) => return Err(SurrealDomainError::from(e)),
     };

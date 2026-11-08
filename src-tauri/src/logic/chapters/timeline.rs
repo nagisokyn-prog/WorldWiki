@@ -94,39 +94,12 @@ pub async fn get_planet_calendar_bundle_inner(
     project: &str,
 ) -> Result<Value, ChapterError> {
     let clean_pid = project.trim().replace("projects:", "");
-    eprintln!("[DEBUG][get_planet_calendar_bundle] >>> project={:?}, clean_pid={:?}", project, clean_pid);
-
-    // Diagnostic query: dump existing planets and calendars from DB
-    if let Ok(mut diag) = db.query("SELECT id, name, project_id, type::string(project_id) AS pid_str FROM planets; SELECT id, name, planet_id, planet_id.project_id AS pl_proj, type::string(planet_id.project_id) AS pl_proj_str FROM calendars;").await {
-        let all_planets: Vec<Value> = diag.take(0).unwrap_or_default();
-        let all_cals: Vec<Value> = diag.take(1).unwrap_or_default();
-        eprintln!("[DEBUG][DB_DUMP] All Planets in DB (count={}):", all_planets.len());
-        for p in &all_planets {
-            eprintln!("   -> Planet id={}, name={}, project_id={}", p["id"], p["name"], p["pid_str"]);
-        }
-        eprintln!("[DEBUG][DB_DUMP] All Calendars in DB (count={}):", all_cals.len());
-        for c in &all_cals {
-            eprintln!("   -> Cal id={}, name={}, planet_id={}, planet_id.project_id={}", c["id"], c["name"], c["planet_id"], c["pl_proj_str"]);
-        }
-    }
 
     let mut res = db
         .query("RETURN fn::get_planet_calendar_bundle(type::record('projects', $p));")
-        .bind(("p", clean_pid.clone()))
+        .bind(("p", clean_pid))
         .await?;
     let val: Option<Value> = res.take(0)?;
-    if let Some(ref v) = val {
-        let pl_count = v.get("planets").and_then(|p| p.as_array()).map(|a| a.len()).unwrap_or(0);
-        let cal_count = v.get("calendars").and_then(|c| c.as_array()).map(|a| a.len()).unwrap_or(0);
-        eprintln!("[DEBUG][get_planet_calendar_bundle] <<< bundle for {:?}: planets_count={}, calendars_count={}", clean_pid, pl_count, cal_count);
-        if let Some(cals) = v.get("calendars").and_then(|c| c.as_array()) {
-            for c in cals {
-                eprintln!("   [bundle cal] id={}, name={}, planet_id={}, is_master={}", c["id"], c["name"], c["planet_id"], c["is_master"]);
-            }
-        }
-    } else {
-        eprintln!("[DEBUG][get_planet_calendar_bundle] <<< returning None for {:?}", clean_pid);
-    }
     Ok(val.unwrap_or(json!({ "planets": [], "calendars": [] })))
 }
 
@@ -150,7 +123,6 @@ pub async fn save_planet_inner(
     params: SavePlanetParams,
 ) -> Result<Value, ChapterError> {
     let clean_pid = params.project.trim().replace("projects:", "");
-    eprintln!("[DEBUG][save_planet] params: project={:?}, clean_pid={:?}, planet_id={:?}, name={:?}", params.project, clean_pid, params.planet_id, params.name);
     let id_clause = if let Some(ref pid) = params.planet_id {
         format!("type::record('planets', '{}')", pid.trim().replace("planets:", ""))
     } else {
@@ -178,16 +150,10 @@ pub async fn save_planet_inner(
         let errs = res.take_errors();
         if !errs.is_empty() {
             let err_msg = errs.into_values().next().map(|e| e.to_string()).unwrap_or_default();
-            eprintln!("[DEBUG][save_planet] ERR: {}", err_msg);
             return Err(ChapterError::Transaction(err_msg));
         }
 
         let val: Option<Value> = res.take(0)?;
-        if let Some(ref v) = val {
-            eprintln!("[DEBUG][save_planet] SUCCESS: id={}, name={}", v["id"], v["name"]);
-        } else {
-            eprintln!("[DEBUG][save_planet] SUCCESS");
-        }
         Ok(val.unwrap_or(json!({ "success": true })))
     })
 }
@@ -204,7 +170,6 @@ pub async fn save_calendar_inner(
 ) -> Result<Value, ChapterError> {
     let clean_pid = project.trim().replace("projects:", "");
     let raw_plid = planet_id.trim().replace("planets:", "");
-    eprintln!("[DEBUG][save_calendar] project={:?}, clean_pid={:?}, cal_id={:?}, planet_id={:?}, raw_plid={:?}, name={:?}, is_master={}", project, clean_pid, calendar_id, planet_id, raw_plid, name, is_master);
     let plid_clause = if raw_plid.is_empty() || raw_plid == "NONE" {
         "NONE".to_string()
     } else {
@@ -232,16 +197,10 @@ pub async fn save_calendar_inner(
         let errs = res.take_errors();
         if !errs.is_empty() {
             let err_msg = errs.into_values().next().map(|e| e.to_string()).unwrap_or_default();
-            eprintln!("[DEBUG][save_calendar] ERR: {}", err_msg);
             return Err(ChapterError::Transaction(err_msg));
         }
 
         let val: Option<Value> = res.take(0)?;
-        if let Some(ref v) = val {
-            eprintln!("[DEBUG][save_calendar] SUCCESS: id={}, name={}", v["id"], v["name"]);
-        } else {
-            eprintln!("[DEBUG][save_calendar] SUCCESS");
-        }
         Ok(val.unwrap_or(json!({ "success": true })))
     })
 }

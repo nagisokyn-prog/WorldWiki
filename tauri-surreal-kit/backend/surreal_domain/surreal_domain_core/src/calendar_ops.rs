@@ -25,8 +25,6 @@ where
         format!("type::record('planets', '{}')", pl_str)
     };
 
-    eprintln!("[DEBUG][save_calendar_record] cal_id={:?}, pid={:?}, pl_str={:?}, pl_clause={:?}, name={:?}, is_m={}", cal_id, pid_str, pl_str, pl_clause, name_str, is_m);
-
     let (query, has_cid) = match cal_id {
         Some(cid) => (
             format!("RETURN fn::save_calendar(type::record('calendars', $cal_id), $pid, {}, $name, $is_master, $data);", pl_clause),

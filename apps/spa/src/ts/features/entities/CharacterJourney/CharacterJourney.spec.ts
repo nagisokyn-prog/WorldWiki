@@ -315,16 +315,16 @@ describe('useCharacterJourney Composable', () => {
     expect(journey.timelineItems.value[0].boundArcs?.[0].arcTitle).toBe('Арка Бунта');
 
     // Test filter mode change
-    journey.setFilterMode('intersection');
+    await journey.setFilterMode('intersection');
     expect(journey.filterMode.value).toBe('intersection');
   });
 
   it('preserves real paragraph quote, block_id, and paragraph_index in timeline items for editor jumping', async () => {
-    vi.mocked(apiClient.getEntities).mockResolvedValueOnce([
+    vi.mocked(apiClient.getEntities).mockResolvedValue([
       { id: 'ent:1', name: 'Алексей', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
     ]);
-    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([]);
-    vi.mocked(apiClient.getCharacterJourney).mockResolvedValueOnce({
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValue([]);
+    vi.mocked(apiClient.getCharacterJourney).mockResolvedValue({
       entity_id: 'ent:1',
       entity_name: 'Алексей',
       entity_type: 'character',

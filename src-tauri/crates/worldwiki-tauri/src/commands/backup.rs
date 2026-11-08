@@ -1,12 +1,13 @@
 use std::fs;
 use std::path::PathBuf;
 use serde_json::Value;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use worldwiki_domain::storage::YandexBackupFile;
 use worldwiki_infrastructure::storage::{
-    create_cloud_backup_inner, download_yandex_file_inner, exchange_yandex_token_inner,
-    export_chapters_inner, list_yandex_disk_backups_inner, restore_from_backup_inner,
-    upload_to_yandex_disk_inner,
+    create_cloud_backup_inner, download_missing_media_inner, download_yandex_file_inner,
+    exchange_yandex_token_inner, export_chapters_inner, list_yandex_disk_backups_inner,
+    restore_from_backup_inner, sync_media_to_yandex_inner, upload_to_yandex_disk_inner,
+    MediaSyncProgress,
 };
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -58,6 +59,30 @@ pub async fn upload_to_yandex_disk(token: String, file_path: String) -> Result<(
 }
 
 #[tauri::command]
+pub async fn sync_yandex_media(
+    token: String,
+    app: tauri::AppHandle,
+) -> Result<usize, IpcError> {
+    let base_data_dir = if let Ok(custom_dir) = std::env::var("SURREAL_DATA_DIR")
+        && !custom_dir.is_empty()
+    {
+        PathBuf::from(custom_dir)
+    } else {
+        std::env::current_dir().unwrap_or_default().join("data")
+    };
+    let images_dir = base_data_dir.join("user_images");
+
+    let app_clone = app.clone();
+    let on_progress = std::sync::Arc::new(move |progress: MediaSyncProgress| {
+        let _ = app_clone.emit("sync-media-progress", progress);
+    });
+
+    sync_media_to_yandex_inner(&token, &images_dir, None, Some(on_progress))
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
 pub async fn list_yandex_disk_backups(token: String) -> Result<Vec<YandexBackupFile>, IpcError> {
     list_yandex_disk_backups_inner(&token, None)
         .await
@@ -80,6 +105,11 @@ pub async fn download_and_restore_yandex(
         .await
         .map_err(IpcError::from)?;
 
+    // Download any missing media files referenced in the backup manifest from app:/media/
+    if let Err(e) = download_missing_media_inner(&token, &temp_file_path, None).await {
+        eprintln!("[BACKUP] Warning: failed to download some media files: {e}");
+    }
+
     if let Some(dir) = temp_file_path.parent()
         && let Err(e) = fs::remove_dir_all(dir) {
             eprintln!("[BACKUP] Temp dir clean error: {e}");
@@ -101,5 +131,5 @@ pub async fn restore_from_backup(
 
 #[tauri::command]
 pub fn get_launch_args() -> Option<String> {
-    std::env::args().nth(1).filter(|arg| arg.ends_with(".wwiki"))
+    std::env::args().skip(1).find(|arg| arg.ends_with(".wwiki"))
 }

@@ -13,13 +13,15 @@
 }
 
 .cloud-sync-modal {
-    width: 500px;
+    width: 540px;
+    max-width: min(540px, calc(100vw - 32px));
     background: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-dropdown);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .cloud-sync-header {
@@ -183,4 +185,194 @@
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xs);
+}
+
+.sync-destinations-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+}
+
+.sync-destination-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.sync-dest-icon {
+    font-size: 18px;
+    color: var(--accent);
+    margin-top: 2px;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sync-dest-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.sync-dest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.sync-dest-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.sync-dest-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.sync-dest-path {
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    background: var(--bg-input);
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-color);
+    color: var(--accent);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sync-dest-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.sync-destination-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0;
+}
+
+.badge-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.badge-syncing {
+    background: var(--info-bg, var(--bg-input));
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.badge-success {
+    background: var(--success-bg, var(--bg-input));
+    color: var(--success);
+    border: 1px solid var(--success-border, var(--border-color));
+}
+
+.badge-error {
+    background: var(--error-bg);
+    color: var(--error);
+    border: 1px solid var(--error-border);
+}
+
+.sync-media-progress-box {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
+    padding: 8px 10px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.sync-progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+}
+
+.sync-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: var(--radius-xs);
+    transition: width 0.2s ease;
+}
+
+.sync-current-file {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    min-width: 0;
+}
+
+.sync-active-threads {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
+    padding: 6px 8px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.sync-thread-row {
+    padding: 4px 6px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.sync-thread-row > span:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-uploading {
+    font-size: 10px;
+    color: var(--accent);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.text-main {
+    color: var(--text-main);
 }

@@ -139,7 +139,7 @@ fn test_docx_export_structure_and_openxml_spec() {
     let file = File::open(out_path).expect("failed to open docx file");
     let mut archive = ZipArchive::new(file).expect("docx must be a valid zip container");
 
-    let names: Vec<String> = archive.file_names().map(|s| s.to_string()).collect();
+    let names: Vec<String> = archive.file_names().flatten().map(|s| s.to_string()).collect();
 
     // Проверка обязательных компонентов OpenXML
     assert!(names.contains(&"[Content_Types].xml".to_string()), "Content Types missing");
@@ -206,7 +206,7 @@ fn test_epub_export_structure_and_idpf_spec() {
     let mut archive = ZipArchive::new(file).expect("epub must be a valid zip");
 
     // КРИТИЧЕСКОЕ ТРЕБОВАНИЕ IDPF EPUB: первый файл обязан быть 'mimetype'
-    let names: Vec<String> = archive.file_names().map(|s| s.to_string()).collect();
+    let names: Vec<String> = archive.file_names().flatten().map(|s| s.to_string()).collect();
     assert!(names.len() >= 5);
     assert_eq!(names[0], "mimetype", "First entry in EPUB container must be 'mimetype'");
 

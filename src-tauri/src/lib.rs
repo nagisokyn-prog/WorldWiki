@@ -14,6 +14,7 @@ pub fn run() {
     use logic::projects::*;
     use logic::volumes::*;
     use tauri_shell::logic::system::*;
+    use tauri::{Emitter, Manager};
 
     if let Err(e) = tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
@@ -92,6 +93,7 @@ pub fn run() {
             worldwiki_tauri::commands::create_cloud_backup,
             worldwiki_tauri::commands::exchange_yandex_token,
             worldwiki_tauri::commands::upload_to_yandex_disk,
+            worldwiki_tauri::commands::sync_yandex_media,
             worldwiki_tauri::commands::list_yandex_disk_backups,
             worldwiki_tauri::commands::download_and_restore_yandex,
             worldwiki_tauri::commands::get_launch_args,
@@ -198,6 +200,16 @@ pub fn run() {
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites, ParticipantOf, AdvancesArc, OccursAt, RevealedIn]
 ])
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            if let Some(file_path) = argv.into_iter().find(|arg| arg.ends_with(".wwiki")) {
+                let _ = app.emit("open-wwiki-file", file_path);
+            }
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())

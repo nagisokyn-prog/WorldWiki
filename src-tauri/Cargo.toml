@@ -77,6 +77,7 @@ zip = "9"
 reqwest = { version = "0.13.5", features = ["json", "form"] }
 tokio = { version = "1", features = ["fs", "io-util", "rt-multi-thread", "macros", "net", "time", "process", "io-std"] }
 tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
 
 # AI Dependencies
 claw_runtime = { package = "runtime", path = "../vendor/claw-code/rust/crates/runtime", optional = true }

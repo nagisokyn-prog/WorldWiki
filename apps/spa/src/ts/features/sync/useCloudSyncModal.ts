@@ -1,7 +1,9 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import * as api from '@/services/api.client';
+import type { MediaSyncProgress, DatabaseSyncStatus, MediaSyncStatus } from './CloudSyncModal.model';
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
 
@@ -25,9 +27,17 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     const authError = ref('');
     const isLoading = ref(false);
     const isSyncing = ref(false);
+    const syncStatusText = ref('');
+    const dbSyncStatus = ref<DatabaseSyncStatus>('idle');
+    const mediaSyncStatus = ref<MediaSyncStatus>('idle');
+    const mediaProgress = ref<MediaSyncProgress | null>(null);
+    const uploadedMediaCount = ref(0);
+    const lastBackupFileName = ref('');
     
     const availableBackups = ref<YandexBackupFile[]>([]);
     const isLoadingBackups = ref(false);
+
+    let unlistenMediaProgress: UnlistenFn | null = null;
 
     const loadToken = () => {
         yandexToken.value = localStorage.getItem('yandex_disk_token');
@@ -77,12 +87,23 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
         openModal(mode);
     };
 
-    onMounted(() => {
+    onMounted(async () => {
         window.addEventListener('open-cloud-sync', handleOpenEvent);
+        try {
+            unlistenMediaProgress = await listen<MediaSyncProgress>('sync-media-progress', (event) => {
+                mediaProgress.value = event.payload;
+            });
+        } catch (e) {
+            console.error('Failed to attach sync-media-progress listener:', e);
+        }
     });
 
     onUnmounted(() => {
         window.removeEventListener('open-cloud-sync', handleOpenEvent);
+        if (unlistenMediaProgress) {
+            unlistenMediaProgress();
+            unlistenMediaProgress = null;
+        }
     });
 
     const connectYandex = async () => {
@@ -132,11 +153,26 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     const uploadBackup = async () => {
         if (!yandexToken.value) return;
         isSyncing.value = true;
+        mediaSyncStatus.value = 'syncing';
+        dbSyncStatus.value = 'idle';
+        mediaProgress.value = null;
 
         try {
-            emit('toast', { text: 'Создаем локальный бекап...', type: 'info' });
+            emit('toast', { text: 'Синхронизация медиафайлов...', type: 'info' });
+            const mediaCount = await invoke<number>('sync_yandex_media', { token: yandexToken.value });
+            uploadedMediaCount.value = mediaCount;
+            mediaSyncStatus.value = 'success';
+            if (mediaCount > 0) {
+                emit('toast', { text: `Загружено новых медиа: ${mediaCount}`, type: 'info' });
+            }
+
+            dbSyncStatus.value = 'exporting';
+            emit('toast', { text: 'Создаем компактный бекап...', type: 'info' });
 
             const backupFilePath = await api.createCloudBackup();
+            lastBackupFileName.value = backupFilePath.split(/[/\\]/).pop() || 'backup.wwiki';
+
+            dbSyncStatus.value = 'uploading';
             emit('toast', { text: 'Бекап создан, отправляем в облако...', type: 'info' });
 
             await invoke<void>('upload_to_yandex_disk', {
@@ -144,10 +180,14 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
                 filePath: backupFilePath
             });
 
+            dbSyncStatus.value = 'success';
             emit('toast', { text: 'Бекап успешно сохранен в Яндекс.Диск!', type: 'success' });
 
         } catch (err: unknown) {
             console.error(err);
+            if (mediaSyncStatus.value === 'syncing') mediaSyncStatus.value = 'error';
+            if (dbSyncStatus.value === 'exporting' || dbSyncStatus.value === 'uploading') dbSyncStatus.value = 'error';
+
             const errMsg = err instanceof Error ? err.message : String(err);
             if (errMsg && (errMsg.includes('Token expired') || errMsg.includes('401'))) disconnectYandex();
             emit('toast', { text: `Ошибка: ${errMsg}`, type: 'error' });
@@ -164,6 +204,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
         }
 
         isSyncing.value = true;
+        syncStatusText.value = 'Скачивание архива и восстановление...';
 
         try {
             emit('toast', { text: 'Скачивание и восстановление бекапа...', type: 'info' });
@@ -173,6 +214,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
                 fileName: fileName
             });
             
+            syncStatusText.value = 'Проект успешно восстановлен!';
             emit('toast', { text: 'Проект успешно восстановлен! Требуется перезагрузка.', type: 'success' });
             setTimeout(() => {
                 window.location.reload();
@@ -185,6 +227,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
             emit('toast', { text: `Ошибка восстановления: ${errMsg}`, type: 'error' });
         } finally {
             isSyncing.value = false;
+            syncStatusText.value = '';
         }
     };
 
@@ -197,6 +240,12 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
         authError,
         isLoading,
         isSyncing,
+        syncStatusText,
+        mediaProgress,
+        mediaSyncStatus,
+        dbSyncStatus,
+        uploadedMediaCount,
+        lastBackupFileName,
         availableBackups,
         isLoadingBackups,
         openModal,

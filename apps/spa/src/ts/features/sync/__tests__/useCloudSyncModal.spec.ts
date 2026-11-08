@@ -6,9 +6,14 @@ import { useCloudSyncModal, type CloudSyncEmit } from '../useCloudSyncModal';
 import * as api from '@/services/api.client';
 import { appConfirm } from '@worldwiki/components';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
+}));
+
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn().mockResolvedValue(vi.fn()),
 }));
 
 vi.mock('@/services/api.client', () => ({
@@ -122,6 +127,29 @@ describe('useCloudSyncModal', () => {
       window.dispatchEvent(event);
       expect(modalInstance.isOpen.value).toBe(true);
       expect(modalInstance.syncMode.value).toBe('import');
+      wrapper.unmount();
+    });
+
+    it('updates mediaProgress when sync-media-progress event fires', async () => {
+      let listenerCallback: any;
+      vi.mocked(listen).mockImplementation(async (event: string, cb: any) => {
+        if (event === 'sync-media-progress') listenerCallback = cb;
+        return vi.fn();
+      });
+
+      let modalInstance: any;
+      const Comp = defineComponent({
+        setup() {
+          modalInstance = useCloudSyncModal(emit);
+          return () => null;
+        }
+      });
+      const wrapper = mount(Comp);
+      await wrapper.vm.$nextTick();
+
+      expect(listenerCallback).toBeDefined();
+      listenerCallback({ payload: { current: 3, total: 10, current_file: 'pic.png', active_files: ['pic.png'] } });
+      expect(modalInstance.mediaProgress.value).toEqual({ current: 3, total: 10, current_file: 'pic.png', active_files: ['pic.png'] });
       wrapper.unmount();
     });
   });
@@ -259,13 +287,40 @@ describe('useCloudSyncModal', () => {
       expect(api.createCloudBackup).not.toHaveBeenCalled();
     });
 
-    it('creates local backup and uploads to Yandex.Disk', async () => {
+    it('creates local backup and uploads to Yandex.Disk with media sync', async () => {
       modal.yandexToken.value = 'token_123';
       vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
-      vi.mocked(invoke).mockResolvedValue('ok');
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
+        if (cmd === 'sync_yandex_media') return 3;
+        if (cmd === 'upload_to_yandex_disk') return 'ok';
+        return null;
+      });
 
       await modal.uploadBackup();
 
+      expect(invoke).toHaveBeenCalledWith('sync_yandex_media', { token: 'token_123' });
+      expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ text: 'Загружено новых медиа: 3', type: 'info' }));
+      expect(api.createCloudBackup).toHaveBeenCalled();
+      expect(invoke).toHaveBeenCalledWith('upload_to_yandex_disk', {
+        token: 'token_123',
+        filePath: '/tmp/backup.zip',
+      });
+      expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'success' }));
+    });
+
+    it('creates local backup and uploads to Yandex.Disk when mediaCount is 0', async () => {
+      modal.yandexToken.value = 'token_123';
+      vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
+        if (cmd === 'sync_yandex_media') return 0;
+        if (cmd === 'upload_to_yandex_disk') return 'ok';
+        return null;
+      });
+
+      await modal.uploadBackup();
+
+      expect(invoke).toHaveBeenCalledWith('sync_yandex_media', { token: 'token_123' });
+      expect(emit).not.toHaveBeenCalledWith('toast', expect.objectContaining({ text: expect.stringContaining('Загружено новых медиа') }));
       expect(api.createCloudBackup).toHaveBeenCalled();
       expect(invoke).toHaveBeenCalledWith('upload_to_yandex_disk', {
         token: 'token_123',

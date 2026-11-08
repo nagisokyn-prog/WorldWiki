@@ -255,11 +255,11 @@ export function useCharacterJourney(projectId: string, initialEntityId?: string)
     loadJourney();
   };
 
-  const setFilterMode = (mode: JourneyFilterMode) => {
+  const setFilterMode = async (mode: JourneyFilterMode) => {
     if (filterMode.value !== mode) {
       filterMode.value = mode;
       if (selectedEntityIds.value.length > 1) {
-        loadJourney();
+        await loadJourney();
       }
     }
   };

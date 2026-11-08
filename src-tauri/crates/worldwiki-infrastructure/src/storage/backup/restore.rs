@@ -27,6 +27,14 @@ fn extract_archive_file<R: std::io::Read>(
         std::io::copy(file, &mut out).map_err(|e| DomainError::Validation(e.to_string()))?;
         return Ok(true);
     }
+
+    if file_name == "manifest.json" {
+        let manifest_path = temp_dir.join("manifest.json");
+        if let Ok(mut out) = fs::File::create(&manifest_path) {
+            let _ = std::io::copy(file, &mut out);
+        }
+        return Ok(false);
+    }
     
     let base_data_dir = get_base_data_dir();
     if let Some(sub) = file_name.strip_prefix("images/") {

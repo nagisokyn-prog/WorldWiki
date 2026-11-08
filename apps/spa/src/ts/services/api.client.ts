@@ -312,6 +312,10 @@ export async function uploadToYandexDisk(token: string, filePath: string): Promi
     return await invoke('upload_to_yandex_disk', { token, filePath });
 }
 
+export async function syncYandexMedia(token: string): Promise<number> {
+    return await invoke('sync_yandex_media', { token });
+}
+
 export async function listYandexDiskBackups(token: string): Promise<unknown[]> {
     return await invoke('list_yandex_disk_backups', { token });
 }

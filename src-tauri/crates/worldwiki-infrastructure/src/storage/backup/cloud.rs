@@ -109,10 +109,32 @@ pub async fn create_cloud_backup_inner(
         eprintln!("[BACKUP] Temp file remove error: {e}");
     }
 
-    // 2. Add user images (if any)
+    // 2. Add manifest with media references (instead of bundling heavy media into the archive)
     let base_data_dir = get_base_data_dir();
     let images_dir = base_data_dir.join("user_images");
-    add_directory_files_to_zip(&mut zip, &images_dir, "images", |_| true, options);
+    let mut media_files = Vec::new();
+    if let Ok(entries) = fs::read_dir(&images_dir) {
+        for entry in entries.flatten() {
+            if entry.path().is_file()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                media_files.push(name.to_string());
+            }
+        }
+    }
+    media_files.sort();
+
+    let manifest = serde_json::json!({
+        "version": "0.85.0",
+        "created_at": chrono::Local::now().to_rfc3339(),
+        "media_files": media_files
+    });
+    let manifest_bytes = serde_json::to_vec_pretty(&manifest).unwrap_or_default();
+    zip.start_file("manifest.json", options)
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
+    use std::io::Write;
+    zip.write_all(&manifest_bytes)
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
 
     // 3. Add settings files
     add_directory_files_to_zip(&mut zip, &base_data_dir, "settings", |name| name.ends_with(".json"), options);

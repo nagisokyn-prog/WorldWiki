@@ -26,8 +26,18 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     isLoading.value = true;
     try {
       const list = await useCalendarStore().getCalendars(props.project);
-      masterCalendar.value = list.find((c: CalendarRecord) => c.is_master) || null;
-      localCalendars.value = list.filter((c: CalendarRecord) => !c.is_master);
+      masterCalendar.value =
+        list.find(
+          (c: CalendarRecord) =>
+            c.is_master === true ||
+            (c.data as Record<string, unknown> | undefined)?.is_master === true ||
+            (c.data as Record<string, unknown> | undefined)?.calendar_type === 'master' ||
+            (c.data as Record<string, unknown> | undefined)?.название === 'Календарь Мира' ||
+            c.name === 'Календарь Мира'
+        ) ||
+        list[0] ||
+        null;
+      localCalendars.value = list.filter((c: CalendarRecord) => c.id !== masterCalendar.value?.id);
       if (localCalendars.value.length > 0 && !selectedLocalCal.value) {
         selectedLocalCal.value = localCalendars.value[0].id || null;
       }
@@ -40,39 +50,51 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     loadCalendars();
   });
 
+  const masterCalendarData = computed<CalendarData | null>(() => {
+    if (!masterCalendar.value) return null;
+    let d = masterCalendar.value.data as Record<string, unknown> | null;
+    if (d && typeof d === 'object' && 'data' in d && typeof d.data === 'object' && d.data !== null) {
+      d = d.data as Record<string, unknown>;
+    }
+    if (!d || (!d.месяцы && (masterCalendar.value as unknown as Record<string, unknown>).месяцы)) {
+      d = masterCalendar.value as unknown as Record<string, unknown>;
+    }
+    return (d as unknown as CalendarData) || null;
+  });
+
   const currentAbsoluteMinute = computed(() => {
-    if (!masterCalendar.value?.data) return 0;
-    return CalendarMath.getAbsoluteMinute(currentMasterInput.value, masterCalendar.value.data);
+    if (!masterCalendarData.value) return 0;
+    return CalendarMath.getAbsoluteMinute(currentMasterInput.value, masterCalendarData.value);
   });
 
   const maxDaysInCurrentMonth = computed(() => {
-    if (!masterCalendar.value?.data) return 31;
+    if (!masterCalendarData.value) return 31;
     return CalendarMath.getDaysInMonth(
-      masterCalendar.value.data,
+      masterCalendarData.value,
       currentMasterInput.value.year,
       currentMasterInput.value.month
     );
   });
 
   const maxHoursInDay = computed(() => {
-    return masterCalendar.value?.data?.настройки_времени?.часов_в_сутках || 24;
+    return masterCalendarData.value?.настройки_времени?.часов_в_сутках || 24;
   });
 
   const maxMinutesInHour = computed(() => {
-    return masterCalendar.value?.data?.настройки_времени?.минут_в_часе || 60;
+    return masterCalendarData.value?.настройки_времени?.минут_в_часе || 60;
   });
 
   const activeMoons = computed(() => {
-    if (!masterCalendar.value?.data?.moons) return [];
+    if (!masterCalendarData.value?.moons) return [];
     return CalendarMath.calculateMoonPhases(
       currentAbsoluteMinute.value,
-      masterCalendar.value.data.moons,
-      masterCalendar.value.data
+      masterCalendarData.value.moons,
+      masterCalendarData.value
     );
   });
 
   const activeHoliday = computed(() => {
-    const master = masterCalendar.value?.data;
+    const master = masterCalendarData.value;
     if (!master) return null;
     return CalendarMath.isHoliday(
       master,
@@ -83,13 +105,13 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   });
 
   const formattedMasterDate = computed(() => {
-    if (!masterCalendar.value?.data) return '';
+    if (!masterCalendarData.value) return '';
     const dateObj = { 
       absolute_minute: currentAbsoluteMinute.value,
-      calendar_id: masterCalendar.value.id || '',
+      calendar_id: masterCalendar.value?.id || '',
       original_input: currentMasterInput.value
     };
-    return CalendarMath.formatDate(masterCalendar.value.data, dateObj);
+    return CalendarMath.formatDate(masterCalendarData.value, dateObj);
   });
 
   const formattedLocalDate = computed(() => {
@@ -162,17 +184,18 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   const closeExplainer = () => { isExplainerOpen.value = false; };
 
   const dateExplanation = computed(() => {
-    if (!masterCalendar.value?.data) return null;
+    if (!masterCalendarData.value) return null;
+    const activeLocal = localCalendars.value.find(c => c.id === selectedLocalCal.value)?.data;
+    const targetCal = activeLocal || masterCalendarData.value;
     const allCals = [
-      masterCalendar.value.data,
+      masterCalendarData.value,
       ...(localCalendars.value.map(c => c.data).filter(Boolean) as CalendarData[])
     ];
-    const activeLocal = localCalendars.value.find(c => c.id === selectedLocalCal.value)?.data;
     return CalendarMath.explainDate(
       currentMasterInput.value,
-      activeLocal || masterCalendar.value.data,
+      targetCal,
       allCals,
-      masterCalendar.value.data
+      masterCalendarData.value
     );
   });
 
@@ -187,6 +210,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
 
   return {
     masterCalendar,
+    masterCalendarData,
     localCalendars,
     selectedLocalCal,
     currentMasterInput,

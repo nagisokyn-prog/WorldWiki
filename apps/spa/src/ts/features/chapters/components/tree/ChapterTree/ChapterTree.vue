@@ -29,7 +29,7 @@
       <template #after-header>
         <slot name="after-header">
           <div class="calendar-widget-container" :style="{ '--calendar-h': calendarHeight + 'px' }">
-            <component :is="'GlobalCalendarWidget'" :project="props.project" />
+            <GlobalCalendarWidget :project="props.project" />
           </div>
           <div class="panel-resize-handle-h" title="Потяните, чтобы изменить высоту" @mousedown="startVerticalResize"></div>
         </slot>
@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { ExplorerTree } from '@worldwiki/components';
+import GlobalCalendarWidget from '@/features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import { useCalendarTreeResize } from './composables/useCalendarTreeResize';
 import type { ChapterTreeProps } from './ChapterTree.model';

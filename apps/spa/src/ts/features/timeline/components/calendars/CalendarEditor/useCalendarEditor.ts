@@ -36,8 +36,20 @@ export function useCalendarEditor(
   const getStateKey = () => getCalendarStateKey(props.projectId, props.calendarId);
   const getScrollKey = () => getCalendarScrollKey(props.projectId, props.calendarId);
 
-  const calData = computed<CalendarData | null>(() => (calendarRecord.value?.data as CalendarData) || null);
-  const masterCalData = computed<CalendarData | null>(() => (masterCalendarRecord.value?.data as CalendarData) || null);
+  const extractCalendarData = (record: CalendarRecord | null): CalendarData | null => {
+    if (!record) return null;
+    let d = record.data as Record<string, unknown> | null;
+    if (d && typeof d === 'object' && 'data' in d && typeof d.data === 'object' && d.data !== null) {
+      d = d.data as Record<string, unknown>;
+    }
+    if (!d || (!d.месяцы && (record as unknown as Record<string, unknown>).месяцы)) {
+      d = record as unknown as Record<string, unknown>;
+    }
+    return (d as unknown as CalendarData) || null;
+  };
+
+  const calData = computed<CalendarData | null>(() => extractCalendarData(calendarRecord.value));
+  const masterCalData = computed<CalendarData | null>(() => extractCalendarData(masterCalendarRecord.value));
 
   const totalDays = computed<number>(() => {
     if (!calData.value) return 365;

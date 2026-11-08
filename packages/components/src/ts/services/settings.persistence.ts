@@ -8,11 +8,25 @@ import { DEFAULT_SETTINGS } from './settings.defaults';
 import { deepMergeSettings } from './settings.theme';
 
 export async function loadAppSettingsFromStorage(): Promise<AppSettings> {
+  const sanitizeBackground = (settings: AppSettings): AppSettings => {
+    if (settings.background) {
+      if (typeof settings.background.imagePath === 'string' && settings.background.imagePath.includes('Kuzma')) {
+        settings.background.imagePath = '';
+        settings.background.type = 'none';
+      }
+      if (typeof settings.background.videoPath === 'string' && settings.background.videoPath.includes('Kuzma')) {
+        settings.background.videoPath = '';
+        settings.background.type = 'none';
+      }
+    }
+    return settings;
+  };
+
   if (typeof window !== 'undefined' && window.__TAURI__?.core) {
     try {
       const saved = await window.__TAURI__.core.invoke<AppSettings | null>('load_settings');
       if (saved) {
-        return deepMergeSettings(DEFAULT_SETTINGS, saved);
+        return sanitizeBackground(deepMergeSettings(DEFAULT_SETTINGS, saved));
       }
     } catch (e) {
       console.warn('Tauri settings load failed, falling back to localStorage:', e);
@@ -23,7 +37,7 @@ export async function loadAppSettingsFromStorage(): Promise<AppSettings> {
     const key = typeof window !== 'undefined' ? (window.__APP_CONFIG__?.storageKey ?? 'app:settings') : 'app:settings';
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
     if (saved) {
-      return deepMergeSettings(DEFAULT_SETTINGS, JSON.parse(saved));
+      return sanitizeBackground(deepMergeSettings(DEFAULT_SETTINGS, JSON.parse(saved)));
     }
   } catch (e) {
     console.warn('localStorage load failed:', e);

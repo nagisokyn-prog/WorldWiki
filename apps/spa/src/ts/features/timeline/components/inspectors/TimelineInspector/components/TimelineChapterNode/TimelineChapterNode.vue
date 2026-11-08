@@ -6,7 +6,7 @@
       'chapter-node--active': isActive,
       'chapter-node--has-flashback': (chapter.flashbackCount || 0) > 0,
     }"
-    :style="{ left: (60 + index * 140) + 'px' }"
+    :style="{ position: 'absolute', top: '24px', left: (60 + index * 140) + 'px' }"
     @click="onClick"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"

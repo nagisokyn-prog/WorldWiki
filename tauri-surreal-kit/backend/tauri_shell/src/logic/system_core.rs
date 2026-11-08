@@ -141,7 +141,21 @@ pub async fn load_settings_core() -> Result<Value, SystemError> {
     let path = get_data_dir().join("settings.json");
     if path.exists() {
         let content = fs::read_to_string(&path)?;
-        let settings = serde_json::from_str(&content).unwrap_or(Value::Null);
+        let mut settings = serde_json::from_str::<Value>(&content).unwrap_or(Value::Null);
+        if let Some(bg) = settings.get_mut("background") {
+            if let Some(img_path) = bg.get("imagePath").and_then(|v| v.as_str()) {
+                if !img_path.is_empty() && !std::path::Path::new(img_path).exists() {
+                    bg["imagePath"] = serde_json::Value::String(String::new());
+                    bg["type"] = serde_json::Value::String("none".to_string());
+                }
+            }
+            if let Some(vid_path) = bg.get("videoPath").and_then(|v| v.as_str()) {
+                if !vid_path.is_empty() && !std::path::Path::new(vid_path).exists() {
+                    bg["videoPath"] = serde_json::Value::String(String::new());
+                    bg["type"] = serde_json::Value::String("none".to_string());
+                }
+            }
+        }
         Ok(settings)
     } else {
         Ok(Value::Null)

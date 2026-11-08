@@ -96,7 +96,38 @@ pub async fn create_cloud_backup_inner(
     let options = SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
 
-    // 1. Add database dump
+    // 1. Export database dump and sanitize it for seamless compatibility
+    if let Ok(raw_dump) = fs::read_to_string(&temp_surql_path) {
+        let sanitized: String = raw_dump
+            .lines()
+            .filter_map(|line| {
+                let t = line.trim_start();
+                if t.starts_with("DEFINE FIELD")
+                    && t.contains("OVERWRITE")
+                    && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*"))
+                {
+                    return None;
+                }
+                if t.starts_with("CREATE entity_schemas:default_")
+                    || t.starts_with("UPSERT entity_schemas:default_")
+                    || t.starts_with("INSERT INTO entity_schemas:default_")
+                {
+                    return None;
+                }
+                if let Some(rest) = t.strip_prefix("CREATE ") {
+                    let first_token = rest.split_whitespace().next().unwrap_or_default();
+                    if first_token.contains(':') {
+                        let leading_ws = &line[..line.len() - t.len()];
+                        return Some(format!("{leading_ws}UPSERT {rest}"));
+                    }
+                }
+                Some(line.to_string())
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let _ = fs::write(&temp_surql_path, sanitized);
+    }
+
     if let Ok(mut dump_file) = fs::File::open(&temp_surql_path) {
         zip.start_file("database.surql", options)
             .map_err(|e| DomainError::Validation(e.to_string()))?;
@@ -107,6 +138,56 @@ pub async fn create_cloud_backup_inner(
     // Clean up temporary dump
     if let Err(e) = fs::remove_file(&temp_surql_path) {
         eprintln!("[BACKUP] Temp file remove error: {e}");
+    }
+
+    // 2. Export scoped project bundle (LPG nodes & edges) if project exists
+    if let Ok(mut proj_res) = db.query("SELECT * FROM projects LIMIT 1;").await {
+        let projs: Vec<serde_json::Value> = proj_res.take(0).unwrap_or_default();
+        if let Some(first_proj) = projs.first()
+            && let Some(pid_str) = first_proj.get("id").and_then(|v| v.as_str())
+        {
+            let bundle_q = r#"
+                LET $p_rec = type::record($pid);
+                LET $p = (SELECT * FROM ONLY $p_rec);
+                LET $vols = (SELECT * FROM volumes WHERE project_id = $p_rec);
+                LET $chaps = (SELECT * FROM chapters WHERE volume_id IN $vols.id);
+                LET $contains = (SELECT * FROM contains WHERE in = $p_rec OR in IN $vols.id);
+                LET $ent_schemas = (SELECT * FROM entity_schemas WHERE project_id = $p_rec AND !id.starts_with('entity_schemas:default_'));
+                LET $rel_schemas = (SELECT * FROM relation_schemas WHERE project_id = $p_rec);
+                LET $ents = (SELECT * FROM entities WHERE schema_id IN $ent_schemas.id);
+                LET $entity_rels = (SELECT * FROM entity_rel WHERE in IN $ents.id AND out IN $ents.id);
+                LET $events = (SELECT * FROM timeline_events WHERE project_id = $p_rec);
+                LET $part_in = (SELECT * FROM participates_in WHERE in IN $ents.id);
+                LET $appears = (SELECT * FROM appears_in WHERE in IN $ents.id);
+                LET $planets = (SELECT * FROM planets WHERE project_id = $p_rec);
+                LET $cals = (SELECT * FROM calendars WHERE planet_id IN $planets.id);
+                RETURN {
+                    project: $p,
+                    volumes: $vols,
+                    chapters: $chaps,
+                    contains: $contains,
+                    entity_schemas: $ent_schemas,
+                    relation_schemas: $rel_schemas,
+                    entities: $ents,
+                    entity_rel: $entity_rels,
+                    timeline_events: $events,
+                    participates_in: $part_in,
+                    appears_in: $appears,
+                    planets: $planets,
+                    calendars: $cals
+                };
+            "#;
+            if let Ok(mut b_res) = db.query(bundle_q).bind(("pid", pid_str)).await {
+                let bundle_val: Option<serde_json::Value> = b_res.take(0).ok().flatten();
+                if let Some(bundle) = bundle_val
+                    && let Ok(bundle_bytes) = serde_json::to_vec_pretty(&bundle)
+                    && zip.start_file("project_bundle.json", options).is_ok()
+                {
+                    use std::io::Write;
+                    let _ = zip.write_all(&bundle_bytes);
+                }
+            }
+        }
     }
 
     // 2. Add manifest with media references (instead of bundling heavy media into the archive)

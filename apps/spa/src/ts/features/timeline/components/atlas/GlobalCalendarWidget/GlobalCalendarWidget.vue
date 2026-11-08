@@ -3,7 +3,7 @@
     <div class="gc-header">
       <div class="gc-header-left">
         <span class="gc-icon">🌍</span>
-        <span class="gc-title">{{ masterCalendar?.data?.название || 'Календарь Мира' }}</span>
+        <span class="gc-title">{{ masterCalendarData?.название || masterCalendar?.name || 'Календарь Мира' }}</span>
       </div>
       <div class="gc-header-actions">
         <button class="gc-step-btn interactive-el" title="Предыдущий день" @click="prevDay">◀</button>
@@ -33,7 +33,7 @@
             title="Месяц"
           >
             <option
-              v-for="(m, mIdx) in masterCalendar?.data?.месяцы || []"
+              v-for="(m, mIdx) in masterCalendarData?.месяцы || []"
               :key="mIdx"
               :value="mIdx"
             >
@@ -138,6 +138,7 @@ const props = defineProps<GlobalCalendarWidgetProps>();
 
 const {
   masterCalendar,
+  masterCalendarData,
   localCalendars,
   selectedLocalCal,
   currentMasterInput,

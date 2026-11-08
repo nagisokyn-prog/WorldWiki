@@ -19,7 +19,7 @@ tokio = { version = "1", features = ["sync", "time", "rt", "fs"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 uuid = { version = "1", default-features = false, features = ["v4", "serde", "std"] }
 surrealdb = { version = "3", default-features = false, features = ["kv-surrealkv", "kv-mem"] }
-reqwest = { version = "0.13.5", default-features = false, features = ["json", "form", "rustls-tls"] }
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "form", "rustls"] }
 tracing = "0.1"
 
 claw_runtime = { package = "runtime", path = "../../../vendor/claw-code/rust/crates/runtime" }

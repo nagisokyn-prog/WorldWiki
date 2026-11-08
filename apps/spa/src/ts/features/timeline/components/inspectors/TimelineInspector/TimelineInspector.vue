@@ -124,7 +124,7 @@
               'event-node--ping': pingedEventId === normalizeId(ev.id),
               'event-node--flashback': ev.isFlashback,
             }"
-            :style="{ left: (60 + idx * 160) + 'px' }"
+            :style="{ position: 'absolute', top: '24px', left: (60 + idx * 160) + 'px' }"
             :title="`Кликните для перехода к сцене в тексте: ${ev.title}`"
             @mouseenter="hoveredEventId = ev.id"
             @mouseleave="hoveredEventId = null"

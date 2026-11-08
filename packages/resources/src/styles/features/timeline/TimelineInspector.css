@@ -141,7 +141,7 @@
 
 .dual-axis-canvas {
   position: relative;
-  height: 380px;
+  height: 420px;
   min-width: 480px;
 }
 
@@ -154,12 +154,12 @@
 
 .narrative-wrapper {
   top: 10px;
-  height: 75px;
+  height: 100px;
 }
 
 .diegetic-wrapper {
-  top: 155px;
-  height: 120px;
+  top: 175px;
+  height: 160px;
 }
 
 /* Визуальные рельсы-направляющие осей */
@@ -304,9 +304,10 @@
 }
 
 /* Карточка главы (Компактный узел) */
-.chapter-node {
-  position: absolute;
-  top: 24px;
+.chapter-node,
+.chapter-node.interactive-el {
+  position: absolute !important;
+  top: 24px !important;
   transform: translateX(-50%);
   padding: 4px 8px;
   border-radius: var(--radius-sm, 4px);
@@ -321,7 +322,8 @@
   z-index: 2;
 }
 
-.chapter-node:hover {
+.chapter-node:hover,
+.chapter-node.interactive-el:hover {
   border-color: var(--accent);
   transform: translateX(-50%) translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -348,9 +350,10 @@
 }
 
 /* Карточка события / сцены / конфликта (Компактный узел) */
-.event-node {
-  position: absolute;
-  top: 24px;
+.event-node,
+.event-node.interactive-el {
+  position: absolute !important;
+  top: 24px !important;
   transform: translateX(-50%);
   padding: 6px 8px;
   border-radius: var(--radius-md, 6px);
@@ -365,7 +368,8 @@
   z-index: 2;
 }
 
-.event-node:hover {
+.event-node:hover,
+.event-node.interactive-el:hover {
   border-color: var(--warning);
   transform: translateX(-50%) translateY(-2px);
   box-shadow: var(--shadow-md);

@@ -74,7 +74,7 @@ pub fn build_app() -> tauri::Builder<tauri::test::MockRuntime> {
             save_custom_theme,
             // ── ADD YOUR DOMAIN COMMANDS HERE ─────────────────────────────
         ])
-        .setup(|app| setup_app(app))
+        .setup(setup_app)
 }
 
 #[cfg(not(test))]
@@ -114,27 +114,45 @@ mod tests {
     }
 
     #[test]
+    fn test_init_database_error() {
+        let temp = tempfile::TempDir::new().expect("temp dir");
+        let data_dir = temp.path().join("data");
+        std::fs::create_dir_all(&data_dir).expect("create data dir");
+        // create surreal_db as a file so create_dir_all fails
+        std::fs::write(data_dir.join("surreal_db"), b"blocking file").expect("write file");
+        tauri_shell::logic::system_core::set_data_dir_provider(Box::new(TestProvider(data_dir)));
+
+        let err = tauri::async_runtime::block_on(init_database("test_ns", "test_db"));
+        assert!(err.is_err());
+
+        let builder = build_app();
+        let mut app = builder
+            .build(tauri::generate_context!())
+            .expect("build mock app");
+        let setup_err = setup_app(&mut app);
+        assert!(setup_err.is_err());
+
+        tauri_shell::logic::system_core::clear_data_dir_provider();
+    }
+
+    #[test]
     fn test_build_app_setup_and_handlers() {
         let temp = tempfile::TempDir::new().expect("temp dir");
         let data_dir = temp.path().join("data");
         std::fs::create_dir_all(&data_dir).expect("create data dir");
         tauri_shell::logic::system_core::set_data_dir_provider(Box::new(TestProvider(data_dir)));
 
-        let app = build_app()
+        let builder = build_app();
+        let mut app = builder
             .build(tauri::generate_context!())
             .expect("build mock app");
 
-        let exit_code = app.run_return(|app_handle, event| {
-            if let tauri::RunEvent::Ready = event {
-                let retrieved = app_handle.state::<AppState>();
-                let health = tauri::async_runtime::block_on(async {
-                    retrieved.inner().surreal_db().health().await
-                });
-                assert!(health.is_ok());
-                app_handle.exit(0);
-            }
+        setup_app(&mut app).expect("setup app");
+        let retrieved = app.state::<AppState>();
+        let health = tauri::async_runtime::block_on(async {
+            retrieved.inner().surreal_db().health().await
         });
-        assert_eq!(exit_code, 0);
+        assert!(health.is_ok());
 
         tauri_shell::logic::system_core::clear_data_dir_provider();
     }

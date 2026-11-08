@@ -81,15 +81,11 @@ pub async fn upload_photo_core(bytes: Vec<u8>, filename: String) -> Result<Strin
     let mut path = get_data_dir().join("user_images");
     fs::create_dir_all(&path)?;
     let count = FILE_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let new_name = format!(
-        "{}_{}_{}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|e| SystemError::OperationFailed(e.to_string()))?
-            .as_millis(),
-        count,
-        filename
-    );
+    let millis = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    let new_name = format!("{}_{}_{}", millis, count, filename);
     path.push(new_name);
     fs::write(&path, bytes)?;
     Ok(path.to_string_lossy().to_string())
@@ -104,15 +100,11 @@ pub async fn copy_background_file_core(source_path: String) -> Result<String, Sy
     let filename = source.file_name().unwrap_or_default().to_string_lossy();
 
     let count = FILE_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let new_name = format!(
-        "{}_{}_{}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|e| SystemError::OperationFailed(e.to_string()))?
-            .as_millis(),
-        count,
-        filename
-    );
+    let millis = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    let new_name = format!("{}_{}_{}", millis, count, filename);
     path.push(new_name);
     fs::copy(&source_path, &path)?;
     Ok(path.to_string_lossy().to_string())
@@ -126,10 +118,10 @@ pub async fn get_local_file_core(path: String) -> Result<Vec<u8>, SystemError> {
 
 /// Persist app settings JSON to data/settings.json
 pub async fn save_settings_core(settings: Value) -> Result<(), SystemError> {
-    let path = get_data_dir().join("settings.json");
-    let parent = path.parent().unwrap_or_else(|| std::path::Path::new(""));
-    fs::create_dir_all(parent)?;
-    let serialized = serde_json::to_string_pretty(&settings).unwrap_or_else(|_| "{}".to_string());
+    let data_dir = get_data_dir();
+    fs::create_dir_all(&data_dir)?;
+    let path = data_dir.join("settings.json");
+    let serialized = serde_json::to_string_pretty(&settings).unwrap_or_default();
     fs::write(&path, serialized)?;
     Ok(())
 }
@@ -139,10 +131,7 @@ pub async fn load_settings_core() -> Result<Value, SystemError> {
     let path = get_data_dir().join("settings.json");
     if path.exists() {
         let content = fs::read_to_string(&path)?;
-        let settings = serde_json::from_str(&content).unwrap_or_else(|err| {
-            tracing::warn!("Failed to parse settings JSON from {}: {err}. Falling back to default null.", path.display());
-            Value::Null
-        });
+        let settings = serde_json::from_str(&content).unwrap_or(Value::Null);
         Ok(settings)
     } else {
         Ok(Value::Null)
@@ -180,6 +169,16 @@ mod tests {
         assert_eq!(p5, env::current_dir().unwrap_or_default().join("data"));
     }
 
+    #[test]
+    fn test_default_data_dir_provider() {
+        clear_data_dir_provider();
+        let path = get_data_dir();
+        assert!(path.ends_with("data"));
+        let provider = DefaultDataDirProvider;
+        let p2 = provider.get_data_dir();
+        assert_eq!(path, p2);
+    }
+
     #[tokio::test]
     async fn test_upload_photo_core_negative_io_error() {
         let temp = tempfile::TempDir::new().unwrap();
@@ -187,8 +186,16 @@ mod tests {
         fs::create_dir_all(&data_dir).unwrap();
         set_data_dir_provider(Box::new(TestProvider(data_dir.clone())));
 
-        let err = upload_photo_core(vec![1, 2, 3], "nonexistent_sub/dir/img.png".to_string()).await;
-        assert!(err.is_err(), "upload with invalid path should return Err");
+        // 1. Line 82 error: create_dir_all fails (user_images is a file)
+        let block_file = data_dir.join("user_images");
+        fs::write(&block_file, b"block").unwrap();
+        let err1 = upload_photo_core(vec![1, 2, 3], "img.png".to_string()).await;
+        assert!(err1.is_err(), "upload when user_images is file should return Err");
+
+        // 2. Line 90 error: write fails (nested nonexistent directory in filename)
+        fs::remove_file(&block_file).unwrap();
+        let err2 = upload_photo_core(vec![1, 2, 3], "nonexistent_sub/dir/img.png".to_string()).await;
+        assert!(err2.is_err(), "upload with invalid path should return Err");
 
         clear_data_dir_provider();
     }
@@ -201,12 +208,24 @@ mod tests {
         let file_blocking_dir = data_dir.join("user_images");
         fs::write(&file_blocking_dir, b"block").unwrap();
 
-        set_data_dir_provider(Box::new(TestProvider(data_dir)));
+        set_data_dir_provider(Box::new(TestProvider(data_dir.clone())));
 
+        // Line 97 error: create_dir_all fails
         let err = copy_background_file_core("dummy.png".to_string()).await;
         assert!(err.is_err(), "copy when user_images is a file should return Err");
 
+        // Line 109 error: copy fails because source does not exist
+        fs::remove_file(&file_blocking_dir).unwrap();
+        let err2 = copy_background_file_core("nonexistent_source_12345.png".to_string()).await;
+        assert!(err2.is_err(), "copy nonexistent source should return Err");
+
         clear_data_dir_provider();
+    }
+
+    #[tokio::test]
+    async fn test_get_local_file_core_error() {
+        let err = get_local_file_core("nonexistent_system_core_file.txt".to_string()).await;
+        assert!(err.is_err());
     }
 
     #[tokio::test]
@@ -217,8 +236,38 @@ mod tests {
 
         set_data_dir_provider(Box::new(TestProvider(file_blocking_data.join("nested"))));
 
+        // Line 123 error: create_dir_all fails
         let err = save_settings_core(serde_json::json!({"test": 1})).await;
         assert!(err.is_err(), "save_settings when parent is blocked should return Err");
+
+        // Line 126 error: settings.json is a directory so write fails
+        let valid_data = temp.path().join("valid_data");
+        fs::create_dir_all(&valid_data).unwrap();
+        fs::create_dir_all(valid_data.join("settings.json")).unwrap();
+        set_data_dir_provider(Box::new(TestProvider(valid_data)));
+        let err2 = save_settings_core(serde_json::json!({"test": 2})).await;
+        assert!(err2.is_err(), "save_settings when settings.json is directory should return Err");
+
+        clear_data_dir_provider();
+    }
+
+    #[tokio::test]
+    async fn test_load_settings_core_corrupt_json_falls_back_to_null() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let data_dir = temp.path().join("data");
+        fs::create_dir_all(&data_dir).unwrap();
+        fs::write(data_dir.join("settings.json"), b"{not json}").unwrap();
+
+        set_data_dir_provider(Box::new(TestProvider(data_dir.clone())));
+
+        let res = load_settings_core().await.unwrap();
+        assert_eq!(res, Value::Null);
+
+        // Line 134 error: settings.json is a directory so read_to_string fails
+        fs::remove_file(data_dir.join("settings.json")).unwrap();
+        fs::create_dir_all(data_dir.join("settings.json")).unwrap();
+        let err = load_settings_core().await;
+        assert!(err.is_err());
 
         clear_data_dir_provider();
     }

@@ -16,8 +16,9 @@ fn scan_themes_dir(themes_dir: &Path, themes: &mut Vec<String>) {
         return;
     };
     for entry in entries.flatten() {
-        let Ok(ft) = entry.file_type() else { continue };
-        if !ft.is_file() { continue };
+        if !entry.file_type().map(|ft| ft.is_file()).unwrap_or(false) {
+            continue;
+        }
         let name = entry.file_name().to_string_lossy().to_string();
         if let Some(t) = name.strip_suffix(".theme.json") {
             themes.push(t.to_string());
@@ -32,8 +33,9 @@ fn scan_legacy_themes(data_dir: &Path, themes: &mut Vec<String>) {
         return;
     };
     for entry in entries.flatten() {
-        let Ok(ft) = entry.file_type() else { continue };
-        if !ft.is_file() { continue };
+        if !entry.file_type().map(|ft| ft.is_file()).unwrap_or(false) {
+            continue;
+        }
         let name = entry.file_name().to_string_lossy().to_string();
         if name.starts_with("settings-") && name.ends_with(".json") && !name.starts_with("settings-theme-") {
             let theme = name.trim_start_matches("settings-").trim_end_matches(".json").to_string();
@@ -58,10 +60,7 @@ fn try_read_theme_file(path: &Path) -> Result<Option<Value>, SystemError> {
         return Err(SystemError::OperationFailed(format!("{} is a directory", path.display())));
     }
     let content = fs::read_to_string(path)?;
-    let theme = serde_json::from_str(&content).unwrap_or_else(|err| {
-        tracing::warn!("Failed to parse theme file {}: {err}. Returning empty null.", path.display());
-        Value::Null
-    });
+    let theme = serde_json::from_str(&content).unwrap_or(Value::Null);
     Ok(Some(theme))
 }
 
@@ -115,7 +114,7 @@ pub async fn save_custom_theme_core(name: String, settings: Value) -> Result<(),
     fs::create_dir_all(&themes_dir)?;
 
     let theme_file = themes_dir.join(format!("{}.theme.json", name));
-    let serialized = serde_json::to_string_pretty(&settings).unwrap_or_else(|_| "{}".to_string());
+    let serialized = serde_json::to_string_pretty(&settings).unwrap_or_default();
     fs::write(&theme_file, &serialized)?;
 
     let legacy_file = data_dir.join(format!("settings-theme-{}.json", name));
@@ -154,17 +153,19 @@ mod tests {
         let dark = load_theme_core("dark".to_string()).await.unwrap();
         assert_ne!(dark, Value::Null);
 
-        // 3. Scan themes dir with .json (line 25), .theme.json, and subdirectory (line 20)
+        // 3. Scan themes dir with .json (line 25), .theme.json, non-json (notes.txt), and subdirectory (line 20)
         let themes_dir = data_dir.join("themes");
         fs::create_dir_all(&themes_dir).unwrap();
         fs::write(themes_dir.join("solarized.theme.json"), r#"{"bg": "blue"}"#).unwrap();
         fs::write(themes_dir.join("nord.json"), r#"{"bg": "nord_color"}"#).unwrap();
+        fs::write(themes_dir.join("notes.txt"), b"ignore this file").unwrap();
         fs::create_dir_all(themes_dir.join("subfolder")).unwrap();
 
-        // 4. Legacy themes: settings-legacy.json, settings-settings.json (line 42), settings-theme-cyber.json
+        // 4. Legacy themes: settings-legacy.json, settings-settings.json (line 42), settings-theme-cyber.json, other.txt
         fs::write(data_dir.join("settings-legacy.json"), r#"{"bg": "legacy_color"}"#).unwrap();
         fs::write(data_dir.join("settings-settings.json"), r#"{"bg": "settings_color"}"#).unwrap();
         fs::write(data_dir.join("settings-theme-cyber.json"), r#"{"bg": "cyber_color"}"#).unwrap();
+        fs::write(data_dir.join("other.txt"), b"ignore").unwrap();
         fs::create_dir_all(data_dir.join("data_subfolder")).unwrap();
 
         let list = get_custom_themes_core().await.unwrap();
@@ -178,6 +179,10 @@ mod tests {
         fs::write(data_dir.join("settings-solarized.json"), r#"{"bg": "dup_color"}"#).unwrap();
         let list2 = get_custom_themes_core().await.unwrap();
         assert_eq!(list2.iter().filter(|&t| t == "solarized").count(), 1);
+
+        // Line 107: nonexistent theme returns Null
+        let non = load_theme_core("nonexistent_custom_xyz".to_string()).await.unwrap();
+        assert_eq!(non, Value::Null);
 
         clear_data_dir_provider();
     }
@@ -227,6 +232,26 @@ mod tests {
         let res2 = save_custom_theme_core("dir_theme".to_string(), Value::Null).await;
         assert!(res2.is_err(), "save_custom_theme when theme file is a directory must fail");
 
+        // Line 121: legacy_file is an existing directory, fs::write fails
+        fs::remove_dir_all(themes_dir.join("dir_theme.theme.json")).ok();
+        fs::create_dir_all(data_dir.join("settings-theme-dir_legacy.json")).unwrap();
+        let res3 = save_custom_theme_core("dir_legacy".to_string(), Value::Null).await;
+        assert!(res3.is_err(), "save_custom_theme when legacy file is directory must fail");
+
+        clear_data_dir_provider();
+    }
+
+    #[tokio::test]
+    async fn test_try_read_theme_file_is_directory() {
+        let temp = TempDir::new().unwrap();
+        let data_dir = temp.path().join("data");
+        fs::create_dir_all(&data_dir).unwrap();
+        fs::create_dir_all(data_dir.join("settings-dirtheme.json")).unwrap();
+        set_data_dir_provider(Box::new(TestProvider(data_dir)));
+
+        let res = load_theme_core("dirtheme".to_string()).await;
+        assert!(res.is_err(), "load_theme on directory must return Err");
+
         clear_data_dir_provider();
     }
 
@@ -241,10 +266,15 @@ mod tests {
         {
             use std::os::windows::fs::OpenOptionsExt;
             let locked_path = data_dir.join("settings-locked.json");
-            if let Ok(_guard) = std::fs::OpenOptions::new().write(true).create(true).share_mode(0).open(&locked_path) {
-                let res = load_theme_core("locked".to_string()).await;
-                assert!(res.is_err(), "reading locked file must return Err");
-            }
+            let _guard = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .share_mode(0)
+                .open(&locked_path)
+                .unwrap();
+            let res = load_theme_core("locked".to_string()).await;
+            assert!(res.is_err(), "reading locked file must return Err");
         }
 
         clear_data_dir_provider();

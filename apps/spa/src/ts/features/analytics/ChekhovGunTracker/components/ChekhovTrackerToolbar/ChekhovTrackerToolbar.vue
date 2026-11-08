@@ -79,7 +79,7 @@
 
       <button
         v-if="filter.search || filter.itemType !== 'all' || filter.usageState !== 'all'"
-        class="text-xs text-muted hover:text-main underline cursor-pointer ml-auto"
+        class="btn-reset-filters"
         @click="onResetClick"
       >
         Сбросить фильтры
@@ -97,4 +97,6 @@ const emit = defineEmits<ChekhovTrackerToolbarEmits>();
 
 const { onScopeClick, onResetClick } = useChekhovTrackerToolbar(props, emit);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/analytics/ChekhovGunTracker.css"></style>
 

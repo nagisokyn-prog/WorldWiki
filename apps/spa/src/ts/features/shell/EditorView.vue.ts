@@ -125,6 +125,7 @@ export default defineComponent({
     const activeGroupId = computed(() => shell.activeGroupId);
     
     const isWowilonOpen = computed(() => shell.isWowilonOpen);
+    const isAiEnabled = typeof __FEATURE_AI__ !== 'undefined' ? __FEATURE_AI__ : false;
 
     // Methods - direct references from store
     const selectSidebarTab = shell.selectSidebarTab;
@@ -252,8 +253,12 @@ export default defineComponent({
       editorGroups,
       activeGroupId,
       isWowilonOpen,
+      isAiEnabled,
       
-      toggleWowilon: () => { shell.isWowilonOpen = !shell.isWowilonOpen; },
+      toggleWowilon: () => {
+        if (!isAiEnabled) return;
+        shell.isWowilonOpen = !shell.isWowilonOpen;
+      },
       setActivePanelTab: (tab: string) => { shell.activePanelTab = tab; },
       togglePanel: () => { shell.activePanelTab = shell.activePanelTab === '' ? 'console' : ''; },
       toggleSidebar: () => { shell.sidebarVisible = !shell.sidebarVisible; },

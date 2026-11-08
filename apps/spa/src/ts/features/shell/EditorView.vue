@@ -237,6 +237,7 @@
 
       <!-- WoWiLon AI Panel (Right Sidebar) -->
       <wowilon-panel-vue
+        v-if="isAiEnabled"
         :is-open="isWowilonOpen"
         @close="toggleWowilon"
       ></wowilon-panel-vue>
@@ -411,6 +412,7 @@
 
     <!-- Global Floating Button for AI -->
     <button 
+      v-if="isAiEnabled"
       v-show="!isWowilonOpen" 
       class="wowilon-toggle-btn interactive-el" 
       title="Открыть WoWiLon AI (Ctrl+Shift+A)"

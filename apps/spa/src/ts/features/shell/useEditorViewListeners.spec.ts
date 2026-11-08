@@ -79,4 +79,13 @@ describe('useEditorViewListeners', () => {
 
     expect(shell.closeEditor).toHaveBeenCalledWith('entity:planet:p_1');
   });
+
+  it('toggleWowilonHandler не открывает панель если __FEATURE_AI__ выключен', () => {
+    const shell = mockShell() as any;
+    const { toggleWowilonHandler } = useEditorViewListeners({ shell });
+
+    toggleWowilonHandler();
+    // В тестовом окружении __FEATURE_AI__ по умолчанию false
+    expect(shell.isWowilonOpen).toBe(false);
+  });
 });

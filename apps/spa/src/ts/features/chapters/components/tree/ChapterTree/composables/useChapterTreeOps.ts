@@ -71,13 +71,21 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 if (pNode) options.explorerTreeRef.value?.startRename(pNode);
             } else {
                 const planetId = parentId.replace(/^(entity:)?planets?:/, '');
-                const calName = name?.trim() || 'Новый календарь';
+                const existingCals = await calendarStore.getCalendars(options.project);
+                const newCalId = `cal_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+                const calName = name?.trim() || `Новый календарь ${existingCals.length + 1}`;
                 const defaultCalData = CalendarMath.getDefaultCalendar();
                 defaultCalData.planet_id = planetId;
                 defaultCalData.название = calName;
                 defaultCalData.is_master = false;
                 const saved = await calendarStore.saveCalendar(options.project, {
-                    ...defaultCalData, planet_id: planetId, name: calName, is_master: false, is_default: false,
+                    ...defaultCalData,
+                    id: newCalId,
+                    _id: newCalId,
+                    planet_id: planetId,
+                    name: calName,
+                    is_master: false,
+                    is_default: false,
                 } as unknown as CalendarData);
                 if (!saved) {
                     await appAlert('Не удалось сохранить календарь на планете', 'Ошибка сохранения');
@@ -87,14 +95,11 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
                 options.explorerTreeRef.value?.expandNode(`entity:planet:${planetId}`);
                 document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
                 const cals = await calendarStore.getCalendars(options.project);
-                const created = cals.find(c => c.name === calName) || cals[cals.length - 1];
-                if (created) {
-                    const cleanCalId = String(created.id ?? '').replace(/^(entity:)?calendars?:/, '');
-                    options.emit('open-entity', { ...created, entityType: 'calendar', id: cleanCalId, name: created.name, title: created.name });
-                    await nextTick();
-                    const node = options.findNodeById(`entity:calendar:${cleanCalId}`) || options.findNodeById(cleanCalId);
-                    if (node) options.explorerTreeRef.value?.startRename(node);
-                }
+                const created = cals.find(c => String(c.id).replace(/^(entity:)?calendars?:/, '') === newCalId) || { id: newCalId, name: calName };
+                options.emit('open-entity', { ...created, entityType: 'calendar', id: newCalId, name: calName, title: calName });
+                await nextTick();
+                const node = options.findNodeById(`entity:calendar:${newCalId}`) || options.findNodeById(newCalId);
+                if (node) options.explorerTreeRef.value?.startRename(node);
             }
         } else if (name) {
             options.emit('add-entity', sectionId, name);

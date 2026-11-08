@@ -66,8 +66,8 @@ export function useChapterTreeSections(options: UseChapterTreeSectionsOptions) {
                 const cleanPlanetId = String(planet.id).replace(/^(entity:)?planets?:/, '');
                 const childCals = (options.calendars?.value || []).filter(c => {
                     const cPlanet = c.planet_id || (c.data as Record<string, unknown> | undefined)?.planet_id;
-                    if (!cPlanet) return String(planet.id).endsWith('earth') || planet.name === 'Земля';
-                    return compareIds(cPlanet, planet.id) || compareIds(cPlanet, planet.name);
+                    if (!cPlanet) return options.planets?.value[0]?.id === planet.id;
+                    return compareIds(cPlanet, planet.id);
                 });
 
                 return {

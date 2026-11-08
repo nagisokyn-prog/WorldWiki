@@ -39,6 +39,8 @@ vi.mock('@/stores/calendar.store', () => ({
   useCalendarStore: () => ({
     loadCalendars: vi.fn().mockResolvedValue([]),
     getCalendars: vi.fn().mockResolvedValue([]),
+    saveCalendar: vi.fn().mockResolvedValue(true),
+    savePlanet: vi.fn().mockResolvedValue(true),
     getPlanets: vi.fn().mockReturnValue([]),
     calendars: ref([]),
   }),
@@ -331,6 +333,10 @@ describe('useChapterTree', () => {
       // 2. Create chapter in volume (with parentId)
       await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
       expect(emit).toHaveBeenCalledWith('create-chapter-in', { volumeId: 'vol_1' });
+
+      // 3. Create calendar in planet
+      await tree.handleCreate({ sectionId: 'calendars', parentId: 'entity:planet:p1' });
+      expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ entityType: 'calendar' }));
     });
 
     it('handles handleRename and handleCancelRename across all node types', async () => {

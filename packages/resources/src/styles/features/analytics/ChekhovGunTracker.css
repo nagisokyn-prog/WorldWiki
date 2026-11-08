@@ -163,6 +163,7 @@
   background-color: var(--bg-sunken);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
 .scope-btn {
@@ -178,6 +179,7 @@
   transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
   color: var(--text-muted);
   background: transparent;
+  white-space: nowrap;
 }
 
 .scope-btn:hover {
@@ -218,6 +220,8 @@
   flex: 1;
   min-width: 180px;
   max-width: 280px;
+  display: flex;
+  align-items: center;
 }
 
 .search-icon {
@@ -232,7 +236,9 @@
 
 .search-input {
   width: 100%;
-  padding: 5px 10px 5px 28px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 4px 10px 4px 28px;
   font-size: 12px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-color);
@@ -246,7 +252,9 @@
 }
 
 .filter-select {
-  padding: 5px 10px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 4px 8px;
   font-size: 12px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-color);
@@ -258,6 +266,21 @@
 
 .filter-select:focus {
   border-color: var(--accent);
+}
+
+.btn-reset-filters {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.btn-reset-filters:hover {
+  color: var(--text-main);
 }
 
 /* Kanban Board & Columns */

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useCalendarStore } from '../calendar.store';
 import * as api from '@/services/api.client';
+import { calendarApi } from '@/services/api/calendar.api';
 import { clearCache } from '@/utils/requestCache';
 
 vi.mock('@worldwiki/components', () => ({
@@ -12,6 +13,14 @@ vi.mock('@/services/api.client', () => ({
   getCalendars: vi.fn(),
   saveCalendar: vi.fn(),
   deleteCalendar: vi.fn(),
+}));
+
+vi.mock('@/services/api/calendar.api', () => ({
+  calendarApi: {
+    getPlanetCalendarBundle: vi.fn(),
+    savePlanetDirect: vi.fn(),
+    deletePlanetDirect: vi.fn(),
+  },
 }));
 
 describe('calendar.store', () => {
@@ -29,25 +38,35 @@ describe('calendar.store', () => {
       const mockList = [
         { id: 'cal_1', name: 'Master Cal', is_master: true, is_default: true },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValue({
+        calendars: mockList,
+        planets: [{ id: 'planets:p1', name: 'Марс' }],
+      } as any);
 
       const result = await store.getCalendars('project_1');
-      expect(api.getCalendars).toHaveBeenCalledWith('project_1');
+      expect(calendarApi.getPlanetCalendarBundle).toHaveBeenCalledWith('project_1');
       expect(result).toEqual(mockList);
+      expect(store.getPlanets('project_1')[0].name).toBe('Марс');
     });
 
     it('promotes default calendar to master in memory if none has is_master', async () => {
       const mockList = [
         { id: 'cal_1', name: 'Standard Cal', is_default: true, data: { name: 'Standard Cal' } },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValue({
+        calendars: mockList,
+        planets: [],
+      } as any);
 
       const result = await store.getCalendars('project_1');
       expect(result[0].is_master).toBe(true);
     });
 
     it('returns empty array when no calendars exist without mutating DB', async () => {
-      vi.mocked(api.getCalendars).mockResolvedValueOnce([]);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValueOnce({
+        calendars: [],
+        planets: [],
+      } as any);
 
       const result = await store.getCalendars('empty_proj');
       expect(api.saveCalendar).not.toHaveBeenCalled();
@@ -55,7 +74,7 @@ describe('calendar.store', () => {
     });
 
     it('returns empty array on API error', async () => {
-      vi.mocked(api.getCalendars).mockRejectedValue(new Error('Network error'));
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockRejectedValue(new Error('Network error'));
       const result = await store.getCalendars('err_proj');
       expect(result).toEqual([]);
     });
@@ -66,7 +85,7 @@ describe('calendar.store', () => {
       const mockList = [
         { id: 'cal_1', is_default: true, is_master: true, data: { название: 'Календарь' } },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValue({ calendars: mockList, planets: [] } as any);
 
       const cal = await store.loadCalendar('project_1');
       expect(cal).toBeDefined();
@@ -78,13 +97,13 @@ describe('calendar.store', () => {
       const mockList = [
         { id: 'cal_nodata', is_default: true, is_master: true, название: 'Direct' },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValue({ calendars: mockList, planets: [] } as any);
       const cal = await store.loadCalendar('proj_bare');
       expect(cal?._id).toBe('cal_nodata');
     });
 
     it('returns null if list is empty', async () => {
-      vi.mocked(api.getCalendars).mockResolvedValue([]);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValue({ calendars: [], planets: [] } as any);
       const cal = await store.loadCalendar('project_1');
       expect(cal).toBeNull();
     });
@@ -98,7 +117,7 @@ describe('calendar.store', () => {
           data: Object.freeze({ name: 'Frozen' }),
         },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValueOnce(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValueOnce({ calendars: mockList, planets: [] } as any);
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const cal = await store.loadCalendar('err_proj');
       expect(cal).toBeNull();
@@ -160,14 +179,14 @@ describe('calendar.store', () => {
   describe('Additional branch edge cases for calendar.store', () => {
     it('uses cache on consecutive getCalendars calls', async () => {
       const mockList = [{ id: 'cal_cached', is_master: true }];
-      vi.mocked(api.getCalendars).mockResolvedValueOnce(mockList as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValueOnce({ calendars: mockList, planets: [] } as any);
 
       const first = await store.getCalendars('cached_project');
-      expect(api.getCalendars).toHaveBeenCalledTimes(1);
+      expect(calendarApi.getPlanetCalendarBundle).toHaveBeenCalledTimes(1);
 
       const second = await store.getCalendars('cached_project');
       expect(second).toEqual(first);
-      expect(api.getCalendars).toHaveBeenCalledTimes(1); // from cache
+      expect(calendarApi.getPlanetCalendarBundle).toHaveBeenCalledTimes(1); // from cache
     });
 
     it('handles loadCalendar catch path and list fallback without is_default', async () => {
@@ -175,12 +194,12 @@ describe('calendar.store', () => {
       const listWithoutDefault = [
         { id: 'first_cal', is_master: true, data: { название: 'First' } },
       ];
-      vi.mocked(api.getCalendars).mockResolvedValueOnce(listWithoutDefault as any);
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValueOnce({ calendars: listWithoutDefault, planets: [] } as any);
       const cal = await store.loadCalendar('proj_no_default');
       expect(cal?._id).toBe('first_cal');
 
       // 2. Catch path in loadCalendar
-      vi.mocked(api.getCalendars).mockRejectedValueOnce(new Error('Load error'));
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockRejectedValueOnce(new Error('Load error'));
       const calErr = await store.loadCalendar('proj_err');
       expect(calErr).toBeNull();
     });

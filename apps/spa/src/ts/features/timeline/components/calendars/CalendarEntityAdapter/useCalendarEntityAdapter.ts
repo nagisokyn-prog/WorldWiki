@@ -17,7 +17,7 @@ export function useCalendarEntityAdapter(
   const calendarStore = useCalendarStore();
 
   const activeMode = ref<CalendarAdapterMode>('calendar');
-  const selectedPlanetId = ref<string>('earth');
+  const selectedPlanetId = ref<string>('');
   const selectedCalendarId = ref<string>(props.calendarId);
   const currentCalendarRecord = ref<CalendarRecord | null>(null);
   const rawCalendarsList = ref<CalendarRecord[]>([]);
@@ -35,7 +35,7 @@ export function useCalendarEntityAdapter(
       id: c.id,
       idx,
       name: c.name || c.data?.название || `Календарь ${idx + 1}`,
-      planet_id: (c.data?.planet_id as string) || (planetsList.value[0]?.id ?? 'earth'),
+      planet_id: (c.data?.planet_id as string) || c.planet_id || (planetsList.value[0]?.id ?? ''),
       is_master: c.is_master,
       data: (c.data || {}) as CalendarData,
     }));
@@ -43,8 +43,11 @@ export function useCalendarEntityAdapter(
 
   async function loadData() {
     try {
-      planetsList.value = calendarStore.getPlanets(props.projectId);
       rawCalendarsList.value = await calendarStore.getCalendars(props.projectId);
+      planetsList.value = calendarStore.getPlanets(props.projectId);
+      if (planetsList.value.length > 0 && !selectedPlanetId.value) {
+        selectedPlanetId.value = planetsList.value[0].id;
+      }
       if (props.calendarId) {
         selectedCalendarId.value = props.calendarId;
       }
@@ -66,7 +69,7 @@ export function useCalendarEntityAdapter(
     }
   }
 
-  function onAddPlanet() {
+  async function onAddPlanet() {
     const newId = `planet_${Date.now()}`;
     const newPlanet: PlanetEntity = {
       id: newId,
@@ -76,7 +79,8 @@ export function useCalendarEntityAdapter(
       orbit_days: 365.25,
       axial_tilt: 23.5,
     };
-    calendarStore.savePlanet(props.projectId, newPlanet);
+    await calendarStore.savePlanet(props.projectId, newPlanet);
+    await calendarStore.getCalendars(props.projectId);
     planetsList.value = calendarStore.getPlanets(props.projectId);
     activeMode.value = 'planet';
     selectedPlanetId.value = newId;
@@ -87,9 +91,11 @@ export function useCalendarEntityAdapter(
     try {
       const defaultData = CalendarMath.getDefaultCalendar();
       defaultData.название = `Новый календарь ${rawCalendarsList.value.length + 1}`;
-      defaultData.planet_id = planetId;
+      const targetPlId = planetId || planetsList.value[0]?.id || '';
+      defaultData.planet_id = targetPlId;
       await calendarStore.saveCalendar(props.projectId, {
         ...defaultData,
+        planet_id: targetPlId,
         is_default: false,
         is_master: false,
       } as unknown as CalendarData);

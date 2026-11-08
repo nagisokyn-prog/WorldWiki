@@ -25,7 +25,7 @@ mod tests {
     use std::sync::Arc;
     use worldwiki_domain::manuscript::Chapter;
     use worldwiki_domain::plot::Todo;
-    use worldwiki_infrastructure::ai::mock_ai::MockAiAdapter;
+    use worldwiki_infrastructure::mock_ai::MockAiAdapter;
     use worldwiki_infrastructure::events::InMemoryEventPublisher;
     use worldwiki_infrastructure::surrealdb::memory_repos::{
         InMemoryChapterRepository, InMemoryEntityRepository, InMemoryPlotPromiseRepository,
@@ -177,16 +177,10 @@ mod tests {
     #[test]
     fn test_local_ai_services_hardware_and_manager() {
         use crate::ai::LocalAiServices;
-        use worldwiki_infrastructure::ai::hardware::WinApiHardwareDetector;
-        use worldwiki_infrastructure::ai::local_manager::FsLocalModelManager;
-        use worldwiki_infrastructure::ai::permissions::StaticPermissionsCatalog;
+        use worldwiki_infrastructure::mock_ai::MockAiAdapter;
 
-        let temp_dir = std::env::temp_dir().join("worldwiki_test_models");
-        let hw = Arc::new(WinApiHardwareDetector::new());
-        let mgr = Arc::new(FsLocalModelManager::new(temp_dir));
-        let perms = Arc::new(StaticPermissionsCatalog::new());
-
-        let local_ai = LocalAiServices::new(hw, mgr, perms);
+        let mock = Arc::new(MockAiAdapter::new());
+        let local_ai = LocalAiServices::new(mock.clone(), mock.clone(), mock);
 
         let info = local_ai.get_hardware_info();
         assert!(info.total_ram_gb > 0.0);

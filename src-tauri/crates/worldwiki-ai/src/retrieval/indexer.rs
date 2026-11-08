@@ -1,5 +1,5 @@
-use crate::ai::chunker::DocumentChunker;
-use crate::ai::retrieval::embedder::EmbedderService;
+use crate::chunker::DocumentChunker;
+use crate::retrieval::embedder::EmbedderService;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;

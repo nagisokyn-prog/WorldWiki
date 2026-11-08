@@ -31,7 +31,23 @@ const compilerFs = {
  * v2-депсы. Vite-хак с перенаправлением импортов (paginationV2Resolver)
  * больше не нужен: pnpm резолвит v2-копии внутри пакета.
  */
+const withAi = process.argv.includes('--with-ai');
+
+const inputEntries: Record<string, string> = {
+  app: resolve(__dirname, 'app.html'),
+  settings: resolve(__dirname, 'settings.html'),
+  ui_editor: resolve(__dirname, 'ui_editor.html'),
+  character_journey: resolve(__dirname, 'character_journey.html')
+};
+
+if (withAi) {
+  inputEntries.ai = resolve(__dirname, 'ai.html');
+}
+
 export default defineConfig({
+  define: {
+    __FEATURE_AI__: JSON.stringify(withAi)
+  },
   plugins: [
     vue({
       script: {
@@ -73,13 +89,7 @@ export default defineConfig({
     emptyOutDir: true,
     cssMinify: 'esbuild',
     rollupOptions: {
-      input: {
-        app: resolve(__dirname, 'app.html'),
-        settings: resolve(__dirname, 'settings.html'),
-        ui_editor: resolve(__dirname, 'ui_editor.html'),
-        ai: resolve(__dirname, 'ai.html'),
-        character_journey: resolve(__dirname, 'character_journey.html')
-      },
+      input: inputEntries,
     }
   },
   server: {

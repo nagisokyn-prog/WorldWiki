@@ -2,7 +2,7 @@
 pub mod macros;
 pub mod errors;
 pub mod surrealdb;
-pub mod ai;
+pub mod mock_ai;
 pub mod events;
 pub mod documents;
 pub mod storage;

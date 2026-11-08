@@ -72,6 +72,9 @@ pub mod export {
 }
 
 pub mod ai {
-    pub use worldwiki_infrastructure::ai::*;
+    #[cfg(feature = "ai")]
+    pub use worldwiki_ai::*;
+    #[cfg(not(feature = "ai"))]
+    pub use worldwiki_infrastructure::mock_ai::*;
     pub use worldwiki_application::ai::*;
 }

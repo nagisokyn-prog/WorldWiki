@@ -5,13 +5,10 @@ use std::os::raw::c_char;
 
 use super::error::LlmError;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
-#[cfg(feature = "ai-local")]
 pub struct LlmTokenizer;
 
-#[cfg(feature = "ai-local")]
 impl LlmTokenizer {
     /// Tokenizes input string into vector of token IDs.
     // SAFETY:

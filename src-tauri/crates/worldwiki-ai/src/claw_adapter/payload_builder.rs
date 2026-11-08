@@ -1,4 +1,3 @@
-#[cfg(feature = "ai-cloud")]
 use claw_api::{
     InputContentBlock, InputMessage, MessageRequest, ToolDefinition, ToolResultContentBlock,
 };
@@ -6,10 +5,8 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use worldwiki_ports::ai::StreamRequest;
 
-#[cfg(feature = "ai-cloud")]
 pub(crate) struct ClawPayloadBuilder;
 
-#[cfg(feature = "ai-cloud")]
 impl ClawPayloadBuilder {
     pub fn build_message_request(request: StreamRequest) -> MessageRequest {
         let profile = request.profile;

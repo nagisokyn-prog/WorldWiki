@@ -1,9 +1,7 @@
 use worldwiki_domain::errors::DomainError;
 
-#[cfg(feature = "ai-cloud")]
 use claw_api::{AnthropicClient, AuthSource, OpenAiCompatClient, OpenAiCompatConfig, ProviderClient};
 
-#[cfg(feature = "ai-cloud")]
 pub fn build_provider_client(
     provider: &str,
     api_key: &str,
@@ -64,7 +62,6 @@ pub fn build_provider_client(
 }
 
 #[cfg(test)]
-#[cfg(feature = "ai-cloud")]
 mod provider_client_tests {
     use super::*;
 

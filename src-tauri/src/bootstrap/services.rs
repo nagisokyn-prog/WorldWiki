@@ -15,9 +15,12 @@ use worldwiki_application::plot::{PlotServices, StoryArcServices};
 use worldwiki_application::workflows::{
     EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow,
 };
-use worldwiki_infrastructure::ai::{
-    FsLocalModelManager, StaticPermissionsCatalog, WinApiHardwareDetector,
+#[cfg(feature = "ai")]
+use worldwiki_ai::{
+    ClawStreamAdapter, FsLocalModelManager, StaticPermissionsCatalog, WinApiHardwareDetector,
 };
+#[cfg(not(feature = "ai"))]
+use worldwiki_infrastructure::mock_ai::MockAiAdapter;
 use worldwiki_infrastructure::events::InMemoryEventPublisher;
 use worldwiki_infrastructure::surrealdb::chat_repo::SurrealChatRepository;
 use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
@@ -140,11 +143,23 @@ fn build_workflows_and_tools(
 }
 
 fn build_local_ai_layer() -> Arc<LocalAiServices> {
-    let hw = Arc::new(WinApiHardwareDetector::new());
-    let models_dir = FsLocalModelManager::default_dir();
-    let model_mgr = Arc::new(FsLocalModelManager::new(models_dir));
-    let permissions = Arc::new(StaticPermissionsCatalog::new());
-    Arc::new(LocalAiServices::new(hw, model_mgr, permissions))
+    #[cfg(feature = "ai")]
+    {
+        let hw = Arc::new(WinApiHardwareDetector::new());
+        let models_dir = FsLocalModelManager::default_dir();
+        let model_mgr = Arc::new(FsLocalModelManager::new(models_dir));
+        let permissions = Arc::new(StaticPermissionsCatalog::new());
+        Arc::new(LocalAiServices::new(hw, model_mgr, permissions))
+    }
+    #[cfg(not(feature = "ai"))]
+    {
+        let mock = Arc::new(MockAiAdapter::new());
+        Arc::new(LocalAiServices::new(
+            mock.clone(),
+            mock.clone(),
+            mock,
+        ))
+    }
 }
 
 struct SurrealRepos {
@@ -194,8 +209,13 @@ pub fn build_surreal_app_services(
 
     let workflows = build_workflows_and_tools(&core, Arc::clone(&repos.rag));
 
+    #[cfg(feature = "ai")]
     let stream_adapter: Arc<dyn LlmStreamPort> =
-        Arc::new(worldwiki_infrastructure::ai::ClawStreamAdapter::new());
+        Arc::new(ClawStreamAdapter::new());
+
+    #[cfg(not(feature = "ai"))]
+    let stream_adapter: Arc<dyn LlmStreamPort> =
+        Arc::new(MockAiAdapter::new());
 
     let chat = Arc::new(ChatServices::new(
         Arc::clone(&repos.chat),

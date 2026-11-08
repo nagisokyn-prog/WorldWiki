@@ -2,7 +2,6 @@
 
 use super::LocalLlm;
 
-#[cfg(feature = "ai-local")]
 pub struct LoadedModelSlot {
     pub model_path: String,
     pub llm: LocalLlm,

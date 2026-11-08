@@ -1,4 +1,3 @@
-#[cfg(feature = "ai-cloud")]
 use super::types::ToolAssembler;
 use claw_api::{
     ContentBlockDelta, ContentBlockDeltaEvent, ContentBlockStartEvent, OutputContentBlock,
@@ -9,10 +8,8 @@ use tokio::sync::mpsc::Sender;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::{StreamEventDto, ToolUseCall};
 
-#[cfg(feature = "ai-cloud")]
 pub(crate) struct ClawStreamConsumer;
 
-#[cfg(feature = "ai-cloud")]
 impl ClawStreamConsumer {
     pub async fn consume_stream(
         mut stream: claw_api::MessageStream,

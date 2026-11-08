@@ -1,0 +1,30 @@
+[package]
+name = "worldwiki-ai"
+version = "0.60.0"
+edition = "2024"
+description = "AI Agent runtime, Local llama.cpp LLM, RAG and Tool Facades"
+
+[package.metadata.cerberus]
+layer = "infrastructure"
+
+[dependencies]
+worldwiki-domain = { path = "../worldwiki-domain" }
+worldwiki-ports = { path = "../worldwiki-ports" }
+worldwiki-application = { path = "../worldwiki-application" }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = { version = "1", features = ["sync", "time", "rt", "fs"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+surrealdb = { version = "3", default-features = false, features = ["kv-surrealkv", "kv-mem"] }
+reqwest = { version = "0.13.5", features = ["json", "form"] }
+tracing = "0.1"
+
+claw_runtime = { package = "runtime", path = "../../../vendor/claw-code/rust/crates/runtime" }
+claw_api = { package = "api", path = "../../../vendor/claw-code/rust/crates/api" }
+llama-sys = { path = "../../llama-sys" }
+
+[features]
+default = []

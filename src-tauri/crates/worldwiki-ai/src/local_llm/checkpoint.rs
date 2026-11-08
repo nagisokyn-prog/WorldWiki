@@ -4,13 +4,10 @@ use std::ffi::CString;
 
 use super::error::LlmError;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
-#[cfg(feature = "ai-local")]
 pub struct LlmCheckpoint;
 
-#[cfg(feature = "ai-local")]
 impl LlmCheckpoint {
     /// Initializes TriAttention KV eviction using a calibration stats file.
     // SAFETY: Caller guarantees `ctx` is a valid, initialized non-null `llama_context` pointer.

@@ -87,9 +87,17 @@ pub async fn fetch_hf_models(
     query: Option<String>,
     token: Option<String>,
 ) -> Result<Vec<worldwiki_domain::ai::types::HfModelCard>, IpcError> {
-    worldwiki_infrastructure::ai::fetch_hf_models_inner(query.as_deref(), token.as_deref(), None)
-        .await
-        .map_err(IpcError::from)
+    #[cfg(feature = "ai")]
+    {
+        worldwiki_ai::fetch_hf_models_inner(query.as_deref(), token.as_deref(), None)
+            .await
+            .map_err(IpcError::from)
+    }
+    #[cfg(not(feature = "ai"))]
+    {
+        let _ = (query, token);
+        Ok(Vec::new())
+    }
 }
 
 #[tauri::command]

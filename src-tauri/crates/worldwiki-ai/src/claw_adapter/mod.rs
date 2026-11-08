@@ -7,11 +7,8 @@ use tokio::sync::mpsc::Sender;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::{LlmStreamPort, StreamEventDto, StreamRequest};
 
-#[cfg(feature = "ai-cloud")]
 use super::client::build_provider_client;
-#[cfg(feature = "ai-cloud")]
 use payload_builder::ClawPayloadBuilder;
-#[cfg(feature = "ai-cloud")]
 use stream_consumer::ClawStreamConsumer;
 
 pub struct ClawStreamAdapter;
@@ -35,21 +32,10 @@ impl LlmStreamPort for ClawStreamAdapter {
         request: StreamRequest,
         sender: Sender<StreamEventDto>,
     ) -> Result<(), DomainError> {
-        #[cfg(not(feature = "ai-cloud"))]
-        {
-            drop(request);
-            drop(sender);
-            return Err(DomainError::ConstraintViolation(
-                "ai-cloud feature is disabled".to_string(),
-            ));
-        }
-
-        #[cfg(feature = "ai-cloud")]
-        {
-            let profile = &request.profile;
-            let provider = &profile.provider;
-            let api_key = profile.api_key.as_deref().unwrap_or("");
-            let base_url = profile.base_url.clone();
+        let profile = &request.profile;
+        let provider = &profile.provider;
+        let api_key = profile.api_key.as_deref().unwrap_or("");
+        let base_url = profile.base_url.clone();
 
             if api_key.is_empty() && provider != "local" && provider != "ollama" {
                 return Err(DomainError::Validation(

@@ -8,7 +8,6 @@ use super::model::TokenEvent;
 use super::sampler::LlmSampler;
 use super::tokenizer::LlmTokenizer;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
 pub static CANCEL_LOCAL_GEN: AtomicBool = AtomicBool::new(false);
@@ -18,10 +17,8 @@ pub fn trigger_cancel_local_gen() {
     CANCEL_LOCAL_GEN.store(true, Ordering::SeqCst);
 }
 
-#[cfg(feature = "ai-local")]
 pub struct LlmGenerator;
 
-#[cfg(feature = "ai-local")]
 impl LlmGenerator {
     /// Prefills tokens in batches of `n_batch` size.
     // SAFETY: Caller guarantees `ctx` is a valid, initialized non-null `llama_context` pointer.

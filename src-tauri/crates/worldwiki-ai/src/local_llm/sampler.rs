@@ -2,13 +2,10 @@
 
 use super::error::LlmError;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
-#[cfg(feature = "ai-local")]
 pub struct LlmSampler;
 
-#[cfg(feature = "ai-local")]
 impl LlmSampler {
     /// Creates and configures a default sampling chain (penalties, top_k, top_p, temp, dist).
     pub(crate) fn create_default_chain() -> Result<*mut llama_sampler, LlmError> {

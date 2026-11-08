@@ -6464,7 +6464,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "surreal_domain"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "surreal_domain_core",
  "surreal_domain_macros",
@@ -6473,7 +6473,7 @@ dependencies = [
 
 [[package]]
 name = "surreal_domain_core"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -6485,7 +6485,7 @@ dependencies = [
 
 [[package]]
 name = "surreal_domain_macros"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7655,7 +7655,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-shell-adapter"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "open",
@@ -9222,15 +9222,12 @@ checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
 name = "world-wiki"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
- "api",
  "chrono",
  "dashmap",
- "llama-sys",
  "mock-anthropic-service",
  "reqwest 0.13.5",
- "runtime",
  "scraper",
  "serde",
  "serde_json",
@@ -9246,6 +9243,7 @@ dependencies = [
  "tokio",
  "ts-rs",
  "uuid",
+ "worldwiki-ai",
  "worldwiki-application",
  "worldwiki-domain",
  "worldwiki-infrastructure",
@@ -9255,8 +9253,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "worldwiki-ai"
+version = "0.60.0"
+dependencies = [
+ "api",
+ "async-trait",
+ "chrono",
+ "llama-sys",
+ "reqwest 0.13.5",
+ "runtime",
+ "serde",
+ "serde_json",
+ "surrealdb",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "uuid",
+ "worldwiki-application",
+ "worldwiki-domain",
+ "worldwiki-ports",
+]
+
+[[package]]
 name = "worldwiki-application"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -9272,7 +9292,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-ast-diff-wasm"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde-wasm-bindgen",
@@ -9292,7 +9312,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-calendar-wasm"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde-wasm-bindgen",
@@ -9311,7 +9331,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-domain"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "serde",
@@ -9325,11 +9345,9 @@ dependencies = [
 name = "worldwiki-infrastructure"
 version = "0.85.0"
 dependencies = [
- "api",
  "async-trait",
  "chrono",
  "dashmap",
- "llama-sys",
  "reqwest 0.13.5",
  "serde",
  "serde_json",
@@ -9354,7 +9372,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-manuscript-wasm"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "hashbrown 0.17.1",
  "serde",
@@ -9367,7 +9385,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-ports"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -9379,7 +9397,7 @@ dependencies = [
 
 [[package]]
 name = "worldwiki-tauri"
-version = "0.85.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.5",
@@ -9389,6 +9407,7 @@ dependencies = [
  "tauri",
  "thiserror 2.0.21",
  "tokio",
+ "worldwiki-ai",
  "worldwiki-application",
  "worldwiki-domain",
  "worldwiki-infrastructure",

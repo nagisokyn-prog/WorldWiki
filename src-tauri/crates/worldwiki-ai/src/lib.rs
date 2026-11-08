@@ -7,7 +7,6 @@ pub mod chunker;
 pub mod retrieval;
 pub mod client;
 pub mod claw_adapter;
-#[cfg(feature = "ai-local")]
 pub mod local_llm;
 pub mod model_discovery;
 
@@ -20,5 +19,4 @@ pub use chunker::*;
 pub use retrieval::*;
 pub use client::*;
 pub use claw_adapter::ClawStreamAdapter;
-#[cfg(feature = "ai-local")]
 pub use local_llm::*;

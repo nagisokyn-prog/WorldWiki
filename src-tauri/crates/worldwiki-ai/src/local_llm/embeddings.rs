@@ -4,13 +4,10 @@ use std::ptr;
 
 use super::error::LlmError;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
-#[cfg(feature = "ai-local")]
 pub struct LlmEmbeddings;
 
-#[cfg(feature = "ai-local")]
 impl LlmEmbeddings {
     /// Extracts vector embeddings for tokens and returns an L2-normalized float vector.
     // SAFETY: Caller guarantees `model` and `ctx` are valid, initialized non-null pointers.

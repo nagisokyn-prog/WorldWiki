@@ -95,9 +95,17 @@ pub async fn reindex_project_lore(
     state: State<'_, AppState>,
     project_id: String,
 ) -> Result<usize, IpcError> {
-    let db = &state.services.db;
-    worldwiki_infrastructure::ai::reindex_project_lore_inner(db, &project_id)
-        .await
-        .map_err(IpcError::from)
+    #[cfg(feature = "ai")]
+    {
+        let db = &state.services.db;
+        worldwiki_ai::reindex_project_lore_inner(db, &project_id)
+            .await
+            .map_err(IpcError::from)
+    }
+    #[cfg(not(feature = "ai"))]
+    {
+        let _ = (state, project_id);
+        Err(IpcError::Internal("AI feature is disabled in this build".to_string()))
+    }
 }
 

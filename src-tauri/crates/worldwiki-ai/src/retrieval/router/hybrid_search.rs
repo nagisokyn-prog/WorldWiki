@@ -5,7 +5,7 @@ use surrealdb::Surreal;
 use std::collections::HashSet;
 
 use super::candidate::RetrievalCandidate;
-use crate::ai::retrieval::embedder::EmbedderService;
+use crate::retrieval::embedder::EmbedderService;
 
 pub(crate) struct SearchScope<'a> {
     pub db: &'a Surreal<Db>,

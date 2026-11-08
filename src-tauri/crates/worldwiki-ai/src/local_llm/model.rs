@@ -6,7 +6,6 @@ use std::ptr;
 
 use super::error::LlmError;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
 /// Configuration parameters for GGUF model loading and runtime execution.
@@ -88,7 +87,6 @@ pub fn resolve_model_path(path_str: &str) -> PathBuf {
     p.to_path_buf()
 }
 
-#[cfg(feature = "ai-local")]
 pub struct LoadedModelHandles {
     pub model: *mut llama_model,
     pub ctx: *mut llama_context,
@@ -97,7 +95,6 @@ pub struct LoadedModelHandles {
     pub n_vocab: i32,
 }
 
-#[cfg(feature = "ai-local")]
 impl LoadedModelHandles {
     /// Loads a generation model and initial context/sampler from GGUF.
     pub fn load_generation(model_path: &str, params: &ModelParams) -> Result<Self, LlmError> {

@@ -23,10 +23,8 @@ pub use tokenizer::LlmTokenizer;
 
 use std::sync::mpsc;
 
-#[cfg(feature = "ai-local")]
 use llama_sys::*;
 
-#[cfg(feature = "ai-local")]
 pub struct LocalLlm {
     model: *mut llama_model,
     ctx: *mut llama_context,
@@ -39,14 +37,11 @@ pub struct LocalLlm {
     pub tokens: Vec<llama_token>,
 }
 
-#[cfg(feature = "ai-local")]
 // SAFETY: LocalLlm manages exclusive pointer lifetimes and thread confinement; mutation requires &mut self.
 unsafe impl Send for LocalLlm {}
-#[cfg(feature = "ai-local")]
 // SAFETY: Read-only access through immutable references is safe; thread synchronization is enforced via Mutex/RwLock.
 unsafe impl Sync for LocalLlm {}
 
-#[cfg(feature = "ai-local")]
 impl LocalLlm {
     /// Loads a generation model from a GGUF file.
     pub fn load_model(model_path: &str, params: ModelParams) -> Result<Self, LlmError> {
@@ -210,7 +205,6 @@ impl LocalLlm {
     }
 }
 
-#[cfg(feature = "ai-local")]
 impl Drop for LocalLlm {
     fn drop(&mut self) {
         LlmSampler::free(&mut self.sampler);

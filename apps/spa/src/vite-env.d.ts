@@ -1,4 +1,4 @@
-﻿/// <reference types="vite/client" />
+/// <reference types="vite/client" />
 
 declare module "uno.css" {
   const css: string;
@@ -10,6 +10,8 @@ declare module "*.vue" {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+declare const __FEATURE_AI__: boolean;
 
 declare global {
   interface Window {

@@ -46,7 +46,7 @@ export function findParagraphIndexByQuote(
     topBlocks.push(el);
   }
 
-  const cleanQ = quote.replace(/[«»""''„“—–−.,!?:;…()\-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const cleanQ = quote.replace(/[«»""''„“—–−.,!?:;…()-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
   const firstLine = cleanQ.slice(0, 40).trim();
   if (!firstLine) return null;
 
@@ -55,7 +55,7 @@ export function findParagraphIndexByQuote(
     const clone = el.cloneNode(true) as HTMLElement;
     const icons = clone.querySelectorAll('.entity-icon, .chip-icon, .mention-icon, .btn-icon, .semantic-tag-badge');
     icons.forEach(ic => ic.remove());
-    const cleanText = (clone.textContent || '').replace(/[«»""''„“—–−.,!?:;…()\-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    const cleanText = (clone.textContent || '').replace(/[«»""''„“—–−.,!?:;…()-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
     if (cleanText.includes(firstLine) || firstLine.includes(cleanText)) {
       const blockId = el.getAttribute('data-block-id') || el.getAttribute('data-id') || `para-${i + 1}`;
       return {
@@ -215,8 +215,8 @@ export function isMentionCoveredByPromise(
 
     // 4. Quote text inclusion match (if scene quote contains the paragraph snippet)
     if (p.quote && p.quote.trim().length > 10) {
-      const pClean = p.quote.replace(/[«»""''„“—–−.,!?:;…()\-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-      const mClean = mention.text.replace(/[«»""''„“—–−.,!?:;…()\-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+      const pClean = p.quote.replace(/[«»""''„“—–−.,!?:;…()-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+      const mClean = mention.text.replace(/[«»""''„“—–−.,!?:;…()-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
       const firstLine = mClean.slice(0, 35).trim();
       if (firstLine && (pClean.includes(firstLine) || mClean.includes(pClean.slice(0, 35).trim()))) {
         return true;

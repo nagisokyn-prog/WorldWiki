@@ -105,7 +105,7 @@ pub async fn reindex_project_lore(
     #[cfg(not(feature = "ai"))]
     {
         let _ = (state, project_id);
-        Err(IpcError::Internal("AI feature is disabled in this build".to_string()))
+        Err(IpcError::from("AI feature is disabled in this build"))
     }
 }
 

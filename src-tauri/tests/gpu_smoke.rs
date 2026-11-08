@@ -1,8 +1,8 @@
-#![cfg(feature = "ai-local")]
+#![cfg(feature = "ai")]
 //! GPU smoke-тесты: реальная загрузка GGUF-моделей на CUDA.
 //!
 //! Запуск вручную (требует NVIDIA GPU и установленных моделей):
-//!   cargo test --test gpu_smoke --features ai-local -- --ignored --test-threads=1
+//!   cargo test --test gpu_smoke --features ai -- --ignored --test-threads=1
 //!
 //! Модели ищутся через resolve_model_path (APPDATA/com.worldwiki.app/models).
 //! Имена переопределяются переменными окружения WW_GEN_MODEL / WW_EMB_MODEL.

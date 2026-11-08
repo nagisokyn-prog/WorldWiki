@@ -140,7 +140,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
         provider: &str,
         api_key: Option<&str>,
     ) -> Result<Vec<AiModelInfo>, DomainError> {
-        crate::ai::model_discovery::fetch_provider_models(provider, api_key).await
+        crate::model_discovery::fetch_provider_models(provider, api_key).await
     }
 }
 

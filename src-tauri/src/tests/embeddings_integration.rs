@@ -148,6 +148,7 @@ async fn vector_search_cosine_knn_retrieval() {
     assert!(sim > 0.95, "косинусное сходство для близких векторов должно быть > 0.95 (получено {sim})");
 }
 
+#[cfg(feature = "ai")]
 #[tokio::test]
 async fn test_high_performance_lore_reindexing() {
     let db = create_test_db().await;

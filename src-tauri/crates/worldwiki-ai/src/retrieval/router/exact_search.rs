@@ -34,6 +34,24 @@ pub(crate) async fn fetch_exact_chapter(
     None
 }
 
+fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> bool {
+    let q = query.trim().to_lowercase();
+    if q.is_empty() {
+        return false;
+    }
+    let t = target_name.trim().to_lowercase();
+    if q == t || t.contains(&q) || q.contains(&t) {
+        return true;
+    }
+    for a in aliases {
+        let a_low = a.trim().to_lowercase();
+        if q == a_low || a_low.contains(&q) || q.contains(&a_low) {
+            return true;
+        }
+    }
+    false
+}
+
 pub(crate) async fn fetch_fuzzy_entities(
     db: &Surreal<Db>,
     p_raw: &str,
@@ -58,7 +76,7 @@ pub(crate) async fn fetch_fuzzy_entities(
                         arr.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect()
                     })
                     .unwrap_or_default();
-                if !name.is_empty() && crate::surrealdb::repos::fuzzy_match_name(query, name, &tags) {
+                if !name.is_empty() && fuzzy_match_name(query, name, &tags) {
                     let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
                     let desc = row.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
                     if !id.is_empty() {

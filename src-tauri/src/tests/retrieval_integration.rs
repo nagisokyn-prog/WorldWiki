@@ -1,3 +1,4 @@
+#![cfg(feature = "ai")]
 //! Интеграционные тесты RAG-индексатора (`retrieval/indexer.rs`).
 //!
 //! Тестируют `reindex_project_lore_inner` поверх реальной in-memory SurrealDB:
@@ -5,7 +6,7 @@
 //! - чанковка глав и запись в `entity_chunks` с проставленным `chapter_id`;
 //! - идемпотентность повторного реиндекса (старые чанки чистятся).
 
-use worldwiki_infrastructure::ai::retrieval::indexer::reindex_project_lore_inner;
+use worldwiki_ai::retrieval::indexer::reindex_project_lore_inner;
 use serde_json::json;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -104,7 +105,7 @@ async fn reindex_is_idempotent_old_chunks_are_cleared() {
 // RetrievalRouter::retrieve() — keyword/BM25 путь (enable_semantic = false)
 // ---------------------------------------------------------------------------
 
-use worldwiki_infrastructure::ai::retrieval::router::RetrievalRouter;
+use worldwiki_ai::retrieval::router::RetrievalRouter;
 
 /// Сидинг сущности: возвращает нормализованный id "entities:{key}".
 async fn seed_entity(

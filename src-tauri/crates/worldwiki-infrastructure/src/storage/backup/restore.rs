@@ -89,7 +89,10 @@ pub async fn restore_from_backup_inner(
         let mut archive_file = zip
             .by_index(i)
             .map_err(|e| DomainError::Validation(e.to_string()))?;
-        let name = archive_file.name().to_string();
+        let name = archive_file
+            .name()
+            .map_err(|e| DomainError::Validation(e.to_string()))?
+            .to_string();
 
         if extract_archive_file(&mut archive_file, &name, &temp_dir)? {
             surql_found = true;

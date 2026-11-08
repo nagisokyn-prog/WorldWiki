@@ -53,6 +53,5 @@ impl LlmStreamPort for ClawStreamAdapter {
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
             ClawStreamConsumer::consume_stream(stream, &sender).await
-        }
     }
 }

@@ -25,28 +25,212 @@ mod tests {
     use std::sync::Arc;
     use worldwiki_domain::manuscript::Chapter;
     use worldwiki_domain::plot::Todo;
-    use worldwiki_infrastructure::mock_ai::MockAiAdapter;
-    use worldwiki_infrastructure::events::InMemoryEventPublisher;
-    use worldwiki_infrastructure::surrealdb::memory_repos::{
-        InMemoryChapterRepository, InMemoryEntityRepository, InMemoryPlotPromiseRepository,
-        InMemoryRelationRepository, InMemoryTodoRepository,
-    };
+
+    struct TestEventPublisher;
+    #[async_trait::async_trait]
+    impl worldwiki_ports::EventPublisherPort for TestEventPublisher {
+        async fn publish_raw(&self, _event_name: &str, _payload: serde_json::Value) -> Result<(), worldwiki_domain::errors::DomainError> {
+            Ok(())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestChapterRepository {
+        storage: std::sync::Mutex<std::collections::HashMap<String, Chapter>>,
+    }
+    #[async_trait::async_trait]
+    impl worldwiki_ports::repositories::ChapterRepository for TestChapterRepository {
+        async fn get_by_id(&self, id: &str) -> Result<Option<Chapter>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().get(id).cloned())
+        }
+        async fn save(&self, chapter: &Chapter) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().insert(chapter.id.clone(), chapter.clone());
+            Ok(())
+        }
+        async fn delete(&self, id: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().remove(id);
+            Ok(())
+        }
+        async fn list_by_project(&self, _project_id: &str) -> Result<Vec<Chapter>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().cloned().collect())
+        }
+        async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<Chapter>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|c| c.volume_id == volume_id).cloned().collect())
+        }
+        async fn sync_mentions_appearances(&self, _chapter_id: &str, _entity_names: &[String]) -> Result<(), worldwiki_domain::errors::DomainError> {
+            Ok(())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestEntityRepository {
+        storage: std::sync::Mutex<std::collections::HashMap<String, worldwiki_domain::knowledge::Entity>>,
+    }
+    #[async_trait::async_trait]
+    impl worldwiki_ports::repositories::EntityRepository for TestEntityRepository {
+        async fn get_by_id(&self, id: &str) -> Result<Option<worldwiki_domain::knowledge::Entity>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().get(id).cloned())
+        }
+        async fn save(&self, entity: &worldwiki_domain::knowledge::Entity) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().insert(entity.id.clone(), entity.clone());
+            Ok(())
+        }
+        async fn delete(&self, id: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().remove(id);
+            Ok(())
+        }
+        async fn search(&self, _project_id: &str, _query: &str, _top_k: usize) -> Result<Vec<worldwiki_domain::knowledge::Entity>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().cloned().collect())
+        }
+        async fn list_by_type(&self, _project_id: &str, type_key: &str) -> Result<Vec<worldwiki_domain::knowledge::Entity>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|e| e.type_key == type_key).cloned().collect())
+        }
+        async fn list_by_project(&self, project_id: &str) -> Result<Vec<worldwiki_domain::knowledge::Entity>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|e| e.project_id == project_id).cloned().collect())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestRelationRepository {
+        storage: std::sync::Mutex<std::collections::HashMap<String, worldwiki_domain::knowledge::EntityRelation>>,
+    }
+    #[async_trait::async_trait]
+    impl worldwiki_ports::repositories::RelationRepository for TestRelationRepository {
+        async fn get_by_id(&self, id: &str) -> Result<Option<worldwiki_domain::knowledge::EntityRelation>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().get(id).cloned())
+        }
+        async fn save(&self, rel: &worldwiki_domain::knowledge::EntityRelation) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().insert(rel.id.clone(), rel.clone());
+            Ok(())
+        }
+        async fn delete(&self, id: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().remove(id);
+            Ok(())
+        }
+        async fn get_entity_relations(&self, entity_id: &str) -> Result<Vec<worldwiki_domain::knowledge::EntityRelation>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|r| r.from_entity_id == entity_id || r.to_entity_id == entity_id).cloned().collect())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestPlotPromiseRepository {
+        storage: std::sync::Mutex<std::collections::HashMap<String, worldwiki_domain::plot::PlotPromise>>,
+    }
+    #[async_trait::async_trait]
+    impl worldwiki_ports::repositories::PlotPromiseRepository for TestPlotPromiseRepository {
+        async fn get_by_id(&self, id: &str) -> Result<Option<worldwiki_domain::plot::PlotPromise>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().get(id).cloned())
+        }
+        async fn save(&self, promise: &worldwiki_domain::plot::PlotPromise) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().insert(promise.id.clone(), promise.clone());
+            Ok(())
+        }
+        async fn delete(&self, id: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().remove(id);
+            Ok(())
+        }
+        async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<worldwiki_domain::plot::PlotPromise>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|p| p.chapter_id.as_deref() == Some(chapter_id)).cloned().collect())
+        }
+        async fn list_unresolved_by_volume(&self, _volume_id: &str) -> Result<Vec<worldwiki_domain::plot::PlotPromise>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|p| p.status != worldwiki_domain::plot::PromiseStatus::Resolved).cloned().collect())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestTodoRepository {
+        storage: std::sync::Mutex<std::collections::HashMap<String, Todo>>,
+    }
+    #[async_trait::async_trait]
+    impl worldwiki_ports::repositories::TodoRepository for TestTodoRepository {
+        async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().get(id).cloned())
+        }
+        async fn save(&self, todo: &Todo) -> Result<String, worldwiki_domain::errors::DomainError> {
+            let id = if todo.id.is_empty() {
+                format!("todo_{}", self.storage.lock().unwrap().len() + 1)
+            } else {
+                todo.id.clone()
+            };
+            let mut t = todo.clone();
+            t.id = id.clone();
+            self.storage.lock().unwrap().insert(id.clone(), t);
+            Ok(id)
+        }
+        async fn set_status(&self, id: &str, status: &str) -> Result<Option<Todo>, worldwiki_domain::errors::DomainError> {
+            let mut map = self.storage.lock().unwrap();
+            if let Some(t) = map.get_mut(id) {
+                let parsed = match status {
+                    "done" => worldwiki_domain::plot::TodoStatus::Done,
+                    "in_progress" => worldwiki_domain::plot::TodoStatus::InProgress,
+                    "blocked" => worldwiki_domain::plot::TodoStatus::Blocked,
+                    _ => worldwiki_domain::plot::TodoStatus::Planned,
+                };
+                t.set_status(parsed);
+                Ok(Some(t.clone()))
+            } else {
+                Ok(None)
+            }
+        }
+        async fn delete(&self, id: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            self.storage.lock().unwrap().remove(id);
+            Ok(())
+        }
+        async fn list_by_owner(&self, owner_id: &str) -> Result<Vec<Todo>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|t| t.owner_id == owner_id).cloned().collect())
+        }
+        async fn list_by_owners(&self, owner_ids: &[&str]) -> Result<Vec<Todo>, worldwiki_domain::errors::DomainError> {
+            Ok(self.storage.lock().unwrap().values().filter(|t| owner_ids.contains(&t.owner_id.as_str())).cloned().collect())
+        }
+    }
+
+    struct TestRagPort;
+    #[async_trait::async_trait]
+    impl worldwiki_ports::ai::RAGContextPort for TestRagPort {
+        async fn retrieve_context(
+            &self,
+            project_id: &str,
+            query: &str,
+            scope: &str,
+            _top_k: usize,
+        ) -> Result<Vec<serde_json::Value>, worldwiki_domain::errors::DomainError> {
+            Ok(vec![serde_json::json!({
+                "project_id": project_id,
+                "scope": scope,
+                "match": format!("Context match for query: '{query}'")
+            })])
+        }
+        async fn retrieve_chapter_multi_hop_context(
+            &self,
+            project_id: &str,
+            chapter_id: &str,
+        ) -> Result<serde_json::Value, worldwiki_domain::errors::DomainError> {
+            Ok(serde_json::json!({
+                "project_id": project_id,
+                "chapter_id": chapter_id,
+                "participants": [],
+                "relations": [],
+                "timeline": [],
+                "plot_promises": []
+            }))
+        }
+    }
 
     fn setup_test_services() -> AiToolFacades {
-        let events: Arc<dyn worldwiki_ports::EventPublisherPort> = Arc::new(InMemoryEventPublisher);
+        let events: Arc<dyn worldwiki_ports::EventPublisherPort> = Arc::new(TestEventPublisher);
         let manuscript = Arc::new(ManuscriptServices::new(
-            Arc::new(InMemoryChapterRepository::default()),
+            Arc::new(TestChapterRepository::default()),
             Arc::clone(&events),
         ));
         let knowledge = Arc::new(KnowledgeServices::new(
-            Arc::new(InMemoryEntityRepository::default()),
-            Arc::new(InMemoryRelationRepository::default()),
+            Arc::new(TestEntityRepository::default()),
+            Arc::new(TestRelationRepository::default()),
             Arc::clone(&events),
         ));
         let calendar = Arc::new(CalendarServices::new());
         let plot = Arc::new(PlotServices::new(
-            Arc::new(InMemoryPlotPromiseRepository::default()),
-            Arc::new(InMemoryTodoRepository::default()),
+            Arc::new(TestPlotPromiseRepository::default()),
+            Arc::new(TestTodoRepository::default()),
             events,
         ));
         let job_manager = Arc::new(JobManager::new());
@@ -55,7 +239,7 @@ mod tests {
             Arc::clone(&manuscript),
             Arc::clone(&plot),
         ));
-        let search_workflow = Arc::new(HybridSemanticSearchWorkflow::new(Arc::new(MockAiAdapter)));
+        let search_workflow = Arc::new(HybridSemanticSearchWorkflow::new(Arc::new(TestRagPort)));
 
         AiToolFacades::new(
             manuscript,
@@ -175,30 +359,30 @@ mod tests {
     }
 
     #[derive(Default, Clone, Debug)]
-    struct LocalTestAiAdapter;
+    struct LocalTestAiMock;
 
-    impl worldwiki_ports::ai::HardwareDetectorPort for LocalTestAiAdapter {
+    impl worldwiki_ports::ai::HardwareDetectorPort for LocalTestAiMock {
         fn get_hardware_info(&self) -> worldwiki_domain::ai::HardwareInfo {
             worldwiki_domain::ai::HardwareInfo {
                 total_ram_gb: 16.0,
                 free_ram_gb: 8.0,
-                has_gpu: false,
-                gpu_name: None,
-                vram_gb: None,
-                cpu_cores: 8,
+                gpu_name: "Mock GPU".to_string(),
+                total_vram_gb: 8.0,
+                free_vram_gb: 6.0,
+                is_gpu_available: false,
             }
         }
         fn calculate_quantization_estimates(
             &self,
-            params_billions: f32,
+            _params_billions: f32,
             _context_tokens: Option<usize>,
         ) -> Vec<worldwiki_domain::ai::MemoryEstimation> {
             vec![worldwiki_domain::ai::MemoryEstimation {
-                quantization: "Q4_K_M".to_string(),
-                ram_required_gb: params_billions * 0.6,
-                fits_in_ram: true,
-                fits_in_vram: false,
-                recommended: true,
+                quant_name: "Q4_K_M".to_string(),
+                estimated_vram_gb: 4.5,
+                status: "ok".to_string(),
+                is_recommended: true,
+                size_gb: 4.0,
             }]
         }
         fn get_recommended_local_models(&self) -> Vec<worldwiki_domain::ai::RecommendedModelCard> {
@@ -206,63 +390,86 @@ mod tests {
                 worldwiki_domain::ai::RecommendedModelCard {
                     id: "model_1".to_string(),
                     name: "Model 1".to_string(),
-                    parameters: "7B".to_string(),
-                    quantization: "Q4_K_M".to_string(),
-                    size_gb: 4.5,
-                    min_ram_gb: 8.0,
-                    download_url: "http://example.com/1".to_string(),
+                    tagline: "Fast and lightweight".to_string(),
                     description: "Test".to_string(),
+                    parameters: "7B".to_string(),
+                    recommended_quant: "Q4_K_M".to_string(),
+                    size_gb: 4.5,
+                    repo_id: "test/m1".to_string(),
+                    filename: "m1.gguf".to_string(),
+                    tags: vec![],
+                    license_name: "Apache-2.0".to_string(),
+                    is_commercial_allowed: true,
                 },
                 worldwiki_domain::ai::RecommendedModelCard {
                     id: "model_2".to_string(),
                     name: "Model 2".to_string(),
-                    parameters: "8B".to_string(),
-                    quantization: "Q4_K_M".to_string(),
-                    size_gb: 5.0,
-                    min_ram_gb: 16.0,
-                    download_url: "http://example.com/2".to_string(),
+                    tagline: "Balanced".to_string(),
                     description: "Test".to_string(),
+                    parameters: "8B".to_string(),
+                    recommended_quant: "Q4_K_M".to_string(),
+                    size_gb: 5.0,
+                    repo_id: "test/m2".to_string(),
+                    filename: "m2.gguf".to_string(),
+                    tags: vec![],
+                    license_name: "Apache-2.0".to_string(),
+                    is_commercial_allowed: true,
                 },
                 worldwiki_domain::ai::RecommendedModelCard {
                     id: "model_3".to_string(),
                     name: "Model 3".to_string(),
-                    parameters: "3B".to_string(),
-                    quantization: "Q4_K_M".to_string(),
-                    size_gb: 2.0,
-                    min_ram_gb: 4.0,
-                    download_url: "http://example.com/3".to_string(),
+                    tagline: "Compact".to_string(),
                     description: "Test".to_string(),
+                    parameters: "3B".to_string(),
+                    recommended_quant: "Q4_K_M".to_string(),
+                    size_gb: 2.0,
+                    repo_id: "test/m3".to_string(),
+                    filename: "m3.gguf".to_string(),
+                    tags: vec![],
+                    license_name: "Apache-2.0".to_string(),
+                    is_commercial_allowed: true,
                 },
             ]
         }
     }
 
-    impl worldwiki_ports::ai::LocalModelManagerPort for LocalTestAiAdapter {
-        fn list_installed_models(
-            &self,
-        ) -> Result<Vec<worldwiki_domain::ai::InstalledModelInfo>, worldwiki_domain::errors::DomainError> {
+    impl worldwiki_ports::ai::LocalModelManagerPort for LocalTestAiMock {
+        fn list_installed(&self) -> Result<Vec<worldwiki_domain::ai::InstalledModelInfo>, worldwiki_domain::errors::DomainError> {
             Ok(vec![])
         }
-        fn delete_model(&self, _filename: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
-            Ok(())
+        fn load_model(&self, _filename: &str) -> Result<String, worldwiki_domain::errors::DomainError> {
+            Ok("Loaded".to_string())
+        }
+        fn unload_model(&self, _filename: &str) -> Result<String, worldwiki_domain::errors::DomainError> {
+            Ok("Unloaded".to_string())
+        }
+        fn unload_all(&self) -> Result<String, worldwiki_domain::errors::DomainError> {
+            Ok("All unloaded".to_string())
+        }
+        fn delete_model(&self, _filename: &str) -> Result<String, worldwiki_domain::errors::DomainError> {
+            Ok("Deleted".to_string())
         }
     }
 
-    impl worldwiki_ports::ai::PermissionsPort for LocalTestAiAdapter {
-        fn get_tool_permissions_catalog(
-            &self,
-        ) -> std::collections::HashMap<String, worldwiki_domain::ai::ToolPermissionConfig> {
-            let mut map = std::collections::HashMap::new();
-            for i in 1..=5 {
-                map.insert(
-                    format!("tool_{i}"),
-                    worldwiki_domain::ai::ToolPermissionConfig {
-                        default_level: "auto".to_string(),
-                        description: format!("Desc {i}"),
-                    },
-                );
-            }
-            map
+    impl worldwiki_ports::ai::PermissionsPort for LocalTestAiMock {
+        fn get_tool_permissions_catalog(&self) -> Vec<worldwiki_domain::ai::ToolPermissionConfig> {
+            (1..=5).map(|i| {
+                worldwiki_domain::ai::ToolPermissionConfig {
+                    id: format!("tool_{i}"),
+                    name: format!("Tool {i}"),
+                    description: format!("Desc {i}"),
+                    category: worldwiki_domain::ai::ToolCategory::Read,
+                    risk: worldwiki_domain::ai::RiskLevel::Low,
+                    default_level: worldwiki_domain::ai::PermissionLevel::Allow,
+                    user_level: None,
+                }
+            }).collect()
+        }
+        fn save_tool_permission(&self, _tool_id: &str, _level: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            Ok(())
+        }
+        fn save_all_tool_permissions(&self, _permissions: &std::collections::HashMap<String, String>) -> Result<(), worldwiki_domain::errors::DomainError> {
+            Ok(())
         }
     }
 
@@ -270,7 +477,7 @@ mod tests {
     fn test_local_ai_services_hardware_and_manager() {
         use crate::ai::LocalAiServices;
 
-        let mock = Arc::new(LocalTestAiAdapter);
+        let mock = Arc::new(LocalTestAiMock);
         let local_ai = LocalAiServices::new(mock.clone(), mock.clone(), mock);
 
         let info = local_ai.get_hardware_info();

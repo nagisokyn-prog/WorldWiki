@@ -105,64 +105,22 @@ pub(crate) async fn node_exists_in_db(db: &Surreal<Db>, rec_str: &str) -> bool {
     let q = db
         .query("SELECT id FROM ONLY type::record($rec);")
         .bind(("rec", rec_str.to_string()));
-    if let Ok(mut res) = q.await {
-        if res.take_errors().is_empty() {
-            if let Ok(row) = res.take::<Option<serde_json::Value>>(0) {
-                return row.is_some();
-            }
-        }
+    if let Ok(mut res) = q.await
+        && res.take_errors().is_empty()
+        && let Ok(row) = res.take::<Option<serde_json::Value>>(0)
+    {
+        return row.is_some();
     }
     false
 }
 
-pub(crate) fn table_has_created_at(table: &str) -> bool {
-    matches!(
-        table,
-        "projects"
-            | "chapters"
-            | "entities"
-            | "entity_schemas"
-            | "planets"
-            | "calendars"
-            | "timeline_events"
-            | "story_arcs"
-            | "entity_rel"
-            | "participates_in"
-            | "appears_in"
-            | "revealed_in"
-    )
-}
-
-pub(crate) fn table_has_updated_at(table: &str) -> bool {
-    matches!(
-        table,
-        "chapters"
-            | "entities"
-            | "planets"
-            | "calendars"
-            | "story_arcs"
-    )
-}
-
 pub(crate) fn clean_bundle_item(mut item: serde_json::Value, table: &str) -> serde_json::Value {
     if let Some(obj) = item.as_object_mut() {
-        let now_str = chrono::Utc::now().to_rfc3339();
-
-        if table_has_created_at(table) {
-            if obj.get("created_at").is_none_or(|v| v.is_null()) {
-                obj.insert("created_at".to_string(), serde_json::Value::String(now_str.clone()));
-            }
-        } else {
-            obj.remove("created_at");
-        }
-
-        if table_has_updated_at(table) {
-            if obj.get("updated_at").is_none_or(|v| v.is_null()) {
-                obj.insert("updated_at".to_string(), serde_json::Value::String(now_str));
-            }
-        } else {
-            obj.remove("updated_at");
-        }
+        // Strip datetime fields so SurrealDB uses its native DEFAULT time::now()
+        // and avoids String -> Datetime coercion failures in MERGE payloads.
+        obj.remove("created_at");
+        obj.remove("updated_at");
+        obj.remove("saved_at");
 
         let prefix = format!("{table}:");
         let id_str = obj.get("id").and_then(flatten_record_id);

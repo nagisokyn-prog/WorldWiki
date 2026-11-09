@@ -3,10 +3,8 @@ pub mod client;
 pub mod http;
 pub mod media;
 
-pub use auth::*;
+pub use auth::{YANDEX_CLIENT_ID, YANDEX_CLIENT_SECRET};
 pub use client::*;
-pub use http::*;
-pub use media::*;
 
 #[cfg(test)]
 mod tests {

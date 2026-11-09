@@ -13,7 +13,11 @@ pub async fn get_entity_schemas_inner(
     db: &Surreal<Db>,
     project: &str,
 ) -> Result<Vec<EntitySchema>, EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
+    let clean_pid = project
+        .trim()
+        .strip_prefix("projects:")
+        .unwrap_or(project.trim())
+        .trim_matches(['⟨', '⟩', '`', '"', '\'']);
     let mut res = db
         .query("RETURN fn::get_entity_schemas(type::record('projects', $p));")
         .bind(("p", clean_pid))
@@ -28,7 +32,11 @@ pub async fn save_entity_schema_inner(
     schema: EntitySchema,
     max_saves: Option<usize>,
 ) -> Result<EntitySchema, EntityError> {
-    let clean_pid = project.trim().strip_prefix("projects:").unwrap_or(project.trim());
+    let clean_pid = project
+        .trim()
+        .strip_prefix("projects:")
+        .unwrap_or(project.trim())
+        .trim_matches(['⟨', '⟩', '`', '"', '\'']);
 
     // FIND EXISTING SCHEMA ID
     let mut res = db
@@ -39,7 +47,7 @@ pub async fn save_entity_schema_inner(
 
     let found_id: Option<String> = res.take(0)?;
 
-    let actual_id_str = if let Some(id_val) = found_id {
+    let raw_id = if let Some(id_val) = found_id {
         id_val
             .split_once(':')
             .map(|(_, b)| b.to_string())
@@ -58,11 +66,7 @@ pub async fn save_entity_schema_inner(
         format!("{}_{}", clean_pid, schema.type_key)
     };
 
-    let target_raw = if !actual_id_str.is_empty() {
-        actual_id_str
-    } else {
-        format!("{}_{}", clean_pid, schema.type_key)
-    };
+    let target_raw = raw_id.trim_matches(['⟨', '⟩', '`', '"', '\'']).to_string();
 
     // --- BACKUP OLD SCHEMA IF IT ALREADY EXISTS ---
     if !target_raw.is_empty() {
@@ -123,7 +127,11 @@ pub async fn delete_entity_schema_inner(
     project: &str,
     type_key: &str,
 ) -> Result<(), EntityError> {
-    let clean_pid = project.trim().replace("projects:", "");
+    let clean_pid = project
+        .trim()
+        .strip_prefix("projects:")
+        .unwrap_or(project.trim())
+        .trim_matches(['⟨', '⟩', '`', '"', '\'']);
 
     // SurrealKV может вернуть Transaction write conflict под нагрузкой — это
     // транзиентная ошибка, которую можно повторить.

@@ -33,30 +33,6 @@
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (335.3) exceeds warning limit (250.0)",
-    "fingerprint": "f0a2b758e1da70769857d3939ec95d0cecfd0a95230d12fbc8a91a17e8df4d35"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (413.0) exceeds warning limit (250.0)",
-    "fingerprint": "c0d650877179263134df6b7688429eb02abed7de7084510b3f0b68e70d19ebaa"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (372.9) exceeds warning limit (250.0)",
-    "fingerprint": "f610141eaae63ad8d0098ea152410cd73756fa97b86ac0f0fe50cd27acb5537b"
-  },
-  {
-    "rule": "ARCH-030",
     "file": "./src-tauri/src/bootstrap/database.rs",
     "line": 1,
     "symbol": "file",
@@ -606,14 +582,6 @@
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
     "fingerprint": "d83c551fa646d9097d45add7ee2659d66a935f9a2666979a61cd9faa07e6c1a7"
-  },
-  {
-    "rule": "SDB-009",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
-    "line": 284,
-    "symbol": "restore_project_bundle",
-    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
-    "fingerprint": "d858866642b3b0c0fc2154467cea47d080608bc7cb3c855820781dbe8b620576"
   },
   {
     "rule": "SEC-011",

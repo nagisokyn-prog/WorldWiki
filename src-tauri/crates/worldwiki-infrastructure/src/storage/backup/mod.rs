@@ -3,6 +3,7 @@
 pub mod cloud;
 pub(crate) mod bundle_export;
 pub(crate) mod bundle_restore;
+pub(crate) mod bundle_validator;
 pub mod export;
 pub mod restore;
 pub(crate) mod sanitize;

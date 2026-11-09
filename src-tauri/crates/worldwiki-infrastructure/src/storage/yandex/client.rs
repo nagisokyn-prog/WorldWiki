@@ -6,9 +6,9 @@ use std::path::{Path, PathBuf};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::storage::YandexBackupFile;
 
-use super::auth::exchange_yandex_token_with_client;
 use super::http::{disk_base, upload_single_file_to_yandex};
 
+pub use super::auth::exchange_yandex_token_inner;
 pub use super::http::{
     ensure_yandex_dir_inner, list_yandex_dir_files_inner, upload_single_file_to_yandex as upload_single_file_to_yandex_inner,
     upload_single_file_with_client,
@@ -16,15 +16,6 @@ pub use super::http::{
 pub use super::media::{
     download_missing_media_inner, sync_media_to_yandex_inner, MediaSyncProgress, ProgressCallback,
 };
-
-/// Обмен OAuth-кода на токен Яндекс.Диска.
-pub async fn exchange_yandex_token_inner(
-    code: &str,
-    token_url_override: Option<&str>,
-) -> Result<String, DomainError> {
-    let client = reqwest::Client::new();
-    exchange_yandex_token_with_client(&client, code, token_url_override).await
-}
 
 /// Загрузка бэкапа на Диск: запрос upload-ссылки -> PUT файла.
 pub async fn upload_to_yandex_disk_inner(

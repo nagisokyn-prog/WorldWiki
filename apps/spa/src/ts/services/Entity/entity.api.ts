@@ -166,6 +166,9 @@ export const entityApi = {
     if (needsSync || isDbEmpty) {
       console.log(`🔄 [SchemaSync] Однократная синхронизация базовых схем для проекта "${project}"...`);
       for (const type of defaultTypes) {
+        if (dict[type]) {
+          continue;
+        }
         try {
           const res = await fetch(`/struct/editor/${type}.json`);
           if (res.ok) {

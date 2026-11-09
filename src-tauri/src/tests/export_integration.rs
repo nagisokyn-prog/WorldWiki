@@ -226,6 +226,9 @@ async fn restore_from_backup_with_project_bundle_restores_complete_subgraph() {
 #[tokio::test]
 async fn restore_legacy_backup_with_conflicting_default_schemas_succeeds() {
     let dst = create_test_db().await;
+    dst.query("CREATE entity_schemas:default_character SET project_id = 'global', type_key = 'character', type_name = 'Персонаж';")
+        .await
+        .unwrap();
     let dir = tmp_dir("legacy_conflict");
 
     // Manually construct a legacy backup with raw conflicting CREATE
@@ -233,9 +236,9 @@ async fn restore_legacy_backup_with_conflicting_default_schemas_succeeds() {
     let file = std::fs::File::create(&zip_path).expect("create zip");
     let mut zw = zip::ZipWriter::new(file);
 
-    let surql_content = r#"
+    let surql_content = r#"OPTION IMPORT;
 CREATE entity_schemas:default_character CONTENT {
-    created_at: time::now(),
+    created_at: "2026-11-08T00:00:00Z",
     fields_schema: [],
     project_id: 'global',
     type_key: 'character',
@@ -564,6 +567,9 @@ async fn restore_project_a_does_not_touch_project_b() {
 #[tokio::test]
 async fn restore_bundle_without_default_schemas_keeps_existing_defaults() {
     let dst = create_test_db().await;
+    dst.query("CREATE entity_schemas:default_character SET project_id = 'global', type_key = 'character', type_name = 'Персонаж';")
+        .await
+        .unwrap();
 
     // Verify default_character exists prior to restore
     let mut before_check = dst.query("SELECT * FROM ONLY type::record('entity_schemas:default_character');").await.unwrap();
@@ -597,6 +603,9 @@ async fn restore_bundle_without_default_schemas_keeps_existing_defaults() {
 #[tokio::test]
 async fn restore_bundle_with_modified_default_schema_does_not_override() {
     let dst = create_test_db().await;
+    dst.query("CREATE entity_schemas:default_character SET project_id = 'global', type_key = 'character', type_name = 'Персонаж';")
+        .await
+        .unwrap();
 
     let dir = tmp_dir("bundle_hacked_default");
     let zip_path = dir.join("hacked_default.wwiki");

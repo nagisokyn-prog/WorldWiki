@@ -117,13 +117,23 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   const formattedLocalDate = computed(() => {
     if (!selectedLocalCal.value) return '';
     const localCal = localCalendars.value.find(c => c.id === selectedLocalCal.value);
-    if (!localCal?.data) return '';
+    if (!localCal) return '';
+
+    let localData = localCal.data as Record<string, unknown> | null;
+    if (localData && typeof localData === 'object' && 'data' in localData && typeof localData.data === 'object' && localData.data !== null) {
+      localData = localData.data as Record<string, unknown>;
+    }
+    if (!localData || (!localData.месяцы && (localCal as unknown as Record<string, unknown>).месяцы)) {
+      localData = localCal as unknown as Record<string, unknown>;
+    }
+    if (!localData || (!localData.месяцы && !localData.название)) return '';
+    const typedLocalData = localData as unknown as CalendarData;
     
     // Используем синхронизированную конвертацию с учетом SyncAnchor
     const localInput = CalendarMath.masterMinuteToLocalDate(
       currentAbsoluteMinute.value,
-      localCal.data,
-      masterCalendar.value?.data,
+      typedLocalData,
+      masterCalendarData.value,
       0
     );
     
@@ -133,7 +143,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
       original_input: localInput
     };
     
-    return CalendarMath.formatDate(localCal.data, dateObj);
+    return CalendarMath.formatDate(typedLocalData, dateObj);
   });
 
   const prevDay = () => {

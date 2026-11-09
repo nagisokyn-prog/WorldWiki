@@ -34,13 +34,13 @@ export class CalendarFormat {
   }
 
   public static formatDate(calendar: CalendarData, dateObj: CalendarDate): string {
-    if (!dateObj || !dateObj.original_input) return '';
+    if (!calendar || !dateObj || !dateObj.original_input) return '';
     const { era_index, year: год, month: месяц, day: день, hour, minute } = dateObj.original_input;
     if (год === undefined || месяц === undefined || день === undefined) return '';
 
-    const era = calendar.эпохи[era_index];
+    const era = calendar.эпохи?.[era_index];
     const eraName = era ? era.название : '';
-    const monthName = calendar.месяцы[месяц]?.название || `Месяц ${месяц + 1}`;
+    const monthName = calendar.месяцы?.[месяц]?.название || `Месяц ${месяц + 1}`;
 
     let result = `${год} год, ${monthName} ${день}`;
     if (eraName) result += ` (${eraName})`;

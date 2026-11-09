@@ -98,26 +98,39 @@ pub async fn create_cloud_backup_inner(
 
     // 1. Export database dump and sanitize it for seamless compatibility
     if let Ok(raw_dump) = fs::read_to_string(&temp_surql_path) {
+        let mut skip_until_semi = false;
         let sanitized: String = raw_dump
             .lines()
             .filter_map(|line| {
-                let t = line.trim_start();
+                let t = line.trim();
+                if skip_until_semi {
+                    if t.ends_with(';') {
+                        skip_until_semi = false;
+                    }
+                    return None;
+                }
                 if t.starts_with("DEFINE FIELD")
                     && t.contains("OVERWRITE")
                     && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*"))
                 {
+                    if !t.ends_with(';') {
+                        skip_until_semi = true;
+                    }
                     return None;
                 }
                 if t.starts_with("CREATE entity_schemas:default_")
                     || t.starts_with("UPSERT entity_schemas:default_")
                     || t.starts_with("INSERT INTO entity_schemas:default_")
                 {
+                    if !t.ends_with(';') {
+                        skip_until_semi = true;
+                    }
                     return None;
                 }
-                if let Some(rest) = t.strip_prefix("CREATE ") {
+                if let Some(rest) = line.trim_start().strip_prefix("CREATE ") {
                     let first_token = rest.split_whitespace().next().unwrap_or_default();
                     if first_token.contains(':') {
-                        let leading_ws = &line[..line.len() - t.len()];
+                        let leading_ws = &line[..line.len() - line.trim_start().len()];
                         return Some(format!("{leading_ws}UPSERT {rest}"));
                     }
                 }
@@ -141,46 +154,154 @@ pub async fn create_cloud_backup_inner(
     }
 
     // 2. Export scoped project bundle (LPG nodes & edges) if project exists
-    if let Ok(mut proj_res) = db.query("SELECT * FROM projects LIMIT 1;").await {
+    if let Ok(mut proj_res) = db.query("SELECT *, type::string(id) AS id_str FROM projects ORDER BY id ASC LIMIT 1;").await {
         let projs: Vec<serde_json::Value> = proj_res.take(0).unwrap_or_default();
-        if let Some(first_proj) = projs.first()
-            && let Some(pid_str) = first_proj.get("id").and_then(|v| v.as_str())
-        {
-            let bundle_q = r#"
-                LET $p_rec = type::record($pid);
-                LET $p = (SELECT * FROM ONLY $p_rec);
-                LET $vols = (SELECT * FROM volumes WHERE project_id = $p_rec);
-                LET $chaps = (SELECT * FROM chapters WHERE volume_id IN $vols.id);
-                LET $contains = (SELECT * FROM contains WHERE in = $p_rec OR in IN $vols.id);
-                LET $ent_schemas = (SELECT * FROM entity_schemas WHERE project_id = $p_rec AND !id.starts_with('entity_schemas:default_'));
-                LET $rel_schemas = (SELECT * FROM relation_schemas WHERE project_id = $p_rec);
-                LET $ents = (SELECT * FROM entities WHERE schema_id IN $ent_schemas.id);
-                LET $entity_rels = (SELECT * FROM entity_rel WHERE in IN $ents.id AND out IN $ents.id);
-                LET $events = (SELECT * FROM timeline_events WHERE project_id = $p_rec);
-                LET $part_in = (SELECT * FROM participates_in WHERE in IN $ents.id);
-                LET $appears = (SELECT * FROM appears_in WHERE in IN $ents.id);
-                LET $planets = (SELECT * FROM planets WHERE project_id = $p_rec);
-                LET $cals = (SELECT * FROM calendars WHERE planet_id IN $planets.id);
-                RETURN {
-                    project: $p,
-                    volumes: $vols,
-                    chapters: $chaps,
-                    contains: $contains,
-                    entity_schemas: $ent_schemas,
-                    relation_schemas: $rel_schemas,
-                    entities: $ents,
-                    entity_rel: $entity_rels,
-                    timeline_events: $events,
-                    participates_in: $part_in,
-                    appears_in: $appears,
-                    planets: $planets,
-                    calendars: $cals
-                };
-            "#;
-            if let Ok(mut b_res) = db.query(bundle_q).bind(("pid", pid_str)).await {
-                let bundle_val: Option<serde_json::Value> = b_res.take(0).ok().flatten();
-                if let Some(bundle) = bundle_val
-                    && let Ok(bundle_bytes) = serde_json::to_vec_pretty(&bundle)
+        if let Some(first_proj) = projs.first() {
+            let pid_opt = first_proj
+                .get("id_str")
+                .and_then(|v| v.as_str())
+                .or_else(|| first_proj.get("id").and_then(|v| v.as_str()))
+                .map(|s| s.to_string())
+                .or_else(|| {
+                    first_proj.get("id").and_then(|id_obj| {
+                        if let Some(tb) = id_obj.get("tb").and_then(|v| v.as_str()) {
+                            let id_val = id_obj.get("id")?;
+                            let id_s = id_val.as_str().map(|s| s.to_string()).unwrap_or_else(|| id_val.to_string().trim_matches('"').to_string());
+                            Some(format!("{tb}:{id_s}"))
+                        } else {
+                            None
+                        }
+                    })
+                });
+
+            if let Some(pid_str) = pid_opt {
+                let p_rec = pid_str.as_str();
+
+                // 1. Volumes
+                let mut v_res = db
+                    .query("SELECT *, type::string(id) AS id FROM volumes WHERE project_id = fn::normalize_project_id($pid);")
+                    .bind(("pid", p_rec))
+                    .await
+                    .ok();
+                let volumes: Vec<serde_json::Value> = v_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+                let vol_ids: Vec<serde_json::Value> = volumes.iter().filter_map(|v| v.get("id")).cloned().collect();
+
+                // 2. Chapters
+                let mut ch_res = db
+                    .query("SELECT *, type::string(id) AS id, type::string(volume_id) AS volume_id FROM chapters WHERE volume_id.project_id = fn::normalize_project_id($pid) OR volume_id IN $vols;")
+                    .bind(("pid", p_rec))
+                    .bind(("vols", vol_ids.clone()))
+                    .await
+                    .ok();
+                let chapters: Vec<serde_json::Value> = ch_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 3. Contains
+                let mut c_res = db
+                    .query("SELECT * FROM contains WHERE in = type::record($pid) OR in IN $vols;")
+                    .bind(("pid", p_rec))
+                    .bind(("vols", vol_ids))
+                    .await
+                    .ok();
+                let contains: Vec<serde_json::Value> = c_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 4. Entity Schemas
+                let mut es_res = db
+                    .query("SELECT * FROM entity_schemas WHERE project_id = fn::normalize_project_id($pid) AND string::starts_with(type::string(id), 'entity_schemas:default_') = false;")
+                    .bind(("pid", p_rec))
+                    .await
+                    .ok();
+                let entity_schemas: Vec<serde_json::Value> = es_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+                let schema_ids: Vec<serde_json::Value> = entity_schemas.iter().filter_map(|s| s.get("id")).cloned().collect();
+
+                // 5. Relation Schemas
+                let mut rs_res = db
+                    .query("SELECT * FROM relation_schemas WHERE project_id = fn::normalize_project_id($pid);")
+                    .bind(("pid", p_rec))
+                    .await
+                    .ok();
+                let relation_schemas: Vec<serde_json::Value> = rs_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 6. Entities
+                let mut e_res = db
+                    .query("SELECT * FROM entities WHERE schema_id.project_id = fn::normalize_project_id($pid) OR schema_id IN $schemas;")
+                    .bind(("pid", p_rec))
+                    .bind(("schemas", schema_ids))
+                    .await
+                    .ok();
+                let entities: Vec<serde_json::Value> = e_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+                let ent_ids: Vec<serde_json::Value> = entities.iter().filter_map(|e| e.get("id")).cloned().collect();
+
+                // 7. Entity Rel (strictly between entities of this project)
+                let mut er_res = db
+                    .query("SELECT * FROM entity_rel WHERE in IN $ents AND out IN $ents;")
+                    .bind(("ents", ent_ids.clone()))
+                    .await
+                    .ok();
+                let entity_rel: Vec<serde_json::Value> = er_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 8. Timeline Events
+                let mut te_res = db
+                    .query("SELECT * FROM timeline_events WHERE project_id = fn::normalize_project_id($pid);")
+                    .bind(("pid", p_rec))
+                    .await
+                    .ok();
+                let timeline_events: Vec<serde_json::Value> = te_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 9. Participates in
+                let mut pi_res = db
+                    .query("SELECT * FROM participates_in WHERE in IN $ents;")
+                    .bind(("ents", ent_ids.clone()))
+                    .await
+                    .ok();
+                let participates_in: Vec<serde_json::Value> = pi_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 10. Appears in
+                let mut ai_res = db
+                    .query("SELECT * FROM appears_in WHERE in IN $ents;")
+                    .bind(("ents", ent_ids))
+                    .await
+                    .ok();
+                let appears_in: Vec<serde_json::Value> = ai_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                // 11. Planets
+                let mut pl_res = db
+                    .query("SELECT * FROM planets WHERE project_id = fn::normalize_project_id($pid);")
+                    .bind(("pid", p_rec))
+                    .await
+                    .ok();
+                let planets: Vec<serde_json::Value> = pl_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+                let planet_ids: Vec<serde_json::Value> = planets.iter().filter_map(|p| p.get("id")).cloned().collect();
+
+                // 12. Calendars
+                let mut cal_res = db
+                    .query("SELECT * FROM calendars WHERE planet_id IN $planets;")
+                    .bind(("planets", planet_ids))
+                    .await
+                    .ok();
+                let calendars: Vec<serde_json::Value> = cal_res.as_mut().and_then(|r| r.take(0).ok()).unwrap_or_default();
+
+                let mut clean_project = first_proj.clone();
+                if let Some(map) = clean_project.as_object_mut() {
+                    map.remove("id_str");
+                }
+
+                let bundle = serde_json::json!({
+                    "project": clean_project,
+                    "volumes": volumes,
+                    "chapters": chapters,
+                    "contains": contains,
+                    "entity_schemas": entity_schemas,
+                    "relation_schemas": relation_schemas,
+                    "entities": entities,
+                    "entity_rel": entity_rel,
+                    "timeline_events": timeline_events,
+                    "participates_in": participates_in,
+                    "appears_in": appears_in,
+                    "planets": planets,
+                    "calendars": calendars,
+                });
+
+                if let Ok(bundle_bytes) = serde_json::to_vec_pretty(&bundle)
                     && zip.start_file("project_bundle.json", options).is_ok()
                 {
                     use std::io::Write;

@@ -43,7 +43,7 @@ DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
 
 -- 4. ГЛАВЫ РУКОПИСИ
 DEFINE TABLE OVERWRITE chapters SCHEMAFULL CHANGEFEED 30d;
-DEFINE FIELD OVERWRITE volume_id   ON chapters TYPE record<volumes>;
+DEFINE FIELD OVERWRITE volume_id   ON chapters TYPE record<volumes> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE title       ON chapters TYPE string;
 DEFINE FIELD OVERWRITE content     ON chapters TYPE string;
 DEFINE FIELD OVERWRITE sort_order  ON chapters TYPE int DEFAULT 0;
@@ -86,7 +86,7 @@ DEFINE FIELD OVERWRITE updated_at       ON planets TYPE datetime DEFAULT time::n
 
 -- 8. КАЛЕНДАРИ И ЭПОХИ
 DEFINE TABLE OVERWRITE calendars SCHEMAFULL;
-DEFINE FIELD OVERWRITE planet_id   ON calendars TYPE record<planets>;
+DEFINE FIELD OVERWRITE planet_id   ON calendars TYPE record<planets> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
 DEFINE FIELD OVERWRITE description ON calendars TYPE option<string | null>;
 DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
@@ -116,7 +116,7 @@ DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string | null>;
 
 -- 11. СУЩНОСТИ ЭНЦИКЛОПЕДИИ ЛОРА
 DEFINE TABLE OVERWRITE entities SCHEMAFULL CHANGEFEED 30d;
-DEFINE FIELD OVERWRITE schema_id    ON entities TYPE record<entity_schemas>;
+DEFINE FIELD OVERWRITE schema_id    ON entities TYPE record<entity_schemas> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE name         ON entities TYPE string;
 DEFINE FIELD OVERWRITE description  ON entities TYPE option<string | null>;
 DEFINE FIELD OVERWRITE tags         ON entities TYPE array<string> DEFAULT [] VALUE IF $value = NONE OR $value = NULL THEN [] ELSE $value END;
@@ -172,7 +172,7 @@ DEFINE FIELD OVERWRITE project_id  ON timeline_events TYPE record<projects> | st
 DEFINE FIELD OVERWRITE title       ON timeline_events TYPE string;
 DEFINE FIELD OVERWRITE description ON timeline_events TYPE option<string | null>;
 DEFINE FIELD OVERWRITE m_abs       ON timeline_events TYPE int; -- Золотой эталон абсолютной минуты
-DEFINE FIELD OVERWRITE calendar_id ON timeline_events TYPE record<calendars>;
+DEFINE FIELD OVERWRITE calendar_id ON timeline_events TYPE record<calendars> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE created_at  ON timeline_events TYPE datetime DEFAULT time::now();
 
 -- 17. РОЛЕВОЕ УЧАСТИЕ СУЩНОСТЕЙ В СОБЫТИЯХ ТАЙМЛАЙНА (ХРОНИКА ЛОРА)

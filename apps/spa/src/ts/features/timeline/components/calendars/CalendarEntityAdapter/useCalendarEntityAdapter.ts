@@ -79,12 +79,20 @@ export function useCalendarEntityAdapter(
       orbit_days: 365.25,
       axial_tilt: 23.5,
     };
-    await calendarStore.savePlanet(props.projectId, newPlanet);
-    await calendarStore.getCalendars(props.projectId);
-    planetsList.value = calendarStore.getPlanets(props.projectId);
+    planetsList.value.push(newPlanet);
     activeMode.value = 'planet';
     selectedPlanetId.value = newId;
     emit('modified');
+    try {
+      await calendarStore.savePlanet(props.projectId, newPlanet);
+      await calendarStore.getCalendars(props.projectId);
+      const updated = calendarStore.getPlanets(props.projectId);
+      if (updated && updated.length > 0) {
+        planetsList.value = updated;
+      }
+    } catch (e) {
+      console.error('[CalendarEntityAdapter] Ошибка сохранения планеты:', e);
+    }
   }
 
   async function onAddCalendar(planetId: string) {

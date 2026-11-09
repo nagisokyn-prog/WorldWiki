@@ -111,5 +111,6 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
     calendarRenamedListener,
     calendarDeletedListener,
     planetDeletedListener,
+    toggleWowilonHandler,
   };
 }

@@ -62,11 +62,11 @@ describe('useCalendarEntityAdapter', () => {
     expect(adapter.selectedCalendarId.value).toBe('cal_123');
   });
 
-  it('добавляет новую планету', () => {
+  it('добавляет новую планету', async () => {
     const emit = vi.fn();
     const adapter = useCalendarEntityAdapter(dummyProps, emit);
     const initialPlanets = adapter.planetsList.value.length;
-    adapter.onAddPlanet();
+    await adapter.onAddPlanet();
 
     expect(adapter.planetsList.value.length).toBe(initialPlanets + 1);
     expect(adapter.activeMode.value).toBe('planet');

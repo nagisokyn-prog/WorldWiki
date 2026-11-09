@@ -69,6 +69,36 @@ fn extract_archive_file<R: std::io::Read>(
     Ok(false)
 }
 
+fn clean_bundle_item(mut item: serde_json::Value, table: &str) -> serde_json::Value {
+    if let Some(obj) = item.as_object_mut() {
+        obj.remove("created_at");
+        obj.remove("updated_at");
+        obj.remove("saved_at");
+        let prefix = format!("{table}:");
+        let id_str = match obj.get("id") {
+            Some(serde_json::Value::String(s)) => Some(s.clone()),
+            Some(serde_json::Value::Object(m)) => {
+                if let Some(id_field) = m.get("id") {
+                    match id_field {
+                        serde_json::Value::String(s) => Some(s.clone()),
+                        serde_json::Value::Object(sub_m) => sub_m.values().next().and_then(|v| v.as_str()).map(|s| s.to_string()),
+                        _ => Some(id_field.to_string().trim_matches('"').to_string()),
+                    }
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        };
+
+        if let Some(s) = id_str {
+            let stripped = s.strip_prefix(&prefix).unwrap_or(&s);
+            obj.insert("id".to_string(), serde_json::Value::String(stripped.to_string()));
+        }
+    }
+    item
+}
+
 async fn restore_project_bundle(
     db: &Surreal<Db>,
     bundle_path: &std::path::Path,
@@ -85,135 +115,104 @@ async fn restore_project_bundle(
         DomainError::Validation("Project missing id in bundle".to_string())
     })?;
 
-    // 1. Begin transaction for 100% ACID atomicity
-    let mut tx_res = db
-        .query("BEGIN TRANSACTION;")
+    let mut p_content = project.clone();
+    if let Some(map) = p_content.as_object_mut() {
+        map.remove("id");
+        map.remove("created_at");
+        map.remove("updated_at");
+    }
+
+    // Build atomic transaction script: if any statement errors, SurrealDB automatically aborts transaction
+    let mut script = String::new();
+    script.push_str("BEGIN TRANSACTION;\n");
+    script.push_str("DELETE type::record($pid);\n");
+    script.push_str("UPSERT type::record($pid) CONTENT $p_content;\n");
+
+    let mut bindings: Vec<(String, serde_json::Value)> = vec![
+        ("pid".to_string(), serde_json::Value::String(proj_id.to_string())),
+        ("p_content".to_string(), p_content),
+    ];
+
+    let node_tables = [
+        "volumes",
+        "chapters",
+        "entity_schemas",
+        "entities",
+        "timeline_events",
+        "story_arcs",
+        "planets",
+        "calendars",
+        "atlases",
+        "relation_schemas",
+    ];
+
+    let mut var_idx = 0;
+    for table in node_tables {
+        if let Some(items) = bundle.get(table).and_then(|v| v.as_array()) {
+            if items.is_empty() {
+                continue;
+            }
+            for chunk in items.chunks(500) {
+                let filtered_chunk: Vec<serde_json::Value> = if table == "entity_schemas" {
+                    chunk
+                        .iter()
+                        .filter(|item| {
+                            let id = item.get("id").and_then(|v| v.as_str()).unwrap_or_default();
+                            !id.starts_with("entity_schemas:default_")
+                        })
+                        .cloned()
+                        .map(|it| clean_bundle_item(it, table))
+                        .collect()
+                } else {
+                    chunk.iter().cloned().map(|it| clean_bundle_item(it, table)).collect()
+                };
+
+                if filtered_chunk.is_empty() {
+                    continue;
+                }
+
+                let var_name = format!("batch_{var_idx}");
+                var_idx += 1;
+                script.push_str(&format!("INSERT INTO {table} ${var_name};\n"));
+                bindings.push((var_name, serde_json::Value::Array(filtered_chunk)));
+            }
+        }
+    }
+
+    let edge_tables = ["contains", "entity_rel", "participates_in", "appears_in"];
+    for table in edge_tables {
+        if let Some(items) = bundle.get(table).and_then(|v| v.as_array()) {
+            if items.is_empty() {
+                continue;
+            }
+            for chunk in items.chunks(500) {
+                let cleaned_chunk: Vec<serde_json::Value> =
+                    chunk.iter().cloned().map(|it| clean_bundle_item(it, table)).collect();
+                let var_name = format!("batch_{var_idx}");
+                var_idx += 1;
+                script.push_str(&format!("INSERT INTO {table} ${var_name};\n"));
+                bindings.push((var_name, serde_json::Value::Array(cleaned_chunk)));
+            }
+        }
+    }
+
+    script.push_str("COMMIT TRANSACTION;\n");
+
+    let mut query = db.query(&script);
+    for (k, v) in bindings {
+        query = query.bind((k, v));
+    }
+
+    let mut res = query
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to begin transaction: {e}")))?;
-    let _ = tx_res.take_errors();
+        .map_err(|e| DomainError::Validation(format!("Restore transaction execution failed: {e}")))?;
 
-    let restore_ops = async {
-        // 2. Cascade delete existing project data safely (triggers cascade_project_delete)
-        let del_q = "DELETE type::record($pid);";
-        let mut del_res = db
-            .query(del_q)
-            .bind(("pid", proj_id))
-            .await
-            .map_err(|e| DomainError::Validation(format!("Delete project failed: {e}")))?;
-        let errors = del_res.take_errors();
-        if !errors.is_empty() {
-            return Err(DomainError::Validation(format!("Cascade delete error: {errors:?}")));
-        }
-
-        // 3. Upsert project itself
-        let p_q = "UPSERT type::record($pid) CONTENT $content;";
-        let mut p_res = db
-            .query(p_q)
-            .bind(("pid", proj_id))
-            .bind(("content", project.clone()))
-            .await
-            .map_err(|e| DomainError::Validation(format!("Upsert project failed: {e}")))?;
-        let errors = p_res.take_errors();
-        if !errors.is_empty() {
-            return Err(DomainError::Validation(format!("Project upsert error: {errors:?}")));
-        }
-
-        // 4. Batch insert nodes (chunks of 500)
-        let node_tables = [
-            "volumes",
-            "chapters",
-            "entity_schemas",
-            "entities",
-            "timeline_events",
-            "story_arcs",
-            "planets",
-            "calendars",
-            "atlases",
-            "relation_schemas",
-        ];
-
-        for table in node_tables {
-            if let Some(items) = bundle.get(table).and_then(|v| v.as_array()) {
-                if items.is_empty() {
-                    continue;
-                }
-                for chunk in items.chunks(500) {
-                    let filtered_chunk: Vec<serde_json::Value> = if table == "entity_schemas" {
-                        chunk
-                            .iter()
-                            .filter(|item| {
-                                let id = item.get("id").and_then(|v| v.as_str()).unwrap_or_default();
-                                !id.starts_with("entity_schemas:default_")
-                            })
-                            .cloned()
-                            .collect()
-                    } else {
-                        chunk.to_vec()
-                    };
-
-                    if filtered_chunk.is_empty() {
-                        continue;
-                    }
-
-                    let ins_q = "INSERT INTO type::table($table) $batch;";
-                    let mut ins_res = db
-                        .query(ins_q)
-                        .bind(("table", table))
-                        .bind(("batch", filtered_chunk))
-                        .await
-                        .map_err(|e| DomainError::Validation(format!("Insert {table} failed: {e}")))?;
-                    let errors = ins_res.take_errors();
-                    if !errors.is_empty() {
-                        return Err(DomainError::Validation(format!("Insert {table} error: {errors:?}")));
-                    }
-                }
-            }
-        }
-
-        // 5. Batch insert edges with preserved IDs and relations
-        let edge_tables = ["contains", "entity_rel", "participates_in", "appears_in"];
-        for table in edge_tables {
-            if let Some(items) = bundle.get(table).and_then(|v| v.as_array()) {
-                if items.is_empty() {
-                    continue;
-                }
-                for chunk in items.chunks(500) {
-                    let ins_q = "INSERT INTO type::table($table) $batch;";
-                    let mut ins_res = db
-                        .query(ins_q)
-                        .bind(("table", table))
-                        .bind(("batch", chunk.to_vec()))
-                        .await
-                        .map_err(|e| DomainError::Validation(format!("Insert edge {table} failed: {e}")))?;
-                    let errors = ins_res.take_errors();
-                    if !errors.is_empty() {
-                        return Err(DomainError::Validation(format!("Insert edge {table} error: {errors:?}")));
-                    }
-                }
-            }
-        }
-
-        Ok::<(), DomainError>(())
+    let errors = res.take_errors();
+    if !errors.is_empty() {
+        return Err(DomainError::Validation(format!("Restore transaction error: {errors:?}")));
     }
-    .await;
 
-    match restore_ops {
-        Ok(()) => {
-            let mut commit_res = db
-                .query("COMMIT TRANSACTION;")
-                .await
-                .map_err(|e| DomainError::Validation(format!("Commit failed: {e}")))?;
-            let errors = commit_res.take_errors();
-            if !errors.is_empty() {
-                return Err(DomainError::Validation(format!("Commit transaction error: {errors:?}")));
-            }
-            Ok(())
-        }
-        Err(e) => {
-            let _ = db.query("CANCEL TRANSACTION;").await;
-            Err(e)
-        }
-    }
+    Ok(())
 }
 
 /// Открывает `.wwiki` (zip), извлекает `database.surql` или `project_bundle.json` и импортирует его в БД.
@@ -263,7 +262,7 @@ pub async fn restore_from_backup_inner(
     if !bundle_found && !surql_found {
         let _ = fs::remove_dir_all(&temp_dir);
         return Err(DomainError::Validation(
-            "Invalid backup file: neither project_bundle.json nor database.surql found".to_string(),
+            "Invalid backup file: database.surql not found (nor project_bundle.json)".to_string(),
         ));
     }
 
@@ -272,26 +271,39 @@ pub async fn restore_from_backup_inner(
     } else {
         let raw_dump = fs::read_to_string(&surql_path)
             .map_err(|e| DomainError::Validation(format!("Failed to read dump: {e}")))?;
-        let sanitized: String = raw_dump
+        let mut skip_until_semi = false;
+        let mut sanitized: String = raw_dump
             .lines()
             .filter_map(|line| {
-                let t = line.trim_start();
+                let t = line.trim();
+                if skip_until_semi {
+                    if t.ends_with(';') {
+                        skip_until_semi = false;
+                    }
+                    return None;
+                }
                 if t.starts_with("DEFINE FIELD")
                     && t.contains("OVERWRITE")
                     && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*"))
                 {
+                    if !t.ends_with(';') {
+                        skip_until_semi = true;
+                    }
                     return None;
                 }
                 if t.starts_with("CREATE entity_schemas:default_")
                     || t.starts_with("UPSERT entity_schemas:default_")
                     || t.starts_with("INSERT INTO entity_schemas:default_")
                 {
+                    if !t.ends_with(';') {
+                        skip_until_semi = true;
+                    }
                     return None;
                 }
-                if let Some(rest) = t.strip_prefix("CREATE ") {
+                if let Some(rest) = line.trim_start().strip_prefix("CREATE ") {
                     let first_token = rest.split_whitespace().next().unwrap_or_default();
                     if first_token.contains(':') {
-                        let leading_ws = &line[..line.len() - t.len()];
+                        let leading_ws = &line[..line.len() - line.trim_start().len()];
                         return Some(format!("{leading_ws}UPSERT {rest}"));
                     }
                 }
@@ -299,6 +311,11 @@ pub async fn restore_from_backup_inner(
             })
             .collect::<Vec<_>>()
             .join("\n");
+
+        if !sanitized.contains("OPTION IMPORT;") {
+            sanitized = format!("OPTION IMPORT;\n{}", sanitized);
+        }
+
         fs::write(&surql_path, sanitized)
             .map_err(|e| DomainError::Validation(format!("Failed to write dump: {e}")))?;
 

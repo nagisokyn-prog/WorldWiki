@@ -3,15 +3,18 @@
  * @description Точка входа для отдельного плавающего окна «Путь Персонажа & Навигатор Сцен»
  */
 
-import { createApp, h } from 'vue';
+import { createApp, h, type Plugin } from 'vue';
 import { createPinia } from 'pinia';
-import type { Plugin } from 'vue';
 
 import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
 import '@worldwiki/resources/styles/styles.css';
+import '@worldwiki/resources/styles/base/glass-animations.css';
 
-import { settingsService, i18n } from '@worldwiki/components';
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
+import { MotionPlugin } from '@vueuse/motion';
+import { setupGlass } from '@/utils/v-glass';
+import { settingsService, i18n, setLocale } from '@worldwiki/components';
 import CharacterJourney from '../features/entities/CharacterJourney/CharacterJourney.vue';
 import type { JourneyTimelineItem } from '../features/entities/CharacterJourney/CharacterJourney.model';
 
@@ -20,9 +23,12 @@ async function init() {
   const project = params.get('project') || 'default';
   const initialEntityId = params.get('entity') || undefined;
 
-  // Применяем настройки темы и дизайн-системы
+  // Загружаем и применяем настройки темы и дизайн-системы
+  await settingsService
+    .loadSettings()
+    .catch((e: unknown) => console.warn('Failed to load settings:', e));
   settingsService.applySettings();
-  await settingsService.loadSettings().catch((e: unknown) => console.warn('Failed to load settings:', e));
+  setLocale(settingsService.getSettings().locale || 'ru');
 
   const pinia = createPinia();
 
@@ -67,8 +73,12 @@ async function init() {
   });
 
   app.use(pinia);
+  app.use(autoAnimatePlugin as unknown as Plugin);
+  app.use(MotionPlugin as unknown as Plugin);
+  setupGlass(app);
   app.use(i18n as unknown as Plugin);
+
   app.mount('#app');
 }
 
-init();
+init().catch((e) => console.error('[character_journey] init error:', e));

@@ -1,6 +1,12 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+
+const withAi =
+  process.argv.includes('--ai') ||
+  process.argv.includes('--with-ai') ||
+  process.env.WITH_AI === '1' ||
+  process.env.VITE_WITH_AI === 'true';
 
 export default defineConfig({
   plugins: [vue()],
@@ -8,6 +14,10 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     pool: 'vmThreads',
+    exclude: [
+      ...configDefaults.exclude,
+      ...(!withAi ? ['**/features/ai/**', '**/FloatingWindowAI/**'] : [])
+    ],
     include: [
       'test/**/*.test.ts',
       'apps/spa/src/ts/**/*.spec.ts',

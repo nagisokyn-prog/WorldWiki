@@ -121,4 +121,27 @@ opt-level = "s"
 [profile.release.package.worldwiki-calendar-wasm]
 opt-level = "s"
 
+# 🗜️ Сжатие модулей SurrealDB и адаптеров БД (I/O хранилище)
+[profile.release.package.surrealdb]
+opt-level = "s"
 
+[profile.release.package.surrealdb-core]
+opt-level = "s"
+
+[profile.release.package.surrealdb-datastore]
+opt-level = "s"
+
+[profile.release.package.surrealkv]
+opt-level = "s"
+
+[profile.release.package.surrealql]
+opt-level = "s"
+
+[profile.release.package.worldwiki-infrastructure]
+opt-level = "s"
+
+[profile.release.package.surreal_domain_core]
+opt-level = "s"
+
+[profile.release.package.tauri-shell-adapter]
+opt-level = "s"

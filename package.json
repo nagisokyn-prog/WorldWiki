@@ -15,6 +15,7 @@
     "lint:css": "npx stylelint \"packages/resources/src/styles/**/*.css\"",
     "format": "oxfmt --write src/ts",
     "test": "pnpm -r --stream test",
+    "test:ai": "pnpm -r --stream --filter @worldwiki/spa test:ai",
     "test:run": "vitest run",
     "test:turbo": "turbo-test",
     "test:coverage": "vitest run --coverage",

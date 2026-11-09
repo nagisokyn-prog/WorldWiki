@@ -51,6 +51,7 @@
 @import "./features/chapters/PromisesPanel.css";
 @import "./features/chapters/PlanningPanel.css";
 @import "./features/entities/EntityEditor.css";
+@import "./features/entities/EntityEditorWindow.css";
 @import "./features/entities/FloatingEntityEditor.css";
 @import "./features/entities/TagsManagerModal.css";
 @import "./features/schemas/SchemaEditorMain.css";

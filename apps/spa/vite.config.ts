@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 import { resolve } from 'path';
 import * as fs from 'node:fs';
 import vue from '@vitejs/plugin-vue';
@@ -31,7 +31,11 @@ const compilerFs = {
  * v2-депсы. Vite-хак с перенаправлением импортов (paginationV2Resolver)
  * больше не нужен: pnpm резолвит v2-копии внутри пакета.
  */
-const withAi = process.argv.includes('--with-ai');
+const withAi =
+  process.argv.includes('--with-ai') ||
+  process.argv.includes('--ai') ||
+  process.env.WITH_AI === '1' ||
+  process.env.VITE_WITH_AI === 'true';
 
 const inputEntries: Record<string, string> = {
   app: resolve(__dirname, 'app.html'),
@@ -156,6 +160,10 @@ export default defineConfig(({ command }) => {
       globals: true,
       environment: 'happy-dom',
       pool: 'vmThreads',
+      exclude: [
+        ...configDefaults.exclude,
+        ...(!withAi ? ['**/features/ai/**', '**/FloatingWindowAI/**'] : [])
+      ],
       server: {
         deps: {
           // tiptap-pagination-plus — ESM-код в .js без "type": "module",

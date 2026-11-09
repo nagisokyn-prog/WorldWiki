@@ -56,7 +56,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     if (d && typeof d === 'object' && 'data' in d && typeof d.data === 'object' && d.data !== null) {
       d = d.data as Record<string, unknown>;
     }
-    if (!d || (!d.месяцы && (masterCalendar.value as unknown as Record<string, unknown>).месяцы)) {
+    if (!d && (masterCalendar.value as unknown as Record<string, unknown>).месяцы) {
       d = masterCalendar.value as unknown as Record<string, unknown>;
     }
     return (d as unknown as CalendarData) || null;

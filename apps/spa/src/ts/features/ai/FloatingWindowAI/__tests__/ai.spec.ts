@@ -7,9 +7,13 @@ describe('FloatingWindowAI ai.ts entry point', () => {
       mount: vi.fn(),
     };
 
-    vi.doMock('vue', () => ({
-      createApp: vi.fn(() => mockApp),
-    }));
+    vi.doMock('vue', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('vue')>();
+      return {
+        ...actual,
+        createApp: vi.fn(() => mockApp),
+      };
+    });
 
     vi.doMock('pinia', () => ({
       createPinia: vi.fn(() => ({})),
@@ -21,6 +25,7 @@ describe('FloatingWindowAI ai.ts entry point', () => {
 
     // Import ai.ts
     await import('../ai');
+    await new Promise((r) => setTimeout(r, 20));
 
     const { createApp } = await import('vue');
     expect(createApp).toHaveBeenCalled();

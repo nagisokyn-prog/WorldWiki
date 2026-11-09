@@ -1,11 +1,99 @@
 [
   {
+    "rule": "AI-003",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
+    "line": 1,
+    "symbol": "reflection_probe",
+    "message": "Unauthorized environment probe 'std::env::current_dir' in crate 'worldwiki-tauri'. Probing platform environment is restricted to infrastructure adapters.",
+    "fingerprint": "36914ebb950a9b96b69dda2cebb60b34036c46ab525c38a5558ed7c5d3614328"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-ai/src/hub.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (201.6) exceeds warning limit (200.0)",
+    "fingerprint": "db4a3ec195ca94b94250f232a1dd2ca2d22719ab0f9314aa304e11c1e5ac4c8c"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-ai/src/local_manager.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (237.0) exceeds warning limit (200.0)",
+    "fingerprint": "575e46ae6db747d4393fe23b85a6d5b0bead40f198b29e8235fd73397b381789"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/id_extractor.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (193.5) exceeds warning limit (150.0)",
+    "fingerprint": "4fa1035a8a27c9130cbb58c4e1531df6d66738bc6d7fc043a56100b6201a5f0e"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (275.4) exceeds warning limit (150.0)",
+    "fingerprint": "e7b2f10e6904720c14702418b2722485e8c2be3b6928bf25804f89cdda56c1ce"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (271.8) exceeds warning limit (250.0)",
+    "fingerprint": "5090eb99df228d27311b731da445b733eed3aeed22d44136b2f868ff920f99ae"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (352.7) exceeds warning limit (250.0)",
+    "fingerprint": "320e9e0a3a037fe792dc9a45c7bf12affd9b3a51a6041191088fcb9c355e4fd4"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (399.2) exceeds warning limit (250.0)",
+    "fingerprint": "294d0b3e5e86814cf7088f02f53331f598bdabd7bc0ab07d27ab4507e4b83505"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/src/bootstrap/database.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (213.1) exceeds warning limit (200.0)",
+    "fingerprint": "99e6ebb608adbcaafae463cace84ef4fe0a2c0d5f112f7b8753beefc59a5bcd2"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (249.9) exceeds warning limit (200.0)",
+    "fingerprint": "cc57e4fc52328c89dfdcb4b205985ca4637a923f6169e396dfabc474726cbb0f"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (178.6) exceeds warning limit (150.0)",
+    "fingerprint": "5c3e3f7027643e1bae4e7b132b7c45614c58ac84ac051ecbc6a2f8ca81149119"
+  },
+  {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/chapters/components/editor/EditorCoreTiptap/composables/useEditorSceneFrames.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (329) exceeds recommended limit (265)",
-    "fingerprint": "c31215a5fa9274aa4ec057f2900e0fbfffcdd710c7eacdaa9f6650c5f40a5a9b"
+    "message": "Frontend file SLOC (384) exceeds recommended limit (265)",
+    "fingerprint": "c3a88ac5df75288626876122f6837860b6d7d6acdaf2bed610a2a04ed292ba5e"
   },
   {
     "rule": "ARCH-031",
@@ -25,6 +113,62 @@
   },
   {
     "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/components/panels/PromisesPanel/usePromisesPanel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (358) exceeds recommended limit (265)",
+    "fingerprint": "56ebb0ded55642d7608a61e4fc348dac83919f508de00605593a0dc10d2f204f"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/CharacterJourney.spec.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (402) exceeds recommended limit (315)",
+    "fingerprint": "52b48dc6359afcff89377fca0d2ccda3a8219ab528e85330fb177507279f34ee"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/composables/useJourneyItemsBuilder.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (306) exceeds recommended limit (265)",
+    "fingerprint": "0d423dcb70f949f0c5631bef4b79ebb35870f4ded2192bf2e15861e38c2302c8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/composables/useJourneyManuscriptEnricher.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (465) exceeds recommended limit (265)",
+    "fingerprint": "8526212bbe5461176bc7c75643d8cbc3ee0ee86b8b5ecbadef099ecc6339dc6c"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/useCharacterJourney.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (274) exceeds recommended limit (265)",
+    "fingerprint": "c7bc0d397cf6b140eeabed28454bb3e08ca5c2ecff9173898d139fde12795352"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/useEntityEditorWindow.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (268) exceeds recommended limit (265)",
+    "fingerprint": "eb37d44e0a8cdad2fb133c5c8091fb7f8913c558e20f475ed640261ac71d737d"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/sync/CloudSyncModal.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (177) exceeds recommended limit (165)",
+    "fingerprint": "da2ea34168605dfa8260ee61e769e71754ee00ff1a5e9454d5ef777f2a9989f5"
+  },
+  {
+    "rule": "ARCH-031",
     "file": "./packages/ast-diff-wasm/pkg/worldwiki_ast_diff_wasm.js",
     "line": 1,
     "symbol": "component",
@@ -40,27 +184,1283 @@
     "fingerprint": "ab7111ba2b5abeafff31bc5960918ba7e5575a9bab92a0494a96c9438dd2e8ac"
   },
   {
+    "rule": "ASYNC-001",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/theme.rs",
+    "line": 1,
+    "symbol": "async_await",
+    "message": "Holding std::sync::MutexGuard across .await point causes Tokio worker starvation and deadlocks",
+    "fingerprint": "2c5689b9be134c1cc1fac3e6067006e1cfdf2f0bd212910419c576d7f967299f"
+  },
+  {
+    "rule": "CONC-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
+    "line": 233,
+    "symbol": "orphan_spawn",
+    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
+    "fingerprint": "32c901a67c3a9e1346fa09b2e423cdc5eaf9ae704a3f333636b4688aecd27019"
+  },
+  {
+    "rule": "CSS-001",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 138,
+    "symbol": "style",
+    "message": "Vue SFC contains large inline <style> (234 lines). Raw CSS blocks in SFC are prohibited.",
+    "fingerprint": "c984640b5728ec3c254e5c0d5c653007d90e467145c8940cddcf356fc13ff380"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 143,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "aa10aee5930aee8d6725778d241ecaf88cfc698a025a29a4ee9fb98aefe5299f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 144,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "6e5a6ae9dd28d378680576a2f20f191992709c5d6ea50c4844141e5c1d39465b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 152,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "6c47e743b25b51f1b8261e8eb63a5ea9ecd350fb780bf4da768f7c77a897354e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 153,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "ab62c61881e257d1b820f03aa9e70f872c96bd4c1e0e93d15d1b4c49e1b3a8bc"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 169,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "7de40c4866c1e06858d49f161a647025eb495fb71e4ccc13323aabbaf4bc0747"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 170,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e0cd57e77aca9210e1516c180189637c0378174aa5d42eed72fb2c0bb72189a4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 185,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "36344d19d77d4d6285b8c59f18f53bd1a8f1ff11066fd69d1e96470f8bab35c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 197,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3273a027fe960bd2ad2b512007259e0dcf75edaa5ebee124de750c4532e04270"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 198,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e1d7d5a20dc6f52a4da93e52e0c7d2238bb30e318997217279b1c9812ae3f578"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 199,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "b179ba30839ca82e2e40c5959751bbf391f9ee4d4922430e78e08c6ca9c44e73"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 208,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "7de40c4866c1e06858d49f161a647025eb495fb71e4ccc13323aabbaf4bc0747"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 209,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e0cd57e77aca9210e1516c180189637c0378174aa5d42eed72fb2c0bb72189a4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 219,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3c74f87b39e21fbf95e07a337c29a1a56c117ca01761c829711d5a70dd3444ac"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 224,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "9aea4161081f11d9662242c0bed1d2ad0ba6f5684d903dd51a805505fb280b5e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 241,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "559e3c594e62ac7c4968af7c6e941a30bdadad9dce3436da4a37045ce9e86cc5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 242,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "547ea41332cf59d362ca89a0c03a5e7f22e05ce2d659697680ce2b04bbd1f42a"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 243,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "450c0113bf4a646e17d3b94acb16b052eef9fdde6787d12f82efded44745fec8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 247,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "883b4779adc5b208088bd30d95081c1583553e7d1960d4e1507d25b42bb4f2b7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 248,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "db19e66ac7ff441da538406a9b2ea2d7892497ba6b277b2eda0ba676a2db9513"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 249,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "6e5a6ae9dd28d378680576a2f20f191992709c5d6ea50c4844141e5c1d39465b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 256,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3273a027fe960bd2ad2b512007259e0dcf75edaa5ebee124de750c4532e04270"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 257,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "6f9615c1fc0e674442d29bcd60f6d681b2825789c77b1386a341bf424a7303d0"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 267,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e1d7d5a20dc6f52a4da93e52e0c7d2238bb30e318997217279b1c9812ae3f578"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 278,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "b179ba30839ca82e2e40c5959751bbf391f9ee4d4922430e78e08c6ca9c44e73"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 280,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e1d7d5a20dc6f52a4da93e52e0c7d2238bb30e318997217279b1c9812ae3f578"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 288,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "cbe6e247b00d69634b4caa648b0cf91342b96cde6c67b8a54cf21e36304c458c"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 289,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e1628a42c8267927bf202fecf6db54ca5eac90e6b29ba95f1731b84271b72092"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 320,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "36344d19d77d4d6285b8c59f18f53bd1a8f1ff11066fd69d1e96470f8bab35c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 330,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "ed384a41351c79688292838d48c909344fe55cfe81736e1a9ce3c823526ceb77"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 331,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "8fb716c27671d0e0f7084fd6f9b10ab381778fa6d2c50a923195ecef3e3a3c20"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 335,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "7efda232379c882e9d55093d6b702f9563254a2d9a325f8a97be4da7f4030035"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 341,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "2dbf69e5720df216947ffd58068edc7600a766500fe55dcc7910990451f2b9b1"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 353,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "36344d19d77d4d6285b8c59f18f53bd1a8f1ff11066fd69d1e96470f8bab35c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 359,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "36344d19d77d4d6285b8c59f18f53bd1a8f1ff11066fd69d1e96470f8bab35c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 374,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "36344d19d77d4d6285b8c59f18f53bd1a8f1ff11066fd69d1e96470f8bab35c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 381,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "db19e66ac7ff441da538406a9b2ea2d7892497ba6b277b2eda0ba676a2db9513"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 384,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "883b4779adc5b208088bd30d95081c1583553e7d1960d4e1507d25b42bb4f2b7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 388,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "83da92166479d36a21e12689fe00a0f1c7c55915e3301462b1a72ca2c9ca353c"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 389,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "0dcdb14bc2694fc7c9e97c8c36d7e15051ca8dcaa4380416187752d4589bc792"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 406,
+    "symbol": "color_hex",
+    "message": "Hardcoded hex color found in stylesheet.",
+    "fingerprint": "e1d7d5a20dc6f52a4da93e52e0c7d2238bb30e318997217279b1c9812ae3f578"
+  },
+  {
     "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
-    "line": 548,
+    "line": 552,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "42f429421cc5e5af0fe044cef7c83c53dff3332eb2f99f174e5ecd16cf5e4fd2"
   },
   {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 683,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 700,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 701,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 720,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 757,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "60337ffaf1c01cb26092aaac4536f43b9e577e75d4b27d021266be307df4172b"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 782,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "5048ecd8c15919395b3fd9433c2d04744aef015ac658f304043afb5f7ad1b2f4"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 807,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "57a82f1286743f499ce5b2ceb06ca767684b7473d79d4b79d936856dbecf0521"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 832,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "797bb8aeb41ad21a5b9c61f266b5b42665843e921ead91e8d6692d8b1fb8dfce"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 857,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "557ba484e246169d1bacb2553ebbf763ec9654b7746149484136c2d23d05ac74"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 309,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "f0e41b95bdf9e976cb7d0fbb68d227e61ec084f1b89253276d64cef329dcbe8c"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 310,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "8fb25f3082d751014a1f29ba9243de2413142c004b07c6d125d8b86b77772890"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 355,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "f0e41b95bdf9e976cb7d0fbb68d227e61ec084f1b89253276d64cef329dcbe8c"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
+    "line": 356,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "8fb25f3082d751014a1f29ba9243de2413142c004b07c6d125d8b86b77772890"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/CloudSyncModal.css",
+    "line": 325,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "0af117d6b6fcbaad55d1c479f5f25262148a54879dea31118efc72df98717aa6"
+  },
+  {
     "rule": "CSS-PERF-003",
     "file": "./packages/resources/src/styles/features/timeline/TimelineInspector.css",
-    "line": 549,
+    "line": 553,
     "symbol": "compositor_transition_layout",
     "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
     "fingerprint": "6fa88d49ef8712a1b8b798f3a16205e856a2321a67dd97d898de8ef1200accc3"
   },
   {
+    "rule": "CSS-PERF-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 215,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cb4e7d166f46a65bfb831cc21785250d40715d23c9dd258da2bba4a53404faf7"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 383,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cb4e7d166f46a65bfb831cc21785250d40715d23c9dd258da2bba4a53404faf7"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditorWindow/EntityEditorWindow.vue",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "d501970f3d8e6dd0a7fb541997da840867d01072574c8eb4f8a66c9371ad8ebe"
+  },
+  {
+    "rule": "ERR-001",
+    "file": "./src-tauri/crates/worldwiki-ai/src/mock_ai.rs",
+    "line": 38,
+    "symbol": "stream_chat",
+    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
+    "fingerprint": "9b64df5f95f9412d95ebce73c8c281dba15937832c7ab528381ddad829aaf0e8"
+  },
+  {
+    "rule": "ERR-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/mock_ai.rs",
+    "line": 38,
+    "symbol": "stream_chat",
+    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
+    "fingerprint": "ae2abe67eeb70b226ab1175fba907d72f3e55a1e965c957f4d334f06ec1f9402"
+  },
+  {
+    "rule": "ERR-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 141,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
+    "fingerprint": "1a776313739bff1642b1d0f38509320b0fade3bbdedf4b6bcf21c4e23a790d74"
+  },
+  {
+    "rule": "ERR-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 308,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
+    "fingerprint": "124aa4618e3f9d5eb933c92f3e11540248e6b35c227a53b728087324ccd2f567"
+  },
+  {
+    "rule": "ERR-004",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/theme.rs",
+    "line": 63,
+    "symbol": "try_read_theme_file",
+    "message": "Calling .unwrap_or_default() / .unwrap_or() on fallible Result suppresses errors into empty default state.",
+    "fingerprint": "808efa2ba9cb792b24d2e613f29f2754ff9516ba98218bff781fa2f687d3e7f4"
+  },
+  {
+    "rule": "ERR-005",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/mock.rs",
+    "line": 85,
+    "symbol": "test_mock_repo_recovers_from_poisoned_mutex",
+    "message": "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.",
+    "fingerprint": "31fabb2bc1bca31e5b02812bc19bf93513aebb4446e065a9d119ce11b0a9d946"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 181,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "04f938c8ab61dff188ec1a49b8c59cc0548571cf043bc23e59bea3e73ba7830a"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 186,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 190,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "b52eec1b10beb0605d4322fe1a3319da6927cd18d80074a1f332cd3109de07f6"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 196,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 199,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "1c143b014ff8c579d5579aea1bafcdf7d82128f90293cb6262963b4ac3926bf6"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 205,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 208,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "90cabc24c7ae679fec651641245cd151987af1da2f4b58822122405d93bed5c4"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 213,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 217,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "e098a2b7023e131bba590039c6d94d0ae56f0528a0aa9f6c9cc464431f24589a"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 222,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 225,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "cf182bd31f0fbaa51b0444a94a19169cfb05aba086292317c4c68ccdfa79ca5a"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 231,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 235,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "a5d3b23f5d1a08fb711a833ced3252db57cb515daf8f63e4840723a604f03b3e"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 240,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 243,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f8e8a25d042d93d6d970e0f2623c75aba7e33f3bec83808fe4a6b1a49d84bb4d"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 248,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 251,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "a29fdaa334bee08c083ada14966eda06befb57bc30604750dc2515bd5b03c84f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 256,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 259,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "d555b1e3523b3f0e48ec3715357ee09075e0f29f1cf19bc2284cca300f8c692d"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 264,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 267,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "6b39591d22716f62bf53cb222e38ab7b0118c1ff974040144d2641dbe1d9d90e"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 272,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 276,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "70829f30e63291582f71c1ba2030dec7a38780f49c8f51fedc511957bf21ead1"
+  },
+  {
+    "rule": "ERR-006",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 281,
+    "symbol": "create_cloud_backup_inner",
+    "message": "Calling .ok()? on database query erases critical failure reason into None.",
+    "fingerprint": "f7b5b96e1007c3146c7a5e8214b3446f6ba46add4ddaab52958920601369a48f"
+  },
+  {
+    "rule": "FE-ERR-001",
+    "file": "./apps/spa/src/ts/features/entities/CharacterJourney/composables/useJourneyManuscriptEnricher.ts",
+    "line": 509,
+    "symbol": "empty_catch_block",
+    "message": "Empty catch block silently swallows runtime exceptions without analysis, recovery or telemetry.",
+    "fingerprint": "7fcb1137a678942e9eb8687908d9ebc39dd1436c3e69aacf7aee80905697bbc4"
+  },
+  {
+    "rule": "FSD-004",
+    "file": "./apps/spa/src/ts/features/chapters/components/tree/ChapterTree/ChapterTree.vue",
+    "line": 106,
+    "symbol": "@/features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue",
+    "message": "FSD Cross-Slice Violation: slice 'chapters' cannot directly depend on sibling slice 'timeline'",
+    "fingerprint": "beb92eddaa6ff74882edc0607f2b5db98ab78a0517fcd316c8881b32575bf64a"
+  },
+  {
+    "rule": "PERF-011",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
+    "line": 495,
+    "symbol": "loop_io",
+    "message": "Blocking I/O operation 'fs::write' invoked inside iteration loop causing N+1 performance bottleneck.",
+    "fingerprint": "7b88e56e9261b6fde360699402f10509c675f4050c3038f34bcbb34d40650281"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/id_extractor.rs",
+    "line": 51,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "63480e5ef8e2cf897272fb548125245a51724eb518b8c53b1188f0eb90ac044d"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 25,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "dd7eeee96e681e7bee42c9b61eda86393d72088ddd821efbf831a667414ee917"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 28,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "219aaf1d7032b9652da689e8f1dde06944a3280f355a9f9cfedc77fb6cb9187a"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 29,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "219aaf1d7032b9652da689e8f1dde06944a3280f355a9f9cfedc77fb6cb9187a"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 29,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a19d7028b4e8e3029328eb650f2d1032198b7049b14bbd5ade8474f25cb15e69"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 29,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a972c0a858ced682fa6f36241b61cd3e270be371db2f6865fd3c78d0d06813e6"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 31,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "219aaf1d7032b9652da689e8f1dde06944a3280f355a9f9cfedc77fb6cb9187a"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 32,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a19d7028b4e8e3029328eb650f2d1032198b7049b14bbd5ade8474f25cb15e69"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 32,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a972c0a858ced682fa6f36241b61cd3e270be371db2f6865fd3c78d0d06813e6"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 33,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "433dae4f4969c2b482d5711e8641cf513cff025ada995c48d446c8f59eb8cf9d"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 33,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "856c8c03e0a47085e153f976b4551a95f3397b894f9c5ae2269c332369b3406c"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 36,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "219aaf1d7032b9652da689e8f1dde06944a3280f355a9f9cfedc77fb6cb9187a"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 37,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a19d7028b4e8e3029328eb650f2d1032198b7049b14bbd5ade8474f25cb15e69"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 37,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "a972c0a858ced682fa6f36241b61cd3e270be371db2f6865fd3c78d0d06813e6"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 38,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "433dae4f4969c2b482d5711e8641cf513cff025ada995c48d446c8f59eb8cf9d"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 38,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "856c8c03e0a47085e153f976b4551a95f3397b894f9c5ae2269c332369b3406c"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 39,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "03d28df4c20e7a3bc3c7c15ff2ad9a84f3e95938b809f0d6cff5a001a7dbf4e4"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 39,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "7bd44c647df8606a4cf2eefd1f0182efbe930975cfb69a7ac3809a9a0368ab7a"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/mention_parser.rs",
+    "line": 160,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "b90996c6f7e93f851c34a9fd304e9d0d22a7bf29384e078be5be279386b7aeae"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 133,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "809995909a8d0c9ac4e8c282e84c438c393510e0ed5e9efd1ea417b5f5a14478"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
+    "line": 306,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "9ba7fff4f65aecbc9b1dcf068ea37155cfdfdcc37fa8cabac09b1c093e408b07"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 21,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "43b111d86dd99c9a1c80d9bc0a3b1f0557f455cd546e3040fed01b3801541f63"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 38,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "d833f30f5d265258759df89b3b4deba6e8075ef1b2f1acb5effa6711bfa6ad1b"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 39,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "90acf2abc75f76e4c0bdd8cd98f5889b3f92ba697340e35e69d179f557221f1f"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/id_helpers.rs",
+    "line": 54,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "673ca77f513d75c2445d73986a488fa446711b4d533cd26dadf30c1d04847525"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
+    "line": 148,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "8fa2c64c3a3f8a106e059266204d05348fdbe25e8bb1a153e613de8f9c486232"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
+    "line": 149,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "d83c551fa646d9097d45add7ee2659d66a935f9a2666979a61cd9faa07e6c1a7"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
+    "line": 154,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "cdc7dbc63a22421bcb5a62685a7e079273d5729e9f441bc840ca01b995b562cf"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
+    "line": 155,
+    "symbol": "slice_index",
+    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
+    "fingerprint": "d83c551fa646d9097d45add7ee2659d66a935f9a2666979a61cd9faa07e6c1a7"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 158,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "518a0ae9a243d3e7eede87e69208098a5b63cee02b3bba9a9cef310e2ed52eb6"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 186,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "87c49d1acd2138137dd22db4d6e833f23194aa9fa279dde00c62c853c5741a12"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 196,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "926b1c5b1f11d6250d94ab88664c6dace797c796339982bc892bcdab7a33261e"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 205,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "2180baca38c6a98c9ef5d882118f1867e8f034747619268217cfb52f50de6bc8"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 213,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "12e0a7ddfe328db7c9fc3a03240ccb32a7208f21a5d127039ba1f3a80f23db08"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 222,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "6b87997698b5d379eb396a98266872ddb787db2e54622f08331a27149a6d3b2b"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 231,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "803e53c13bb357e329630eef7c2e66eef7e7dbbd7253589f466fa87251fcac9a"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 240,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "87c09e4081c338f8288208f63c40f019342f7ba0905c411069b192a01b334742"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 248,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "d7f38c13b7abc887ee6f6d23cdbc88d4f59cce7e14541443a45cee530c4faf56"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 256,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "13f2b3de440bf23f7d04f9bde8418b9359942baea7a6a3070af7e262b038d2f2"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 264,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "1ab1f72305f1bc89c7049e94abb46defd16f73aab2ef7961232b70da0fbd8384"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 272,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "958bc783813ffd13a5139956d879c21ebf5834eb6ce9c81a6e49debc622ae9c2"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 281,
+    "symbol": "create_cloud_backup_inner",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "8c5be1585a6b7ec5ebfaaef8b09732fd12ac7b4049b160aac6fc8cd31d374bcb"
+  },
+  {
+    "rule": "SDB-009",
+    "file": "./src-tauri/src/bootstrap/database.rs",
+    "line": 136,
+    "symbol": "deduplicate_entity_schemas",
+    "message": "SurrealDB Response statement take without error check. res.take(index).unwrap_or_default() suppresses SQL runtime errors.",
+    "fingerprint": "272f78ad48a12147f1a11cb8551bac8d8826e7f750f6b6afbb4060cd1c667a10"
+  },
+  {
+    "rule": "SEC-011",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
+    "line": 176,
+    "symbol": "format!(...)",
+    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+    "fingerprint": "a841ca5ae2ea5cd7305c5781521da12e4744ac92df48c4a6a569af881db15b21"
+  },
+  {
+    "rule": "SEC-011",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/restore.rs",
+    "line": 193,
+    "symbol": "format!(...)",
+    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+    "fingerprint": "a841ca5ae2ea5cd7305c5781521da12e4744ac92df48c4a6a569af881db15b21"
+  },
+  {
+    "rule": "SEC-011",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/read_ops.rs",
+    "line": 62,
+    "symbol": "format!(...)",
+    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+    "fingerprint": "13b71ab0cd7ea15ee78d5317c753f1b097ab3e351e849573776a1b5ebb7aaabe"
+  },
+  {
+    "rule": "SEC-011",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/write_ops.rs",
+    "line": 34,
+    "symbol": "format!(...)",
+    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+    "fingerprint": "4bd7961fdda04862dadf038faed0970e6e335c75604b85096e4c5630c772176a"
+  },
+  {
+    "rule": "SEC-011",
+    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/write_ops.rs",
+    "line": 88,
+    "symbol": "format!(...)",
+    "message": "Building SurrealQL query via format! macro. Pass parameterized bind values via .bind() instead.",
+    "fingerprint": "4bd7961fdda04862dadf038faed0970e6e335c75604b85096e4c5630c772176a"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 1,
+    "symbol": "create_cloud_backup_inner",
+    "message": "High .clone() density detected (4 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "6971f28141867ab8ab1fc01f556c753a006b56a469a8f13885fcddb773122679"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
+    "line": 1,
+    "symbol": "sync_media_to_yandex_inner",
+    "message": "High .clone() density detected (9 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "418ce5c4437f545b5b5b66691d93a5161f48a4bca110c53850142aa8f9066f81"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 157,
+    "symbol": "projects",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'projects' uses SELECT * without explicit field projection.",
+    "fingerprint": "169f508565dffa05a764f5646600cec0cb4f360b15e17c7d12a1520fbdb509b2"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 182,
+    "symbol": "volumes",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'volumes' uses SELECT * without explicit field projection.",
+    "fingerprint": "c5543af185b4f1db5c4bd34c3a992df4527abd44bb9ff0a05d8b6799ff1e49df"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 191,
+    "symbol": "chapters",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'chapters' uses SELECT * without explicit field projection.",
+    "fingerprint": "cbd45d6e67f5f61f90ff1267e1c38dfa9287b479fa7bb6370362b6c547930520"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 200,
+    "symbol": "contains",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'contains' uses SELECT * without explicit field projection.",
+    "fingerprint": "d72648e50553677d89510c86ae1c4079d601e417359b45382b1d7f9de7ca7caa"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 209,
+    "symbol": "entity_schemas",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'entity_schemas' uses SELECT * without explicit field projection.",
+    "fingerprint": "406040fee34a87326ac440b1614d569c3081f49665bbfad79596fdf4f01357f0"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 218,
+    "symbol": "relation_schemas",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'relation_schemas' uses SELECT * without explicit field projection.",
+    "fingerprint": "95af500cc59e9d90cb52361e3a9218d373434eaed399d794bf171c3896ceb8f6"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 226,
+    "symbol": "entities",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'entities' uses SELECT * without explicit field projection.",
+    "fingerprint": "c1560c8e37025f33de387987af88dc1edca0b45ed766864bae25aeb08baa13a3"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 236,
+    "symbol": "entity_rel",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'entity_rel' uses SELECT * without explicit field projection.",
+    "fingerprint": "896467e2840fc6608995ca34f3a7adf1684ecd7e033c5a59250d3c164a4b1063"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 244,
+    "symbol": "timeline_events",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'timeline_events' uses SELECT * without explicit field projection.",
+    "fingerprint": "d3693511d45e243b1f6d7335c21514bcac6a8909ca9db9ce107a63a23c3953be"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 252,
+    "symbol": "participates_in",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'participates_in' uses SELECT * without explicit field projection.",
+    "fingerprint": "b33d7a0223116f1a13159faa5210a702604f258207af8a52570f486db9483b94"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 260,
+    "symbol": "appears_in",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'appears_in' uses SELECT * without explicit field projection.",
+    "fingerprint": "5143f789120e8978b4410d81cc67f82166bcaccaa31d656867533e17a9950141"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 268,
+    "symbol": "planets",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'planets' uses SELECT * without explicit field projection.",
+    "fingerprint": "2316c7a696e3f2ac69c47fbaab4c7aed00bb2ea0a9f404e76f511ee8427e78ad"
+  },
+  {
+    "rule": "SURQL-002",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup/cloud.rs",
+    "line": 277,
+    "symbol": "calendars",
+    "message": "(Rust Inline SURQL) Ad-hoc query on 'calendars' uses SELECT * without explicit field projection.",
+    "fingerprint": "eabe261d75fc83a173351f3ffd15fd86fa4113e678245483059c050f849159af"
+  },
+  {
     "rule": "SURQL-004",
-    "file": "./apps/spa/src/logic/schema/no_ai/functions/05_revisions_and_blocks.surql",
-    "line": 30,
-    "symbol": "fn::save_text_blocks",
-    "message": "Stored function 'fn::save_text_blocks' performs non-aggregating query on 'table' without LIMIT clause.",
-    "fingerprint": "583059aa3cbda47562e7e4b8e24d75bbb0831c6f2c891563e67cd939d7b30e98"
+    "file": "./apps/spa/src/logic/schema/no_ai/functions/01_analytics.surql",
+    "line": 480,
+    "symbol": "fn::get_character_journey",
+    "message": "Stored function 'fn::get_character_journey' performs non-aggregating query on 'table' without LIMIT clause.",
+    "fingerprint": "fe143aefbca4669b017089c1dfb6112807947d8c06c732d11bc5951e24d1091a"
+  },
+  {
+    "rule": "TEST-003",
+    "file": "./src-tauri/crates/worldwiki-application/src/lib.rs",
+    "line": 182,
+    "symbol": "adapter_instantiation",
+    "message": "Direct concrete adapter instantiation 'MockAiAdapter::new' inside 'worldwiki-application' violates Dependency Inversion Principle.",
+    "fingerprint": "e788a45c26a33c85a74d6208fca0effaa4f0e25a91cc91e29280750c5b14e8cf"
   }
 ]

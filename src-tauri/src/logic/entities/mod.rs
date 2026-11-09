@@ -1,6 +1,7 @@
 //! Модуль сущностей: декомпозирован на types, errors, entities_crud, schemas_crud, history_crud, relations и commands.
 
 pub mod commands;
+pub mod crud_helpers;
 pub mod entities_crud;
 pub mod errors;
 pub mod history_crud;

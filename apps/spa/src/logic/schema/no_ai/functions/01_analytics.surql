@@ -131,7 +131,7 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             description,
             'event' AS kind,
             IF attributes.location_id != NONE { attributes.location_id } ELSE { NONE } AS location_id,
-            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE {
+            IF type::is_array(attributes['хронология_события']) AND array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE {
                 attributes['хронология_события'][0]['начальная_дата']['m_abs']
             } ELSE IF attributes['начальная_дата']['m_abs'] != NONE {
                 attributes['начальная_дата']['m_abs']
@@ -402,14 +402,14 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             name AS event_title,
             IF description != NONE AND description != '' THEN description
                ELSE IF attributes['описание'] != NONE THEN attributes['описание']
-               ELSE IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['описание_1'] != NONE THEN attributes['хронология_события'][0]['описание_1']
+               ELSE IF type::is_array(attributes['хронология_события']) AND array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['описание_1'] != NONE THEN attributes['хронология_события'][0]['описание_1']
                ELSE '' END AS event_desc,
-            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE THEN attributes['хронология_события'][0]['начальная_дата']['m_abs']
+            IF type::is_array(attributes['хронология_события']) AND array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['m_abs'] != NONE THEN attributes['хронология_события'][0]['начальная_дата']['m_abs']
                ELSE IF attributes['начальная_дата']['m_abs'] != NONE THEN attributes['начальная_дата']['m_abs']
                ELSE IF attributes['дата_события']['m_abs'] != NONE THEN attributes['дата_события']['m_abs']
                ELSE IF attributes.m_abs != NONE THEN attributes.m_abs
                ELSE 0 END AS m_abs,
-            IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['calendar_id'] != NONE THEN type::string(attributes['хронология_события'][0]['начальная_дата']['calendar_id'])
+            IF type::is_array(attributes['хронология_события']) AND array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_дата']['calendar_id'] != NONE THEN type::string(attributes['хронология_события'][0]['начальная_дата']['calendar_id'])
                ELSE IF attributes['начальная_дата']['calendar_id'] != NONE THEN type::string(attributes['начальная_дата']['calendar_id'])
                ELSE IF attributes.calendar_id != NONE THEN type::string(attributes.calendar_id)
                ELSE NONE END AS calendar_id,
@@ -462,7 +462,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
                 LIMIT 1
             )[0] AS mention,
             (
-                IF array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_глава'] != NONE THEN
+                IF type::is_array(attributes['хронология_события']) AND array::len(attributes['хронология_события']) > 0 AND attributes['хронология_события'][0]['начальная_глава'] != NONE THEN
                     attributes['хронология_события'][0]['начальная_глава']
                 ELSE IF attributes['начальная_глава'] != NONE THEN
                     attributes['начальная_глава']
@@ -504,6 +504,7 @@ DEFINE FUNCTION OVERWRITE fn::get_character_journey($proj: record<projects>, $en
             IF mention.block_id != NONE THEN mention.block_id ELSE NONE END AS block_id,
             IF mention.paragraph_index != NONE THEN mention.paragraph_index ELSE 1 END AS paragraph_index
         FROM $raw_entity_event_participants
+        LIMIT 1000
     );
     LET $events = array::concat($timeline_events, $entity_event_participants);
     LET $relations = (

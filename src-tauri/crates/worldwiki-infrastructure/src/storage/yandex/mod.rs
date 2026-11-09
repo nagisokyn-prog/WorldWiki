@@ -1,8 +1,12 @@
 pub mod auth;
 pub mod client;
+pub mod http;
+pub mod media;
 
 pub use auth::*;
 pub use client::*;
+pub use http::*;
+pub use media::*;
 
 #[cfg(test)]
 mod tests {

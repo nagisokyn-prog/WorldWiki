@@ -12,14 +12,11 @@
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $p_rec = fn::normalize_project_id($before.id);
     
-    LET $vols = (SELECT VALUE id FROM volumes WHERE project_id = $p_rec);
-    LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id IN $vols);
     LET $arcs = (SELECT VALUE id FROM story_arcs WHERE project_id = $p_rec);
     LET $schemas = (SELECT VALUE id FROM entity_schemas WHERE project_id = $p_rec);
 
     -- 1. Графовые связи, нарративные узлы и ревизии лора
-    DELETE contains WHERE in = $p_rec;
-    DELETE chapter_revisions WHERE target_id IN $chaps;
+    DELETE contains WHERE in = $p_rec OR out = $p_rec;
     DELETE entity_revisions WHERE target_id.schema_id IN $schemas;
     DELETE entity_rel_revisions WHERE in_id.schema_id IN $schemas;
     DELETE entity_rel WHERE in.schema_id IN $schemas;
@@ -27,23 +24,15 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE participates_in WHERE in.schema_id IN $schemas;
     DELETE participant_of WHERE in.schema_id IN $schemas;
     DELETE advances_arc WHERE out IN $arcs;
-    DELETE revealed_in WHERE out IN $chaps;
-    LET $blks = (SELECT VALUE id FROM text_blocks WHERE chapter_id IN $chaps);
-    LET $p_from_blocks = (SELECT VALUE in FROM spans_blocks WHERE out IN $blks);
-    LET $p_from_milestones = (SELECT VALUE in FROM promise_milestones WHERE out IN $blks);
-    LET $p_from_arcs = (SELECT VALUE in FROM advances_arc WHERE out IN $arcs);
-    LET $all_promises = array::distinct(array::concat($p_from_blocks, $p_from_milestones, $p_from_arcs));
-    DELETE plot_promises WHERE id IN $all_promises;
 
-    -- 2. Задачи планировщика (todos)
-    DELETE todos WHERE owner_id IN array::concat($vols, $chaps, $arcs) OR owner_id = $p_rec;
+    -- 2. Задачи планировщика (todos) проекта и арок (главы и тома очищаются своим каскадом)
+    DELETE todos WHERE owner_id = $p_rec OR owner_id IN $arcs;
 
     -- 3. Сюжетные арки
     DELETE story_arcs WHERE project_id = $p_rec;
 
-    -- 4. Текст рукописи (блоки, ревизии, главы, тома)
-    DELETE text_blocks WHERE chapter_id IN $chaps;
-    DELETE chapters WHERE volume_id IN $vols;
+    -- 4. Текст рукописи (главы корня проекта и тома; тома каскадно удаляют свои главы через cascade_volume_delete)
+    DELETE chapters WHERE (volume_id = NONE OR volume_id = NULL) AND (project_id = $p_rec OR in = $p_rec);
     DELETE volumes WHERE project_id = $p_rec;
 
     -- 5. Сущности лора (каскад по мета-схемам проекта)
@@ -63,44 +52,21 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
-    LET $chaps = (SELECT VALUE id FROM chapters WHERE volume_id = $before.id);
-    LET $block_ids = (SELECT VALUE id FROM text_blocks WHERE chapter_id IN $chaps);
-    LET $promise_ids = array::distinct(
-        array::concat(
-            (SELECT VALUE in FROM spans_blocks WHERE out IN $block_ids),
-            (SELECT VALUE in FROM promise_milestones WHERE out IN $block_ids)
-        )
-    );
-    IF array::len($promise_ids) > 0 {
-        DELETE $promise_ids;
-    };
-    DELETE text_blocks WHERE chapter_id IN $chaps;
-    DELETE chapter_revisions WHERE target_id IN $chaps;
-    LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id OR owner_id IN $chaps);
+    LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id);
     UPDATE todos SET depends_on = NONE WHERE depends_on IN $del_todos;
     DELETE todos WHERE id IN $del_todos;
-    DELETE chapters WHERE volume_id = $before.id;
     DELETE contains WHERE in = $before.id OR out = $before.id;
+    DELETE chapters WHERE volume_id = $before.id;
 };
 
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
-    LET $block_ids = (SELECT VALUE id FROM text_blocks WHERE chapter_id = $before.id);
-    LET $promise_ids = array::distinct(
-        array::concat(
-            (SELECT VALUE in FROM spans_blocks WHERE out IN $block_ids),
-            (SELECT VALUE in FROM promise_milestones WHERE out IN $block_ids)
-        )
-    );
-    IF array::len($promise_ids) > 0 {
-        DELETE $promise_ids;
-    };
-    DELETE text_blocks WHERE chapter_id = $before.id;
     DELETE contains WHERE out = $before.id;
     LET $del_todos = (SELECT VALUE id FROM todos WHERE owner_id = $before.id);
     UPDATE todos SET depends_on = NONE WHERE depends_on IN $del_todos;
     DELETE todos WHERE id IN $del_todos;
     DELETE chapter_revisions WHERE target_id = $before.id;
     DELETE revealed_in WHERE out = $before.id;
+    DELETE text_blocks WHERE chapter_id = $before.id;
 
     -- Разрыв временных границ связей
     UPDATE entity_rel SET start_at = NONE WHERE start_at = $before.id;

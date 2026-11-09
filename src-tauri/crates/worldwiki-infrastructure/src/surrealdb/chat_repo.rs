@@ -185,13 +185,22 @@ impl ChatRepository for SurrealChatRepository {
 
     async fn delete_message(&self, message_id: &str) -> Result<(), DomainError> {
         let msg_clean = clean_id_str(message_id, "chat_messages:");
-        let msg_rec = RecordId::new("chat_messages", msg_clean);
+        let raw_id = format!("chat_messages:{msg_clean}");
 
-        self.db
-            .query("DELETE chat_messages WHERE id = $msg;")
-            .bind(("msg", msg_rec))
+        let mut res = self
+            .db
+            .query("DELETE chat_messages WHERE id = type::record('chat_messages', $clean) OR id = $raw_id;")
+            .bind(("clean", msg_clean.to_string()))
+            .bind(("raw_id", raw_id))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(format!(
+                "delete_message error: {e}"
+            )));
+        }
 
         Ok(())
     }

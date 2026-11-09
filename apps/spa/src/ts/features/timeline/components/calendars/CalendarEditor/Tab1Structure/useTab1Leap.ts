@@ -3,8 +3,9 @@
  * @description Composable для управления високосными правилами, днями вне месяцев и дрейфом орбиты через WASM.
  */
 
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import type { CalendarData, CalendarMonth, ExtraDaysConfig } from '@/services/Calendars/calendar.types';
+import { ensureWasmInitialized, isWasmReady } from '@/services/Calendars/calendar.wasm-bridge';
 import type {
   HarmonicRule,
   LeapRuleType,
@@ -24,6 +25,18 @@ export function useTab1Leap(
   planetOrbitDays: () => number | undefined,
   emit: (e: 'update', patch: Partial<CalendarData>) => void
 ) {
+  const isWasmEngineReady = ref(isWasmReady());
+
+  onMounted(() => {
+    if (!isWasmEngineReady.value) {
+      ensureWasmInitialized()
+        .then(() => {
+          isWasmEngineReady.value = true;
+        })
+        .catch((e) => console.warn('[useTab1Leap] WASM init fallback:', e));
+    }
+  });
+
   const orbitDays = computed<number>(() => planetOrbitDays() ?? 365.2422);
 
   const months = computed<CalendarMonth[]>(() => calendarData()?.месяцы || []);
@@ -100,6 +113,8 @@ export function useTab1Leap(
   });
 
   const driftResult = computed(() => {
+    // Подписка на готовность WASM-движка
+    void isWasmEngineReady.value;
     return calculateCenturyDrift(
       monthsDaysSum.value,
       extraDaysCount.value,
@@ -123,6 +138,8 @@ export function useTab1Leap(
     );
   });
   const upcomingYears = computed<UpcomingYearDto[]>(() => {
+    // Подписка на готовность WASM-движка
+    void isWasmEngineReady.value;
     return calculateUpcomingYears(
       2024,
       totalNominalDays.value,
@@ -132,6 +149,8 @@ export function useTab1Leap(
     );
   });
   const suggestions = computed(() => {
+    // Подписка на готовность WASM-движка
+    void isWasmEngineReady.value;
     return calculateWasmLeapSuggestions(orbitDays.value, totalNominalDays.value);
   });
   function updateConfig(patch: Partial<ExtraDaysConfig>) {

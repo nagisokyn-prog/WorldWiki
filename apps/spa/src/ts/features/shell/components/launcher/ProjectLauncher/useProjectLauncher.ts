@@ -2,7 +2,7 @@ import { ref, shallowRef, computed, onMounted, onUnmounted, getCurrentInstance }
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 import { projectService } from '@/services/project.service';
-import { settingsService } from '@worldwiki/components';
+import { settingsService, appAlert } from '@worldwiki/components';
 import {
   projectTypes,
   genres,
@@ -90,8 +90,13 @@ export function useProjectLauncher() {
     window.dispatchEvent(new CustomEvent('open-cloud-sync', { detail: mode }));
   }
 
-  function showToast(toast: { text?: string; type?: string; [key: string]: unknown }) {
+  async function showToast(toast: { text?: string; type?: string; [key: string]: unknown }) {
     console.log('Toast:', toast);
+    if (toast.type === 'error') {
+      await appAlert(toast.text || 'Произошла ошибка', 'Синхронизация WorldWiki');
+    } else if (toast.type === 'success') {
+      await appAlert(toast.text || 'Операция завершена успешно', 'Синхронизация WorldWiki');
+    }
   }
 
   const handleKeydown = (e: KeyboardEvent) => {

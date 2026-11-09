@@ -29,6 +29,7 @@ pub async fn export_chapters(
 
 #[tauri::command]
 pub async fn create_cloud_backup(
+    project: Option<String>,
     state: tauri::State<'_, AppState>,
     app: tauri::AppHandle,
 ) -> Result<String, IpcError> {
@@ -39,9 +40,36 @@ pub async fn create_cloud_backup(
         .unwrap_or_else(|_| PathBuf::from("."))
         .join("backups");
 
-    create_cloud_backup_inner(db, &target_dir)
+    create_cloud_backup_inner(db, &target_dir, project.as_deref())
         .await
         .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn export_local_backup(
+    project: Option<String>,
+    destination_path: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<String, IpcError> {
+    let db = &state.services.db;
+    let dest = PathBuf::from(&destination_path);
+    let parent = dest.parent().unwrap_or_else(|| std::path::Path::new("."));
+    fs::create_dir_all(parent).map_err(|e| IpcError::from(worldwiki_domain::errors::DomainError::Validation(e.to_string())))?;
+
+    let temp_zip_path = create_cloud_backup_inner(db, parent, project.as_deref())
+        .await
+        .map_err(IpcError::from)?;
+
+    if temp_zip_path != destination_path {
+        fs::copy(&temp_zip_path, &destination_path).map_err(|e| {
+            IpcError::from(worldwiki_domain::errors::DomainError::Validation(format!(
+                "Failed to copy backup to {destination_path}: {e}"
+            )))
+        })?;
+        let _ = fs::remove_file(&temp_zip_path);
+    }
+
+    Ok(destination_path)
 }
 
 #[tauri::command]
@@ -63,21 +91,12 @@ pub async fn sync_yandex_media(
     token: String,
     app: tauri::AppHandle,
 ) -> Result<usize, IpcError> {
-    let base_data_dir = if let Ok(custom_dir) = std::env::var("SURREAL_DATA_DIR")
-        && !custom_dir.is_empty()
-    {
-        PathBuf::from(custom_dir)
-    } else {
-        std::env::current_dir().unwrap_or_default().join("data")
-    };
-    let images_dir = base_data_dir.join("user_images");
-
     let app_clone = app.clone();
     let on_progress = std::sync::Arc::new(move |progress: MediaSyncProgress| {
         let _ = app_clone.emit("sync-media-progress", progress);
     });
 
-    sync_media_to_yandex_inner(&token, &images_dir, None, Some(on_progress))
+    sync_media_to_yandex_inner(&token, None, None, Some(on_progress))
         .await
         .map_err(IpcError::from)
 }

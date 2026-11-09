@@ -70,7 +70,7 @@ export function ruleToWasmHarmonics(
 }
 
 /**
- * Проверка високосности года через нативный движок Rust WASM (O(1)).
+ * Проверка високосности года через нативный движок Rust WASM (O(1)) с JS-фоллбэком.
  */
 export function isYearLeapCalculated(
   year: number,
@@ -79,8 +79,16 @@ export function isYearLeapCalculated(
   simpleInterval = 4
 ): boolean {
   if (ruleType === 'none') return false;
-  const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics, simpleInterval);
-  return defaultWasmEngine.is_leap_year(BigInt(year), wasmHarmonics, 0);
+  try {
+    const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics, simpleInterval);
+    return defaultWasmEngine.is_leap_year(BigInt(year), wasmHarmonics, 0);
+  } catch (err) {
+    console.debug('[tab1Leap.utils] WASM isYearLeapCalculated fallback:', err);
+    if (ruleType === 'simple') return year % (simpleInterval || 4) === 0;
+    if (ruleType === 'gregorian') return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (ruleType === 'custom') return harmonics.some((h) => h.period > 0 && year % h.period === 0);
+    return false;
+  }
 }
 
 /**
@@ -138,7 +146,7 @@ export function calculateYearTape(
 }
 
 /**
- * Генерация инспектора ближайших 12 лет через WASM дни в году.
+ * Генерация инспектора ближайших 12 лет через WASM дни в году с JS-фоллбэком.
  */
 export function calculateUpcomingYears(
   baseYear: number,
@@ -153,15 +161,31 @@ export function calculateUpcomingYears(
 
   for (let i = 0; i < 12; i++) {
     const y = baseYear + i;
-    const isLeap = defaultWasmEngine.is_leap_year(BigInt(y), wasmHarmonics, 0);
-    const days = Number(
-      defaultWasmEngine.days_in_year(
-        BigInt(y),
-        BigInt(baseYearDays),
-        wasmHarmonics,
-        BigInt(leapDaysOffset)
-      )
-    );
+    let isLeap = false;
+    let days = baseYearDays;
+
+    try {
+      isLeap = defaultWasmEngine.is_leap_year(BigInt(y), wasmHarmonics, 0);
+      days = Number(
+        defaultWasmEngine.days_in_year(
+          BigInt(y),
+          BigInt(baseYearDays),
+          wasmHarmonics,
+          BigInt(leapDaysOffset)
+        )
+      );
+    } catch {
+      // JS Fallback при отсутствии WASM
+      if (ruleType === 'simple') {
+        isLeap = y % (simpleInterval || 4) === 0;
+      } else if (ruleType === 'gregorian') {
+        isLeap = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+      } else if (ruleType === 'custom') {
+        isLeap = harmonics.some((h) => h.period > 0 && y % h.period === 0);
+      }
+      days = baseYearDays + (isLeap ? leapDaysOffset : 0);
+    }
+
     list.push({
       year: y,
       isLeap,
@@ -173,7 +197,7 @@ export function calculateUpcomingYears(
 
 /**
  * Расчет векового дрейфа календаря относительно истинного тропического года орбиты
- * строго через нативный алгоритм Rust WASM drift_per_century.
+ * строго через нативный алгоритм Rust WASM drift_per_century с JS-фоллбэком.
  */
 export function calculateCenturyDrift(
   baseDays: number,
@@ -186,12 +210,26 @@ export function calculateCenturyDrift(
   const nominalYear = baseDays + extraDays;
   const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics, 4, leapOffset);
 
-  // Вызов нативного ядра WASM (f64 drift per 100 years)
-  const driftCentury = CalendarWasmBridge.calculateDriftPerCentury(
-    nominalYear,
-    wasmHarmonics,
-    orbitDays
-  );
+  let driftCentury = 0;
+  try {
+    driftCentury = CalendarWasmBridge.calculateDriftPerCentury(
+      nominalYear,
+      wasmHarmonics,
+      orbitDays
+    );
+  } catch {
+    // Чистый JS фоллбэк при недоступности WASM
+    let leapFrac = 0;
+    if (ruleType === 'gregorian') {
+      leapFrac = (1 / 4 - 1 / 100 + 1 / 400) * leapOffset;
+    } else if (ruleType === 'simple') {
+      leapFrac = (1 / (harmonics[0]?.period || 4)) * leapOffset;
+    } else if (ruleType === 'custom') {
+      leapFrac = harmonics.reduce((acc, h) => acc + (h.period > 0 ? (h.weight * leapOffset) / h.period : 0), 0);
+    }
+    const avgCalendarYear = nominalYear + leapFrac;
+    driftCentury = (avgCalendarYear - orbitDays) * 100;
+  }
 
   const sign = driftCentury >= 0 ? '+' : '';
   const label = `${sign}${driftCentury.toFixed(3)} сут/век`;
@@ -239,7 +277,17 @@ export function calculateWasmLeapSuggestions(
   ];
 
   return suggestionsDefs.map((def) => {
-    const drift = CalendarWasmBridge.calculateDriftPerCentury(baseDays, def.harmonics, orbitDays);
+    let drift = 0;
+    try {
+      drift = CalendarWasmBridge.calculateDriftPerCentury(baseDays, def.harmonics, orbitDays);
+    } catch {
+      let leapFrac = 0;
+      if (def.key === 'simple') leapFrac = 1 / 4;
+      else if (def.key === 'persian') leapFrac = 8 / 33;
+      else if (def.key === 'gregorian') leapFrac = 97 / 400;
+      else if (def.key === 'medler') leapFrac = 31 / 128;
+      drift = (baseDays + leapFrac - orbitDays) * 100;
+    }
     const sign = drift >= 0 ? '+' : '';
     return {
       key: def.key,

@@ -56,3 +56,6 @@ e2e/prebuilt/
 .logic_legacy/
 src/.logic_legacy/
 src-tauri/src/.logic_legacy/
+
+# Auto-generated context docs
+.repo-context/

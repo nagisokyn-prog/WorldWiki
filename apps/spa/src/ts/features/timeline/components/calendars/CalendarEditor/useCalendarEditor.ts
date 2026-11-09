@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useCalendarStore, type CalendarRecord } from '@/stores/calendar.store';
 import { CalendarEngine } from '@/services/Calendars/useCalendarEngine';
+import { ensureWasmInitialized } from '@/services/Calendars/calendar.wasm-bridge';
 import { DEFAULT_CALENDAR_SEASONS, type CalendarData } from '@/services/Calendars/calendar.types';
 import type { CalendarPreset } from '@/features/timeline/components/calendars/presets';
 import type {
@@ -229,6 +230,7 @@ export function useCalendarEditor(
   };
 
   onMounted(() => {
+    void ensureWasmInitialized().catch((e) => console.warn('WASM init in useCalendarEditor failed:', e));
     document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
     document.addEventListener('ww:trigger-calendar-save', handleTriggerSave as EventListener);
   });

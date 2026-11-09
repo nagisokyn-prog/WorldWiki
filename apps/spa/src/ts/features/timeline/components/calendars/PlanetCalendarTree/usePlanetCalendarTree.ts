@@ -40,16 +40,14 @@ export function usePlanetCalendarTree(
         const cleanPlanet = String(planet.id || '').replace(/^(entity:)?planets?:/, '');
         const matchesPlanet = cleanCalPlanet === cleanPlanet || (!rawPlanetId && (cleanPlanet.endsWith('earth') || planet.name === 'Земля'));
         if (matchesPlanet) {
-          // Планета и есть Календарь Мира — не дублируем его в дочерние культурные календари
           const isMaster = Boolean(cal.is_master || cal.data?.is_master || cal.data?.calendar_type === 'master' || cal.data?.название === 'Календарь Мира');
-          if (isMaster) {
-            return;
-          }
+          const rawName = typeof cal.name === 'string' && cal.name ? cal.name : '';
+          const calName = cal.data?.название || rawName || (isMaster ? 'Календарь Мира' : 'Календарь');
           planetCals.push({
             id: cal.id,
             idx: originalIdx,
-            name: cal.data?.название || 'Календарь',
-            is_master: false,
+            name: calName,
+            is_master: isMaster,
             planet_id: calPlanetId,
             data: cal.data,
           });

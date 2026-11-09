@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useCalendarStore } from '@/stores/calendar.store';
 import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 
@@ -23,6 +23,10 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   });
 
   const loadCalendars = async () => {
+    if (!props.project) {
+      isLoading.value = false;
+      return;
+    }
     isLoading.value = true;
     try {
       const list = await useCalendarStore().getCalendars(props.project);
@@ -46,8 +50,30 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     }
   };
 
+  const handleCalendarChanged = () => {
+    void loadCalendars();
+  };
+
+  watch(
+    () => props.project,
+    (newProject) => {
+      if (newProject) {
+        void loadCalendars();
+      }
+    }
+  );
+
   onMounted(() => {
-    loadCalendars();
+    void loadCalendars();
+    document.addEventListener('ww:calendar-saved', handleCalendarChanged);
+    document.addEventListener('ww:calendar-deleted', handleCalendarChanged);
+    document.addEventListener('ww:calendar-renamed', handleCalendarChanged);
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener('ww:calendar-saved', handleCalendarChanged);
+    document.removeEventListener('ww:calendar-deleted', handleCalendarChanged);
+    document.removeEventListener('ww:calendar-renamed', handleCalendarChanged);
   });
 
   const masterCalendarData = computed<CalendarData | null>(() => {

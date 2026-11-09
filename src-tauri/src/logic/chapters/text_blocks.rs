@@ -57,18 +57,28 @@ pub async fn save_text_blocks_inner(
         })
         .collect();
 
-    let mut res = db
-        .query("fn::save_text_blocks(type::record('chapters', $c), $blocks);")
-        .bind(("c", clean_cid))
-        .bind(("blocks", block_objects))
-        .await?;
+    let mut attempts = 0;
+    loop {
+        attempts += 1;
+        let mut res = db
+            .query("fn::save_text_blocks(type::record('chapters', $c), $blocks);")
+            .bind(("c", clean_cid.clone()))
+            .bind(("blocks", block_objects.clone()))
+            .await?;
 
-    let errs = res.take_errors();
-    if let Some(e) = errs.values().next() {
-        return Err(ChapterError::Transaction(format!(
-            "save_text_blocks error: {}",
-            e
-        )));
+        let errs = res.take_errors();
+        if let Some(e) = errs.values().next() {
+            let err_str = e.to_string();
+            if (err_str.contains("Write conflict") || err_str.contains("-32009")) && attempts < 3 {
+                tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempts)).await;
+                continue;
+            }
+            return Err(ChapterError::Transaction(format!(
+                "save_text_blocks error: {}",
+                e
+            )));
+        }
+        break;
     }
 
     Ok(())

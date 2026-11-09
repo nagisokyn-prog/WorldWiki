@@ -91,6 +91,7 @@ pub fn run() {
             worldwiki_tauri::commands::export_document_fb2,
             worldwiki_tauri::commands::export_document_pdf_save,
             worldwiki_tauri::commands::create_cloud_backup,
+            worldwiki_tauri::commands::export_local_backup,
             worldwiki_tauri::commands::exchange_yandex_token,
             worldwiki_tauri::commands::upload_to_yandex_disk,
             worldwiki_tauri::commands::sync_yandex_media,

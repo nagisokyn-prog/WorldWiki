@@ -12,6 +12,7 @@ pub mod negative_integration;
 pub mod batch_and_connections_integration;
 pub mod chat_integration;
 pub mod export_integration;
+pub mod graph_relational_backup_suite;
 #[cfg(feature = "ai")]
 pub mod retrieval_integration;
 pub mod tools_integration;

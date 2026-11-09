@@ -300,8 +300,12 @@ export async function exportDocumentPdfSave(fileName: string, pdfBytesBase64: st
     return await invoke('export_document_pdf_save', { fileName, pdfBytesBase64 });
 }
 
-export async function createCloudBackup(): Promise<string> {
-    return await invoke('create_cloud_backup');
+export async function createCloudBackup(project: string | null): Promise<string> {
+    return await invoke('create_cloud_backup', { project });
+}
+
+export async function exportLocalBackup(project: string | null, destinationPath: string): Promise<string> {
+    return await invoke('export_local_backup', { project, destinationPath });
 }
 
 export async function exchangeYandexToken(code: string): Promise<string> {

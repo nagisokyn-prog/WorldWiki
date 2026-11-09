@@ -20,4 +20,3 @@ uuid = { version = "1", default-features = false, features = ["v4", "serde", "st
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-worldwiki-infrastructure = { path = "../worldwiki-infrastructure" }

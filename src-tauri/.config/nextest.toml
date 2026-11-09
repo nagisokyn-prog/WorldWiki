@@ -1,0 +1,6 @@
+[profile.default]
+default-filter = 'not (package(worldwiki-ai) | test(/ai_/) | test(/chat_/) | test(/embedding/) | test(/retrieval/) | test(/agent_/))'
+
+[profile.all]
+default-filter = 'all()'
+

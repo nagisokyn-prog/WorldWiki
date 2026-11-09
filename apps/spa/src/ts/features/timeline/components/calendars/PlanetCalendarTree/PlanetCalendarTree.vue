@@ -73,8 +73,9 @@
             @click="selectCalendar(cal.idx)"
           >
             <div class="flex items-center gap-2">
-              <span class="cal-icon text-xs">📄</span>
+              <span class="cal-icon text-xs">{{ cal.is_master ? '🌟' : '📄' }}</span>
               <span class="cal-name text-sm">{{ cal.name }}</span>
+              <span v-if="cal.is_master" class="text-xs opacity-60" style="color: var(--accent);">(Мир)</span>
             </div>
           </div>
         </div>

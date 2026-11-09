@@ -18,6 +18,23 @@ export type CloudSyncEmit = {
     (e: 'toast', payload: { text: string; type: 'info' | 'success' | 'error' }): void;
 };
 
+export function formatErrorMessage(err: unknown): string {
+    if (!err) return 'Неизвестная ошибка';
+    if (typeof err === 'string') return err;
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'object') {
+        const obj = err as Record<string, unknown>;
+        if (typeof obj.message === 'string' && obj.message) return obj.message;
+        if (typeof obj.error === 'string' && obj.error) return obj.error;
+        try {
+            return JSON.stringify(err);
+        } catch {
+            // ignore
+        }
+    }
+    return String(err);
+}
+
 export function useCloudSyncModal(emit: CloudSyncEmit) {
     const isOpen = ref(false);
     const syncMode = ref<'import' | 'export'>('export');
@@ -53,7 +70,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
             availableBackups.value = backups;
         } catch (err: unknown) {
             console.error('Failed to list backups:', err);
-            const errMsg = err instanceof Error ? err.message : String(err);
+            const errMsg = formatErrorMessage(err);
             if (errMsg && errMsg.includes('401')) {
                 disconnectYandex();
             }
@@ -73,6 +90,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     };
 
     const close = () => {
+        if (isSyncing.value) return;
         isOpen.value = false;
         showAuthCodeInput.value = false;
         authCode.value = '';
@@ -188,11 +206,34 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
             if (mediaSyncStatus.value === 'syncing') mediaSyncStatus.value = 'error';
             if (dbSyncStatus.value === 'exporting' || dbSyncStatus.value === 'uploading') dbSyncStatus.value = 'error';
 
-            const errMsg = err instanceof Error ? err.message : String(err);
+            const errMsg = formatErrorMessage(err);
             if (errMsg && (errMsg.includes('Token expired') || errMsg.includes('401'))) disconnectYandex();
             emit('toast', { text: `Ошибка: ${errMsg}`, type: 'error' });
         } finally {
             isSyncing.value = false;
+        }
+    };
+
+    const exportLocalBackupAction = async () => {
+        isSyncing.value = true;
+        syncStatusText.value = 'Создание локального архива...';
+        dbSyncStatus.value = 'exporting';
+
+        try {
+            emit('toast', { text: 'Создание локального бэкапа...', type: 'info' });
+            const backupFilePath = await api.createCloudBackup();
+            const fileName = backupFilePath.split(/[/\\]/).pop() || 'backup.wwiki';
+            lastBackupFileName.value = fileName;
+            dbSyncStatus.value = 'success';
+            emit('toast', { text: `Локальный бэкап успешно создан: ${fileName}`, type: 'success' });
+        } catch (err: unknown) {
+            console.error('Local backup failed:', err);
+            dbSyncStatus.value = 'error';
+            const errMsg = formatErrorMessage(err);
+            emit('toast', { text: `Ошибка локального экспорта: ${errMsg}`, type: 'error' });
+        } finally {
+            isSyncing.value = false;
+            syncStatusText.value = '';
         }
     };
 
@@ -222,7 +263,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
             
         } catch (err: unknown) {
             console.error(err);
-            const errMsg = err instanceof Error ? err.message : String(err);
+            const errMsg = formatErrorMessage(err);
             if (errMsg && errMsg.includes('401')) disconnectYandex();
             emit('toast', { text: `Ошибка восстановления: ${errMsg}`, type: 'error' });
         } finally {
@@ -254,6 +295,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
         disconnectYandex,
         exchangeCode,
         uploadBackup,
+        exportLocalBackupAction,
         restoreBackup,
         fetchBackupsList
     };

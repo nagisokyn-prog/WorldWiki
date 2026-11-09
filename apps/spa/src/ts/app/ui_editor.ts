@@ -15,6 +15,7 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
 import { setupGlass } from '@/utils/v-glass';
 import { settingsService, i18n, setLocale } from '@worldwiki/components';
+import { ensureWasmInitialized } from '@/services/Calendars/calendar.wasm-bridge';
 import EntityEditorWindow from '../features/entities/EntityEditorWindow/EntityEditorWindow.vue';
 
 const TagsField = defineAsyncComponent(() =>
@@ -26,6 +27,9 @@ async function init() {
   const project = params.get('project') || 'default';
   const entityType = params.get('type') || '';
   const entityId = params.get('id') || '';
+
+  // Инициализируем WebAssembly-движок календаря
+  await ensureWasmInitialized().catch((e) => console.warn('WASM init failed in ui_editor:', e));
 
   // Загружаем сохраненные настройки темы и дизайн-системы (Glass UI)
   await settingsService

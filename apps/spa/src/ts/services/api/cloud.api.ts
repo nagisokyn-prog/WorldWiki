@@ -6,7 +6,10 @@
 import { invoke } from '@worldwiki/components';
 
 export const cloudApi = {
-  createCloudBackup: (): Promise<string> => invoke<string>('create_cloud_backup'),
+  createCloudBackup: (project?: string): Promise<string> =>
+    project !== undefined ? invoke<string>('create_cloud_backup', { project }) : invoke<string>('create_cloud_backup'),
+  exportLocalBackup: (destinationPath: string, project?: string): Promise<string> =>
+    invoke<string>('export_local_backup', { destinationPath, project }),
 
   exportChapters: (project: string, chapters: unknown[], format: string, options: Record<string, unknown>): Promise<{ path: string }> =>
     invoke<{ path: string }>('export_chapters', { project, chapters, format, options }),

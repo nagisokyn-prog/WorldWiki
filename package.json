@@ -9,6 +9,8 @@
     "build": "pnpm -r --stream build",
     "preview": "vp preview",
     "tauri": "tauri",
+    "tauri:fast": "tauri build -- --profile fast-release",
+    "tauri:prod": "tauri build",
     "typecheck": "pnpm -r --stream typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

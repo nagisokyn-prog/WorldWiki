@@ -174,12 +174,103 @@ mod tests {
         assert_eq!(task_res["status"], "completed");
     }
 
+    #[derive(Default, Clone, Debug)]
+    struct LocalTestAiAdapter;
+
+    impl worldwiki_ports::ai::HardwareDetectorPort for LocalTestAiAdapter {
+        fn get_hardware_info(&self) -> worldwiki_domain::ai::HardwareInfo {
+            worldwiki_domain::ai::HardwareInfo {
+                total_ram_gb: 16.0,
+                free_ram_gb: 8.0,
+                has_gpu: false,
+                gpu_name: None,
+                vram_gb: None,
+                cpu_cores: 8,
+            }
+        }
+        fn calculate_quantization_estimates(
+            &self,
+            params_billions: f32,
+            _context_tokens: Option<usize>,
+        ) -> Vec<worldwiki_domain::ai::MemoryEstimation> {
+            vec![worldwiki_domain::ai::MemoryEstimation {
+                quantization: "Q4_K_M".to_string(),
+                ram_required_gb: params_billions * 0.6,
+                fits_in_ram: true,
+                fits_in_vram: false,
+                recommended: true,
+            }]
+        }
+        fn get_recommended_local_models(&self) -> Vec<worldwiki_domain::ai::RecommendedModelCard> {
+            vec![
+                worldwiki_domain::ai::RecommendedModelCard {
+                    id: "model_1".to_string(),
+                    name: "Model 1".to_string(),
+                    parameters: "7B".to_string(),
+                    quantization: "Q4_K_M".to_string(),
+                    size_gb: 4.5,
+                    min_ram_gb: 8.0,
+                    download_url: "http://example.com/1".to_string(),
+                    description: "Test".to_string(),
+                },
+                worldwiki_domain::ai::RecommendedModelCard {
+                    id: "model_2".to_string(),
+                    name: "Model 2".to_string(),
+                    parameters: "8B".to_string(),
+                    quantization: "Q4_K_M".to_string(),
+                    size_gb: 5.0,
+                    min_ram_gb: 16.0,
+                    download_url: "http://example.com/2".to_string(),
+                    description: "Test".to_string(),
+                },
+                worldwiki_domain::ai::RecommendedModelCard {
+                    id: "model_3".to_string(),
+                    name: "Model 3".to_string(),
+                    parameters: "3B".to_string(),
+                    quantization: "Q4_K_M".to_string(),
+                    size_gb: 2.0,
+                    min_ram_gb: 4.0,
+                    download_url: "http://example.com/3".to_string(),
+                    description: "Test".to_string(),
+                },
+            ]
+        }
+    }
+
+    impl worldwiki_ports::ai::LocalModelManagerPort for LocalTestAiAdapter {
+        fn list_installed_models(
+            &self,
+        ) -> Result<Vec<worldwiki_domain::ai::InstalledModelInfo>, worldwiki_domain::errors::DomainError> {
+            Ok(vec![])
+        }
+        fn delete_model(&self, _filename: &str) -> Result<(), worldwiki_domain::errors::DomainError> {
+            Ok(())
+        }
+    }
+
+    impl worldwiki_ports::ai::PermissionsPort for LocalTestAiAdapter {
+        fn get_tool_permissions_catalog(
+            &self,
+        ) -> std::collections::HashMap<String, worldwiki_domain::ai::ToolPermissionConfig> {
+            let mut map = std::collections::HashMap::new();
+            for i in 1..=5 {
+                map.insert(
+                    format!("tool_{i}"),
+                    worldwiki_domain::ai::ToolPermissionConfig {
+                        default_level: "auto".to_string(),
+                        description: format!("Desc {i}"),
+                    },
+                );
+            }
+            map
+        }
+    }
+
     #[test]
     fn test_local_ai_services_hardware_and_manager() {
         use crate::ai::LocalAiServices;
-        use worldwiki_infrastructure::mock_ai::MockAiAdapter;
 
-        let mock = Arc::new(MockAiAdapter::new());
+        let mock = Arc::new(LocalTestAiAdapter);
         let local_ai = LocalAiServices::new(mock.clone(), mock.clone(), mock);
 
         let info = local_ai.get_hardware_info();
@@ -197,7 +288,6 @@ mod tests {
         let installed = local_ai
             .list_installed_models()
             .expect("list_installed_models must succeed");
-        // Не предполагаем, что у пользователя нет моделей на диске — проверяем работоспособность сканирования
         let _ = installed;
     }
 }

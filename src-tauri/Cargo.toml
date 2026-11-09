@@ -105,10 +105,42 @@ opt-level = 2
 [profile.dev.package.flate2]
 opt-level = 2
 
+# ⚡ СВЕРХБЫСТРЫЙ РЕЛИЗ: для мгновенной сборки и проверки работоспособности
+[profile.fast-release]
+inherits = "release"
+opt-level = 0
+lto = false
+codegen-units = 256
+incremental = true
+panic = "abort"
+strip = false
+
+[profile.fast-release.package.surrealdb]
+opt-level = 2
+
+[profile.fast-release.package.surrealdb-core]
+opt-level = 2
+
+[profile.fast-release.package.surrealkv]
+opt-level = 2
+
+[profile.fast-release.package.serde]
+opt-level = 2
+
+[profile.fast-release.package.serde_json]
+opt-level = 2
+
+[profile.fast-release.package.zip]
+opt-level = 2
+
+[profile.fast-release.package.flate2]
+opt-level = 2
+
+# 🏆 ФИНАЛЬНЫЙ ПРОД: максимальная оптимизация и минимальный размер бинарника
 [profile.release]
 opt-level = 3
-lto = "thin"
-codegen-units = 16
+lto = "fat"
+codegen-units = 1
 panic = "abort"
 strip = true
 
@@ -132,9 +164,6 @@ opt-level = "s"
 opt-level = "s"
 
 [profile.release.package.surrealkv]
-opt-level = "s"
-
-[profile.release.package.surrealql]
 opt-level = "s"
 
 [profile.release.package.worldwiki-infrastructure]

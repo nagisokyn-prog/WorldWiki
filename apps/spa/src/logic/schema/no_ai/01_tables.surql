@@ -63,7 +63,7 @@ DEFINE FIELD OVERWRITE updated_at  ON story_arcs TYPE datetime DEFAULT time::now
 
 -- 6. БЛОКИ ТЕКСТА (АТОМАРНЫЙ ТЕКСТ РУКОПИСИ)
 DEFINE TABLE OVERWRITE text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE chapter_id  ON text_blocks TYPE record<chapters>;
+DEFINE FIELD OVERWRITE chapter_id  ON text_blocks TYPE record<chapters> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE block_type  ON text_blocks TYPE string DEFAULT 'description';
 DEFINE FIELD OVERWRITE order_index ON text_blocks TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE content     ON text_blocks TYPE string;
@@ -106,7 +106,7 @@ DEFINE FIELD OVERWRITE created_at    ON entity_schemas TYPE datetime DEFAULT tim
 
 -- 10. ИСТОРИЯ ВЕРСИЙ МЕТА-СХЕМ
 DEFINE TABLE OVERWRITE schema_history SCHEMAFULL;
-DEFINE FIELD OVERWRITE schema_id  ON schema_history TYPE record<entity_schemas>;
+DEFINE FIELD OVERWRITE schema_id  ON schema_history TYPE record<entity_schemas> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE type_key   ON schema_history TYPE string;
 DEFINE FIELD OVERWRITE project_id ON schema_history TYPE record<projects> | string VALUE fn::normalize_project_id($value);
 DEFINE FIELD OVERWRITE snapshot   ON schema_history TYPE object FLEXIBLE DEFAULT {};
@@ -141,8 +141,8 @@ DEFINE FIELD OVERWRITE rel_type       ON entity_rel TYPE string;
 DEFINE FIELD OVERWRITE description    ON entity_rel TYPE option<string | null>;
 DEFINE FIELD OVERWRITE strength       ON entity_rel TYPE option<int | null>;
 DEFINE FIELD OVERWRITE attributes     ON entity_rel TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE start_at       ON entity_rel TYPE option<record<chapters | volumes> | null>;
-DEFINE FIELD OVERWRITE end_at         ON entity_rel TYPE option<record<chapters | volumes> | null>;
+DEFINE FIELD OVERWRITE start_at       ON entity_rel TYPE option<record<chapters | volumes> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE end_at         ON entity_rel TYPE option<record<chapters | volumes> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
@@ -155,9 +155,9 @@ DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now(
 
 -- 15. ЗАДАЧИ И ЧЕК-ЛИСТЫ ПЛАНИРОВЩИКА (ПЕРЕПЛЕТЁННАЯ ТКАНЬ СЮЖЕТА, 3NF)
 DEFINE TABLE OVERWRITE todos SCHEMAFULL;
-DEFINE FIELD OVERWRITE owner_id    ON todos TYPE record<volumes | chapters | story_arcs>;
-DEFINE FIELD OVERWRITE arc_id      ON todos TYPE option<record<story_arcs> | null>;
-DEFINE FIELD OVERWRITE depends_on  ON todos TYPE option<record<todos> | null>;
+DEFINE FIELD OVERWRITE owner_id    ON todos TYPE record<volumes | chapters | story_arcs> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE arc_id      ON todos TYPE option<record<story_arcs> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE depends_on  ON todos TYPE option<record<todos> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE text        ON todos TYPE string;
 DEFINE FIELD OVERWRITE status      ON todos TYPE string DEFAULT 'planned'
   ASSERT $value IN ['planned', 'in_progress', 'done', 'blocked'];
@@ -183,7 +183,7 @@ DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time:
 
 -- 17.1. НЕЛИНЕЙНОЕ РАСКРЫТИЕ СОБЫТИЙ ТАЙМЛАЙНА В ГЛАВАХ РУКОПИСИ
 DEFINE TABLE OVERWRITE revealed_in TYPE RELATION IN timeline_events OUT chapters SCHEMAFULL;
-DEFINE FIELD OVERWRITE pov_id     ON revealed_in TYPE option<record<entities> | null>;
+DEFINE FIELD OVERWRITE pov_id     ON revealed_in TYPE option<record<entities> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE kind       ON revealed_in TYPE string DEFAULT 'direct'
   ASSERT $value IN ['direct', 'flashback', 'mention', 'rumor'];
 DEFINE FIELD OVERWRITE block_id   ON revealed_in TYPE option<string | null>;
@@ -192,7 +192,7 @@ DEFINE FIELD OVERWRITE created_at ON revealed_in TYPE datetime DEFAULT time::now
 -- 18. РЕВИЗИИ СУЩНОСТЕЙ ЛОРА (БЕЗ ВЕКТОРОВ ЭМБЕДДИНГОВ)
 REMOVE FIELD IF EXISTS project_id ON entity_revisions;
 DEFINE TABLE OVERWRITE entity_revisions SCHEMAFULL;
-DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;
+DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE content     ON entity_revisions TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE commit_msg  ON entity_revisions TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at  ON entity_revisions TYPE datetime DEFAULT time::now();
@@ -201,9 +201,9 @@ DEFINE FIELD OVERWRITE is_pinned   ON entity_revisions TYPE bool DEFAULT false;
 -- 19. РЕВИЗИИ ГРАФОВЫХ СВЯЗЕЙ СУЩНОСТЕЙ
 REMOVE FIELD IF EXISTS project_id ON entity_rel_revisions;
 DEFINE TABLE OVERWRITE entity_rel_revisions SCHEMAFULL;
-DEFINE FIELD OVERWRITE target_id   ON entity_rel_revisions TYPE record<entity_rel>;
-DEFINE FIELD OVERWRITE in_id       ON entity_rel_revisions TYPE record<entities>;
-DEFINE FIELD OVERWRITE out_id      ON entity_rel_revisions TYPE record<entities>;
+DEFINE FIELD OVERWRITE target_id   ON entity_rel_revisions TYPE record<entity_rel> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE in_id       ON entity_rel_revisions TYPE record<entities> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE out_id      ON entity_rel_revisions TYPE record<entities> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE action      ON entity_rel_revisions TYPE string
   ASSERT $value IN ['CREATE', 'UPDATE', 'DELETE'];
 DEFINE FIELD OVERWRITE content     ON entity_rel_revisions TYPE object FLEXIBLE DEFAULT {};
@@ -213,7 +213,7 @@ DEFINE FIELD OVERWRITE created_at  ON entity_rel_revisions TYPE datetime DEFAULT
 -- 20. РЕВИЗИИ ТЕКСТА ГЛАВ РУКОПИСИ
 REMOVE FIELD IF EXISTS project_id ON chapter_revisions;
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
-DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
+DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
@@ -236,9 +236,9 @@ DEFINE FIELD OVERWRITE title             ON plot_promises TYPE string;
 DEFINE FIELD OVERWRITE note              ON plot_promises TYPE option<string | null>;
 DEFINE FIELD OVERWRITE status            ON plot_promises TYPE string DEFAULT 'planted'
   ASSERT $value IN ['planted', 'developed', 'in_progress', 'resolved', 'abandoned'];
-DEFINE FIELD OVERWRITE parent_id         ON plot_promises TYPE option<record<plot_promises> | null>;
-DEFINE FIELD OVERWRITE location_id       ON plot_promises TYPE option<record<entities> | string | null>;
-DEFINE FIELD OVERWRITE timeline_event_id ON plot_promises TYPE option<record<timeline_events> | null>;
+DEFINE FIELD OVERWRITE parent_id         ON plot_promises TYPE option<record<plot_promises> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE location_id       ON plot_promises TYPE option<record<entities> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE timeline_event_id ON plot_promises TYPE option<record<timeline_events> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE created_at        ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at        ON plot_promises TYPE datetime DEFAULT time::now();
 

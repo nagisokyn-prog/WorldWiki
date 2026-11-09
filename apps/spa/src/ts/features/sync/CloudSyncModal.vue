@@ -1,13 +1,13 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="isOpen" class="cloud-sync-overlay" @click.self="close">
+    <div v-if="isOpen" class="cloud-sync-overlay" @click.self="!isSyncing && close()">
       <div v-motion-pop class="cloud-sync-modal">
         <div class="cloud-sync-header">
           <h3>
             <i class="fas fa-cloud"></i>
             Синхронизация
           </h3>
-          <button class="close-btn" @click="close">&times;</button>
+          <button class="close-btn" :disabled="isSyncing" @click="close">&times;</button>
         </div>
 
         <div class="cloud-sync-body relative">
@@ -157,7 +157,7 @@
                 </div>
               </div>
 
-              <div class="flex gap-3 items-center justify-center">
+              <div class="flex gap-3 items-center justify-center flex-wrap">
                 <button 
                   class="btn-sync-primary interactive-el"
                   :disabled="!yandexToken || isSyncing"
@@ -166,11 +166,27 @@
                   <i :class="isSyncing ? 'fas fa-spinner fa-spin' : 'fas fa-cloud-upload-alt'"></i>
                   {{ isSyncing ? 'Синхронизация...' : 'Отправить в облако' }}
                 </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary interactive-el"
+                  :disabled="isSyncing"
+                  title="Создать локальный бэкап .wwiki"
+                  @click="exportLocalBackupAction"
+                >
+                  <i class="far fa-file-archive mr-1"></i> Сохранить файл .wwiki
+                </button>
               </div>
             </template>
 
             <!-- IMPORT MODE -->
             <template v-else-if="syncMode === 'import'">
+              <!-- Активный прогресс восстановления -->
+              <div v-if="isSyncing" class="text-center p-5 border rounded-md mb-3" style="background: var(--bg-surface-elevated, #1a1a24); border-color: var(--accent, #6366f1);">
+                <i class="fas fa-spinner fa-spin text-lg text-accent mb-2"></i>
+                <div class="text-sm font-semibold text-main">{{ syncStatusText || 'Идет процесс восстановления...' }}</div>
+                <div class="text-xs text-muted mt-1">Пожалуйста, не закрывайте окно до завершения</div>
+              </div>
+
               <div v-if="!yandexToken" class="text-center text-muted text-sm">
                 Подключите Яндекс.Диск для загрузки бекапов
               </div>
@@ -222,6 +238,7 @@ const {
   authError,
   isLoading,
   isSyncing,
+  syncStatusText,
   mediaProgress,
   mediaSyncStatus,
   dbSyncStatus,
@@ -234,6 +251,7 @@ const {
   disconnectYandex,
   exchangeCode,
   uploadBackup,
+  exportLocalBackupAction,
   restoreBackup,
   fetchBackupsList
 } = useCloudSyncModal(emit);

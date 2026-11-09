@@ -82,7 +82,7 @@ async fn create_cloud_backup_creates_wwiki_with_database_dump() {
     std::fs::create_dir_all(&test_data).ok();
     unsafe { std::env::set_var("SURREAL_DATA_DIR", &test_data); }
 
-    let zip_path = create_cloud_backup_inner(&db, &dir)
+    let zip_path = create_cloud_backup_inner(&db, &dir, None)
         .await
         .expect("backup should succeed");
 
@@ -113,7 +113,7 @@ async fn restore_from_backup_roundtrip_restores_project() {
     std::fs::create_dir_all(&test_data).ok();
     unsafe { std::env::set_var("SURREAL_DATA_DIR", &test_data); }
 
-    let zip_path = create_cloud_backup_inner(&src, &dir)
+    let zip_path = create_cloud_backup_inner(&src, &dir, None)
         .await
         .expect("backup");
 
@@ -196,7 +196,7 @@ async fn restore_from_backup_with_project_bundle_restores_complete_subgraph() {
 
     // Create cloud backup
     let dir = tmp_dir("full_bundle_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir)
+    let zip_path = create_cloud_backup_inner(&src, &dir, None)
         .await
         .expect("backup succeeds");
 
@@ -284,7 +284,7 @@ async fn restore_over_existing_project_cleans_zombie_records() {
         .unwrap();
 
     let dir = tmp_dir("zombie_backup");
-    let zip_path = create_cloud_backup_inner(&src, &dir)
+    let zip_path = create_cloud_backup_inner(&src, &dir, None)
         .await
         .expect("backup succeeds");
 
@@ -388,7 +388,7 @@ async fn backup_and_restore_stress_large_dataset_chunks() {
         .unwrap();
 
     let dir = tmp_dir("stress_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir)
+    let zip_path = create_cloud_backup_inner(&src, &dir, None)
         .await
         .expect("backup succeeds for 1200 entities");
 
@@ -419,7 +419,7 @@ async fn restore_idempotency_multiple_times() {
         .unwrap();
 
     let dir = tmp_dir("idempotent_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir)
+    let zip_path = create_cloud_backup_inner(&src, &dir, None)
         .await
         .expect("backup");
 
@@ -498,7 +498,7 @@ async fn export_excludes_edges_pointing_outside_project() {
     src.query("RELATE entities:ent_a1->entity_rel->entities:ent_b1 SET rel_type = 'cross_link';").await.unwrap();
 
     let dir = tmp_dir("cross_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir).await.expect("backup A");
+    let zip_path = create_cloud_backup_inner(&src, &dir, None).await.expect("backup A");
 
     // Read project_bundle.json inside the zip
     let file = std::fs::File::open(&zip_path).expect("open zip");
@@ -522,7 +522,7 @@ async fn restore_preserves_custom_string_ids() {
     src.query("CREATE entities:hero_slayer_of_dragons SET schema_id = type::record('entity_schemas:custom_char'), name = 'Убийца Драконов', attributes = {}, tags = [];").await.unwrap();
 
     let dir = tmp_dir("custom_id_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir).await.expect("backup");
+    let zip_path = create_cloud_backup_inner(&src, &dir, None).await.expect("backup");
 
     let dst = create_test_db().await;
     restore_from_backup_inner(&dst, &zip_path).await.expect("restore");
@@ -545,7 +545,7 @@ async fn restore_project_a_does_not_touch_project_b() {
 
     // Make backup of A
     let dir = tmp_dir("isolated_a_export");
-    let zip_path = create_cloud_backup_inner(&db, &dir).await.expect("backup A");
+    let zip_path = create_cloud_backup_inner(&db, &dir, Some("isolated_a")).await.expect("backup A");
 
     // Mutate A in DB
     db.query("CREATE volumes:vol_a_unwanted SET project_id = type::record('projects:isolated_a'), title = 'Лишний';").await.unwrap();
@@ -646,7 +646,7 @@ async fn restore_with_empty_nodes_and_edges_succeeds() {
     seed_project(&src, "empty_proj", "Empty Project").await;
 
     let dir = tmp_dir("empty_export");
-    let zip_path = create_cloud_backup_inner(&src, &dir).await.expect("backup empty project");
+    let zip_path = create_cloud_backup_inner(&src, &dir, None).await.expect("backup empty project");
 
     let dst = create_test_db().await;
     let res = restore_from_backup_inner(&dst, &zip_path).await;

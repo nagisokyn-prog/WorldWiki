@@ -123,9 +123,21 @@ async fn delete_project_cascades_chapters() {
     // DDL-событиe `cascade_project_delete` должно удалить все главы проекта.
     // ВАЖНО: Rust SDK .delete(record) гарантированно триггерит DEFINE EVENT
     // для каждой записи. Сырой SQL DELETE может не триггерить events в SurrealDB.
-    db.delete::<Option<serde_json::Value>>(("projects", "p1"))
-        .await
-        .expect("delete project via SDK");
+    // При параллельном запуске тестов OCC движок SurrealKV может выдать retryable -32009.
+    let mut deleted = false;
+    for attempt in 1..=5 {
+        match db.delete::<Option<serde_json::Value>>(("projects", "p1")).await {
+            Ok(_) => {
+                deleted = true;
+                break;
+            }
+            Err(e) if e.to_string().contains("Transaction conflict") || e.to_string().contains("-32009") => {
+                tokio::time::sleep(tokio::time::Duration::from_millis(50 * attempt)).await;
+            }
+            Err(e) => panic!("delete project via SDK: {e}"),
+        }
+    }
+    assert!(deleted, "delete project via SDK should succeed within retries");
 
     let chapters = Chapter::find_all(&db, "projects:p1")
         .await

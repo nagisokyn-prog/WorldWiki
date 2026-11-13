@@ -27,3 +27,16 @@ export type PromiseCardEmits = {
 export type PromiseCardEmitFn = {
   <K extends keyof PromiseCardEmits>(e: K, ...args: PromiseCardEmits[K]): void;
 };
+
+export interface PromiseCardTimelineProps {
+  item: RichPlotPromise;
+  getChapterTitle: (chapterId: string) => string;
+  isCurrentChapterPromise: (chapterId: string) => boolean;
+}
+
+export type PromiseCardTimelineEmits = {
+  remove: [];
+  locate: [];
+  locateStep: [payload: { chapter_id: string; paragraph_index: number; quote: string }];
+  removeMilestone: [payload: { item: RichPlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }];
+};

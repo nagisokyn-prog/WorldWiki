@@ -94,19 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import type { RichPlotPromise } from '../../../usePromisesPanel';
+import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from '../PromiseCard.model';
 
-defineProps<{
-  item: RichPlotPromise;
-  getChapterTitle: (chapterId: string) => string;
-  isCurrentChapterPromise: (chapterId: string) => boolean;
-}>();
-
-defineEmits<{
-  remove: [];
-  locate: [];
-  locateStep: [payload: { chapter_id: string; paragraph_index: number; quote: string }];
-  removeMilestone: [payload: { item: RichPlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }];
-}>();
+defineProps<PromiseCardTimelineProps>();
+defineEmits<PromiseCardTimelineEmits>();
 </script>
 

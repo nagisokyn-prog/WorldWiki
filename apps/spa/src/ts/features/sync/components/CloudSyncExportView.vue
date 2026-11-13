@@ -129,20 +129,9 @@
 </template>
 
 <script setup lang="ts">
-import type { DatabaseSyncStatus, MediaSyncProgress, MediaSyncStatus } from '../CloudSyncModal.model';
+import type { CloudSyncExportViewProps, CloudSyncExportViewEmits } from '../CloudSyncModal.model';
 
-defineProps<{
-  yandexToken: string | null;
-  isSyncing: boolean;
-  dbSyncStatus: DatabaseSyncStatus;
-  mediaSyncStatus: MediaSyncStatus;
-  mediaProgress: MediaSyncProgress | null;
-  lastBackupFileName: string;
-}>();
-
-defineEmits<{
-  upload: [];
-  exportLocal: [];
-}>();
+defineProps<CloudSyncExportViewProps>();
+defineEmits<CloudSyncExportViewEmits>();
 </script>
 

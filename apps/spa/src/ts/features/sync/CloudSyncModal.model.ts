@@ -10,3 +10,17 @@ export interface MediaSyncProgress {
 
 export type DatabaseSyncStatus = 'idle' | 'exporting' | 'uploading' | 'success' | 'error';
 export type MediaSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
+
+export interface CloudSyncExportViewProps {
+    yandexToken: string | null;
+    isSyncing: boolean;
+    dbSyncStatus: DatabaseSyncStatus;
+    mediaSyncStatus: MediaSyncStatus;
+    mediaProgress: MediaSyncProgress | null;
+    lastBackupFileName: string;
+}
+
+export type CloudSyncExportViewEmits = {
+    upload: [];
+    exportLocal: [];
+};

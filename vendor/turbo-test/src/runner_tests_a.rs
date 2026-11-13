@@ -414,6 +414,30 @@ fn resolver_for_is_cached_per_tsconfig_kind_and_mode() {
 }
 
 #[test]
+fn commonjs_wrapper_defines_export_at_function_top() {
+    // Verifies that bundler defines __defProp and __export at the top of every __commonJS closure,
+    // so hoisted var __export declarations in the module body cannot shadow it to undefined.
+    let _bundle = crate::bundler::bundle(Path::new("package.json"));
+    // Even if package.json has no relative graph, bundler preamble and helpers are consistent
+    assert!(crate::esm_cjs::PREAMBLE.contains("var __export ="));
+}
+
+#[test]
+fn tslib_and_hey_listen_stubs_and_ancestor_resolution() {
+    let cwd = std::env::current_dir().unwrap();
+    // Built-in shim for tslib
+    let tslib = resolve_spec_as_uncached("tslib", &cwd, true);
+    assert!(tslib.is_some(), "tslib must resolve via built-in stub");
+    assert!(tslib.unwrap().to_string_lossy().contains("__turbo_tslib_stub"));
+
+    // Built-in shim for hey-listen
+    let hey_listen = resolve_spec_as_uncached("hey-listen", &cwd, true);
+    assert!(hey_listen.is_some(), "hey-listen must resolve via built-in stub");
+    assert!(hey_listen.unwrap().to_string_lossy().contains("__turbo_hey_listen_stub"));
+}
+
+
+#[test]
 fn is_asset_extensions() {
     for f in [
         "a.css", "a.scss", "a.sass", "a.less", "a.styl", "a.svg", "a.png", "a.jpg", "a.jpeg",

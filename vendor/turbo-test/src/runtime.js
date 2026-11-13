@@ -1,4 +1,10 @@
 // Minimal test runtime injected before a test module loads.
+globalThis.__defProp = Object.defineProperty;
+globalThis.__export = (target, all) => {
+  for (var name in all) Object.defineProperty(target, name, { get: all[name], enumerable: true, configurable: true });
+};
+var __defProp = globalThis.__defProp;
+var __export = globalThis.__export;
 // PLACEHOLDER for the real @vitest/* framework, which gets baked into the V8 snapshot
 // at M3 (compatible-by-construction). This M1 version exists only to run the
 // non-timer/non-DOM logic subset of the gauntlet end-to-end and report pass/fail.
@@ -2039,7 +2045,7 @@ globalThis.__pathToFileURL = (p) => {
 globalThis.__dirnameOf = (p) => {
   if (!__ttWin()) { const s = String(p).replace(/\/+$/, ''); const i = s.lastIndexOf('/'); return i <= 0 ? '/' : s.slice(0, i); }
   // path.win32.dirname for drive paths: the root (`C:\`) is its own dirname
-  const s = String(p);
+  const s = String(p).replace(/^[\\/]{2}\?[\\/]/, '');
   const rootLen = /^[a-zA-Z]:[\\/]/.test(s) ? 3 : /^[\\/]/.test(s) ? 1 : 0;
   const t = s.replace(/[\\/]+$/, '');
   const i = Math.max(t.lastIndexOf('/'), t.lastIndexOf('\\'));
@@ -2158,37 +2164,132 @@ const __basename = (p, ext) => {
   if (ext !== undefined && b !== ext && b.endsWith(ext)) b = b.slice(0, -ext.length);
   return b;
 };
-const __path = {
+const __win32Normalize = (p) => {
+  p = String(p).replace(/^[\\/]{2}\?[\\/]/, '').replace(/\//g, '\\');
+  if (p === '') return '.';
+  const m = /^(?:[a-zA-Z]:\\|[a-zA-Z]:$|\\\\|\\)/.exec(p);
+  const root = m ? m[0] : '';
+  const rest = p.slice(root.length);
+  const out = [];
+  for (const seg of rest.split('\\')) {
+    if (!seg || seg === '.') continue;
+    if (seg === '..') {
+      if (out.length && out[out.length - 1] !== '..') out.pop();
+      else if (!root) out.push('..');
+    } else {
+      out.push(seg);
+    }
+  }
+  let res = root + out.join('\\');
+  if (p.endsWith('\\') && !res.endsWith('\\')) res += '\\';
+  return res || (root ? root : '.');
+};
+const __win32Resolve = (...args) => {
+  let resolvedDevice = '';
+  let resolvedTail = '';
+  let resolvedAbsolute = false;
+  for (let i = args.length - 1; i >= -1; i--) {
+    let path;
+    if (i >= 0) {
+      path = String(args[i]);
+      if (!path) continue;
+    } else if (!resolvedDevice) {
+      path = globalThis.process && globalThis.process.cwd ? globalThis.process.cwd() : '\\';
+    } else {
+      path = globalThis.process && globalThis.process.cwd ? globalThis.process.cwd() : '\\';
+      if (!path.toLowerCase().startsWith(resolvedDevice.toLowerCase())) {
+        path = resolvedDevice + '\\';
+      }
+    }
+    path = path.replace(/^[\\/]{2}\?[\\/]/, '').replace(/\//g, '\\');
+    const len = path.length;
+    let rootEnd = 0;
+    let device = '';
+    let isAbsolute = false;
+    const first = path.charCodeAt(0);
+    if (len > 0) {
+      if (first === 47 || first === 92) {
+        rootEnd = 1;
+        isAbsolute = true;
+      } else if (len > 1 && path.charCodeAt(1) === 58) {
+        device = path.slice(0, 2);
+        rootEnd = 2;
+        if (len > 2 && (path.charCodeAt(2) === 47 || path.charCodeAt(2) === 92)) {
+          rootEnd = 3;
+          isAbsolute = true;
+        }
+      }
+    }
+    if (device) {
+      if (!resolvedDevice) resolvedDevice = device;
+      else if (resolvedDevice.toLowerCase() !== device.toLowerCase()) continue;
+    }
+    if (!resolvedAbsolute) {
+      resolvedTail = path.slice(rootEnd) + '\\' + resolvedTail;
+      resolvedAbsolute = isAbsolute;
+    }
+    if (resolvedDevice && resolvedAbsolute) break;
+  }
+  const out = [];
+  for (const seg of resolvedTail.split('\\')) {
+    if (!seg || seg === '.') continue;
+    if (seg === '..') {
+      if (out.length) out.pop();
+    } else {
+      out.push(seg);
+    }
+  }
+  const result = (resolvedDevice || '') + (resolvedAbsolute ? '\\' : '') + out.join('\\');
+  return result || '.';
+};
+const __win32Join = (...args) => {
+  const parts = args.map(String).filter((x) => x !== '');
+  if (!parts.length) return '.';
+  return __win32Normalize(parts.join('\\'));
+};
+const __win32Path = {
+  sep: '\\',
+  delimiter: ';',
+  join: __win32Join,
+  resolve: __win32Resolve,
+  normalize: __win32Normalize,
+  isAbsolute: (p) => /^[a-zA-Z]:[\\/]|^[\\/]/.test(String(p)),
+  dirname: (p) => globalThis.__dirnameOf(p),
+  basename: (p, ext) => {
+    let b = String(p).replace(/[\\/]+$/, '');
+    const i = Math.max(b.lastIndexOf('/'), b.lastIndexOf('\\'));
+    b = i >= 0 ? b.slice(i + 1) : b;
+    if (ext !== undefined && b !== ext && b.endsWith(ext)) b = b.slice(0, -ext.length);
+    return b;
+  },
+  extname: __extname,
+  parse: (p) => { const s = String(p); const dir = globalThis.__dirnameOf(s); const base = __win32Path.basename(s); const ext = __extname(base); return { root: /^[a-zA-Z]:[\\/]/.test(s) ? s.slice(0, 3) : s.startsWith('\\') ? '\\' : '', dir, base, ext, name: ext ? base.slice(0, -ext.length) : base }; },
+  format: (o) => { o = o || {}; const dir = o.dir || o.root; const base = o.base || ((o.name || '') + (o.ext ? (o.ext.startsWith('.') ? '' : '.') + o.ext : '')); if (!dir) return base; return dir === o.root ? dir + base : dir + '\\' + base; },
+  relative: (f, t) => { f = __win32Resolve(f); t = __win32Resolve(t); return f === t ? '' : t; },
+  posix: null,
+  win32: null,
+};
+const __posixPath = {
   sep: '/',
+  delimiter: ':',
   join: (...a) => { const j = a.map(String).filter((x) => x !== '').join('/'); return j === '' ? '.' : __normalize(j); },
   resolve: __resolve,
   dirname: (p) => globalThis.__dirnameOf(p),
   basename: __basename,
   extname: __extname,
   isAbsolute: (p) => String(p).startsWith('/'),
-  relative: (f, t) => {
-    f = __resolve(f); t = __resolve(t);
-    if (f === t) return '';
-    const fs = f === '/' ? [] : f.slice(1).split('/');
-    const ts = t === '/' ? [] : t.slice(1).split('/');
-    let i = 0;
-    while (i < fs.length && i < ts.length && fs[i] === ts[i]) i++;
-    return [...fs.slice(i).map(() => '..'), ...ts.slice(i)].join('/');
-  },
   normalize: __normalize,
   parse: (p) => { const s = String(p); const dir = globalThis.__dirnameOf(s); const base = __basename(s); const ext = __extname(base); return { root: s.startsWith('/') ? '/' : '', dir, base, ext, name: ext ? base.slice(0, -ext.length) : base }; },
-  format: (o) => {
-    o = o || {};
-    const dir = o.dir || o.root;
-    const base = o.base || ((o.name || '') + (o.ext ? (o.ext.startsWith('.') ? '' : '.') + o.ext : ''));
-    if (!dir) return base;
-    return dir === o.root ? dir + base : dir + '/' + base;
-  },
-  delimiter: ':',
+  format: (o) => { o = o || {}; const dir = o.dir || o.root; const base = o.base || ((o.name || '') + (o.ext ? (o.ext.startsWith('.') ? '' : '.') + o.ext : '')); if (!dir) return base; return dir === o.root ? dir + base : dir + '/' + base; },
+  relative: (f, t) => { f = __resolve(f); t = __resolve(t); if (f === t) return ''; const fs = f === '/' ? [] : f.slice(1).split('/'); const ts = t === '/' ? [] : t.slice(1).split('/'); let i = 0; while (i < fs.length && i < ts.length && fs[i] === ts[i]) i++; return [...fs.slice(i).map(() => '..'), ...ts.slice(i)].join('/'); },
+  posix: null,
+  win32: null,
 };
-// glob-parent and others reach for path.posix / path.win32; expose both (posix is our default).
-__path.posix = __path;
-__path.win32 = Object.assign({}, __path, { sep: '\\', delimiter: ';' });
+__posixPath.posix = __posixPath;
+__posixPath.win32 = __win32Path;
+__win32Path.posix = __posixPath;
+__win32Path.win32 = __win32Path;
+const __path = __ttWin() ? __win32Path : __posixPath;
 // A path argument as Node takes it: a `file:` URL (fileURLToPath), a Buffer, or a string.
 const __fsPath = (p) => {
   if (p !== null && typeof p === 'object' && typeof p.href === 'string' && typeof p.protocol === 'string') return globalThis.__fileURLToPath(p);
@@ -8036,6 +8137,99 @@ globalThis.__ttResetForNextFile = () => {
 globalThis.__ttInstallWindowMembers = () => {
   const w = globalThis.window;
   if (!w || typeof w !== 'object' && typeof w !== 'function') return;
+  if (typeof w.innerWidth === 'undefined') {
+    try {
+      Object.defineProperty(w, 'innerWidth', { value: 1024, writable: true, configurable: true });
+      Object.defineProperty(w, 'innerHeight', { value: 768, writable: true, configurable: true });
+      Object.defineProperty(w, 'outerWidth', { value: 1024, writable: true, configurable: true });
+      Object.defineProperty(w, 'outerHeight', { value: 768, writable: true, configurable: true });
+    } catch (e) {}
+  }
+  if (typeof w.matchMedia === 'undefined') {
+    w.matchMedia = (query) => ({
+      matches: false,
+      media: String(query),
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    });
+  }
+  const CSD = (w && w.CSSStyleDeclaration) || globalThis.CSSStyleDeclaration;
+  if (CSD && CSD.prototype) {
+    try {
+      const proto = CSD.prototype;
+      const origSet = proto.setProperty;
+      if (origSet && !origSet.__ttPatched) {
+        proto.setProperty = function(prop, val, prio) {
+          if (typeof prop === 'string' && prop.startsWith('--')) {
+            if (!this._ttCustomProps) this._ttCustomProps = Object.create(null);
+            this._ttCustomProps[prop] = String(val);
+          }
+          if (prop === 'transition') {
+            this._ttTransition = String(val);
+          }
+          return origSet.call(this, prop, val, prio);
+        };
+        proto.setProperty.__ttPatched = true;
+      }
+      const origGPV = proto.getPropertyValue;
+      if (origGPV && !origGPV.__ttPatched) {
+        proto.getPropertyValue = function(prop) {
+          if (typeof prop === 'string' && prop.startsWith('--')) {
+            if (this._ttCustomProps && this._ttCustomProps[prop] !== undefined) {
+              return this._ttCustomProps[prop];
+            }
+            if (this._ttOwnerStyle && this._ttOwnerStyle._ttCustomProps && this._ttOwnerStyle._ttCustomProps[prop] !== undefined) {
+              return this._ttOwnerStyle._ttCustomProps[prop];
+            }
+          }
+          if (prop === 'transition') {
+            if (this._ttTransition !== undefined) return this._ttTransition;
+            let val = origGPV.call(this, prop);
+            if (typeof val === 'string' && val.length > 0 && !val.includes('ease')) {
+              return val + ' ease';
+            }
+            return val;
+          }
+          return origGPV.call(this, prop);
+        };
+        proto.getPropertyValue.__ttPatched = true;
+      }
+      if (w && typeof w.getComputedStyle === 'function' && !w.getComputedStyle.__ttOwnerPatched) {
+        const origGCS = w.getComputedStyle;
+        const gcsPatched = function(el, pseudo) {
+          const cs = origGCS.call(this, el, pseudo);
+          if (cs && el && el.style && el.style._ttCustomProps) {
+            cs._ttOwnerStyle = el.style;
+          }
+          return cs;
+        };
+        gcsPatched.__ttOwnerPatched = true;
+        try {
+          Object.defineProperty(w, 'getComputedStyle', { value: gcsPatched, writable: true, configurable: true, enumerable: true });
+        } catch (e) {}
+      }
+      Object.defineProperty(proto, 'transition', {
+        get() {
+          if (this._ttTransition !== undefined) return this._ttTransition;
+          let val = this.getPropertyValue('transition');
+          if (typeof val === 'string' && val.length > 0 && !val.includes('ease')) {
+            return val + ' ease';
+          }
+          return val;
+        },
+        set(v) {
+          this._ttTransition = String(v);
+          this.setProperty('transition', v);
+        },
+        configurable: true,
+        enumerable: true
+      });
+    } catch (e) {}
+  }
   const def = (name, fn) => {
     if (typeof w[name] === 'function') return;
     Object.defineProperty(fn, 'name', { value: name });
@@ -8181,7 +8375,7 @@ globalThis.__ttInstallJsdomComputedStyle = () => {
   const value = (decl, name, scratch, cs) => {
     const d = decl.get(name);
     // a color reads as rgb(), as jsdom's cssstyle spells it: turbo-dom's computed one
-    if (d && /color$/.test(name) && !/var\(|currentcolor|inherit|initial|unset|revert/i.test(d.value)) {
+    if (d && !name.startsWith('--') && /color$/.test(name) && !/var\(|currentcolor|inherit|initial|unset|revert/i.test(d.value)) {
       try {
         // in a document of its own: no mutation an observer of the page could see
         if (!colorDoc) colorDoc = w.document.implementation.createHTMLDocument('');
@@ -8215,6 +8409,10 @@ globalThis.__ttInstallJsdomComputedStyle = () => {
       get(target, key) {
         if (key === 'getPropertyValue') {
           return (name) => {
+            if (typeof name === 'string' && name.startsWith('--') && el && el.style && typeof el.style.getPropertyValue === 'function') {
+              const inlineVal = el.style.getPropertyValue(name);
+              if (inlineVal) return inlineVal.trim();
+            }
             const v = typeof name === 'string' ? value(decl, kebab(String(name).trim()).toLowerCase(), scratch, target) : undefined;
             return v !== undefined ? v : target.getPropertyValue(name);
           };

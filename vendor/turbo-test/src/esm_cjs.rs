@@ -454,8 +454,15 @@ pub fn emit_mapped(path: &Path, src: &str, legacy_decorators: bool) -> Option<St
 /// `emit_with` with the coverage decision injected: `with_map = true` appends the inline source map.
 fn emit_inner(path: &Path, src: &str, legacy_decorators: bool, with_map: bool) -> Option<String> {
     let alloc = Allocator::default();
-    let stype = SourceType::from_path(path).ok()?;
-    let parsed = Parser::new(&alloc, src, stype).parse();
+    let is_vue = path.extension().and_then(|e| e.to_str()) == Some("vue");
+    let (compiled_src, stype) = if is_vue {
+        let compiled = crate::vue::compile_vue_sfc(path, src).ok()?;
+        (Some(compiled), SourceType::ts())
+    } else {
+        (None, SourceType::from_path(path).ok()?)
+    };
+    let effective_src = compiled_src.as_deref().unwrap_or(src);
+    let parsed = Parser::new(&alloc, effective_src, stype).parse();
     if !parsed.errors.is_empty() {
         return None;
     }
@@ -475,7 +482,12 @@ fn emit_inner(path: &Path, src: &str, legacy_decorators: bool, with_map: bool) -
             opts.decorator.strict_null_checks = false;
             opts.helper_loader.mode = HelperLoaderMode::External;
         }
-        let ret = Transformer::new(&alloc, path, &opts).build_with_scoping(scoping0, &mut program);
+        let transform_path = if is_vue {
+            path.with_extension("ts")
+        } else {
+            path.to_path_buf()
+        };
+        let ret = Transformer::new(&alloc, &transform_path, &opts).build_with_scoping(scoping0, &mut program);
         if !ret.errors.is_empty() {
             return None;
         }
@@ -495,14 +507,19 @@ fn emit_inner(path: &Path, src: &str, legacy_decorators: bool, with_map: bool) -
         resolve: None,
         module_path: None,
     };
-    let map_src = if with_map { Some((path, src)) } else { None };
+    let map_src = if with_map { Some((path, effective_src)) } else { None };
     let (parts, mappings) = lower(ast, scoping, &ctx, &mut program, map_src)?;
 
     // No ESM module syntax → CJS/script: return the transformed body unwrapped (no preamble), with
     // just the `__toESM` helper prepended when a lowered `import()` calls it.
     if !parts.has_module_syntax {
+        let export_helper = if parts.body_code.contains("__export") {
+            "var __defProp = Object.defineProperty;\nvar __export = (target, all) => { for (var name in all) __defProp(target, name, { get: all[name], enumerable: true, configurable: true }); };\n"
+        } else {
+            ""
+        };
         let helper = if parts.uses_to_esm { TO_ESM_HELPER } else { "" };
-        let mut out = format!("{helper}{}", parts.body_code);
+        let mut out = format!("{export_helper}{helper}{}", parts.body_code);
         if let Some(m) = &mappings {
             append_inline_map(&mut out, path, helper.matches('\n').count(), m);
         }
@@ -1115,7 +1132,8 @@ pub(crate) const STAR_HELPER: &str = star_helper!();
 /// init ordering work (each module's body runs once, on first require, with its exports object
 /// already live).
 pub(crate) const PREAMBLE: &str = concat!(
-    r#"var __defProp = Object.defineProperty;
+    r#""use strict";
+var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
@@ -1144,6 +1162,7 @@ pub(crate) fn assemble_module(
     let mut out = String::with_capacity(body.len() + 512);
     out.push_str("var __tt_exports = {};\n");
     if !exports.is_empty() {
+        out.push_str("var __defProp = Object.defineProperty;\nvar __export = (target, all) => { for (var name in all) __defProp(target, name, { get: all[name], enumerable: true, configurable: true }); };\n");
         out.push_str("__export(__tt_exports, {\n");
         for e in exports {
             out.push_str(&format!(

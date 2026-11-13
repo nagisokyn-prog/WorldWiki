@@ -322,7 +322,7 @@
     height: 100%;
     background: var(--accent);
     border-radius: var(--radius-xs);
-    transition: width 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .sync-current-file {

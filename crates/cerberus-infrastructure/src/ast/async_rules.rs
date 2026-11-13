@@ -111,7 +111,7 @@ pub fn is_std_mutex_lock_expression(init: &Option<syn::LocalInit>) -> bool {
         let mut current_expr: &syn::Expr = &local_init.expr;
         while let syn::Expr::MethodCall(method_call) = current_expr {
             let method_name = method_call.method.to_string();
-            if matches!(method_name.as_str(), "lock" | "read" | "write") {
+            if matches!(method_name.as_str(), "lock" | "read" | "write") && method_call.args.is_empty() {
                 let receiver = &method_call.receiver;
                 let receiver_str = quote::quote!(#receiver).to_string();
                 let is_tokio = receiver_str.contains("tokio");

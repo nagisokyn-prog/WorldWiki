@@ -26,13 +26,11 @@
         </button>
       </template>
 
-      <template #after-header>
-        <slot name="after-header">
-          <div class="calendar-widget-container" :style="{ '--calendar-h': calendarHeight + 'px' }">
-            <GlobalCalendarWidget :project="props.project" />
-          </div>
-          <div class="panel-resize-handle-h" title="Потяните, чтобы изменить высоту" @mousedown="startVerticalResize"></div>
-        </slot>
+      <template v-if="$slots['after-header']" #after-header>
+        <div class="calendar-widget-container" :style="{ '--calendar-h': calendarHeight + 'px' }">
+          <slot name="after-header" />
+        </div>
+        <div class="panel-resize-handle-h" title="Потяните, чтобы изменить высоту" @mousedown="startVerticalResize"></div>
       </template>
 
       <!-- Контекстное меню -->
@@ -103,7 +101,6 @@
 
 <script setup lang="ts">
 import { ExplorerTree } from '@worldwiki/components';
-import GlobalCalendarWidget from '@/features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import { useCalendarTreeResize } from './composables/useCalendarTreeResize';
 import type { ChapterTreeProps } from './ChapterTree.model';

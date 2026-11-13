@@ -42,29 +42,16 @@ impl IdExtractor {
             b"events:",
         ];
         for &prefix in PREFIXES {
-            if let Some(idx) = find_ascii(decoded, prefix) {
-                let after = decoded.get(idx..)?;
-                let after_bytes = after.as_bytes();
-                let mut end_idx = after_bytes.len();
-                let mut i = 0;
-                while i < after_bytes.len() {
-                    let b = after_bytes[i];
-                    if b.is_ascii_whitespace()
-                        || b == b'&'
-                        || b == b']'
-                        || b == b')'
-                        || b == b'"'
-                        || b == b'\''
-                    {
-                        end_idx = i;
-                        break;
-                    }
-                    i += 1;
-                }
-                let id = after.get(..end_idx)?;
-                if !id.is_empty() {
-                    return Some(id.to_string());
-                }
+            let Some(idx) = find_ascii(decoded, prefix) else {
+                continue;
+            };
+            let after = decoded.get(idx..)?;
+            let id = after
+                .split(|c: char| c.is_ascii_whitespace() || matches!(c, '&' | ']' | ')' | '"' | '\''))
+                .next()
+                .unwrap_or("");
+            if !id.is_empty() {
+                return Some(id.to_string());
             }
         }
         None
@@ -79,37 +66,39 @@ impl IdExtractor {
         }
     }
 
+    fn decode_hex_pair(h1: u8, h2: u8) -> Option<u8> {
+        let hex = [h1, h2];
+        let hex_str = core::str::from_utf8(&hex).ok()?;
+        u8::from_str_radix(hex_str, 16).ok()
+    }
+
     fn url_decode(s: &str) -> String {
         if find_ascii(s, b"%").is_none() {
             return s.to_string();
         }
         let mut bytes = Vec::with_capacity(s.len());
-        let mut chars = s.as_bytes().iter().copied().peekable();
-        while let Some(b) = chars.next() {
-            if b == b'%' {
-                let c1 = chars.next();
-                let c2 = chars.next();
-                if let (Some(h1), Some(h2)) = (c1, c2) {
-                    let hex = [h1, h2];
-                    if let Ok(hex_str) = core::str::from_utf8(&hex)
-                        && let Ok(val) = u8::from_str_radix(hex_str, 16)
-                    {
+        let mut iter = s.as_bytes().iter().copied();
+        while let Some(b) = iter.next() {
+            if b != b'%' {
+                bytes.push(b);
+                continue;
+            }
+            match (iter.next(), iter.next()) {
+                (Some(h1), Some(h2)) => {
+                    if let Some(val) = Self::decode_hex_pair(h1, h2) {
                         bytes.push(val);
-                        continue;
+                    } else {
+                        bytes.extend_from_slice(&[b'%', h1, h2]);
                     }
-                    bytes.push(b'%');
-                    bytes.push(h1);
-                    bytes.push(h2);
-                    continue;
-                } else {
-                    bytes.push(b'%');
-                    if let Some(h1) = c1 {
-                        bytes.push(h1);
-                    }
+                }
+                (Some(h1), None) => {
+                    bytes.extend_from_slice(&[b'%', h1]);
                     break;
                 }
-            } else {
-                bytes.push(b);
+                _ => {
+                    bytes.push(b'%');
+                    break;
+                }
             }
         }
         String::from_utf8_lossy(&bytes).into_owned()

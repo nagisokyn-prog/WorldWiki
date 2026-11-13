@@ -82,7 +82,7 @@ mod tests {
         let storage_clone = repo.storage.clone();
         let _ = std::panic::catch_unwind(move || {
             let _guard = storage_clone.lock().unwrap();
-            panic!("Poisoning mutex intentionally");
+            std::panic::resume_unwind(Box::new("Poisoning mutex intentionally"));
         });
 
         // Verify operations recover from poisoned state

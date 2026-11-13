@@ -38,6 +38,77 @@ export function extractBirthMabs(data: CharacterJourneyData | null, cal: Calenda
   return null;
 }
 
+export interface BoundArcInfo {
+  arcId: string;
+  arcTitle: string;
+  arcColor?: string;
+  phase: string;
+  phaseLabel: string;
+}
+
+function resolveArcBindings(
+  rawArcs: unknown,
+  fallbackArcId: string | null | undefined,
+  fallbackArcTitle: string | null | undefined,
+  fallbackArcColor: string | null | undefined,
+  fallbackArcPhase: string | null | undefined,
+  storyArcs: StoryArc[]
+): { boundArcs: BoundArcInfo[]; allArcIds: string[]; primaryArc?: BoundArcInfo; combinedArcTitle?: string } {
+  const boundArcs: BoundArcInfo[] = [];
+  const allArcIds: string[] = [];
+
+  if (Array.isArray(rawArcs) && rawArcs.length > 0) {
+    for (const rawEntry of rawArcs) {
+      if (!rawEntry) continue;
+      let entryArcId = '';
+      let entryPhase = 'setup';
+      if (typeof rawEntry === 'string') {
+        entryArcId = rawEntry;
+      } else if (typeof rawEntry === 'object') {
+        const obj = rawEntry as { arc_id?: string; arc_phase?: string };
+        entryArcId = obj.arc_id || '';
+        entryPhase = obj.arc_phase || 'setup';
+      }
+      if (!entryArcId) continue;
+
+      const cleanId = entryArcId.replace(/^story_arcs:/, '');
+      const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanId);
+      const resolvedId = arc?.id || entryArcId;
+      if (!allArcIds.includes(resolvedId)) allArcIds.push(resolvedId);
+
+      boundArcs.push({
+        arcId: resolvedId,
+        arcTitle: arc?.title || 'Сюжетная арка',
+        arcColor: (arc as { color?: string })?.color || undefined,
+        phase: entryPhase,
+        phaseLabel: getPhaseLabel(entryPhase),
+      });
+    }
+  }
+
+  if (boundArcs.length === 0 && fallbackArcId) {
+    const cleanArcId = fallbackArcId.replace(/^story_arcs:/, '');
+    const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanArcId);
+    const resolvedId = arc?.id || fallbackArcId;
+    const phase = fallbackArcPhase || 'setup';
+    allArcIds.push(resolvedId);
+    boundArcs.push({
+      arcId: resolvedId,
+      arcTitle: arc?.title || fallbackArcTitle || 'Сюжетная арка',
+      arcColor: (arc as { color?: string })?.color || fallbackArcColor || undefined,
+      phase,
+      phaseLabel: getPhaseLabel(phase),
+    });
+  }
+
+  const primaryArc = boundArcs[0];
+  const combinedArcTitle = boundArcs.length > 0
+    ? boundArcs.map((b) => b.arcTitle).join(' & ')
+    : (fallbackArcTitle ?? undefined);
+
+  return { boundArcs, allArcIds, primaryArc, combinedArcTitle };
+}
+
 export function buildTimelineItems(
   data: CharacterJourneyData | null,
   storyArcs: StoryArc[],
@@ -67,73 +138,14 @@ export function buildTimelineItems(
       const appFullText = app.quote?.trim()
         || (app.role ? `Роль: ${app.role}` : (isScene ? `Сцена в ${appTitle}` : `Упоминание в тексте (${appTitle})`));
 
-      const boundArcs: Array<{
-        arcId: string;
-        arcTitle: string;
-        arcColor?: string;
-        phase: string;
-        phaseLabel: string;
-      }> = [];
-      const allArcIds: string[] = [];
-
-      if (Array.isArray(app.arcs) && app.arcs.length > 0) {
-        app.arcs.forEach((rawEntry: unknown) => {
-          if (!rawEntry) return;
-          let entryArcId = '';
-          let entryPhase = 'setup';
-
-          if (typeof rawEntry === 'string') {
-            entryArcId = rawEntry;
-          } else if (typeof rawEntry === 'object' && rawEntry !== null) {
-            const obj = rawEntry as { arc_id?: string; arc_phase?: string };
-            entryArcId = obj.arc_id || '';
-            entryPhase = obj.arc_phase || 'setup';
-          }
-
-          if (entryArcId) {
-            const cleanId = entryArcId.replace(/^story_arcs:/, '');
-            const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanId);
-            const resolvedId = arc?.id || entryArcId;
-            const resolvedTitle = arc?.title || 'Сюжетная арка';
-            const resolvedColor = (arc as { color?: string })?.color || undefined;
-
-            if (!allArcIds.includes(resolvedId)) {
-              allArcIds.push(resolvedId);
-            }
-
-            boundArcs.push({
-              arcId: resolvedId,
-              arcTitle: resolvedTitle,
-              arcColor: resolvedColor,
-              phase: entryPhase,
-              phaseLabel: getPhaseLabel(entryPhase),
-            });
-          }
-        });
-      }
-
-      if (boundArcs.length === 0 && app.arc_id) {
-        const cleanArcId = (app.arc_id as string).replace(/^story_arcs:/, '');
-        const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanArcId);
-        const resolvedId = arc?.id || (app.arc_id as string);
-        const resolvedTitle = arc?.title || (app.arc_title as string) || 'Сюжетная арка';
-        const resolvedColor = (arc as { color?: string })?.color || (app.arc_color as string) || undefined;
-        const phase = (app.arc_phase as string) || 'setup';
-
-        allArcIds.push(resolvedId);
-        boundArcs.push({
-          arcId: resolvedId,
-          arcTitle: resolvedTitle,
-          arcColor: resolvedColor,
-          phase,
-          phaseLabel: getPhaseLabel(phase),
-        });
-      }
-
-      const primaryArc = boundArcs[0];
-      const combinedArcTitle = boundArcs.length > 0
-        ? boundArcs.map((b) => b.arcTitle).join(' & ')
-        : (app.arc_title as string | undefined);
+      const { boundArcs, allArcIds, primaryArc, combinedArcTitle } = resolveArcBindings(
+        app.arcs,
+        app.arc_id as string | undefined,
+        app.arc_title as string | undefined,
+        app.arc_color as string | undefined,
+        app.arc_phase as string | undefined,
+        storyArcs
+      );
 
       items.push({
         id: `app-${app.chapter_id}-${app.source || 'mention'}-${app.created_at || Math.random()}`,
@@ -213,73 +225,14 @@ export function buildTimelineItems(
   // 3. Narrative Blocks (Plot Promises / Scenes) with multi-arc support
   if (Array.isArray(data.promises)) {
     data.promises.forEach((p: JourneyPromise) => {
-    const boundArcs: Array<{
-      arcId: string;
-      arcTitle: string;
-      arcColor?: string;
-      phase: string;
-      phaseLabel: string;
-    }> = [];
-    const allArcIds: string[] = [];
-
-    if (Array.isArray(p.arcs) && p.arcs.length > 0) {
-      p.arcs.forEach((rawEntry: unknown) => {
-        if (!rawEntry) return;
-        let entryArcId = '';
-        let entryPhase = 'setup';
-
-        if (typeof rawEntry === 'string') {
-          entryArcId = rawEntry;
-        } else if (typeof rawEntry === 'object' && rawEntry !== null) {
-          const obj = rawEntry as { arc_id?: string; arc_phase?: string };
-          entryArcId = obj.arc_id || '';
-          entryPhase = obj.arc_phase || 'setup';
-        }
-
-        if (entryArcId) {
-          const cleanId = entryArcId.replace(/^story_arcs:/, '');
-          const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanId);
-          const resolvedId = arc?.id || entryArcId;
-          const resolvedTitle = arc?.title || 'Сюжетная арка';
-          const resolvedColor = (arc as { color?: string })?.color || undefined;
-
-          if (!allArcIds.includes(resolvedId)) {
-            allArcIds.push(resolvedId);
-          }
-
-          boundArcs.push({
-            arcId: resolvedId,
-            arcTitle: resolvedTitle,
-            arcColor: resolvedColor,
-            phase: entryPhase,
-            phaseLabel: getPhaseLabel(entryPhase),
-          });
-        }
-      });
-    }
-
-    if (boundArcs.length === 0 && p.arc_id) {
-      const cleanArcId = p.arc_id.replace(/^story_arcs:/, '');
-      const arc = storyArcs.find((a) => (a.id || '').replace(/^story_arcs:/, '') === cleanArcId);
-      const resolvedId = arc?.id || p.arc_id;
-      const resolvedTitle = arc?.title || p.arc_title || 'Сюжетная арка';
-      const resolvedColor = (arc as { color?: string })?.color || p.arc_color || undefined;
-      const phase = p.arc_phase || 'setup';
-
-      allArcIds.push(resolvedId);
-      boundArcs.push({
-        arcId: resolvedId,
-        arcTitle: resolvedTitle,
-        arcColor: resolvedColor,
-        phase,
-        phaseLabel: getPhaseLabel(phase),
-      });
-    }
-
-    const primaryArc = boundArcs[0];
-    const combinedArcTitle = boundArcs.length > 0
-      ? boundArcs.map((b) => b.arcTitle).join(' & ')
-      : p.arc_title;
+    const { boundArcs, allArcIds, primaryArc, combinedArcTitle } = resolveArcBindings(
+      p.arcs,
+      p.arc_id,
+      p.arc_title,
+      p.arc_color,
+      p.arc_phase,
+      storyArcs
+    );
 
     let computedMabs: number | undefined = p.m_abs ?? undefined;
     if (computedMabs === undefined && p.date_fields && typeof p.date_fields === 'object') {

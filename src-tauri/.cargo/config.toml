@@ -1,5 +1,5 @@
 [build]
-rustc-wrapper = "sccache"
+rustc-workspace-wrapper = "sccache"
 
 [target.x86_64-pc-windows-msvc]
 rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
@@ -8,8 +8,10 @@ rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
 rustflags = []
 
 [alias]
-cov = 'llvm-cov nextest --workspace --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
-cov-html = 'llvm-cov nextest --workspace --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
-test-all = "nextest run --workspace"
-test-full = "nextest run --workspace --profile all"
-test-ai = ["nextest", "run", "--workspace", "-E", "package(worldwiki-ai) | test(/ai_/) | test(/chat_/) | test(/embedding/) | test(/retrieval/) | test(/agent_/)"]
+cov = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
+cov-html = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
+cov-full = 'llvm-cov nextest --workspace --features ai --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
+cov-html-full = 'llvm-cov nextest --workspace --features ai --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
+test-all = "nextest run --workspace --exclude worldwiki-ai --exclude llama-sys"
+test-full = "nextest run --workspace --features ai --profile all"
+test-ai = ["nextest", "run", "--workspace", "--features", "ai", "-E", "package(worldwiki-ai) | test(/ai_/) | test(/chat_/) | test(/embedding/) | test(/retrieval/) | test(/agent_/)"]

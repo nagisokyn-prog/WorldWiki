@@ -25,6 +25,7 @@ import ArcBoardVue from '@/features/chapters/components/panels/StoryArcs/ArcBoar
 import TimelineInspectorVue from '@/features/timeline/components/inspectors/TimelineInspector/TimelineInspector.vue';
 import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
 import CalendarEditorVue from '@/features/timeline/components/calendars/CalendarEditor/CalendarEditor.vue';
+import GlobalCalendarWidget from '@/features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import PlanetEditorVue from '@/features/timeline/components/planets/PlanetEditor/PlanetEditor.vue';
 import type { PlanetDto } from '@/features/timeline/components/planets/PlanetEditor/PlanetEditor.model';
 
@@ -36,6 +37,7 @@ export default defineComponent({
     ChaptersMainVue,
     EntityEditorVue,
     CalendarEditorVue,
+    GlobalCalendarWidget,
     PlanetEditorVue,
     SchemaEditorMainVue,
     CrossReferenceMatrixVue,

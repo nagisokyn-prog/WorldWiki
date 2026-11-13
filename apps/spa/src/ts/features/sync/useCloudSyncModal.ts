@@ -28,8 +28,8 @@ export function formatErrorMessage(err: unknown): string {
         if (typeof obj.error === 'string' && obj.error) return obj.error;
         try {
             return JSON.stringify(err);
-        } catch {
-            // ignore
+        } catch (stringifyErr) {
+            console.warn('[CloudSync] Failed to serialize error object:', stringifyErr);
         }
     }
     return String(err);
@@ -187,7 +187,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
             dbSyncStatus.value = 'exporting';
             emit('toast', { text: 'Создаем компактный бекап...', type: 'info' });
 
-            const backupFilePath = await api.createCloudBackup();
+            const backupFilePath = await api.createCloudBackup(null);
             lastBackupFileName.value = backupFilePath.split(/[/\\]/).pop() || 'backup.wwiki';
 
             dbSyncStatus.value = 'uploading';
@@ -221,7 +221,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
 
         try {
             emit('toast', { text: 'Создание локального бэкапа...', type: 'info' });
-            const backupFilePath = await api.createCloudBackup();
+            const backupFilePath = await api.createCloudBackup(null);
             const fileName = backupFilePath.split(/[/\\]/).pop() || 'backup.wwiki';
             lastBackupFileName.value = fileName;
             dbSyncStatus.value = 'success';

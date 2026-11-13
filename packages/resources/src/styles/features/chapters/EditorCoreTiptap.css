@@ -680,7 +680,7 @@ del.diff-del, .diff-del {
   border-bottom-right-radius: 0;
   padding: 6px 10px 2px 10px;
   margin-top: 6px;
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
   min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -697,8 +697,8 @@ del.diff-del, .diff-del {
   background-color: var(--bg-hover);
   border-radius: 0;
   padding: 2px 10px;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  margin-top: 0;
+  margin-bottom: 0;
   min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -717,7 +717,7 @@ del.diff-del, .diff-del {
   border-bottom-left-radius: var(--radius-sm);
   border-bottom-right-radius: var(--radius-sm);
   padding: 2px 10px 6px 10px;
-  margin-top: 0 !important;
+  margin-top: 0;
   margin-bottom: 6px;
   min-height: 1.5em;
   position: relative;
@@ -753,8 +753,8 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-embedded-gun,
 .editor-core-tiptap .narrative-embedded-gun,
-.narrative-embedded-gun {
-  border-left: 3px solid var(--color-warning, var(--accent)) !important;
+.narrative-frame.narrative-embedded-gun {
+  border-left: 3px solid var(--color-warning, var(--accent));
   background-color: var(--warning-bg, var(--bg-selected));
 }
 
@@ -778,8 +778,8 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-embedded-mystery,
 .editor-core-tiptap .narrative-embedded-mystery,
-.narrative-embedded-mystery {
-  border-left: 3px solid var(--color-success, var(--accent)) !important;
+.narrative-frame.narrative-embedded-mystery {
+  border-left: 3px solid var(--color-success, var(--accent));
   background-color: var(--success-bg, var(--bg-selected));
 }
 
@@ -803,8 +803,8 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-embedded-foreshadowing,
 .editor-core-tiptap .narrative-embedded-foreshadowing,
-.narrative-embedded-foreshadowing {
-  border-left: 3px solid var(--accent-secondary, var(--accent)) !important;
+.narrative-frame.narrative-embedded-foreshadowing {
+  border-left: 3px solid var(--accent-secondary, var(--accent));
   background-color: var(--bg-selected);
 }
 
@@ -828,8 +828,8 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-embedded-question,
 .editor-core-tiptap .narrative-embedded-question,
-.narrative-embedded-question {
-  border-left: 3px solid var(--color-info, var(--accent)) !important;
+.narrative-frame.narrative-embedded-question {
+  border-left: 3px solid var(--color-info, var(--accent));
   background-color: var(--info-bg, var(--bg-selected));
 }
 
@@ -853,8 +853,8 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-embedded-conflict,
 .editor-core-tiptap .narrative-embedded-conflict,
-.narrative-embedded-conflict {
-  border-left: 3px solid var(--color-danger, var(--accent)) !important;
+.narrative-frame.narrative-embedded-conflict {
+  border-left: 3px solid var(--color-danger, var(--accent));
   background-color: var(--error-bg, var(--bg-selected));
 }
 

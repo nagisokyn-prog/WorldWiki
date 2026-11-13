@@ -1,4 +1,4 @@
-import { createApp, type Plugin } from 'vue';
+import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import AiApp from './AiApp.vue';
 

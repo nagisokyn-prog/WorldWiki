@@ -55,15 +55,16 @@ where
     let pid_backticked = format!("projects:`{}`", pid_raw);
 
     let query_str = match table {
-        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_bracketed OR volume_id.project_id = $pid_raw".to_string(),
-        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_bracketed OR schema_id.project_id = $pid_raw".to_string(),
-        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_bracketed OR planet_id.project_id = $pid_raw".to_string(),
-        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_bracketed OR chapter_id.volume_id.project_id = $pid_raw".to_string(),
-        _ => format!("SELECT * FROM {table} WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed OR project_id = $pid_raw"),
+        "chapters" => "SELECT * FROM chapters WHERE volume_id.project_id = $pid OR volume_id.project_id = $pid_str OR volume_id.project_id = $pid_bracketed OR volume_id.project_id = $pid_raw",
+        "entities" => "SELECT * FROM entities WHERE schema_id.project_id = $pid OR schema_id.project_id = $pid_str OR schema_id.project_id = $pid_bracketed OR schema_id.project_id = $pid_raw",
+        "calendars" => "SELECT * FROM calendars WHERE planet_id.project_id = $pid OR planet_id.project_id = $pid_str OR planet_id.project_id = $pid_bracketed OR planet_id.project_id = $pid_raw",
+        "text_blocks" => "SELECT * FROM text_blocks WHERE chapter_id.volume_id.project_id = $pid OR chapter_id.volume_id.project_id = $pid_str OR chapter_id.volume_id.project_id = $pid_bracketed OR chapter_id.volume_id.project_id = $pid_raw",
+        _ => "SELECT * FROM type::table($table) WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_bracketed OR project_id = $pid_raw",
     };
 
     let mut res = db
-        .query(&query_str)
+        .query(query_str)
+        .bind(("table", table.to_string()))
         .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
         .bind(("pid_str", pid_str))
         .bind(("pid_bracketed", pid_bracketed))

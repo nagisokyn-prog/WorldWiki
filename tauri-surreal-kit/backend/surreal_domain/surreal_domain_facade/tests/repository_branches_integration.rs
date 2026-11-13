@@ -421,18 +421,20 @@ async fn test_delete_real_db_error_branch() {
 async fn test_find_all_sql_error_propagates() {
     let (db, _temp) = create_test_db().await;
 
-    // TABLE "1badtable" ломает SurrealQL (`SELECT * FROM 1badtable …`) →
-    // ошибка парсинга приходит через take(0) и это НЕ NotFound →
-    // find_all обязан пробросить Err (покрывает Err-arm после eprintln).
+    // После параметризации через `type::table($table)` имя таблицы "1badtable"
+    // безопасно трактуется как несуществующая таблица без SQL-ошибки парсинга.
     let res = WeirdTableEntity::find_all(&db, "projects:p1").await;
-    assert!(res.is_err(), "SQL parse error must propagate as Err: {:?}", res);
+    assert!(
+        res.as_ref().is_ok_and(|items| items.is_empty()),
+        "parameterized table name must safely resolve to empty Vec: {:?}",
+        res
+    );
 }
 
-// ─── find_all: SQL-ошибка от кавычки в имени таблицы (Err-arm 171–173) ─────────
+// ─── find_all: параметризация имени таблицы с пробелом ─────────────────────────
 
-/// Имя таблицы с пробелом гарантированно ломает интерполяцию
-/// `format!("SELECT * FROM {} …")` → синтаксическая ошибка на take(0),
-/// причём это НЕ NotFound.
+/// Имя таблицы с пробелом безопасно передаётся через `type::table($table)`
+/// и не ломает парсер SurrealQL.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct BadSqlEntity {
     id: Option<String>,
@@ -464,8 +466,8 @@ async fn test_find_all_sql_parse_error_propagates() {
 
     let res = BadSqlEntity::find_all(&db, "projects:p1").await;
     assert!(
-        res.is_err(),
-        "SQL parse error from quoted table name must propagate as Err: {:?}",
+        res.as_ref().is_ok_and(|items| items.is_empty()),
+        "parameterized table name with space must safely resolve to empty Vec: {:?}",
         res
     );
 }
@@ -576,11 +578,11 @@ async fn test_calendar_full_lifecycle_and_branches() {
         DEFINE TABLE OVERWRITE planets SCHEMALESS;
         UPSERT planets:mars SET project_id = type::record('projects', 'p1');
 
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             LET $real_id = IF $cal_id != NONE { $cal_id } ELSE { type::record('calendars', 'cal_generated') };
             UPSERT $real_id CONTENT {
                 id: $real_id,
-                planet_id: type::record('planets', $plid),
+                planet_id: $plid,
                 name: $name,
                 is_master: $is_master,
                 project_id: type::record('projects', $pid),
@@ -643,7 +645,7 @@ async fn test_calendar_negative_empty_records_and_missing_func() {
 
     // 1. Function returns empty array [] -> ConstraintViolation
     let define_empty_fn = r#"
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             RETURN [];
         };
     "#;
@@ -853,7 +855,7 @@ async fn test_calendar_ops_query_error_and_mismatched_deserialization() {
 
     // 1. Function throws error -> triggers res.take(0)? on line 45 of calendar_ops
     let define_throwing_fn = r#"
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             THROW "forced function error";
         };
     "#;
@@ -873,7 +875,7 @@ async fn test_calendar_ops_query_error_and_mismatched_deserialization() {
     // 2. Function returns item with field that fails deserialization into TestCalendar
     // TestCalendar expects Option<String> for planet_id, name, etc. If fn returns an array or incompatible object for `name`:
     let define_incompatible_fn = r#"
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             RETURN [{ id: type::record('calendars', 'c1'), name: 123456789 }];
         };
     "#;
@@ -884,7 +886,7 @@ async fn test_calendar_ops_query_error_and_mismatched_deserialization() {
 
     // 3. Function returns empty list [] -> triggers line 49 "fn::save_calendar returned no records"
     let define_empty_fn = r#"
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             RETURN [];
         };
     "#;
@@ -947,7 +949,7 @@ async fn test_write_ops_created_without_id_branches() {
 
     // Calendar entity with get_id() returning None covers line 26 in write_ops
     let define_fn = r#"
-        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: string, $name: string, $is_master: bool, $data: any) {
+        DEFINE FUNCTION OVERWRITE fn::save_calendar($cal_id: any, $pid: string, $plid: any, $name: string, $is_master: bool, $data: any) {
             RETURN [{ name: $name }];
         };
     "#;
@@ -1031,34 +1033,6 @@ async fn test_write_ops_upsert_fallback_to_create_line_96() {
     assert!(res.id.is_some());
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-struct SilentCreateEntity {
-    id: Option<String>,
-}
-
-impl SurrealRepository for SilentCreateEntity {
-    // "[ ]" creates zero target records on CREATE, returning [] and triggering line 43 constraint violation
-    const TABLE: &'static str = "[ ]";
-    fn get_fields() -> &'static [&'static str] { &["id"] }
-    fn get_option_fields() -> &'static [&'static str] { &[] }
-    fn get_id(&self) -> Option<&str> { self.id.as_deref() }
-    fn set_id(&mut self, id: String) { self.id = Some(id); }
-}
-
-#[tokio::test]
-async fn test_write_ops_create_empty_items_line_43() {
-    let (db, ()) = create_test_db().await;
-
-    let entity = SilentCreateEntity { id: None };
-    let err = SilentCreateEntity::create(&db, entity)
-        .await
-        .expect_err("empty targets causes empty items and triggers line 43");
-    assert!(
-        err.to_string().contains("CREATE returned no records"),
-        "Unexpected error: {:?}",
-        err
-    );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests for Query Errors on CREATE (Line 39) and UPSERT (Line 94) via Events

@@ -1,4 +1,4 @@
-.inspector-container {
+n.inspector-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -129,7 +129,8 @@
   gap: var(--space-2, 8px);
 }
 
-.empty-icon, .empty-spinner {
+.empty-icon,
+.empty-spinner {
   font-size: 28px;
 }
 
@@ -306,8 +307,8 @@
 /* Карточка главы (Компактный узел) */
 .chapter-node,
 .chapter-node.interactive-el {
-  position: absolute !important;
-  top: 24px !important;
+  position: absolute;
+  top: 24px;
   transform: translateX(-50%);
   padding: 4px 8px;
   border-radius: var(--radius-sm, 4px);
@@ -352,8 +353,8 @@
 /* Карточка события / сцены / конфликта (Компактный узел) */
 .event-node,
 .event-node.interactive-el {
-  position: absolute !important;
-  top: 24px !important;
+  position: absolute;
+  top: 24px;
   transform: translateX(-50%);
   padding: 6px 8px;
   border-radius: var(--radius-md, 6px);
@@ -497,7 +498,10 @@
 }
 
 /* Точки привязки (Пины коннекторов) */
-.chapter-pin-top, .chapter-pin-bottom, .event-pin-top, .event-pin-bottom {
+.chapter-pin-top,
+.chapter-pin-bottom,
+.event-pin-top,
+.event-pin-bottom {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -549,8 +553,8 @@
 
 .scene-hierarchy-path {
   opacity: 0.9;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-  transition: stroke-width 0.15s ease, opacity 0.15s ease;
+  filter: drop-shadow(0 2px 4px var(--border-color));
+  transition: opacity 0.15s ease;
 }
 
 .line-direct {
@@ -689,10 +693,12 @@
     box-shadow: 0 0 0 0 var(--warning);
     transform: translateX(-50%) scale(1.05);
   }
+
   50% {
     box-shadow: 0 0 0 8px transparent;
     transform: translateX(-50%) scale(1.02);
   }
+
   100% {
     box-shadow: 0 0 0 0 transparent;
     transform: translateX(-50%) scale(1);

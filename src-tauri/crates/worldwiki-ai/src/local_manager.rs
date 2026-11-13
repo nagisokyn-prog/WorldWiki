@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use worldwiki_domain::ai::{InstalledModelInfo, ModelKind, ModelLifecycleState};
+use worldwiki_domain::ai::{InstalledModelInfo, ModelLifecycleState};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::LocalModelManagerPort;
 
@@ -121,75 +121,10 @@ impl FsLocalModelManager {
     }
 }
 
-fn scan_gguf_files_in_dir(
-    dir: &std::path::Path,
-    states: &HashMap<String, ModelLifecycleState>,
-    seen_filenames: &mut HashSet<String>,
-    installed: &mut Vec<InstalledModelInfo>,
-) {
-    if !dir.exists() {
-        return;
-    }
+#[path = "model_scanner.rs"]
+mod model_scanner;
 
-    let entries = match std::fs::read_dir(dir) {
-        Ok(read_dir) => read_dir.flatten().collect::<Vec<_>>(),
-        Err(_) => return,
-    };
-
-    for entry in entries {
-        let path = entry.path();
-        if path.is_file() {
-            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
-            if ext.eq_ignore_ascii_case("gguf") {
-                let filename = path
-                    .file_name()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("")
-                    .to_string();
-
-                if filename.is_empty() || !seen_filenames.insert(filename.clone()) {
-                    continue;
-                }
-
-                let metadata = std::fs::metadata(&path).ok();
-                let size_bytes = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
-                let size_gb =
-                    ((size_bytes as f64 / (1024.0 * 1024.0 * 1024.0)) * 10.0).round() as f32 / 10.0;
-
-                let is_embed = filename.to_lowercase().contains("embed")
-                    || filename.to_lowercase().contains("nomic")
-                    || filename.to_lowercase().contains("bge");
-                let kind = if is_embed {
-                    ModelKind::Embedding
-                } else {
-                    ModelKind::Generation
-                };
-
-                let state = states
-                    .get(&filename)
-                    .cloned()
-                    .unwrap_or(ModelLifecycleState::Installed);
-
-                let name = filename
-                    .trim_end_matches(".gguf")
-                    .trim_end_matches(".GGUF")
-                    .to_string();
-
-                installed.push(InstalledModelInfo {
-                    id: filename.clone(),
-                    name,
-                    filename: filename.clone(),
-                    full_path: path.to_string_lossy().to_string(),
-                    size_bytes,
-                    size_gb,
-                    kind,
-                    state,
-                    memory_used_mb: None,
-                });
-            }
-        }
-    }
-}
+use model_scanner::scan_gguf_files_in_dir;
 
 impl LocalModelManagerPort for FsLocalModelManager {
     fn list_installed(&self) -> Result<Vec<InstalledModelInfo>, DomainError> {
@@ -261,37 +196,5 @@ impl LocalModelManagerPort for FsLocalModelManager {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_candidate_dirs_contains_appdata_and_configured() {
-        let mgr = FsLocalModelManager::new(PathBuf::from("custom_models_path"));
-        let dirs = mgr.candidate_dirs();
-        assert!(dirs
-            .iter()
-            .any(|d| d == &PathBuf::from("custom_models_path")));
-        assert!(dirs.iter().any(|d| d.to_string_lossy().contains("models")));
-    }
-
-    #[test]
-    fn test_list_installed_empty_or_valid() {
-        let temp_dir = std::env::temp_dir().join(format!("test_models_{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(&temp_dir).expect("Failed to create temp dir for tests");
-
-        let test_model = temp_dir.join("test-model-q4.gguf");
-        std::fs::write(&test_model, b"GGUF test content").expect("Failed to write test model file");
-
-        let mgr = FsLocalModelManager::new(temp_dir.clone());
-        let installed = mgr.list_installed().expect("list_installed must succeed");
-
-        assert!(installed.iter().any(|m| m.filename == "test-model-q4.gguf"));
-        let found = installed
-            .iter()
-            .find(|m| m.filename == "test-model-q4.gguf");
-        assert!(found.is_some());
-        assert_eq!(found.unwrap().kind, ModelKind::Generation);
-
-        let _ = std::fs::remove_dir_all(&temp_dir);
-    }
-}
+#[path = "local_manager_tests.rs"]
+mod tests;

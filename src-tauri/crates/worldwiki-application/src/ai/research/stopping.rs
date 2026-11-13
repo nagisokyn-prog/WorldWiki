@@ -35,10 +35,6 @@ impl StoppingCriteriaEvaluator {
         }
 
         // 3. Если поисковик возвращает преимущественно дублирующий контент (исчерпание нового материала)
-        if duplicate_hits_ratio >= 0.8 && round >= 1 {
-            return true;
-        }
-
-        false
+        duplicate_hits_ratio >= 0.8 && round >= 1
     }
 }

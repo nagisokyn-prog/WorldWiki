@@ -4,6 +4,7 @@ import * as api from '@/services/api.client';
 import { entityApi } from '@/services/Entity/entity.api';
 import type { Entity } from '@/types/generated/Entity';
 import { appAlert } from '@worldwiki/components';
+import { deepMergeRecord } from './EntityEditorWindow.utils';
 
 export function useEntityEditorWindow(props: EntityEditorWindowProps) {
   const isLoadingData = ref(true);
@@ -138,37 +139,6 @@ export function useEntityEditorWindow(props: EntityEditorWindowProps) {
   let isLiveSyncing = false;
   let liveSyncTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const merge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
-    for (const key in source) {
-      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!target[key] || typeof target[key] !== 'object') {
-          target[key] = {};
-        }
-        merge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
-      } else if (Array.isArray(source[key])) {
-        if (!Array.isArray(target[key])) {
-          target[key] = [];
-        }
-        const tArr = target[key] as unknown[];
-        const sArr = source[key] as unknown[];
-        for (let i = 0; i < sArr.length; i++) {
-          if (i < tArr.length) {
-            if (typeof sArr[i] === 'object' && sArr[i] !== null) {
-              merge(tArr[i] as Record<string, unknown>, sArr[i] as Record<string, unknown>);
-            } else {
-              tArr[i] = sArr[i];
-            }
-          } else {
-            tArr.push(sArr[i]);
-          }
-        }
-        tArr.length = sArr.length;
-      } else {
-        target[key] = source[key];
-      }
-    }
-  };
-
   let currentWindowLabel = `entity-editor-${props.entityType}-${props.entityId.replace(/:/g, '-')}`;
   if (typeof window !== 'undefined' && window.__TAURI__) {
     import('@tauri-apps/api/webviewWindow')
@@ -247,7 +217,7 @@ export function useEntityEditorWindow(props: EntityEditorWindowProps) {
             }
 
             isLiveSyncing = true;
-            merge(initialData.value, data);
+            deepMergeRecord(initialData.value, data);
             initialData.value = { ...initialData.value };
             setTimeout(() => {
               isLiveSyncing = false;

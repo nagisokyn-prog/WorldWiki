@@ -4,7 +4,8 @@ import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
 import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
 
-import { preparePromisePayload, createNewPromiseRecord, syncPromisesToLocalStorage } from './usePromisePayloadBuilder';
+import { createNewPromiseRecord, syncPromisesToLocalStorage } from './usePromisePayloadBuilder';
+import { createPromisePersister } from './usePromisePersistence';
 
 export function usePromiseActions(params: UsePromiseActionsParams) {
   const { promises, emit } = params;
@@ -16,7 +17,6 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
 
   const syncLocalBackup = () => syncPromisesToLocalStorage(getProject(), promises.value);
 
-  let persistQueue = Promise.resolve();
   const updatePromiseDebounceMap = new Map<string, ReturnType<typeof setTimeout>>();
 
   onUnmounted(() => {
@@ -26,55 +26,13 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     updatePromiseDebounceMap.clear();
   });
 
-  const persist = (item: RichPlotPromise, logMsg: string): Promise<void> => {
-    persistQueue = persistQueue.then(async () => {
-      let payloadForLog: PlotPromise | null = null;
-      let attempts = 0;
-      while (attempts < 4) {
-        attempts++;
-        try {
-          console.log(logMsg, { project: getProject(), item });
-          const payload = preparePromisePayload(item, getChapterId());
-          payloadForLog = payload;
-          const saved = (await plotApi.savePlotPromise(getProject(), payload)) as RichPlotPromise | null;
-          if (saved) {
-            const cleanSavedId = cleanId(item.id);
-            const idx = promises.value.findIndex((p) => p.id === item.id || cleanId(p.id) === cleanSavedId);
-            if (idx !== -1) {
-              promises.value[idx] = {
-                ...promises.value[idx],
-                timeline_event_id: saved.timeline_event_id || promises.value[idx].timeline_event_id,
-                m_abs: saved.m_abs ?? promises.value[idx].m_abs,
-                calendar_id: saved.calendar_id || promises.value[idx].calendar_id
-              };
-            }
-          }
-          break;
-        } catch (err) {
-          const errStr = err instanceof Error ? err.message : String(err);
-          const isConflict =
-            errStr.includes('Transaction conflict') ||
-            errStr.includes('write conflict') ||
-            (typeof err === 'object' && err !== null && JSON.stringify(err).includes('conflict'));
-          if (isConflict && attempts < 4) {
-            await new Promise((r) => setTimeout(r, attempts * 150));
-            continue;
-          }
-          console.error(`[usePromiseActions ERROR] Failed: ${logMsg}`, err, {
-            errorMsg: errStr,
-            item,
-            payload: payloadForLog
-          });
-          break;
-        }
-      }
-      syncLocalBackup();
-      emit('change');
-    }).catch((qErr) => {
-      console.warn('[usePromiseActions] Queue error:', qErr);
-    });
-    return persistQueue;
-  };
+  const persist = createPromisePersister({
+    promises,
+    getProject,
+    getChapterId,
+    syncLocalBackup,
+    onChange: () => emit('change')
+  });
 
   const addPromise = async (payload: {
     kind: string;

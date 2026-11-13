@@ -142,18 +142,23 @@ pub async fn load_settings_core() -> Result<Value, SystemError> {
     if path.exists() {
         let content = fs::read_to_string(&path)?;
         let mut settings = serde_json::from_str::<Value>(&content).unwrap_or(Value::Null);
-        if let Some(bg) = settings.get_mut("background") {
-            if let Some(img_path) = bg.get("imagePath").and_then(|v| v.as_str()) {
-                if !img_path.is_empty() && !std::path::Path::new(img_path).exists() {
-                    bg["imagePath"] = serde_json::Value::String(String::new());
-                    bg["type"] = serde_json::Value::String("none".to_string());
-                }
+        if let Some(bg) = settings.get_mut("background").and_then(|v| v.as_object_mut()) {
+            let img_broken = bg
+                .get("imagePath")
+                .and_then(|v| v.as_str())
+                .is_some_and(|p| !p.is_empty() && !std::path::Path::new(p).exists());
+            if img_broken {
+                bg.insert("imagePath".to_string(), serde_json::Value::String(String::new()));
+                bg.insert("type".to_string(), serde_json::Value::String("none".to_string()));
             }
-            if let Some(vid_path) = bg.get("videoPath").and_then(|v| v.as_str()) {
-                if !vid_path.is_empty() && !std::path::Path::new(vid_path).exists() {
-                    bg["videoPath"] = serde_json::Value::String(String::new());
-                    bg["type"] = serde_json::Value::String("none".to_string());
-                }
+
+            let vid_broken = bg
+                .get("videoPath")
+                .and_then(|v| v.as_str())
+                .is_some_and(|p| !p.is_empty() && !std::path::Path::new(p).exists());
+            if vid_broken {
+                bg.insert("videoPath".to_string(), serde_json::Value::String(String::new()));
+                bg.insert("type".to_string(), serde_json::Value::String("none".to_string()));
             }
         }
         Ok(settings)
@@ -184,13 +189,28 @@ mod tests {
         let p3 = resolve_data_dir_path(None, Some(Path::new("/home/user/code/target/release/binary")));
         assert_eq!(p3, PathBuf::from("/home/user/code/data"));
 
+        let expected_fallback = {
+            #[cfg(target_os = "windows")]
+            {
+                std::env::var_os("APPDATA")
+                    .map(|a| PathBuf::from(a).join("com.worldwiki.app").join("data"))
+                    .unwrap_or_else(|| env::current_dir().unwrap_or_default().join("data"))
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                std::env::var_os("XDG_DATA_HOME")
+                    .map(|d| PathBuf::from(d).join("com.worldwiki.app").join("data"))
+                    .unwrap_or_else(|| env::current_dir().unwrap_or_default().join("data"))
+            }
+        };
+
         // 4. Exe path without target directory
         let p4 = resolve_data_dir_path(None, Some(Path::new("/usr/local/bin/app")));
-        assert_eq!(p4, env::current_dir().unwrap_or_default().join("data"));
+        assert_eq!(p4, expected_fallback);
 
         // 5. Exe path None
         let p5 = resolve_data_dir_path(None, None);
-        assert_eq!(p5, env::current_dir().unwrap_or_default().join("data"));
+        assert_eq!(p5, expected_fallback);
     }
 
     #[test]

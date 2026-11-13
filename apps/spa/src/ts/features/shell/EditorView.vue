@@ -25,7 +25,11 @@
           @open-sandbox="openSandbox"
           @edit-schema="openSchemaEditor"
           @open-planet-viewer="openPlanetViewer"
-        ></chapter-tree-vue>
+        >
+          <template #after-header>
+            <global-calendar-widget :project="projectName" />
+          </template>
+        </chapter-tree-vue>
       </div>
 
       <!-- Sidebar resize handle -->

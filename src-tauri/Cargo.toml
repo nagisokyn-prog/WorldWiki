@@ -24,6 +24,20 @@ members = [
     "crates/worldwiki-ai",
     "crates/worldwiki-tauri",
 ]
+default-members = [
+    ".",
+    "crates/worldwiki-calendar-core",
+    "crates/worldwiki-calendar-wasm",
+    "crates/worldwiki-document-core",
+    "crates/worldwiki-ast-diff-wasm",
+    "crates/worldwiki-manuscript-core",
+    "crates/worldwiki-manuscript-wasm",
+    "crates/worldwiki-domain",
+    "crates/worldwiki-ports",
+    "crates/worldwiki-application",
+    "crates/worldwiki-infrastructure",
+    "crates/worldwiki-tauri",
+]
 resolver = "2"
 
 [workspace.metadata.cerberus]

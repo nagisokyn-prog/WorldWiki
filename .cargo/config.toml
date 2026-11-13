@@ -7,14 +7,14 @@ retry = 5
 git-fetch-with-cli = true
 
 [alias]
-cov = "llvm-cov nextest --workspace"
-cov-html = "llvm-cov nextest --workspace --html --open"
-test-all = "nextest run --workspace"
+cov = "llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys"
+cov-html = "llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --html --open"
+test-all = "nextest run --workspace --exclude worldwiki-ai --exclude llama-sys"
 test-full = "nextest run --workspace --profile all"
 test-ai = ["nextest", "run", "--workspace", "-E", "package(worldwiki-ai) | test(/ai_/) | test(/chat_/) | test(/embedding/) | test(/retrieval/) | test(/agent_/)"]
 
 [build]
-rustc-wrapper = "sccache"
+rustc-workspace-wrapper = "sccache"
 
 
 [profile.dev]

@@ -11,11 +11,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(any(test, feature = "wry"))]
 use std::fs;
-use surrealdb::engine::local::{Db, SurrealKv};
+use surrealdb::engine::local::Db;
+#[cfg(any(test, feature = "wry"))]
+use surrealdb::engine::local::SurrealKv;
 use surrealdb::Surreal;
+#[cfg(any(test, feature = "wry"))]
 use tauri::Manager;
 
+#[cfg(any(test, feature = "wry"))]
 use tauri_shell::logic;
 
 // ─── App State ───────────────────────────────────────────────────────────────
@@ -35,6 +40,7 @@ impl surreal_domain::SurrealDb for AppState {
 
 // ─── Database Init ────────────────────────────────────────────────────────────
 
+#[cfg(any(test, feature = "wry"))]
 async fn init_database(
     ns: &str, // e.g. "my_app"
     db: &str, // e.g. "my_app"
@@ -49,16 +55,18 @@ async fn init_database(
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+#[cfg(any(test, feature = "wry"))]
 pub fn setup_app<R: tauri::Runtime>(app: &mut tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
     let db = tauri::async_runtime::block_on(init_database("my_app", "my_app"))?;
     app.manage(AppState { db });
     Ok(())
 }
 
-pub fn build_app() -> tauri::Builder<tauri::test::MockRuntime> {
+#[cfg(any(test, feature = "wry"))]
+pub fn configure_app<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
     use logic::system::*;
 
-    tauri::Builder::<tauri::test::MockRuntime>::default()
+    builder
         .invoke_handler(surreal_domain::entity_commands![
             // ── System commands (always included) ──────────────────────────
             upload_photo,
@@ -77,13 +85,21 @@ pub fn build_app() -> tauri::Builder<tauri::test::MockRuntime> {
         .setup(setup_app)
 }
 
-#[cfg(not(test))]
+#[cfg(test)]
+pub fn build_app() -> tauri::Builder<tauri::test::MockRuntime> {
+    configure_app(tauri::Builder::<tauri::test::MockRuntime>::default())
+}
+
+#[cfg(all(not(test), feature = "wry"))]
 fn main() {
-    if let Err(e) = build_app().run(tauri::generate_context!()) {
+    if let Err(e) = configure_app(tauri::Builder::<tauri::Wry>::default()).run(tauri::generate_context!()) {
         eprintln!("error while running tauri application: {:?}", e);
         std::process::exit(1);
     }
 }
+
+#[cfg(all(not(test), not(feature = "wry")))]
+fn main() {}
 
 #[cfg(test)]
 mod tests {

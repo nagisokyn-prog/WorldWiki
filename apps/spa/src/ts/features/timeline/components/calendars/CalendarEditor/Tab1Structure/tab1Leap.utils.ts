@@ -162,7 +162,7 @@ export function calculateUpcomingYears(
   for (let i = 0; i < 12; i++) {
     const y = baseYear + i;
     let isLeap = false;
-    let days = baseYearDays;
+    let days: number;
 
     try {
       isLeap = defaultWasmEngine.is_leap_year(BigInt(y), wasmHarmonics, 0);
@@ -210,7 +210,7 @@ export function calculateCenturyDrift(
   const nominalYear = baseDays + extraDays;
   const wasmHarmonics = ruleToWasmHarmonics(ruleType, harmonics, 4, leapOffset);
 
-  let driftCentury = 0;
+  let driftCentury: number;
   try {
     driftCentury = CalendarWasmBridge.calculateDriftPerCentury(
       nominalYear,
@@ -277,7 +277,7 @@ export function calculateWasmLeapSuggestions(
   ];
 
   return suggestionsDefs.map((def) => {
-    let drift = 0;
+    let drift: number;
     try {
       drift = CalendarWasmBridge.calculateDriftPerCentury(baseDays, def.harmonics, orbitDays);
     } catch {

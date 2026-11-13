@@ -138,7 +138,7 @@ pub async fn delete_entity_schema_inner(
     for attempt in 0..4u32 {
         let mut tx_res = db
             .query("fn::delete_entity_schema(type::record('projects', $p), $tk);")
-            .bind(("p", clean_pid.clone()))
+            .bind(("p", clean_pid))
             .bind(("tk", type_key.to_string()))
             .await?;
 

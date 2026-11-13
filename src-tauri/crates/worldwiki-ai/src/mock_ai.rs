@@ -35,7 +35,7 @@ impl LlmStreamPort for MockAiAdapter {
         _request: StreamRequest,
         sender: tokio::sync::mpsc::Sender<StreamEventDto>,
     ) -> Result<(), DomainError> {
-        let _ = sender
+        sender
             .send(StreamEventDto {
                 text_delta: Some("Mock AI stream response".to_string()),
                 reasoning_delta: None,
@@ -43,7 +43,8 @@ impl LlmStreamPort for MockAiAdapter {
                 usage: Some(serde_json::json!({ "total_tokens": 10 })),
                 is_done: true,
             })
-            .await;
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(format!("Mock AI stream send failed: {}", e)))?;
         Ok(())
     }
 }

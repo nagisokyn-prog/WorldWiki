@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "tree-sitter": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@nendo/tree-sitter-mcp",
+        "--mcp"
+      ]
+    },
+    "code-index": {
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.12",
+        "code-index-mcp"
+      ],
+      "env": {
+        "OPENAI_BASE_URL": "http://127.0.0.1:8080/v1",
+        "OPENAI_API_KEY": "dummy"
+      }
+    }
+  }
+}

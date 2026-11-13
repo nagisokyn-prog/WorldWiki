@@ -28,13 +28,13 @@ where
     }
 
     let assign_clauses: Vec<String> = map.keys().map(|k| format!("{k} = ${k}")).collect();
-    let query_str = if assign_clauses.is_empty() {
-        format!("CREATE {table}")
-    } else {
-        format!("CREATE {table} SET {}", assign_clauses.join(", "))
-    };
+    let mut query_str = String::from("CREATE type::table($__tb)");
+    if !assign_clauses.is_empty() {
+        query_str.push_str(" SET ");
+        query_str.push_str(&assign_clauses.join(", "));
+    }
 
-    let q = bind_map_values(db.query(&query_str), map);
+    let q = bind_map_values(db.query(&query_str).bind(("__tb", table.to_string())), map);
     let mut res = q.await?;
     let items: Vec<serde_json::Value> = res.take(0)?;
     let mut res_val = items
@@ -80,12 +80,11 @@ where
     }
 
     let (assign_clauses, bind_values) = build_upsert_clauses(fields, option_fields, map);
-    let set_clause = if assign_clauses.is_empty() {
-        String::new()
-    } else {
-        format!(" SET {}", assign_clauses.join(", "))
-    };
-    let query_str = format!("UPSERT type::record($__tb, $__id){set_clause}");
+    let mut query_str = String::from("UPSERT type::record($__tb, $__id)");
+    if !assign_clauses.is_empty() {
+        query_str.push_str(" SET ");
+        query_str.push_str(&assign_clauses.join(", "));
+    }
     let q = db
         .query(&query_str)
         .bind(("__tb", table.to_string()))

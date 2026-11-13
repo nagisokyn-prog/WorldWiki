@@ -32,7 +32,9 @@
     "**/data/backup_latest.surql",
     "**/e2e/",
     "/src-tauri/llama-sys/prebuilt-libs/bindings.rs",
-    "packages/calendar-wasm/pkg/**"
+    "packages/calendar-wasm/pkg/**",
+    "packages/ast-diff-wasm",
+    "packages/manuscript-wasm"
   ],
   "extends": [
     "cerberus:rust-hexagonal",
@@ -48,7 +50,12 @@
         "**/crates/worldwiki-calendar-core/**",
         "**/crates/worldwiki-calendar-wasm/**"
       ],
-      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
+      "forbidden_external": [
+        "tokio",
+        "reqwest",
+        "tauri",
+        "surrealdb"
+      ],
       "allowed_deps": []
     },
     "domain": {
@@ -56,23 +63,41 @@
         "**/crates/worldwiki-domain/**",
         "**/surreal_domain/surreal_domain_macros/**"
       ],
-      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
-      "allowed_deps": ["core"]
+      "forbidden_external": [
+        "tokio",
+        "reqwest",
+        "tauri",
+        "surrealdb"
+      ],
+      "allowed_deps": [
+        "core"
+      ]
     },
     "application": {
       "patterns": [
         "**/crates/worldwiki-application/**",
         "**/surreal_domain/surreal_domain_facade/**"
       ],
-      "forbidden_external": ["tauri"],
-      "allowed_deps": ["domain", "ports", "infrastructure"]
+      "forbidden_external": [
+        "tauri"
+      ],
+      "allowed_deps": [
+        "domain",
+        "ports",
+        "infrastructure"
+      ]
     },
     "ports": {
       "patterns": [
         "**/crates/worldwiki-ports/**"
       ],
-      "forbidden_external": ["tauri", "surrealdb"],
-      "allowed_deps": ["domain"]
+      "forbidden_external": [
+        "tauri",
+        "surrealdb"
+      ],
+      "allowed_deps": [
+        "domain"
+      ]
     },
     "infrastructure": {
       "patterns": [
@@ -80,17 +105,33 @@
         "**/surreal_domain/surreal_domain_core/**",
         "**/llama-sys/**"
       ],
-      "allowed_deps": ["domain", "ports", "application"]
+      "allowed_deps": [
+        "domain",
+        "ports",
+        "application"
+      ]
     },
     "adapters_tauri": {
-      "aliases": ["adapter", "adapters", "tauri"],
+      "aliases": [
+        "adapter",
+        "adapters",
+        "tauri"
+      ],
       "patterns": [
         "src-tauri/**",
         "**/crates/worldwiki-tauri/**",
         "**/tauri_shell/**"
       ],
-      "allowed_external": ["tauri", "surrealdb"],
-      "allowed_deps": ["domain", "application", "ports", "infrastructure"]
+      "allowed_external": [
+        "tauri",
+        "surrealdb"
+      ],
+      "allowed_deps": [
+        "domain",
+        "application",
+        "ports",
+        "infrastructure"
+      ]
     }
   },
   "surrealdb": {
@@ -113,34 +154,76 @@
     },
     "entities": {
       "order": 2,
-      "aliases": ["entity"],
-      "allowed_deps": ["shared"]
+      "aliases": [
+        "entity"
+      ],
+      "allowed_deps": [
+        "shared"
+      ]
     },
     "features": {
       "order": 3,
-      "aliases": ["feature"],
-      "allowed_deps": ["entities", "shared"]
+      "aliases": [
+        "feature"
+      ],
+      "allowed_deps": [
+        "entities",
+        "shared"
+      ]
     },
     "widgets": {
       "order": 4,
-      "aliases": ["widget"],
-      "allowed_deps": ["features", "entities", "shared"]
+      "aliases": [
+        "widget"
+      ],
+      "allowed_deps": [
+        "features",
+        "entities",
+        "shared"
+      ]
     },
     "pages": {
       "order": 5,
-      "aliases": ["page", "views", "view", "screens", "screen"],
-      "allowed_deps": ["widgets", "features", "entities", "shared"]
+      "aliases": [
+        "page",
+        "views",
+        "view",
+        "screens",
+        "screen"
+      ],
+      "allowed_deps": [
+        "widgets",
+        "features",
+        "entities",
+        "shared"
+      ]
     },
     "app": {
       "order": 6,
-      "aliases": ["application"],
-      "allowed_deps": ["shell", "pages", "widgets", "features", "entities", "shared"]
+      "aliases": [
+        "application"
+      ],
+      "allowed_deps": [
+        "shell",
+        "pages",
+        "widgets",
+        "features",
+        "entities",
+        "shared"
+      ]
     },
     "shell": {
       "order": 6,
       "is_orchestrator": true,
       "allow_cross_slice": true,
-      "allowed_deps": ["pages", "widgets", "features", "entities", "shared", "app"]
+      "allowed_deps": [
+        "pages",
+        "widgets",
+        "features",
+        "entities",
+        "shared",
+        "app"
+      ]
     }
   },
   "design_tokens": {
@@ -188,23 +271,18 @@
     "arch/cqrs-isolation": "deny",
     "arch/event-decoupling": "deny",
     "arch/cyclic-dependency": "deny",
-
     "code/max-pressure": "warn",
     "code/max-sloc": "deny",
-
     "async/no-sync-mutex-in-await": "deny",
     "async/no-zombie-spawn": "warn",
     "conc/no-orphan-spawn": "warn",
     "conc/no-double-lock": "deny",
     "conc/no-static-mut": "deny",
     "conc/no-poison-swallow": "deny",
-
     "robustness/no-raw-unwrap-panic": "warn",
     "quality/ai-slop-detector": "warn",
-
     "sec/taint-sink-execution": "deny",
     "sec/transitive-capabilities": "warn",
-
     "surql/schemaless-table-ban": "deny",
     "surql/idempotent-ddl": "deny",
     "surql/require-field-type": "deny",
@@ -231,11 +309,9 @@
     "surql/migration-version-header": "warn",
     "surql/ban-deprecated-v1-v2-syntax": "deny",
     "surql/no-types-in-domain": "deny",
-
     "vue/no-monolith-script-setup": "deny",
     "vue/require-companion-hook": "deny",
     "vue/no-types-in-sfc": "deny",
-
     "css/no-hardcoded-colors": "deny",
     "css/require-design-tokens": "deny",
     "css/no-raw-colors-in-ts": "deny",
@@ -248,25 +324,20 @@
     "ds/no-primitive-spectral-tokens": "deny",
     "ds/no-local-theme-overrides": "deny",
     "ds/token-role-mismatch": "deny",
-
     "fsd/layer-imports-hierarchy": "deny",
     "fsd/public-api-only": "deny",
     "fsd/ui-kit-zero-domain": "deny",
     "fsd/no-cross-slice-imports": "deny",
-
     "perf/shallow-ref-for-heavy-ast": "deny",
     "perf/no-reactive-canvas-three": "deny",
     "perf/no-allocations-in-raf": "deny",
     "perf/no-template-methods-in-loops": "deny",
     "perf/no-cascading-watchers": "deny",
     "perf/layout-thrashing": "deny",
-
     "leak/uncleaned-ipc-listener": "deny",
     "fe/raii-cleanup": "deny",
-
     "ts/store-aliasing": "deny",
     "ts/exhaustive-match": "deny",
-
     "ERR-001": "deny",
     "ERR-002": "deny",
     "ERR-003": "deny",

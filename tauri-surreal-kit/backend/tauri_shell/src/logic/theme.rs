@@ -60,7 +60,17 @@ fn try_read_theme_file(path: &Path) -> Result<Option<Value>, SystemError> {
         return Err(SystemError::OperationFailed(format!("{} is a directory", path.display())));
     }
     let content = fs::read_to_string(path)?;
-    let theme = serde_json::from_str(&content).unwrap_or(Value::Null);
+    let trimmed = content.trim_start_matches('\u{FEFF}').trim();
+    if trimmed.is_empty() {
+        return Ok(Some(Value::Null));
+    }
+    let theme = match serde_json::from_str(trimmed) {
+        Ok(val) => val,
+        Err(e) => {
+            tracing::warn!("Failed to parse theme file {}: {}", path.display(), e);
+            Value::Null
+        }
+    };
     Ok(Some(theme))
 }
 
@@ -266,13 +276,12 @@ mod tests {
         {
             use std::os::windows::fs::OpenOptionsExt;
             let locked_path = data_dir.join("settings-locked.json");
-            let _guard = std::fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .share_mode(0)
-                .open(&locked_path)
-                .unwrap();
+            let mut open_opts = std::fs::OpenOptions::new();
+            open_opts.write(true);
+            open_opts.create(true);
+            open_opts.truncate(true);
+            open_opts.share_mode(0);
+            let _locked_file = open_opts.open(&locked_path).unwrap();
             let res = load_theme_core("locked".to_string()).await;
             assert!(res.is_err(), "reading locked file must return Err");
         }

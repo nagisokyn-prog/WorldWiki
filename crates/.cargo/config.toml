@@ -1,11 +1,11 @@
 [build]
-rustc-wrapper = "sccache"
+rustc-workspace-wrapper = "sccache"
 rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
 
 [target.x86_64-pc-windows-msvc]
 rustflags = [
     "--cfg", "surrealdb_unstable",
-    "-C", "linker=lld-link.exe",
+    "-C", "linker=rust-lld.exe",
     "-C", "link-arg=/NODEFAULTLIB:libcmt.lib",
     "-C", "link-arg=/STACK:33554432",
 ]

@@ -330,8 +330,8 @@ describe('api.client (Tauri invoke contract tests)', () => {
   describe('Cloud & Backup Sync', () => {
     it('createCloudBackup invokes create_cloud_backup', async () => {
       vi.mocked(invoke).mockResolvedValue('backup.zip');
-      const res = await api.createCloudBackup();
-      expect(invoke).toHaveBeenCalledWith('create_cloud_backup');
+      const res = await api.createCloudBackup(null);
+      expect(invoke).toHaveBeenCalledWith('create_cloud_backup', { project: null });
       expect(res).toBe('backup.zip');
     });
 

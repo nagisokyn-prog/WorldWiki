@@ -8253,6 +8253,22 @@ globalThis.__ttInstallWindowMembers = () => {
       w.dispatchEvent(ev);
     }, 0);
   });
+  if (typeof w.DOMParser !== 'function' || typeof w.DOMParser.prototype?.parseFromString !== 'function') {
+    class TurboDOMParser {
+      parseFromString(str, _type) {
+        const doc = w.document.implementation.createHTMLDocument('');
+        const s = String(str ?? '');
+        if (/<body[\s>]/i.test(s)) {
+          doc.documentElement.innerHTML = s;
+        } else {
+          doc.body.innerHTML = s;
+        }
+        return doc;
+      }
+    }
+    try { Object.defineProperty(w, 'DOMParser', { value: TurboDOMParser, writable: true, configurable: true, enumerable: false }); } catch (e) {}
+    try { Object.defineProperty(globalThis, 'DOMParser', { value: TurboDOMParser, writable: true, configurable: true, enumerable: false }); } catch (e) {}
+  }
 };
 
 // OPT-IN jsdom quirks (TURBO_JSDOM_QUIRKS=1, turbo-test#210), off by default: under environment

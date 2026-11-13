@@ -10,6 +10,9 @@ const withAi =
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __FEATURE_AI__: withAi
+  },
   test: {
     globals: true,
     environment: 'happy-dom',

@@ -35,7 +35,29 @@ fn strip_template_type_assertions(s: &str) -> String {
         rest = after;
     }
     out.push_str(rest);
-    out
+
+    // Strip TypeScript non-null assertions (`obj!.prop`, `arr![0]`, `fn()!.x`)
+    // without touching logical NOT (`!flag`, `!=`) or prose (`(hello!)`).
+    let bytes = out.as_bytes();
+    let mut cleaned = String::with_capacity(out.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'!' && i > 0 && i + 1 < bytes.len() {
+            let prev = bytes[i - 1];
+            let next = bytes[i + 1];
+            let is_postfix_target =
+                prev.is_ascii_alphanumeric() || matches!(prev, b'_' | b'$' | b')' | b']');
+            let is_member_access = matches!(next, b'.' | b'[');
+            if is_postfix_target && is_member_access {
+                i += 1;
+                continue;
+            }
+        }
+        let ch = out[i..].chars().next().unwrap();
+        cleaned.push(ch);
+        i += ch.len_utf8();
+    }
+    cleaned
 }
 
 /// Transforms Vue SFC source into executable TypeScript/JavaScript.

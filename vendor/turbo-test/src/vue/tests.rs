@@ -598,5 +598,24 @@ const update = (v: string) => {};
     assert!(compiled.contains("return __props[propName]"));
 }
 
+#[test]
+fn test_35_compile_sfc_strips_template_non_null_assertions() {
+    let sfc = r#"
+<template>
+  <input v-model.number="settings.background!.blur" :disabled="!settings.enabled">
+  <span>{{ items![0] }} (Внимание!)</span>
+</template>
+<script setup lang="ts">
+const settings = { background: { blur: 10 }, enabled: true };
+const items = ['a'];
+</script>
+"#;
+    let compiled = compile_vue_sfc(Path::new("NonNullTest.vue"), sfc).unwrap();
+    assert!(compiled.contains("settings.background.blur"), "Must strip `!.`: {compiled}");
+    assert!(compiled.contains("items[0]"), "Must strip `![`: {compiled}");
+    assert!(compiled.contains("!settings.enabled"), "Must preserve logical `!`: {compiled}");
+    assert!(compiled.contains("(Внимание!)"), "Must preserve prose `!`: {compiled}");
+}
+
 
 

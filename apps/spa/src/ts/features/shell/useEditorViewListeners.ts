@@ -33,7 +33,7 @@ export function useEditorViewListeners(deps: UseEditorViewListenersDeps) {
   };
 
   const toggleWowilonHandler = () => {
-    if (!__FEATURE_AI__) {
+    if (typeof __FEATURE_AI__ === 'undefined' || !__FEATURE_AI__) {
       return;
     }
     shell.isWowilonOpen = !shell.isWowilonOpen;

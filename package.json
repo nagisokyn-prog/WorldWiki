@@ -28,12 +28,10 @@
     "test:e2e:rust": "cargo test --manifest-path e2e/Cargo.toml --config e2e/msvc-linker.toml --target-dir e2e/target --test \"*\"",
     "test:e2e:ui": "vitest run --config e2e/fullstack/vitest.e2e.config.ts",
     "test:e2e": "pnpm test:e2e:rust && pnpm test:e2e:ui",
-
     "generate:api": "node scripts/codegen.js",
     "audit:god-files": "node detect_god_files.js",
     "audit:macro-commands": "node scripts/find_macroable_commands.mjs",
     "migrate:macro-commands": "node scripts/migrate_to_bridge_macros.mjs --write"
-
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.3.0",
@@ -68,7 +66,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@miaskiewicz/turbo-test": "^0.4.5",
+    "@miaskiewicz/turbo-test": "file:./vendor/turbo-test",
     "@playwright/test": "1.64.1",
     "@tauri-apps/cli": "^2.12.4",
     "@types/dompurify": "^3.2.0",

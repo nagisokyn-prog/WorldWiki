@@ -6,7 +6,6 @@ import Splash from './Splash.vue.ts';
 const mockPush = vi.fn();
 const mockInvoke = vi.fn();
 
-
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush

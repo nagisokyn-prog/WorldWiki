@@ -64,8 +64,26 @@ export default defineConfig({
         '**/*.types.ts',
         '**/*.model.ts',
         'apps/spa/src/ts/services/api.service.ts',
+        // Thin Tauri invoke wrappers — no unit-testable business logic
+        'apps/spa/src/ts/services/api/api.chapters.ts',
+        'apps/spa/src/ts/services/api/manuscript.ts',
+        'apps/spa/src/ts/services/api/api.entities.ts',
+        'apps/spa/src/ts/services/api/entities.ts',
+        'apps/spa/src/ts/services/api/projects.ts',
+        'apps/spa/src/ts/services/api/plot_calendar.ts',
+        'apps/spa/src/ts/services/api/api.projects.ts',
+        'apps/spa/src/ts/services/api/api.system.ts',
+        'apps/spa/src/ts/services/api/api.calendars.ts',
         'apps/spa/src/ts/stores/index.ts',
-        'packages/resources/src/index.ts'
+        'packages/resources/src/index.ts',
+        ...(!withAi
+          ? [
+              '**/features/ai/**',
+              '**/FloatingWindowAI/**',
+              'apps/spa/src/ts/services/api/ai.ts',
+              'apps/spa/src/ts/services/api/api.ai.ts'
+            ]
+          : [])
       ]
     }
   },

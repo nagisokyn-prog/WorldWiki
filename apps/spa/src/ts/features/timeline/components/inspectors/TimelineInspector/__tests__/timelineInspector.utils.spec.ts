@@ -3,9 +3,15 @@ import {
   normalizeId,
   checkIsFlashback,
   cleanParticipantsList,
-  calculateConnectionLines
+  calculateConnectionLines,
+  resolveBestEraIndex,
+  formatEventDate,
+  buildFilteredChapters,
+  filterInspectorEvents,
+  buildFormattedEvents,
 } from '../timelineInspector.utils';
 import type { InspectorEvent, InspectorChapter } from '../TimelineInspector.model';
+import type { CalendarData } from '@/services/Calendars/calendar.types';
 
 describe('timelineInspector.utils', () => {
   it('normalizes id table prefixes', () => {
@@ -70,6 +76,106 @@ describe('timelineInspector.utils', () => {
     expect(lines.length).toBe(1);
     expect(lines[0].chapterId).toBe('chapters:c1');
     expect(lines[0].eventId).toBe('timeline_events:e1');
+  });
+
+  it('normalizes SurrealDB object ids and detects chronological flashbacks', () => {
+    expect(normalizeId({ id: { String: '⟨ch_9⟩' } })).toBe('ch_9');
+
+    const chs: InspectorChapter[] = [
+      { id: 'c1', title: 'Ch1', sort_order: 1 },
+      { id: 'c2', title: 'Ch2', sort_order: 2 },
+    ];
+    const evPrev: InspectorEvent = {
+      id: 'timeline_events:1',
+      title: 'Present',
+      m_abs: 10000,
+      reveals: [{ chapter_id: 'c1', chapter_title: 'Ch1', kind: 'direct' }],
+      participants: [],
+    };
+    const evFlash: InspectorEvent = {
+      id: 'timeline_events:2',
+      title: 'Past',
+      m_abs: 1000,
+      reveals: [{ chapter_id: 'c2', chapter_title: 'Ch2', kind: 'direct' }],
+      participants: [],
+    };
+
+    expect(checkIsFlashback(evFlash, chs, [evPrev, evFlash])).toBe(true);
+    expect(checkIsFlashback(evPrev, chs, [evPrev, evFlash])).toBe(false);
+  });
+
+  it('resolves era index, formats dates, filters chapters and events, and builds formatted events', () => {
+    const cal = {
+      id: 'cal_1',
+      название: 'Std',
+      минут_в_часе: 60,
+      часов_в_сутках: 24,
+      месяцы: [{ название: 'Янв', дней: 30 }],
+      эпохи: [
+        { название: 'До н.э.', обратный_отсчет: true, год_начала: 1, год_конца: 1000 },
+        { название: 'Н.э.', обратный_отсчет: false, год_начала: 1, год_конца: 5000 },
+      ],
+    } as unknown as CalendarData;
+
+    expect(resolveBestEraIndex(1440, cal)).toBe(1);
+    expect(resolveBestEraIndex(-1440, cal)).toBe(0);
+    expect(formatEventDate(1440, null)).toBe('M_abs: 1440');
+    expect(typeof formatEventDate(1440, cal)).toBe('string');
+
+    const chs: InspectorChapter[] = [
+      { id: 'c1', title: ' ', sort_order: 1 },
+      { id: 'c2', title: 'Вторая', sort_order: 2 },
+    ];
+    const evs: InspectorEvent[] = [
+      {
+        id: 'plot_promises:p1',
+        title: 'Сцена у ворот',
+        description: 'Описание',
+        m_abs: 2000,
+        kind: 'scene',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Глава #1', kind: 'flashback', pov_id: 'pov1' }],
+        participants: [{ id: 'entities:e1', name: 'Герой' }],
+      },
+      {
+        id: 'timeline_events:dup',
+        title: 'Сцена у ворот',
+        m_abs: 2000,
+        kind: 'event',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Глава #1', kind: 'direct', pov_id: 'pov1' }],
+        participants: ['entities:e1'],
+      },
+      {
+        id: 'timeline_events:ev2',
+        title: 'Обычное событие',
+        m_abs: 3000,
+        kind: 'event',
+        calendar_id: 'cal_1',
+        location_id: 'entities:loc1',
+        reveals: [{ chapter_id: 'c2', chapter_title: 'Вторая', kind: 'direct', pov_id: 'pov2' }],
+        participants: [],
+      },
+    ];
+
+    const filteredChs = buildFilteredChapters(chs, evs, 1);
+    expect(filteredChs).toHaveLength(1);
+    expect(filteredChs[0].title).toBe('Глава #1');
+    expect(filteredChs[0].flashbackCount).toBe(1);
+
+    const filteredEvs = filterInspectorEvents(evs, filteredChs, {
+      searchQuery: 'ворот',
+      isolatedChapterId: 'c1',
+      selectedEntityId: 'entities:e1',
+      selectedPovId: 'pov1',
+      showFlashbacksOnly: true,
+      selectedVolumeId: 'v1',
+    });
+    expect(filteredEvs).toHaveLength(1);
+    expect(filteredEvs[0].id).toBe('plot_promises:p1');
+
+    const calMap = new Map<string, CalendarData>([['cal_1', cal]]);
+    const formatted = buildFormattedEvents(evs, chs, cal, evs, [], calMap);
+    expect(formatted).toHaveLength(3);
+    expect(formatted[2].locationName).toBe('loc1');
   });
 });
 

@@ -6,6 +6,7 @@ import Splash from './Splash.vue.ts';
 const mockPush = vi.fn();
 const mockInvoke = vi.fn();
 
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush
@@ -68,7 +69,7 @@ describe('Splash.vue.ts', () => {
   });
 
   it('handles startup error gracefully and still navigates to /launcher', async () => {
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     mockInvoke.mockRejectedValueOnce(new Error('DB init failed'));
 
     wrapper = mountSplash();

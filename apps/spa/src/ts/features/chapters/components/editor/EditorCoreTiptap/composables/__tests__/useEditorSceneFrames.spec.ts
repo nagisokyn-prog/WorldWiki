@@ -455,6 +455,16 @@ describe('useEditorSceneFrames', () => {
     chapterId.value = null;
     api.renderSceneFrames();
 
+    // Missing editorDom / empty targetElements / non-function ed.off
+    const emptyApi = useEditorSceneFrames({
+      editor: ref({ view: { dom: null } } as any),
+      existingPromises: ref([]),
+      chapterId: ref(null),
+      editorMode: ref('wysiwyg'),
+    });
+    emptyApi.renderSceneFrames();
+    emptyApi.locateScene(1, 'missing');
+
     compWrapper.unmount();
     wrapperEl.remove();
     vi.useRealTimers();

@@ -324,5 +324,34 @@ describe('entityApi', () => {
       expect(components.invoke).toHaveBeenCalledWith('delete_connection', { id: 'conn_1' });
       expect(delRes).toEqual({ success: true });
     });
+
+    it('covers string tags, название fallback, getSchemas fetch ok, and default maxSaves', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce({
+        id: 'e_str',
+        название: 'Из названия',
+        tags: '#a, b',
+        attributes: {},
+      });
+      const ent = await entityApi.getEntity('p1', 'character', 'e_str');
+      expect(ent?.name).toBe('Из названия');
+      expect(ent?.tags).toEqual(['a', 'b']);
+
+      const payload = entityApi.formatEntityPayload('p1', 'character', { название: 'Тайтл', tags: 'x, #y' });
+      expect(payload.name).toBe('Тайтл');
+      expect(payload.tags).toEqual(['x', 'y']);
+
+      // getSchemas with DB entry missing icon + fetch fallback ok
+      vi.mocked(components.invoke).mockResolvedValueOnce([{ type_key: 'custom', type_name: '', icon: '' }]);
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ name: 'Fetched', iconEmoji: '', color: '' }),
+      }) as any;
+      const dict = await entityApi.getSchemas('p1');
+      expect(dict.custom.name).toBe('custom');
+
+      vi.mocked(components.invoke).mockResolvedValueOnce({ success: true });
+      await entityApi.saveSchema('p1', { name: 'S' });
+      expect(components.invoke).toHaveBeenCalledWith('save_entity_schema', expect.objectContaining({ maxSaves: 10 }));
+    });
   });
 });

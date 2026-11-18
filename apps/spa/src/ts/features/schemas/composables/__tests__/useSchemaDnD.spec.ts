@@ -187,5 +187,34 @@ describe('useSchemaDnD', () => {
       dnd.handleDropIntoModule(2);
       expect(activeSection.value.items[2].customFields.length).toBe(1);
     });
+
+    it('covers dataTransfer getData fallback, null preventDefault/dataTransfer, duplicate drop guard, and module into module', () => {
+      const dnd = useSchemaDnD(activeSection, activeSectionIdx);
+      const makeEvent = (payload?: unknown) => ({
+        preventDefault: vi.fn(),
+        dataTransfer: payload
+          ? { effectAllowed: '', setData: vi.fn(), getData: vi.fn(() => JSON.stringify(payload)) }
+          : null,
+      }) as any;
+
+      // DragStart without dataTransfer
+      dnd.handleDragStartPalette({ dataTransfer: null } as any, 'atomic', 'text', '');
+      dnd.handleItemDragStart({ dataTransfer: null } as any, 0);
+      dnd.handleDragOver(makeEvent());
+      dnd.handleDragOverItem(makeEvent(), 0);
+      dnd.handleDragLeaveItem();
+
+      // Drop via dataTransfer JSON when draggedInfo was cleared by handleDropNew
+      const dropEvt = makeEvent({ source: 'palette', kind: 'atomic', type: 'text', label: '' });
+      dnd.handleDropNew(dropEvt);
+      expect(activeSection.value.items.some((i) => i.label === '')).toBe(true);
+
+      // Canvas reorder via dataTransfer JSON + out-of-bounds srcIdx
+      dnd.handleItemDrop(0, makeEvent({ source: 'canvas', idx: 0 }));
+      dnd.handleItemDrop(0, makeEvent({ source: 'canvas', idx: 999 }));
+
+      // Duplicate drop guard (same timestamp/event)
+      dnd.handleDropIntoModule(999, makeEvent(null));
+    });
   });
 });

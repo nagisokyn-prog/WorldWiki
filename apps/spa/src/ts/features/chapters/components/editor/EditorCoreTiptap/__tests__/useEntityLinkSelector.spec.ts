@@ -390,6 +390,13 @@ describe('useEntityLinkSelector', () => {
       selector.close();
       expect(emit).toHaveBeenCalledWith('close');
 
+      // Guards: empty project, empty type_key in schemas, selectEntity(undefined), quickCreateEntity('')
+      vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([{ type_key: '' }, { type_key: 'note', type_name: '', icon: '' }] as never);
+      const emptyProjSel = useEntityLinkSelector({ project: '', isOpen: true }, emit);
+      await flushPromises();
+      emptyProjSel.selectEntity(undefined as never);
+      await emptyProjSel.quickCreateEntity();
+
       errSpy.mockRestore();
     });
   });

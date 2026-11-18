@@ -164,5 +164,37 @@ describe('useChapterRightSidebar', () => {
 
     wrapper.unmount();
   });
+
+  it('covers plans tab from localStorage, selectedArcTitle, chapterPlan toggle, RAF throttle, and unmount during resize', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    localStorage.setItem('chapters-sidebar-active-tab', 'plans');
+
+    let sidebar!: ReturnType<typeof useChapterRightSidebar>;
+    const Comp = defineComponent({
+      setup() {
+        sidebar = useChapterRightSidebar({ project: 'proj-1' });
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    expect(sidebar.activeTab.value).toBe('plans');
+    expect(sidebar.selectedArcTitle.value).toBe('');
+
+    sidebar.selectArc('arc_unknown');
+    expect(sidebar.selectedArcTitle.value).toBe('Арка');
+
+    sidebar.togglePanel('chapterPlan');
+    sidebar.togglePanel('chapterPlan');
+
+    // RAF throttling with 2 mousemove events before mouseup
+    sidebar.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }), 'timeline');
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 120 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 140 }));
+    // Unmount while resizing to trigger rafId / listener cleanup
+    wrapper.unmount();
+  });
 });
 

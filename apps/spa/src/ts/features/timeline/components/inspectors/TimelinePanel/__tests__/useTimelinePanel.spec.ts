@@ -446,5 +446,33 @@ describe('useTimelinePanel', () => {
       expect(panel.checkEventOverlap(0, 0)).toBe(true);
       expect(panel.checkEventOverlap(0, 99)).toBe(false);
     });
+
+    it('covers mount with defaultCal without id, missing точка_отсчета, and events without time on sort/overlap', async () => {
+      mockGetCalendars.mockResolvedValueOnce([
+        { id: '', name: 'NoIdCal', is_default: true, data: { название: 'NoIdCal', эпохи: [{ название: 'Э1', год_начала: 1 }], месяцы: [{ название: 'М1', дней: 30 }] } } as any,
+      ]);
+      const TestComp = defineComponent({
+        props: ['project', 'events'],
+        emits: ['update:events', 'change'],
+        setup(p, { emit: e }) {
+          return { ...useTimelinePanel(p as any, e) };
+        },
+        template: '<div></div>',
+      });
+      const w = mount(TestComp, {
+        props: {
+          project: 'p1',
+          events: [
+            { date: { era: 0, year: 5, month: 0, day: 1 }, description: 'E1' },
+            { date: { era: 0, year: 2, month: 0, day: 1 }, description: 'E2' },
+          ],
+        },
+      });
+      await flushPromises();
+      (w.vm as any).addEvent();
+      (w.vm as any).sortByAbsoluteTime();
+      expect((w.vm as any).checkEventOverlap(0, 1)).toBe(true);
+      w.unmount();
+    });
   });
 });

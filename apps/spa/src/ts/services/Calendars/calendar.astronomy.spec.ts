@@ -26,7 +26,7 @@ describe('CalendarAstronomy', () => {
       { настройки_времени: undefined } as any
     );
     expect(phases).toHaveLength(1);
-    expect(phases[0].phase_name).toBe('Полнолуние');
+    expect(phases[0].name).toBe('Полнолуние');
   });
 
   it('computes region sun status across dawn, day, dusk, night, and explainDate with daylight & moons', () => {
@@ -66,7 +66,7 @@ describe('CalendarAstronomy', () => {
     );
     expect(explained.holidays).toEqual(['Праздничный день']);
     expect(explained.daylightText).toContain('14 ч.');
-    expect(explained.snippet).toContain('Луна');
+    expect(explained.snippet).toContain('Новолуние');
     expect(explained.crossDates).toHaveLength(1);
   });
 });

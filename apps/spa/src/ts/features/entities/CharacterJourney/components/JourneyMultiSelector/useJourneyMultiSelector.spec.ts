@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useJourneyMultiSelector } from './useJourneyMultiSelector';
+import { useJourneyMultiSelector, isCharacterEntity } from './useJourneyMultiSelector';
 import type { Entity } from '@/types/generated/Entity';
 
 describe('useJourneyMultiSelector Composable', () => {
@@ -59,5 +59,22 @@ describe('useJourneyMultiSelector Composable', () => {
 
     handleRemove(null);
     expect(emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('covers isCharacterEntity variants and empty handleAddChange', () => {
+    expect(isCharacterEntity(null)).toBe(false);
+    expect(isCharacterEntity({ schema_id: 'персонаж' } as any)).toBe(true);
+    expect(isCharacterEntity({ schema_type: 'герой' } as any)).toBe(true);
+    expect(isCharacterEntity({ entity_type: 'person' } as any)).toBe(true);
+    expect(isCharacterEntity({ entity_type: 'item' } as any)).toBe(false);
+
+    const emit = vi.fn();
+    const { handleAddChange, availableEntities } = useJourneyMultiSelector(
+      { selectedEntities: [], entitiesList: [entity1, locationEntity] },
+      emit
+    );
+    expect(availableEntities.value).toHaveLength(1);
+    handleAddChange({ target: { value: '' } } as unknown as Event);
+    expect(emit).not.toHaveBeenCalled();
   });
 });

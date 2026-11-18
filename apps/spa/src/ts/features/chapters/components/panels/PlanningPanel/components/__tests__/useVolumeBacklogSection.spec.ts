@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useVolumeBacklogSection } from '../VolumeBacklogSection/useVolumeBacklogSection';
 
 describe('useVolumeBacklogSection', () => {
@@ -58,5 +60,34 @@ describe('useVolumeBacklogSection', () => {
       targetChapterId: 'chapters:c2'
     });
     expect(hook.activeMoveItemId.value).toBeNull();
+  });
+
+  it('closes move menu on window click, toggles off, cancels add, and cleans up on unmount', () => {
+    const emit = vi.fn();
+    let hook!: ReturnType<typeof useVolumeBacklogSection>;
+    const Comp = defineComponent({
+      setup() {
+        hook = useVolumeBacklogSection({ items: [] }, emit);
+        return {};
+      },
+      template: '<div />',
+    });
+
+    const wrapper = mount(Comp);
+    hook.toggleMoveMenu('todo:1');
+    expect(hook.activeMoveItemId.value).toBe('todo:1');
+    hook.toggleMoveMenu('todo:1');
+    expect(hook.activeMoveItemId.value).toBeNull();
+
+    hook.toggleMoveMenu('todo:2');
+    window.dispatchEvent(new MouseEvent('click'));
+    expect(hook.activeMoveItemId.value).toBeNull();
+
+    hook.startAdding();
+    hook.newText.value = '   ';
+    hook.submitAdd();
+    expect(emit).not.toHaveBeenCalled();
+
+    wrapper.unmount();
   });
 });

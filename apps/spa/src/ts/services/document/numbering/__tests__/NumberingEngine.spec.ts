@@ -141,4 +141,41 @@ describe('NumberingEngine', () => {
     expect(context.footnotes.get('fn-1')).toBe(1);
     expect(context.footnotes.get('fn-2')).toBe(2);
   });
+
+  it('covers deep heading initialization, tables, equations, quotes, lists, and nested footnotes', () => {
+    const byChapterProfile: NumberingProfile = {
+      ...defaultProfile,
+      tableMode: 'by_chapter',
+      equationMode: 'by_chapter',
+    };
+
+    const doc = normalizeSemanticDocument({
+      blocks: [
+        { type: 'heading', id: 'h3_first', level: 3, content: [{ type: 'footnote_reference', id: 'fn-h', content: [{ type: 'footnote_reference', id: 'fn-nested', content: [] }] }], numberingMode: 'auto' } as any,
+        { type: 'figure', id: 'fig-none', mediaUrl: '', captionContent: [{ type: 'footnote_reference', id: 'fn-fig', content: [] }], numberingMode: 'none', alignment: 'center' } as any,
+        {
+          type: 'table',
+          id: 'tbl-1',
+          numberingMode: 'global',
+          captionContent: [{ type: 'footnote_reference', id: 'fn-tbl', content: [] }],
+          rows: [{ cells: [{ content: [{ type: 'equation', id: 'eq-1', latex: 'x=1', numberingMode: 'auto' }] }] }],
+        } as any,
+        { type: 'table', id: 'tbl-none', numberingMode: 'none', rows: [] } as any,
+        { type: 'equation', id: 'eq-none', latex: 'y=2', numberingMode: 'none' } as any,
+        { type: 'quote', id: 'q1', content: [{ type: 'paragraph', content: [{ type: 'footnote_reference', id: 'fn-q', content: [] }] }] } as any,
+        { type: 'list', id: 'l1', items: [{ content: [{ type: 'paragraph', content: [{ type: 'footnote_reference', id: 'fn-l', content: [] }] }] }] } as any,
+        { type: 'code_block', id: 'cb1', code: 'x' } as any,
+      ],
+    });
+
+    const ctx = NumberingEngine.compute(doc, byChapterProfile);
+    expect(ctx.headings.get('h3_first')).toBe('1.1.1');
+    expect(ctx.figures.has('fig-none')).toBe(false);
+    expect(ctx.tables.get('tbl-1')).toBe('1.1');
+    expect(ctx.tables.has('tbl-none')).toBe(false);
+    expect(ctx.equations.get('eq-1')).toBe('1.1');
+    expect(ctx.equations.has('eq-none')).toBe(false);
+    expect(ctx.footnotes.get('fn-nested')).toBe(2);
+    expect(ctx.footnotes.get('fn-l')).toBe(6);
+  });
 });

@@ -19,6 +19,7 @@ vi.mock('@/services/api.client', () => ({
   setTodoStatus: vi.fn(),
   deleteTodo: vi.fn(),
   createChapter: vi.fn(),
+  createVolume: vi.fn(),
   assignChapter: vi.fn(),
   getChapterHierarchy: vi.fn(),
   getStoryArcs: vi.fn(),
@@ -284,5 +285,77 @@ describe('usePlanningPanel - Unified Tapestry', () => {
     errSpy.mockRestore();
     getByIdSpy.mockRestore();
     vi.useRealTimers();
+  });
+
+  it('covers resolvedVolumeId/volumeTitle fallbacks, props.arcsList, remaining chapters, and outlining volume actions', async () => {
+    const chapterStore = useChapterStore();
+    chapterStore.hierarchy = {
+      volumes: [{ id: 'volumes:v1', title: '' }],
+      chapters: [
+        { id: 'chapters:c1', volume_id: 'volumes:other', title: 'Сирота', sort_order: 1 } as any,
+      ],
+    };
+    chapterStore.selectedVolumeId = 'volumes:v1';
+    vi.mocked(api.getTodos).mockResolvedValue([]);
+
+    const customArcs = [
+      { id: 'story_arcs:a1', title: 'Arc 1', color: null, arc_type: 'plot', status: 'active', project_id: 'p1', description: null },
+    ];
+    const panel = usePlanningPanel({
+      project: 'proj_1',
+      arcsList: customArcs as any,
+    });
+    expect(panel.allProjectArcs.value).toEqual(customArcs);
+    expect(panel.resolvedVolumeId.value).toBe('volumes:v1');
+    expect(panel.volumeTitle.value).toBe('Рукопись тома');
+
+    await panel.load();
+    // remainingChapters attached to blocks[0]
+    expect(panel.volumeBlocks.value[0].chapters.some((c) => c.chapterId === 'chapters:c1')).toBe(true);
+
+    // Outlining volume actions
+    panel.startAddVolume();
+    expect(panel.isAddingVolume.value).toBe(true);
+    panel.cancelAddVolume();
+    expect(panel.isAddingVolume.value).toBe(false);
+
+    // Empty title guard in addPlannedChapter
+    await panel.addPlannedChapter('volumes:v1', '   ');
+    // Error branch in addPlannedChapter
+    const { appAlert } = await import('@worldwiki/components');
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(chapterService.save).mockRejectedValueOnce(new Error('save fail'));
+    await panel.addPlannedChapter('volumes:v1', 'Новая глава');
+    expect(appAlert).toHaveBeenCalled();
+
+    // submitAddChapter
+    vi.mocked(chapterService.save).mockResolvedValueOnce('chapters:ch_new');
+    panel.newChapterTitle.value = 'Глава из инпута';
+    await panel.submitAddChapter('volumes:v1');
+
+    // submitAddVolume: empty title, success, and error
+    panel.newVolumeTitle.value = '   ';
+    await panel.submitAddVolume();
+    panel.newVolumeTitle.value = 'Том 2';
+    await panel.submitAddVolume();
+    expect(api.createVolume).toHaveBeenCalledWith('proj_1', 'Том 2');
+    vi.mocked(api.createVolume).mockRejectedValueOnce(new Error('vol err'));
+    panel.newVolumeTitle.value = 'Том 3';
+    await panel.submitAddVolume();
+
+    // attachArc: string form + error
+    const arcsStore = useStoryArcsStore();
+    vi.spyOn(arcsStore, 'bindChapter').mockResolvedValueOnce(undefined);
+    await panel.attachArc('chapters:c1', 'story_arcs:a1');
+    vi.spyOn(arcsStore, 'bindChapter').mockRejectedValueOnce(new Error('bind err'));
+    await panel.attachArc({ chapterId: 'chapters:c1', arcId: 'story_arcs:a1' });
+
+    // saveTodo & addBacklog without volume
+    await panel.saveTodo({ id: 't1', owner_id: 'chapters:c1', text: '   ', sort_order: 1 } as any);
+    await panel.saveTodo({ id: 't1', owner_id: 'chapters:c1', text: 'Valid', sort_order: 1 } as any);
+    vi.mocked(api.createTodo).mockRejectedValueOnce(new Error('save todo err'));
+    await panel.saveTodo({ id: 't1', owner_id: 'chapters:c1', text: 'Fail', sort_order: 1 } as any);
+
+    errSpy.mockRestore();
   });
 });

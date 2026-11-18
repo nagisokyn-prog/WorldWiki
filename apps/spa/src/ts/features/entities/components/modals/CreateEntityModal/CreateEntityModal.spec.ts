@@ -170,6 +170,23 @@ describe('useCreateEntityModal', () => {
     props.isOpen = false;
     await flushPromises();
     expect(modal.entityName.value).toBe('');
+    await modal.loadEntityTypes(); // early return when closed
+
+    // Fallback to entityApi.getSchemas when api.getEntitySchemas returns []
+    const { entityApi } = await import('@/services/Entity/entity.api');
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([{ type_key: '' } as any]);
+    vi.mocked(entityApi.getSchemas).mockResolvedValueOnce({
+      faction: { name: 'Фракция', icon: '🏰', full_schema: { description: 'Орден' } },
+      item: { full_schema: null },
+    } as any);
+    props.isOpen = true;
+    await flushPromises();
+    expect(modal.availableTypes.value.map((t) => t.type)).toEqual(['faction', 'item']);
+
+    modal.searchTypeQuery.value = 'орден';
+    expect(modal.filteredTypes.value.map((t) => t.type)).toEqual(['faction']);
+    modal.searchTypeQuery.value = 'item';
+    expect(modal.filteredTypes.value.map((t) => t.type)).toEqual(['item']);
 
     wrapper.unmount();
   });

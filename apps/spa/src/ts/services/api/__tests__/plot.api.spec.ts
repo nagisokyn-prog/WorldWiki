@@ -212,4 +212,31 @@ describe('plotApi', () => {
       expect(res).toBe('story_arcs:arc1');
     });
   });
+
+  describe('normalization fallbacks', () => {
+    it('normalizes missing arcs/arc_id/arc_phase/time_nature and null story arcs', async () => {
+      vi.mocked(api.getPlotPromises).mockResolvedValueOnce([
+        { id: 'p1', arcs: null, arc_id: 123, arc_phase: null } as any,
+      ]);
+      const list = await plotApi.getPlotPromises('');
+      expect(list[0]).toMatchObject({ arcs: [], arc_id: null, arc_phase: null });
+
+      vi.mocked(api.getPlotPromise).mockResolvedValueOnce({ id: 'p2', arcs: 'bad', arc_id: 1, arc_phase: 2 } as any);
+      const single = await plotApi.getPlotPromise('p2');
+      expect(single).toMatchObject({ arcs: [], arc_id: null, arc_phase: null });
+
+      vi.mocked(api.savePlotPromise).mockResolvedValueOnce({ id: 'p3' } as any);
+      await plotApi.savePlotPromise('', { id: 'p3', arcs: 'bad', arc_id: 1, arc_phase: 2, time_nature: 3 } as any);
+      expect(api.savePlotPromise).toHaveBeenCalledWith('', expect.objectContaining({
+        project_id: 'projects:default',
+        arcs: [],
+        arc_id: null,
+        arc_phase: null,
+        time_nature: null,
+      }));
+
+      vi.mocked(api.getStoryArcs).mockResolvedValueOnce(null as any);
+      expect(await plotApi.getStoryArcs('')).toEqual([]);
+    });
+  });
 });

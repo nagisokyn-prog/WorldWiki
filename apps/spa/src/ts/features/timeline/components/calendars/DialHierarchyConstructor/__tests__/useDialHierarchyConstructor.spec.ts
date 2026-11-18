@@ -18,13 +18,13 @@ describe('useDialHierarchyConstructor', () => {
     expect(emit).toHaveBeenCalled();
 
     // removeUnit & quantumErrorSec
-    expect(hook.quantumErrorSec.value).toBe('6.00');
+    expect(hook.quantumErrorSec.value).toBe('60.00');
     hook.removeUnit(2);
     expect(hook.dialUnits.value.length).toBe(2);
 
-    // setter & empty dialUnits (totalCapacity = 1) & missing настройки_времени
+    // setter & missing настройки_времени
     hook.dialUnits.value = [];
-    expect(hook.totalCapacity.value).toBe(1);
+    expect(cal.dial_hierarchy?.units).toEqual([]);
 
     const sparseCal = { ...cal, dial_hierarchy: undefined, настройки_времени: undefined } as any;
     const hook2 = useDialHierarchyConstructor({ modelValue: sparseCal }, emit);

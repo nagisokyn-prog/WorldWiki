@@ -302,12 +302,47 @@ describe('useCharacterJourney Composable', () => {
 
     // Error branch in loadJourney
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.mocked(apiClient.getCharacterJourney).mockRejectedValueOnce(new Error('journey fail'));
+    vi.mocked(apiClient.getCharacterJourney).mockRejectedValueOnce('raw journey fail');
     await journey.refresh();
-    expect(journey.error.value).toBe('journey fail');
+    expect(journey.error.value).toBe('raw journey fail');
     errSpy.mockRestore();
 
+    // currentEntityId setter, removeEntity <=1 guard, setFilterMode same/single, selectEntity('')
+    journey.currentEntityId.value = 'entities:e1';
+    expect(journey.currentEntityId.value).toBe('entities:e1');
+    journey.removeEntity('entities:e1');
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e1']);
+    await journey.setFilterMode('only_together'); // same mode
+    await journey.setFilterMode('union'); // single entity -> no loadJourney
+    journey.currentEntityId.value = '';
+    expect(journey.selectedEntityIds.value).toEqual([]);
+    journey.selectEntity('');
+    expect(journey.data.value).toBeNull();
+
     wrapper.unmount();
+
+    // Empty projectId & getEntities failure & auto-select first entity
+    const emptyProj = useCharacterJourney('');
+    await emptyProj.refresh();
+    expect(emptyProj.data.value).toBeNull();
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(apiClient.getEntities).mockRejectedValueOnce(new Error('ent fail'));
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+    vi.spyOn(calStore, 'getCalendars').mockRejectedValueOnce(new Error('cal fail'));
+
+    const CompNoInit = defineComponent({
+      setup() {
+        journey = useCharacterJourney('test_proj');
+        return {};
+      },
+      template: '<div></div>',
+    });
+    const w2 = mount(CompNoInit);
+    await flushPromises();
+    w2.unmount();
+    warnSpy.mockRestore();
   });
 });
 

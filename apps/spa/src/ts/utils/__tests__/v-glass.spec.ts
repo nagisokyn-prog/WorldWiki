@@ -85,4 +85,32 @@ describe('vGlass directive and setupGlass', () => {
       expect(bg).not.toBeNull();
     });
   });
+
+  describe('unmounted and edge cases', () => {
+    it('removes all listeners on unmounted and handles missing gsap or existing breathe bg', () => {
+      delete (window as any).gsap;
+      const input = document.createElement('input');
+      const existingBg = document.createElement('div');
+      existingBg.className = 'input-breathe-bg';
+      el.appendChild(existingBg);
+      el.appendChild(input);
+
+      vGlass.mounted!(
+        el,
+        { modifiers: { interactive: true, ripple: true, pushpull: true, breathe: true } } as any,
+        null as any,
+        null as any
+      );
+      expect(el.querySelectorAll('.input-breathe-bg')).toHaveLength(1);
+
+      el.dispatchEvent(new MouseEvent('mouseenter'));
+      el.dispatchEvent(new MouseEvent('mouseleave'));
+      el.dispatchEvent(new MouseEvent('mousedown'));
+      el.dispatchEvent(new MouseEvent('mouseup'));
+
+      vGlass.unmounted!(el, {} as any, null as any, null as any);
+      // Second unmount on same element (not in handlersMap)
+      vGlass.unmounted!(el, {} as any, null as any, null as any);
+    });
+  });
 });

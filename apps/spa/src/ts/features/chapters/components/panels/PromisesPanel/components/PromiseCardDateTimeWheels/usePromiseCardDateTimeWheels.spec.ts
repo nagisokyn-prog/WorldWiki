@@ -70,5 +70,27 @@ describe('usePromiseCardDateTimeWheels', () => {
     expect(emit).toHaveBeenCalledWith('update:currentEraIdx', 1);
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  it('covers onYearChange and fallback defaults when bounds or numeric values are omitted', () => {
+    const emit = vi.fn();
+    const wheels = usePromiseCardDateTimeWheels(
+      { ...baseProps, eraMinYear: undefined, eraMaxYear: undefined },
+      emit
+    );
+
+    wheels.onYearChange('100');
+    expect(emit).toHaveBeenCalledWith('update:currentYear', 100);
+
+    wheels.onEraChange('');
+    expect(emit).toHaveBeenCalledWith('update:currentEraIdx', 0);
+    wheels.onMonthChange('');
+    expect(emit).toHaveBeenCalledWith('update:currentMonthIdx', 0);
+    wheels.onDayChange('');
+    expect(emit).toHaveBeenCalledWith('update:currentDay', 1);
+    wheels.onHourChange('');
+    expect(emit).toHaveBeenCalledWith('update:currentHour', 0);
+    wheels.onMinuteChange('');
+    expect(emit).toHaveBeenCalledWith('update:currentMinute', 0);
+  });
 });
 

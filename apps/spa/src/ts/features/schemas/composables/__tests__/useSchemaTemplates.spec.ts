@@ -51,6 +51,55 @@ describe('useSchemaTemplates', () => {
     const mockedTpl = useSchemaTemplatesMocked();
     expect(mockedTpl.timelineTemplates.value).toEqual({});
     expect(mockedTpl.dynamicTemplates.value).toEqual({});
+
+    // Mount with populated templates
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+    vi.resetModules();
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          templates: {
+            'Базовая хронология': { type: 'timeline', fields: [] },
+            'Динамический элемент': { type: 'dynamic', fields: [] },
+          },
+        }),
+    } as any);
+    const { useSchemaTemplates: useMountedTpl } = await import('../useSchemaTemplates');
+    let apiHook!: ReturnType<typeof useMountedTpl>;
+    const Comp = defineComponent({
+      setup() {
+        apiHook = useMountedTpl();
+        return {};
+      },
+      template: '<div />',
+    });
+    const w = mount(Comp);
+    await flushPromises();
+    expect(Object.keys(apiHook.timelineTemplates.value)).toEqual(['Базовая хронология']);
+    expect(Object.keys(apiHook.dynamicTemplates.value)).toEqual(['Динамический элемент']);
+    w.unmount();
+
+    // Error catch
+    vi.resetModules();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('net err'));
+    const { useSchemaTemplates: useErrTpl } = await import('../useSchemaTemplates');
+    const wErr = mount(
+      defineComponent({
+        setup() {
+          useErrTpl();
+          return {};
+        },
+        template: '<div />',
+      })
+    );
+    await flushPromises();
+    expect(warnSpy).toHaveBeenCalled();
+    wErr.unmount();
+    warnSpy.mockRestore();
+
     globalThis.fetch = originalFetch;
     vi.resetModules();
   });

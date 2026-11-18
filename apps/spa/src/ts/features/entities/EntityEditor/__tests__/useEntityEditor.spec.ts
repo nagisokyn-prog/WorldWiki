@@ -612,6 +612,44 @@ describe('useEntityEditor', () => {
     expect(editorState.visibleSections.value).toHaveLength(2);
     expect(editorState.totalHiddenCount.value).toBe(0);
 
+    // isChapterField variants
+    expect(editorState.isChapterField({ entityType: 'chapter' })).toBe(true);
+    expect(editorState.isChapterField({ type: 'manuscript_point' })).toBe(true);
+    expect(editorState.isChapterField({ class: 'начальная_глава' })).toBe(true);
+    expect(editorState.isChapterField({ id: 'bio' })).toBe(false);
+
+    // getOptionsFor edge cases
+    editorState.referenceData.value = {
+      a_list: [{ value: '1', label: 'One' }],
+      b_list: [{ value: '1', label: 'Dup' }, { value: '2', label: 'Two' }],
+    };
+    expect(editorState.getOptionsFor({ entityTypes: ['a', 'b'] } as any)).toHaveLength(2);
+    expect(editorState.getOptionsFor({ entityType: 'missing', optionsSource: 'entities' } as any)).toEqual([]);
+    expect(editorState.getOptionsFor({ entityType: 'missing' } as any)).toEqual([]);
+
+    // Window/Document event listeners: ww:schema-updated, ww:toggle-entity-history, ww:tags-updated
+    window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: 'other' } }));
+    window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: 'char' } }));
+    document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: 'other' } }));
+    document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: `char:${props.entityId}` } }));
+    document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: null }));
+    document.dispatchEvent(
+      new CustomEvent('ww:tags-updated', { detail: { id: props.entityId, tags: ['#alpha', 'beta'] } })
+    );
+    expect(editorState.formData.value.tags).toEqual(['alpha', 'beta']);
+
     wrapper.unmount();
+  });
+
+  it('normalizes string tags, attributes._hidden, название, and null initialData', async () => {
+    const { normalizeEntityFormData } = await import('../useEntityEditor');
+    expect(normalizeEntityFormData(null).tags).toEqual([]);
+    const res = normalizeEntityFormData({
+      название: 'Имя',
+      attributes: { tags: '#tag1, tag2', _hidden: { sections: ['s1'] } },
+    });
+    expect(res.name).toBe('Имя');
+    expect(res.tags).toEqual(['tag1', 'tag2']);
+    expect(res._hidden).toEqual({ sections: ['s1'] });
   });
 });

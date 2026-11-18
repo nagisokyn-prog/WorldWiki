@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { usePlanItemRow } from '../PlanItemRow/usePlanItemRow';
 import type { TapestryTodo } from '../../PlanningPanel.model';
 
@@ -98,5 +100,50 @@ describe('usePlanItemRow', () => {
     hook.onSelectStatus('in_progress');
     expect(emit).toHaveBeenCalledWith('set-status', expect.anything(), 'in_progress');
     expect(hook.isStatusMenuOpen.value).toBe(false);
+  });
+
+  it('closes menus on window click/contextmenu, handles multiple candidates, and cleans up on unmount', () => {
+    const emit = vi.fn();
+    let hook!: ReturnType<typeof usePlanItemRow>;
+    const Comp = defineComponent({
+      setup() {
+        hook = usePlanItemRow(
+          {
+            item: { ...baseTodo, id: 't1', done: true },
+            allTodos: [
+              { id: 't2', text: 'A', chapterId: '', chapterTitle: 'No Ch', status: 'planned' },
+              { id: 't3', text: 'B', chapterId: '', chapterTitle: 'No Ch', status: 'planned' },
+            ],
+          },
+          emit
+        );
+        return {};
+      },
+      template: '<div />',
+    });
+
+    const wrapper = mount(Comp);
+    expect(hook.groupedCandidates.value).toHaveLength(1);
+    expect(hook.groupedCandidates.value[0].todos).toHaveLength(2);
+
+    const preventDefault = vi.fn();
+    const stopPropagation = vi.fn();
+    hook.openStatusMenu({ preventDefault, stopPropagation } as unknown as MouseEvent);
+    expect(preventDefault).toHaveBeenCalled();
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(hook.isStatusMenuOpen.value).toBe(true);
+
+    hook.toggleDepMenu();
+    expect(hook.isDepMenuOpen.value).toBe(true);
+    expect(hook.isStatusMenuOpen.value).toBe(false);
+
+    window.dispatchEvent(new MouseEvent('click'));
+    expect(hook.isDepMenuOpen.value).toBe(false);
+
+    hook.openStatusMenu();
+    window.dispatchEvent(new MouseEvent('contextmenu'));
+    expect(hook.isStatusMenuOpen.value).toBe(false);
+
+    wrapper.unmount();
   });
 });

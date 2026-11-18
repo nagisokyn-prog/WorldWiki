@@ -42,6 +42,11 @@ describe('projectApi & projectRecordId', () => {
 
       expect(api.createProject).toHaveBeenCalledWith({ name: 'New Project' });
       expect(res).toEqual({ success: true });
+
+      const resId = await projectApi.createProject({ id: 'proj_by_id' });
+      expect(resId).toEqual({ success: true });
+      const resNoName = await projectApi.createProject({});
+      expect(resNoName).toEqual({ success: true });
     });
 
     it('getProjectConfig calls api.getProjectConfig', async () => {

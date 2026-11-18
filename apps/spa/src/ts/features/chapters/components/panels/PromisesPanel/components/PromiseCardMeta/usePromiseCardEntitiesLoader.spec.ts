@@ -54,4 +54,33 @@ describe('usePromiseCardEntitiesLoader', () => {
     expect(res.characters).toEqual([]);
     expect(res.timelineEvents).toEqual([{ id: 'ev:2', title: 'Битва', m_abs: 500 }]);
   });
+
+  it('covers fallbacks for missing titles, rejected timeline/stores, and non-id characters', async () => {
+    vi.mocked(api.getEntities)
+      .mockResolvedValueOnce([{ id: '', name: 'NoId' }] as never)
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ id: 'char:2', title: 'Титул' }, { name: 'NoIdChar' }] as never);
+
+    vi.mocked(api.getGlobalTimeline).mockResolvedValueOnce([
+      { id: 'chapters:5', timeline_events: [{ id: 'ev:5', name: 'Имя' }] },
+      { timeline_events: [{ id: 'ev:6' }] },
+    ]);
+
+    const res = await fetchPromiseCardEntities('proj-1', calendarStore, arcsStore);
+    expect(res.locations).toEqual([]);
+    expect(res.characters).toEqual([{ id: 'char:2', name: 'Титул', type: 'character' }]);
+    expect(res.timelineEvents).toEqual([
+      { id: 'ev:5', title: '[Глава 5] Имя', m_abs: undefined },
+      { id: 'ev:6', title: '[Глава] ev:6', m_abs: undefined },
+    ]);
+
+    vi.mocked(api.getEntities).mockResolvedValue([] as never);
+    vi.mocked(api.getGlobalTimeline).mockRejectedValueOnce(new Error('tl err'));
+    const failingCal = { getCalendars: vi.fn().mockRejectedValueOnce(new Error('cal err')) } as any;
+    const failingArcs = { loadArcs: vi.fn().mockRejectedValueOnce(new Error('arc err')) } as any;
+
+    const resErr = await fetchPromiseCardEntities('proj-1', failingCal, failingArcs);
+    expect(resErr.timelineEvents).toEqual([]);
+    expect(resErr.calendars).toEqual([]);
+  });
 });

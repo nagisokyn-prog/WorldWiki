@@ -100,6 +100,15 @@ describe('useCalendarTreeResize', () => {
     wrapper.unmount();
     expect(resize.isResizing.value).toBe(false);
 
+    // Cover non-resizing mousemove/mouseup and unmount with pending rafId
+    vi.stubGlobal('requestAnimationFrame', () => 99);
+    const w2 = mount(Comp);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 120 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    resize.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 140 }));
+    w2.unmount();
+
     setItemSpy.mockRestore();
     warnSpy.mockRestore();
     vi.unstubAllGlobals();

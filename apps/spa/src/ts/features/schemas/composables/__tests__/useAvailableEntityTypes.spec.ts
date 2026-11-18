@@ -42,5 +42,20 @@ describe('useAvailableEntityTypes', () => {
     warnSpy.mockRestore();
 
     wrapper.unmount();
+
+    // Without project arg & schema without type_name/icon
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([{ type_key: 'custom_x' }] as never);
+    const CompNoProj = defineComponent({
+      setup() {
+        hook = useAvailableEntityTypes();
+        return {};
+      },
+      template: '<div></div>',
+    });
+    const w2 = mount(CompNoProj);
+    await flushPromises();
+    expect(api.getEntitySchemas).toHaveBeenCalledWith('default');
+    expect(hook.availableTypes.value.some((t) => t.value === 'custom_x' && t.label === 'custom_x' && t.icon === '📄')).toBe(true);
+    w2.unmount();
   });
 });

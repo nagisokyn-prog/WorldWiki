@@ -248,6 +248,22 @@ describe('useEditorCoreTiptap', () => {
     expect(mockLocateScene).toHaveBeenCalledWith(4, 'q', 'b4');
 
     document.dispatchEvent(new CustomEvent('ww:locate-promise'));
+
+    // Global shortcuts Alt+= and Ctrl+Enter
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '=', altKey: true }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
+    expect(insertContent).toHaveBeenCalledTimes(2);
+
+    // Markdown mode with active trigger and closing '))'
+    mockEditorMode.value = 'markdown';
+    api.activeEditorTarget.value = 'markdown';
+    const ta = document.createElement('textarea');
+    ta.value = '((Ал))';
+    ta.setSelectionRange(4, 4);
+    api.markdownTextareaRef.value = ta;
+    mockDetectActiveEntityQuery.mockReturnValue({ length: 4, query: 'Ал', isClosed: false });
+    api.handleEntityInsert({ type: 'character', id: 'c1', name: 'Алиса' });
+    expect(ta.value).toContain('((Ал))[ui_editor.html?project=proj-1&type=character&id=c1]');
     expect(mockLocateScene).toHaveBeenCalledTimes(1);
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: '=', altKey: true }));

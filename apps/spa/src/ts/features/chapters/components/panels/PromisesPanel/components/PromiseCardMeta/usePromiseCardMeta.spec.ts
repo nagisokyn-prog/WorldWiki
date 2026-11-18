@@ -245,4 +245,39 @@ describe('usePromiseCardMeta', () => {
     });
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  it('covers effectiveArcs, onArcChange, onArcsUpdate empty, updateKind same, empty project, and null blockBadgeText', async () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta(
+      { project: '', item: { ...baseItem, block_id: null, block_ids: [], arc_id: 'arc:9', arc_phase: null } },
+      emit
+    );
+    await meta.loadProjectEntities();
+    expect(meta.blockBadgeText.value).toBeNull();
+    expect(meta.effectiveArcs.value).toEqual([{ arc_id: 'arc:9', arc_phase: 'setup' }]);
+
+    meta.updateKind(baseItem.kind);
+    expect(emit).not.toHaveBeenCalled();
+
+    meta.onArcsUpdate([]);
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({ arc_id: null, arc_phase: null }));
+
+    meta.onArcsUpdate([{ arc_id: 'arc:2', arc_phase: null }]);
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({ arc_id: 'arc:2', arc_phase: 'setup' }));
+
+    meta.localArcId.value = 'arc:3';
+    meta.localArcPhase.value = '';
+    meta.onArcChange();
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({ arc_id: 'arc:3', arc_phase: 'setup' }));
+
+    meta.localArcId.value = null;
+    meta.onArcChange();
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({ arc_id: null, arcs: [] }));
+
+    const metaWithCal = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    await metaWithCal.loadProjectEntities();
+    metaWithCal.currentYear.value = 9999;
+    metaWithCal.onEraChange(0);
+    expect(metaWithCal.currentYear.value).toBe(1);
+  });
 });

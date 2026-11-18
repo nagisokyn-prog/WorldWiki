@@ -130,4 +130,20 @@ describe('useChapterArcTags', () => {
     expect(tags.newArcTitle.value).toBe('');
     expect(tags.isCreating.value).toBe(false);
   });
+
+  it('guards against missing project/chapterId and handles empty relation outCandidate', async () => {
+    const store = useStoryArcsStore();
+    store.arcs = [{ id: 'arc_1', title: 'A1', arc_type: 'event', status: 'in_progress' }];
+    store.arcChapters.set('arc_1', [{ arc_id: 'arc_1', project_id: 'p' }]);
+
+    const empty = useChapterArcTags({ project: '', chapterId: '' });
+    expect(empty.boundArcs.value).toEqual([]);
+    await empty.attachArc('arc_1');
+    await empty.detachArc('arc_1');
+    empty.newArcTitle.value = 'Valid';
+    await empty.createAndAttachArc();
+
+    const noOut = useChapterArcTags({ project: 'p1', chapterId: 'chapters:c1' });
+    expect(noOut.boundArcs.value).toEqual([]);
+  });
 });

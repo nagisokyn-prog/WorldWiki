@@ -106,5 +106,18 @@ describe('useFloatingEntityEditor', () => {
       emit
     );
     expect(otherEd.entityIcon.value).toBe('fas fa-edit');
+
+    // Reactive watch & character icon & event edge cases
+    const { reactive } = await import('vue');
+    const rProps = reactive({ project: 'p1', entityType: 'character', entityId: 'c1', isOpen: false });
+    const rEd = useFloatingEntityEditor(rProps, emit);
+    expect(rEd.entityIcon.value).toBe('fas fa-user-edit');
+
+    rProps.isOpen = true;
+    await flushPromises();
+    expect(entityApi.getEntity).toHaveBeenCalledWith('p1', 'character', 'c1');
+
+    document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: null }));
+    document.dispatchEvent(new CustomEvent('ww:tags-updated', { detail: { id: 'other' } }));
   });
 });

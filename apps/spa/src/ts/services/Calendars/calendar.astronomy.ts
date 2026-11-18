@@ -71,15 +71,22 @@ export const CalendarAstronomy = {
       const periodDen = m.period_days_den || 1000;
       const initialPhaseBp = m.initial_phase_bp ?? Math.round(((m.initial_phase || 0) * 10000) % 10000);
 
-      const res = defaultEngine.moon_phase_rational(
-        BigInt(absMin),
-        BigInt(minsInDay),
-        BigInt(periodNum),
-        BigInt(periodDen),
-        BigInt(initialPhaseBp)
-      );
-
-      const phaseFrac = res.basis_points / 10000;
+      let phaseFrac: number;
+      try {
+        const res = defaultEngine.moon_phase_rational(
+          BigInt(absMin),
+          BigInt(minsInDay),
+          BigInt(periodNum),
+          BigInt(periodDen),
+          BigInt(initialPhaseBp)
+        );
+        phaseFrac = res.basis_points / 10000;
+      } catch {
+        const periodDays = periodNum / periodDen;
+        const days = absMin / minsInDay;
+        const raw = periodDays > 0 ? days / periodDays + initialPhaseBp / 10000 : 0;
+        phaseFrac = ((raw % 1) + 1) % 1;
+      }
       let phaseKey: 'new' | 'waxing' | 'full' | 'waning';
       let defaultName: string;
       let defaultEmoji: string;

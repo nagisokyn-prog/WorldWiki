@@ -87,7 +87,7 @@
                 <div v-else-if="availableBackups.length === 0" class="text-center p-5 text-muted border border-dashed rounded-md">
                   Бекапы не найдены в папке Приложения/WorldWiki
                 </div>
-                <div v-else class="flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                <div v-else class="flex-col gap-2 backup-list-scroll pr-1">
                   <div v-for="backup in availableBackups" :key="backup.name" class="backup-item-row">
                     <div class="flex-col gap-1">
                       <div class="text-sm font-medium break-all"><i class="far fa-file-archive mr-1 text-muted"></i>{{ backup.name }}</div>

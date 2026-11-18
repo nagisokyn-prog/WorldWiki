@@ -321,6 +321,13 @@ function generate() {
     usedTypes.add('Chapter');
     usedTypes.add('Entity');
     
+    const EXTRA_FEATURE_COMMANDS = ['export_chapters', 'execute_raw_surql'];
+    for (const extraCmd of EXTRA_FEATURE_COMMANDS) {
+        if (!normalCommands.includes(extraCmd) && commandMap.has(extraCmd)) {
+            normalCommands.push(extraCmd);
+        }
+    }
+
     outputLines.push(`// --- Normal Commands ---`);
     for (const cmd of normalCommands) {
         if (!commandMap.has(cmd)) {

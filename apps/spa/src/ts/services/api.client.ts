@@ -640,6 +640,14 @@ export async function aiDelegateTask(taskId: string, prompt: string): Promise<un
     return await invoke('ai_delegate_task', { taskId, prompt });
 }
 
+export async function exportChapters(project: string, chapters: unknown[], format: string): Promise<string> {
+    return await invoke('export_chapters', { project, chapters, format });
+}
+
+export async function executeRawSurql(query: string): Promise<unknown> {
+    return await invoke('execute_raw_surql', { query });
+}
+
 // --- Entities CRUD ---
 export async function getStoryArc(id: string): Promise<StoryArc | null> {
     return await invoke('get_story_arc', { id });

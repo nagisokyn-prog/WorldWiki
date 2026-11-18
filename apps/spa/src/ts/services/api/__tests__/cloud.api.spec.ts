@@ -53,9 +53,12 @@ describe('cloudApi', () => {
   it('exchangeYandexToken calls invoke exchange_yandex_token', async () => {
     vi.mocked(invoke).mockResolvedValueOnce('oauth-token-xyz');
 
-    const res = await cloudApi.exchangeYandexToken('auth-code-123');
+    const res = await cloudApi.exchangeYandexToken('auth-code-123', 'verifier-456');
 
-    expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'auth-code-123' });
+    expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', {
+      code: 'auth-code-123',
+      codeVerifier: 'verifier-456',
+    });
     expect(res).toBe('oauth-token-xyz');
   });
 

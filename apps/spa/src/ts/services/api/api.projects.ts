@@ -25,8 +25,8 @@ export async function createCloudBackup(): Promise<string> {
   return await invoke('create_cloud_backup');
 }
 
-export async function exchangeYandexToken(code: string): Promise<string> {
-  return await invoke('exchange_yandex_token', { code });
+export async function exchangeYandexToken(code: string, codeVerifier: string): Promise<string> {
+  return await invoke('exchange_yandex_token', { code, codeVerifier });
 }
 
 export async function uploadToYandexDisk(token: string, filePath: string): Promise<void> {

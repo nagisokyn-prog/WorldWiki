@@ -155,10 +155,12 @@ describe('useCloudSyncModal', () => {
   });
 
   describe('openAuthUrl', () => {
-    it('opens auth url and sets showAuthCodeInput', async () => {
+    it('opens auth url with PKCE challenge and sets showAuthCodeInput', async () => {
       await modal.connectYandex();
 
-      expect(mockOpenUrl).toHaveBeenCalledWith(expect.stringContaining('oauth.yandex.ru/authorize'));
+      expect(mockOpenUrl).toHaveBeenCalledWith(
+        expect.stringMatching(/oauth\.yandex\.ru\/authorize.*code_challenge=[^&]+.*code_challenge_method=S256/)
+      );
       expect(modal.showAuthCodeInput.value).toBe(true);
     });
 
@@ -221,7 +223,17 @@ describe('useCloudSyncModal', () => {
   });
 
   describe('exchangeCode', () => {
+    it('shows error when called without an active PKCE session', async () => {
+      modal.authCode.value = 'auth_code_xyz';
+
+      await modal.exchangeCode();
+
+      expect(invoke).not.toHaveBeenCalled();
+      expect(modal.authError.value).toContain('Подключить Яндекс');
+    });
+
     it('exchanges code for token and updates state, fetching backups in import mode', async () => {
+      await modal.connectYandex();
       modal.syncMode.value = 'import';
       modal.authCode.value = 'auth_code_xyz';
       vi.mocked(invoke).mockImplementation(async (cmd: string) => {
@@ -232,7 +244,10 @@ describe('useCloudSyncModal', () => {
 
       await modal.exchangeCode();
 
-      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'auth_code_xyz' });
+      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', {
+        code: 'auth_code_xyz',
+        codeVerifier: expect.any(String),
+      });
       expect(localStorage.getItem('yandex_disk_token')).toBe('jwt_token_abc');
       expect(modal.yandexToken.value).toBe('jwt_token_abc');
       expect(modal.showAuthCodeInput.value).toBe(false);
@@ -241,6 +256,7 @@ describe('useCloudSyncModal', () => {
     });
 
     it('exchanges code in export mode without fetching backups', async () => {
+      await modal.connectYandex();
       modal.syncMode.value = 'export';
       modal.authCode.value = 'code_export';
       vi.mocked(invoke).mockResolvedValue('jwt_token_export');
@@ -251,6 +267,7 @@ describe('useCloudSyncModal', () => {
     });
 
     it('handles exchange error gracefully with string error', async () => {
+      await modal.connectYandex();
       modal.authCode.value = 'bad_code';
       vi.mocked(invoke).mockRejectedValue('Invalid authorization code');
 

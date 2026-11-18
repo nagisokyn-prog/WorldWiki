@@ -3,7 +3,7 @@ pub mod client;
 pub mod http;
 pub mod media;
 
-pub use auth::{YANDEX_CLIENT_ID, YANDEX_CLIENT_SECRET};
+pub use auth::YANDEX_CLIENT_ID;
 pub use client::*;
 
 #[cfg(test)]
@@ -87,7 +87,7 @@ mod tests {
         .await;
         let base = format!("http://127.0.0.1:{port}");
 
-        let token = exchange_yandex_token_inner("ABC-CODE", Some(&base))
+        let token = exchange_yandex_token_inner("ABC-CODE", "test-verifier-123", Some(&base))
             .await
             .expect("успешный обмен кода");
         assert_eq!(token, "tok-123");
@@ -96,6 +96,8 @@ mod tests {
         assert!(req.contains("grant_type=authorization_code"), "{req}");
         assert!(req.contains("code=ABC-CODE"), "{req}");
         assert!(req.contains(&format!("client_id={YANDEX_CLIENT_ID}")), "{req}");
+        assert!(req.contains("code_verifier=test-verifier-123"), "{req}");
+        assert!(!req.contains("client_secret"), "{req}");
         assert!(req.to_ascii_lowercase().contains("post /token"), "{req}");
     }
 
@@ -114,7 +116,7 @@ mod tests {
         .await;
         let base = format!("http://127.0.0.1:{port}");
 
-        let err = exchange_yandex_token_inner("BAD", Some(&base))
+        let err = exchange_yandex_token_inner("BAD", "test-verifier-123", Some(&base))
             .await
             .expect_err("ошибка OAuth -> Err");
         assert_eq!(err.to_string(), "Validation error: Код подтверждения неверен");

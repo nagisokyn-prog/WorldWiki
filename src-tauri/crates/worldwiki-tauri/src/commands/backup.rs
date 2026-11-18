@@ -86,8 +86,8 @@ pub async fn export_local_backup(
 }
 
 #[tauri::command]
-pub async fn exchange_yandex_token(code: String) -> Result<String, IpcError> {
-    exchange_yandex_token_inner(&code, None)
+pub async fn exchange_yandex_token(code: String, code_verifier: String) -> Result<String, IpcError> {
+    exchange_yandex_token_inner(&code, &code_verifier, None)
         .await
         .map_err(IpcError::from)
 }

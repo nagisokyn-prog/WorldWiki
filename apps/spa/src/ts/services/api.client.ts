@@ -308,8 +308,8 @@ export async function exportLocalBackup(project: string | null, destinationPath:
     return await invoke('export_local_backup', { project, destinationPath });
 }
 
-export async function exchangeYandexToken(code: string): Promise<string> {
-    return await invoke('exchange_yandex_token', { code });
+export async function exchangeYandexToken(code: string, codeVerifier: string): Promise<string> {
+    return await invoke('exchange_yandex_token', { code, codeVerifier });
 }
 
 export async function uploadToYandexDisk(token: string, filePath: string): Promise<void> {

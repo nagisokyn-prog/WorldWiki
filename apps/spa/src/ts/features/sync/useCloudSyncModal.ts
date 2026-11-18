@@ -7,6 +7,23 @@ import type { MediaSyncProgress, DatabaseSyncStatus, MediaSyncStatus } from './C
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
 
+function toBase64Url(bytes: Uint8Array): string {
+    let binary = '';
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function createPkcePair(): Promise<{ verifier: string; challenge: string }> {
+    const randomBytes = new Uint8Array(32);
+    crypto.getRandomValues(randomBytes);
+    const verifier = toBase64Url(randomBytes);
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    const challenge = toBase64Url(new Uint8Array(digest));
+    return { verifier, challenge };
+}
+
 export interface YandexBackupFile {
     name: string;
     created: string;
@@ -48,6 +65,7 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     const dbSyncStatus = ref<DatabaseSyncStatus>('idle');
     const mediaSyncStatus = ref<MediaSyncStatus>('idle');
     const mediaProgress = ref<MediaSyncProgress | null>(null);
+    let pendingCodeVerifier: string | null = null;
     const uploadedMediaCount = ref(0);
     const lastBackupFileName = ref('');
     
@@ -125,7 +143,9 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
     });
 
     const connectYandex = async () => {
-        const url = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${YANDEX_CLIENT_ID}`;
+        const { verifier, challenge } = await createPkcePair();
+        pendingCodeVerifier = verifier;
+        const url = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${YANDEX_CLIENT_ID}&code_challenge=${challenge}&code_challenge_method=S256`;
         try {
             await openUrl(url);
             showAuthCodeInput.value = true;
@@ -146,11 +166,19 @@ export function useCloudSyncModal(emit: CloudSyncEmit) {
 
     const exchangeCode = async () => {
         if (!authCode.value) return;
+        if (!pendingCodeVerifier) {
+            authError.value = 'Сессия авторизации устарела. Нажмите «Подключить Яндекс» ещё раз.';
+            return;
+        }
         isLoading.value = true;
         authError.value = '';
 
         try {
-            const token = await invoke<string>('exchange_yandex_token', { code: authCode.value.trim() });
+            const token = await invoke<string>('exchange_yandex_token', {
+                code: authCode.value.trim(),
+                codeVerifier: pendingCodeVerifier,
+            });
+            pendingCodeVerifier = null;
             localStorage.setItem('yandex_disk_token', token);
             yandexToken.value = token;
             showAuthCodeInput.value = false;

@@ -337,8 +337,11 @@ describe('api.client (Tauri invoke contract tests)', () => {
 
     it('exchangeYandexToken invokes exchange_yandex_token', async () => {
       vi.mocked(invoke).mockResolvedValue('token_123');
-      const res = await api.exchangeYandexToken('code_abc');
-      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'code_abc' });
+      const res = await api.exchangeYandexToken('code_abc', 'verifier_123');
+      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', {
+        code: 'code_abc',
+        codeVerifier: 'verifier_123',
+      });
       expect(res).toBe('token_123');
     });
 

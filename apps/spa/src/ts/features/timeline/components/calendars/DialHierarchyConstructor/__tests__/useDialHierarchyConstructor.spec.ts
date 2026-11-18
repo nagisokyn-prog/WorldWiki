@@ -16,5 +16,19 @@ describe('useDialHierarchyConstructor', () => {
     hook.addUnit();
     expect(hook.dialUnits.value.length).toBe(3);
     expect(emit).toHaveBeenCalled();
+
+    // removeUnit & quantumErrorSec
+    expect(hook.quantumErrorSec.value).toBe('6.00');
+    hook.removeUnit(2);
+    expect(hook.dialUnits.value.length).toBe(2);
+
+    // setter & empty dialUnits (totalCapacity = 1) & missing настройки_времени
+    hook.dialUnits.value = [];
+    expect(hook.totalCapacity.value).toBe(1);
+
+    const sparseCal = { ...cal, dial_hierarchy: undefined, настройки_времени: undefined } as any;
+    const hook2 = useDialHierarchyConstructor({ modelValue: sparseCal }, emit);
+    expect(hook2.ticksPerDay.value).toBe(86400);
+    expect(hook2.dialUnits.value).toHaveLength(2);
   });
 });

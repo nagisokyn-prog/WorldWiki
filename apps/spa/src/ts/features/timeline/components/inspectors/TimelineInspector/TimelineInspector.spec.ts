@@ -240,4 +240,25 @@ describe('useTimelineInspector Composable', () => {
     expect(Array.isArray(ok.sceneHierarchyLines.value)).toBe(true);
     expect(ok.canvasMinWidth.value).toMatch(/px$/);
   });
+
+  it('covers project prop fallback, default calendar map, rejected entities, null raw data, and string error', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+    vi.spyOn(calStore, 'getCalendars').mockResolvedValueOnce([
+      { id: 'cal:1', name: 'DefaultCal', is_default: true, data: { название: 'DefaultCal' } } as any,
+    ]);
+    vi.mocked(apiClient.getEntities).mockRejectedValue(new Error('ent err'));
+    vi.mocked(apiClient.getTimelineInspectorData).mockResolvedValueOnce(null as any);
+
+    const hook = useTimelineInspector({ project: 'proj_prop' });
+    await hook.refresh();
+    expect(hook.filteredChapters.value).toEqual([]);
+    expect(hook.filteredEvents.value).toEqual([]);
+
+    vi.mocked(apiClient.getTimelineInspectorData).mockRejectedValueOnce('raw string err');
+    await hook.refresh();
+    expect(hook.error.value).toBe('raw string err');
+    errSpy.mockRestore();
+  });
 });

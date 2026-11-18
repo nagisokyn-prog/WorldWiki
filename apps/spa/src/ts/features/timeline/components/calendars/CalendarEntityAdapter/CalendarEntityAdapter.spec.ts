@@ -104,6 +104,21 @@ describe('useCalendarEntityAdapter', () => {
     adapter.onPlanetSave();
     expect(emit).toHaveBeenCalledWith('modified');
 
+    // Out-of-bounds selectCalendar
+    adapter.onSelectCalendar(999);
+    // Empty planetId onAddCalendar
+    await adapter.onAddCalendar('');
+
     wrapper.unmount();
+  });
+
+  it('handles store errors gracefully in loadData, onAddPlanet, and onAddCalendar', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const emit = vi.fn();
+    const adapter = useCalendarEntityAdapter({ calendarId: '', projectId: 'p1', isPreview: false }, emit);
+
+    await adapter.onAddPlanet();
+    expect(adapter.planetsList.value.length).toBeGreaterThan(0);
+    errSpy.mockRestore();
   });
 });

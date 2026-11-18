@@ -54,4 +54,37 @@ describe('usePlanetCalendarTree', () => {
     addPlanet();
     expect(emit).toHaveBeenCalledWith('add-planet');
   });
+
+  it('toggles planet collapse/expand and handles fallback names, master flags, and empty props', () => {
+    const emit = vi.fn();
+    const { treeGroups, togglePlanet } = usePlanetCalendarTree(
+      {
+        planets: [
+          { id: 'entity:planet:earth', project_id: 'p1', name: 'Земля', ticks_per_day: 86400, orbit_days: 365 },
+        ],
+        calendars: [
+          { id: 'c_master', is_master: false, data: { название: 'Календарь Мира' } as CalendarData },
+          { id: 'c_named', name: 'ИмяИзЗаписи', is_master: false, data: { planet_id: 'earth' } as CalendarData },
+          { id: 'c_default', is_master: false, data: { planet_id: 'earth' } as CalendarData },
+        ],
+      },
+      emit
+    );
+
+    expect(treeGroups.value[0].isExpanded).toBe(true);
+    togglePlanet('entity:planet:earth');
+    expect(treeGroups.value[0].isExpanded).toBe(false);
+    togglePlanet('entity:planet:earth');
+    expect(treeGroups.value[0].isExpanded).toBe(true);
+
+    expect(treeGroups.value[0].calendars.map((c) => c.name)).toEqual([
+      'Календарь Мира',
+      'ИмяИзЗаписи',
+      'Календарь',
+    ]);
+    expect(treeGroups.value[0].calendars[0].is_master).toBe(true);
+
+    const empty = usePlanetCalendarTree({ planets: undefined as any, calendars: undefined as any }, emit);
+    expect(empty.treeGroups.value).toEqual([]);
+  });
 });

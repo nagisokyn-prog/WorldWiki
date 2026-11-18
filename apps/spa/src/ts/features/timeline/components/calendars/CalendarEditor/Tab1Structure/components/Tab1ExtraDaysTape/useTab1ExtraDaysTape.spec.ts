@@ -28,10 +28,16 @@ describe('useTab1ExtraDaysTape Composable', () => {
   });
 
   it('computes monthOptions properly', () => {
-    const { monthOptions } = useTab1ExtraDaysTape(defaultProps);
+    const { monthOptions } = useTab1ExtraDaysTape({
+      ...defaultProps,
+      months: [
+        { id: 'm1', название: 'Январь', дней: 30, сезон: 'Зима' },
+        { id: 'm2', название: '', дней: 30, сезон: 'Зима' },
+      ],
+    });
     expect(monthOptions.value).toHaveLength(2);
     expect(monthOptions.value[0]).toEqual({ value: '0', label: 'Январь' });
-    expect(monthOptions.value[1]).toEqual({ value: '1', label: 'Февраль' });
+    expect(monthOptions.value[1]).toEqual({ value: '1', label: 'Месяц 2' });
   });
 
   it('toggles collapsed state', () => {

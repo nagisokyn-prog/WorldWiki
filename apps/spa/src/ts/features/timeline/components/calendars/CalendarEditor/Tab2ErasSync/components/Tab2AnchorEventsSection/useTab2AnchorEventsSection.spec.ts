@@ -54,5 +54,41 @@ describe('useTab2AnchorEventsSection', () => {
     }));
     expect(showAddRow.value).toBe(false);
   });
+
+  it('covers openAddRow, cancelAddEvent, out-of-bounds onFieldChange, and submit guards/fallbacks', () => {
+    const emit = vi.fn();
+    const hook = useTab2AnchorEventsSection(props, emit as any);
+
+    hook.openAddRow();
+    expect(hook.showAddRow.value).toBe(true);
+    hook.cancelAddEvent();
+    expect(hook.showAddRow.value).toBe(false);
+
+    hook.onFieldChange(99, 'name', 'X');
+    expect(emit).not.toHaveBeenCalled();
+
+    // Missing name / null year guard
+    hook.newEventName.value = '   ';
+    hook.newEventYear.value = 10;
+    hook.submitNewEvent();
+    hook.newEventName.value = 'Valid';
+    hook.newEventYear.value = null;
+    hook.submitNewEvent();
+    expect(emit).not.toHaveBeenCalled();
+
+    // Null month/day and empty description fallbacks
+    hook.newEventYear.value = 10;
+    hook.newEventMonth.value = null;
+    hook.newEventDay.value = null;
+    hook.newEventDesc.value = '   ';
+    hook.submitNewEvent();
+    expect(emit).toHaveBeenCalledWith('add-anchor-event', expect.objectContaining({
+      name: 'Valid',
+      year: 10,
+      month: 0,
+      day: 1,
+      description: undefined,
+    }));
+  });
 });
 

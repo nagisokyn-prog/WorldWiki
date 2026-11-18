@@ -38,5 +38,21 @@ describe('useTab3SeasonsSection', () => {
     expect(props.seasons[0].цвет).toBe('--color-warning');
     expect(emit).toHaveBeenCalledWith('update-seasons', expect.any(Array));
   });
+
+  it('respects isReadOnly and handles southern->northern and missing months array', () => {
+    const emit = vi.fn();
+    const season = { id: 's2', название: 'Зима', цвет: '--c', hemisphere: 'southern' as const };
+    const ro = useTab3SeasonsSection({ seasons: [season as any], months: [], isReadOnly: true }, emit as any);
+    ro.toggleHemisphere(season as any);
+    ro.toggleMonthInSeason(season as any, 1);
+    ro.setSeasonColor(season as any, '--x');
+    expect(emit).not.toHaveBeenCalled();
+
+    const rw = useTab3SeasonsSection({ seasons: [season as any], months: [] }, emit as any);
+    rw.toggleHemisphere(season as any);
+    expect(season.hemisphere).toBe('northern');
+    rw.toggleMonthInSeason(season as any, 1);
+    expect((season as any).месяцы).toEqual([1]);
+  });
 });
 

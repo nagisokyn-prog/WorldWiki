@@ -128,5 +128,47 @@ describe('useLocationAstronomyWidget', () => {
     );
     expect(seasons).toEqual([{ name: 'Лето', startDay: 30 }]);
   });
+
+  it('covers planet timezone fallback, negative offset, building without subtype, and project watcher', async () => {
+    vi.mocked(api.getEntities).mockResolvedValue([] as never);
+    const calStore = useCalendarStore();
+    const cal = CalendarEngine.getDefaultCalendar();
+    cal.timezones = [];
+    cal.planet_id = 'planet_1';
+    vi.spyOn(calStore, 'getCalendars').mockResolvedValue([
+      { id: 'cal_def', name: 'DefaultCal', is_default: true, data: cal } as never,
+    ]);
+    vi.spyOn(calStore, 'getPlanets').mockReturnValue([
+      {
+        id: 'planet_1',
+        name: 'Terra',
+        timezones: [{ id: 'tz_west', name: 'West', code: 'UTC-5', base_offset_hours: -5 }],
+      } as never,
+    ]);
+
+    const props = reactive({
+      project: '',
+      entityId: '',
+      formData: {
+        scale_level: 'unknown_scale',
+        часовой_пояс: '-5',
+        календарь_id: 'cal_def',
+      },
+    });
+
+    const hook = useLocationAstronomyWidget(props);
+    await hook.refreshContext(); // empty project -> early return
+    expect(api.getEntities).not.toHaveBeenCalled();
+
+    props.project = 'proj_2';
+    await hook.refreshContext();
+
+    expect(hook.availableTimezones.value.length).toBe(1);
+    expect(hook.formattedOffset.value).toBe('UTC-5');
+    expect(hook.scaleLabel.value).toBeTruthy();
+
+    props.formData.scale_level = 'building';
+    expect(hook.scaleLabel.value).toBeTruthy();
+  });
 });
 

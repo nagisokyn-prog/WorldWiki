@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useSurrealConsole } from './useSurrealConsole';
 import * as api from '@/services/api.client';
 
@@ -89,5 +91,65 @@ describe('useSurrealConsole', () => {
     history.value = [{ id: '1', query: 'SELECT 1;', timestamp: '10:00', durationMs: 1, success: true }];
     clearHistory();
     expect(history.value).toEqual([]);
+  });
+
+  it('loads history on mount, handles corrupt JSON, selectHistoryItem, key handlers, and max history', async () => {
+    localStorage.setItem(
+      'surreal_console_history_v1',
+      JSON.stringify([{ id: 'h1', query: 'INFO FOR DB;', timestamp: '10:00', durationMs: 2, success: true }])
+    );
+    let apiHook!: ReturnType<typeof useSurrealConsole>;
+    const Comp = defineComponent({
+      setup() {
+        apiHook = useSurrealConsole({ project: 'projects:p1' });
+        return {};
+      },
+      template: '<div />',
+    });
+    const wrapper = mount(Comp);
+    expect(apiHook.history.value.length).toBe(1);
+    expect(apiHook.activeResult.value?.id).toBe('h1');
+    wrapper.unmount();
+
+    localStorage.setItem('surreal_console_history_v1', '{invalid');
+    const wrapperBad = mount(Comp);
+    expect(apiHook.history.value).toEqual([]);
+    wrapperBad.unmount();
+
+    // Empty query guard & customQuery & non-Error catch
+    await apiHook.executeQuery('   ');
+    expect(api.executeRawSurql).not.toHaveBeenCalled();
+
+    vi.mocked(api.executeRawSurql).mockRejectedValueOnce('raw error');
+    await apiHook.executeQuery('SELECT 1;');
+    expect(apiHook.activeResult.value?.error).toBe('raw error');
+
+    // Fill > 50 items
+    vi.mocked(api.executeRawSurql).mockResolvedValue([]);
+    apiHook.history.value = Array.from({ length: 50 }, (_, i) => ({
+      id: `id_${i}`,
+      query: `Q${i}`,
+      timestamp: '10:00',
+      durationMs: 1,
+      success: true,
+    }));
+    await apiHook.executeQuery('Q_NEW');
+    expect(apiHook.history.value.length).toBe(50);
+
+    apiHook.selectHistoryItem(apiHook.history.value[1]);
+    expect(apiHook.queryInput.value).toBe('Q0');
+
+    // handleKeyUp / handleKeyDown
+    const preventDefault = vi.fn();
+    apiHook.queryInput.value = '';
+    apiHook.handleKeyUp({ target: { selectionStart: 0 }, preventDefault } as any);
+    apiHook.queryInput.value = '';
+    apiHook.handleKeyDown({ target: { selectionStart: 0 }, preventDefault } as any);
+    expect(preventDefault).toHaveBeenCalledTimes(2);
+
+    apiHook.queryInput.value = 'SELECT 1';
+    apiHook.handleKeyUp({ target: { selectionStart: 3 }, preventDefault } as any);
+    apiHook.handleKeyDown({ target: { selectionStart: 3 }, preventDefault } as any);
+    expect(preventDefault).toHaveBeenCalledTimes(2);
   });
 });

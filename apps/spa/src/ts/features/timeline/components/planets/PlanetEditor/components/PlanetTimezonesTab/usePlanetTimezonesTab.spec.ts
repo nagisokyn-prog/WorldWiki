@@ -29,5 +29,10 @@ describe('usePlanetTimezonesTab', () => {
     const { dstOptions } = usePlanetTimezonesTab(props);
     expect(dstOptions).toEqual(DST_OPTIONS);
   });
+
+  it('returns empty timezoneCodeOptions when planet or timezones are missing', () => {
+    const { timezoneCodeOptions } = usePlanetTimezonesTab({ planet: {} as any });
+    expect(timezoneCodeOptions.value).toEqual([]);
+  });
 });
 

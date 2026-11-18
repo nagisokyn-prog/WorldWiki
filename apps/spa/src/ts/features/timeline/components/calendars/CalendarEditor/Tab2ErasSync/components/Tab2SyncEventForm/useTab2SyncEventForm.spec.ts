@@ -7,7 +7,7 @@ describe('useTab2SyncEventForm', () => {
     selectedEventId: 'ev_1',
     anchorEvents: [
       { id: 'ev_1', name: 'Падение Крепости', year: 500 },
-      { id: 'ev_2', name: 'Великий Поход', year: 750 },
+      { id: '', name: 'Великий Поход', year: 750 },
     ],
     currentEvent: undefined,
     offsetDirection: 'after',
@@ -22,7 +22,7 @@ describe('useTab2SyncEventForm', () => {
       label: 'Падение Крепости (Год 500)',
     });
     expect(eventOptions.value[1]).toEqual({
-      value: 'ev_2',
+      value: 'Великий Поход',
       label: 'Великий Поход (Год 750)',
     });
   });

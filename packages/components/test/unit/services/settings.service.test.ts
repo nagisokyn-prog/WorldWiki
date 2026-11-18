@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { effectScope } from 'vue';
 
 // Import the service after mocks are set up
-import { settingsService } from '../../../src/ts/services/settings.service';
+import { settingsService, useSettingsService } from '../../../src/ts/services/settings.service';
 
 // Type augmentation for global mocks
 declare global {
@@ -928,6 +929,40 @@ describe('SettingsService', () => {
       expect(warnSpy).toHaveBeenCalled();
       warnSpy.mockRestore();
       delete (window as any).__TAURI__;
+    });
+
+    it('covers useSettingsService, offChange, storage event sync, debounced save, and dispose', async () => {
+      vi.useFakeTimers();
+      const scope = effectScope();
+      let svc!: typeof settingsService;
+      scope.run(() => {
+        svc = useSettingsService();
+      });
+      expect(svc).toBe(settingsService);
+
+      const listener = vi.fn();
+      const unsub = svc.onChange(listener);
+      await svc.saveSettings({ locale: 'en' } as any, false);
+      await svc.saveSettings({ locale: 'ru' } as any, false);
+      expect(listener).toHaveBeenCalledTimes(2);
+      vi.advanceTimersByTime(350);
+
+      unsub();
+      await svc.saveSettings({ locale: 'en' } as any, false);
+      expect(listener).toHaveBeenCalledTimes(2);
+
+      // storage event: valid, invalid JSON, unrelated key
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other:key', newValue: '{}' }));
+      window.dispatchEvent(new StorageEvent('storage', { key: 'app:settings', newValue: '{"locale":"en"}' }));
+      window.dispatchEvent(new StorageEvent('storage', { key: 'app:settings', newValue: '{bad json' }));
+
+      // switchTheme when loadThemeSettings returns null (unknown/fetch fail)
+      await svc.switchTheme('dark');
+
+      svc.dispose();
+      svc.dispose();
+      scope.stop();
+      vi.useRealTimers();
     });
   });
 });

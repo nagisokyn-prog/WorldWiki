@@ -43,4 +43,28 @@ describe('useDocumentExportModal', () => {
     closeModal();
     expect(emit).toHaveBeenCalledWith('close');
   });
+
+  it('sets errorMessage on Error and non-Error rejection, and handles success=false', async () => {
+    const doc = normalizeSemanticDocument({});
+    const emit = vi.fn();
+
+    vi.spyOn(DocumentExportService, 'export').mockRejectedValueOnce(new Error('Disk full'));
+    const modal = useDocumentExportModal({ document: doc, isOpen: true, projectName: 'MyProj' }, emit);
+    await modal.handleExport();
+    expect(modal.errorMessage.value).toBe('Disk full');
+    expect(modal.isExporting.value).toBe(false);
+
+    vi.spyOn(DocumentExportService, 'export').mockRejectedValueOnce('String fail');
+    await modal.handleExport();
+    expect(modal.errorMessage.value).toBe('String fail');
+
+    vi.spyOn(DocumentExportService, 'export').mockResolvedValueOnce({
+      success: false,
+      filePath: '',
+      fileName: '',
+      fileSizeBytes: 0,
+    });
+    await modal.handleExport();
+    expect(modal.successMessage.value).toBeNull();
+  });
 });

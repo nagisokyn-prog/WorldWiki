@@ -20,5 +20,20 @@ describe('useEntityHiddenManager', () => {
     expect(hiddenFieldsList.value).toEqual([{ id: 'field_1', label: 'Label for field_1' }]);
     expect(hiddenContainersList.value).toEqual([{ id: 'cont_1', label: 'Title for cont_1' }]);
   });
+
+  it('falls back to section id when sections prop is missing or section is not found', () => {
+    const props = {
+      isOpen: true,
+      totalHiddenCount: 1,
+      hiddenSections: ['sec_missing'],
+      hiddenFields: [],
+      hiddenContainers: [],
+      getFieldLabel: vi.fn(),
+      getContainerTitle: vi.fn(),
+    };
+
+    const { hiddenSectionsList } = useEntityHiddenManager(props);
+    expect(hiddenSectionsList.value).toEqual([{ id: 'sec_missing', label: 'sec_missing' }]);
+  });
 });
 

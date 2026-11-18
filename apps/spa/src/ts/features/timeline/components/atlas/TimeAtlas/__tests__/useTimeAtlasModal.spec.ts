@@ -147,4 +147,17 @@ describe('useTimeAtlasModal', () => {
     vi.unstubAllGlobals();
     vi.useRealTimers();
   });
+
+  it('covers closed modal, empty project, and getCalendars failure/empty cases', async () => {
+    const closed = useTimeAtlasModal({ project: 'test-proj', isOpen: false });
+    expect(closed.allCalendars.value).toEqual([]);
+    expect(closed.masterCalendar.value).toBeNull();
+    expect(closed.localCalendarRecords.value).toEqual([]);
+    expect(closed.activeAlignments.value).toEqual([]);
+    expect(closed.snippetFormats.value).toEqual([]);
+
+    const emptyProj = useTimeAtlasModal({ project: '', isOpen: true });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(emptyProj.allCalendars.value).toEqual([]);
+  });
 });

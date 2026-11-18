@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useTagsManagerModal } from './useTagsManagerModal';
+import { useTagsManagerModal, ensureHexColor } from './useTagsManagerModal';
 import * as api from '@/services/api.client';
 import { appConfirm } from '@worldwiki/components';
 
@@ -84,5 +84,21 @@ describe('useTagsManagerModal', () => {
     vi.mocked(appConfirm).mockResolvedValueOnce(true);
     await modal.deleteTag('tag_1');
     expect(modal.tags.value.length).toBe(0);
+  });
+
+  it('covers ensureHexColor, duplicate addTag, and updateTag miss', async () => {
+    expect(ensureHexColor(null)).toBe('#8b5cf6');
+    expect(ensureHexColor('red')).toBe('#8b5cf6');
+    expect(ensureHexColor('  #AABBCC  ')).toBe('#aabbcc');
+
+    const modal = useTagsManagerModal(props);
+    modal.newTagName.value = 'Magic';
+    await modal.addTag();
+    modal.newTagName.value = 'magic';
+    await modal.addTag();
+    expect(modal.tags.value.length).toBe(1);
+
+    await modal.updateTag({ id: 'missing', name: 'Missing', color: '#000000', project_id: 'my-project' });
+    expect(modal.tags.value.length).toBe(1);
   });
 });

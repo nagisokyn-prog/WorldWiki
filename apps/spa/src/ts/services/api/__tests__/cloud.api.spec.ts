@@ -18,6 +18,22 @@ describe('cloudApi', () => {
 
     expect(invoke).toHaveBeenCalledWith('create_cloud_backup');
     expect(res).toBe('backup-id-123');
+
+    vi.mocked(invoke).mockResolvedValueOnce('backup-proj');
+    const resProj = await cloudApi.createCloudBackup('proj1');
+    expect(invoke).toHaveBeenCalledWith('create_cloud_backup', { project: 'proj1' });
+    expect(resProj).toBe('backup-proj');
+  });
+
+  it('exportLocalBackup calls invoke export_local_backup', async () => {
+    vi.mocked(invoke).mockResolvedValueOnce('/tmp/out.wwiki');
+
+    const res = await cloudApi.exportLocalBackup('/tmp/out.wwiki', 'proj1');
+    expect(invoke).toHaveBeenCalledWith('export_local_backup', {
+      destinationPath: '/tmp/out.wwiki',
+      project: 'proj1',
+    });
+    expect(res).toBe('/tmp/out.wwiki');
   });
 
   it('exportChapters calls invoke export_chapters with options', async () => {

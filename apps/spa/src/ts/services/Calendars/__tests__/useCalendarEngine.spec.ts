@@ -266,4 +266,28 @@ describe('useCalendarEngine', () => {
       expect(engine.checkDeathViolation(10, 15, 20)).toBe(false);
     });
   });
+
+  describe('CalendarEngine facade helpers', () => {
+    it('covers getEngine, formatDateShort, mergeCalendarData, getMonthName, getDayName, and explainDate', () => {
+      const cal = engine.getDefaultCalendar();
+      expect(engine.getEngine()).toBeDefined();
+
+      expect(engine.formatDateShort(cal, {})).toBe('');
+      expect(engine.formatDateShort(cal, { original_input: { year: 2024, month: 0, day: 5 } })).toContain('5');
+      expect(engine.formatDateShort({ ...cal, месяцы: [] }, { original_input: { year: 2024, month: 2, day: 5 } })).toBe('5 3 2024');
+      expect(engine.formatDateShort(cal, { original_input: { year: 2024, month: undefined as any, day: 5 } })).toBe('5 1 2024');
+
+      const merged = engine.mergeCalendarData({ ...cal, настройки_времени: undefined as any }, {});
+      expect(merged.настройки_времени.часов_в_сутках).toBe(24);
+
+      expect(engine.getMonthName(cal, 0)).toBe(cal.месяцы[0].название);
+      expect(engine.getMonthName(cal, 999)).toBe('Неизвестный месяц');
+      expect(engine.getDayName(cal, 0)).toBe(cal.названия_дней_недели[0]);
+      expect(engine.getDayName(cal, 999)).toBe('День');
+
+      const otherCal = { ...cal, _id: 'cal_2', название: 'Другой' };
+      const explanation = engine.explainDate({ year: 1, month: 0, day: 1 }, cal, [cal, otherCal], cal);
+      expect(explanation).toBeDefined();
+    });
+  });
 });

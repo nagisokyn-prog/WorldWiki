@@ -50,3 +50,24 @@ pub fn push_delete<T: Clone>(ops: &mut Vec<EditOp<T>>, slice: &[T], idx: usize) 
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+
+    #[test]
+    fn test_ops_out_of_bounds_are_noops() {
+        let mut buf = vec![10usize, 20];
+        set_idx(&mut buf, 99, 123);
+        assert_eq!(buf, vec![10, 20]);
+        assert!(!are_equal(&buf, 0, &buf, 99));
+        assert!(!are_equal(&buf, 99, &buf, 0));
+
+        let mut ops = Vec::new();
+        push_keep(&mut ops, &buf, 99);
+        push_insert(&mut ops, &buf, 99);
+        push_delete(&mut ops, &buf, 99);
+        assert!(ops.is_empty());
+    }
+}
+

@@ -1,5 +1,6 @@
 //! Item Tracker and Chekhov's Guns repository module.
 
+pub mod guns;
 pub mod journey;
 pub mod tracker;
 pub mod types;

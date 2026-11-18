@@ -104,3 +104,20 @@ impl IdExtractor {
         String::from_utf8_lossy(&bytes).into_owned()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_record_id_normalizes_plain_id_without_prefix() {
+        assert_eq!(
+            IdExtractor::extract_record_id_from_metadata(r#"<span data-entity-id="hero_1">"#),
+            Some("entities:hero_1".to_string())
+        );
+        assert_eq!(
+            IdExtractor::extract_record_id_from_metadata("worldwiki://open?id=item_42&mode=view"),
+            Some("entities:item_42".to_string())
+        );
+    }
+}

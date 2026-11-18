@@ -147,4 +147,3 @@ pub fn format_all_moon_phases(
     }
     out
 }
-

@@ -19,10 +19,10 @@ pub(crate) fn find_ascii(s: &str, needle: &[u8]) -> Option<usize> {
     }
     let limit = haystack.len() - n_len;
     let mut i = 0;
-    while i <= limit {
-        let Some(&b) = haystack.get(i) else {
+    while let Some(&b) = haystack.get(i) {
+        if i > limit {
             break;
-        };
+        }
         if b < 0x80 {
             if haystack.get(i..i + n_len) == Some(needle) {
                 return Some(i);
@@ -49,10 +49,7 @@ pub(crate) fn strip_html_tags(raw: &str) -> String {
     let mut chunk_start = 0usize;
     let mut i = 0usize;
 
-    while i < bytes.len() {
-        let Some(&b) = bytes.get(i) else {
-            break;
-        };
+    while let Some(&b) = bytes.get(i) {
         if b == b'<' || b == b'>' {
             if !in_tag
                 && chunk_start < i

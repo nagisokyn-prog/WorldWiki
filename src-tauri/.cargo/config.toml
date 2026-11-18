@@ -8,10 +8,10 @@ rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/STACK:33554432"]
 rustflags = []
 
 [alias]
-cov = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]ai[\\/])'
-cov-html = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]ai[\\/])'
-cov-full = 'llvm-cov nextest --workspace --features ai --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
-cov-html-full = 'llvm-cov nextest --workspace --features ai --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$)'
+cov = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]ai[\\/]|[\\/]worldwiki-[^\\/]+-wasm[\\/])'
+cov-html = 'llvm-cov nextest --workspace --exclude worldwiki-ai --exclude llama-sys --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]ai[\\/]|[\\/]worldwiki-[^\\/]+-wasm[\\/])'
+cov-full = 'llvm-cov nextest --workspace --features ai --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]worldwiki-[^\\/]+-wasm[\\/])'
+cov-html-full = 'llvm-cov nextest --workspace --features ai --html --open --ignore-filename-regex=([\\/]src-tauri[\\/]src[\\/](main|lib)\.rs$|[\\/]logic[\\/]schema\.rs$|[\\/]worldwiki-[^\\/]+-wasm[\\/])'
 test-all = "nextest run --workspace --exclude worldwiki-ai --exclude llama-sys"
 test-full = "nextest run --workspace --features ai --profile all"
 test-ai = ["nextest", "run", "--workspace", "--features", "ai", "-E", "package(worldwiki-ai) | test(/ai_/) | test(/chat_/) | test(/embedding/) | test(/retrieval/) | test(/agent_/)"]

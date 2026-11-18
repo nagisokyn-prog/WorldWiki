@@ -9,4 +9,3 @@ pub use cross_ref_matrix::CrossReferenceMatrixService;
 pub use item_tracker::ItemTrackerService;
 pub use manuscript_stats::{ManuscriptAnalyticsService, ManuscriptStatisticsDto};
 pub use timeline_inspector::TimelineInspectorService;
-

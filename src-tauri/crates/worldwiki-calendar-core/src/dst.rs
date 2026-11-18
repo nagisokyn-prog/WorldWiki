@@ -240,5 +240,87 @@ mod tests {
         assert!(is_dst_active_fixed(&window, 6, 15, 720));
         assert!(!is_dst_active_fixed(&window, 9, 1, 180)); // В момент окончания
     }
+
+    #[test]
+    fn test_dst_none_and_relative_weekday() {
+        use crate::types::{WeekdayOccurrence, WeekdayRule};
+
+        assert!(validate_dst_policy(&DstPolicy::None).is_ok());
+
+        let tz_none = PlanetTimezone {
+            id: "tz_none".to_string(),
+            name: "UTC".to_string(),
+            code: "UTC".to_string(),
+            standard_offset_minutes: 120,
+            dst_policy: DstPolicy::None,
+        };
+        assert_eq!(get_timezone_effective_offset(&tz_none, 6, 15, 720), 120);
+
+        let valid_rel = DstPolicy::RelativeWeekday {
+            spring_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::Last,
+                weekday: 6,
+                month: 3,
+                minute_of_day: 120,
+            },
+            fall_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::Last,
+                weekday: 6,
+                month: 10,
+                minute_of_day: 180,
+            },
+            shift_minutes: 60,
+        };
+        assert!(validate_dst_policy(&valid_rel).is_ok());
+
+        let tz_rel = PlanetTimezone {
+            id: "tz_rel".to_string(),
+            name: "EU".to_string(),
+            code: "CET".to_string(),
+            standard_offset_minutes: 60,
+            dst_policy: valid_rel,
+        };
+        assert_eq!(get_timezone_effective_offset(&tz_rel, 6, 15, 720), 120);
+
+        let bad_month = DstPolicy::RelativeWeekday {
+            spring_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::First,
+                weekday: 0,
+                month: 0,
+                minute_of_day: 0,
+            },
+            fall_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::Last,
+                weekday: 6,
+                month: 10,
+                minute_of_day: 0,
+            },
+            shift_minutes: 60,
+        };
+        assert_eq!(
+            validate_dst_policy(&bad_month),
+            Err(DstValidationError::InvalidMonth)
+        );
+
+        let bad_shift = DstPolicy::RelativeWeekday {
+            spring_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::First,
+                weekday: 0,
+                month: 3,
+                minute_of_day: 0,
+            },
+            fall_rule: WeekdayRule {
+                occurrence: WeekdayOccurrence::Last,
+                weekday: 6,
+                month: 10,
+                minute_of_day: 0,
+            },
+            shift_minutes: 1500,
+        };
+        assert_eq!(
+            validate_dst_policy(&bad_shift),
+            Err(DstValidationError::ExcessiveShiftMinutes)
+        );
+    }
 }
 

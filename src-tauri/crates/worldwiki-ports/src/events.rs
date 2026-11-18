@@ -66,3 +66,35 @@ impl<T: EventPublisherPort + ?Sized> EventPublisherExt for T {
         self.publish_raw(name, payload).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct DummyPublisher;
+    #[async_trait]
+    impl EventPublisherPort for DummyPublisher {
+        async fn publish_raw(&self, _event_name: &str, _payload: Value) -> Result<(), DomainError> {
+            Ok(())
+        }
+    }
+
+    struct FailingSerializeEvent;
+    impl Serialize for FailingSerializeEvent {
+        fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
+            Err(serde::ser::Error::custom("cannot serialize"))
+        }
+    }
+    impl ApplicationEvent for FailingSerializeEvent {
+        fn event_name(&self) -> &'static str {
+            "failing_event"
+        }
+    }
+
+    #[tokio::test]
+    async fn test_publish_returns_error_when_serialization_fails() {
+        let pub_port = DummyPublisher;
+        let err = pub_port.publish(FailingSerializeEvent).await.unwrap_err();
+        assert!(matches!(err, DomainError::ConstraintViolation(_)));
+    }
+}

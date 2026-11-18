@@ -1,6 +1,22 @@
 [
   {
     "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/analytics_repo/item_tracker/tracker.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (253.8) exceeds warning limit (250.0)",
+    "fingerprint": "ec918d9242fcd2e3ce56e9fa3f6293bd7cc43270f19ffc72dac318111d191f90"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/analytics_repo/multi_journey.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (251.8) exceeds warning limit (250.0)",
+    "fingerprint": "111be6efb298eec56be672bbb9f44165e5077df6497ec7f15048f778abf35d95"
+  },
+  {
+    "rule": "ARCH-030",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/volume_ops_repo.rs",
     "line": 1,
     "symbol": "file",

@@ -549,4 +549,95 @@ mod tests {
         let recalc_res = services.recalculate_linked_anchors(&recalc_params).expect("Failed recalculation");
         assert_eq!(recalc_res["updatedCount"], 1);
     }
+
+    #[test]
+    fn test_calendar_conversions_pairing_and_weekday_shift() {
+        let services: CalendarServices = Default::default();
+
+        let cal = CalendarData {
+            название: "TestCal".into(),
+            calendar_type: Some("solar".into()),
+            is_master: Some(true),
+            months: vec![worldwiki_domain::calendar::CalendarMonth {
+                название: "Jan".into(),
+                дней: 30,
+            }],
+            eras: vec![worldwiki_domain::calendar::CalendarEra {
+                название: "First Era".into(),
+                год_начала: 0,
+                год_конца: 1000,
+                обратный_отсчет: false,
+            }],
+            leap_year_rule: "none".into(),
+            custom_leap_rule: None,
+            time_settings: None,
+            moons: None,
+            sync_anchor: None,
+            planet_id: None,
+            ticks_per_day: None,
+            day_start_offset: None,
+            retrograde: None,
+            dial_hierarchy: None,
+        };
+
+        // convert_absolute_to_local
+        let local = services.convert_absolute_to_local(0, &cal, 0).unwrap();
+        assert!(local["formatted"].as_str().unwrap().contains("First Era"));
+
+        // convert_calendar_date
+        let conv = services
+            .convert_calendar_date(&ConvertCalendarDateParams {
+                from_calendar: cal.clone(),
+                to_calendar: cal.clone(),
+                master_calendar: None,
+                date: DateCoordinate {
+                    era_index: 0,
+                    year: 2,
+                    month: 0,
+                    day: 5,
+                    hour: 12,
+                    minute: 30,
+                },
+                target_era_index: Some(0),
+            })
+            .unwrap();
+        assert_eq!(conv["year"], 2);
+        assert_eq!(conv["day"], 5);
+
+        // pair_linked_calendar
+        let paired = services
+            .pair_linked_calendar(&PairLinkedCalendarParams {
+                master_calendar: cal.clone(),
+                local_calendar: cal,
+                master_date: DateCoordinate {
+                    era_index: 0,
+                    year: 1,
+                    month: 0,
+                    day: 2,
+                    hour: 0,
+                    minute: 0,
+                },
+                local_date: DateCoordinate {
+                    era_index: 0,
+                    year: 1,
+                    month: 0,
+                    day: 1,
+                    hour: 0,
+                    minute: 0,
+                },
+            })
+            .unwrap();
+        assert_eq!(paired["anchorWorldDay"], 1);
+
+        // detect_origin_weekday_shift
+        let zero = services.detect_origin_weekday_shift(0, 0, 1, 1, 0);
+        assert_eq!(zero["shifted"], false);
+
+        let same = services.detect_origin_weekday_shift(0, 0, 7, 0, 7);
+        assert_eq!(same["shifted"], false);
+
+        let shifted = services.detect_origin_weekday_shift(0, 0, 1, 0, 7);
+        assert_eq!(shifted["shifted"], true);
+        assert_eq!(shifted["requiresAuthorDecision"], true);
+    }
 }

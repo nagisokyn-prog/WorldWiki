@@ -146,52 +146,46 @@ mod tests {
     fn test_decompose_julian() {
         let h = decompose_fraction_to_unit_harmonics(1, 4, 3);
         assert_eq!(h.len(), 1);
-        if let Some(first) = h.first() {
-            assert_eq!(first.weight, 1);
-            assert_eq!(first.divisor_c, 4);
-        }
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
     }
 
     #[test]
     fn test_decompose_madler_31_128() {
         let h = decompose_fraction_to_unit_harmonics(31, 128, 3);
         assert_eq!(h.len(), 2);
-        if let Some(first) = h.first() {
-            assert_eq!(first.weight, 1);
-            assert_eq!(first.divisor_c, 4);
-        }
-        if let Some(second) = h.get(1) {
-            assert_eq!(second.weight, -1);
-            assert_eq!(second.divisor_c, 128);
-        }
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
+        assert_eq!(h[1].weight, -1);
+        assert_eq!(h[1].divisor_c, 128);
     }
 
     #[test]
     fn test_decompose_khayyam_8_33() {
         let h = decompose_fraction_to_unit_harmonics(8, 33, 3);
         assert_eq!(h.len(), 2);
-        if let Some(first) = h.first() {
-            assert_eq!(first.weight, 1);
-            assert_eq!(first.divisor_c, 4);
-        }
-        if let Some(second) = h.get(1) {
-            assert_eq!(second.weight, -1);
-            assert_eq!(second.divisor_c, 132);
-        }
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
+        assert_eq!(h[1].weight, -1);
+        assert_eq!(h[1].divisor_c, 132);
     }
 
     #[test]
     fn test_decompose_mars_3_5() {
         let h = decompose_fraction_to_unit_harmonics(3, 5, 3);
         assert_eq!(h.len(), 2);
-        if let Some(first) = h.first() {
-            assert_eq!(first.weight, 1);
-            assert_eq!(first.divisor_c, 2);
-        }
-        if let Some(second) = h.get(1) {
-            assert_eq!(second.weight, 1);
-            assert_eq!(second.divisor_c, 10);
-        }
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 2);
+        assert_eq!(h[1].weight, 1);
+        assert_eq!(h[1].divisor_c, 10);
+    }
+
+    #[test]
+    fn test_decompose_early_precision_exit() {
+        let h = decompose_fraction_to_unit_harmonics(10_001, 40_000, 3);
+        assert_eq!(h.len(), 1);
+        assert_eq!(h[0].weight, 1);
+        assert_eq!(h[0].divisor_c, 4);
     }
 
     #[test]

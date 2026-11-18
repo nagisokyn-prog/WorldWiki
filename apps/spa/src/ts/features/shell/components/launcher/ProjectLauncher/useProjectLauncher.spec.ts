@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h, ref } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { useProjectLauncher } from './useProjectLauncher';
@@ -66,6 +67,7 @@ vi.mock('./useProjectLauncherModal', () => ({
 
 describe('useProjectLauncher', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.clearAllMocks();
     mockGetProjects.mockResolvedValue([]);
     mockLoadSettings.mockResolvedValue(undefined);

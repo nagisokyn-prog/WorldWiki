@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper" class="dropdown-container" :class="{ 'is-open': isOpen }">
+  <div ref="wrapper" class="dropdown-container" :class="{ 'is-open': isOpen, 'is-compact': compact }">
     <div 
       ref="trigger" 
       class="status-trigger interactive-el"

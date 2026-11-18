@@ -4,6 +4,8 @@
  */
 
 import { createApp, type Plugin } from 'vue';
+import { createPinia } from 'pinia';
+import { useZoomStore } from '@/stores/zoom';
 
 import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
@@ -32,7 +34,10 @@ async function init() {
   setLocale(settingsService.getSettings().locale || 'ru');
   
   // Монтируем Vue компонент Settings
+  const pinia = createPinia();
+  const zoom = useZoomStore(pinia);
   appInstance = createApp(Settings);
+  appInstance.use(pinia);
   appInstance.use(autoAnimatePlugin as unknown as Plugin);
   appInstance.use(i18n as unknown as Plugin).mount('#settingsContent');
   console.log('[settings] Settings component mounted');
@@ -70,6 +75,19 @@ async function init() {
   keydownHandler = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && backHandler) {
       backHandler();
+      return;
+    }
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+      if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+        e.preventDefault();
+        void zoom.applyZoom(zoom.zoomLevel + 0.1);
+      } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+        e.preventDefault();
+        void zoom.applyZoom(zoom.zoomLevel - 0.1);
+      } else if (e.code === 'Digit0' || e.code === 'Numpad0') {
+        e.preventDefault();
+        void zoom.applyZoom(1);
+      }
     }
   };
 

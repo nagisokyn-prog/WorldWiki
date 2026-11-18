@@ -13,6 +13,7 @@ export interface XboxWheelProps {
   options: XboxWheelOption[] | readonly XboxWheelOption[];
   placeholder?: string;
   horizontal?: boolean;
+  compact?: boolean;
 }
 
 export interface XboxWheelEmits {

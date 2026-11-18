@@ -37,7 +37,8 @@ export const useZoomStore = defineStore('zoom', () => {
       try {
         await getCurrentWebview().setZoom(clamped);
       } catch (err: unknown) {
-        console.debug('[zoomStore] Native webview zoom set:', err);
+        console.debug('[zoomStore] Native webview zoom set failed, falling back to CSS zoom:', err);
+        (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
       }
     } else {
       (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);

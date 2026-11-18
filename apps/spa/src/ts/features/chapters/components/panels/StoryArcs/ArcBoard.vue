@@ -20,6 +20,7 @@
         <XboxWheel
           v-model="filters.selectedType"
           :options="arcTypeFilterOptions"
+          compact
         />
 
         <button

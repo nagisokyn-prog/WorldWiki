@@ -30,6 +30,7 @@
           <XboxWheel
             :model-value="currentMasterInput.month"
             :options="monthWheelOptions"
+            compact
             title="Месяц"
             @update:model-value="currentMasterInput.month = Number($event)"
           />

@@ -2,6 +2,7 @@ import { ref, shallowRef, computed, onMounted, onUnmounted, getCurrentInstance }
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 import { projectService } from '@/services/project.service';
+import { useZoomStore } from '@/stores/zoom';
 import { settingsService, appAlert } from '@worldwiki/components';
 import {
   projectTypes,
@@ -20,6 +21,7 @@ export {
 
 export function useProjectLauncher() {
   const router = useRouter();
+  const zoom = useZoomStore();
 
   const projects = shallowRef<ProjectData[]>([]);
   const cloudSyncMode = ref<'import' | 'export'>('export');
@@ -103,6 +105,19 @@ export function useProjectLauncher() {
     if (e.code === 'F11') {
       e.preventDefault();
       invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
+      return;
+    }
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+      if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+        e.preventDefault();
+        void zoom.applyZoom(zoom.zoomLevel + 0.1);
+      } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+        e.preventDefault();
+        void zoom.applyZoom(zoom.zoomLevel - 0.1);
+      } else if (e.code === 'Digit0' || e.code === 'Numpad0') {
+        e.preventDefault();
+        void zoom.applyZoom(1);
+      }
     }
   };
 

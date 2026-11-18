@@ -6,6 +6,11 @@
   z-index: 1000;
 }
 
+.dropdown-container.is-compact {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 .dropdown-container.is-open {
   z-index: 10005;
 }
@@ -14,6 +19,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  white-space: nowrap;
   cursor: pointer;
   user-select: none;
   padding: 6px 12px;

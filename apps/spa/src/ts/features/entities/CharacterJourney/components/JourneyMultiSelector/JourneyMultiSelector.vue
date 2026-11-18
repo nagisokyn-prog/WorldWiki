@@ -26,6 +26,7 @@
       :model-value="''"
       :options="availableWheelOptions"
       placeholder="+ Добавить персонажа..."
+      compact
       @update:model-value="handleAddValue"
     />
   </div>

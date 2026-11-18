@@ -1,4 +1,5 @@
 import { createApp, h, type Plugin } from 'vue';
+import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { settingsService } from '../services/settings.service';
 import Settings from '../../components/Vue/Settings.vue';
 import { i18n } from '../i18n';
@@ -9,6 +10,18 @@ const cfg = window.__APP_CONFIG__ || {};
 
 let appInstance: ReturnType<typeof createApp> | null = null;
 let saveBtnHandler: (() => Promise<void>) | null = null;
+let zoomKeydownHandler: ((e: KeyboardEvent) => void) | null = null;
+
+async function applySettingsZoom(level: number): Promise<void> {
+  const clamped = Math.max(0.5, Math.min(2, Math.round(level * 100) / 100));
+  localStorage.setItem('app-zoom', String(clamped));
+  document.documentElement.style.setProperty('--app-zoom', String(clamped));
+  try {
+    await getCurrentWebview().setZoom(clamped);
+  } catch {
+    (document.documentElement.style as unknown as Record<string, string>).zoom = String(clamped);
+  }
+}
 
 export function initSettingsApp(): void {
   const container = document.getElementById('settingsContent');
@@ -56,9 +69,29 @@ export function initSettingsApp(): void {
   };
 
   document.getElementById('saveBtn')?.addEventListener('click', saveBtnHandler);
+
+  zoomKeydownHandler = (e: KeyboardEvent) => {
+    if (!e.ctrlKey || e.shiftKey || e.altKey) return;
+    const current = parseFloat(localStorage.getItem('app-zoom') || '1') || 1;
+    if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+      e.preventDefault();
+      void applySettingsZoom(current + 0.1);
+    } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+      e.preventDefault();
+      void applySettingsZoom(current - 0.1);
+    } else if (e.code === 'Digit0' || e.code === 'Numpad0') {
+      e.preventDefault();
+      void applySettingsZoom(1);
+    }
+  };
+  window.addEventListener('keydown', zoomKeydownHandler);
 }
 
 export function disposeSettingsApp(): void {
+  if (zoomKeydownHandler) {
+    window.removeEventListener('keydown', zoomKeydownHandler);
+    zoomKeydownHandler = null;
+  }
   if (saveBtnHandler) {
     document.getElementById('saveBtn')?.removeEventListener('click', saveBtnHandler);
     saveBtnHandler = null;

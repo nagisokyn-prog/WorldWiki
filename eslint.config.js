@@ -39,7 +39,10 @@ export default ts.config(
       },
       globals: {
         ...globals.browser,
-        ...globals.node
+        ...globals.node,
+        __FEATURE_AI__: 'readonly',
+        __FEATURE_RAZRAB__: 'readonly',
+        __FEATURE_VER_1_1_0__: 'readonly'
       }
     },
     rules: {

@@ -17,6 +17,7 @@ import type {
 } from './calendar.types';
 import type { CalendarDateParts, CalendarDateInput } from './useCalendarEngine';
 import { defaultWasmEngine as defaultEngine } from './calendar.wasm-bridge';
+import { computeRegionSunStatus } from './calendar.sun';
 
 export const CalendarAstronomy = {
   calculateDaylight(
@@ -165,7 +166,14 @@ export const CalendarAstronomy = {
     const mInHour = settings.минут_в_часе || 60;
     const minsInDay = hInDay * mInHour;
     const totalMin = Math.round(moment.day_index * minsInDay + moment.day_fraction * minsInDay + offsetHours * mInHour);
-    return getDateFromAbs(totalMin, cal, 0);
+    const localDayIndex = Math.floor(totalMin / minsInDay);
+    const remMin = ((totalMin % minsInDay) + minsInDay) % minsInDay;
+    const date = getDateFromAbs(localDayIndex * minsInDay, cal, 0);
+    return {
+      ...date,
+      hour: Math.floor(remMin / mInHour),
+      minute: remMin % mInHour,
+    };
   },
 
   calculateSunForRegion(
@@ -175,41 +183,7 @@ export const CalendarAstronomy = {
     calcDaylight: (absMin: number, c: CalendarData) => DaylightResult | null,
     offsetHours: number = 0
   ): RegionSunStatus {
-    const settings = cal.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
-    const hInDay = settings.часов_в_сутках || 24;
-    const localFrac = (((moment.day_fraction + offsetHours / hInDay) % 1) + 1) % 1;
-    const daylight = calcDaylight(Math.round(moment.day_index * 1440 + localFrac * 1440), cal);
-    const getSunPhase = (f: number): { phase: 'dawn' | 'day' | 'dusk' | 'night'; phase_label: string } => {
-      if (f >= 0.22 && f < 0.28) {
-        return { phase: 'dawn', phase_label: '🌅 Рассвет' };
-      }
-      if (f >= 0.28 && f < 0.72) {
-        return { phase: 'day', phase_label: '☀️ День' };
-      }
-      if (f >= 0.72 && f < 0.78) {
-        return { phase: 'dusk', phase_label: '🌇 Закат' };
-      }
-      return { phase: 'night', phase_label: '🌙 Ночь' };
-    };
-
-    const { phase, phase_label } = getSunPhase(localFrac);
-
-    const sunrise_time = daylight?.sunrise || '06:00';
-    const sunset_time = daylight?.sunset || '18:00';
-    const zenith_time = daylight?.zenith || '12:00';
-    const daylight_text = daylight
-      ? `Световой день ~${Math.round(daylight.duration_hours)} ч.`
-      : 'Стандартный световой день (~12 ч.)';
-
-    return {
-      phase,
-      phase_label,
-      daylight_text,
-      sunrise_time,
-      sunset_time,
-      zenith_time,
-      note: region.name ? `Регион: ${region.name}` : undefined,
-    };
+    return computeRegionSunStatus(region, moment, cal, calcDaylight, offsetHours);
   },
 
   explainDate(

@@ -41,9 +41,29 @@ describe('CalendarAstronomy', () => {
 
     const calcDaylight = () => ({ sunrise: '05:00', sunset: '19:00', zenith: '12:00', duration_hours: 14 });
 
-    const dawn = CalendarAstronomy.calculateSunForRegion({ name: 'Восток' } as any, { day_index: 0, day_fraction: 0.25 }, cal, calcDaylight, 0);
+    const dawn = CalendarAstronomy.calculateSunForRegion({ name: 'Восток' } as any, { day_index: 0, day_fraction: 5 / 24 }, cal, calcDaylight, 0);
     expect(dawn.phase).toBe('dawn');
     expect(dawn.note).toBe('Регион: Восток');
+
+    const moscowWinter = CalendarAstronomy.calculateSunForRegion(
+      { name: 'Москва', latitude: 55.75, longitude: 37.61, summer_day_hours: 17.57, winter_day_hours: 7.2 } as any,
+      { day_index: 0, day_fraction: 3 / 24 },
+      masterCal,
+      () => null,
+      3
+    );
+    expect(moscowWinter.daylight_text).toBe('Световой день ~7 ч.');
+    expect(moscowWinter.phase).toBe('night');
+
+    const sydneySummer = CalendarAstronomy.calculateSunForRegion(
+      { name: 'Сидней', latitude: -33.86, longitude: 151.2, summer_day_hours: 14.4, winter_day_hours: 9.9 } as any,
+      { day_index: 0, day_fraction: 3 / 24 },
+      masterCal,
+      () => null,
+      10
+    );
+    expect(sydneySummer.daylight_text).toBe('Световой день ~14 ч.');
+    expect(sydneySummer.phase).toBe('day');
 
     const dusk = CalendarAstronomy.calculateSunForRegion({ name: '' } as any, { day_index: 0, day_fraction: 0.75 }, cal, () => null, 0);
     expect(dusk.phase).toBe('dusk');

@@ -56,10 +56,6 @@ export async function deleteProject(name: string): Promise<string> {
     return await invoke('delete_project', { name });
 }
 
-export async function executeRawSurql(query: string): Promise<unknown> {
-    return await invoke('execute_raw_surql', { query });
-}
-
 export async function getEntities(project: string, entityType: string | null): Promise<Entity[]> {
     return await invoke('get_entities', { project, entityType });
 }
@@ -278,26 +274,6 @@ export async function deletePlanet(project: string, planetId: string, cascade: b
 
 export async function deleteCalendarDirect(calendarId: string): Promise<unknown> {
     return await invoke('delete_calendar_direct', { calendarId });
-}
-
-export async function exportChapters(project: string, chapters: unknown[], format: string): Promise<string> {
-    return await invoke('export_chapters', { project, chapters, format });
-}
-
-export async function exportDocumentDocx(request: unknown): Promise<unknown> {
-    return await invoke('export_document_docx', { request });
-}
-
-export async function exportDocumentEpub(request: unknown): Promise<unknown> {
-    return await invoke('export_document_epub', { request });
-}
-
-export async function exportDocumentFb2(request: unknown): Promise<unknown> {
-    return await invoke('export_document_fb2', { request });
-}
-
-export async function exportDocumentPdfSave(fileName: string, pdfBytesBase64: string): Promise<unknown> {
-    return await invoke('export_document_pdf_save', { fileName, pdfBytesBase64 });
 }
 
 export async function createCloudBackup(project: string | null): Promise<string> {

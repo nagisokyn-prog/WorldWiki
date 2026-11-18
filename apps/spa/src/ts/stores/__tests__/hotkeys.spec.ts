@@ -60,18 +60,26 @@ describe('hotkeys store', () => {
     expect(shell.sidebarVisible).toBe(false);
   });
 
-  it('handles Ctrl+P by opening quick open ref', () => {
+  it('handles Ctrl+P by opening quick open ref only under ver_1.1.0', () => {
     const mockOpen = vi.fn();
     shell.quickOpenRef = { open: mockOpen } as any;
     triggerKey('KeyP', { ctrlKey: true });
-    expect(mockOpen).toHaveBeenCalled();
+    if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+      expect(mockOpen).toHaveBeenCalled();
+    } else {
+      expect(mockOpen).not.toHaveBeenCalled();
+    }
   });
 
-  it('handles Ctrl+N by adding new entity for current tab', () => {
+  it('handles Ctrl+N by adding new entity for current tab only under ver_1.1.0', () => {
     shell.currentSidebarTab = 'character';
     const spy = vi.spyOn(shell, 'addNewEntity').mockImplementation(() => {});
     triggerKey('KeyN', { ctrlKey: true });
-    expect(spy).toHaveBeenCalledWith('character');
+    if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+      expect(spy).toHaveBeenCalledWith('character');
+    } else {
+      expect(spy).not.toHaveBeenCalled();
+    }
   });
 
   it('handles Ctrl+= and Ctrl+- zoom controls', () => {
@@ -109,10 +117,14 @@ describe('hotkeys store', () => {
     expect(mockOpen).toHaveBeenCalled();
   });
 
-  it('handles Ctrl+Shift+N (create chapter)', () => {
+  it('handles Ctrl+Shift+N (create chapter) only under ver_1.1.0', () => {
     const spy = vi.spyOn(shell, 'createChapterIn').mockImplementation(() => {});
     triggerKey('KeyN', { ctrlKey: true, shiftKey: true });
-    expect(spy).toHaveBeenCalledWith({});
+    if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+      expect(spy).toHaveBeenCalledWith({});
+    } else {
+      expect(spy).not.toHaveBeenCalled();
+    }
   });
 
   it('handles Ctrl+Shift+T (tags manager)', () => {

@@ -59,7 +59,8 @@
 
     <!-- RIGHT: Save / Actions -->
     <div class="toolbar-right-group">
-      <button 
+      <button
+        v-if="showVer110Features"
         class="btn btn-small btn-outline interactive-el btn-export-doc" 
         title="Экспорт главы (Word DOCX, PDF, EPUB, FB2)" 
         @click="$emit('export')"
@@ -96,6 +97,8 @@ import type { EditorToolbarProps } from './EditorToolbar.model';
 defineProps<EditorToolbarProps>();
 
 defineEmits(['update:editorMode', 'update:title', 'save', 'toggle-history', 'export', 'change']);
+
+const showVer110Features = typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__;
 </script>
 
 

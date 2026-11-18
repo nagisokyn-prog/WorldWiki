@@ -56,24 +56,28 @@ export function useCommandPalette(
       keywords: ['сохранить', 'save', 'все', 'вкладки', 'write'],
       action: () => { close(); emit('save-all'); }
     },
-    {
-      id: 'new-chapter',
-      title: 'Новая глава',
-      desc: 'Создать новую главу рукописи',
-      icon: '📝',
-      hotkey: 'Ctrl+Shift+N',
-      keywords: ['новая', 'глава', 'рукопись', 'chapter', 'new'],
-      action: () => { close(); emit('new-chapter'); }
-    },
-    {
-      id: 'new-entity',
-      title: 'Создать сущность',
-      desc: 'Создать новую запись в энциклопедии лора',
-      icon: '✨',
-      hotkey: 'Ctrl+N',
-      keywords: ['создать', 'сущность', 'персонаж', 'локация', 'лор', 'entity', 'new'],
-      action: () => { close(); emit('new-entity'); }
-    },
+    ...(typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__
+      ? [
+          {
+            id: 'new-chapter',
+            title: 'Новая глава',
+            desc: 'Создать новую главу рукописи',
+            icon: '📝',
+            hotkey: 'Ctrl+Shift+N',
+            keywords: ['новая', 'глава', 'рукопись', 'chapter', 'new'],
+            action: () => { close(); emit('new-chapter'); }
+          },
+          {
+            id: 'new-entity',
+            title: 'Создать сущность',
+            desc: 'Создать новую запись в энциклопедии лора',
+            icon: '✨',
+            hotkey: 'Ctrl+N',
+            keywords: ['создать', 'сущность', 'персонаж', 'локация', 'лор', 'entity', 'new'],
+            action: () => { close(); emit('new-entity'); }
+          }
+        ]
+      : []),
     {
       id: 'open-tags',
       title: 'Теги проекта',
@@ -83,15 +87,17 @@ export function useCommandPalette(
       keywords: ['теги', 'метки', 'tags'],
       action: () => { close(); emit('open-tags'); }
     },
-    {
-      id: 'quick-open',
-      title: 'Быстрый переход',
-      desc: 'Найти и открыть любой элемент проекта',
-      icon: '🔎',
-      hotkey: 'Ctrl+P',
-      keywords: ['переход', 'поиск', 'открыть', 'quick', 'open', 'find'],
-      action: () => { close(); emit('open-quick'); }
-    },
+    ...(typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__
+      ? [{
+          id: 'quick-open',
+          title: 'Быстрый переход',
+          desc: 'Найти и открыть любой элемент проекта',
+          icon: '🔎',
+          hotkey: 'Ctrl+P',
+          keywords: ['переход', 'поиск', 'открыть', 'quick', 'open', 'find'],
+          action: () => { close(); emit('open-quick'); }
+        }]
+      : []),
     {
       id: 'open-settings',
       title: 'Настройки приложения',

@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
+import { webcrypto } from 'node:crypto';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+if (!globalThis.crypto?.subtle) {
+  Object.defineProperty(globalThis.crypto, 'subtle', {
+    value: webcrypto.subtle,
+    configurable: true,
+  });
+}
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import { useCloudSyncModal, type CloudSyncEmit } from '../useCloudSyncModal';
@@ -277,6 +285,7 @@ describe('useCloudSyncModal', () => {
     });
 
     it('handles exchange error gracefully with object error', async () => {
+      await modal.connectYandex();
       modal.authCode.value = 'bad_code';
       vi.mocked(invoke).mockRejectedValue(new Error('Network error'));
 

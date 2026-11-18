@@ -43,6 +43,12 @@ const withRazrab =
   process.env.WITH_RAZRAB === '1' ||
   process.env.VITE_WITH_RAZRAB === 'true';
 
+const withVer110 =
+  process.argv.includes('--with-ver-1.1.0') ||
+  process.argv.includes('--ver-1.1.0') ||
+  process.env.WITH_VER_1_1_0 === '1' ||
+  process.env.VITE_WITH_VER_1_1_0 === 'true';
+
 const inputEntries: Record<string, string> = {
   app: resolve(__dirname, 'app.html'),
   settings: resolve(__dirname, 'settings.html'),
@@ -60,7 +66,8 @@ export default defineConfig(({ command }) => {
   return {
     define: {
       __FEATURE_AI__: JSON.stringify(withAi),
-      __FEATURE_RAZRAB__: JSON.stringify(withRazrab)
+      __FEATURE_RAZRAB__: JSON.stringify(withRazrab),
+      __FEATURE_VER_1_1_0__: JSON.stringify(withVer110)
     },
     plugins: [
       vue({

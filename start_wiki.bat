@@ -28,7 +28,7 @@ echo Generating TS bindings...
 call node scripts/codegen.js
 
 echo Starting dev build...
-cmd /k pnpm tauri dev -- --features ai
+cmd /k pnpm tauri dev
 exit /b
 
 :check_sweep_needed

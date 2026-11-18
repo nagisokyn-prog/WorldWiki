@@ -1,7 +1,7 @@
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::errors::DomainResultExt;
 
-pub const YANDEX_CLIENT_ID: &str = "200295d252b44387a21ec64a80d7d124";
+pub const YANDEX_CLIENT_ID: &str = "bbbe3d5f9d2d4356868756399fecf9b6";
 
 /// Базовый URL OAuth-эндпоинта; `base_override` подменяет его в тестах.
 pub(crate) fn oauth_base(base_override: Option<&str>) -> String {

@@ -9,9 +9,15 @@ describe('useCommandPalette', () => {
     expect(palette.filtered.value.length).toBeGreaterThan(0);
     const titles = palette.filtered.value.map(c => c.title);
     expect(titles).toContain('Сохранить всё');
-    expect(titles).toContain('Новая глава');
-    expect(titles).toContain('Создать сущность');
-    expect(titles).toContain('Быстрый переход');
+    if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+      expect(titles).toContain('Новая глава');
+      expect(titles).toContain('Создать сущность');
+      expect(titles).toContain('Быстрый переход');
+    } else {
+      expect(titles).not.toContain('Новая глава');
+      expect(titles).not.toContain('Создать сущность');
+      expect(titles).not.toContain('Быстрый переход');
+    }
     expect(titles).toContain('Настройки приложения');
     expect(titles).toContain('Показать / скрыть боковую панель');
     expect(titles).toContain('Показать / скрыть терминал');
@@ -21,8 +27,8 @@ describe('useCommandPalette', () => {
     const emit = vi.fn();
     const palette = useCommandPalette({}, emit as any);
 
-    palette.query.value = 'глава';
-    expect(palette.filtered.value.some(c => c.title === 'Новая глава')).toBe(true);
+    palette.query.value = 'сохранить';
+    expect(palette.filtered.value.some(c => c.title === 'Сохранить всё')).toBe(true);
 
     palette.query.value = 'terminal';
     expect(palette.filtered.value.some(c => c.title === 'Показать / скрыть терминал')).toBe(true);

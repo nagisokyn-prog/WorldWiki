@@ -92,15 +92,15 @@ class="glass-btn outline" title="Удалить"
                     </div>
                     <div class="hotkeys-grid-cols">
                         <div class="hk-item"><kbd>Ctrl+K</kbd> <span>Командная панель</span></div>
-                        <div class="hk-item"><kbd>Ctrl+P</kbd> <span>Быстрое открытие</span></div>
+                        <div v-if="showVer110Features" class="hk-item"><kbd>Ctrl+P</kbd> <span>Быстрое открытие</span></div>
                         <div class="hk-item"><kbd>Ctrl+S</kbd> <span>Сохранить всё</span></div>
                         <div class="hk-item"><kbd>Ctrl+W</kbd> <span>Закрыть вкладку</span></div>
                         <div class="hk-item"><kbd>Ctrl+Tab</kbd> <span>Следующая вкладка</span></div>
                         <div class="hk-item"><kbd>Ctrl+1…9</kbd> <span>Вкладка по номеру</span></div>
                         <div class="hk-item"><kbd>Ctrl+B</kbd> <span>Скрыть сайдбар</span></div>
                         <div class="hk-item"><kbd>Ctrl+`</kbd> <span>Скрыть терминал</span></div>
-                        <div class="hk-item"><kbd>Ctrl+N</kbd> <span>Новая сущность</span></div>
-                        <div class="hk-item"><kbd>Ctrl+Shift+N</kbd> <span>Новая глава</span></div>
+                        <div v-if="showVer110Features" class="hk-item"><kbd>Ctrl+N</kbd> <span>Новая сущность</span></div>
+                        <div v-if="showVer110Features" class="hk-item"><kbd>Ctrl+Shift+N</kbd> <span>Новая глава</span></div>
                         <div class="hk-item"><kbd>Ctrl+= / Ctrl+-</kbd> <span>Масштаб</span></div>
                         <div class="hk-item"><kbd>Alt+1…9</kbd> <span>Секция в редакторе</span></div>
                     </div>
@@ -249,6 +249,8 @@ id="projectName" v-model="formData.name" type="text" class="glass-input"
 import { AppDialog, XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CloudSyncModal from '@/features/sync/CloudSyncModal.vue';
 import { useProjectLauncher } from './useProjectLauncher';
+
+const showVer110Features = typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__;
 
 const {
   projects,

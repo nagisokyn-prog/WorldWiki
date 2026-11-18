@@ -65,8 +65,10 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           shell.sidebarVisible = !shell.sidebarVisible;
           return;
         case 'KeyP':
-          if (shell.quickOpenRef && typeof shell.quickOpenRef.open === 'function') {
-            shell.quickOpenRef.open();
+          if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+            if (shell.quickOpenRef && typeof shell.quickOpenRef.open === 'function') {
+              shell.quickOpenRef.open();
+            }
           }
           return;
         case 'KeyK':
@@ -75,8 +77,10 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           }
           return;
         case 'KeyN': {
-          const type = shell.currentSidebarTab;
-          if (type) shell.addNewEntity(type);
+          if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+            const type = shell.currentSidebarTab;
+            if (type) shell.addNewEntity(type);
+          }
           return;
         }
         case 'Equal':
@@ -124,7 +128,9 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           }
           return;
         case 'KeyN':
-          shell.createChapterIn({});
+          if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+            shell.createChapterIn({});
+          }
           return;
         case 'KeyS':
           shell.saveAll();

@@ -1,5 +1,6 @@
 import { ref, computed, watch, type ComputedRef, type Ref } from 'vue';
 import * as api from '@/services/api.client';
+import { CalendarMath } from '@/services/Calendars/useCalendarEngine';
 import type {
   CalendarData,
   CalendarDate,
@@ -167,33 +168,68 @@ export function useTimeAtlasWorldTime(
   const maxHours = computed(() => masterTimeSettings.value?.часов_в_сутках || 24);
   const maxMinutes = computed(() => masterTimeSettings.value?.минут_в_часе || 60);
 
+  const masterTimezoneOffsetHours = computed(() => {
+    const master = masterCalendar.value;
+    if (!master) return 0;
+    const raw = master as unknown as Record<string, unknown>;
+    let tzKey = master.default_timezone_id || (typeof raw.calendar_timezone === 'string' ? raw.calendar_timezone : '');
+    if (!tzKey) {
+      const firstRegId = (raw.culture_regions as string[] | undefined)?.[0] ?? master.region_ids?.[0];
+      if (firstRegId) {
+        const reg = worldRegions.value.find((r) => r.id === firstRegId || r.name === firstRegId);
+        if (reg?.timezone_id) tzKey = reg.timezone_id;
+      }
+    }
+    if (!tzKey) return 0;
+    const tz = worldTimezones.value.find(
+      (t) => t.id === tzKey || t.code === tzKey || t.name === tzKey
+    );
+    if (tz) {
+      return CalendarMath.getTimezoneOffsetForDay(tz, currentWorldMoment.value.day_index);
+    }
+    const utcMatch = tzKey.match(/UTC\s*([+-]?\d+(?:\.\d+)?)/i);
+    return utcMatch ? Number(utcMatch[1]) : 0;
+  });
+
+  const masterOffsetMinutes = computed(() =>
+    Math.round(masterTimezoneOffsetHours.value * maxMinutes.value)
+  );
+
   const worldHour = computed({
     get: () => {
       const dayMins = maxHours.value * maxMinutes.value;
-      const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
+      const localAbsMin = currentWorldMinute.value + masterOffsetMinutes.value;
+      const remMins = ((localAbsMin % dayMins) + dayMins) % dayMins;
       return Math.floor(remMins / maxMinutes.value);
     },
     set: (newHour: number) => {
       const dayMins = maxHours.value * maxMinutes.value;
-      const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
-      const curMin = (((currentWorldMinute.value % dayMins) + dayMins) % dayMins) % maxMinutes.value;
+      const offsetMins = masterOffsetMinutes.value;
+      const localAbsMin = currentWorldMinute.value + offsetMins;
+      const localDayIndex = Math.floor(localAbsMin / dayMins);
+      const remMins = ((localAbsMin % dayMins) + dayMins) % dayMins;
+      const curMin = remMins % maxMinutes.value;
       const hClamped = Math.max(0, Math.min(maxHours.value - 1, newHour));
-      currentWorldMinute.value = dayIndex * dayMins + hClamped * maxMinutes.value + curMin;
+      currentWorldMinute.value = localDayIndex * dayMins + hClamped * maxMinutes.value + curMin - offsetMins;
     },
   });
 
   const worldMinute = computed({
     get: () => {
       const dayMins = maxHours.value * maxMinutes.value;
-      const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
+      const localAbsMin = currentWorldMinute.value + masterOffsetMinutes.value;
+      const remMins = ((localAbsMin % dayMins) + dayMins) % dayMins;
       return remMins % maxMinutes.value;
     },
     set: (newMin: number) => {
       const dayMins = maxHours.value * maxMinutes.value;
-      const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
-      const curHour = Math.floor((((currentWorldMinute.value % dayMins) + dayMins) % dayMins) / maxMinutes.value);
+      const offsetMins = masterOffsetMinutes.value;
+      const localAbsMin = currentWorldMinute.value + offsetMins;
+      const localDayIndex = Math.floor(localAbsMin / dayMins);
+      const remMins = ((localAbsMin % dayMins) + dayMins) % dayMins;
+      const curHour = Math.floor(remMins / maxMinutes.value);
       const mClamped = Math.max(0, Math.min(maxMinutes.value - 1, newMin));
-      currentWorldMinute.value = dayIndex * dayMins + curHour * maxMinutes.value + mClamped;
+      currentWorldMinute.value = localDayIndex * dayMins + curHour * maxMinutes.value + mClamped - offsetMins;
     },
   });
 

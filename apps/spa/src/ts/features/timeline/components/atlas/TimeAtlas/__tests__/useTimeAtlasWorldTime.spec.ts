@@ -206,5 +206,66 @@ describe('useTimeAtlasWorldTime', () => {
     expect(hook2.worldRegions.value[0].id).toBe('reg_0');
     expect(hook2.worldHour.value).toBe(0);
   });
+
+  it('uses masterCalendar.default_timezone_id as the reference timezone for worldHour/worldMinute', async () => {
+    vi.mocked(api.getEntities).mockResolvedValue([] as never);
+    const cal = CalendarEngine.getDefaultCalendar();
+    cal.default_timezone_id = 'tz_msk';
+    cal.timezones = [
+      { id: 'tz_ny', name: 'Нью-Йорк', code: 'UTC-5', base_offset_hours: -5 },
+      { id: 'tz_lon', name: 'Лондон', code: 'UTC+0', base_offset_hours: 0 },
+      { id: 'tz_msk', name: 'Москва', code: 'UTC+3', base_offset_hours: 3 },
+    ];
+    cal.regions = [
+      { id: 'r_ny', name: 'Нью-Йорк', timezone_id: 'tz_ny', latitude: 40.71, longitude: -74 },
+      { id: 'r_lon', name: 'Лондон', timezone_id: 'tz_lon', latitude: 51.5, longitude: -0.12 },
+      { id: 'r_msk', name: 'Москва', timezone_id: 'tz_msk', latitude: 55.75, longitude: 37.61 },
+    ];
+
+    const currentMin = ref(0);
+    const hook = useTimeAtlasWorldTime(
+      computed(() => cal),
+      currentMin,
+      (c) => CalendarEngine.getDateFromAbsolute(currentMin.value, c),
+      'proj_msk'
+    );
+
+    hook.worldHour.value = 6;
+    hook.worldMinute.value = 0;
+
+    // 06:00 в Москве (UTC+3) = 03:00 UTC+0 (180 минут)
+    expect(currentMin.value).toBe(180);
+    expect(hook.worldHour.value).toBe(6);
+    expect(hook.worldMinute.value).toBe(0);
+
+    const byName = Object.fromEntries(
+      hook.worldTimeSnapshot.value.map((item) => [item.region.name, item.localTimeStr])
+    );
+    expect(byName['Москва']).toBe('06:00');
+    expect(byName['Лондон']).toBe('03:00');
+    expect(byName['Нью-Йорк']).toBe('22:00');
+  });
+
+  it('falls back to calendar_timezone string when default_timezone_id is absent', () => {
+    const cal = {
+      ...CalendarEngine.getDefaultCalendar(),
+      calendar_timezone: 'UTC+3',
+      timezones: [],
+    } as any;
+    const currentMin = ref(0);
+    const hook = useTimeAtlasWorldTime(
+      computed(() => cal),
+      currentMin,
+      (c) => CalendarEngine.getDateFromAbsolute(currentMin.value, c),
+      'proj_cal_tz'
+    );
+
+    hook.worldHour.value = 1;
+    hook.worldMinute.value = 0;
+    // 01:00 (UTC+3) = 22:00 prev day UTC+0 (-120 min)
+    expect(currentMin.value).toBe(-120);
+    expect(hook.worldHour.value).toBe(1);
+    expect(hook.worldMinute.value).toBe(0);
+  });
 });
 

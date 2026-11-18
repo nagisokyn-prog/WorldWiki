@@ -14,11 +14,18 @@ const withRazrab =
   process.env.WITH_RAZRAB === '1' ||
   process.env.VITE_WITH_RAZRAB === 'true';
 
+const withVer110 =
+  process.argv.includes('--ver-1.1.0') ||
+  process.argv.includes('--with-ver-1.1.0') ||
+  process.env.WITH_VER_1_1_0 === '1' ||
+  process.env.VITE_WITH_VER_1_1_0 === 'true';
+
 export default defineConfig({
   plugins: [vue()],
   define: {
     __FEATURE_AI__: withAi,
-    __FEATURE_RAZRAB__: withRazrab
+    __FEATURE_RAZRAB__: withRazrab,
+    __FEATURE_VER_1_1_0__: withVer110
   },
   test: {
     globals: true,

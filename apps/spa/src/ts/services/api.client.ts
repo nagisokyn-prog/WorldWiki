@@ -929,3 +929,11 @@ export async function createRevealedIn(fromId: string, toId: string, data: Revea
 export async function deleteRevealedIn(id: string): Promise<void> {
     return await invoke('delete_revealed_in', { id });
 }
+
+export async function exportChapters(project: string, chapters: unknown[], format: string): Promise<unknown> {
+    return await invoke('export_chapters', { project, chapters, format });
+}
+
+export async function executeRawSurql(query: string): Promise<unknown> {
+    return await invoke('execute_raw_surql', { query });
+}

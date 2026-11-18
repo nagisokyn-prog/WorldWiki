@@ -526,5 +526,24 @@ describe('useTiptapEditor', () => {
 
       wrapper.unmount();
     });
+
+    it('covers switchEditorMode from word mode, onCreate, and locked onUpdate guard', async () => {
+      const wrapper = mount(TestComponent, { props: { ...props, isLocked: true } });
+      const vm = wrapper.vm as unknown as ReturnType<typeof useTiptapEditor>;
+
+      editorOptions.onCreate?.();
+      editorOptions.onUpdate?.();
+      expect(wrapper.emitted('update:content')).toBeUndefined();
+
+      vm.switchEditorMode('word');
+      expect(vm.editorMode).toBe('word');
+      mockEditorInstance.commands.setContent.mockClear();
+
+      vm.switchEditorMode('wysiwyg');
+      expect(vm.editorMode).toBe('wysiwyg');
+      expect(mockEditorInstance.commands.setContent).toHaveBeenCalledWith(props.content);
+
+      wrapper.unmount();
+    });
   });
 });

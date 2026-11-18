@@ -244,4 +244,115 @@ describe('useChekhovGunTracker Composable', () => {
     expect(selectedJourney.value?.nodes.length).toBe(1);
     expect(selectedJourney.value?.nodes[0].title).toBe('🌱 Завязка (Посадка ружья)');
   });
+
+  it('covers volume filtering, counts, item journey fallback, locate timers, setScope, resetFilter, and onMounted', async () => {
+    const { defineComponent, h } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    const { useAnalyticsStore } = await import('@/stores/analytics.store');
+    const { useChapterStore } = await import('@/stores/chapter.store');
+
+    vi.useFakeTimers();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const store = useAnalyticsStore();
+    const chapterStore = useChapterStore();
+    chapterStore.hierarchy = {
+      volumes: [{ id: 'volumes:v1', title: 'Том 1' }],
+      chapters: [
+        { id: 'chapters:ch1', title: 'Глава 1', volume_id: 'v1' },
+        { id: 'chapters:ch2', title: 'Глава 2', volume_id: 'v2' }
+      ] as any
+    };
+
+    const reportWithCustody: ItemTrackerReport = {
+      ...sampleReport,
+      items: [
+        ...sampleReport.items,
+        {
+          id: 'entities:amulet',
+          name: 'Амулет',
+          item_type: 'артефакт',
+          status_category: 'Утерян / Уничтожен',
+          current_owner_id: null,
+          current_owner_name: 'Маг',
+          first_chapter_order: 1,
+          last_chapter_order: 1,
+          skipped_chapters: 0,
+          total_mentions: 1,
+          usage_state: 'destroyed_or_lost',
+          custody_chain: [{ chapter_id: 'chapters:ch1', circumstances: 'Найден' }]
+        }
+      ]
+    };
+
+    vi.mocked(apiClient.getItemTracker).mockResolvedValue(reportWithCustody);
+    vi.mocked(apiClient.getItemJourney).mockResolvedValue({
+      item_id: 'entities:sword',
+      item_name: 'Клинок Зари',
+      item_type: 'оружие',
+      status_category: 'Цел',
+      nodes: []
+    });
+    vi.mocked(plotApi.getPlotPromise).mockRejectedValueOnce(new Error('no promise'));
+
+    const emit = vi.fn();
+    let api!: ReturnType<typeof useChekhovGunTracker>;
+    const Comp = defineComponent({
+      setup() {
+        api = useChekhovGunTracker({ projectId: 'proj-gun' }, emit);
+        return () => h('div');
+      }
+    });
+
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(api.gunsCount.value).toBe(1);
+    expect(api.itemsCount.value).toBe(4);
+    expect(api.totalCount.value).toBe(5);
+    expect(api.volumeOptions.value.map((v) => v.id)).toEqual(['all', 'v1', 'v2']);
+
+    api.setScope('items');
+    expect(api.filter.value.scope).toBe('items');
+    expect(api.itemTypes.value).toEqual(['оружие', 'артефакт', 'улика_документ']);
+    expect(api.destroyedItems.value).toHaveLength(1);
+
+    api.filter.value.selectedVolumeId = 'v1';
+    expect(api.filteredItems.value.some((i) => i.id === 'entities:amulet')).toBe(true);
+
+    api.filter.value.usageState = 'destroyed';
+    expect(api.filteredItems.value).toHaveLength(1);
+
+    api.resetFilter();
+    expect(api.filter.value.usageState).toBe('all');
+
+    // Non-gun item journey + closeJourneyModal
+    await api.openJourney(reportWithCustody.items[1]);
+    expect(api.selectedJourney.value?.item_name).toBe('Клинок Зари');
+    api.closeJourneyModal();
+    expect(api.isJourneyModalOpen.value).toBe(false);
+
+    // Gun item journey when getPlotPromise rejects
+    await api.openJourney(reportWithCustody.items[0]);
+    expect(api.selectedJourney.value?.item_name).toBe('Тайна письма');
+
+    // Locate node dispatches 4 events + emits
+    const located: CustomEvent[] = [];
+    const listener = (e: Event) => located.push(e as CustomEvent);
+    document.addEventListener('ww:locate-promise', listener);
+
+    api.onLocateNode({ chapterId: 'ch1', paragraphIndex: 1 });
+    expect(emit).toHaveBeenCalledWith('locate-promise', { chapterId: 'ch1', paragraphIndex: 1 });
+    expect(emit).toHaveBeenCalledWith('jump-to-chapter', 'ch1');
+    await vi.advanceTimersByTimeAsync(900);
+    expect(located).toHaveLength(4);
+
+    document.removeEventListener('ww:locate-promise', listener);
+    store.itemTracker = null;
+    warnSpy.mockRestore();
+    vi.useRealTimers();
+    wrapper.unmount();
+  });
 });

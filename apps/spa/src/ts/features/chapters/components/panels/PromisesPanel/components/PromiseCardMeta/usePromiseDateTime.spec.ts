@@ -158,4 +158,33 @@ describe('usePromiseDateTime', () => {
     expect(dt.currentEraIdx.value).toBe(0);
     expect(dt.currentYear.value).toBe(2024);
   });
+
+  it('covers wheel options, onUniversalDateChange, date_fields sync, and timelineEventId sync', () => {
+    const emitChange = vi.fn();
+    const dt = usePromiseDateTime(calendars, emitChange);
+
+    dt.currentYear.value = 500;
+    expect(dt.eraWheelOptions.value).toHaveLength(1);
+    expect(dt.yearWheelOptions.value.length).toBeGreaterThan(50);
+    expect(dt.monthWheelOptions.value).toHaveLength(2);
+    expect(dt.dayWheelOptions.value).toHaveLength(30);
+    expect(dt.hourWheelOptions.value).toHaveLength(24);
+
+    dt.onUniversalDateChange(null);
+    dt.onUniversalDateChange({
+      calendar_id: 'cal:1',
+      original_input: { era_index: 0, year: 10, month: 1, day: 5, hour: 8, minute: 15 },
+    });
+    expect(dt.currentYear.value).toBe(10);
+    expect(emitChange).toHaveBeenCalled();
+
+    dt.syncInitialTimelineDate({
+      date_fields: { era_index: 0, year: 25, month: 0, day: 12, hour: 9, minute: 45 },
+      calendar_id: 'cal:1',
+    });
+    expect(dt.currentYear.value).toBe(25);
+
+    dt.syncInitialTimelineDate(null, 'ev_1', [{ id: 'ev_1', title: 'Battle', m_abs: 1440 }]);
+    expect(dt.currentDay.value).toBeDefined();
+  });
 });

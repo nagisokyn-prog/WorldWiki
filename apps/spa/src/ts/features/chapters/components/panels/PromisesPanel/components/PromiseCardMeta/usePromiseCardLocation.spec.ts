@@ -72,5 +72,31 @@ describe('usePromiseCardLocation', () => {
       location_id: 'Новая Локация'
     }));
   });
+
+  it('covers filteredLocations, getLocationDisplayName, and onLocationBlur timer', () => {
+    vi.useFakeTimers();
+    const emit = vi.fn();
+    const loc = usePromiseCardLocation({ project: 'proj_1', item: baseItem }, projectLocations, emit);
+
+    loc.locationDraft.value = '';
+    expect(loc.filteredLocations.value).toHaveLength(2);
+    loc.locationDraft.value = 'библио';
+    expect(loc.filteredLocations.value).toHaveLength(1);
+
+    expect(loc.getLocationDisplayName('')).toBe('');
+    expect(loc.getLocationDisplayName('loc_1')).toBe('Тронный Зал');
+    expect(loc.getLocationDisplayName('Custom')).toBe('Custom');
+
+    loc.isLocationDropdownOpen.value = true;
+    loc.locationDraft.value = 'Библиотека';
+    loc.onLocationBlur();
+    vi.advanceTimersByTime(210);
+    expect(loc.isLocationDropdownOpen.value).toBe(false);
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
+      location_id: 'Библиотека'
+    }));
+
+    vi.useRealTimers();
+  });
 });
 

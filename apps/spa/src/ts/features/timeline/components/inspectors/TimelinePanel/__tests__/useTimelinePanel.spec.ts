@@ -408,5 +408,43 @@ describe('useTimelinePanel', () => {
       expect(displayIds[1]).toBe('cal1'); // comparative calendar second
       expect(displayIds.length).toBe(2);
     });
+
+    it('covers toggleCalendarSelection, displayEvents, sortByAbsoluteTime, and checkEventOverlap', async () => {
+      const panel = useTimelinePanel(
+        {
+          project: 'p1',
+          events: [
+            {
+              date: { era: 0, year: 1, month: 0, day: 10 },
+              time: { hour: 12, minute: 0 },
+              description: 'Later',
+              calendar_id: 'cal1',
+            },
+            {
+              date: { era: 0, year: 1, month: 0, day: 1 },
+              time: { hour: 12, minute: 0 },
+              description: 'Earlier',
+              calendar_id: 'cal1',
+            },
+          ],
+        } as unknown as Parameters<typeof useTimelinePanel>[0],
+        emit
+      );
+      panel.availableCalendars.value = [mockCalendar];
+      panel.selectedCalendarIds.value = ['cal1'];
+
+      panel.toggleCalendarSelection('cal2');
+      expect(panel.selectedCalendarIds.value).toContain('cal2');
+      panel.toggleCalendarSelection('cal2');
+      expect(panel.selectedCalendarIds.value).not.toContain('cal2');
+
+      expect(panel.displayEvents.value).toHaveLength(2);
+      panel.sortByAbsoluteTime();
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+
+      expect(panel.checkEventOverlap(0, 1)).toBe(false);
+      expect(panel.checkEventOverlap(0, 0)).toBe(true);
+      expect(panel.checkEventOverlap(0, 99)).toBe(false);
+    });
   });
 });

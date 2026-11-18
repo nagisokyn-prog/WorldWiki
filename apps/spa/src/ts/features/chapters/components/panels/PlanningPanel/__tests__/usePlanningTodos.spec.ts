@@ -446,4 +446,26 @@ describe('usePlanningTodos', () => {
     expect(appConfirm).toHaveBeenCalledWith(expect.stringContaining('Изучить старый свиток'));
     expect(childTodo.status).toBe('in_progress');
   });
+
+  it('alerts when moveBacklogToChapter has no target chapter or fails API call', async () => {
+    const chaptersList = ref<TapestryChapterNode[]>([]);
+    const backlog = ref<TapestryTodo[]>([
+      { id: 'todo:b1', owner_id: 'volumes:v1', text: 'Backlog 1', status: 'planned', done: false, sort_order: 1 },
+    ]);
+    const volId = ref<string | null>('volumes:v1');
+    const curChId = ref<string | null>(null);
+    const emit = vi.fn();
+
+    const { appAlert: mockedAppAlert } = await import('@worldwiki/components');
+    const { moveBacklogToChapter } = usePlanningTodos(chaptersList, backlog, volId, curChId, emit);
+    await moveBacklogToChapter('todo:b1');
+    expect(mockedAppAlert).toHaveBeenCalledWith('Не выбрана глава для переноса задачи');
+
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.deleteTodo).mockRejectedValueOnce(new Error('move fail'));
+    curChId.value = 'chapters:c1';
+    await moveBacklogToChapter('todo:b1');
+    expect(mockedAppAlert).toHaveBeenCalledWith('Не удалось перенести задачу в главу');
+    errSpy.mockRestore();
+  });
 });

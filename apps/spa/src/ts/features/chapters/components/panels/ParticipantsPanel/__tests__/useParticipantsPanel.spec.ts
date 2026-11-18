@@ -179,4 +179,50 @@ describe('useParticipantsPanel', () => {
     await panel.loadEntitiesForType();
     expect(panel.entities.value).toEqual([]);
   });
+
+  it('covers isFaIcon, formatFaIcon, getIcon, object participants, fallbackName match, and removeParticipant', async () => {
+    const entityApi = await import('@/services/Entity/entity.api');
+    vi.spyOn(entityApi.entityApi, 'getSchemas').mockResolvedValueOnce({
+      character: { icon: 'fa-user', name: 'Персонаж' },
+    } as never);
+    vi.mocked(api.getEntitiesBatch).mockResolvedValueOnce({
+      character: [{ id: 'entities:hero_1', name: 'Арагорн' }],
+    } as never);
+
+    let panel!: ReturnType<typeof useParticipantsPanel>;
+    const TestComp = defineComponent({
+      setup() {
+        panel = useParticipantsPanel(
+          {
+            project: 'proj_1',
+            participants: [
+              { id: 'unknown_id', name: 'Арагорн', type: 'character' },
+              { id: 'entities:hero_1', name: 'Fallback', type: '' },
+            ],
+          },
+          emit
+        );
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp);
+    await flushPromises();
+
+    expect(panel.isFaIcon(undefined)).toBe(false);
+    expect(panel.isFaIcon('fa-user')).toBe(true);
+    expect(panel.isFaIcon('fas fa-star')).toBe(true);
+    expect(panel.formatFaIcon(undefined)).toBe('');
+    expect(panel.formatFaIcon('fa-user')).toBe('fas fa-user');
+    expect(panel.formatFaIcon('far fa-user')).toBe('far fa-user');
+    expect(panel.getIcon('character')).toBe('fa-user');
+
+    expect(panel.normalizedParticipants.value[0].name).toBe('Арагорн');
+    panel.removeParticipant(0);
+    expect(emit).toHaveBeenCalledWith('update:participants', expect.any(Array));
+    expect(emit).toHaveBeenCalledWith('change');
+
+    wrapper.unmount();
+  });
 });

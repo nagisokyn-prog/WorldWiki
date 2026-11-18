@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useFloatingEntities } from '../useFloatingEntities';
 
 describe('useFloatingEntities', () => {
@@ -25,6 +27,35 @@ describe('useFloatingEntities', () => {
       id: '1',
     };
     floating.handleOpenEntity(badData as any);
+  });
+
+  it('registers window listener on mount and handles ww:open-floating-entity events', () => {
+    let api!: ReturnType<typeof useFloatingEntities>;
+    const Comp = defineComponent({
+      setup() {
+        api = useFloatingEntities('proj_1');
+        return {};
+      },
+      template: '<div />',
+    });
+
+    const wrapper = mount(Comp);
+
+    window.dispatchEvent(new CustomEvent('ww:open-floating-entity', { detail: {} }));
+    expect(api.floatingEditors.value.length).toBe(0);
+
+    window.dispatchEvent(
+      new CustomEvent('ww:open-floating-entity', { detail: { type: 'location', id: 'loc_1' } })
+    );
+    expect(api.floatingEditors.value.length).toBe(1);
+    expect(api.floatingEditors.value[0].entityId).toBe('loc_1');
+
+    wrapper.unmount();
+
+    window.dispatchEvent(
+      new CustomEvent('ww:open-floating-entity', { detail: { type: 'location', id: 'loc_2' } })
+    );
+    expect(api.floatingEditors.value.length).toBe(1);
   });
 });
 

@@ -33,4 +33,27 @@ describe('useDocumentProcessor', () => {
     toggleInspector();
     expect(isInspectorOpen.value).toBe(true);
   });
+
+  it('creates Tiptap Editor on mount, syncs AST on update, and destroys on unmount', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+
+    let proc!: ReturnType<typeof useDocumentProcessor>;
+    const Comp = defineComponent({
+      setup() {
+        proc = useDocumentProcessor({});
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    expect(proc.editor.value).not.toBeNull();
+    expect(proc.numberingContext.value).toBeDefined();
+
+    proc.editor.value?.commands.setContent('<p>Новый абзац</p>', { emitUpdate: true });
+    expect(proc.semanticDoc.value.blocks.length).toBeGreaterThan(0);
+
+    wrapper.unmount();
+  });
 });

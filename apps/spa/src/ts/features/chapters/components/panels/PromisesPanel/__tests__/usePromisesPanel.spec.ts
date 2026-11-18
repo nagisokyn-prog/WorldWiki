@@ -356,4 +356,47 @@ describe('usePromisesPanel', () => {
     expect(panel.promisesHeight.value).toBe(340);
     expect(localStorage.getItem('chapters-panel-promises-h')).toBe('340');
   });
+
+  it('mounts, sanitizes milestones & block_ids, removes empty cache, and listens to ww:editor-content-updated', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+
+    vi.mocked(api.getPlotPromises)
+      .mockResolvedValueOnce([
+        {
+          id: 'p1',
+          parent_id: 'NONE',
+          block_ids: ['text_blocks:blk_1_para-5', 'NONE'],
+          milestones: [
+            { stage: 'plant', chapter_id: 'ch_1', quote: 'Plant Q', order_index: 3, block_id: 'para-5' },
+            { stage: 'progression', chapter_id: 'ch_1', quote: 'Prog', order_index: 4 },
+            { stage: 'resolution', chapter_id: 'ch_2', quote: 'Res', order_index: 5 },
+          ],
+        },
+      ] as never)
+      .mockResolvedValueOnce([]);
+
+    let panel!: ReturnType<typeof usePromisesPanel>;
+    const Comp = defineComponent({
+      setup() {
+        panel = usePromisesPanel(props, emit);
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(panel.promises.value[0].parent_id).toBeNull();
+    expect(panel.promises.value[0].block_ids).toEqual(['para-5']);
+    expect(panel.promises.value[0].quote).toBe('Plant Q');
+
+    document.dispatchEvent(new CustomEvent('ww:editor-content-updated'));
+
+    await panel.loadPromises();
+    expect(localStorage.getItem('ww_plot_promises_proj_test')).toBeNull();
+
+    wrapper.unmount();
+  });
 });

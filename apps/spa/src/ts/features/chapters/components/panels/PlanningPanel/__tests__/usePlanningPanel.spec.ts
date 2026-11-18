@@ -63,6 +63,7 @@ describe('usePlanningPanel - Unified Tapestry', () => {
       { chapter_id: 'chapters:ch_2', phase: 'escalation' }
     ]);
     vi.mocked(api.getStoryArcs).mockResolvedValue(arcsStore.arcs as any);
+    vi.mocked(api.getChapterHierarchy).mockResolvedValue({ volumes: [], chapters: [] } as any);
 
     props = {
       project: 'proj_1',
@@ -233,5 +234,55 @@ describe('usePlanningPanel - Unified Tapestry', () => {
     expect(panel.isVolumeCollapsed.value).toBe(true);
     panel.toggleVolumeCollapse();
     expect(panel.isVolumeCollapsed.value).toBe(false);
+  });
+
+  it('computes totalStats, allVolumeTodos, selectVolume, toggleHelp, addBacklogToVolume, handleNavigate, and load error', async () => {
+    vi.useFakeTimers();
+    const scrollIntoView = vi.fn();
+    const classList = { add: vi.fn(), remove: vi.fn() };
+    const getByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue({
+      scrollIntoView,
+      classList,
+    } as unknown as HTMLElement);
+
+    vi.mocked(api.getTodos).mockResolvedValue([
+      { id: 't1', owner_id: 'chapters:ch_2', text: 'Task 1', arc_id: 'story_arcs:arc_1', status: 'planned', is_done: false, sort_order: 1 },
+      { id: 't2', owner_id: 'chapters:ch_2', text: 'Task 2', arc_id: null, status: 'done', is_done: true, sort_order: 2 },
+    ] as never);
+
+    const emit = vi.fn();
+    const panel = usePlanningPanel(props, emit);
+    await panel.load();
+
+    expect(panel.totalStats.value.total).toBeGreaterThan(0);
+    expect(panel.allVolumeTodos.value.length).toBeGreaterThan(0);
+
+    panel.toggleHelp();
+    expect(panel.isHelpOpen.value).toBe(true);
+
+    panel.handleNavigate('chapters:ch_1');
+    expect(emit).toHaveBeenCalledWith('select-chapter', 'chapters:ch_1');
+    await Promise.resolve();
+    vi.advanceTimersByTime(1900);
+    expect(scrollIntoView).toHaveBeenCalled();
+    expect(classList.add).toHaveBeenCalledWith('chapter-card-highlight');
+    expect(classList.remove).toHaveBeenCalledWith('chapter-card-highlight');
+
+    panel.selectVolume('volumes:vol_1');
+    await panel.addBacklogToVolume('volumes:vol_1', { text: 'Backlog X' });
+    expect(api.createTodo).toHaveBeenCalled();
+
+    // Error branch in loadTapestryData
+    const { appAlert } = await import('@worldwiki/components');
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const chapterStore = useChapterStore();
+    chapterStore.hierarchy = { volumes: [], chapters: [] };
+    vi.spyOn(chapterStore, 'loadChapters').mockRejectedValueOnce(new Error('load fail'));
+    await panel.load();
+    expect(appAlert).toHaveBeenCalledWith('Не удалось загрузить задачи плана');
+
+    errSpy.mockRestore();
+    getByIdSpy.mockRestore();
+    vi.useRealTimers();
   });
 });

@@ -257,5 +257,91 @@ describe('useCrossReferenceMatrix Composable', () => {
     filters.value.selectedVolumeId = 'all';
     expect(chapters.value).toHaveLength(2);
   });
+
+  it('covers props object mode, volumeOptions, volumeGroups, deceased filter, loadData, and refresh', async () => {
+    const { defineComponent, h, ref } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    const { useChapterStore } = await import('@/stores/chapter.store');
+    const apiClient = await import('@/services/api.client');
+
+    const store = useAnalyticsStore();
+    const chapterStore = useChapterStore();
+    chapterStore.hierarchy = {
+      volumes: [
+        { id: 'volumes:v1', title: 'Том Первый' },
+        { id: 'volumes:v2', title: '' }
+      ],
+      chapters: [
+        { id: 'ch:1', title: 'Г1', volume_id: 'v1' },
+        { id: 'ch:2', title: 'Г2', volume_id: 'v1' }
+      ] as any
+    };
+
+    vi.mocked(apiClient.getCrossReferenceMatrix).mockResolvedValue({
+      chapters: [
+        { id: 'ch:1', title: 'Г1', sort_order: 1, word_count: 500 },
+        { id: 'ch:2', title: 'Г2', volume_id: 'v1', sort_order: 2, word_count: 600 },
+        { id: 'ch:3', title: 'Г3', volume_id: 'v3', sort_order: 3, word_count: 700 }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Мертвец',
+          entity_type: 'character',
+          is_deceased: true,
+          role_in_story: 'secondary',
+          appearances: [{ chapter_id: 'ch:1', source: 'scene', has_scene: true }]
+        },
+        {
+          id: 'e2',
+          name: 'Протагонист',
+          entity_type: 'character',
+          role_in_story: 'protagonist',
+          appearances: [
+            { chapter_id: 'ch:1', source: 'scene', has_scene: true },
+            { chapter_id: 'ch:2', source: 'mention', has_mention: true }
+          ]
+        }
+      ]
+    });
+
+    const projectRef = ref('proj-a');
+    let api!: ReturnType<typeof useCrossReferenceMatrix>;
+    const Comp = defineComponent({
+      setup() {
+        api = useCrossReferenceMatrix({ project: projectRef.value });
+        return () => h('div');
+      }
+    });
+
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(api.volumeOptions.value.map((v) => v.id)).toEqual(['all', 'v1', 'v2', 'v3']);
+    expect(api.volumeGroups.value).toEqual([
+      { volumeId: 'v1', volumeTitle: 'Том Первый', chaptersCount: 2 },
+      { volumeId: 'v3', volumeTitle: 'Том v3', chaptersCount: 1 }
+    ]);
+    expect(api.totalProjectAppearances.value).toBe(3);
+    expect(api.rows.value[0].entity.name).toBe('Протагонист');
+
+    api.filters.value.showDeceasedOnly = true;
+    expect(api.rows.value.map((r) => r.entity.name)).toEqual(['Мертвец']);
+
+    await api.refresh();
+    expect(vi.mocked(apiClient.getCrossReferenceMatrix)).toHaveBeenCalledWith('proj-a');
+
+    // Empty matrixData fallbacks
+    store.matrixData = null;
+    expect(api.availableEntityTypes.value).toEqual([]);
+    expect(api.chapters.value).toEqual([]);
+    expect(api.rows.value).toEqual([]);
+    expect(api.volumeGroups.value).toEqual([]);
+    expect(api.isLoading.value).toBe(false);
+    expect(api.error.value).toBeNull();
+
+    wrapper.unmount();
+  });
 });
 

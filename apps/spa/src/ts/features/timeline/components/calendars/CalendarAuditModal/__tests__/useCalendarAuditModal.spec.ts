@@ -22,4 +22,26 @@ describe('useCalendarAuditModal', () => {
     hook.close();
     expect(emit).toHaveBeenCalledWith('update:modelValue', false);
   });
+
+  it('handles sparse calendar fallbacks for time settings, months, leap rule, and eras', () => {
+    const emit = vi.fn();
+    const sparseCal = {
+      ...defaultCal,
+      _id: '',
+      настройки_времени: undefined,
+      месяцы: [{ название: 'M1', дней: 0 }],
+      пользовательское_високосное_правило: undefined,
+      эпохи: [{ название: '', год_начала: undefined, обратный_отсчет: undefined }],
+      первый_месяц_года: undefined,
+    } as any;
+
+    const hook = useCalendarAuditModal(
+      { modelValue: false, calendar: sparseCal },
+      emit
+    );
+
+    expect(hook.isOpen.value).toBe(false);
+    expect(hook.auditReport.value).toBeDefined();
+    expect(hook.yearPreview.value).toBeDefined();
+  });
 });

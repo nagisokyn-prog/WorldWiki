@@ -125,5 +125,69 @@ describe('Tab 5: Reforms, Succession & DST', () => {
       composable.autumnFold.value = 1;
       expect(composable.autumnAlertDesc.value).toContain('fold: 1');
     });
+
+    it('covers syncFromCalendarData for reforms/dst_preset/dst_policy, updateShiftSelect, and badges', () => {
+      const emit = vi.fn();
+
+      // 1. reform_key + dst_preset
+      const c1 = useTab5ReformsDst(
+        {
+          calendarData: {
+            ...mockCalendar,
+            reform_key: 'russia_1918',
+            dst_preset: 'fixed_dates'
+          } as unknown as CalendarData
+        },
+        emit
+      );
+      expect(c1.mode.value).toBe('gap');
+      expect(c1.policyBadgeText.value).toContain('Фиксированные');
+      expect(c1.shiftBadgeText.value).toContain('+');
+      expect(c1.monthNames.value).toHaveLength(4);
+      expect(c1.weekdayNames.value).toHaveLength(7);
+
+      // 2. Explicit reforms array (transitional & reset) + dst_policy object
+      const c2 = useTab5ReformsDst(
+        {
+          calendarData: {
+            reforms: [{ mode: 'transitional', effective_year: -45, added_days: 67 }],
+            dst_policy: { is_enabled: false }
+          } as unknown as CalendarData
+        },
+        emit
+      );
+      expect(c2.mode.value).toBe('transitional');
+      expect(c2.transParams.value.addedDays).toBe(67);
+      expect(c2.policyBadgeText.value).toContain('None');
+      expect(c2.shiftBadgeText.value).toBe('Сдвиг: 0 мин');
+      expect(c2.monthNames.value.length).toBeGreaterThan(0);
+
+      const c3 = useTab5ReformsDst(
+        {
+          calendarData: {
+            reforms: [{ mode: 'reset', start_day: 1, start_month: 2, effective_year: 1800 }],
+            dst_policy: { is_enabled: true, spring_shift_minutes: 30 }
+          } as unknown as CalendarData
+        },
+        emit
+      );
+      expect(c3.mode.value).toBe('reset');
+      expect(c3.policyConfig.value.shiftMinutes).toBe(30);
+
+      // 3. updateShiftSelect & visualTape
+      c3.updateShiftSelect('45');
+      expect(c3.policyConfig.value.shiftMinutes).toBe(45);
+      expect(emit).toHaveBeenCalled();
+
+      emit.mockClear();
+      c3.updateShiftSelect('custom');
+      expect(emit).not.toHaveBeenCalled();
+      expect(c3.visualTape.value).toBeDefined();
+      expect(c3.dualDatingResult.value).toBeDefined();
+      expect(c3.springTimeStr.value).toBeDefined();
+      expect(c3.springAlertStyle.value).toBeDefined();
+      expect(c3.springAlertTextColor.value).toBeDefined();
+      expect(c3.autumnAlertStyle.value).toBeDefined();
+    });
   });
 });

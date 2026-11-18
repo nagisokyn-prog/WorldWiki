@@ -101,5 +101,34 @@ describe('useCreateChapterModal', () => {
 
     expect(title).toBe('Глава 13');
   });
+
+  it('covers onVolumeChange, handleClose, missing volume validation, and load error', async () => {
+    const emit = vi.fn() as unknown as CreateChapterModalEmits;
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.getChapterHierarchy).mockRejectedValueOnce(new Error('hier err'));
+
+    const modal = useCreateChapterModal(
+      { isOpen: true, projectName: 'test_project', initialTitle: '' },
+      emit
+    );
+    await new Promise((r) => setTimeout(r, 10));
+    expect(modal.errorMessage.value).toBe('Не удалось загрузить список томов');
+    errSpy.mockRestore();
+
+    modal.title.value = 'Глава 1';
+    modal.selectedVolumeId.value = null;
+    modal.handleSubmit();
+    expect(modal.errorMessage.value).toContain('Необходимо выбрать том');
+
+    vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
+      volumes: [],
+      chapters: [{ id: 'c1', title: 'Глава 4', volume_id: 'v2' }],
+    } as never);
+    await modal.onVolumeChange('v2');
+    expect(modal.title.value).toBe('Глава 5');
+
+    modal.handleClose();
+    expect(emit).toHaveBeenCalledWith('close');
+  });
 });
 

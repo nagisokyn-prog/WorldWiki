@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { openEntityEditorWindow } from '../windowManager';
+import { openEntityEditorWindow, openCharacterJourneyWindow } from '../windowManager';
 import { WebviewWindow, getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
 
 vi.mock('@tauri-apps/api/webviewWindow', () => {
@@ -57,5 +57,63 @@ describe('windowManager', () => {
     vi.mocked(getAllWebviewWindows).mockRejectedValue(new Error('Tauri IPC failure'));
 
     await expect(openEntityEditorWindow('proj1', 'character', '123', 'Hero')).resolves.not.toThrow();
+  });
+
+  it('calls unminimize and show on existing entity window even if they reject', async () => {
+    const existingWin = {
+      label: 'entity-editor-character-char-123',
+      unminimize: vi.fn().mockRejectedValue(new Error('unmin err')),
+      show: vi.fn().mockRejectedValue(new Error('show err')),
+      setFocus: vi.fn().mockResolvedValue(undefined),
+    };
+    vi.mocked(getAllWebviewWindows).mockResolvedValue([existingWin as any]);
+
+    await openEntityEditorWindow('proj1', 'character', 'char:123', 'Hero');
+    expect(existingWin.unminimize).toHaveBeenCalled();
+    expect(existingWin.show).toHaveBeenCalled();
+    expect(existingWin.setFocus).toHaveBeenCalled();
+  });
+
+  describe('openCharacterJourneyWindow', () => {
+    it('focuses existing journey window and returns true', async () => {
+      const existingWin = {
+        label: 'character-journey-proj_1',
+        unminimize: vi.fn().mockResolvedValue(undefined),
+        show: vi.fn().mockResolvedValue(undefined),
+        setFocus: vi.fn().mockResolvedValue(undefined),
+      };
+      vi.mocked(getAllWebviewWindows).mockResolvedValue([existingWin as any]);
+
+      const res = await openCharacterJourneyWindow('proj:1');
+      expect(res).toBe(true);
+      expect(existingWin.unminimize).toHaveBeenCalled();
+      expect(existingWin.show).toHaveBeenCalled();
+      expect(existingWin.setFocus).toHaveBeenCalled();
+    });
+
+    it('creates new journey window with and without entityId', async () => {
+      vi.mocked(getAllWebviewWindows).mockResolvedValue([]);
+
+      expect(await openCharacterJourneyWindow('proj1', 'char:1')).toBe(true);
+      expect(WebviewWindow).toHaveBeenCalledWith(
+        'character-journey-proj1',
+        expect.objectContaining({
+          url: 'character_journey.html?project=proj1&entity=char%3A1',
+        })
+      );
+
+      expect(await openCharacterJourneyWindow('proj1')).toBe(true);
+      expect(WebviewWindow).toHaveBeenCalledWith(
+        'character-journey-proj1',
+        expect.objectContaining({
+          url: 'character_journey.html?project=proj1',
+        })
+      );
+    });
+
+    it('returns false when getAllWebviewWindows throws', async () => {
+      vi.mocked(getAllWebviewWindows).mockRejectedValue(new Error('IPC error'));
+      expect(await openCharacterJourneyWindow('proj1')).toBe(false);
+    });
   });
 });

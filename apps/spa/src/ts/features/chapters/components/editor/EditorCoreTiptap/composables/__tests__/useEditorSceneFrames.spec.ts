@@ -359,4 +359,104 @@ describe('useEditorSceneFrames', () => {
     expect(found[3]).toBe(paragraphs[5]); // пустой абзац para-6 внутри сцены
     expect(found[6]).toBe(paragraphs[8]); // para-9 ("— Да не бузи ты так.")
   });
+
+  it('covers chapter_id / block_ids prefix matching, locateScene scrolling/highlight, and early returns', async () => {
+    const { vi } = await import('vitest');
+    const { defineComponent, h } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+
+    vi.useFakeTimers();
+
+    const wrapperEl = document.createElement('div');
+    wrapperEl.className = 'editor-wrapper';
+    Object.defineProperty(wrapperEl, 'scrollHeight', { value: 1000, configurable: true });
+    Object.defineProperty(wrapperEl, 'clientHeight', { value: 400, configurable: true });
+    wrapperEl.scrollTo = vi.fn();
+
+    const p1 = document.createElement('p');
+    p1.setAttribute('data-block-id', 'blk_ch_1_10');
+    p1.textContent = 'Свежая сцена без вех.';
+    p1.scrollIntoView = vi.fn();
+    p1.classList.add('scene-selected-frame');
+
+    const p2 = document.createElement('p');
+    p2.textContent = 'Сцена по прямому chapter_id.';
+    p2.scrollIntoView = vi.fn();
+
+    editorDom.appendChild(p1);
+    editorDom.appendChild(p2);
+    wrapperEl.appendChild(editorDom);
+    document.body.appendChild(wrapperEl);
+
+    const mockEditor = ref({ view: { dom: editorDom } } as any);
+    const editorMode = ref('wysiwyg');
+    const chapterId = ref<string | null>('chapters:ch_1');
+    const existingPromises = ref<any[]>([
+      {
+        id: 'plot_promises:fresh_prefix',
+        kind: 'mystery',
+        title: 'Свежая сцена без вех',
+        block_ids: ['blk_ch_1_10'],
+        milestones: []
+      },
+      {
+        id: 'plot_promises:direct_chap',
+        kind: 'question',
+        chapter_id: 'chapters:ch_1',
+        title: 'Сцена по прямому chapter_id',
+        milestones: []
+      },
+      {
+        id: 'plot_promises:other_chap',
+        kind: 'gun',
+        chapter_id: 'chapters:other',
+        title: 'Чужая глава',
+        milestones: []
+      }
+    ]);
+
+    let api!: ReturnType<typeof useEditorSceneFrames>;
+    const Comp = defineComponent({
+      setup() {
+        api = useEditorSceneFrames({
+          editor: mockEditor,
+          existingPromises,
+          chapterId,
+          editorMode
+        });
+        return () => h('div');
+      }
+    });
+
+    const compWrapper = mount(Comp);
+    api.renderSceneFrames();
+
+    expect(p1.classList.contains('narrative-kind-mystery')).toBe(true);
+    expect(p2.classList.contains('narrative-kind-question')).toBe(true);
+
+    // locateScene scrolls wrapper, marks scene-selected-frame and removes promise-highlight-target after 3000ms
+    api.locateScene(2, 'Сцена по прямому chapter_id');
+    expect(wrapperEl.scrollTo).toHaveBeenCalled();
+    expect(p2.scrollIntoView).toHaveBeenCalled();
+    expect(p1.classList.contains('scene-selected-frame')).toBe(false);
+    expect(p2.classList.contains('scene-selected-frame')).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(50);
+    expect(p2.classList.contains('promise-highlight-target')).toBe(true);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(p2.classList.contains('promise-highlight-target')).toBe(false);
+
+    // Early returns in markdown mode & empty chapterId
+    editorMode.value = 'markdown';
+    api.renderSceneFrames();
+    api.locateScene(1, 'Свежая сцена без вех.');
+
+    editorMode.value = 'wysiwyg';
+    chapterId.value = null;
+    api.renderSceneFrames();
+
+    compWrapper.unmount();
+    wrapperEl.remove();
+    vi.useRealTimers();
+  });
 });

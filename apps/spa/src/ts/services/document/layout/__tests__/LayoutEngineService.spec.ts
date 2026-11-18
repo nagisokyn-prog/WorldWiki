@@ -50,4 +50,45 @@ describe('LayoutEngineService', () => {
 
     expect(config.enabled).toBe(false);
   });
+
+  it('computes B5, Letter, Custom landscape dimensions and all page number positions', () => {
+    const b5 = LayoutEngineService.computeDimensions({
+      ...AcademicGOSTProfile.page,
+      format: 'B5',
+      orientation: 'landscape',
+    });
+    expect(b5.widthMm).toBe(250);
+    expect(b5.heightMm).toBe(176);
+
+    const letter = LayoutEngineService.computeDimensions({
+      ...AcademicGOSTProfile.page,
+      format: 'Letter',
+    });
+    expect(letter.widthMm).toBe(215.9);
+
+    const custom = LayoutEngineService.computeDimensions({
+      ...AcademicGOSTProfile.page,
+      format: 'Custom',
+    });
+    expect(custom.widthMm).toBe(210);
+
+    const topCenter = LayoutEngineService.buildPaginationConfig({
+      page: AcademicGOSTProfile.page,
+      headersFooters: { ...AcademicGOSTProfile.headersFooters, showPageNumber: true, pageNumberPosition: 'top-center' },
+    });
+    expect(topCenter.headerLeft).toBe('{page}');
+
+    const bottomRight = LayoutEngineService.buildPaginationConfig({
+      page: AcademicGOSTProfile.page,
+      headersFooters: { ...AcademicGOSTProfile.headersFooters, showPageNumber: true, pageNumberPosition: 'bottom-right' },
+    });
+    expect(bottomRight.footerRight).toBe('{page}');
+
+    const none = LayoutEngineService.buildPaginationConfig({
+      page: AcademicGOSTProfile.page,
+      headersFooters: { ...AcademicGOSTProfile.headersFooters, showPageNumber: true, pageNumberPosition: 'none' },
+    });
+    expect(none.headerRight).toBe('');
+    expect(none.footerRight).toBe('');
+  });
 });

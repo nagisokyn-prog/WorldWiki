@@ -48,4 +48,36 @@ describe('zoom store', () => {
     expect(store.zoomLevel).toBe(1.3);
     expect((document.documentElement.style as unknown as Record<string, string>).zoom).toBe('');
   });
+
+  it('handles duplicate zoom, storage events, invalid initial zoom, and error catches', async () => {
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+    // Duplicate applyZoom returns early
+    await store.applyZoom(1.4);
+    await store.applyZoom(1.4);
+    expect(store.zoomLevel).toBe(1.4);
+
+    // Storage event updates zoom and ignores unrelated/invalid events
+    window.dispatchEvent(new StorageEvent('storage', { key: 'other-key', newValue: '1.8' }));
+    expect(store.zoomLevel).toBe(1.4);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: 'app-zoom', newValue: 'not-a-number' }));
+    expect(store.zoomLevel).toBe(1.4);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: 'app-zoom', newValue: '1.75' }));
+    await Promise.resolve();
+    expect(store.zoomLevel).toBe(1.75);
+
+    // Invalid localStorage initial value -> defaults to 1
+    setActivePinia(createPinia());
+    localStorage.setItem('app-zoom', 'invalid-zoom');
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceeded');
+    });
+    const freshStore = useZoomStore();
+    expect(freshStore.zoomLevel).toBe(1);
+
+    setItemSpy.mockRestore();
+    debugSpy.mockRestore();
+  });
 });

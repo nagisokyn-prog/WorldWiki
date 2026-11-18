@@ -238,6 +238,22 @@ describe('EditorView.vue.ts', () => {
     vm.toggleWowilon();
     expect(mockShell.isWowilonOpen).toBe(false);
 
+    // Evaluate all template-exposed computed getters for full coverage
+    const computedKeys = [
+      'projectName', 'activeView', 'currentSidebarTab', 'showSettings',
+      'sidebarSearch', 'activePanelTab', 'openEditors', 'activeEditorId',
+      'activeEditor', 'activeEntityRawId', 'consoleLogs', 'activeField',
+      'panelHeight', 'sidebarWidth', 'sidebarItems', 'activeSidebarItem',
+      'filteredEntityList', 'chapters', 'sidebarVisible', 'zoomLevel',
+      'unsavedCount', 'settings', 'toasts', 'activeTreeNode',
+      'editorGroups', 'activeGroupId', 'isWowilonOpen',
+      'isCreateChapterModalOpen', 'createChapterTargetVolumeId',
+      'isCreateEntityModalOpen', 'createEntityTargetType'
+    ];
+    for (const key of computedKeys) {
+      expect((wrapper.vm as unknown as Record<string, unknown>)[key]).toBeDefined();
+    }
+
     wrapper.unmount();
   });
 });

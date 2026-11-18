@@ -73,4 +73,55 @@ describe('useTab3CultureLore', () => {
     addRegion('Новая Провинция');
     expect(emit).toHaveBeenCalled();
   });
+
+  it('covers planet-linked regions/timezones, defaults, moon phase names, and calendarTimezone', async () => {
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+    vi.spyOn(calStore, 'getPlanets').mockReturnValue([
+      {
+        id: 'planets:p1',
+        name: 'Терра',
+        project_id: 'proj-1',
+        ticks_per_day: 86400,
+        orbit_days: 365,
+        axial_tilt: 23.4,
+        is_retrograde: false,
+        regions: [{ id: 'r1', name: 'Север', timezone_id: 'UTC+1', latitude: 60, longitude: 10 }],
+        timezones: [{ id: 'tz1', name: 'Центр', code: 'UTC+1', base_offset_hours: 1 }],
+        moons: []
+      }
+    ]);
+    vi.spyOn(calStore, 'savePlanet').mockResolvedValue(undefined);
+
+    const emit = vi.fn() as unknown as Tab3CultureLoreEmits;
+    const cal12 = {
+      ...mockCalendar,
+      project_id: 'proj-1',
+      planet_id: 'planets:p1',
+      сезоны: [],
+      праздники: [],
+      месяцы: Array.from({ length: 12 }, (_, i) => ({ название: `M${i + 1}`, дней: 30 })),
+      moons: [{ name: 'Селена', period_days: 29.5, phase_names: { new: 'Н', waxing: 'Р', full: 'П', waning: 'У' } }]
+    } as unknown as CalendarData;
+
+    const lore = useTab3CultureLore({ calendarData: cal12, projectId: 'proj-1', planetId: 'planets:p1' }, emit);
+
+    expect(lore.seasons.value).toHaveLength(4);
+    expect(lore.holidays.value).toHaveLength(2);
+    expect(lore.phaseNames.value.new).toBe('Н');
+    expect(lore.regionsList.value[0].id).toBe('r1');
+    expect(lore.timezonesList.value[0].value).toBe('UTC+1');
+    expect(lore.calendarTimezone.value).toBe('UTC+1');
+    expect(lore.findDoubleFullMoon()).toBeNull();
+
+    lore.updatePhaseNames({ new: 'N', waxing: 'W', full: 'F', waning: 'D' });
+    lore.setCalendarTimezone('UTC+5');
+    expect(emit).toHaveBeenCalledWith('update', { calendar_timezone: 'UTC+5' });
+
+    await lore.addRegion('Юг');
+    expect(calStore.savePlanet).toHaveBeenCalled();
+
+    // Toggle existing region off
+    lore.toggleRegion('r1');
+  });
 });

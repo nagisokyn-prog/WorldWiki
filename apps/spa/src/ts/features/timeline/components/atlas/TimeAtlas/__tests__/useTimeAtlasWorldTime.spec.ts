@@ -99,5 +99,68 @@ describe('useTimeAtlasWorldTime', () => {
     expect(dispatchSpy).toHaveBeenCalled();
     dispatchSpy.mockRestore();
   });
+
+  it('covers planet fallback timezones/regions, worldHour/worldMinute setters, snippet copy, and error handling', async () => {
+    vi.useFakeTimers();
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+
+    vi.spyOn(calStore, 'getPlanets').mockReturnValue([
+      {
+        id: 'planets:p1',
+        name: 'Терра',
+        timezones: [{ id: 'tz_p1', name: 'Столичный', code: 'CAP', base_offset_hours: 2 }],
+        regions: [{ id: 'reg_p1', name: 'Столица', timezone_id: 'tz_p1', latitude: 45, longitude: 30 }]
+      } as never
+    ]);
+
+    vi.mocked(api.getEntities).mockRejectedValueOnce(new Error('geo err'));
+
+    const cal = CalendarEngine.getDefaultCalendar();
+    cal.planet_id = 'planets:p1';
+    cal.timezones = [];
+    cal.regions = [];
+    const masterCal = computed(() => cal);
+    const currentMin = ref(90); // 01:30
+    const projRef = ref('proj_planet');
+
+    const hook = useTimeAtlasWorldTime(
+      masterCal,
+      currentMin,
+      (c) => CalendarEngine.getDateFromAbsolute(currentMin.value, c),
+      projRef
+    );
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(hook.worldTimezones.value).toHaveLength(1);
+    expect(hook.worldRegions.value).toHaveLength(1);
+    expect(hook.masterCalendarName.value).toBeTruthy();
+    expect(hook.maxHours.value).toBe(24);
+    expect(hook.maxMinutes.value).toBe(60);
+
+    // worldHour & worldMinute getters/setters with clamping
+    expect(hook.worldHour.value).toBe(1);
+    expect(hook.worldMinute.value).toBe(30);
+    hook.worldHour.value = 30; // clamps to 23
+    expect(hook.worldHour.value).toBe(23);
+    hook.worldMinute.value = 99; // clamps to 59
+    expect(hook.worldMinute.value).toBe(59);
+
+    // Snippet & clipboard copy
+    expect(hook.worldTimeSnippet.value).toContain('Столица');
+    await hook.copyWorldTimeSnippet();
+    expect(hook.isWorldTimeCopied.value).toBe(true);
+    vi.advanceTimersByTime(2000);
+    expect(hook.isWorldTimeCopied.value).toBe(false);
+
+    // Empty entityId guard
+    hook.openLocationEntity('');
+
+    errSpy.mockRestore();
+    vi.useRealTimers();
+  });
 });
 

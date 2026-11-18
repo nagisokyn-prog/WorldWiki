@@ -332,6 +332,66 @@ describe('useEntityLinkSelector', () => {
         { id: 'custom_magic', name: 'Магическая школа', icon: '✨' }
       ]);
     });
+
+    it('covers fallback list, moveSelection wrap-around, selectCurrent quickCreate, initialQuery watch, close, and API errors', async () => {
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { reactive } = await import('vue');
+
+      const props = reactive({ project: 'test_prj', isOpen: true, initialQuery: 'Рейн' });
+      const emit = vi.fn();
+      const selector = useEntityLinkSelector(props, emit);
+      await flushPromises();
+
+      // initialQuery prop change updates searchQuery while open
+      props.initialQuery = '((Несуществующий))';
+      await flushPromises();
+      expect(selector.searchQuery.value).toBe('Несуществующий');
+      expect(selector.isFallbackList.value).toBe(true);
+
+      // activeTypeFilter applies to fallback list
+      selector.setTypeFilter('location');
+      expect(selector.filteredEntities.value.map((e) => e.name)).toEqual(['Рейнский замок']);
+
+      // moveSelection wrap-around & DOM scrollIntoView
+      const list = document.createElement('div');
+      const activeItem = document.createElement('div');
+      activeItem.className = 'selector-item active';
+      activeItem.scrollIntoView = vi.fn();
+      list.appendChild(activeItem);
+      selector.listEl.value = list;
+
+      selector.moveSelection(-1); // wraps from 0 to max (1: entity + quickCreate)
+      expect(selector.selectedIndex.value).toBe(1);
+      await flushPromises();
+      expect(activeItem.scrollIntoView).toHaveBeenCalled();
+
+      // selectCurrent on last index invokes quickCreateEntity
+      selector.selectCurrent();
+      await flushPromises();
+      expect(api.saveEntity).toHaveBeenCalled();
+
+      selector.moveSelection(1);
+      selector.moveSelection(1);
+      expect(selector.selectedIndex.value).toBe(0);
+
+      // Error handling on loadData & quickCreateEntity
+      vi.mocked(api.getEntitySchemas).mockRejectedValueOnce(new Error('load err'));
+      props.isOpen = false;
+      await flushPromises();
+      props.isOpen = true;
+      await flushPromises();
+      expect(errSpy).toHaveBeenCalled();
+
+      vi.mocked(api.saveEntity).mockRejectedValueOnce(new Error('create err'));
+      selector.searchQuery.value = 'Сбой';
+      await selector.quickCreateEntity('character');
+      expect(selector.isCreating.value).toBe(false);
+
+      selector.close();
+      expect(emit).toHaveBeenCalledWith('close');
+
+      errSpy.mockRestore();
+    });
   });
 });
 

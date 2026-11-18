@@ -74,4 +74,53 @@ describe('useGunItemCard Composable', () => {
     expect(participantOrOwnerLabel.value).toBe('🎭 В сцене: Ника');
     expect(actionButtonText.value).toBe('Вехи');
   });
+
+  it('covers all item type icons, usage states, owner labels, and chapter range fallbacks', () => {
+    const base: TrackedItem = {
+      id: 'item:x',
+      name: 'X',
+      item_type: 'other',
+      status_category: '',
+      current_owner_id: null,
+      current_owner_name: null,
+      first_chapter_order: null,
+      last_chapter_order: null,
+      skipped_chapters: 3,
+      total_mentions: 0,
+      usage_state: 'sleeping',
+      custody_chain: [],
+    };
+
+    const cases: Array<[Partial<TrackedItem>, string, string, string]> = [
+      [{ item_type: 'улика', usage_state: 'sleeping' }, '📜', 'badge-sleeping', '🟡 Спит'],
+      [{ item_type: 'реликвия', usage_state: 'destroyed_or_lost' }, '👑', 'badge-destroyed', '⚪ Выбыл'],
+      [{ item_type: 'транспорт', usage_state: 'unknown' as TrackedItem['usage_state'] }, '🚀', 'badge-default', '⚪ Не указано'],
+      [{ item_type: 'зелье' }, '🧪', 'badge-sleeping', '🟡 Спит'],
+      [{ item_type: 'прочее' }, '📦', 'badge-sleeping', '🟡 Спит'],
+      [{ id: 'plot_promises:1', item_type: 'Предзнаменование', usage_state: 'active', status_category: 'Выстрелило' }, '🔮', 'badge-active', '🎯 Выстрелило'],
+      [{ id: 'plot_promises:2', item_type: 'Предзнаменование', usage_state: 'sleeping' }, '🔮', 'badge-sleeping', '🟡 Ждёт выстрела (5+ глав)'],
+      [{ id: 'plot_promises:3', item_type: 'Чеховское ружьё', usage_state: 'forgotten' }, '🗡️', 'badge-forgotten', '🔴 Забыто (3 глав)'],
+      [{ id: 'plot_promises:4', item_type: 'Чеховское ружьё', usage_state: 'destroyed_or_lost' }, '🗡️', 'badge-destroyed', '⚪ Сорвано / Снято'],
+      [{ id: 'plot_promises:5', item_type: 'Чеховское ружьё', usage_state: 'other' as TrackedItem['usage_state'] }, '🗡️', 'badge-default', '🌱 Заложено']
+    ];
+
+    for (const [override, expectedIcon, expectedBadge, expectedLabel] of cases) {
+      const card = useGunItemCard(() => ({ ...base, ...override }));
+      expect(card.typeIcon.value).toBe(expectedIcon);
+      expect(card.stateBadgeClass.value).toContain(expectedBadge);
+      expect(card.stateLabel.value).toBe(expectedLabel);
+    }
+
+    const noOwnerItem = useGunItemCard(() => base);
+    expect(noOwnerItem.participantOrOwnerLabel.value).toBe('Без постоянного владельца');
+    expect(noOwnerItem.chapterRangeLabel.value).toBe('В тексте еще не появлялся');
+    expect(noOwnerItem.actionButtonText.value).toBe('Путь');
+
+    const noOwnerPromise = useGunItemCard(() => ({ ...base, id: 'plot_promises:p', total_mentions: 0 }));
+    expect(noOwnerPromise.participantOrOwnerLabel.value).toBe('📖 Заложено в тексте рукописи');
+    expect(noOwnerPromise.chapterRangeLabel.value).toBe('В главах пока не упоминалось');
+
+    const unknownRange = useGunItemCard(() => ({ ...base, total_mentions: 2 }));
+    expect(unknownRange.chapterRangeLabel.value).toBe('Главы ? → ? (2 сцен)');
+  });
 });

@@ -175,5 +175,53 @@ describe('useStoryArcs Composable', () => {
     expect(formatChapterName('chapters:ch_12')).toBe('Гл. ch_12');
     expect(getArcTypeLabel('character')).toBe('Персонаж');
   });
+
+  it('supports updateArcStatus, deleteArc, handleCreate, abandoned column, and onMounted', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValue([
+      { id: 'arc:4', project_id: 'test_proj', title: 'Отмененная', arc_type: 'theme', status: 'abandoned' },
+    ]);
+    vi.mocked(apiClient.saveStoryArc).mockResolvedValue({
+      id: 'arc:new',
+      project_id: 'test_proj',
+      title: 'Новая',
+      arc_type: 'character',
+      status: 'planned',
+    } as never);
+    vi.mocked(apiClient.deleteStoryArc).mockResolvedValue(undefined);
+
+    let board!: ReturnType<typeof useArcBoard>;
+    const Comp = defineComponent({
+      setup() {
+        board = useArcBoard('test_proj');
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    const abandonedCol = board.columns.value.find((c) => c.status === 'abandoned');
+    expect(abandonedCol?.arcs).toHaveLength(1);
+
+    await board.updateArcStatus({ id: 'arc:4', project_id: 'test_proj', title: 'Отмененная', arc_type: 'theme', status: 'abandoned' }, 'completed');
+    expect(apiClient.saveStoryArc).toHaveBeenCalled();
+
+    await board.deleteArc(null);
+    await board.deleteArc('arc:4');
+    expect(apiClient.deleteStoryArc).toHaveBeenCalledWith('arc:4');
+
+    board.newArcTitle.value = '   ';
+    await board.handleCreate();
+    board.newArcTitle.value = 'Новая';
+    await board.handleCreate();
+    expect(board.showCreateModal.value).toBe(false);
+    expect(board.newArcTitle.value).toBe('');
+
+    wrapper.unmount();
+  });
 });
 

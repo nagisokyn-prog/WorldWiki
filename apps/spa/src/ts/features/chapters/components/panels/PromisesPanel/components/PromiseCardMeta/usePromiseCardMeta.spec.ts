@@ -217,4 +217,32 @@ describe('usePromiseCardMeta', () => {
     expect(meta.currentYear.value).toBe(500);
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  it('covers handleCalendarChange, handleUniversalDateChange, and blockBadgeText variants', () => {
+    const emit = vi.fn();
+    const metaMulti = usePromiseCardMeta(
+      { project: 'test_proj', item: { ...baseItem, block_ids: ['p-1', 'p-2', 'p-3'] } },
+      emit
+    );
+    expect(metaMulti.blockBadgeText.value).toBe('p-1..p-3 (3)');
+
+    const metaSingle = usePromiseCardMeta(
+      { project: 'test_proj', item: { ...baseItem, block_ids: ['p-1'] } },
+      emit
+    );
+    expect(metaSingle.blockBadgeText.value).toBe('p-1');
+
+    const metaFallback = usePromiseCardMeta(
+      { project: 'test_proj', item: { ...baseItem, block_ids: [], block_id: 'p-0' } },
+      emit
+    );
+    expect(metaFallback.blockBadgeText.value).toBe('p-0');
+
+    metaMulti.onCalendarChange('cal:1');
+    metaMulti.onUniversalDateChange({
+      calendar_id: 'cal:1',
+      original_input: { era_index: 0, year: 12, month: 0, day: 2, hour: 5, minute: 10 },
+    });
+    expect(emit).toHaveBeenCalledWith('change');
+  });
 });

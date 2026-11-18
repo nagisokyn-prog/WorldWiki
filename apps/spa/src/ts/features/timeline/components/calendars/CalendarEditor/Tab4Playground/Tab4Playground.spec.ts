@@ -63,4 +63,59 @@ describe('useTab4Playground', () => {
     updateOrigin({ year: 1566 });
     expect(currentMonthTitle.value).toContain('1566');
   });
+
+  it('covers missing точка_отсчета defaults, multi-month matrix, and computed formatting', () => {
+    const emit = vi.fn() as unknown as Tab4PlaygroundEmits;
+    const minCal: CalendarData = {
+      ...mockCalendar,
+      точка_отсчета: undefined,
+      месяцы: [
+        { название: 'М1', дней: 28 },
+        { название: 'М2', дней: 30 }
+      ]
+    };
+
+    const pg = useTab4Playground({ calendarData: minCal }, emit);
+    expect(pg.storyOrigin.value.year).toBe(1024);
+    expect(pg.monthMatrixDays.value.length).toBeGreaterThan(20);
+    pg.testMonth.value = 1;
+    pg.selectMatrixDay(10);
+    expect(pg.testDay.value).toBe(10);
+  });
+
+  it('switches prevMonth/nextMonth across year boundaries and computes liveCalculation & fallbacks', () => {
+    const emit = vi.fn() as unknown as Tab4PlaygroundEmits;
+    const minCal: CalendarData = {
+      ...mockCalendar,
+      месяцы: [],
+      названия_дней_недели: [],
+      эпохи: undefined,
+      точка_отсчета: { эпоха: 0, год: 1024, месяц: 0, день: 1, день_недели: 0, час: 0, минута: 0 } as unknown as CalendarData['точка_отсчета'],
+    };
+
+    const pg = useTab4Playground({ calendarData: minCal }, emit);
+    expect(pg.monthNames.value.length).toBe(12);
+    expect(pg.weekdayNames.value.length).toBe(7);
+    expect(pg.weekdayHeaders.value.length).toBe(7);
+    expect(pg.liveCalculation.value).not.toBeNull();
+
+    pg.testMonth.value = 0;
+    pg.prevMonth();
+    expect(pg.testYear.value).toBe(1023);
+    expect(pg.testMonth.value).toBe(11);
+
+    pg.nextMonth();
+    expect(pg.testYear.value).toBe(1024);
+    expect(pg.testMonth.value).toBe(0);
+
+    pg.nextMonth();
+    expect(pg.testMonth.value).toBe(1);
+
+    pg.prevMonth();
+    expect(pg.testMonth.value).toBe(0);
+
+    const emptyPg = useTab4Playground({ calendarData: undefined as unknown as CalendarData }, emit);
+    expect(emptyPg.liveCalculation.value).toBeNull();
+    expect(emptyPg.monthMatrixDays.value).toEqual([]);
+  });
 });

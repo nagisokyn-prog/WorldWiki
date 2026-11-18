@@ -43,5 +43,39 @@ describe('ast-diff.wasm-bridge', () => {
     const inserted = changes.find((c) => c.insert_text.includes('быстро'));
     expect(inserted).toBeDefined();
   });
+
+  it('covers getAstDiffEngine and JS fallback on WASM errors', async () => {
+    const { vi } = await import('vitest');
+    const { getAstDiffEngine } = await import('./ast-diff.wasm-bridge');
+    await ensureAstDiffWasm();
+
+    const engine = getAstDiffEngine();
+    expect(engine).not.toBeNull();
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const diffSpy = vi.spyOn(engine!, 'compute_diff').mockImplementationOnce(() => {
+      throw new Error('wasm diff err');
+    });
+    const patchSpy = vi.spyOn(engine!, 'apply_patch').mockImplementationOnce(() => {
+      throw new Error('wasm patch err');
+    });
+    const inlineSpy = vi.spyOn(engine!, 'compute_inline_diff').mockImplementationOnce(() => {
+      throw new Error('wasm inline err');
+    });
+
+    const fbDiff = computeSemanticDiff(docA, docB);
+    expect(fbDiff.has_structural_changes).toBe(true);
+
+    const fbPatched = applySemanticPatch(docA, fbDiff);
+    expect(fbPatched.blocks).toHaveLength(2);
+
+    const fbInline = computeInlineDiff('a', 'b');
+    expect(fbInline).toEqual([]);
+
+    diffSpy.mockRestore();
+    patchSpy.mockRestore();
+    inlineSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
 });
 

@@ -66,4 +66,46 @@ describe('usePromiseCard', () => {
     handleRemove();
     expect(emit).toHaveBeenCalledWith('remove', mockItem);
   });
+
+  it('handles fallback fields and block_ids array in handleLocate', () => {
+    const emit = vi.fn();
+    const itemWithBlockIds: RichPlotPromise = {
+      ...mockItem,
+      chapter_id: '',
+      paragraph_index: 0,
+      quote: '',
+      title: 'Заголовок',
+      block_id: null,
+      block_ids: ['b1', 'b2'],
+    };
+    const { handleLocate } = usePromiseCard({ ...props, item: itemWithBlockIds }, emit);
+
+    handleLocate();
+    expect(emit).toHaveBeenCalledWith('locate', {
+      chapter_id: '',
+      paragraph_index: 1,
+      quote: 'Заголовок',
+      block_id: null,
+      block_ids: ['b1', 'b2'],
+    });
+
+    const emit2 = vi.fn();
+    const emptyItem: RichPlotPromise = {
+      ...mockItem,
+      chapter_id: '',
+      paragraph_index: 0,
+      quote: '',
+      title: '',
+      block_id: null,
+      block_ids: [],
+    };
+    usePromiseCard({ ...props, item: emptyItem }, emit2).handleLocate();
+    expect(emit2).toHaveBeenCalledWith('locate', {
+      chapter_id: '',
+      paragraph_index: 1,
+      quote: '',
+      block_id: null,
+      block_ids: [],
+    });
+  });
 });

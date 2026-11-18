@@ -102,4 +102,25 @@ describe('useSchemaContainer', () => {
     expect(res2).toEqual({});
     expect(itemWithoutOverrides.fieldOverrides.another_field).toBeDefined();
   });
+
+  it('covers isChapterField, setFieldOptionsSource, toggleFieldEntityType, and isFieldEntityTypeSelected', () => {
+    const container = useSchemaContainer(props);
+
+    expect(container.isChapterField({ entityType: 'chapter' })).toBe(true);
+    expect(container.isChapterField({ type: 'manuscript_point' })).toBe(true);
+    expect(container.isChapterField({ class: 'начальная_глава' })).toBe(true);
+    expect(container.isChapterField({ id: 'name' })).toBe(false);
+
+    const fieldObj: Record<string, unknown> = { entityType: 'character' };
+    container.setFieldOptionsSource(fieldObj, 'entities');
+    expect(fieldObj.entityTypes).toEqual(['character']);
+
+    container.toggleFieldEntityType(fieldObj, 'location');
+    expect(fieldObj.entityTypes).toEqual(['character', 'location']);
+    expect(container.isFieldEntityTypeSelected(fieldObj, 'location')).toBe(true);
+
+    container.toggleFieldEntityType(fieldObj, 'character');
+    expect(fieldObj.entityTypes).toEqual(['location']);
+    expect(fieldObj.entityType).toBe('location');
+  });
 });

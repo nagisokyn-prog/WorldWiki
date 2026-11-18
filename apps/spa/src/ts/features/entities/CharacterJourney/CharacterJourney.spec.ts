@@ -243,6 +243,72 @@ describe('useCharacterJourney Composable', () => {
     expect(item.paragraph_index).toBe(13);
     expect(item.block_id).toBe('para-13');
   });
+
+  it('covers selectEntity, toggleEntity, addEntity, removeEntity, setFilterMode, error handling, and onMounted', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+
+    vi.mocked(apiClient.getEntities).mockReset();
+    vi.mocked(apiClient.getStoryArcs).mockReset();
+    vi.mocked(apiClient.getCharacterJourney).mockReset();
+    vi.mocked(apiClient.getEntities).mockResolvedValue([
+      { id: 'entities:e1', name: 'Герой 1', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
+      { id: 'entities:e2', name: 'Герой 2', entity_type: 'character', project_id: 'test_proj', attributes: {}, tags: [] },
+    ]);
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValue([]);
+    vi.mocked(apiClient.getCharacterJourney).mockResolvedValue({
+      entity_id: 'entities:e1',
+      entity_name: 'Герой 1',
+      entity_type: 'character',
+      appearances: [],
+      events: [],
+      relations: [],
+      promises: [],
+    });
+
+    let journey!: ReturnType<typeof useCharacterJourney>;
+    const Comp = defineComponent({
+      setup() {
+        journey = useCharacterJourney('test_proj', 'entities:e1');
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(journey.currentEntity.value?.name).toBe('Герой 1');
+
+    journey.addEntity('entities:e2');
+    journey.addEntity('entities:e2'); // duplicate guard
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e1', 'entities:e2']);
+    expect(journey.selectedEntities.value).toHaveLength(2);
+
+    await journey.setFilterMode('only_together');
+    expect(journey.filterMode.value).toBe('only_together');
+
+    journey.toggleEntity('entities:e2'); // removes e2
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e1']);
+    journey.toggleEntity('entities:e1'); // cannot remove last entity
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e1']);
+
+    journey.toggleEntity('entities:e2'); // adds e2 back
+    journey.removeEntity('entities:e2');
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e1']);
+
+    journey.selectEntity('entities:e2');
+    expect(journey.selectedEntityIds.value).toEqual(['entities:e2']);
+
+    // Error branch in loadJourney
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(apiClient.getCharacterJourney).mockRejectedValueOnce(new Error('journey fail'));
+    await journey.refresh();
+    expect(journey.error.value).toBe('journey fail');
+    errSpy.mockRestore();
+
+    wrapper.unmount();
+  });
 });
 
 

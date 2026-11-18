@@ -76,4 +76,41 @@ describe('usePromiseCardArcTags', () => {
       { arc_id: 'arc:2', arc_phase: 'resolution' }
     ]);
   });
+
+  it('computes selectableArcs and creates+attaches new arc via store', async () => {
+    const { useStoryArcsStore } = await import('@/stores/story_arcs.store');
+    const store = useStoryArcsStore();
+    store.arcs = [
+      { id: 'story_arcs:1', title: 'А1', arc_type: 'event', status: 'in_progress', project_id: 'p1' },
+      { id: 'story_arcs:2', title: 'А2', arc_type: 'theme', status: 'planned', project_id: 'p1' },
+    ];
+    const saveArcSpy = vi.spyOn(store, 'saveArc').mockResolvedValue({
+      id: 'story_arcs:3',
+      title: 'А3',
+      arc_type: 'event',
+      status: 'in_progress',
+      project_id: 'p1',
+    });
+
+    const emit = vi.fn();
+    const tags = usePromiseCardArcTags(
+      { project: 'p1', arcs: [{ arc_id: 'story_arcs:1', arc_phase: 'setup' }] },
+      emit as never
+    );
+
+    expect(tags.selectableArcs.value.map((a) => a.id)).toEqual(['story_arcs:2']);
+
+    tags.newArcTitle.value = '   ';
+    await tags.createAndAttachArc();
+    expect(saveArcSpy).not.toHaveBeenCalled();
+
+    tags.newArcTitle.value = 'А3';
+    await tags.createAndAttachArc();
+    expect(saveArcSpy).toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith('update:arcs', expect.arrayContaining([
+      expect.objectContaining({ arc_id: 'story_arcs:3', arc_phase: 'setup' }),
+    ]));
+    expect(tags.newArcTitle.value).toBe('');
+    expect(tags.isCreating.value).toBe(false);
+  });
 });

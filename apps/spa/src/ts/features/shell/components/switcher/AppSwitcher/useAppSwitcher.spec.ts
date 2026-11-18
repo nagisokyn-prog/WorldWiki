@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount, flushPromises } from '@vue/test-utils';
 import { useAppSwitcher } from './useAppSwitcher';
 import * as api from '@/services/api.client';
 import { appConfirm, appAlert } from '@worldwiki/components';
@@ -80,6 +82,83 @@ describe('useAppSwitcher', () => {
       expect.stringContaining('Corrupt zip archive'),
       'Ошибка восстановления'
     );
+  });
+
+  it('ignores concurrent prompt and handles non-Error rejection', async () => {
+    let resolveConfirm!: (v: boolean) => void;
+    vi.mocked(appConfirm).mockReturnValueOnce(new Promise((r) => { resolveConfirm = r; }));
+    const { handleWwikiPath } = useAppSwitcher();
+
+    const first = handleWwikiPath('first.wwiki');
+    const second = await handleWwikiPath('second.wwiki');
+    expect(second).toBe(false);
+
+    resolveConfirm(false);
+    expect(await first).toBe(false);
+
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
+    vi.mocked(api.restoreFromBackup).mockRejectedValueOnce('raw string fail');
+    expect(await handleWwikiPath('broken.wwiki')).toBe(false);
+    expect(appAlert).toHaveBeenCalledWith(
+      expect.stringContaining('raw string fail'),
+      'Ошибка восстановления'
+    );
+  });
+
+  it('checks launch args on mount, listens for open-wwiki-file, and cleans up on unmount', async () => {
+    let listenerCb: ((ev: { payload: string }) => void) | null = null;
+    vi.mocked(api.getLaunchArgs).mockResolvedValueOnce('launch.wwiki');
+    vi.mocked(appConfirm).mockResolvedValue(false);
+    vi.mocked(listen).mockImplementationOnce(async (_evt, cb) => {
+      listenerCb = cb as any;
+      return unlistenMock;
+    });
+
+    const Comp = defineComponent({
+      setup() {
+        return useAppSwitcher();
+      },
+      template: '<div />',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(api.getLaunchArgs).toHaveBeenCalled();
+    expect(appConfirm).toHaveBeenCalledWith(
+      expect.stringContaining('launch.wwiki'),
+      'Открытие резервной копии WorldWiki'
+    );
+
+    listenerCb?.({ payload: '' });
+    listenerCb?.({ payload: 'event.wwiki' });
+    await flushPromises();
+    expect(appConfirm).toHaveBeenCalledWith(
+      expect.stringContaining('event.wwiki'),
+      'Открытие резервной копии WorldWiki'
+    );
+
+    wrapper.unmount();
+    expect(unlistenMock).toHaveBeenCalled();
+  });
+
+  it('warns gracefully when getLaunchArgs or listen fails on mount', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(api.getLaunchArgs).mockRejectedValueOnce(new Error('args err'));
+    vi.mocked(listen).mockRejectedValueOnce(new Error('listen err'));
+
+    const Comp = defineComponent({
+      setup() {
+        return useAppSwitcher();
+      },
+      template: '<div />',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+    expect(warnSpy).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+    warnSpy.mockRestore();
   });
 });
 

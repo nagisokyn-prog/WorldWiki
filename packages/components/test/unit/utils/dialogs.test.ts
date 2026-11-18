@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { appConfirm } from '../../../src/ts/utils/dialogs';
+import { effectScope } from 'vue';
+import { appConfirm, useAppConfirm } from '../../../src/ts/utils/dialogs';
 
 describe('packages/components/src/ts/utils/dialogs.ts', () => {
   beforeEach(() => {
@@ -63,5 +64,27 @@ describe('packages/components/src/ts/utils/dialogs.ts', () => {
 
     appConfirm('Null buttons message');
     spy.mockRestore();
+  });
+
+  it('closes on Escape keydown and ignores other keys', async () => {
+    const promise = appConfirm('Escape test');
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(document.getElementById('app-confirm-cancel')).not.toBeNull();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(await promise).toBe(false);
+    expect(document.getElementById('app-confirm-cancel')).toBeNull();
+  });
+
+  it('provides useAppConfirm composable and disposes scope cleanly', async () => {
+    const scope = effectScope();
+    let api!: ReturnType<typeof useAppConfirm>;
+    scope.run(() => {
+      api = useAppConfirm();
+    });
+    const promise = api.confirm('Scoped confirm', 'Title');
+    (document.getElementById('app-confirm-ok') as HTMLButtonElement).click();
+    expect(await promise).toBe(true);
+    scope.stop();
   });
 });

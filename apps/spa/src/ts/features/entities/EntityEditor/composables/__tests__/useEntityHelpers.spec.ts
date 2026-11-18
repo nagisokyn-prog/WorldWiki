@@ -181,4 +181,40 @@ describe('useEntityHelpers', () => {
       expect(helpers.getPhotoUrl('C:/path/5.png')).toBe('C:/path/5.png');
     });
   });
+
+  it('covers getDynamicList object fallback, getItemSummary variants, getFieldLabel, and getContainerTitle', () => {
+    formData.value = { singleObj: { name: 'Single' } };
+    config.value = {
+      sections: [
+        {
+          id: 's1',
+          title: 'Main',
+          fields: [{ path: 'f_age', label: 'Возраст' }],
+          dynamicContainers: [{ id: 'c1', dataPath: 'events', title: 'События' }],
+        },
+      ],
+      templates: {
+        t_str: { fields: [{ id: 'name', label: 'Name' }] },
+      },
+    } as never;
+
+    const helpers = useEntityHelpers(formData, config);
+
+    expect(helpers.getDynamicList('singleObj')).toEqual([{ name: 'Single' }]);
+    expect(helpers.getDynamicList('')).toEqual([]);
+
+    const c = { template: 't_str' } as never;
+    expect(helpers.getItemSummary({ name: '  Герой  ' }, c)).toBe('Герой');
+    expect(helpers.getItemSummary({ name: 42 }, c)).toBe('42');
+    expect(helpers.getItemSummary({ name: { title: 'Глава 1' } }, c)).toBe('Глава 1');
+    expect(helpers.getItemSummary({ name: { chapter_id: 'ch_2' } }, c)).toBe('Глава: ch_2');
+    expect(helpers.getItemSummary({ name: { год: 1024 } }, c)).toBe('1024 г.');
+    expect(helpers.getItemSummary({ name: { название: 'Весна' } }, c)).toBe('Весна');
+    expect(helpers.getItemSummary({}, c)).toBe('');
+
+    expect(helpers.getFieldLabel('f_age')).toBe('Возраст');
+    expect(helpers.getFieldLabel('missing')).toBe('missing');
+    expect(helpers.getContainerTitle('events')).toBe('События');
+    expect(helpers.getContainerTitle('missing')).toBe('missing');
+  });
 });

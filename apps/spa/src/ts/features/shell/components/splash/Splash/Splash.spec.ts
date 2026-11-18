@@ -94,4 +94,28 @@ describe('Splash.vue.ts', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'F11' }));
     expect(mockInvoke).not.toHaveBeenCalled();
   });
+
+  it('handles missing perf fields, unknown level, non-Error rejection, and non-F11 key', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    mockInvoke.mockResolvedValueOnce({ level: 'unknown_level' });
+
+    wrapper = mountSplash();
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Enter' }));
+    expect(mockInvoke).not.toHaveBeenCalledWith('toggle_fullscreen');
+
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(localStorage.getItem('perfLevel')).toBe('unknown_level');
+    expect(mockPush).toHaveBeenCalledWith('/launcher');
+
+    wrapper.unmount();
+    wrapper = null;
+    mockPush.mockClear();
+
+    mockInvoke.mockRejectedValueOnce('plain string error');
+    wrapper = mountSplash();
+    await vi.advanceTimersByTimeAsync(2600);
+    expect(mockPush).toHaveBeenCalledWith('/launcher');
+
+    errSpy.mockRestore();
+  });
 });

@@ -102,4 +102,49 @@ describe('useTimeAtlasModal', () => {
     expect(atlas.worldTimeSnippet.value).toContain('Столица');
     expect(atlas.worldTimeSnippet.value).toContain('Западный Порт');
   });
+
+  it('navigates matrix months, selects matrix day, and copies snippets', async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+
+    const emit = vi.fn();
+    const atlas = useTimeAtlasModal({ project: 'test-proj', isOpen: true }, emit);
+    await vi.advanceTimersByTimeAsync(20);
+
+    // Without base cal, prev/next are no-op
+    atlas.matrixBaseCalId.value = '';
+    atlas.prevMatrixMonth();
+    atlas.nextMatrixMonth();
+    expect(atlas.matrixDaysCount.value).toBe(30);
+
+    // With base cal (1 month in cal_local)
+    atlas.matrixBaseCalId.value = 'cal_local';
+    atlas.matrixYear.value = 10;
+    atlas.matrixMonth.value = 0;
+    atlas.prevMatrixMonth();
+    expect(atlas.matrixYear.value).toBe(9);
+    atlas.nextMatrixMonth();
+    expect(atlas.matrixYear.value).toBe(10);
+
+    // Multi-month calendar (cal_master has 12 months)
+    atlas.matrixBaseCalId.value = 'cal_master';
+    atlas.matrixMonth.value = 1;
+    atlas.prevMatrixMonth();
+    expect(atlas.matrixMonth.value).toBe(0);
+    atlas.nextMatrixMonth();
+    expect(atlas.matrixMonth.value).toBe(1);
+
+    atlas.selectMatrixDay(9999);
+    expect(atlas.currentWorldMinute.value).toBe(9999);
+
+    await atlas.copySnippet('Test Date', 0);
+    expect(writeText).toHaveBeenCalledWith('Test Date');
+    expect(atlas.copiedIdx.value).toBe(0);
+    vi.advanceTimersByTime(2100);
+    expect(atlas.copiedIdx.value).toBeNull();
+
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
 });

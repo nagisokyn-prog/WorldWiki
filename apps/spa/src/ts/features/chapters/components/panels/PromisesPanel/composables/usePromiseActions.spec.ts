@@ -147,5 +147,58 @@ describe('usePromiseActions', () => {
     await actions.saveNote(item);
     expect(item.note).toBe('Важная заметка о шкатулке');
     expect(actions.editingNoteId.value).toBeNull();
+
+    actions.startEditNote(item);
+    actions.cancelEditNote();
+    expect(actions.editingNoteId.value).toBeNull();
+  });
+
+  it('covers updatePromise (debounced & immediate), addNewScene, and addSubScene (success & fallback)', async () => {
+    vi.useFakeTimers();
+    const { plotApi } = await import('@/services/api/plot.api');
+    const saveSpy = vi.spyOn(plotApi, 'savePlotPromise').mockResolvedValue({ id: 'plot_promises:sub1' } as never);
+
+    const parent: RichPlotPromise = {
+      id: 'plot_promises:item1',
+      project_id: 'proj-1',
+      chapter_id: 'chap-1',
+      kind: 'gun',
+      quote: 'Ружьё',
+      paragraph_index: 1,
+      status: 'planted',
+    };
+    promises.value = [parent];
+
+    const actions = usePromiseActions({
+      project: 'proj-1',
+      chapterId: 'chap-1',
+      promises,
+      emit: emitMock as never,
+    });
+
+    // Debounced updatePromise
+    void actions.updatePromise({ ...parent, quote: 'Ружьё 2' }, false);
+    vi.advanceTimersByTime(260);
+    expect(promises.value[0].quote).toBe('Ружьё 2');
+
+    // Immediate updatePromise
+    await actions.updatePromise({ ...parent, quote: 'Ружьё 3' }, true);
+    expect(promises.value[0].quote).toBe('Ружьё 3');
+
+    await actions.addNewScene();
+    expect(promises.value.some((p) => p.kind === 'scene')).toBe(true);
+
+    await actions.addSubScene(parent, { quote: 'Подсцена', paragraph_index: 2 });
+    expect(promises.value.some((p) => p.quote === 'Подсцена')).toBe(true);
+
+    // Fallback when savePlotPromise rejects on addSubScene
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    saveSpy.mockRejectedValueOnce(new Error('net err'));
+    await actions.addSubScene(parent, { quote: 'Подсцена оффлайн', paragraph_index: 3 });
+    expect(promises.value.some((p) => p.quote === 'Подсцена оффлайн')).toBe(true);
+
+    warnSpy.mockRestore();
+    saveSpy.mockRestore();
+    vi.useRealTimers();
   });
 });

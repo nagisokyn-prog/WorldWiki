@@ -65,5 +65,46 @@ describe('useTimelineInspectorNavigation', () => {
     expect(nav.activeChapterId.value).toBe('2');
     expect(nav.pingedEventId.value).toBe('1');
   });
+
+  it('scrolls to events and chapters with timers, handles hover highlights, and dispatches locate-promise on navigateToScene', () => {
+    vi.useFakeTimers();
+    const scrollIntoView = vi.fn();
+    const el = { scrollIntoView } as unknown as HTMLElement;
+    const qsSpy = vi.spyOn(document, 'querySelector').mockReturnValue(el);
+    const dispatchSpy = vi.spyOn(document, 'dispatchEvent');
+    const emit = vi.fn();
+
+    const nav = useTimelineInspectorNavigation(dummyChapters, dummyEvents, emit);
+
+    nav.scrollToEvent('ev:1');
+    expect(nav.pingedEventId.value).toBe('1');
+    vi.advanceTimersByTime(60);
+    expect(qsSpy).toHaveBeenCalledWith('[data-event-id="1"]');
+    expect(scrollIntoView).toHaveBeenCalled();
+    vi.advanceTimersByTime(2500);
+    expect(nav.pingedEventId.value).toBeNull();
+
+    nav.scrollToChapter('ch:2');
+    vi.advanceTimersByTime(60);
+    expect(qsSpy).toHaveBeenCalledWith('[data-chapter-id="2"]');
+
+    nav.hoveredEventId.value = 'ev:1';
+    expect(nav.isEventHighlighted(dummyEvents.value[0])).toBe(true);
+    nav.hoveredEventId.value = null;
+    nav.hoveredChapterId.value = 'ch:1';
+    expect(nav.isEventHighlighted(dummyEvents.value[0])).toBe(true);
+
+    nav.navigateToScene(dummyEvents.value[0]);
+    expect(emit).toHaveBeenCalledWith('open-chapter', { id: '1', title: 'Chapter 1' });
+    vi.advanceTimersByTime(160);
+    expect(dispatchSpy).toHaveBeenCalled();
+
+    // Missing reveal chapter_id guard
+    nav.navigateToScene({ id: 'ev:2', title: 'No reveal', m_abs: 0, reveals: [] } as unknown as FormattedInspectorEvent);
+
+    qsSpy.mockRestore();
+    dispatchSpy.mockRestore();
+    vi.useRealTimers();
+  });
 });
 

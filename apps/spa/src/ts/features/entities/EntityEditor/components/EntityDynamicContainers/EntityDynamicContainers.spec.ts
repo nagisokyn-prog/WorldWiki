@@ -40,5 +40,47 @@ describe('EntityDynamicContainers', () => {
     await hideBtn.trigger('click');
     expect(wrapper.emitted('hideContainer')).toEqual([['events']]);
   });
+
+  it('covers useEntityDynamicContainers composable methods directly', async () => {
+    const { useEntityDynamicContainers } = await import('./useEntityDynamicContainers');
+    const emit = vi.fn();
+    const list = [{ name: 'Old' }];
+    const container = { id: 'c1', title: 'Events', dataPath: 'events', template: 'tpl1' };
+    const hooks = useEntityDynamicContainers(
+      {
+        containers: [container],
+        config: { templates: { tpl1: { fields: [] } } },
+        project: 'p1',
+        entityId: 'e1',
+        entityType: 'character',
+        isContainerHidden: vi.fn(() => false),
+        isFieldChanged: vi.fn(() => false),
+        canHideContainer: vi.fn(() => true),
+        getDynamicList: vi.fn(() => list),
+        areAllCollapsed: vi.fn(() => false),
+        getResolvedTemplate: vi.fn(() => null),
+        getItemSummary: vi.fn(() => ''),
+        getProp: vi.fn(),
+        setProp: vi.fn(),
+        getOptionsFor: vi.fn(() => []),
+        isChapterField: vi.fn(() => false),
+        isItemCollapsed: vi.fn(() => false),
+      } as never,
+      emit
+    );
+
+    expect(hooks.getTemplateConf(container)).toEqual({});
+    expect(hooks.getAllTemplates()).toHaveProperty('tpl1');
+
+    hooks.handleItemUpdated(container, 0, { item: { name: 'New' }, idx: 0 });
+    expect(list[0].name).toBe('New');
+    expect(emit).toHaveBeenCalledWith('modified');
+
+    hooks.onToggleCollapse('events', 0);
+    expect(emit).toHaveBeenCalledWith('toggleItemCollapse', 'events', 0);
+
+    hooks.onRemoveItem('events', 0);
+    expect(emit).toHaveBeenCalledWith('removeDynamicItem', 'events', 0);
+  });
 });
 

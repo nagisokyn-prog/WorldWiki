@@ -337,5 +337,55 @@ describe('chapter.store', () => {
       const ch2 = await store.createNewChapter('project_1');
       expect(ch2.timeline_events).toEqual([]);
     });
+
+    it('covers selectVolume, openChapter auto-save, string participants, and non-Error catches', async () => {
+      const timeline = useTimelineStore();
+
+      // selectVolume + object volume id matching
+      store.hierarchy = {
+        volumes: [{ id: { id: 'volumes:vol_obj' } as unknown as string, title: 'ObjVol' }],
+        chapters: []
+      };
+      store.selectVolume('vol_obj');
+      expect(store.currentVolume?.title).toBe('ObjVol');
+
+      store.selectVolume('missing_vol');
+      expect(store.currentVolume).toBeNull();
+
+      // openChapter auto-saves when hasUnsavedChanges is true
+      store.hasUnsavedChanges = true;
+      store.currentChapter = { id: 'ch_prev', title: 'Prev', content: '', participants: [] } as any;
+      vi.mocked(chapterService.save).mockResolvedValue({} as any);
+      vi.mocked(chapterService.get).mockResolvedValueOnce({
+        id: 'ch_next',
+        title: 'Next',
+        content: 'Hero',
+        participants: ['char_1', { id: 'char_2', type: 'character', name: 'Bob' }],
+        timeline_events: null,
+        footnotes: null
+      } as any);
+      vi.spyOn(timeline, 'parseParticipants').mockReturnValue([
+        { id: 'char_1', type: 'character', name: 'Hero' } as any,
+        { id: 'other', type: 'character', name: 'Bob' } as any,
+        { id: 'char_3', type: 'character', name: 'New' } as any
+      ]);
+
+      expect(await store.openChapter('project_1', 'ch_next')).toBe(true);
+      expect(store.currentChapter?.participants).toHaveLength(3);
+
+      // Non-Error rejection branches
+      vi.mocked(api.getChapterHierarchy).mockRejectedValueOnce('raw hierarchy err');
+      await store.loadChapters('project_1');
+      expect(store.debugError).toContain('raw hierarchy err');
+
+      store.currentChapter = { id: 'ch_1', content: '', participants: [] } as any;
+      vi.mocked(chapterService.save).mockRejectedValueOnce('raw save err');
+      expect(await store.saveChapter('project_1')).toBe(false);
+      expect(store.debugError).toContain('raw save err');
+
+      vi.mocked(chapterService.get).mockRejectedValueOnce('raw open err');
+      expect(await store.openChapter('project_1', 'ch_err')).toBe(false);
+      expect(store.debugError).toContain('raw open err');
+    });
   });
 });

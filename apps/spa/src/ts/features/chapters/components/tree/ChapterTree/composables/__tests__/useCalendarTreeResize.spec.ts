@@ -61,4 +61,47 @@ describe('useCalendarTreeResize', () => {
 
     expect(calendarHeight.value).toBe(500);
   });
+
+  it('resets invalid height on mount, handles RAF & storage errors, and cleans up on unmount', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    localStorage.setItem('chapter-tree-calendar-h', '10');
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 77;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+
+    let resize!: ReturnType<typeof useCalendarTreeResize>;
+    const Comp = defineComponent({
+      setup() {
+        resize = useCalendarTreeResize();
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    expect(resize.calendarHeight.value).toBe(170);
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
+      throw new Error('quota');
+    });
+
+    resize.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 140 }));
+    expect(resize.calendarHeight.value).toBe(210);
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(warnSpy).toHaveBeenCalled();
+
+    // Unmount mid-drag
+    resize.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }));
+    wrapper.unmount();
+    expect(resize.isResizing.value).toBe(false);
+
+    setItemSpy.mockRestore();
+    warnSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
 });

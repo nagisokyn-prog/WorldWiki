@@ -394,6 +394,44 @@ describe('useChapterTree', () => {
       expect(consoleSpy).toHaveBeenCalledWith('ChapterTree load error:', expect.any(Error));
       consoleSpy.mockRestore();
     });
+
+    it('covers planet and calendar selection, opening, renaming, deleting, and document events', async () => {
+      const TestComp = defineComponent({
+        setup() {
+          return { ...useChapterTree(props, emit) };
+        },
+        template: '<div></div>',
+      });
+      const wrapper = mount(TestComp);
+      const tree = wrapper.vm as unknown as ReturnType<typeof useChapterTree>;
+
+      const planetNode = {
+        id: 'entity:planet:earth',
+        data: { type: 'planet', original: { id: 'planets:earth', name: 'Земля' } },
+      };
+      const calNode = {
+        id: 'entity:calendar:greg',
+        data: { type: 'calendar', original: { id: 'calendars:greg', name: 'Григорианский', data: { название: 'Григорианский' } } },
+      };
+
+      tree.handleSelect([planetNode], new MouseEvent('click'));
+      expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ entityType: 'planet', id: 'earth' }));
+
+      tree.handleSelect([calNode], new MouseEvent('click'));
+      expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ entityType: 'calendar', id: 'greg' }));
+
+      tree.handleOpen(planetNode);
+      tree.handleOpen(calNode);
+
+      await tree.handleRename(planetNode, 'Терра');
+      await tree.handleRename(calNode, 'Имперский');
+
+      document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: 'calendars:greg', name: 'Новый' } }));
+      document.dispatchEvent(new CustomEvent('ww:planet-deleted'));
+      document.dispatchEvent(new CustomEvent('ww:calendar-deleted'));
+
+      wrapper.unmount();
+    });
   });
 });
 

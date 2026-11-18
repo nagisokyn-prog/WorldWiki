@@ -16,6 +16,11 @@ vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
 }));
 
+vi.mock('@tauri-apps/api/event', () => ({
+  emit: vi.fn().mockResolvedValue(undefined),
+  listen: vi.fn().mockResolvedValue(() => {}),
+}));
+
 describe('useEntityEditorWindow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -101,6 +106,95 @@ describe('useEntityEditorWindow', () => {
     expect(hook.showHistory.value).toBe(true);
     hook.toggleHistory();
     expect(hook.showHistory.value).toBe(false);
+  });
+
+  it('covers saveEntity, handleUpdateData live sync, Tauri listeners on mount, and cleanup on unmount', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+    const api = await import('@/services/api.client');
+    const { appAlert } = await import('@worldwiki/components');
+
+    let hook!: ReturnType<typeof useEntityEditorWindow>;
+    const Comp = defineComponent({
+      setup() {
+        hook = useEntityEditorWindow({
+          project: 'test_proj',
+          entityType: 'character',
+          entityId: 'char1',
+        });
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    // handleUpdateData debounced live sync
+    vi.useFakeTimers();
+    hook.handleUpdateData({ name: 'Live Hero' });
+    vi.advanceTimersByTime(300);
+    vi.useRealTimers();
+    await flushPromises();
+
+    // saveEntity success
+    hook.editorRef.value = {
+      getFormData: () => ({ name: 'Saved Hero' }),
+      getForeignUpdates: () => ({}),
+    } as never;
+    await hook.save();
+    expect(api.saveEntityWithRelations).toHaveBeenCalled();
+    expect(hook.isUnsaved.value).toBe(false);
+
+    // save error
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.saveEntityWithRelations).mockRejectedValueOnce(new Error('save fail'));
+    await hook.save();
+    expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения сущности');
+    errSpy.mockRestore();
+
+    wrapper.unmount();
+    vi.useRealTimers();
+  });
+
+  it('triggers Tauri ww-entity-saved and ww-entity-live-sync listeners', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+    const { listen } = await import('@tauri-apps/api/event');
+    const { entityApi } = await import('@/services/Entity/entity.api');
+
+    const handlers: Record<string, (e: { payload: Record<string, unknown> }) => void> = {};
+    vi.mocked(listen).mockImplementation(async (ev, cb) => {
+      handlers[ev] = cb as typeof handlers[string];
+      return () => {};
+    });
+
+    let hook!: ReturnType<typeof useEntityEditorWindow>;
+    const Comp = defineComponent({
+      setup() {
+        hook = useEntityEditorWindow({
+          project: 'test_proj',
+          entityType: 'character',
+          entityId: 'char1',
+        });
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    handlers['ww-entity-saved']?.({ payload: { type: 'character', id: 'entities:char1' } });
+    await flushPromises();
+    expect(entityApi.getEntity).toHaveBeenCalledTimes(2);
+
+    handlers['ww-entity-live-sync']?.({
+      payload: { type: 'character', id: 'char1', data: { name: 'Synced Hero' }, sender: 'other-window' },
+    });
+    expect(hook.initialData.value.name).toBe('Synced Hero');
+
+    wrapper.unmount();
   });
 });
 

@@ -15,6 +15,14 @@ vi.mock('@tauri-apps/plugin-dialog', () => ({
   open: vi.fn()
 }));
 
+vi.mock('@worldwiki/components', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@worldwiki/components')>();
+  return {
+    ...actual,
+    appAlert: vi.fn().mockResolvedValue(undefined),
+  };
+});
+
 describe('useProjectLauncherModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -146,5 +154,50 @@ describe('useProjectLauncherModal', () => {
     modal.formData.value.cover_image = 'path/to/cover.png';
     modal.removeCoverImage();
     expect(modal.formData.value.cover_image).toBeNull();
+  });
+
+  it('covers deleteCustomGenre, removeGenre, selectCoverImage, resolveCoverUrl, custom type submit, and error alert', async () => {
+    const { open } = await import('@tauri-apps/plugin-dialog');
+    const api = await import('@/services/api.client');
+
+    const loadProjectsMock = vi.fn().mockResolvedValue(undefined);
+    const modal = useProjectLauncherModal(loadProjectsMock);
+    modal.openCreateModal();
+
+    modal.customGenreInput.value = 'ЛитРПГ';
+    modal.addCustomGenre();
+    modal.deleteCustomGenre('ЛитРПГ');
+    expect(modal.customGenresList.value).toEqual([]);
+
+    modal.formData.value.genres = ['fantasy', 'sci-fi'];
+    modal.removeGenre('fantasy');
+    expect(modal.formData.value.genres).toEqual(['sci-fi']);
+
+    vi.mocked(open).mockResolvedValueOnce('/tmp/pic.png');
+    const copySpy = vi.spyOn(api, 'copyBackgroundFile').mockResolvedValueOnce('assets/pic.png');
+    await modal.selectCoverImage();
+    expect(modal.formData.value.cover_image).toBe('assets/pic.png');
+    copySpy.mockRestore();
+
+    expect(modal.resolveCoverUrl(null)).toBe('');
+    expect(modal.resolveCoverUrl('https://x/a.png')).toBe('https://x/a.png');
+    expect(modal.resolveCoverUrl('/local/a.png')).toBe('/local/a.png');
+
+    modal.formData.value.name = 'Новый проект';
+    modal.formData.value.type = 'custom';
+    modal.customTypeInput.value = 'Поэма';
+    vi.mocked(projectService.createProject).mockResolvedValueOnce(undefined as never);
+    await modal.submitForm();
+    expect(projectService.createProject).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Новый проект', type: 'Поэма' })
+    );
+
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    modal.formData.value.name = 'Fail';
+    modal.formData.value.type = 'custom';
+    modal.customTypeInput.value = '';
+    vi.mocked(projectService.createProject).mockRejectedValueOnce(new Error('db err'));
+    await modal.submitForm();
+    errSpy.mockRestore();
   });
 });

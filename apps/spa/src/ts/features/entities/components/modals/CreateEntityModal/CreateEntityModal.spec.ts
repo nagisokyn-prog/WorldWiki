@@ -131,5 +131,47 @@ describe('useCreateEntityModal', () => {
       name: 'Мерлин',
     });
   });
+
+  it('covers selectType, handleClose, missing type validation, load error, and mount/watch lifecycle', async () => {
+    const { defineComponent, reactive } = await import('vue');
+    const { mount, flushPromises } = await import('@vue/test-utils');
+
+    const props = reactive({ isOpen: true, projectName: 'test-project' });
+    const emit = vi.fn();
+    let modal!: ReturnType<typeof useCreateEntityModal>;
+
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.getEntitySchemas).mockRejectedValueOnce(new Error('schema err'));
+
+    const Comp = defineComponent({
+      setup() {
+        modal = useCreateEntityModal(props, emit);
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+    expect(modal.errorMessage.value).toBe('Не удалось загрузить типы сущностей');
+    errSpy.mockRestore();
+
+    modal.selectType('location');
+    expect(modal.selectedEntityType.value).toBe('location');
+
+    modal.selectedEntityType.value = '';
+    modal.entityName.value = 'Valid Name';
+    modal.handleSubmit();
+    expect(modal.errorMessage.value).toBe('Выберите тип сущности');
+
+    modal.handleClose();
+    expect(emit).toHaveBeenCalledWith('close');
+
+    props.isOpen = false;
+    await flushPromises();
+    expect(modal.entityName.value).toBe('');
+
+    wrapper.unmount();
+  });
 });
 

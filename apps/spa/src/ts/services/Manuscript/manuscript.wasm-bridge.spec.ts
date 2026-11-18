@@ -40,5 +40,45 @@ describe('manuscript.wasm-bridge', () => {
     expect(resolved[0].target_title).toBe('Король Артур');
     expect(resolved[1].is_resolved).toBe(false);
   });
+
+  it('covers detectActiveEntityQuery, isManuscriptWasmReady, and JS fallbacks on WASM error', async () => {
+    const { vi } = await import('vitest');
+    const {
+      getManuscriptEngine,
+      isManuscriptWasmReady,
+      detectActiveEntityQuery,
+    } = await import('./manuscript.wasm-bridge');
+
+    await ensureManuscriptWasm();
+    const engine = getManuscriptEngine();
+    expect(engine).not.toBeNull();
+    expect(isManuscriptWasmReady()).toBe(true);
+
+    expect(detectActiveEntityQuery('')).toBeNull();
+    expect(detectActiveEntityQuery('Привет ((Артур))')).toEqual({ query: 'Артур', length: 9, isClosed: true });
+    expect(detectActiveEntityQuery('Привет ((Мер')).toEqual({ query: 'Мер', length: 5, isClosed: false });
+    expect(detectActiveEntityQuery('Привет мир')).toBeNull();
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const extSpy = vi.spyOn(engine!, 'extract_entities').mockImplementationOnce(() => {
+      throw new Error('extract err');
+    });
+    const resSpy = vi.spyOn(engine!, 'resolve_cross_references').mockImplementationOnce(() => {
+      throw new Error('resolve err');
+    });
+
+    const fbMentions = extractEntityMentions('((Герой)) и ((Маг))');
+    expect(fbMentions).toHaveLength(2);
+
+    const fbResolved = resolveCrossReferences(
+      [{ id: 'r1', target_id: 'e1', ref_type: 'character' }],
+      { e1: { title: 'Герой' } }
+    );
+    expect(fbResolved[0].is_resolved).toBe(true);
+
+    extSpy.mockRestore();
+    resSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
 });
 

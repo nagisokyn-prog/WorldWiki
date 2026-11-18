@@ -109,4 +109,80 @@ describe('useGlobalCalendarWidget', () => {
     widget.selectedLocalCal.value = '';
     expect(widget.formattedLocalDate.value).toBe('');
   });
+
+  it('covers prevDay, nextDay, atlas/explainer toggles, dateExplanation, copySnippet, and calendar events', async () => {
+    vi.useFakeTimers();
+    const reactiveProps = { project: 'my-proj' };
+    let widgetInstance!: ReturnType<typeof useGlobalCalendarWidget>;
+    const Comp = defineComponent({
+      setup() {
+        widgetInstance = useGlobalCalendarWidget(reactiveProps);
+        return () => null;
+      },
+    });
+
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    // prevDay & nextDay transitions across day, month, and year boundaries
+    widgetInstance.currentMasterInput.value = { era_index: 0, year: 2, month: 0, day: 1, hour: 12, minute: 0 };
+    widgetInstance.prevDay();
+    expect(widgetInstance.currentMasterInput.value.year).toBe(1);
+
+    widgetInstance.nextDay();
+    expect(widgetInstance.currentMasterInput.value.year).toBe(2);
+    expect(widgetInstance.currentMasterInput.value.day).toBe(1);
+
+    widgetInstance.nextDay();
+    expect(widgetInstance.currentMasterInput.value.day).toBe(2);
+    widgetInstance.prevDay();
+    expect(widgetInstance.currentMasterInput.value.day).toBe(1);
+
+    // Computed metadata & toggles
+    expect(widgetInstance.maxDaysInCurrentMonth.value).toBe(30);
+    expect(widgetInstance.maxHoursInDay.value).toBe(24);
+    expect(widgetInstance.maxMinutesInHour.value).toBe(60);
+    expect(widgetInstance.activeMoons.value).toEqual([]);
+    expect(widgetInstance.activeHoliday.value).toBeFalsy();
+    expect(widgetInstance.dateExplanation.value).toBeTruthy();
+
+    widgetInstance.openAtlas();
+    expect(widgetInstance.isAtlasOpen.value).toBe(true);
+    widgetInstance.closeAtlas();
+    expect(widgetInstance.isAtlasOpen.value).toBe(false);
+
+    widgetInstance.toggleExplainer();
+    expect(widgetInstance.isExplainerOpen.value).toBe(true);
+    widgetInstance.closeExplainer();
+    expect(widgetInstance.isExplainerOpen.value).toBe(false);
+
+    await widgetInstance.copySnippet();
+    if (widgetInstance.dateExplanation.value?.snippet) {
+      expect(widgetInstance.isCopied.value).toBe(true);
+      vi.advanceTimersByTime(2000);
+      expect(widgetInstance.isCopied.value).toBe(false);
+    }
+
+    // Event listeners reload calendars
+    document.dispatchEvent(new CustomEvent('ww:calendar-saved'));
+    document.dispatchEvent(new CustomEvent('ww:calendar-deleted'));
+    document.dispatchEvent(new CustomEvent('ww:calendar-renamed'));
+
+    // Empty project guard via mounted watcher/onMounted
+    let emptyWidget!: ReturnType<typeof useGlobalCalendarWidget>;
+    const EmptyComp = defineComponent({
+      setup() {
+        emptyWidget = useGlobalCalendarWidget({ project: '' });
+        return () => null;
+      },
+    });
+    const emptyWrapper = mount(EmptyComp);
+    await Promise.resolve();
+    expect(emptyWidget.isLoading.value).toBe(false);
+    emptyWrapper.unmount();
+
+    vi.useRealTimers();
+    wrapper.unmount();
+  });
 });

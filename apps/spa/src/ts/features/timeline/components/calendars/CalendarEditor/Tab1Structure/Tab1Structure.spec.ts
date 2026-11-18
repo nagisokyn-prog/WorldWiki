@@ -119,4 +119,66 @@ describe('useTab1Structure', () => {
     leap.balanceMonthsForExtraDays();
     expect(emit).toHaveBeenCalled();
   });
+
+  it('covers remaining branches of useTab1Structure and useTab1Leap', () => {
+    const emit = vi.fn() as unknown as Tab1StructureEmits;
+    const s = useTab1Structure({ calendarData: mockCalendar, planetOrbitDays: 365.2422 }, emit);
+
+    // Computed getters
+    expect(s.seasons.value).toEqual([]);
+    expect(s.dialUnits.value).toHaveLength(3);
+    expect(s.dayStartOffset.value).toBe('midnight');
+    expect(s.leapRules.value).toHaveLength(1);
+    expect(s.timeSettings.value).toBeUndefined();
+    expect(s.extraDays.value).toBe(0);
+    expect(s.totalYearDays.value).toBe(59);
+    expect(s.firstMonthOfYear.value).toBe(0);
+    expect(s.newYearDay.value).toBe(1);
+
+    // Dial & week presets + guards
+    s.applyDialPreset('earth');
+    s.applyDialPreset('metric');
+    s.applyDialPreset('agrarian');
+    s.setDayStartOffset('sunrise');
+    s.applyWeekPreset(6);
+    s.applyWeekPreset(10);
+    s.applyWeekPreset(5);
+    s.reorderWeekday(0, -1); // out of bounds no-op
+    s.addCustomWeekday('   '); // blank no-op
+    s.setFirstMonthOfYear(1);
+    s.setNewYearDay(15);
+    s.updateLeapRuleField('interval', 8);
+    expect(emit).toHaveBeenCalledWith('update', { первый_месяц_года: 1 });
+    expect(emit).toHaveBeenCalledWith('update', { день_начала_года: 15 });
+
+    // Single weekday cannot be removed
+    const singleWeek = useTab1Structure(
+      { calendarData: { ...mockCalendar, названия_дней_недели: ['Один'], месяцы: [] } },
+      emit
+    );
+    (emit as unknown as ReturnType<typeof vi.fn>).mockClear();
+    singleWeek.removeWeekday(0);
+    singleWeek.balanceMonthsEvenly();
+    expect(emit).not.toHaveBeenCalled();
+
+    // useTab1Leap presets, suggestions, and computed previews
+    const { leap } = s;
+    expect(leap.driftLabel.value).toBeDefined();
+    expect(typeof leap.driftIsOk.value).toBe('boolean');
+    expect(leap.showWarningBanner.value).toBe(true);
+    expect(leap.yearTape.value.length).toBeGreaterThan(0);
+    expect(leap.upcomingYears.value.length).toBeGreaterThan(0);
+    expect(leap.suggestions.value.length).toBeGreaterThan(0);
+    expect(leap.targetMonthPreview.value).toContain('Февраль');
+
+    leap.selectSystemPreset('gregorian');
+    leap.selectSystemPreset('egyptian');
+    leap.selectSystemPreset('custom');
+    leap.applySuggestion('simple');
+    leap.applySuggestion('gregorian');
+    leap.applySuggestion('persian');
+    leap.applySuggestion('medler');
+    leap.resetExtraDays();
+    expect(emit).toHaveBeenCalledWith('update', { extra_days: 0 });
+  });
 });

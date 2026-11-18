@@ -127,5 +127,91 @@ describe('useCalendarEditor', () => {
     const savedState = JSON.parse(localStorage.getItem(editor.getStateKey()) || '{}');
     expect(savedState.unsavedData).toBeUndefined();
   });
+
+  it('covers updateName, setTab, modals, deleteCalendar, events, error paths, and calendarId watch', async () => {
+    const { defineComponent, h, reactive } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+
+    vi.useFakeTimers();
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const confirmMock = vi.fn().mockReturnValue(true);
+    vi.stubGlobal('confirm', confirmMock);
+
+    const props = reactive({ calendarId: 'cal_earth', projectId: 'test_proj' });
+    const emit = vi.fn();
+    let editor!: ReturnType<typeof useCalendarEditor>;
+
+    const Comp = defineComponent({
+      setup() {
+        editor = useCalendarEditor(props, emit);
+        return () => h('div');
+      }
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    // Tabs & modals & computed fallbacks
+    editor.setTab('cultureLore');
+    expect(editor.activeTab.value).toBe('cultureLore');
+    editor.openAuditModal();
+    editor.openPresetsModal();
+    expect(editor.isAuditModalOpen.value).toBe(true);
+    expect(editor.isPresetsModalOpen.value).toBe(true);
+    expect(editor.planetOrbitDays.value).toBe(365.2422);
+    expect(editor.masterCalData.value?.название).toBe('Земной календарь');
+    expect(editor.getScrollKey()).toContain('cal_earth');
+
+    // updateName + debounced draft save
+    editor.updateName('Переименованный');
+    expect(editor.calendarRecord.value?.name).toBe('Переименованный');
+    vi.advanceTimersByTime(300);
+    expect(localStorage.getItem(editor.getStateKey())).toContain('Переименованный');
+
+    // ww:calendar-renamed & ww:trigger-calendar-save events
+    document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: 'cal_earth', name: 'Извне' } }));
+    expect(editor.calendarRecord.value?.name).toBe('Извне');
+
+    document.dispatchEvent(new CustomEvent('ww:trigger-calendar-save', { detail: { id: 'cal_earth' } }));
+    await flushPromises();
+    expect(mockCalendarStore.saveCalendar).toHaveBeenCalled();
+
+    // deleteCalendar: cancelled -> confirmed -> error
+    confirmMock.mockReturnValueOnce(false);
+    await editor.deleteCalendar();
+    expect(mockCalendarStore.deleteCalendar).not.toHaveBeenCalled();
+
+    confirmMock.mockReturnValueOnce(true);
+    await editor.deleteCalendar();
+    expect(mockCalendarStore.deleteCalendar).toHaveBeenCalledWith('cal_earth');
+    expect(emit).toHaveBeenCalledWith('delete', 'cal_earth');
+
+    confirmMock.mockReturnValueOnce(true);
+    mockCalendarStore.deleteCalendar.mockRejectedValueOnce(new Error('del fail'));
+    await editor.deleteCalendar();
+    expect(editor.error.value).toBe('del fail');
+
+    // saveCalendar error
+    mockCalendarStore.saveCalendar.mockRejectedValueOnce(new Error('save fail'));
+    await editor.saveCalendar();
+    expect(editor.error.value).toBe('save fail');
+
+    // calendarId watch loads fallback default when calendar not found
+    mockCalendarStore.getCalendars.mockResolvedValueOnce([]);
+    props.calendarId = 'cal_missing';
+    await flushPromises();
+    expect(editor.calendarRecord.value?.id).toBe('cal_missing');
+
+    // loadCalendar error
+    mockCalendarStore.getCalendars.mockRejectedValueOnce(new Error('load fail'));
+    props.calendarId = 'cal_err';
+    await flushPromises();
+    expect(editor.error.value).toBe('load fail');
+
+    vi.unstubAllGlobals();
+    errSpy.mockRestore();
+    vi.useRealTimers();
+    wrapper.unmount();
+  });
 });
 

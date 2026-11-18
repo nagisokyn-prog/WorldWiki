@@ -106,5 +106,63 @@ describe('useChapterRightSidebar', () => {
     expect(selectedArcId.value).toBeNull();
     expect(localStorage.getItem('chapters-sidebar-selected-arc-id')).toBeNull();
   });
+
+  it('resizes participants, volumePlan, chapterPlan, delegates panel methods, and cleans up on unmount', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    localStorage.setItem('chapters-panel-timeline-h', 'invalid');
+    localStorage.setItem('chapters-panel-participants-h', '20');
+    localStorage.setItem('chapters-panel-volplan-h', '30');
+    localStorage.setItem('chapters-panel-chaplan-h', '40');
+
+    let sidebar!: ReturnType<typeof useChapterRightSidebar>;
+    const Comp = defineComponent({
+      setup() {
+        sidebar = useChapterRightSidebar({ project: 'proj-1' });
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    expect(sidebar.timelineHeight.value).toBe(260);
+    expect(sidebar.participantsHeight.value).toBe(220);
+    expect(sidebar.volumePlanHeight.value).toBe(220);
+    expect(sidebar.chapterPlanHeight.value).toBe(220);
+
+    const addPromise = vi.fn();
+    const addMilestone = vi.fn();
+    const addSubScene = vi.fn();
+    const loadPromises = vi.fn();
+    sidebar.promisesPanelRef.value = {
+      addPromise,
+      addMilestone,
+      addSubScene,
+      loadPromises,
+      promises: [{ id: 'p1' }],
+    } as unknown as typeof sidebar.promisesPanelRef.value;
+
+    expect(sidebar.promises.value).toHaveLength(1);
+    sidebar.addPromise({ kind: 'gun', quote: 'Q', paragraph_index: 1 });
+    expect(addPromise).toHaveBeenCalled();
+    sidebar.addMilestone({ promiseId: 'p1', stage: 'resolution', quote: 'M', paragraph_index: 2 });
+    expect(addMilestone).toHaveBeenCalled();
+    sidebar.addSubScene({ id: 'p1' } as never, { quote: 'S', paragraph_index: 3 });
+    expect(addSubScene).toHaveBeenCalled();
+    sidebar.loadPromises();
+    expect(loadPromises).toHaveBeenCalled();
+
+    for (const panel of ['participants', 'volumePlan', 'chapterPlan'] as const) {
+      sidebar.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }), panel);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientY: 130 }));
+      document.dispatchEvent(new MouseEvent('mouseup'));
+    }
+
+    expect(sidebar.participantsHeight.value).toBe(250);
+    expect(sidebar.volumePlanHeight.value).toBe(250);
+    expect(sidebar.chapterPlanHeight.value).toBe(250);
+
+    wrapper.unmount();
+  });
 });
 

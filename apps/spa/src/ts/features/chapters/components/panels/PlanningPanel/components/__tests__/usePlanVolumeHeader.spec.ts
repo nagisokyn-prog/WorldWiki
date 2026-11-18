@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { usePlanVolumeHeader } from '../PlanVolumeHeader/usePlanVolumeHeader';
 import type { PlanVolumeHeaderProps } from '../PlanVolumeHeader/PlanVolumeHeader.model';
 
@@ -61,5 +63,36 @@ describe('usePlanVolumeHeader', () => {
     selectVolume('vol_2');
     expect(emit).toHaveBeenCalledWith('select-volume', 'vol_2');
     expect(isVolumeMenuOpen.value).toBe(false);
+  });
+
+  it('closes volume menu on outside document click and keeps it open on inside click', () => {
+    const props: PlanVolumeHeaderProps = {
+      title: 'Том 1',
+      stats: { total: 1, done: 1, inProgress: 0, planned: 0, blocked: 0 },
+    };
+    const emit = vi.fn();
+    let api!: ReturnType<typeof usePlanVolumeHeader>;
+
+    const Comp = defineComponent({
+      setup() {
+        api = usePlanVolumeHeader(props, emit);
+        return {};
+      },
+      template: '<div class="volume-select-container"><button class="inside">in</button></div><div class="outside">out</div>',
+    });
+
+    const wrapper = mount(Comp, { attachTo: document.body });
+    api.toggleVolumeMenu();
+    expect(api.isVolumeMenuOpen.value).toBe(true);
+
+    const inside = wrapper.find('.inside').element as HTMLElement;
+    inside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(api.isVolumeMenuOpen.value).toBe(true);
+
+    const outside = wrapper.find('.outside').element as HTMLElement;
+    outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(api.isVolumeMenuOpen.value).toBe(false);
+
+    wrapper.unmount();
   });
 });

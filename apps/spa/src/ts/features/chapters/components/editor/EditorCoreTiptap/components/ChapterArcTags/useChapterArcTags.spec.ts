@@ -91,4 +91,43 @@ describe('useChapterArcTags', () => {
     await detachArc('arc_1');
     expect(unbindSpy).toHaveBeenCalledWith('arc_1', 'chapters:ch_1');
   });
+
+  it('loads arcs and bindings, and creates+attaches a new arc', async () => {
+    const store = useStoryArcsStore();
+    const loadArcsSpy = vi.spyOn(store, 'loadArcs').mockImplementation(async () => {
+      store.arcs = [{ id: 'arc_1', title: 'A1', arc_type: 'event', status: 'in_progress' }];
+    });
+    const loadBindingsSpy = vi.spyOn(store, 'loadBindings').mockResolvedValue();
+    const saveArcSpy = vi.spyOn(store, 'saveArc').mockResolvedValue({
+      id: 'arc_new',
+      title: 'Новая',
+      arc_type: 'event',
+      status: 'in_progress',
+    });
+    const bindSpy = vi.spyOn(store, 'bindChapter').mockResolvedValue();
+
+    const changeSpy = vi.fn();
+    const tags = useChapterArcTags({ project: 'test_proj', chapterId: 'ch_1' }, changeSpy);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(loadArcsSpy).toHaveBeenCalledWith('test_proj');
+    expect(loadBindingsSpy).toHaveBeenCalledWith('arc_1');
+
+    // Empty title guard
+    tags.newArcTitle.value = '   ';
+    await tags.createAndAttachArc();
+    expect(saveArcSpy).not.toHaveBeenCalled();
+
+    tags.newArcTitle.value = 'Новая арка';
+    await tags.createAndAttachArc();
+    expect(saveArcSpy).toHaveBeenCalled();
+    expect(bindSpy).toHaveBeenCalledWith({
+      in: 'arc_new',
+      out: 'chapters:ch_1',
+      project_id: 'test_proj',
+    });
+    expect(tags.newArcTitle.value).toBe('');
+    expect(tags.isCreating.value).toBe(false);
+  });
 });

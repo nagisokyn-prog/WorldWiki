@@ -206,4 +206,38 @@ describe('useTimelineInspector Composable', () => {
     expect(ev.hasTimezoneDiscrepancy).toBe(false);
     expect(ev.localTimeHint).toContain('Таверна «У Заката»');
   });
+
+  it('computes volumeOptions, volumeSegments, sceneHierarchyLines, canvasMinWidth and handles errors/empty projectId', async () => {
+    const empty = useTimelineInspector('');
+    await empty.refresh();
+    expect(empty.filteredChapters.value).toEqual([]);
+    expect(empty.filteredEvents.value).toEqual([]);
+
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(apiClient.getTimelineInspectorData).mockRejectedValueOnce(new Error('inspector fail'));
+    const failed = useTimelineInspector('test_proj');
+    await failed.refresh();
+    expect(failed.error.value).toBe('inspector fail');
+    expect(failed.isLoading.value).toBe(false);
+    errSpy.mockRestore();
+
+    vi.mocked(apiClient.getTimelineInspectorData).mockResolvedValueOnce({
+      chapters: [{ id: 'ch:1', title: 'Глава 1', sort_order: 1 }],
+      events: [
+        {
+          id: 'ev:1',
+          title: 'Событие 1',
+          m_abs: 100,
+          reveals: [{ chapter_id: 'ch:1', chapter_title: 'Глава 1', kind: 'direct' }],
+          participants: [],
+        },
+      ],
+    });
+    const ok = useTimelineInspector('test_proj');
+    await ok.refresh();
+    expect(Array.isArray(ok.volumeOptions.value)).toBe(true);
+    expect(Array.isArray(ok.volumeSegments.value)).toBe(true);
+    expect(Array.isArray(ok.sceneHierarchyLines.value)).toBe(true);
+    expect(ok.canvasMinWidth.value).toMatch(/px$/);
+  });
 });

@@ -61,4 +61,50 @@ describe('useFloatingEntityEditor', () => {
 
     expect(entityApi.getEntity).toHaveBeenCalledTimes(2);
   });
+
+  it('covers windowTitle, entityIcon variants, handleSave, close, mount/unmount, and error catch', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    const emit = vi.fn();
+
+    let ed!: ReturnType<typeof useFloatingEntityEditor>;
+    const Comp = defineComponent({
+      setup() {
+        ed = useFloatingEntityEditor(
+          { project: 'p1', entityType: 'location', entityId: 'loc1', isOpen: true },
+          emit
+        );
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    expect(ed.windowTitle.value).toBe('Редактор: Location');
+    expect(ed.entityIcon.value).toBe('fas fa-map-marker-alt');
+    ed.handleSave();
+    expect(emit).toHaveBeenCalledWith('saved');
+    ed.close();
+    expect(emit).toHaveBeenCalledWith('close');
+    wrapper.unmount();
+
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.getEntitySchemas).mockRejectedValueOnce(new Error('schema fail'));
+    const itemEd = useFloatingEntityEditor(
+      { project: 'p1', entityType: 'item', entityId: 'i1', isOpen: true },
+      emit
+    );
+    await flushPromises();
+    expect(itemEd.entityIcon.value).toBe('fas fa-box-open');
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+
+    const otherEd = useFloatingEntityEditor(
+      { project: 'p1', entityType: 'custom', entityId: 'c1', isOpen: false },
+      emit
+    );
+    expect(otherEd.entityIcon.value).toBe('fas fa-edit');
+  });
 });

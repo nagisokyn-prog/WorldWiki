@@ -101,5 +101,32 @@ describe('useLocationAstronomyWidget', () => {
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
   });
+
+  it('covers locationAstronomyWidget.utils formatting and season calculation', async () => {
+    const {
+      formatTimezoneChipLabel,
+      formatCoordinatesLabel,
+      computeAvailableSeasons,
+    } = await import('../locationAstronomyWidget.utils');
+
+    expect(formatTimezoneChipLabel({ id: 'tz1', name: 'UTC+3', base_offset_hours: 3 })).toBe('UTC+3');
+    expect(formatTimezoneChipLabel({ id: 'tz2', name: 'Столичный', base_offset_hours: 3 })).toBe('Столичный (UTC+3)');
+    expect(formatTimezoneChipLabel({ id: 'tz3', name: 'Западный', base_offset_hours: -5 })).toBe('Западный (UTC-5)');
+
+    expect(formatCoordinatesLabel(null, null)).toBe('');
+    expect(formatCoordinatesLabel(55.7, 37.6)).toBe('55.7° с.ш., 37.6° в.д.');
+    expect(formatCoordinatesLabel(-12, -45)).toBe('12° ю.ш., 45° з.д.');
+    expect(formatCoordinatesLabel(10, null)).toBe('10° с.ш.');
+
+    expect(computeAvailableSeasons(null, null)).toEqual([]);
+    const seasons = computeAvailableSeasons(
+      {
+        месяцы: [{ название: 'М1', дней: 30 }, { название: 'М2', дней: 31 }],
+        сезоны: [{ название: 'Лето', месяцы: [1] }],
+      } as never,
+      null
+    );
+    expect(seasons).toEqual([{ name: 'Лето', startDay: 30 }]);
+  });
 });
 

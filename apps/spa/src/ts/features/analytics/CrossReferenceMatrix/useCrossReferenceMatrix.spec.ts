@@ -72,7 +72,7 @@ describe('useCrossReferenceMatrix', () => {
 
     matrix.filters.value.selectedVolumeId = 'all';
     matrix.filters.value.showDeceasedOnly = true;
-    expect(matrix.filteredRows.value).toHaveLength(1);
+    expect(matrix.rows.value).toHaveLength(1);
 
     projRef.value = 'proj_updated';
     await flushPromises();

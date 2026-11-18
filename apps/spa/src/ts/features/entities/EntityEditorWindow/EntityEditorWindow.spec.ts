@@ -194,6 +194,15 @@ describe('useEntityEditorWindow', () => {
     });
     expect(hook.initialData.value.name).toBe('Synced Hero');
 
+    // Empty entityId/project guards + previewData fallback
+    const emptyHook = useEntityEditorWindow({ project: '', entityType: '', entityId: '' });
+    await emptyHook.loadData();
+    await emptyHook.save();
+    await emptyHook.loadHistory();
+    emptyHook.previewHistory({ snapshot: undefined } as any);
+    emptyHook.exitHistoryPreview();
+    expect(emptyHook.initialData.value).toEqual({});
+
     wrapper.unmount();
   });
 });

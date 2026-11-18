@@ -80,5 +80,31 @@ describe('manuscript.wasm-bridge', () => {
     resSpy.mockRestore();
     warnSpy.mockRestore();
   });
+
+  it('covers getBuiltinModule fallback and initWasm failure fallback in fresh module', async () => {
+    const { vi } = await import('vitest');
+    vi.resetModules();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+    const mod = await import('./manuscript.wasm-bridge');
+    expect(mod.isManuscriptWasmReady()).toBe(false);
+    // Test JS fallback when WASM is not initialized and process is temporarily stubbed
+    const origProcess = globalThis.process;
+    vi.stubGlobal('process', undefined);
+    expect(mod.getManuscriptEngine()).toBeNull();
+    const mentions = mod.extractEntityMentions('((Алиса)) и ((Боб|Маг))');
+    expect(mentions).toHaveLength(2);
+    const resolved = mod.resolveCrossReferences(
+      [{ id: 'r1', target_id: 'e1', ref_type: 'char' }, { id: 'r2', target_id: 'e2', ref_type: 'loc' }],
+      { e1: { title: 'Алиса' } }
+    );
+    expect(resolved[0].is_resolved).toBe(true);
+    expect(resolved[1].is_resolved).toBe(false);
+    vi.stubGlobal('process', origProcess);
+
+    warnSpy.mockRestore();
+    debugSpy.mockRestore();
+  });
 });
 

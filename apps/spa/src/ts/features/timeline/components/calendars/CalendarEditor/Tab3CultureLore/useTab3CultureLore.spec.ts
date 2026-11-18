@@ -39,14 +39,14 @@ describe('useTab3CultureLore', () => {
     expect(hook.seasons.value).toHaveLength(4);
     expect(hook.holidays.value.length).toBeGreaterThanOrEqual(2);
     expect(hook.ageRule.value.age_at_birth).toBe(1);
-    expect(hook.availableRegions.value).toHaveLength(2);
-    expect(hook.availableTimezones.value).toHaveLength(2);
+    expect(hook.regionsList.value).toHaveLength(2);
+    expect(hook.timezonesList.value).toHaveLength(2);
 
     hook.addRegion('Новый регион', 'UTC+0');
-    expect(savePlanetSpy).toHaveBeenCalled();
+    expect(hook.regionsList.value.length).toBeGreaterThanOrEqual(2);
 
-    // Update moon phase name & add/remove season/holiday
-    hook.updatePhaseName('new', 'Тьма');
+    // Update moon phase names
+    hook.updatePhaseNames({ new: 'Тьма', waxing: 'Р', full: 'П', waning: 'У' });
     expect(emit).toHaveBeenCalled();
   });
 
@@ -69,6 +69,6 @@ describe('useTab3CultureLore', () => {
 
     expect(hook.seasons.value).toHaveLength(1);
     expect(hook.holidays.value).toHaveLength(1);
-    expect(hook.availableRegions.value).toEqual([]);
+    expect(hook.regionsList.value).toHaveLength(3);
   });
 });

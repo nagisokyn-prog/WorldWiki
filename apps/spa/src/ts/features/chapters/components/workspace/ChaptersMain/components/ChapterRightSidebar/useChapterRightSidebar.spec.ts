@@ -181,13 +181,13 @@ describe('useChapterRightSidebar', () => {
 
     const wrapper = mount(Comp);
     expect(sidebar.activeTab.value).toBe('plans');
-    expect(sidebar.selectedArcTitle.value).toBe('');
+    expect(sidebar.currentArcTitle.value).toBe('');
 
     sidebar.selectArc('arc_unknown');
-    expect(sidebar.selectedArcTitle.value).toBe('Арка');
+    expect(sidebar.currentArcTitle.value).toBe('Арка');
 
-    sidebar.togglePanel('chapterPlan');
-    sidebar.togglePanel('chapterPlan');
+    sidebar.setPlanScope('chapter');
+    sidebar.setPlanScope('volume');
 
     // RAF throttling with 2 mousemove events before mouseup
     sidebar.startVerticalResize(new MouseEvent('mousedown', { clientY: 100 }), 'timeline');

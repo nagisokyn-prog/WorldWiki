@@ -178,6 +178,28 @@ describe('useLocationAstronomyWidget', () => {
     expect(hook.formattedOffset.value).toBe('UTC+3');
     props.formData.часовой_пояс = 'invalid';
     expect(hook.formattedOffset.value).toBeTruthy();
+
+    // Non-Error rejection on refreshContext + null getEntities + building with subtype
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(api.getEntities).mockRejectedValueOnce('raw geo err');
+    await hook.refreshContext();
+
+    vi.mocked(api.getEntities).mockResolvedValueOnce(null as never).mockResolvedValueOnce(null as never);
+    const calStore2 = useCalendarStore();
+    vi.spyOn(calStore2, 'getCalendars').mockResolvedValueOnce([
+      { id: '', name: 'Flat', data: { название: 'Flat', timezones: [{ id: 'tz1', name: 'T', base_offset_hours: 1 }] } } as never,
+    ]);
+    const props2 = reactive({
+      project: 'proj_3',
+      entityId: 'loc_3',
+      formData: { scale_level: 'building', building_subtype: 'Таверна', подтип: 'Таверна', часовой_пояс: '' },
+    });
+    const hook2 = useLocationAstronomyWidget(props2);
+    await hook2.refreshContext();
+    expect(hook2.scaleLabel.value).toBeTruthy();
+    warnSpy.mockRestore();
+    errSpy.mockRestore();
   });
 });
 

@@ -214,13 +214,43 @@ describe('calendar.store', () => {
       const saveRes = await store.saveCalendar('proj_no_id', calNoId);
       expect(saveRes).toBe(true);
 
-      // 2. saveCalendar catch error path
+      // 2. saveCalendar catch error path (Error and string)
       vi.mocked(api.saveCalendar).mockRejectedValueOnce(new Error('Save failed'));
       expect(await store.saveCalendar('proj_err', calNoId)).toBe(false);
+      vi.mocked(api.saveCalendar).mockRejectedValueOnce('raw string err');
+      expect(await store.saveCalendar('proj_err', calNoId)).toBe(false);
 
-      // 3. deleteCalendar catch error path
+      // 3. deleteCalendar catch error path (empty id, Error, string)
+      expect(await store.deleteCalendar('')).toBe(false);
       vi.mocked(api.deleteCalendar).mockRejectedValueOnce(new Error('Delete failed'));
       expect(await store.deleteCalendar('cal_err')).toBe(false);
+      vi.mocked(api.deleteCalendar).mockRejectedValueOnce('raw del err');
+      expect(await store.deleteCalendar('cal_err')).toBe(false);
+
+      // 4. Planets normalization, savePlanet, deletePlanetFromStorage
+      vi.mocked(calendarApi.getPlanetCalendarBundle).mockResolvedValueOnce({
+        calendars: [{ id: 'cal_p', is_default: true, data: { название: 'P', planet_id: 'p1' } }],
+        planets: [
+          {
+            id: 'planets:p1',
+            name: '',
+            orbit_days_num: 1000,
+            orbit_days_den: 2,
+            axial_tilt_mdeg: 23500,
+            moons: [{ name: 'M1' }],
+            timezones: [{ name: 'T1' }],
+            regions: [{ name: 'R1' }],
+          },
+        ],
+      } as any);
+      await store.getCalendars('proj_planets');
+      const planets = store.getPlanets('proj_planets');
+      expect(planets[0].name).toBe('Планета');
+      expect(planets[0].orbit_days).toBe(500);
+
+      vi.mocked(calendarApi.savePlanetDirect).mockResolvedValueOnce({} as any);
+      await store.savePlanet('proj_planets', { id: '', name: 'Новая' } as any);
+      store.deletePlanetFromStorage('proj_planets', 'planets:p1');
     });
   });
 });

@@ -356,6 +356,24 @@ describe('usePlanningPanel - Unified Tapestry', () => {
     vi.mocked(api.createTodo).mockRejectedValueOnce(new Error('save todo err'));
     await panel.saveTodo({ id: 't1', owner_id: 'chapters:c1', text: 'Fail', sort_order: 1 } as any);
 
+    // Additional fallback branches: selectedVolumeId, currentVolume, hierarchy.volumes, firstChapterWithVolume, mount/unmount
+    const chStore = useChapterStore();
+    chStore.selectedVolumeId = 'volumes:v_sel' as any;
+    expect(panel.resolvedVolumeId.value).toBe('volumes:v_sel');
+    chStore.selectedVolumeId = null as any;
+    chStore.hierarchy = { volumes: [], chapters: [{ id: 'chapters:x', volume_id: 'volumes:v_ch' }] } as any;
+    expect(panel.resolvedVolumeId.value).toBe('volumes:v_ch');
+    expect(panel.isVolumeCollapsed.value).toBe(false);
+    panel.toggleCollapse('chapters:x');
+    panel.toggleCollapse('chapters:x');
+
+    // addPlannedChapter with single string title (not matching any volumeId) + missing hierarchy.chapters
+    chStore.hierarchy = { volumes: [] } as any;
+    panel.newChapterTitle.value = '';
+    vi.mocked(chapterService.save).mockResolvedValueOnce('');
+    await panel.addPlannedChapter('Глава по одному аргументу');
+    expect(chapterService.save).toHaveBeenCalled();
+
     errSpy.mockRestore();
   });
 });

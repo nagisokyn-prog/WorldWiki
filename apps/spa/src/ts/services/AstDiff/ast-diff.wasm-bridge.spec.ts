@@ -77,5 +77,19 @@ describe('ast-diff.wasm-bridge', () => {
     inlineSpy.mockRestore();
     warnSpy.mockRestore();
   });
+
+  it('covers uninitialized engine fallback paths via fresh module import', async () => {
+    vi.resetModules();
+    const fresh = await import('./ast-diff.wasm-bridge');
+    expect(fresh.isAstDiffWasmReady()).toBe(false);
+
+    const docA = { blocks: [{ id: '1', type: 'paragraph', content: [] }] } as any;
+    const docB = { blocks: [{ id: '1', type: 'paragraph', content: [] }, { id: '2', type: 'paragraph', content: [] }] } as any;
+
+    const diff = fresh.computeSemanticDiff(docA, docB);
+    expect(diff.has_structural_changes).toBe(true);
+    expect(fresh.applySemanticPatch(docA, diff).blocks).toHaveLength(1);
+    expect(Array.isArray(fresh.computeInlineDiff('a', 'b'))).toBe(true);
+  });
 });
 

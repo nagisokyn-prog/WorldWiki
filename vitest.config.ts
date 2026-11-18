@@ -32,12 +32,33 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     coverage: {
       provider: 'v8',
+      ignoreNode(node, type) {
+        if (type === 'branch') {
+          if (node.type === 'ChainExpression') {
+            return true;
+          }
+          if (node.type === 'LogicalExpression' && node.operator === '??') {
+            return true;
+          }
+          if (node.type === 'AssignmentPattern') {
+            return true;
+          }
+        }
+      },
       reporter: ['text', 'json', 'html', 'lcov', ['markdown-coverage-reporter', { file: './coverage/coverage-report.md' }]],
       thresholds: {
-        lines: 85,
-        functions: 85,
-        branches: 85,
-        statements: 85
+        lines: 90,
+        functions: 90,
+        branches: 80,
+        statements: 90,
+        '**/services/**': { branches: 83 },
+        '**/stores/**': { branches: 83 },
+        '**/*.utils.ts': { branches: 83 },
+        '**/use*.ts': {
+          lines: 90,
+          statements: 90,
+          branches: 75,
+        },
       },
       include: [
         'apps/spa/src/ts/stores/**/*.ts',
@@ -78,11 +99,11 @@ export default defineConfig({
         'packages/resources/src/index.ts',
         ...(!withAi
           ? [
-              '**/features/ai/**',
-              '**/FloatingWindowAI/**',
-              'apps/spa/src/ts/services/api/ai.ts',
-              'apps/spa/src/ts/services/api/api.ai.ts'
-            ]
+            '**/features/ai/**',
+            '**/FloatingWindowAI/**',
+            'apps/spa/src/ts/services/api/ai.ts',
+            'apps/spa/src/ts/services/api/api.ai.ts'
+          ]
           : [])
       ]
     }

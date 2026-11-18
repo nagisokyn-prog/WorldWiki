@@ -200,9 +200,7 @@ describe('useSchemaDnD', () => {
       // DragStart without dataTransfer
       dnd.handleDragStartPalette({ dataTransfer: null } as any, 'atomic', 'text', '');
       dnd.handleItemDragStart({ dataTransfer: null } as any, 0);
-      dnd.handleDragOver(makeEvent());
-      dnd.handleDragOverItem(makeEvent(), 0);
-      dnd.handleDragLeaveItem();
+      dnd.handleDragOverCanvas(makeEvent());
 
       // Drop via dataTransfer JSON when draggedInfo was cleared by handleDropNew
       const dropEvt = makeEvent({ source: 'palette', kind: 'atomic', type: 'text', label: '' });

@@ -181,5 +181,53 @@ describe('usePromiseQuoteSync', () => {
     expect(promises.value[3].quote).toBe('Второй абзац длинной сцены здесь.');
     expect(promises.value[3].is_orphaned).toBe(false);
   });
+
+  it('covers fullDocText match, minParaIdx/expectedSpan fallbacks, ratio guard, and storage/DOM errors', () => {
+    const html = `
+      <p data-block-id="para-1">Первый абзац — с тире в конце строки.</p>
+      <p data-block-id="para-2">Второй абзац длинного фрагмента текста.</p>
+      <p data-block-id="para-3">Третий абзац завершает сцену красиво.</p>
+    `;
+    const list: RichPlotPromise[] = [
+      {
+        id: 'p_fulltext',
+        chapter_id: 'chapters:c1',
+        quote: 'тире в конце строки Второй абзац',
+        is_orphaned: true,
+      } as any,
+      {
+        id: 'p_span_fallback',
+        chapter_id: 'chapters:c1',
+        quote: 'Первый абзац — неизвестный финал',
+        paragraph_index: 1,
+        block_ids: ['para-1', 'para-2'],
+      } as any,
+      {
+        id: 'p_ratio_skip',
+        chapter_id: 'chapters:c1',
+        quote: 'Первый абзац — Третий абзац завершает сцену красиво.' + 'x'.repeat(2000),
+      } as any,
+    ];
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('quota exceeded');
+    });
+
+    const { promises, syncQuotesWithManuscript } = makeSync(html, list);
+    syncQuotesWithManuscript(true);
+    expect(promises.value[0].is_orphaned).toBe(false);
+    expect(warnSpy).toHaveBeenCalled();
+
+    // DOMParser error branch
+    const OrigDOMParser = globalThis.DOMParser;
+    vi.stubGlobal('DOMParser', class { parseFromString() { throw new Error('parse fail'); } });
+    syncQuotesWithManuscript(false);
+    expect(warnSpy).toHaveBeenCalledTimes(2);
+    vi.stubGlobal('DOMParser', OrigDOMParser);
+
+    setItemSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
 });
 

@@ -85,6 +85,23 @@ describe('setupShellTauriEvents', () => {
     document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: 'chapters:c1', title: 'Renamed' } }));
     expect(deps.eg.updateTabData).toHaveBeenCalledWith('chapters:c1', { title: 'Renamed' });
 
+    // Trigger ww-entity-saved without title on chapter and entity, and live-sync from 'main'
+    const apiMod = await import('@/services/api.client');
+    const entMod = await import('@/services/Entity/entity.api');
+    vi.mocked(apiMod.getChapter).mockResolvedValueOnce({ id: 'chapters:c1', title: '' } as any);
+    vi.mocked(entMod.entityApi.getEntity).mockResolvedValueOnce({ id: 'entities:e1' } as any);
+    // Find registered listeners on window.__TAURI__? Instead, dispatch ww-entity-saved if listen was captured
+    const { listen } = await import('@tauri-apps/api/event');
+    const savedCb = vi.mocked(listen).mock.calls.find((c) => c[0] === 'ww-entity-saved')?.[1] as any;
+    const syncCb = vi.mocked(listen).mock.calls.find((c) => c[0] === 'ww-entity-live-sync')?.[1] as any;
+    if (savedCb) {
+      await savedCb({ payload: { type: 'chapter', id: 'c1' } });
+      await savedCb({ payload: { type: 'character', id: 'e1' } });
+    }
+    if (syncCb) {
+      syncCb({ payload: { sender: 'main', type: 'character', id: 'e1', data: {} } });
+    }
+
     scope.stop();
     vi.useRealTimers();
   });

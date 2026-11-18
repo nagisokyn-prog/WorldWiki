@@ -104,5 +104,20 @@ describe('applySettingsToDOM', () => {
     expect(document.documentElement.style.getPropertyValue('--modal-backdrop')).toBe('rgba(0,0,0,0.9)');
     expect(document.body.classList.contains('shadows-inset')).toBe(true);
     expect(document.documentElement.getAttribute('data-animations')).toBe('false');
+
+    // Sparse sub-objects with undefined properties to cover all optional field false-arms
+    applySettingsToDOM({
+      radius: {},
+      shadows: { useInset: false },
+      animations: { enabled: undefined },
+      fonts: {},
+      spacing: {},
+      layout: {},
+      tabs: {},
+      buttons: {},
+      notifications: {},
+    } as unknown as AppSettings);
+    expect(document.documentElement.getAttribute('data-animations')).toBe('true');
+    expect(document.body.classList.contains('shadows-inset')).toBe(false);
   });
 });

@@ -232,6 +232,40 @@ describe('useCalendarEditor', () => {
     editor.updateName('FallbackRec');
     expect(editor.calendarRecord.value?.name).toBe('FallbackRec');
 
+    // Rename & trigger save custom events matching vs non-matching id
+    document.dispatchEvent(new CustomEvent('ww:calendar-renamed', { detail: { id: props.calendarId, name: 'RenamedViaEvent' } }));
+    expect(editor.calendarRecord.value?.name).toBe('RenamedViaEvent');
+
+    mockCalendarStore.saveCalendar.mockResolvedValueOnce(true);
+    document.dispatchEvent(new CustomEvent('ww:trigger-calendar-save', { detail: { id: 'cal_new' } }));
+    await flushPromises();
+
+    // Error branches on saveCalendar & deleteCalendar with non-Error throws
+    mockCalendarStore.saveCalendar.mockRejectedValueOnce('raw save err');
+    await editor.saveCalendar();
+    expect(mockCalendarStore.saveCalendar).toHaveBeenCalled();
+
+    vi.stubGlobal('confirm', () => true);
+    mockCalendarStore.deleteCalendar.mockRejectedValueOnce('raw del err');
+    await editor.deleteCalendar();
+    expect(editor.error.value).toBe('Не удалось удалить календарь');
+
+    // 12-month calendar without seasons gets default seasons populated
+    mockCalendarStore.getCalendars.mockResolvedValueOnce([
+      {
+        id: 'cal_12m',
+        name: '',
+        data: {
+          название: '12M',
+          месяцы: Array.from({ length: 12 }, (_, i) => ({ название: `М${i + 1}`, дней: 30 })),
+          сезоны: [],
+        },
+      } as any,
+    ]);
+    props.calendarId = 'calendars:cal_12m';
+    await flushPromises();
+    expect(editor.calData.value?.сезоны?.length).toBeGreaterThan(0);
+
     vi.unstubAllGlobals();
     errSpy.mockRestore();
     vi.useRealTimers();

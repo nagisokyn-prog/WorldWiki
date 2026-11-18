@@ -215,5 +215,51 @@ describe('usePromiseDateTime', () => {
     wDt.onUniversalDateChange({ absolute_minute: 1440 });
     wDt.syncInitialTimelineDate({ m_abs: 0, date_fields: { era_index: 99, year: 999, month: 0, day: 1 } });
     expect(wDt.currentEraIdx.value).toBe(99);
+
+    // Default/master fallback via universalDateModel.calendar_id & era range matching
+    const multiCals = ref<CalendarRecord[]>([
+      {
+        id: 'cal_1',
+        name: 'Cal 1',
+        is_default: true,
+        data: {
+          название: 'Cal 1',
+          эпохи: [
+            { название: 'E1', год_начала: 1, год_конца: 100 },
+            { название: 'E2', год_начала: 101, год_конца: 500 },
+          ],
+          месяцы: [{ название: 'M1', дней: 30 }],
+        } as any,
+      },
+      {
+        id: 'cal_2',
+        name: 'Cal 2',
+        is_master: true,
+        data: { название: 'Cal 2', эпохи: [], месяцы: [{ название: 'M2', дней: 28 }] } as any,
+      },
+    ]);
+    const mDt = usePromiseDateTime(multiCals, emitChange);
+    mDt.onUniversalDateChange({ calendar_id: 'cal_2', absolute_minute: 0 });
+    expect(mDt.activeCalendar.value?.id).toBe('cal_2');
+
+    // Sync from timeline date with year matching second era (101..500) and out-of-range fallback
+    mDt.setCalendar('cal_1');
+    mDt.syncInitialTimelineDate({ date_fields: { year: 250, month: 0, day: 1 } });
+    expect(mDt.currentEraIdx.value).toBeGreaterThanOrEqual(0);
+    mDt.syncInitialTimelineDate({ date_fields: { year: 9999, month: 0, day: 1 } });
+    expect(mDt.currentEraIdx.value).toBe(0);
+
+    // Sync from m_abs without date_fields
+    mDt.syncInitialTimelineDate({ m_abs: 1440 }, 1);
+    mDt.onUniversalDateChange({ calendar_id: 'cal_2', absolute_minute: 1440 });
+    expect(mDt.activeCalendar.value?.id).toBe('cal_1');
+    mDt.setCalendar('cal_2');
+    expect(mDt.activeCalendar.value?.id).toBe('cal_2');
+
+    // Null cal.data guard
+    const noDataCals = ref<CalendarRecord[]>([{ id: 'cal_null', name: 'Null', data: null as any }]);
+    const nDt = usePromiseDateTime(noDataCals, emitChange);
+    nDt.syncInitialTimelineDate({ m_abs: 0 });
+    expect(nDt.activeCalendar.value?.id).toBe('cal_null');
   });
 });

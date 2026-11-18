@@ -221,6 +221,82 @@ describe('timelineInspector.utils', () => {
 
     const formatted = buildFormattedEvents(evs, chs, null, evs, [], new Map());
     expect(formatted[0].locationName).toBe('raw_loc');
+
+    // Additional edge cases: RecordId objects, flashback flags, entity/pov/volume mismatches, officialCalendarId
+    const evFlashback: InspectorEvent = {
+      id: 'timeline_events:fb_1',
+      title: 'Флэшбек',
+      m_abs: 50,
+      time_nature: 'flashback',
+      location_id: 'entities:loc_official',
+      reveals: [{ chapter_id: { id: 'chapters:c2' } as any, chapter_title: '', kind: 'direct', pov_id: 'pov_x' }],
+      participants: [{ id: 'entities:p1', name: 'P1' }],
+    } as any;
+    const locOfficial = {
+      id: 'entities:loc_official',
+      name: 'Цитадель',
+      официальный_календарь: 'cal_official',
+      широта: 10,
+      долгота: 90,
+    } as any;
+    const officialCal = {
+      id: 'cal_official',
+      название: 'Официальный',
+      эпохи: [{ название: 'Э1', год_начала: undefined, год_конца: undefined }],
+      месяцы: [{ название: 'М1', дней: 30 }],
+    } as any;
+
+    expect(resolveBestEraIndex(0, officialCal)).toBe(0);
+    expect(
+      filterInspectorEvents([evFlashback], [{ id: 'c1', volume_id: 'v1', sort_order: 1 }], {
+        searchQuery: '',
+        isolatedChapterId: 'c1',
+        selectedEntityId: 'all',
+        selectedPovId: 'all',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'all',
+      })
+    ).toHaveLength(0);
+    expect(
+      filterInspectorEvents([evFlashback], [{ id: 'c1', volume_id: 'v1', sort_order: 1 }], {
+        searchQuery: '',
+        isolatedChapterId: null,
+        selectedEntityId: 'missing_ent',
+        selectedPovId: 'all',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'all',
+      })
+    ).toHaveLength(0);
+    expect(
+      filterInspectorEvents([evFlashback], [{ id: 'c1', volume_id: 'v1', sort_order: 1 }], {
+        searchQuery: '',
+        isolatedChapterId: null,
+        selectedEntityId: 'all',
+        selectedPovId: 'missing_pov',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'all',
+      })
+    ).toHaveLength(0);
+    expect(
+      filterInspectorEvents([evFlashback], [{ id: 'c1', volume_id: 'v1', sort_order: 1 }], {
+        searchQuery: '',
+        isolatedChapterId: null,
+        selectedEntityId: 'all',
+        selectedPovId: 'all',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'v1',
+      })
+    ).toHaveLength(0);
+
+    const formattedOfficial = buildFormattedEvents(
+      [evFlashback],
+      [{ id: 'chapters:c2', title: 'Вторая', sort_order: 2 }],
+      officialCal,
+      [evFlashback],
+      [locOfficial],
+      new Map([['cal_official', officialCal]])
+    );
+    expect(formattedOfficial[0].locationName).toBe('Цитадель');
   });
 });
 

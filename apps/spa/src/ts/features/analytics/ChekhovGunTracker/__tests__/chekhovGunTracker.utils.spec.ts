@@ -31,19 +31,51 @@ describe('chekhovGunTracker.utils', () => {
     expect(isGunItem(item3)).toBe(false);
   });
 
-  it('builds gun journey report with fallback nodes', () => {
-    const item: TrackedItem = {
-      id: 'plot_promises:test',
-      name: 'A mysterious note',
-      item_type: 'Чеховское ружьё',
-      status_category: 'Заряжено',
-      chapters_sleeping: 2,
-    };
+  it('handles broken/resolved gun journey with bigint chapter sort_order and missing milestone fields', () => {
+    const report = buildGunJourneyReport(
+      {
+        id: 'gun_broken',
+        item_name: 'Сломанное ружьё',
+        item_type: '',
+        status_category: '',
+        is_resolved: true,
+        is_broken: true,
+        chapters_present: [],
+        last_chapter_order: 4,
+      } as any,
+      {
+        id: 'gun_broken',
+        status: 'broken',
+        milestones: [
+          {
+            stage: 'resolution',
+            chapter_id: 'chapters:99',
+            quote: '',
+            note: 'Сорвалось',
+            block_id: '',
+            order_index: undefined,
+          },
+        ],
+      } as any,
+      [{ id: { String: 'chapters:99' }, sort_order: BigInt(9), title: '' }] as any
+    );
 
-    const report = buildGunJourneyReport(item, null, []);
-    expect(report.item_id).toBe('plot_promises:test');
-    expect(report.nodes.length).toBeGreaterThan(0);
-    expect(report.nodes[0].title).toContain('Завязка');
+    expect(report.item_type).toBe('Чеховское ружьё');
+    expect(report.status_category).toBe('Заряжено');
+    expect(report.nodes.length).toBeGreaterThanOrEqual(1);
+
+    const brokenNoMilestones = buildGunJourneyReport(
+      { id: 'gun_b2', item_name: 'Срыв', status_category: '', is_resolved: true, is_broken: true, chapters_present: [] } as any,
+      { id: 'gun_b2', status: 'broken', milestones: [] } as any,
+      []
+    );
+    expect(brokenNoMilestones.nodes.some((n) => n.title === '💥 Срыв ружья')).toBe(true);
+
+    const resolvedReport = buildGunJourneyReport(
+      { id: 'gun_ok', item_name: 'Ружьё', status_category: 'Выстрел', is_resolved: true, is_broken: false, chapters_present: [] } as any,
+      null,
+      []
+    );
+    expect(resolvedReport.nodes.some((n) => n.title === '🎯 Выстрел (Развязка)')).toBe(true);
   });
 });
-

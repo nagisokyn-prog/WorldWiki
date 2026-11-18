@@ -184,11 +184,67 @@ describe('usePlanetEditor', () => {
     // Events
     document.dispatchEvent(new CustomEvent('ww:planet-renamed', { detail: { id: 'earth_id', name: 'Терра' } }));
     expect(editor.planet.value.name).toBe('Терра');
+    document.dispatchEvent(new CustomEvent('ww:planet-renamed', { detail: { id: 'earth_id', name: 'Терра' } }));
     document.dispatchEvent(new CustomEvent('ww:trigger-planet-save', { detail: { id: 'earth_id' } }));
+    document.dispatchEvent(new CustomEvent('ww:trigger-planet-save', { detail: {} }));
     await flushPromises();
+
+    // openPresetsModal, applyPreset, updateDayTicks NaN, non-Error rejections, deletePlanet without id
+    editor.openPresetsModal();
+    expect(editor.isPresetsModalOpen.value).toBe(true);
+    editor.applyPreset({
+      id: 'custom_p',
+      data: {
+        name: 'Кастом',
+        description: 'desc',
+        orbit_days: 400,
+        day_hours: 20,
+        day_minutes: 0,
+        day_seconds: 0,
+        axial_tilt_deg: 15,
+        rotation_direction: 'prograde',
+        moons: [],
+      },
+    } as any);
+    expect(editor.planet.value.name).toBe('Кастом');
+
+    editor.planet.value.day_hours = undefined as any;
+    editor.planet.value.day_minutes = undefined as any;
+    editor.planet.value.day_seconds = undefined as any;
+    editor.updateDayTicks();
+    expect(editor.planet.value.ticks_per_day).toBe(0);
+
+    vi.mocked(calendarApi.savePlanetDirect).mockRejectedValueOnce('str save err');
+    await editor.savePlanet();
+    expect(editor.errorMessage.value).toContain('str save err');
+
+    confirmMock.mockReturnValueOnce(true);
+    vi.mocked(calendarApi.deletePlanetDirect).mockRejectedValueOnce('str del err');
+    await editor.deletePlanet();
+    expect(editor.errorMessage.value).toContain('str del err');
+
+    editor.planet.value.id = null;
+    await editor.deletePlanet();
 
     vi.unstubAllGlobals();
     errSpy.mockRestore();
     wrapper.unmount();
+  });
+
+  it('loads planet when not found in store using non-earth planetId', async () => {
+    const { defineComponent } = await import('vue');
+    const { mount } = await import('@vue/test-utils');
+    let editor!: ReturnType<typeof usePlanetEditor>;
+    const Comp = defineComponent({
+      setup() {
+        editor = usePlanetEditor({ projectId: 'p_missing', planetId: 'Arrakis' }, vi.fn());
+        return {};
+      },
+      template: '<div></div>',
+    });
+    const w = mount(Comp);
+    expect(editor.planet.value.id).toBe('Arrakis');
+    expect(editor.planet.value.name).toBe('Arrakis');
+    w.unmount();
   });
 });

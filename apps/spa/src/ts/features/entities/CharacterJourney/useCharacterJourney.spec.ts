@@ -86,12 +86,28 @@ describe('useCharacterJourney', () => {
   it('handles empty projectId and loader errors gracefully', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    let emptyJourney!: ReturnType<typeof useCharacterJourney>;
+    const EmptyComp = defineComponent({
+      setup() {
+        emptyJourney = useCharacterJourney('', 'entities:c1');
+        return {};
+      },
+      template: '<div></div>',
+    });
+    const w0 = mount(EmptyComp);
+    await flushPromises();
+    expect(emptyJourney.error.value).toBeNull();
+    w0.unmount();
+
+    const arcsStore = useStoryArcsStore();
+    arcsStore.loadArcs = vi.fn(async () => undefined) as any;
     vi.mocked(journeyLoader.fetchAndEnrichSingleJourney).mockRejectedValueOnce(new Error('boom'));
 
     let journey!: ReturnType<typeof useCharacterJourney>;
     const Comp = defineComponent({
       setup() {
-        journey = useCharacterJourney('', 'entities:c1');
+        journey = useCharacterJourney('p1', 'entities:c1');
         return {};
       },
       template: '<div></div>',
@@ -100,6 +116,26 @@ describe('useCharacterJourney', () => {
     const wrapper = mount(Comp);
     await flushPromises();
     expect(journey.error.value).toBe('boom');
+
+    // Edge cases: removeEntity/toggleEntity on single item, addEntity duplicate & new, setFilterMode same/single, selectEntity('')
+    journey.removeEntity('entities:c1');
+    journey.toggleEntity('entities:c1');
+    journey.addEntity('entities:c1');
+    expect(journey.selectedEntityIds.value).toEqual(['entities:c1']);
+
+    await journey.setFilterMode('union');
+    await journey.setFilterMode('intersection');
+    expect(journey.filterMode.value).toBe('intersection');
+
+    journey.addEntity('entities:c2');
+    await flushPromises();
+    expect(journey.selectedEntityIds.value).toEqual(['entities:c1', 'entities:c2']);
+
+    journey.selectEntity('');
+    await flushPromises();
+    expect(journey.currentEntity.value).toBeNull();
+    expect(journey.selectedEntities.value).toEqual([]);
+
     wrapper.unmount();
     warnSpy.mockRestore();
     errSpy.mockRestore();

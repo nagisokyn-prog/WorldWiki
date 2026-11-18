@@ -420,5 +420,14 @@ describe('useTimelineStore', () => {
       expect(result[1]).toEqual({ type: 'location', id: 'castle_1', name: 'Камелот' });
       expect(result[2]).toEqual({ type: 'char', id: 'char_99', name: 'Мерлин' });
     });
+
+    it('handles invalid URI encoding in legacy links and empty/duplicate mentions', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const text = '[Hero](...type=%E0%A4%A&id=%ZZ...) and ((   )) and ((Hero)) and ((hero))';
+      const result = store.parseParticipants(text);
+      expect(result.some((p) => p.name === 'Hero')).toBe(true);
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
   });
 });

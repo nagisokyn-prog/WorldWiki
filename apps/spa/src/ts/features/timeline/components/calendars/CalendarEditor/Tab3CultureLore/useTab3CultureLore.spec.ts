@@ -19,7 +19,7 @@ describe('useTab3CultureLore', () => {
         timezones: [{ name: 'UTC+0', code: 'UTC+0', base_offset_hours: 0 }, { name: 'Запад', base_offset_hours: -3 }],
       } as any,
     ]);
-    const savePlanetSpy = vi.spyOn(calStore, 'savePlanetToStorage').mockImplementation(() => {});
+    vi.spyOn(calStore, 'savePlanetToStorage').mockImplementation(() => {});
 
     const emit = vi.fn();
     const hook = useTab3CultureLore(

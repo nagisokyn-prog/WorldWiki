@@ -15,10 +15,12 @@ macro_rules! with_occ_retry {
                 Ok(val) => break Ok(val),
                 Err(err) => {
                     let err_str = err.to_string();
-                    if (err_str.contains("Transaction conflict") || err_str.contains("write conflict"))
+                    if (err_str.contains("Transaction conflict")
+                        || err_str.contains("write conflict"))
                         && count < $attempts
                     {
-                        tokio::time::sleep(tokio::time::Duration::from_millis($delay_ms * count)).await;
+                        tokio::time::sleep(tokio::time::Duration::from_millis($delay_ms * count))
+                            .await;
                         continue;
                     }
                     break Err(err);
@@ -60,6 +62,7 @@ pub mod calendar_math {
     pub use worldwiki_domain::calendar::*;
 }
 
+#[cfg(feature = "ver_1.1.0")]
 pub mod documents {
     pub use worldwiki_infrastructure::documents::*;
 }
@@ -71,7 +74,7 @@ pub mod export {
 pub mod ai {
     #[cfg(feature = "ai")]
     pub use worldwiki_ai::*;
+    pub use worldwiki_application::ai::*;
     #[cfg(not(feature = "ai"))]
     pub use worldwiki_infrastructure::mock_ai::*;
-    pub use worldwiki_application::ai::*;
 }

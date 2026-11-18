@@ -17,6 +17,7 @@ thiserror = "2.0"
 [features]
 default = []
 kani = []
+"ver_1.1.0" = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

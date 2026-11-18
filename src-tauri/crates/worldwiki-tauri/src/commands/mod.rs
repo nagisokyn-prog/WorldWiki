@@ -4,6 +4,7 @@ pub mod backup;
 pub mod calendar;
 pub mod chat;
 pub mod connections;
+#[cfg(feature = "ver_1.1.0")]
 pub mod documents;
 pub mod knowledge;
 pub mod local_ai;
@@ -19,6 +20,7 @@ pub use backup::*;
 pub use calendar::*;
 pub use chat::*;
 pub use connections::*;
+#[cfg(feature = "ver_1.1.0")]
 pub use documents::*;
 pub use knowledge::*;
 pub use local_ai::*;

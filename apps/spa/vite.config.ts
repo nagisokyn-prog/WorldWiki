@@ -37,6 +37,12 @@ const withAi =
   process.env.WITH_AI === '1' ||
   process.env.VITE_WITH_AI === 'true';
 
+const withRazrab =
+  process.argv.includes('--with-razrab') ||
+  process.argv.includes('--razrab') ||
+  process.env.WITH_RAZRAB === '1' ||
+  process.env.VITE_WITH_RAZRAB === 'true';
+
 const inputEntries: Record<string, string> = {
   app: resolve(__dirname, 'app.html'),
   settings: resolve(__dirname, 'settings.html'),
@@ -53,7 +59,8 @@ export default defineConfig(({ command }) => {
 
   return {
     define: {
-      __FEATURE_AI__: JSON.stringify(withAi)
+      __FEATURE_AI__: JSON.stringify(withAi),
+      __FEATURE_RAZRAB__: JSON.stringify(withRazrab)
     },
     plugins: [
       vue({

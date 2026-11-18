@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+#[cfg(feature = "ver_1.1.0")]
 use worldwiki_domain::document::{ExportConfig, SemanticDocument};
 use worldwiki_domain::errors::DomainError;
 
@@ -9,6 +10,7 @@ pub trait FileSystemPort: Send + Sync {
     async fn exists(&self, path: &str) -> Result<bool, DomainError>;
 }
 
+#[cfg(feature = "ver_1.1.0")]
 #[async_trait]
 pub trait DocumentCompilerPort: Send + Sync {
     async fn compile(

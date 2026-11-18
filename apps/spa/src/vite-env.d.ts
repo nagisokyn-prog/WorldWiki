@@ -12,6 +12,7 @@ declare module "*.vue" {
 }
 
 declare const __FEATURE_AI__: boolean;
+declare const __FEATURE_RAZRAB__: boolean;
 
 declare global {
   interface Window {

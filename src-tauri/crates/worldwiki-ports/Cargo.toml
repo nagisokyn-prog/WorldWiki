@@ -6,6 +6,10 @@ description = "Ports and interfaces (Secondary Ports) for WorldWiki architecture
 [package.metadata.cerberus]
 layer = "ports"
 
+[features]
+default = []
+"ver_1.1.0" = ["worldwiki-domain/ver_1.1.0"]
+
 [dependencies]
 
 worldwiki-domain = { path = "../worldwiki-domain" }

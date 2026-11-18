@@ -1,4 +1,4 @@
-import { defineComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { defineComponent, defineAsyncComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShellStore } from '@/stores/shell';
 import { useConsoleStore } from '@/stores/console';
@@ -23,7 +23,11 @@ import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/C
 import ChekhovGunTrackerVue from '@/features/analytics/ChekhovGunTracker/ChekhovGunTracker.vue';
 import ArcBoardVue from '@/features/chapters/components/panels/StoryArcs/ArcBoard.vue';
 import TimelineInspectorVue from '@/features/timeline/components/inspectors/TimelineInspector/TimelineInspector.vue';
-import SurrealConsoleVue from '@/features/devtools/SurrealConsole/SurrealConsole.vue';
+const SurrealConsoleVue = defineAsyncComponent(() =>
+  typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__
+    ? import('@/features/devtools/SurrealConsole/SurrealConsole.vue')
+    : Promise.resolve({ render: () => null } as never)
+);
 import CalendarEditorVue from '@/features/timeline/components/calendars/CalendarEditor/CalendarEditor.vue';
 import GlobalCalendarWidget from '@/features/timeline/components/atlas/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import PlanetEditorVue from '@/features/timeline/components/planets/PlanetEditor/PlanetEditor.vue';
@@ -54,7 +58,7 @@ export default defineComponent({
     WowilonPanelVue,
     AppDialog,
   },
-   
+
   setup() {
     const route = useRoute();
     const rawProject = typeof route.query.project === 'string' ? route.query.project : 'default';
@@ -125,9 +129,10 @@ export default defineComponent({
     const activeTreeNode = computed(() => shell.activeTreeNode);
     const editorGroups = computed(() => shell.editorGroups);
     const activeGroupId = computed(() => shell.activeGroupId);
-    
+
     const isWowilonOpen = computed(() => shell.isWowilonOpen);
     const isAiEnabled = typeof __FEATURE_AI__ !== 'undefined' ? __FEATURE_AI__ : false;
+    const isRazrabEnabled = typeof __FEATURE_RAZRAB__ !== 'undefined' ? __FEATURE_RAZRAB__ : false;
 
     // Methods - direct references from store
     const selectSidebarTab = shell.selectSidebarTab;
@@ -256,12 +261,13 @@ export default defineComponent({
       activeGroupId,
       isWowilonOpen,
       isAiEnabled,
-      
+
       toggleWowilon: () => {
         if (!isAiEnabled) return;
         shell.isWowilonOpen = !shell.isWowilonOpen;
       },
       setActivePanelTab: (tab: string) => { shell.activePanelTab = tab; },
+      isRazrabEnabled,
       togglePanel: () => { shell.activePanelTab = shell.activePanelTab === '' ? 'console' : ''; },
       toggleSidebar: () => { shell.sidebarVisible = !shell.sidebarVisible; },
 

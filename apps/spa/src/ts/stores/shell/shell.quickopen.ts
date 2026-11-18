@@ -194,14 +194,18 @@ export function useShellQuickOpen(deps: QuickOpenDeps) {
           keywords: ['хронология', 'таймлайн', 'время', 'инспектор'],
           action: () => setTab('timeline-inspector')
         },
-        {
-          id: 'tool_surreal',
-          title: 'Открыть SurrealDB SQL Консоль',
-          desc: 'Прямые запросы к базе данных SurQL',
-          icon: '⚡',
-          keywords: ['surreal', 'sql', 'surql', 'база', 'запросы'],
-          action: () => setTab('surreal')
-        }
+        ...(typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__
+          ? [
+              {
+                id: 'tool_surreal',
+                title: 'Открыть SurrealDB SQL Консоль',
+                desc: 'Прямые запросы к базе данных SurQL',
+                icon: '⚡',
+                keywords: ['surreal', 'sql', 'surql', 'база', 'запросы'],
+                action: () => setTab('surreal')
+              }
+            ]
+          : [])
       );
     }
 

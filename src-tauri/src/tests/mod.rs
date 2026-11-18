@@ -17,6 +17,7 @@ pub mod graph_relational_backup_suite;
 pub mod retrieval_integration;
 pub mod tools_integration;
 pub mod chat_operations_integration;
+#[cfg(feature = "ver_1.1.0")]
 pub mod document_export_integration;
 pub mod manuscript_tracking_integration;
 // Pipeline-тест перенесён в интеграционный таргет tests/agent_pipeline.rs

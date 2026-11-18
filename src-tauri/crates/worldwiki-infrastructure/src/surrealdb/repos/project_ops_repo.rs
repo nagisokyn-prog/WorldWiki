@@ -145,6 +145,7 @@ pub async fn save_project_config(
     Ok(json!({ "success": true }))
 }
 
+#[cfg(feature = "razrab")]
 pub async fn execute_raw_surql(db: &Surreal<Db>, query: &str) -> Result<Value, DomainError> {
     let mut res = db
         .query(query)

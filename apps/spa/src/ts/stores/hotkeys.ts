@@ -145,7 +145,9 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           document.dispatchEvent(new CustomEvent('ww:toggle-wowilon'));
           return;
         case 'Backquote':
-          shell.activePanelTab = shell.activePanelTab === 'surreal' ? '' : 'surreal';
+          if (typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__) {
+            shell.activePanelTab = shell.activePanelTab === 'surreal' ? '' : 'surreal';
+          }
           return;
       }
     }

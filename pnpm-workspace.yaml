@@ -13,3 +13,6 @@ minimumReleaseAgeExclude:
   - "@tanstack/vue-query@5.105.1"
   - globals@17.14.0
   - vue-i18n@11.4.17
+  - "@vitest/mocker@5.1.1"
+  - "@vitest/spy@5.1.1"
+  - vitest@5.1.1

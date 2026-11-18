@@ -64,6 +64,8 @@ tauri-build = { version = "2", features = [] }
 [features]
 default = []
 ai = ["dep:worldwiki-ai", "worldwiki-tauri/ai"]
+"ver_1.1.0" = ["worldwiki-domain/ver_1.1.0", "worldwiki-infrastructure/ver_1.1.0", "worldwiki-tauri/ver_1.1.0"]
+razrab = ["worldwiki-infrastructure/razrab", "worldwiki-tauri/razrab"]
 # Интеграционный тест AI-пайплайна (run_agent_loop + mock OpenAI SSE + реальная БД).
 agent-pipeline = ["tauri/test"]
 

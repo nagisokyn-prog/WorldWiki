@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { useShellQuickOpen, type QuickOpenDeps } from './shell.quickopen';
-import type { Chapter } from '@/types/generated/Chapter';
 import type { SidebarItem } from './shell.types';
 
 const mockGetChapters = vi.fn();
@@ -101,12 +100,16 @@ describe('shell.quickopen', () => {
       'tool_chekhov_guns',
       'tool_graph_web',
       'tool_timeline_inspector',
-      'tool_surreal'
+      ...(typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__ ? ['tool_surreal'] : [])
     ];
     for (const tid of toolIds) {
       qo.paletteCommands.value.find((c) => c.id === tid)?.action();
     }
-    expect(deps.setActivePanelTab).toHaveBeenCalledWith('surreal');
+    if (typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__) {
+      expect(deps.setActivePanelTab).toHaveBeenCalledWith('surreal');
+    } else {
+      expect(qo.paletteCommands.value.find((c) => c.id === 'tool_surreal')).toBeUndefined();
+    }
 
     // Error paths in updatePaletteCommands + missing setActivePanelTab
     const qoNoPanel = useShellQuickOpen({ ...deps, setActivePanelTab: undefined });

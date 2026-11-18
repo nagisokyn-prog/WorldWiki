@@ -12,6 +12,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+#[cfg(feature = "ver_1.1.0")]
 use serde_json::json;
 
 use worldwiki_infrastructure::storage::backup::*;
@@ -36,6 +37,7 @@ fn tmp_dir(tag: &str) -> PathBuf {
     dir
 }
 
+#[cfg(feature = "ver_1.1.0")]
 #[tokio::test]
 async fn export_chapters_writes_combined_file() {
     let dir = tmp_dir("chapters");
@@ -56,6 +58,7 @@ async fn export_chapters_writes_combined_file() {
     assert!(content.contains("Дальше — больше."));
 }
 
+#[cfg(feature = "ver_1.1.0")]
 #[tokio::test]
 async fn export_chapters_handles_missing_title_and_content() {
     let dir = tmp_dir("chapters_fallback");

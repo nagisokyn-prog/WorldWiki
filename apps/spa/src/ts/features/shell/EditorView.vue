@@ -297,6 +297,7 @@
             📋 Канбан Арок
           </div>
           <div
+            v-if="isRazrabEnabled"
             class="panel-tab-new interactive-el font-semibold"
             :class="{ active: activePanelTab === 'surreal' }"
             @click.stop="setActivePanelTab('surreal')"
@@ -317,7 +318,7 @@
             <span>{{ log.text }}</span>
           </div>
         </div>
-        <div v-else-if="activePanelTab === 'surreal'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+        <div v-else-if="isRazrabEnabled && activePanelTab === 'surreal'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
           <surreal-console-vue :project="projectName || 'default'" />
         </div>
         <div v-else-if="activePanelTab === 'matrix'" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">

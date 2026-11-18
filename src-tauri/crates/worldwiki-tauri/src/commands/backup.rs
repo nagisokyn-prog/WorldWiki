@@ -1,17 +1,21 @@
 use crate::error::IpcError;
 use crate::state::AppState;
+#[cfg(feature = "ver_1.1.0")]
 use serde_json::Value;
 use std::fs;
 use std::path::PathBuf;
 use tauri::{Emitter, Manager};
 use worldwiki_domain::storage::YandexBackupFile;
+#[cfg(feature = "ver_1.1.0")]
+use worldwiki_infrastructure::storage::export_chapters_inner;
 use worldwiki_infrastructure::storage::{
     MediaSyncProgress, create_cloud_backup_inner, download_missing_media_inner,
-    download_yandex_file_inner, exchange_yandex_token_inner, export_chapters_inner,
+    download_yandex_file_inner, exchange_yandex_token_inner,
     list_yandex_disk_backups_inner, restore_from_backup_inner, sync_media_to_yandex_inner,
     upload_to_yandex_disk_inner,
 };
 
+#[cfg(feature = "ver_1.1.0")]
 #[tauri::command]
 pub async fn export_chapters(
     project: String,

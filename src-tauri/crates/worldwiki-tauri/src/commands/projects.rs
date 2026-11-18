@@ -50,6 +50,7 @@ pub async fn delete_project(name: String, state: State<'_, AppState>) -> Result<
         .map_err(IpcError::from)
 }
 
+#[cfg(feature = "razrab")]
 #[tauri::command]
 pub async fn execute_raw_surql(
     query: String,

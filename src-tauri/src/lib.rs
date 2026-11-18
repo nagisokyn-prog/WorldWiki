@@ -13,15 +13,15 @@ pub fn run() {
     use tauri_shell::logic::system::*;
     use tauri::{Emitter, Manager};
 
-    if let Err(e) = tauri::Builder::default()
-        .invoke_handler(surreal_domain::entity_commands![
+    macro_rules! build_invoke_handler {
+        ($($extra:path),* $(,)?) => {
+            surreal_domain::entity_commands![
 // --- Проекты ---
             worldwiki_tauri::commands::get_projects,
             worldwiki_tauri::commands::create_project,
             worldwiki_tauri::commands::get_project_config,
             worldwiki_tauri::commands::save_project_config,
             worldwiki_tauri::commands::delete_project,
-            worldwiki_tauri::commands::execute_raw_surql,
             // --- Универсальные Сущности ---
             get_entities,
             get_entities_batch,
@@ -82,11 +82,6 @@ pub fn run() {
             delete_planet,
             delete_calendar_direct,
             // --- Экспорт и История ---
-            worldwiki_tauri::commands::export_chapters,
-            worldwiki_tauri::commands::export_document_docx,
-            worldwiki_tauri::commands::export_document_epub,
-            worldwiki_tauri::commands::export_document_fb2,
-            worldwiki_tauri::commands::export_document_pdf_save,
             worldwiki_tauri::commands::create_cloud_backup,
             worldwiki_tauri::commands::export_local_backup,
             worldwiki_tauri::commands::exchange_yandex_token,
@@ -193,11 +188,41 @@ pub fn run() {
             worldwiki_tauri::commands::ai_timeline_manager,
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,
+            $($extra,)*
             // --- Генерируемые команды для системных сущностей ---
             @entities: [StoryArc, Volume, Todo, PlotPromise, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites, ParticipantOf, AdvancesArc, OccursAt, RevealedIn]
-])
+            ]
+        };
+    }
+
+    let builder = tauri::Builder::default();
+    #[cfg(all(feature = "ver_1.1.0", feature = "razrab"))]
+    let builder = builder.invoke_handler(build_invoke_handler!(
+        worldwiki_tauri::commands::execute_raw_surql,
+        worldwiki_tauri::commands::export_chapters,
+        worldwiki_tauri::commands::export_document_docx,
+        worldwiki_tauri::commands::export_document_epub,
+        worldwiki_tauri::commands::export_document_fb2,
+        worldwiki_tauri::commands::export_document_pdf_save,
+    ));
+    #[cfg(all(feature = "ver_1.1.0", not(feature = "razrab")))]
+    let builder = builder.invoke_handler(build_invoke_handler!(
+        worldwiki_tauri::commands::export_chapters,
+        worldwiki_tauri::commands::export_document_docx,
+        worldwiki_tauri::commands::export_document_epub,
+        worldwiki_tauri::commands::export_document_fb2,
+        worldwiki_tauri::commands::export_document_pdf_save,
+    ));
+    #[cfg(all(not(feature = "ver_1.1.0"), feature = "razrab"))]
+    let builder = builder.invoke_handler(build_invoke_handler!(
+        worldwiki_tauri::commands::execute_raw_surql,
+    ));
+    #[cfg(all(not(feature = "ver_1.1.0"), not(feature = "razrab")))]
+    let builder = builder.invoke_handler(build_invoke_handler!());
+
+    if let Err(e) = builder
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             if let Some(file_path) = argv.into_iter().find(|arg| arg.ends_with(".wwiki")) {
                 let _ = app.emit("open-wwiki-file", file_path);

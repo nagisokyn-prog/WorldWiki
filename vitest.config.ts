@@ -8,10 +8,17 @@ const withAi =
   process.env.WITH_AI === '1' ||
   process.env.VITE_WITH_AI === 'true';
 
+const withRazrab =
+  process.argv.includes('--razrab') ||
+  process.argv.includes('--with-razrab') ||
+  process.env.WITH_RAZRAB === '1' ||
+  process.env.VITE_WITH_RAZRAB === 'true';
+
 export default defineConfig({
   plugins: [vue()],
   define: {
-    __FEATURE_AI__: withAi
+    __FEATURE_AI__: withAi,
+    __FEATURE_RAZRAB__: withRazrab
   },
   test: {
     globals: true,
@@ -19,7 +26,8 @@ export default defineConfig({
     pool: 'vmThreads',
     exclude: [
       ...configDefaults.exclude,
-      ...(!withAi ? ['**/features/ai/**', '**/FloatingWindowAI/**'] : [])
+      ...(!withAi ? ['**/features/ai/**', '**/FloatingWindowAI/**'] : []),
+      ...(!withRazrab ? ['**/features/devtools/**'] : [])
     ],
     include: [
       'test/**/*.test.ts',

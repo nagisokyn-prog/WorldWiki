@@ -117,3 +117,89 @@ impl CalendarMath {
         Self::master_minute_to_local(master_min, to_cal, master_cal, target_era_index)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::calendar::models::{
+        CalendarData, CalendarMonth, CalendarSettings, SyncAnchor,
+    };
+
+    fn make_cal(is_master: bool, base_days: i32, leap_rule: &str) -> CalendarData {
+        CalendarData {
+            название: if is_master { "MasterCal" } else { "LocalCal" }.to_string(),
+            calendar_type: None,
+            is_master: Some(is_master),
+            months: vec![CalendarMonth {
+                название: "M1".to_string(),
+                дней: base_days,
+            }],
+            eras: vec![],
+            leap_year_rule: leap_rule.to_string(),
+            custom_leap_rule: None,
+            time_settings: Some(CalendarSettings::default()),
+            moons: None,
+            sync_anchor: None,
+            planet_id: Some("earth".to_string()),
+            ticks_per_day: None,
+            day_start_offset: Some(0),
+            retrograde: None,
+            dial_hierarchy: None,
+        }
+    }
+
+    #[test]
+    fn calendar_math_positive_negative_and_conversion_use_case() {
+        let no_leap = make_cal(true, 365, "none");
+        assert!(!CalendarMath::is_leap_year(&no_leap, 2024));
+        assert_eq!(CalendarMath::get_days_in_year(&no_leap, 2024), 365);
+
+        let with_leap = make_cal(true, 365, "gregorian");
+        assert!(CalendarMath::is_leap_year(&with_leap, 4));
+        assert_eq!(CalendarMath::get_days_in_year(&with_leap, 4), 366);
+
+        let abs = CalendarMath::get_absolute_minute(&with_leap, 0, 1, 0, 1, 2, 30);
+        let (y, m, d, h, min) = CalendarMath::get_date_from_absolute(abs, &with_leap, 0);
+        assert_eq!((y, m, d, h, min), (1, 0, 1, 2, 30));
+
+        // Master / unlinked offset == 0
+        assert_eq!(CalendarMath::get_anchor_offset(&with_leap, None), 0);
+        let mut local = make_cal(false, 365, "none");
+        assert_eq!(CalendarMath::get_anchor_offset(&local, Some(&with_leap)), 0);
+
+        // Linked via raw absolute minutes
+        local.sync_anchor = Some(SyncAnchor {
+            master_calendar_id: Some("master".to_string()),
+            linked_to_master: true,
+            local_absolute_minute: 100,
+            master_absolute_minute: 500,
+            local_anchor_date: None,
+            master_anchor_date: None,
+        });
+        assert_eq!(CalendarMath::get_anchor_offset(&local, Some(&with_leap)), 400);
+
+        // Linked via anchor dates
+        local.sync_anchor = Some(SyncAnchor {
+            master_calendar_id: Some("master".to_string()),
+            linked_to_master: true,
+            local_absolute_minute: 0,
+            master_absolute_minute: 0,
+            local_anchor_date: Some(DateCoordinate {
+                era_index: 0, year: 1, month: 0, day: 1, hour: 0, minute: 0,
+            }),
+            master_anchor_date: Some(DateCoordinate {
+                era_index: 0, year: 1, month: 0, day: 2, hour: 0, minute: 0,
+            }),
+        });
+        assert_eq!(CalendarMath::get_anchor_offset(&local, Some(&with_leap)), 1440);
+
+        let converted = CalendarMath::convert_between_calendars(
+            &local,
+            &with_leap,
+            Some(&with_leap),
+            &DateCoordinate { era_index: 0, year: 1, month: 0, day: 1, hour: 3, minute: 15 },
+            0,
+        );
+        assert_eq!(converted, (1, 0, 2, 3, 15));
+    }
+}

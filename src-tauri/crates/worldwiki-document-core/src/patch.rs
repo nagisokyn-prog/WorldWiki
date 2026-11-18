@@ -47,12 +47,11 @@ fn apply_update_operations(
             ..
         } = op
         {
-            let block = blocks
-                .iter_mut()
-                .find(|b| &b.id == block_id)
-                .ok_or_else(|| PatchError::BlockNotFound {
+            let Some(block) = blocks.iter_mut().find(|b| &b.id == block_id) else {
+                return Err(PatchError::BlockNotFound {
                     id: block_id.clone(),
-                })?;
+                });
+            };
 
             if let Some(bt) = new_block_type {
                 block.block_type = bt.clone();
@@ -61,13 +60,12 @@ fn apply_update_operations(
                 block.metadata = md.clone();
             }
 
-            let updated_text =
-                apply_inline_changes(&block.content, inline_changes).map_err(|_| {
-                    PatchError::InlinePositionOutOfBounds {
-                        position: 0,
-                        len: block.content.chars().count(),
-                    }
-                })?;
+            let Ok(updated_text) = apply_inline_changes(&block.content, inline_changes) else {
+                return Err(PatchError::InlinePositionOutOfBounds {
+                    position: 0,
+                    len: block.content.chars().count(),
+                });
+            };
 
             block.content = updated_text;
         }
@@ -104,12 +102,11 @@ fn apply_move_operations(
             ..
         } = op
         {
-            let current_pos = blocks
-                .iter()
-                .position(|b| &b.id == block_id)
-                .ok_or_else(|| PatchError::BlockNotFound {
+            let Some(current_pos) = blocks.iter().position(|b| &b.id == block_id) else {
+                return Err(PatchError::BlockNotFound {
                     id: block_id.clone(),
-                })?;
+                });
+            };
 
             let block = blocks.remove(current_pos);
             let target_idx = (*to_index).min(blocks.len());

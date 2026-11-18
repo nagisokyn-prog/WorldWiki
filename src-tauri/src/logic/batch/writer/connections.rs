@@ -36,10 +36,17 @@ pub async fn upsert_connections_batch_inner(
         }
 
         let target_clean = target_raw.split_once(':').map(|(_, b)| b).unwrap_or(&target_raw).trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string();
-        let src_clean = r#in
-            .as_deref()
-            .map(|s| s.split_once(':').map(|(_, b)| b).unwrap_or(s).trim_matches('⟨').trim_matches('⟩').trim_matches('`').to_string())
-            .unwrap_or_else(|| from_clean.to_string());
+        let src_clean = match r#in.as_deref() {
+            Some(s) => s
+                .split_once(':')
+                .map(|(_, b)| b)
+                .unwrap_or(s)
+                .trim_matches('⟨')
+                .trim_matches('⟩')
+                .trim_matches('`')
+                .to_string(),
+            None => from_clean.to_string(),
+        };
 
         let clean_start = start_at.filter(|s| !s.trim().is_empty());
         let clean_end = end_at.filter(|s| !s.trim().is_empty());

@@ -79,3 +79,45 @@ impl OptionStrExt for Option<String> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn domain_error_constructors_and_extensions_cover_positive_and_negative() {
+        assert_eq!(
+            DomainError::validation("bad input"),
+            DomainError::Validation("bad input".to_string())
+        );
+        assert_eq!(
+            DomainError::constraint_violation("dup key"),
+            DomainError::ConstraintViolation("dup key".to_string())
+        );
+        assert_eq!(
+            DomainError::invalid_ast_node("bad node"),
+            DomainError::InvalidAstNode("bad node".to_string())
+        );
+        assert_eq!(
+            DomainError::invalid_plot_promise("bad promise"),
+            DomainError::InvalidPlotPromise("bad promise".to_string())
+        );
+
+        let ok_res: Result<i32, &str> = Ok(42);
+        assert_eq!(ok_res.ctx_validation("ctx").unwrap(), 42);
+        assert_eq!(ok_res.ctx_constraint("ctx").unwrap(), 42);
+
+        let err_res: Result<i32, &str> = Err("boom");
+        assert_eq!(
+            err_res.ctx_validation("step1").unwrap_err(),
+            DomainError::Validation("step1: boom".to_string())
+        );
+        assert_eq!(
+            err_res.ctx_constraint("step2").unwrap_err(),
+            DomainError::ConstraintViolation("step2: boom".to_string())
+        );
+
+        assert_eq!(Some("val".to_string()).unwrap_or_str("fb"), "val");
+        assert_eq!(None.unwrap_or_str("fb"), "fb");
+    }
+}

@@ -80,9 +80,9 @@ pub async fn save_connections(
     source_id: &str,
     data: Value,
 ) -> Result<(), DomainError> {
-    let connections_arr = data
-        .as_array()
-        .ok_or_else(|| DomainError::Validation("Connections array expected".to_string()))?;
+    let Some(connections_arr) = data.as_array() else {
+        return Err(DomainError::Validation("Connections array expected".to_string()));
+    };
     let proj_clean = project.trim().trim_start_matches("projects:").to_string();
     let src_clean = source_id.trim().trim_start_matches("entities:").to_string();
 

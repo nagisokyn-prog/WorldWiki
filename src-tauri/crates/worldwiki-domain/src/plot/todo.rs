@@ -83,3 +83,34 @@ impl Todo {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn todo_lifecycle_toggle_arc_and_dependency() {
+        let mut todo = Todo::new("chapters:c1", "Написать сцену", 1)
+            .with_arc("story_arcs:a1")
+            .with_depends_on("todos:t0");
+        assert_eq!(todo.arc_id.as_deref(), Some("story_arcs:a1"));
+        assert_eq!(todo.depends_on.as_deref(), Some("todos:t0"));
+        assert_eq!(todo.status, TodoStatus::Blocked);
+        assert!(!todo.is_done);
+
+        todo.toggle();
+        assert_eq!(todo.status, TodoStatus::Done);
+        assert!(todo.is_done);
+
+        todo.toggle();
+        assert_eq!(todo.status, TodoStatus::Planned);
+        assert!(!todo.is_done);
+
+        todo.set_status(TodoStatus::InProgress);
+        assert_eq!(todo.status, TodoStatus::InProgress);
+        assert!(!todo.is_done);
+
+        todo.set_status(TodoStatus::Done);
+        assert!(todo.is_done);
+    }
+}
+

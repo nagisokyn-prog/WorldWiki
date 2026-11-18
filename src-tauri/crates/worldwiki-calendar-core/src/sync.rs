@@ -56,10 +56,12 @@ pub fn try_calculate_linked_anchor_world_day(
     local_date: &DateCoordinate,
     local_config: &CalendarCultureConfig,
 ) -> Result<i64, ConversionError> {
-    validate_date_coordinate(master_date, master_config)
-        .map_err(|_| ConversionError::InvalidSourceDate)?;
-    validate_date_coordinate(local_date, local_config)
-        .map_err(|_| ConversionError::InvalidTargetDate)?;
+    if validate_date_coordinate(master_date, master_config).is_err() {
+        return Err(ConversionError::InvalidSourceDate);
+    }
+    if validate_date_coordinate(local_date, local_config).is_err() {
+        return Err(ConversionError::InvalidTargetDate);
+    }
 
     Ok(calculate_linked_anchor_world_day(
         master_date,

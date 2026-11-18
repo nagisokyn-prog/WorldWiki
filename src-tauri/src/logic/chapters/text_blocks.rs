@@ -13,8 +13,10 @@ pub async fn save_text_blocks_inner(
 
     let blocks = {
         let document = Html::parse_document(html);
-        let selector = Selector::parse("p")
-            .map_err(|e| ChapterError::InvalidData(format!("Failed to parse selector: {:?}", e)))?;
+        let selector = match Selector::parse("p") {
+            Ok(s) => s,
+            Err(e) => return Err(ChapterError::InvalidData(format!("Failed to parse selector: {:?}", e))),
+        };
         let mut blocks: Vec<(String, String, String)> = Vec::new();
 
         for (i, p) in document.select(&selector).enumerate() {
@@ -24,13 +26,15 @@ pub async fn save_text_blocks_inner(
                 "dialog" => "dialogue",
                 _ => tag,
             };
-            let raw_block_id = p
+            let raw_block_id = match p
                 .value()
                 .attr("data-block-id")
-                .or_else(|| p.value().attr("data-id"))
-                .or_else(|| p.value().attr("id"))
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| format!("para-{}", i + 1));
+                .or(p.value().attr("data-id"))
+                .or(p.value().attr("id"))
+            {
+                Some(s) => s.to_string(),
+                None => format!("para-{}", i + 1),
+            };
 
             let block_id = if raw_block_id.starts_with("blk_") {
                 raw_block_id

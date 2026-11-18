@@ -22,3 +22,18 @@ impl std::fmt::Display for ManuscriptStatus {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn manuscript_status_display_and_default() {
+        assert_eq!(ManuscriptStatus::default(), ManuscriptStatus::Draft);
+        assert_eq!(ManuscriptStatus::Draft.to_string(), "draft");
+        assert_eq!(ManuscriptStatus::InProgress.to_string(), "in_progress");
+        assert_eq!(ManuscriptStatus::Review.to_string(), "review");
+        assert_eq!(ManuscriptStatus::Completed.to_string(), "completed");
+        assert_eq!(ManuscriptStatus::Archived.to_string(), "archived");
+    }
+}

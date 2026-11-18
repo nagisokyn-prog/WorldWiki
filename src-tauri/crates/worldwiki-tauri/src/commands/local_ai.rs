@@ -111,15 +111,15 @@ pub async fn download_hf_model(
     use tokio::io::AsyncWriteExt;
     use std::path::PathBuf;
 
-    let models_dir = app
-        .path()
-        .app_data_dir()
-        .unwrap_or_else(|_| PathBuf::from("."))
-        .join("models");
+    let models_dir = match app.path().app_data_dir() {
+        Ok(dir) => dir,
+        Err(_) => PathBuf::from("."),
+    }
+    .join("models");
 
-    tokio::fs::create_dir_all(&models_dir)
-        .await
-        .map_err(|e| format!("Не удалось создать директорию моделей: {e}"))?;
+    if let Err(e) = tokio::fs::create_dir_all(&models_dir).await {
+        return Err(IpcError::from(format!("Не удалось создать директорию моделей: {e}")));
+    }
 
     let dest_path = models_dir.join(&filename);
     let download_url = format!("https://huggingface.co/{repo_id}/resolve/main/{filename}");
@@ -136,10 +136,10 @@ pub async fn download_hf_model(
         }
     }
 
-    let mut resp = req
-        .send()
-        .await
-        .map_err(|e| format!("Ошибка запроса на скачивание: {e}"))?;
+    let mut resp = match req.send().await {
+        Ok(r) => r,
+        Err(e) => return Err(IpcError::from(format!("Ошибка запроса на скачивание: {e}"))),
+    };
 
     if resp.status().as_u16() == 401 {
         return Err(IpcError::from("Ошибка 401 (Нет доступа): Модель требует авторизации через HF Token или файл не найден в репозитории."));
@@ -164,33 +164,39 @@ pub async fn download_hf_model(
     }
 
     let total_bytes = resp.content_length().unwrap_or(0);
-    let mut file = tokio::fs::File::create(&dest_path)
-        .await
-        .map_err(|e| format!("Failed to create target file: {e}"))?;
+    let mut file = match tokio::fs::File::create(&dest_path).await {
+        Ok(f) => f,
+        Err(e) => return Err(IpcError::from(format!("Failed to create target file: {e}"))),
+    };
 
     let mut downloaded_bytes = 0u64;
     let mut last_emitted_percent = 0.0f32;
     let mut last_emit_time = std::time::Instant::now();
 
-    while let Some(chunk) = resp.chunk().await.map_err(|e| {
-        let err_msg = format!("Chunk stream error: {e}");
-        let _ = app.emit(
-            "model_download_progress",
-            BorrowedProgressEvent {
-                repo_id: &repo_id,
-                filename: &filename,
-                downloaded_bytes,
-                total_bytes,
-                percent: 0.0,
-                is_done: false,
-                error: Some(&err_msg),
-            },
-        );
-        err_msg
-    })? {
-        file.write_all(&chunk)
-            .await
-            .map_err(|e| format!("File write error: {e}"))?;
+    loop {
+        let chunk = match resp.chunk().await {
+            Ok(Some(c)) => c,
+            Ok(None) => break,
+            Err(e) => {
+                let err_msg = format!("Chunk stream error: {e}");
+                let _ = app.emit(
+                    "model_download_progress",
+                    BorrowedProgressEvent {
+                        repo_id: &repo_id,
+                        filename: &filename,
+                        downloaded_bytes,
+                        total_bytes,
+                        percent: 0.0,
+                        is_done: false,
+                        error: Some(&err_msg),
+                    },
+                );
+                return Err(IpcError::from(err_msg));
+            }
+        };
+        if let Err(e) = file.write_all(&chunk).await {
+            return Err(IpcError::from(format!("File write error: {e}")));
+        }
 
         downloaded_bytes += chunk.len() as u64;
 
@@ -219,9 +225,9 @@ pub async fn download_hf_model(
         }
     }
 
-    file.flush()
-        .await
-        .map_err(|e| format!("Flush error: {e}"))?;
+    if let Err(e) = file.flush().await {
+        return Err(IpcError::from(format!("Flush error: {e}")));
+    }
 
     let _ = app.emit(
         "model_download_progress",

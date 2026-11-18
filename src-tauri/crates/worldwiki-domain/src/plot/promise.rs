@@ -139,3 +139,21 @@ impl PlotPromise {
         self.status = PromiseStatus::Resolved;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn plot_promise_new_resolve_and_serde_defaults() {
+        let mut p = PlotPromise::new(PromiseKind::Gun, "Пистолет на стене");
+        assert_eq!(p.status, PromiseStatus::Planted);
+        p.resolve();
+        assert_eq!(p.status, PromiseStatus::Resolved);
+
+        let parsed: PlotPromise =
+            serde_json::from_str(r#"{"id":"p1","kind":"mystery"}"#).unwrap();
+        assert_eq!(parsed.created_at, DateTime::UNIX_EPOCH);
+        assert_eq!(parsed.kind, PromiseKind::Mystery);
+    }
+}

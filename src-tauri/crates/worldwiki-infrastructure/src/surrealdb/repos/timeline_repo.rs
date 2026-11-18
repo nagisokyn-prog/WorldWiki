@@ -47,7 +47,10 @@ impl TimelineEventRepository for SurrealTimelineRepository {
             ("description", event.description.clone()),
             ("m_abs", event.m_abs),
         )?;
-        Ok(created.map(|a| a.id).unwrap_or_else(|| event.id.clone()))
+        Ok(match created {
+            Some(a) => a.id,
+            None => event.id.clone(),
+        })
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {

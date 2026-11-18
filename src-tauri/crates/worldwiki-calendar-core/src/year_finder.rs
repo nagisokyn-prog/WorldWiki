@@ -79,8 +79,11 @@ pub fn year_from_days_o1(
     harmonics: &[LeapHarmonic],
     d: i64,
 ) -> (i64, i64) {
-    try_year_from_days_o1(d_cal, base, harmonics, d).unwrap_or_else(|_| {
-        let approx = if base > 0 { d_cal / base } else { 1 };
-        (approx, 0)
-    })
+    match try_year_from_days_o1(d_cal, base, harmonics, d) {
+        Ok(res) => res,
+        Err(_) => {
+            let approx = if base > 0 { d_cal / base } else { 1 };
+            (approx, 0)
+        }
+    }
 }

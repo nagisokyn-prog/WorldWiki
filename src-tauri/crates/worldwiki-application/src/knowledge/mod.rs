@@ -32,10 +32,10 @@ impl KnowledgeServices {
     }
 
     pub async fn get_entity(&self, id: &str) -> Result<Entity, ApplicationError> {
-        self.entity_repo
-            .get_by_id(id)
-            .await?
-            .ok_or_else(|| ApplicationError::NotFound(format!("Entity {id} not found")))
+        match self.entity_repo.get_by_id(id).await? {
+            Some(e) => Ok(e),
+            None => Err(ApplicationError::NotFound(format!("Entity {id} not found"))),
+        }
     }
 
     pub async fn get_full_card(&self, id: &str) -> Result<EntityCardDto, ApplicationError> {

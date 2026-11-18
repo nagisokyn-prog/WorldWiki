@@ -44,3 +44,24 @@ impl EntityRelation {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn entity_relation_new_and_serde_aliases() {
+        let rel = EntityRelation::new("entities:a", "entities:b", "ally");
+        assert_eq!(rel.from_entity_id, "entities:a");
+        assert_eq!(rel.to_entity_id, "entities:b");
+        assert_eq!(rel.rel_type, "ally");
+        assert!(!rel.is_auto_extend);
+
+        let raw = r#"{"in":"entities:x","out":"entities:y","rel":"enemy","strength":-50}"#;
+        let parsed: EntityRelation = serde_json::from_str(raw).unwrap();
+        assert_eq!(parsed.from_entity_id, "entities:x");
+        assert_eq!(parsed.to_entity_id, "entities:y");
+        assert_eq!(parsed.rel_type, "enemy");
+        assert_eq!(parsed.strength, Some(-50));
+    }
+}

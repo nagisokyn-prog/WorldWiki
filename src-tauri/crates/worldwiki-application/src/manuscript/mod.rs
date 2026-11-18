@@ -19,10 +19,10 @@ impl ManuscriptServices {
     }
 
     pub async fn get_chapter(&self, chapter_id: &str) -> Result<Chapter, ApplicationError> {
-        self.repo
-            .get_by_id(chapter_id)
-            .await?
-            .ok_or_else(|| ApplicationError::NotFound(format!("Chapter {chapter_id} not found")))
+        match self.repo.get_by_id(chapter_id).await? {
+            Some(c) => Ok(c),
+            None => Err(ApplicationError::NotFound(format!("Chapter {chapter_id} not found"))),
+        }
     }
 
     pub async fn save_chapter(&self, chapter: &Chapter) -> Result<(), ApplicationError> {

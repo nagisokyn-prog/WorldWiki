@@ -132,11 +132,11 @@ impl WebResearchPort for WebScraper {
         };
 
         let content_hash = Self::compute_content_hash(&clean_text);
-        let extracted_markdown = format!(
-            "# {}\n\n{}",
-            title.clone().unwrap_or_else(|| domain.clone()),
-            clean_text
-        );
+        let page_title = match title.as_deref() {
+            Some(t) => t,
+            None => domain.as_str(),
+        };
+        let extracted_markdown = format!("# {}\n\n{}", page_title, clean_text);
 
         Ok(WebPageEntity {
             id: None,

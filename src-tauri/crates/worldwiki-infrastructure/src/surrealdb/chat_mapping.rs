@@ -20,21 +20,17 @@ pub fn clean_record_id(val: &Value) -> Option<String> {
             let tb = obj.get("tb").and_then(|v| v.as_str())?;
             let id_val = obj.get("id")?;
             let id_str = match id_val {
-                Value::Object(id_obj) => id_obj
-                    .get("String")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.to_string())
-                    .or_else(|| {
-                        id_obj
-                            .get("Int")
-                            .and_then(|v| v.as_i64())
-                            .map(|n| n.to_string())
-                    })
-                    .or_else(|| {
+                Value::Object(id_obj) => {
+                    if let Some(s) = id_obj.get("String").and_then(|v| v.as_str()) {
+                        Some(s.to_string())
+                    } else if let Some(n) = id_obj.get("Int").and_then(|v| v.as_i64()) {
+                        Some(n.to_string())
+                    } else {
                         id_obj
                             .values()
                             .find_map(|v| v.as_str().map(|s| s.to_string()))
-                    }),
+                    }
+                }
                 Value::String(s) => Some(s.replace(['⟨', '⟩', '`'], "")),
                 Value::Number(n) => Some(n.to_string()),
                 _ => None,

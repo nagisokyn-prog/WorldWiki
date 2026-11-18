@@ -44,8 +44,10 @@ impl WasmAstDiffEngine {
         let patch: DocumentDiffResult = serde_wasm_bindgen::from_value(patch_json)
             .map_err(crate::js_err)?;
 
-        let result = core_apply_patch(&old_doc, &patch)
-            .map_err(|e| JsValue::from_str(&format!("{:?}", e)))?;
+        let result = match core_apply_patch(&old_doc, &patch) {
+            Ok(r) => r,
+            Err(e) => return Err(JsValue::from_str(&format!("{:?}", e))),
+        };
 
         serde_wasm_bindgen::to_value(&result).map_err(crate::js_err)
     }

@@ -22,10 +22,10 @@ impl TodoServices {
     }
 
     async fn get_todo_or_err(&self, todo_id: &str) -> Result<Todo, ApplicationError> {
-        self.todo_repo
-            .get_by_id(todo_id)
-            .await?
-            .ok_or_else(|| ApplicationError::NotFound(format!("Todo {todo_id} not found")))
+        match self.todo_repo.get_by_id(todo_id).await? {
+            Some(t) => Ok(t),
+            None => Err(ApplicationError::NotFound(format!("Todo {todo_id} not found"))),
+        }
     }
 
     pub async fn create_todo(&self, owner_id: &str, text: &str, sort_order: i32) -> Result<String, ApplicationError> {

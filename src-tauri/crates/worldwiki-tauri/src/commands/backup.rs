@@ -1,16 +1,16 @@
+use crate::error::IpcError;
+use crate::state::AppState;
+use serde_json::Value;
 use std::fs;
 use std::path::PathBuf;
-use serde_json::Value;
 use tauri::{Emitter, Manager};
 use worldwiki_domain::storage::YandexBackupFile;
 use worldwiki_infrastructure::storage::{
-    create_cloud_backup_inner, download_missing_media_inner, download_yandex_file_inner,
-    exchange_yandex_token_inner, export_chapters_inner, list_yandex_disk_backups_inner,
-    restore_from_backup_inner, sync_media_to_yandex_inner, upload_to_yandex_disk_inner,
-    MediaSyncProgress,
+    MediaSyncProgress, create_cloud_backup_inner, download_missing_media_inner,
+    download_yandex_file_inner, exchange_yandex_token_inner, export_chapters_inner,
+    list_yandex_disk_backups_inner, restore_from_backup_inner, sync_media_to_yandex_inner,
+    upload_to_yandex_disk_inner,
 };
-use crate::error::IpcError;
-use crate::state::AppState;
 
 #[tauri::command]
 pub async fn export_chapters(
@@ -34,11 +34,11 @@ pub async fn create_cloud_backup(
     app: tauri::AppHandle,
 ) -> Result<String, IpcError> {
     let db = &state.services.db;
-    let target_dir = app
-        .path()
-        .app_data_dir()
-        .unwrap_or_else(|_| PathBuf::from("."))
-        .join("backups");
+    let target_dir = match app.path().app_data_dir() {
+        Ok(dir) => dir,
+        Err(_) => PathBuf::from("."),
+    }
+    .join("backups");
 
     create_cloud_backup_inner(db, &target_dir, project.as_deref())
         .await
@@ -53,19 +53,28 @@ pub async fn export_local_backup(
 ) -> Result<String, IpcError> {
     let db = &state.services.db;
     let dest = PathBuf::from(&destination_path);
-    let parent = dest.parent().unwrap_or_else(|| std::path::Path::new("."));
-    fs::create_dir_all(parent).map_err(|e| IpcError::from(worldwiki_domain::errors::DomainError::Validation(e.to_string())))?;
+    let parent = match dest.parent() {
+        Some(p) => p,
+        None => std::path::Path::new("."),
+    };
+    if let Err(e) = fs::create_dir_all(parent) {
+        return Err(IpcError::from(
+            worldwiki_domain::errors::DomainError::Validation(e.to_string()),
+        ));
+    }
 
     let temp_zip_path = create_cloud_backup_inner(db, parent, project.as_deref())
         .await
         .map_err(IpcError::from)?;
 
     if temp_zip_path != destination_path {
-        fs::copy(&temp_zip_path, &destination_path).map_err(|e| {
-            IpcError::from(worldwiki_domain::errors::DomainError::Validation(format!(
-                "Failed to copy backup to {destination_path}: {e}"
-            )))
-        })?;
+        if let Err(e) = fs::copy(&temp_zip_path, &destination_path) {
+            return Err(IpcError::from(
+                worldwiki_domain::errors::DomainError::Validation(format!(
+                    "Failed to copy backup to {destination_path}: {e}"
+                )),
+            ));
+        }
         let _ = fs::remove_file(&temp_zip_path);
     }
 
@@ -87,10 +96,7 @@ pub async fn upload_to_yandex_disk(token: String, file_path: String) -> Result<(
 }
 
 #[tauri::command]
-pub async fn sync_yandex_media(
-    token: String,
-    app: tauri::AppHandle,
-) -> Result<usize, IpcError> {
+pub async fn sync_yandex_media(token: String, app: tauri::AppHandle) -> Result<usize, IpcError> {
     let app_clone = app.clone();
     let on_progress = std::sync::Arc::new(move |progress: MediaSyncProgress| {
         let _ = app_clone.emit("sync-media-progress", progress);
@@ -130,9 +136,10 @@ pub async fn download_and_restore_yandex(
     }
 
     if let Some(dir) = temp_file_path.parent()
-        && let Err(e) = fs::remove_dir_all(dir) {
-            eprintln!("[BACKUP] Temp dir clean error: {e}");
-        }
+        && let Err(e) = fs::remove_dir_all(dir)
+    {
+        eprintln!("[BACKUP] Temp dir clean error: {e}");
+    }
 
     Ok(())
 }

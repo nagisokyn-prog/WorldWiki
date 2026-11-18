@@ -33,3 +33,20 @@ impl Default for SemanticDocument {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn semantic_document_default_and_roundtrip() {
+        let doc = SemanticDocument::default();
+        assert_eq!(doc.version, 1);
+        assert_eq!(doc.root.r#type, "doc");
+        assert!(doc.root.children.is_empty());
+
+        let json = serde_json::to_string(&doc).unwrap();
+        let decoded: SemanticDocument = serde_json::from_str(&json).unwrap();
+        assert_eq!(decoded, doc);
+    }
+}

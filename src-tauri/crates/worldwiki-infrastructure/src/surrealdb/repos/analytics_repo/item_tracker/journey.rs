@@ -37,11 +37,14 @@ fn build_promise_journey(
         .and_then(|pid| character_names.get(clean_id(pid)))
         .cloned();
 
-    let desc = prom
+    let desc = match prom
         .and_then(|p| p.description.as_ref())
         .filter(|s| !s.is_empty())
         .cloned()
-        .unwrap_or_else(|| prom_title.clone());
+    {
+        Some(d) => d,
+        None => prom_title.clone(),
+    };
 
     nodes.push(ItemJourneyNodeDto {
         id: format!("{}_plant", item_clean),
@@ -153,11 +156,10 @@ fn build_entity_journey(
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
             let o_clean = clean_id(owner_val);
-            let o_name = ctx
-                .character_names
-                .get(o_clean)
-                .cloned()
-                .unwrap_or_else(|| owner_val.to_string());
+            let o_name = match ctx.character_names.get(o_clean) {
+                Some(n) => n.clone(),
+                None => owner_val.to_string(),
+            };
             let circ = entry
                 .get("описание_1")
                 .or(entry.get("circumstances"))
@@ -265,9 +267,9 @@ pub(crate) async fn get_item_journey_impl(
     )?;
     let bundle = bundle.unwrap_or_default();
 
-    let target_item = bundle
-        .item
-        .ok_or_else(|| DomainError::Validation(format!("Item {} not found", item_id)))?;
+    let Some(target_item) = bundle.item else {
+        return Err(DomainError::Validation(format!("Item {} not found", item_id)));
+    };
 
     let character_names: HashMap<String, String> = bundle
         .characters

@@ -256,9 +256,10 @@ impl CalendarData {
             };
         }
 
-        let ticks_per_day = self
-            .ticks_per_day
-            .unwrap_or_else(|| core::total_dial_subdivisions(dial_buf));
+        let ticks_per_day = match self.ticks_per_day {
+            Some(t) => t,
+            None => core::total_dial_subdivisions(dial_buf),
+        };
 
         let planet_id = self.planet_id.as_deref().unwrap_or("default");
         let day_start_offset = self.day_start_offset.unwrap_or(0);
@@ -286,5 +287,59 @@ impl CalendarData {
             dial: dial_buf,
             eras: eras_buf.as_slice(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calendar_data_custom_dial_eras_and_leap_variants() {
+        let cal = CalendarData {
+            название: "CustomCal".to_string(),
+            calendar_type: None,
+            is_master: Some(true),
+            months: vec![CalendarMonth {
+                название: "M1".to_string(),
+                дней: 365,
+            }],
+            eras: vec![CalendarEra {
+                название: "Era1".to_string(),
+                год_начала: 1,
+                год_конца: 100,
+                обратный_отсчет: true,
+            }],
+            leap_year_rule: "gregorian".to_string(),
+            custom_leap_rule: Some(CustomLeapRule {
+                месяц: 0,
+                день_смещения: 1,
+            }),
+            time_settings: None,
+            moons: None,
+            sync_anchor: None,
+            planet_id: Some("earth".to_string()),
+            ticks_per_day: Some(1000),
+            day_start_offset: Some(0),
+            retrograde: None,
+            dial_hierarchy: Some(vec![DialUnitModel {
+                name: "Beat".to_string(),
+                subdivisions: 1000,
+            }]),
+        };
+
+        let (mut h, mut m, mut e, mut d) =
+            (Vec::new(), Vec::new(), Vec::new(), DialHierarchy::default());
+        let cfg = cal.to_core_config(&mut h, &mut m, &mut e, &mut d);
+        assert_eq!(cfg.ticks_per_day, 1000);
+        assert_eq!(cfg.harmonics.len(), 3);
+        assert_eq!(cfg.eras.len(), 1);
+        assert!(cfg.eras[0].is_count_down);
+        assert_eq!(cfg.dial.units[0].name, "Beat");
+
+        let parsed_settings: CalendarSettings = serde_json::from_str("{}").unwrap();
+        assert_eq!(parsed_settings.часов_в_сутках, 24);
+        assert_eq!(parsed_settings.минут_в_часе, 60);
+        assert_eq!(parsed_settings.секунд_в_минуте, 60);
     }
 }

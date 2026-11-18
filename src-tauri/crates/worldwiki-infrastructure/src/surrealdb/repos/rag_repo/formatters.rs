@@ -77,13 +77,13 @@ pub fn format_entity_dossier_value(row: &Value) -> Value {
     let name = obj
         .get("name")
         .and_then(|v| v.as_str())
-        .or_else(|| obj.get("title").and_then(|v| v.as_str()))
+        .or(obj.get("title").and_then(|v| v.as_str()))
         .unwrap_or("Сущность");
     let type_key = obj.get("type_key").and_then(|v| v.as_str()).unwrap_or("entity");
     let desc = obj
         .get("description")
         .and_then(|v| v.as_str())
-        .or_else(|| obj.get("content").and_then(|v| v.as_str()))
+        .or(obj.get("content").and_then(|v| v.as_str()))
         .unwrap_or("");
     let tags = match obj.get("tags").and_then(|v| v.as_array()) {
         Some(arr) => {

@@ -47,13 +47,16 @@ pub fn parse_entity_value(mut val: Value, entity_id: &str) -> Result<Option<Enti
         return Ok(None);
     }
     flatten_thing(&mut val);
-    serde_json::from_value(val).map(Some).map_err(|e| {
-        eprintln!(
-            "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}",
-            entity_id, e
-        );
-        EntityError::Serialization(e)
-    })
+    match serde_json::from_value(val) {
+        Ok(ent) => Ok(Some(ent)),
+        Err(e) => {
+            eprintln!(
+                "[DESERIALIZE ERROR] get_entity_inner failed to parse entity '{}': {}",
+                entity_id, e
+            );
+            Err(EntityError::Serialization(e))
+        }
+    }
 }
 
 pub async fn execute_delete_with_retry(

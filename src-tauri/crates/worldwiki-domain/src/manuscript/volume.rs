@@ -39,3 +39,21 @@ impl Volume {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn volume_new_and_serde_defaults() {
+        let vol = Volume::new("projects:p1", "Том 1", 3);
+        assert_eq!(vol.project_id, "projects:p1");
+        assert_eq!(vol.title, "Том 1");
+        assert_eq!(vol.sort_order, 3);
+        assert_eq!(vol.status, ManuscriptStatus::Draft);
+
+        let parsed: Volume = serde_json::from_str(r#"{"project_id":"p1","title":"T"}"#).unwrap();
+        assert_eq!(parsed.created_at, DateTime::UNIX_EPOCH);
+        assert_eq!(parsed.sort_order, 0);
+    }
+}

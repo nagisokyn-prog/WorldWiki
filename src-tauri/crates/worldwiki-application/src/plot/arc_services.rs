@@ -13,10 +13,10 @@ impl StoryArcServices {
     }
 
     pub async fn get_arc(&self, id: &str) -> Result<StoryArc, ApplicationError> {
-        self.repo
-            .get_by_id(id)
-            .await?
-            .ok_or_else(|| ApplicationError::NotFound(format!("Story arc {id} not found")))
+        match self.repo.get_by_id(id).await? {
+            Some(a) => Ok(a),
+            None => Err(ApplicationError::NotFound(format!("Story arc {id} not found"))),
+        }
     }
 
     pub async fn save_arc(&self, arc: &StoryArc) -> Result<String, ApplicationError> {

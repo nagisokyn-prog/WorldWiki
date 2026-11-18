@@ -17,13 +17,13 @@ pub fn flatten_thing(val: &mut Value) {
         for v in obj.values_mut() {
             if v.is_object() {
                 let tb_opt = v.get("tb").and_then(|t| t.as_str()).map(|s| s.to_string());
-                let id_opt = v.get("id").and_then(|id_field| {
-                    id_field
-                        .get("String")
-                        .and_then(|s| s.as_str())
-                        .or_else(|| id_field.as_str())
-                        .map(|s| s.to_string())
-                });
+                let id_opt = match v.get("id") {
+                    Some(id_field) => match id_field.get("String").and_then(|s| s.as_str()) {
+                        Some(s) => Some(s.to_string()),
+                        None => id_field.as_str().map(|s| s.to_string()),
+                    },
+                    None => None,
+                };
                 if let (Some(tb), Some(id_str)) = (tb_opt, id_opt)
                     && !tb.is_empty() && !id_str.is_empty() {
                         *v = Value::String(format!("{}:{}", tb, id_str));
@@ -34,14 +34,11 @@ pub fn flatten_thing(val: &mut Value) {
 }
 
 pub fn deserialize_list<T: serde::de::DeserializeOwned>(values: Vec<Value>) -> Vec<T> {
-    values
-        .into_iter()
-        .map(|mut v| {
-            flatten_thing(&mut v);
-            v
-        })
-        .filter_map(|v| match serde_json::from_value::<T>(v.clone()) {
-            Ok(e) => Some(e),
+    let mut out = Vec::with_capacity(values.len());
+    for mut v in values {
+        flatten_thing(&mut v);
+        match serde_json::from_value::<T>(v.clone()) {
+            Ok(e) => out.push(e),
             Err(e) => {
                 eprintln!(
                     "[DESERIALIZE ERROR] Failed to parse item of type '{}': {}\nRaw JSON: {:?}",
@@ -49,10 +46,10 @@ pub fn deserialize_list<T: serde::de::DeserializeOwned>(values: Vec<Value>) -> V
                     e,
                     v
                 );
-                None
             }
-        })
-        .collect()
+        }
+    }
+    out
 }
 
 pub fn safe_pid(p: &str) -> String {

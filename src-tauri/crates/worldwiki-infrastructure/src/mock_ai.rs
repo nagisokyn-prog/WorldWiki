@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -44,7 +45,7 @@ impl LlmStreamPort for MockAiAdapter {
                 is_done: true,
             })
             .await
-            .map_err(|e| DomainError::ConstraintViolation(format!("Mock AI stream send failed: {}", e)))?;
+            .ctx_constraint("Mock AI stream send failed")?;
         Ok(())
     }
 }

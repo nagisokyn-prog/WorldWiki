@@ -1,7 +1,7 @@
 //! Canonical URL normalization, query sanitization, and redirect resolution.
 
-use std::collections::HashSet;
 use super::html_parser::decode_html_entities;
+use std::collections::HashSet;
 
 /// Normalizes a raw URL into canonical format:
 /// - Enforces HTTPS scheme for public domains
@@ -22,19 +22,19 @@ pub fn normalize_canonical_url(raw_url: &str) -> String {
 
     parsed.set_fragment(None);
 
-    let filtered_pairs: Vec<(String, String)> = parsed
-        .query_pairs()
-        .filter(|(k, _)| {
-            let lower = k.to_ascii_lowercase();
-            !lower.starts_with("utm_")
-                && lower != "fbclid"
-                && lower != "gclid"
-                && lower != "yclid"
-                && lower != "ref"
-                && lower != "source"
-        })
-        .map(|(k, v)| (k.to_string(), v.to_string()))
-        .collect();
+    let mut filtered_pairs: Vec<(String, String)> = Vec::new();
+    for (k, v) in parsed.query_pairs() {
+        let lower = k.to_ascii_lowercase();
+        if !lower.starts_with("utm_")
+            && lower != "fbclid"
+            && lower != "gclid"
+            && lower != "yclid"
+            && lower != "ref"
+            && lower != "source"
+        {
+            filtered_pairs.push((k.to_string(), v.to_string()));
+        }
+    }
 
     if filtered_pairs.is_empty() {
         parsed.set_query(None);
@@ -91,8 +91,12 @@ where
     F: Fn(&T) -> &str,
 {
     let mut seen = HashSet::new();
-    hits.retain(|hit| {
-        let canonical = normalize_canonical_url(url_extractor(hit));
-        seen.insert(canonical)
-    });
+    let mut deduped = Vec::with_capacity(hits.len());
+    for hit in hits.drain(..) {
+        let canonical = normalize_canonical_url(url_extractor(&hit));
+        if seen.insert(canonical) {
+            deduped.push(hit);
+        }
+    }
+    *hits = deduped;
 }

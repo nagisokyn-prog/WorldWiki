@@ -90,3 +90,9 @@ impl From<&str> for IpcError {
         }
     }
 }
+
+impl IpcError {
+    pub fn from_display<E: std::fmt::Display>(err: E) -> Self {
+        Self::from(err.to_string())
+    }
+}

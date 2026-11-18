@@ -1,5 +1,6 @@
 //! Multi-Character Journey analytics and cross-arc navigation.
 
+use worldwiki_domain::errors::OptionStrExt;
 use std::collections::{HashMap, HashSet};
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -30,7 +31,7 @@ impl MultiJourneyRawEntity {
     fn clean(self) -> MultiJourneyCleanEntity {
         MultiJourneyCleanEntity {
             id: self.id.unwrap_or_default(),
-            name: self.name.unwrap_or_else(|| "Без имени".to_string()),
+            name: self.name.unwrap_or_str("Без имени"),
             attributes: self.attributes,
         }
     }
@@ -69,9 +70,9 @@ impl MultiJourneyRawAppearance {
     fn clean(self) -> MultiJourneyCleanAppearance {
         MultiJourneyCleanAppearance {
             entity_id: self.entity_id.unwrap_or_default(),
-            entity_name: self.entity_name.unwrap_or_else(|| "Без имени".to_string()),
+            entity_name: self.entity_name.unwrap_or_str("Без имени"),
             chapter_id: self.chapter_id.unwrap_or_default(),
-            chapter_title: self.chapter_title.unwrap_or_else(|| "Сцена".to_string()),
+            chapter_title: self.chapter_title.unwrap_or_str("Сцена"),
             volume_title: self.volume_title,
             chapter_order: self.chapter_order.unwrap_or(0),
             role: self.role,
@@ -116,16 +117,16 @@ impl MultiJourneyRawPromise {
     }
 
     fn matches_participant(&self, part: &MultiJourneyCleanAppearance) -> bool {
-        self.participant_ids
-            .as_ref()
-            .map(|ids| {
-                ids.iter().any(|id| {
-                    id == &part.entity_id
-                        || id == &part.entity_name
-                        || id == part.entity_id.trim_start_matches("entities:")
-                })
-            })
-            .unwrap_or(true)
+        let Some(ids) = self.participant_ids.as_ref() else {
+            return true;
+        };
+        let clean_ent_id = part.entity_id.trim_start_matches("entities:");
+        for id in ids {
+            if id == &part.entity_id || id == &part.entity_name || id == clean_ent_id {
+                return true;
+            }
+        }
+        false
     }
 }
 
@@ -325,18 +326,16 @@ pub(crate) async fn get_multi_character_journey_impl(
     let mut scenes = Vec::with_capacity(chapter_groups.len());
 
     for (_ch_id, grp) in chapter_groups {
-        let ch_promises: Vec<&MultiJourneyRawPromise> = raw
-            .promises
-            .iter()
-            .filter(|p| {
-                if let Some(ref cid) = p.chapter_id {
-                    cid == grp.chapter_id
-                        || cid.trim_start_matches("chapters:") == grp.chapter_id.trim_start_matches("chapters:")
-                } else {
-                    false
-                }
-            })
-            .collect();
+        let mut ch_promises: Vec<&MultiJourneyRawPromise> = Vec::new();
+        for p in &raw.promises {
+            if let Some(ref cid) = p.chapter_id
+                && (cid == grp.chapter_id
+                    || cid.trim_start_matches("chapters:")
+                        == grp.chapter_id.trim_start_matches("chapters:"))
+            {
+                ch_promises.push(p);
+            }
+        }
 
         let scene_m_abs = ch_promises.iter().find_map(|p| p.m_abs);
         let scene_quote = ch_promises.iter().find_map(|p| p.quote.clone());

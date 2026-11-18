@@ -44,18 +44,15 @@ pub async fn save_text_blocks_inner(
         blocks
     };
 
-    let block_objects: Vec<serde_json::Value> = blocks
-        .into_iter()
-        .enumerate()
-        .map(|(i, (bid, btype, content))| {
-            serde_json::json!({
-                "id": bid,
-                "block_type": btype,
-                "order_index": i,
-                "content": content
-            })
-        })
-        .collect();
+    let mut block_objects = Vec::with_capacity(blocks.len());
+    for (i, (bid, btype, content)) in blocks.into_iter().enumerate() {
+        block_objects.push(serde_json::json!({
+            "id": bid,
+            "block_type": btype,
+            "order_index": i,
+            "content": content
+        }));
+    }
 
     let mut attempts = 0;
     loop {

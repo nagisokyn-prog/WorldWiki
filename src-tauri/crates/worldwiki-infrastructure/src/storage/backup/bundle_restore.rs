@@ -1,5 +1,6 @@
 //! Project bundle restoration functionality (atomic transaction import).
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::fs;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -124,23 +125,26 @@ async fn execute_bundle_transaction(
     let errors = res.take_errors();
     if !errors.is_empty() {
         let script_lines: Vec<&str> = script.lines().collect();
-        let root_cause = errors.iter().find(|(_, err)| {
+        let mut root_cause: Option<(usize, String)> = None;
+        for (idx, err) in &errors {
             let msg = err.to_string();
-            !msg.contains("not executed due to")
+            if !msg.contains("not executed due to")
                 && !msg.contains("cancelled transaction")
                 && !msg.contains("Cannot COMMIT")
-        });
-        let summary = if let Some((idx, err)) = root_cause {
-            let line_text = script_lines.get(*idx).unwrap_or(&"<out of bounds>");
-            format!("Root cause at statement {idx} (`{line_text}`): {err}")
+            {
+                root_cause = Some((*idx, msg));
+                break;
+            }
+        }
+        let summary = if let Some((idx, msg)) = root_cause {
+            let line_text = script_lines.get(idx).unwrap_or(&"<out of bounds>");
+            format!("Root cause at statement {idx} (`{line_text}`): {msg}")
         } else {
-            let all: Vec<_> = errors
-                .iter()
-                .map(|(idx, err)| {
-                    let line_text = script_lines.get(*idx).unwrap_or(&"");
-                    format!("stmt {idx} (`{line_text}`): {err}")
-                })
-                .collect();
+            let mut all = Vec::with_capacity(errors.len());
+            for (idx, err) in &errors {
+                let line_text = script_lines.get(*idx).unwrap_or(&"");
+                all.push(format!("stmt {idx} (`{line_text}`): {err}"));
+            }
             all.join(" | ")
         };
         return Err(DomainError::Validation(format!(
@@ -156,9 +160,9 @@ pub(crate) async fn restore_project_bundle(
     bundle_path: &std::path::Path,
 ) -> Result<(), DomainError> {
     let raw = fs::read_to_string(bundle_path)
-        .map_err(|e| DomainError::Validation(format!("Failed to read project_bundle.json: {e}")))?;
+        .ctx_validation("Failed to read project_bundle.json")?;
     let mut bundle: serde_json::Value = serde_json::from_str(&raw)
-        .map_err(|e| DomainError::Validation(format!("Invalid project_bundle.json: {e}")))?;
+        .ctx_validation("Invalid project_bundle.json")?;
 
     let proj_id = bundle
         .get("project")

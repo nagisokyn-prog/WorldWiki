@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::errors::DomainError;
 
 pub const YANDEX_CLIENT_ID: &str = "200295d252b44387a21ec64a80d7d124";
@@ -26,16 +27,16 @@ pub async fn exchange_yandex_token_inner(
         .form(&params)
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Network error: {e}")))?;
+        .ctx_validation("Network error")?;
 
-    let json: serde_json::Value = res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
+    let json: serde_json::Value = res.json().await.ctx_validation("JSON error")?;
 
     if let Some(token) = json.get("access_token").and_then(|v| v.as_str()) {
         Ok(token.to_string())
     } else {
         let err_desc = json
             .get("error_description")
-            .or_else(|| json.get("error"))
+            .or(json.get("error"))
             .and_then(|v| v.as_str())
             .unwrap_or("Invalid confirmation code");
         Err(DomainError::Validation(err_desc.to_string()))

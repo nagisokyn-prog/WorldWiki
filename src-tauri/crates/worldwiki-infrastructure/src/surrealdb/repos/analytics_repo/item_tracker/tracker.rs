@@ -35,15 +35,13 @@ pub(crate) async fn get_item_tracker_impl(
         .max()
         .unwrap_or(1);
 
-    let chapter_map: HashMap<String, (i32, String)> = chapters
-        .into_iter()
-        .map(|c| {
-            (
-                clean_id(&c.id).to_string(),
-                (c.sort_order.unwrap_or(0), c.title.unwrap_or_default()),
-            )
-        })
-        .collect();
+    let mut chapter_map: HashMap<String, (i32, String)> = HashMap::with_capacity(chapters.len());
+    for c in chapters {
+        chapter_map.insert(
+            clean_id(&c.id).to_string(),
+            (c.sort_order.unwrap_or(0), c.title.unwrap_or_default()),
+        );
+    }
 
     let mut character_names = HashMap::new();
     let mut item_entities: Vec<RawEntity> = Vec::new();
@@ -108,21 +106,21 @@ fn process_item_entities(
 
         let item_type = attrs
             .get("тип_предмета")
-            .or_else(|| attrs.get("itemType"))
+            .or(attrs.get("itemType"))
             .and_then(|v| v.as_str())
             .unwrap_or("артефакт")
             .to_string();
 
         let status_category = attrs
             .get("статус_категория")
-            .or_else(|| attrs.get("itemStatus"))
+            .or(attrs.get("itemStatus"))
             .and_then(|v| v.as_str())
             .unwrap_or("Цел / Активен")
             .to_string();
 
         let owner_raw = attrs
             .get("текущий_владелец")
-            .or_else(|| attrs.get("itemOwner"))
+            .or(attrs.get("itemOwner"))
             .and_then(|v| v.as_str());
 
         let (current_owner_id, current_owner_name) = if let Some(owner) = owner_raw {
@@ -143,7 +141,7 @@ fn process_item_entities(
             for entry in history {
                 let owner_val = entry
                     .get("название")
-                    .or_else(|| entry.get("owner"))
+                    .or(entry.get("owner"))
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
                 let o_clean = clean_id(owner_val);
@@ -154,7 +152,7 @@ fn process_item_entities(
                     .to_string();
                 let circ = entry
                     .get("описание_1")
-                    .or_else(|| entry.get("circumstances"))
+                    .or(entry.get("circumstances"))
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_string();
@@ -344,14 +342,19 @@ fn build_gun_tracked_item(
     };
 
     let current_owner_id = prom.participant_ids.first().map(|s| s.to_string());
-    let current_owner_name = current_owner_id.as_deref().map(|id| {
-        let o_clean = clean_id(id);
-        character_names
-            .get(o_clean)
-            .map(|s| s.as_str())
-            .unwrap_or(id)
-            .to_string()
-    });
+    let current_owner_name = match current_owner_id.as_deref() {
+        Some(id) => {
+            let o_clean = clean_id(id);
+            Some(
+                character_names
+                    .get(o_clean)
+                    .map(|s| s.as_str())
+                    .unwrap_or(id)
+                    .to_string(),
+            )
+        }
+        None => None,
+    };
 
     let custody_chain = build_gun_custody(
         prom.chapter_id.as_deref(),

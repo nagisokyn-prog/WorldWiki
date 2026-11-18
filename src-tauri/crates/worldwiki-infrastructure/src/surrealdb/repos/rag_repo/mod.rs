@@ -14,8 +14,8 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashSet;
 use std::sync::Arc;
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 
 use crate::surrealdb::chat_repo::clean_record_id;
 use crate::surrealdb::repos::helpers::{canonicalize_name, clean_id};
@@ -61,8 +61,7 @@ impl RAGContextPort for SurrealRAGAdapter {
         let mut entity_ids: HashSet<String> = HashSet::new();
 
         // 0. Exact Document Retrieval
-        let exact_rows =
-            fetch_exact_chapter(&self.db, &p_raw, &p_clean, &q_canon, &q_lower).await;
+        let exact_rows = fetch_exact_chapter(&self.db, &p_raw, &p_clean, &q_canon, &q_lower).await;
         list.extend(exact_rows);
 
         // 1. Атомарный вызов fn::gather_rag_bundle (1 раундтрип, типизированный DTO)
@@ -80,15 +79,14 @@ impl RAGContextPort for SurrealRAGAdapter {
             .await
         {
             Ok(mut resp) => match resp.take::<Option<Value>>(0) {
-                Ok(raw_val) => raw_val.and_then(|v| {
-                    match serde_json::from_value::<RagBundleDto>(v) {
-                        Ok(b) => Some(b),
-                        Err(e) => {
-                            tracing::warn!("Failed to deserialize RagBundleDto: {e}");
-                            None
-                        }
+                Ok(Some(v)) => match serde_json::from_value::<RagBundleDto>(v) {
+                    Ok(b) => Some(b),
+                    Err(e) => {
+                        tracing::warn!("Failed to deserialize RagBundleDto: {e}");
+                        None
                     }
-                }),
+                },
+                Ok(None) => None,
                 Err(err) => {
                     tracing::warn!("Failed to take bundle from SurrealDB response: {err}");
                     None
@@ -174,9 +172,7 @@ impl RAGContextPort for SurrealRAGAdapter {
             .bind(("chapter_id", clean))
             .await
             .map_err(DomainError::constraint_violation)?;
-        let ctx: Option<Value> = res
-            .take(0)
-            .map_err(DomainError::constraint_violation)?;
+        let ctx: Option<Value> = res.take(0).map_err(DomainError::constraint_violation)?;
         Ok(ctx.unwrap_or(serde_json::json!({})))
     }
 }

@@ -1,5 +1,6 @@
 //! Project bundle export functionality for scoped backups.
 
+use worldwiki_domain::errors::DomainResultExt;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
@@ -15,7 +16,7 @@ pub(crate) async fn run_backup_query(
     }
     let mut res = query
         .await
-        .map_err(|e| DomainError::Validation(format!("Backup query execution failed: {e}")))?;
+        .ctx_validation("Backup query execution failed")?;
     let errors = res.take_errors();
     if !errors.is_empty() {
         return Err(DomainError::Validation(format!(
@@ -24,8 +25,26 @@ pub(crate) async fn run_backup_query(
     }
     let rows: Vec<serde_json::Value> = res
         .take(0)
-        .map_err(|e| DomainError::Validation(format!("Failed to deserialize query result: {e}")))?;
+        .ctx_validation("Failed to deserialize query result")?;
     Ok(rows)
+}
+
+fn extract_project_id(first_proj: &serde_json::Value) -> Option<String> {
+    if let Some(s) = first_proj
+        .get("id_str")
+        .and_then(|v| v.as_str())
+        .or_else(|| first_proj.get("id").and_then(|v| v.as_str()))
+    {
+        return Some(s.to_string());
+    }
+    let id_obj = first_proj.get("id")?;
+    let tb = id_obj.get("tb").and_then(|v| v.as_str())?;
+    let id_val = id_obj.get("id")?;
+    let id_s = match id_val.as_str() {
+        Some(s) => s.to_string(),
+        None => id_val.to_string().trim_matches('"').to_string(),
+    };
+    Some(format!("{tb}:{id_s}"))
 }
 
 /// Exports all nodes and relation edges for a project as a structured JSON bundle.
@@ -65,24 +84,7 @@ pub(crate) async fn export_project_bundle(
         None => return Ok(None),
     };
 
-    let pid_opt = first_proj
-        .get("id_str")
-        .and_then(|v| v.as_str())
-        .or_else(|| first_proj.get("id").and_then(|v| v.as_str()))
-        .map(|s| s.to_string())
-        .or_else(|| {
-            first_proj.get("id").and_then(|id_obj| {
-                if let Some(tb) = id_obj.get("tb").and_then(|v| v.as_str()) {
-                    let id_val = id_obj.get("id")?;
-                    let id_s = id_val.as_str().map(|s| s.to_string()).unwrap_or_else(|| id_val.to_string().trim_matches('"').to_string());
-                    Some(format!("{tb}:{id_s}"))
-                } else {
-                    None
-                }
-            })
-        });
-
-    let pid_str = match pid_opt {
+    let pid_str = match extract_project_id(&first_proj) {
         Some(s) => s,
         None => return Ok(None),
     };
@@ -116,16 +118,16 @@ pub(crate) async fn export_project_bundle(
             ("vols", serde_json::Value::Array(vol_ids.clone())),
         ],
     ).await?;
-    let sanitized_contains: Vec<serde_json::Value> = contains
-        .into_iter()
-        .filter(|edge| {
-            let has_in = edge.get("in").and_then(|v| v.as_str()).is_some()
-                || edge.get("in").and_then(|v| v.get("tb")).is_some();
-            let has_out = edge.get("out").and_then(|v| v.as_str()).is_some()
-                || edge.get("out").and_then(|v| v.get("tb")).is_some();
-            has_in && has_out
-        })
-        .collect();
+    let mut sanitized_contains = Vec::new();
+    for edge in contains {
+        let has_in = edge.get("in").and_then(|v| v.as_str()).is_some()
+            || edge.get("in").and_then(|v| v.get("tb")).is_some();
+        let has_out = edge.get("out").and_then(|v| v.as_str()).is_some()
+            || edge.get("out").and_then(|v| v.get("tb")).is_some();
+        if has_in && has_out {
+            sanitized_contains.push(edge);
+        }
+    }
 
     // 4. Entity Schemas
     let entity_schemas = run_backup_query(

@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::ai::AiModelInfo;
 use worldwiki_domain::DomainError;
 use super::http::build_client;
@@ -25,7 +26,7 @@ pub(crate) async fn fetch_ollama() -> Result<Vec<AiModelInfo>, DomainError> {
         .get("http://localhost:11434/api/tags")
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Ollama server connection failed (убедитесь, что Ollama запущена): {e}")))?;
+        .ctx_constraint("Ollama server connection failed (убедитесь, что Ollama запущена)")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -36,29 +37,31 @@ pub(crate) async fn fetch_ollama() -> Result<Vec<AiModelInfo>, DomainError> {
     let parsed: OllamaResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse Ollama JSON: {e}")))?;
+        .ctx_constraint("Failed to parse Ollama JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .models
-        .into_iter()
-        .map(|m| {
-            let desc = m.details.as_ref().map(|d| {
-                format!(
+    let mut models = Vec::with_capacity(parsed.models.len());
+    for m in parsed.models {
+        let desc = match m.details.as_ref() {
+            Some(d) => {
+                let s = format!(
                     "{} {}",
                     d.family.as_deref().unwrap_or(""),
                     d.parameter_size.as_deref().unwrap_or("")
-                ).trim().to_string()
-            }).filter(|s| !s.is_empty());
-
-            AiModelInfo {
-                value: m.name.clone(),
-                label: m.name,
-                description: desc,
-                context_length: Some(8192),
-                max_completion_tokens: Some(4096),
+                )
+                .trim()
+                .to_string();
+                if s.is_empty() { None } else { Some(s) }
             }
-        })
-        .collect();
+            None => None,
+        };
+        models.push(AiModelInfo {
+            value: m.name.clone(),
+            label: m.name,
+            description: desc,
+            context_length: Some(8192),
+            max_completion_tokens: Some(4096),
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)

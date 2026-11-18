@@ -47,28 +47,28 @@ pub async fn save_entity_with_relations_inner(
         "embeddings": embeddings,
     });
 
-    let foreign_objs: Vec<serde_json::Value> = foreign_updates
-        .into_iter()
-        .filter_map(|f| {
-            let fid_str = f.id?;
-            let factual_id = fid_str.split_once(':').map(|(_, b)| b).unwrap_or(&fid_str);
-            let clean_fid = factual_id
-                .trim_matches('⟨')
-                .trim_matches('⟩')
-                .trim_matches('`')
-                .to_string();
+    let mut foreign_objs = Vec::with_capacity(foreign_updates.len());
+    for f in foreign_updates {
+        let Some(fid_str) = f.id else {
+            continue;
+        };
+        let factual_id = fid_str.split_once(':').map(|(_, b)| b).unwrap_or(&fid_str);
+        let clean_fid = factual_id
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim_matches('`')
+            .to_string();
 
-            Some(serde_json::json!({
-                "id": clean_fid,
-                "entity_type": f.entity_type,
-                "name": f.name,
-                "description": f.description,
-                "attributes": f.attributes,
-                "tags": f.tags,
-                "embeddings": f.embeddings,
-            }))
-        })
-        .collect();
+        foreign_objs.push(serde_json::json!({
+            "id": clean_fid,
+            "entity_type": f.entity_type,
+            "name": f.name,
+            "description": f.description,
+            "attributes": f.attributes,
+            "tags": f.tags,
+            "embeddings": f.embeddings,
+        }));
+    }
 
     let query = "RETURN fn::batch_save_entity_with_relations(type::record('projects', $p), type::record('entities', $main_id), $main_entity, $foreign);";
 

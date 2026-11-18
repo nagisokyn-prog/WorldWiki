@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/volume_ops_repo.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (345.4) exceeds warning limit (250.0)",
+    "fingerprint": "3f7623022a06336658e6e695a46668fc401465c48632e8b8edd9ce759c571a3d"
+  }
+]

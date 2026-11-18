@@ -1,5 +1,6 @@
 //! Cloud backup restoration (.wwiki archive unpacking and database import).
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::env;
 use std::fs;
 use surrealdb::engine::local::Db;
@@ -11,52 +12,51 @@ use super::sanitize::extract_archive_file;
 
 fn sanitize_database_dump(raw_dump: &str) -> String {
     let mut skip_until_semi = false;
-    let mut sanitized: String = raw_dump
-        .lines()
-        .filter_map(|line| {
-            let t = line.trim();
-            if skip_until_semi {
-                if t.ends_with(';') {
-                    skip_until_semi = false;
-                }
-                return None;
+    let mut out = Vec::new();
+    for line in raw_dump.lines() {
+        let t = line.trim();
+        if skip_until_semi {
+            if t.ends_with(';') {
+                skip_until_semi = false;
             }
-            if t.starts_with("DEFINE TABLE")
-                || t.starts_with("DEFINE FIELD")
-                || t.starts_with("DEFINE INDEX")
-                || t.starts_with("DEFINE EVENT")
-                || t.starts_with("DEFINE ANALYZER")
-                || t.starts_with("DEFINE FUNCTION")
-                || t.starts_with("REMOVE TABLE")
-                || t.starts_with("REMOVE FIELD")
-            {
-                if !t.ends_with(';') {
-                    skip_until_semi = true;
-                }
-                return None;
+            continue;
+        }
+        if t.starts_with("DEFINE TABLE")
+            || t.starts_with("DEFINE FIELD")
+            || t.starts_with("DEFINE INDEX")
+            || t.starts_with("DEFINE EVENT")
+            || t.starts_with("DEFINE ANALYZER")
+            || t.starts_with("DEFINE FUNCTION")
+            || t.starts_with("REMOVE TABLE")
+            || t.starts_with("REMOVE FIELD")
+        {
+            if !t.ends_with(';') {
+                skip_until_semi = true;
             }
-            if t.starts_with("CREATE entity_schemas:default_")
-                || t.starts_with("UPSERT entity_schemas:default_")
-                || t.starts_with("INSERT INTO entity_schemas:default_")
-            {
-                if !t.ends_with(';') {
-                    skip_until_semi = true;
-                }
-                return None;
+            continue;
+        }
+        if t.starts_with("CREATE entity_schemas:default_")
+            || t.starts_with("UPSERT entity_schemas:default_")
+            || t.starts_with("INSERT INTO entity_schemas:default_")
+        {
+            if !t.ends_with(';') {
+                skip_until_semi = true;
             }
-            let trimmed_start = line.trim_start();
-            if let Some(rest) = trimmed_start.strip_prefix("CREATE ") {
-                let first_token = rest.split_whitespace().next().unwrap_or_default();
-                if first_token.contains(':') {
-                    let indent_len = line.chars().take_while(|c| c.is_whitespace()).count();
-                    let leading_ws: String = line.chars().take(indent_len).collect();
-                    return Some(format!("{leading_ws}UPSERT {rest}"));
-                }
+            continue;
+        }
+        let trimmed_start = line.trim_start();
+        if let Some(rest) = trimmed_start.strip_prefix("CREATE ") {
+            let first_token = rest.split_whitespace().next().unwrap_or_default();
+            if first_token.contains(':') {
+                let indent_len = line.chars().take_while(|c| c.is_whitespace()).count();
+                let leading_ws: String = line.chars().take(indent_len).collect();
+                out.push(format!("{leading_ws}UPSERT {rest}"));
+                continue;
             }
-            Some(line.to_string())
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
+        }
+        out.push(line.to_string());
+    }
+    let mut sanitized = out.join("\n");
 
     if !sanitized.contains("OPTION IMPORT;") {
         sanitized = format!("OPTION IMPORT;\n{}", sanitized);
@@ -77,9 +77,9 @@ pub async fn restore_from_backup_inner(
     }
 
     let file = fs::File::open(path)
-        .map_err(|e| DomainError::Validation(format!("Failed to open backup: {}", e)))?;
+        .ctx_validation("Failed to open backup")?;
     let mut zip = zip::ZipArchive::new(file)
-        .map_err(|e| DomainError::Validation(format!("Failed to read zip: {}", e)))?;
+        .ctx_validation("Failed to read zip")?;
 
     let temp_dir = env::temp_dir().join(format!(
         "wwiki_restore_{}",
@@ -123,16 +123,16 @@ pub async fn restore_from_backup_inner(
         restore_project_bundle(db, &bundle_path).await
     } else {
         let raw_dump = fs::read_to_string(&surql_path)
-            .map_err(|e| DomainError::Validation(format!("Failed to read dump: {e}")))?;
+            .ctx_validation("Failed to read dump")?;
         let sanitized = sanitize_database_dump(&raw_dump);
 
         fs::write(&surql_path, sanitized)
-            .map_err(|e| DomainError::Validation(format!("Failed to write dump: {e}")))?;
+            .ctx_validation("Failed to write dump")?;
 
         let surql_path_str = surql_path.to_string_lossy().to_string();
         db.import(&surql_path_str)
             .await
-            .map_err(|e| DomainError::Validation(format!("Database import failed: {}", e)))
+            .ctx_validation("Database import failed")
     };
 
     if let Err(e) = fs::remove_dir_all(&temp_dir) {

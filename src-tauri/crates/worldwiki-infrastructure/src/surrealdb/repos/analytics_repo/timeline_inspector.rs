@@ -1,5 +1,6 @@
 //! Timeline Inspector analytical queries.
 
+use worldwiki_domain::errors::OptionStrExt;
 use super::matrix::RawChapterHeader;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -61,7 +62,7 @@ impl RawTimelineRevealLink {
             chapter_title: self.chapter_title.unwrap_or_default(),
             chapter_sort_order: self.chapter_sort_order.or(self.chapter_order).unwrap_or(0),
             pov_id: self.pov_id,
-            kind: self.kind.unwrap_or_else(|| "direct".to_string()),
+            kind: self.kind.unwrap_or_str("direct"),
             block_id: self.block_id,
             is_anachronism: self.is_anachronism.unwrap_or(false),
         }

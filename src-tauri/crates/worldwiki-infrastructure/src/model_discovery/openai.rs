@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::ai::AiModelInfo;
 use worldwiki_domain::DomainError;
 use super::http::build_client;
@@ -33,7 +34,7 @@ pub(crate) async fn fetch_openai(trimmed_key: Option<&str>) -> Result<Vec<AiMode
         .header("Authorization", format!("Bearer {}", key))
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("OpenAI network request failed: {e}")))?;
+        .ctx_constraint("OpenAI network request failed")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -44,25 +45,27 @@ pub(crate) async fn fetch_openai(trimmed_key: Option<&str>) -> Result<Vec<AiMode
     let parsed: OpenAiResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse OpenAI JSON: {e}")))?;
+        .ctx_constraint("Failed to parse OpenAI JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .data
-        .into_iter()
-        .filter(|m| {
-            let id = m.id.to_lowercase();
-            id.starts_with("gpt-") || id.starts_with("o1") || id.starts_with("o3") || id.starts_with("o4") || id.starts_with("chatgpt-")
-        })
-        .map(|m| {
-            AiModelInfo {
-                value: m.id.clone(),
-                label: m.id,
-                description: None,
-                context_length: Some(128_000),
-                max_completion_tokens: Some(4096),
-            }
-        })
-        .collect();
+    let mut models = Vec::new();
+    for m in parsed.data {
+        let id = m.id.to_lowercase();
+        if !(id.starts_with("gpt-")
+            || id.starts_with("o1")
+            || id.starts_with("o3")
+            || id.starts_with("o4")
+            || id.starts_with("chatgpt-"))
+        {
+            continue;
+        }
+        models.push(AiModelInfo {
+            value: m.id.clone(),
+            label: m.id,
+            description: None,
+            context_length: Some(128_000),
+            max_completion_tokens: Some(4096),
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)
@@ -79,7 +82,7 @@ pub(crate) async fn fetch_deepseek(trimmed_key: Option<&str>) -> Result<Vec<AiMo
         .header("Authorization", format!("Bearer {}", key))
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("DeepSeek network request failed: {e}")))?;
+        .ctx_constraint("DeepSeek network request failed")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -90,26 +93,23 @@ pub(crate) async fn fetch_deepseek(trimmed_key: Option<&str>) -> Result<Vec<AiMo
     let parsed: DeepSeekResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse DeepSeek JSON: {e}")))?;
+        .ctx_constraint("Failed to parse DeepSeek JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .data
-        .into_iter()
-        .map(|m| {
-            let desc = if m.id.contains("reasoner") || m.id.contains("r1") {
-                Some("DeepSeek Reasoning Model".into())
-            } else {
-                Some("DeepSeek Chat Model".into())
-            };
-            AiModelInfo {
-                value: m.id.clone(),
-                label: m.id,
-                description: desc,
-                context_length: Some(64_000),
-                max_completion_tokens: Some(8192),
-            }
-        })
-        .collect();
+    let mut models = Vec::with_capacity(parsed.data.len());
+    for m in parsed.data {
+        let desc = if m.id.contains("reasoner") || m.id.contains("r1") {
+            Some("DeepSeek Reasoning Model".into())
+        } else {
+            Some("DeepSeek Chat Model".into())
+        };
+        models.push(AiModelInfo {
+            value: m.id.clone(),
+            label: m.id,
+            description: desc,
+            context_length: Some(64_000),
+            max_completion_tokens: Some(8192),
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)

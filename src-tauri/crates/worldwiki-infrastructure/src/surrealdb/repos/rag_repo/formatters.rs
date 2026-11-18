@@ -85,16 +85,18 @@ pub fn format_entity_dossier_value(row: &Value) -> Value {
         .and_then(|v| v.as_str())
         .or_else(|| obj.get("content").and_then(|v| v.as_str()))
         .unwrap_or("");
-    let tags = obj
-        .get("tags")
-        .and_then(|v| v.as_array())
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|t| t.as_str())
-                .collect::<Vec<_>>()
-                .join(", ")
-        })
-        .unwrap_or_default();
+    let tags = match obj.get("tags").and_then(|v| v.as_array()) {
+        Some(arr) => {
+            let mut parts = Vec::with_capacity(arr.len());
+            for t in arr {
+                if let Some(s) = t.as_str() {
+                    parts.push(s);
+                }
+            }
+            parts.join(", ")
+        }
+        None => String::new(),
+    };
 
     let mut out = format!("[СУЩНОСТЬ: {name} (тип: {type_key})]\n");
     if !tags.is_empty() {

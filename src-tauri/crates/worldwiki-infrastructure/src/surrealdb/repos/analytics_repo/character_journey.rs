@@ -56,13 +56,20 @@ struct RawJourneyAppearance {
     paragraph_index: Option<i64>,
 }
 
+fn unwrap_or_str(opt: Option<String>, fallback: &str) -> String {
+    match opt {
+        Some(s) => s,
+        None => fallback.to_string(),
+    }
+}
+
 impl RawJourneyAppearance {
     fn into_dto(self) -> JourneyAppearanceDto {
         JourneyAppearanceDto {
             chapter_id: self.chapter_id.unwrap_or_default(),
-            chapter_title: self.chapter_title.unwrap_or_else(|| "Без названия".to_string()),
+            chapter_title: unwrap_or_str(self.chapter_title, "Без названия"),
             chapter_order: self.chapter_order.unwrap_or(0),
-            source: self.source.unwrap_or_else(|| "mention".to_string()),
+            source: unwrap_or_str(self.source, "mention"),
             role: self.role,
             created_at: self.created_at.unwrap_or_default(),
             quote: self.quote,
@@ -92,7 +99,7 @@ impl RawJourneyEvent {
     fn into_dto(self) -> JourneyEventDto {
         JourneyEventDto {
             event_id: self.event_id.unwrap_or_default(),
-            event_title: self.event_title.unwrap_or_else(|| "Событие".to_string()),
+            event_title: unwrap_or_str(self.event_title, "Событие"),
             event_desc: self.event_desc,
             m_abs: self.m_abs.unwrap_or(0),
             calendar_id: self.calendar_id,
@@ -122,7 +129,7 @@ impl RawJourneyRelation {
         JourneyRelationDto {
             id: self.id.unwrap_or_default(),
             target_name: self.target_name.unwrap_or_default(),
-            rel_type: self.rel_type.unwrap_or_else(|| "связь".to_string()),
+            rel_type: unwrap_or_str(self.rel_type, "связь"),
             strength: self.strength.unwrap_or(0),
             start_order: self.start_order,
             end_order: self.end_order,
@@ -179,9 +186,9 @@ impl RawJourneyPromise {
         JourneyPromiseDto {
             id: self.id.unwrap_or_default(),
             title: self.title,
-            kind: self.kind.unwrap_or_else(|| "gun".to_string()),
+            kind: unwrap_or_str(self.kind, "gun"),
             quote: self.quote.unwrap_or_default(),
-            status: self.status.unwrap_or_else(|| "planted".to_string()),
+            status: unwrap_or_str(self.status, "planted"),
             planted_order: self.planted_order,
             resolved_order: self.resolved_order,
             chapter_id: self.chapter_id,
@@ -226,9 +233,9 @@ pub(crate) async fn get_character_journey_impl(
 
     let (ent_id, ent_name, ent_type, ent_attrs) = if let Some(info) = raw.entity {
         (
-            info.id.unwrap_or_else(|| entity_id.to_string()),
-            info.name.unwrap_or_else(|| "Без имени".to_string()),
-            info.entity_type.unwrap_or_else(|| "character".to_string()),
+            unwrap_or_str(info.id, entity_id),
+            unwrap_or_str(info.name, "Без имени"),
+            unwrap_or_str(info.entity_type, "character"),
             info.attributes,
         )
     } else {

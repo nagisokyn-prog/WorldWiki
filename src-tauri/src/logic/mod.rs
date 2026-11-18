@@ -1,11 +1,8 @@
 pub mod batch;
 pub mod chapters;
-pub mod connections;
 pub mod entities;
 pub mod models;
-pub mod projects;
 pub mod schema;
-pub mod volumes;
 
 /// Макрос для повтора асинхронных операций SurrealDB при конфликтах OCC (Transaction write conflict).
 #[macro_export]

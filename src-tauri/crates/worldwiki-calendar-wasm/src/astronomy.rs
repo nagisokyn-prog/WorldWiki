@@ -75,7 +75,7 @@ impl WasmCalendarEngine {
             basis_points: bp,
             phase_name: phase_str,
         })
-        .map_err(|e| JsValue::from_str(&e.to_string()))
+        .map_err(crate::js_err)
     }
 
     /// Поиск момента ближайшего Двойного Полнолуния
@@ -88,11 +88,11 @@ impl WasmCalendarEngine {
         max_days_to_search: i64,
     ) -> Result<JsValue, JsValue> {
         let m1: moons::MoonConfig = serde_wasm_bindgen::from_value(moon1)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let m2: moons::MoonConfig = serde_wasm_bindgen::from_value(moon2)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let res = moons::find_next_double_full_moon(&m1, &m2, ticks_per_day, start_t_abs, max_days_to_search);
-        serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&res).map_err(crate::js_err)
     }
 
     /// Пакетный расчет фаз для множества спутников
@@ -103,8 +103,8 @@ impl WasmCalendarEngine {
         moons: JsValue,
     ) -> Result<JsValue, JsValue> {
         let moon_list: Vec<moons::MoonConfig> = serde_wasm_bindgen::from_value(moons)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let formatted = grid::format_all_moon_phases(t_abs, ticks_per_day, &moon_list);
-        serde_wasm_bindgen::to_value(&formatted).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&formatted).map_err(crate::js_err)
     }
 }

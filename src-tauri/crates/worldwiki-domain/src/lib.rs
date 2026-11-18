@@ -13,7 +13,7 @@ pub mod storage;
 #[cfg(any(kani, feature = "kani"))]
 pub mod verify;
 
-pub use errors::DomainError;
+pub use errors::{DomainError, DomainResultExt, OptionStrExt};
 
 #[cfg(test)]
 mod tests {

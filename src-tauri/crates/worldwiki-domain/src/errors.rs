@@ -45,3 +45,37 @@ impl DomainError {
         Self::InvalidPlotPromise(err.to_string())
     }
 }
+
+pub trait DomainResultExt<T> {
+    fn ctx_validation(self, ctx: &str) -> Result<T, DomainError>;
+    fn ctx_constraint(self, ctx: &str) -> Result<T, DomainError>;
+}
+
+impl<T, E: std::fmt::Display> DomainResultExt<T> for Result<T, E> {
+    fn ctx_validation(self, ctx: &str) -> Result<T, DomainError> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(e) => Err(DomainError::Validation(format!("{ctx}: {e}"))),
+        }
+    }
+
+    fn ctx_constraint(self, ctx: &str) -> Result<T, DomainError> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(e) => Err(DomainError::ConstraintViolation(format!("{ctx}: {e}"))),
+        }
+    }
+}
+
+pub trait OptionStrExt {
+    fn unwrap_or_str(self, fallback: &str) -> String;
+}
+
+impl OptionStrExt for Option<String> {
+    fn unwrap_or_str(self, fallback: &str) -> String {
+        match self {
+            Some(s) => s,
+            None => fallback.to_string(),
+        }
+    }
+}

@@ -3,6 +3,20 @@ use crate::logic::models::Chapter;
 use surreal_domain::SurrealRepository;
 use surrealdb::{Surreal, engine::local::Db};
 
+fn decode_chapter_value(mut v: serde_json::Value) -> Option<Chapter> {
+    surreal_domain::normalize_embedded_things(&mut v);
+    serde_json::from_value(v).ok()
+}
+
+fn parse_chapter_opt(raw: Option<serde_json::Value>) -> Result<Chapter, ChapterError> {
+    match raw.and_then(decode_chapter_value) {
+        Some(ch) => Ok(ch),
+        None => Err(ChapterError::InvalidData(
+            "save_chapter returned no records".to_string(),
+        )),
+    }
+}
+
 pub async fn get_chapters_inner(
     db: &Surreal<Db>,
     project: &str,
@@ -15,13 +29,12 @@ pub async fn get_chapters_inner(
         .await
         .map_err(ChapterError::Database)?;
     let raw: Vec<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
-    let chapters: Vec<Chapter> = raw
-        .into_iter()
-        .filter_map(|mut v| {
-            surreal_domain::normalize_embedded_things(&mut v);
-            serde_json::from_value(v).ok()
-        })
-        .collect();
+    let mut chapters = Vec::with_capacity(raw.len());
+    for v in raw {
+        if let Some(ch) = decode_chapter_value(v) {
+            chapters.push(ch);
+        }
+    }
     Ok(chapters)
 }
 
@@ -50,23 +63,19 @@ pub async fn create_chapter_inner(
         .await
         .map_err(ChapterError::Database)?;
     let raw: Option<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
-    let created: Chapter = raw.and_then(|mut v| {
-        surreal_domain::normalize_embedded_things(&mut v);
-        serde_json::from_value(v).ok()
-    }).ok_or_else(|| ChapterError::InvalidData("save_chapter returned no records".to_string()))?;
+    let created = parse_chapter_opt(raw)?;
 
     if let Some(ch_id) = &created.id {
         let clean_ch = ch_id.trim_start_matches("chapters:");
-        if !created.content.trim().is_empty() {
-            super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &created.content)
-                .await
-                .map_err(|e| {
-                    eprintln!(
-                        "[CREATE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
-                        e
-                    );
-                    e
-                })?;
+        if !created.content.trim().is_empty()
+            && let Err(e) =
+                super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &created.content).await
+        {
+            eprintln!(
+                "[CREATE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
+                e
+            );
+            return Err(e);
         }
     }
 
@@ -97,10 +106,7 @@ pub async fn save_chapter_inner(
             .await
             .map_err(ChapterError::Database)?;
         let raw: Option<serde_json::Value> = res.take(0).map_err(ChapterError::Database)?;
-        raw.and_then(|mut v| {
-            surreal_domain::normalize_embedded_things(&mut v);
-            serde_json::from_value(v).ok()
-        }).ok_or_else(|| ChapterError::InvalidData("save_chapter returned no records".to_string()))?
+        parse_chapter_opt(raw)?
     } else {
         create_chapter_inner(db, "", chapter.clone()).await?
     };
@@ -121,32 +127,35 @@ pub async fn save_chapter_inner(
         let clean_ch = ch_id.trim_start_matches("chapters:");
 
         // Auto-sync semantic text_blocks for granular scene tracking, RAG, and stylometry
-        super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &saved.content)
-            .await
-            .map_err(|e| {
-                eprintln!(
-                    "[SAVE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
-                    e
-                );
+        if let Err(e) =
+            super::text_blocks::save_text_blocks_inner(db, "", clean_ch, &saved.content).await
+        {
+            eprintln!(
+                "[SAVE_CHAPTER ERROR] fn::save_text_blocks execution failed: {:?}",
                 e
-            })?;
+            );
+            return Err(e);
+        }
 
         eprintln!(
             "[SAVE_CHAPTER] Calling fn::sync_chapter_mentions for chapter: {}",
             clean_ch
         );
-        let mut res = db
+        let mut res = match db
             .query("RETURN fn::sync_chapter_mentions(type::record('chapters', $c_id), $names);")
             .bind(("c_id", clean_ch.to_string()))
             .bind(("names", mentions))
             .await
-            .map_err(|e| {
+        {
+            Ok(r) => r,
+            Err(e) => {
                 eprintln!(
                     "[SAVE_CHAPTER ERROR] fn::sync_chapter_mentions execution failed: {}",
                     e
                 );
-                ChapterError::Database(e)
-            })?;
+                return Err(ChapterError::Database(e));
+            }
+        };
 
         let errors = res.take_errors();
         if !errors.is_empty() {

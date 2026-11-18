@@ -1,5 +1,6 @@
 //! High-level client API for Yandex.Disk cloud backup operations.
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -45,7 +46,7 @@ pub async fn list_yandex_disk_backups_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to get directory listing: {e}")))?;
+        .ctx_validation("Failed to get directory listing")?;
 
     if url_res.status() == 404 {
         return Ok(vec![]);
@@ -56,7 +57,7 @@ pub async fn list_yandex_disk_backups_inner(
     }
 
     let json: serde_json::Value =
-        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
+        url_res.json().await.ctx_validation("JSON error")?;
 
     let items = json
         .get("_embedded")
@@ -105,14 +106,14 @@ pub async fn download_yandex_file_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to get download URL: {e}")))?;
+        .ctx_validation("Failed to get download URL")?;
 
     if !url_res.status().is_success() {
         return Err(DomainError::Validation(format!("Download URL request failed: {}", url_res.status())));
     }
 
     let url_json: serde_json::Value =
-        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
+        url_res.json().await.ctx_validation("JSON error")?;
     let download_url = url_json
         .get("href")
         .and_then(|v| v.as_str())
@@ -123,7 +124,7 @@ pub async fn download_yandex_file_inner(
         .get(download_url)
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to download file: {e}")))?;
+        .ctx_validation("Failed to download file")?;
     if !file_res.status().is_success() {
         return Err(DomainError::Validation(format!("Download failed: {}", file_res.status())));
     }
@@ -131,7 +132,7 @@ pub async fn download_yandex_file_inner(
     let file_bytes = file_res
         .bytes()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to read downloaded bytes: {e}")))?;
+        .ctx_validation("Failed to read downloaded bytes")?;
 
     // 3. Save to temp file
     let temp_dir = env::temp_dir().join(format!(
@@ -142,7 +143,7 @@ pub async fn download_yandex_file_inner(
 
     let temp_file_path = temp_dir.join(file_name);
     fs::write(&temp_file_path, file_bytes)
-        .map_err(|e| DomainError::Validation(format!("Failed to save temp file: {e}")))?;
+        .ctx_validation("Failed to save temp file")?;
 
     Ok(temp_file_path)
 }

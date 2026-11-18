@@ -28,16 +28,15 @@ impl PlotPromiseRepository for InMemoryPlotPromiseRepository {
 
     async fn list_by_chapter(&self, chapter_id: &str) -> Result<Vec<PlotPromise>, DomainError> {
         let clean = chapter_id.trim_start_matches("chapters:");
-        let list = self
-            .storage
-            .iter()
-            .filter(|r| {
-                r.value().milestones.iter().any(|m| {
-                    m.chapter_id.as_deref().map(|c| c.trim_start_matches("chapters:")) == Some(clean)
-                })
-            })
-            .map(|r| r.value().clone())
-            .collect();
+        let mut list = Vec::new();
+        for r in self.storage.iter() {
+            let p = r.value();
+            if p.milestones.iter().any(|m| {
+                m.chapter_id.as_deref().map(|c| c.trim_start_matches("chapters:")) == Some(clean)
+            }) {
+                list.push(p.clone());
+            }
+        }
         Ok(list)
     }
 

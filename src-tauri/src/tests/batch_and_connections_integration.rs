@@ -9,7 +9,11 @@
 
 use serde_json::json;
 use crate::logic::batch::{get_entities_batch_inner, save_entity_with_relations_inner, upsert_connections_batch_inner};
-use crate::logic::connections::{get_connections_inner, remove_connections_by_source_inner, save_connections_inner};
+use worldwiki_infrastructure::surrealdb::repos::connections_repo::{
+    get_connections as get_connections_inner,
+    remove_connections_by_source as remove_connections_by_source_inner,
+    save_connections as save_connections_inner,
+};
 use crate::logic::entities::save_entity_inner;
 use crate::logic::models::EntityRel;
 use super::common::{create_test_db, fixture_entity, seed_project};

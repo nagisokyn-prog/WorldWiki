@@ -220,13 +220,14 @@ pub async fn regenerate_assistant_variant(
         .map_err(DomainError::constraint_violation)?;
 
     let user_msg: Option<Value> = check_user.take(0).map_err(DomainError::constraint_violation)?;
-    let user_text = user_msg
-        .and_then(|v| {
-            v.get("content")
-                .and_then(|c| c.as_str())
-                .map(|s| s.to_string())
-        })
-        .unwrap_or_default();
+    let user_text = match user_msg {
+        Some(v) => v
+            .get("content")
+            .and_then(|c| c.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_default(),
+        None => String::new(),
+    };
 
     db.query("UPDATE chat_messages SET is_active = false WHERE parent_id = $parent AND role = 'assistant'")
         .bind(("parent", user_msg_rec.clone()))

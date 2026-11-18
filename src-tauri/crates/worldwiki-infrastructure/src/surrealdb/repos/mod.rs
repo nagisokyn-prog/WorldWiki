@@ -2,15 +2,18 @@
 
 pub mod analytics_repo;
 pub mod chapter_repo;
+pub mod connections_repo;
 pub mod entity_repo;
 pub mod fuzzy;
 pub mod helpers;
 pub mod plot_repo;
+pub mod project_ops_repo;
 pub mod rag_repo;
 pub mod relation_repo;
 pub mod story_arc_repo;
 pub mod timeline_repo;
 pub mod todo_repo;
+pub mod volume_ops_repo;
 pub mod volume_repo;
 
 pub use analytics_repo::SurrealAnalyticsRepository;

@@ -1,8 +1,9 @@
 //! Cloud backup packaging (.wwiki archive creation).
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use worldwiki_domain::errors::DomainError;
@@ -38,20 +39,18 @@ fn add_directory_files_to_zip<F>(
     if !dir.exists() {
         return;
     }
-    let entries: Vec<PathBuf> = match fs::read_dir(dir) {
-        Ok(read_dir) => read_dir
-            .filter_map(Result::ok)
-            .filter_map(|e| {
+    let mut entries = Vec::new();
+    match fs::read_dir(dir) {
+        Ok(read_dir) => {
+            for e in read_dir.flatten() {
                 let p = e.path();
                 if p.is_file() {
-                    Some(p)
-                } else {
-                    None
+                    entries.push(p);
                 }
-            })
-            .collect(),
+            }
+        }
         Err(_) => return,
-    };
+    }
 
     for path in entries {
         let fname = path
@@ -68,47 +67,46 @@ fn add_directory_files_to_zip<F>(
 
 fn sanitize_surql_dump(raw_dump: &str) -> String {
     let mut skip_until_semi = false;
-    raw_dump
-        .lines()
-        .filter_map(|line| {
-            let t = line.trim();
-            if skip_until_semi {
-                if t.ends_with(';') {
-                    skip_until_semi = false;
-                }
-                return None;
+    let mut out = Vec::new();
+    for line in raw_dump.lines() {
+        let t = line.trim();
+        if skip_until_semi {
+            if t.ends_with(';') {
+                skip_until_semi = false;
             }
-            if t.starts_with("DEFINE FIELD")
-                && t.contains("OVERWRITE")
-                && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*"))
-            {
-                if !t.ends_with(';') {
-                    skip_until_semi = true;
-                }
-                return None;
+            continue;
+        }
+        if t.starts_with("DEFINE FIELD")
+            && t.contains("OVERWRITE")
+            && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*"))
+        {
+            if !t.ends_with(';') {
+                skip_until_semi = true;
             }
-            if t.starts_with("CREATE entity_schemas:default_")
-                || t.starts_with("UPSERT entity_schemas:default_")
-                || t.starts_with("INSERT INTO entity_schemas:default_")
-            {
-                if !t.ends_with(';') {
-                    skip_until_semi = true;
-                }
-                return None;
+            continue;
+        }
+        if t.starts_with("CREATE entity_schemas:default_")
+            || t.starts_with("UPSERT entity_schemas:default_")
+            || t.starts_with("INSERT INTO entity_schemas:default_")
+        {
+            if !t.ends_with(';') {
+                skip_until_semi = true;
             }
-            let trimmed_start = line.trim_start();
-            if let Some(rest) = trimmed_start.strip_prefix("CREATE ") {
-                let first_token = rest.split_whitespace().next().unwrap_or_default();
-                if first_token.contains(':') {
-                    let indent_len = line.chars().take_while(|c| c.is_whitespace()).count();
-                    let leading_ws: String = line.chars().take(indent_len).collect();
-                    return Some(format!("{leading_ws}UPSERT {rest}"));
-                }
+            continue;
+        }
+        let trimmed_start = line.trim_start();
+        if let Some(rest) = trimmed_start.strip_prefix("CREATE ") {
+            let first_token = rest.split_whitespace().next().unwrap_or_default();
+            if first_token.contains(':') {
+                let indent_len = line.chars().take_while(|c| c.is_whitespace()).count();
+                let leading_ws: String = line.chars().take(indent_len).collect();
+                out.push(format!("{leading_ws}UPSERT {rest}"));
+                continue;
             }
-            Some(line.to_string())
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+        }
+        out.push(line.to_string());
+    }
+    out.join("\n")
 }
 
 /// Экспортирует дамп БД в `.surql`, упаковывает его в `.wwiki` (zip)
@@ -130,7 +128,7 @@ pub async fn create_cloud_backup_inner(
 
     let zip_path = target_dir.join(format!("WorldWiki_Backup_{}.wwiki", timestamp));
     let file = fs::File::create(&zip_path)
-        .map_err(|e| DomainError::Validation(format!("Failed to create zip file: {}", e)))?;
+        .ctx_validation("Failed to create zip file")?;
     let mut zip = ZipWriter::new(file);
 
     let options = SimpleFileOptions::default()
@@ -140,7 +138,7 @@ pub async fn create_cloud_backup_inner(
     if let Ok(raw_dump) = fs::read_to_string(&temp_surql_path) {
         let sanitized = sanitize_surql_dump(&raw_dump);
         fs::write(&temp_surql_path, sanitized)
-            .map_err(|e| DomainError::Validation(format!("Failed to write sanitized dump: {e}")))?;
+            .ctx_validation("Failed to write sanitized dump")?;
     }
 
     if let Ok(mut dump_file) = fs::File::open(&temp_surql_path) {
@@ -157,11 +155,11 @@ pub async fn create_cloud_backup_inner(
     // 2. Export scoped project bundle (LPG nodes & edges)
     if let Some(bundle) = export_project_bundle(db, project_id).await? {
         let bundle_bytes = serde_json::to_vec_pretty(&bundle)
-            .map_err(|e| DomainError::Validation(format!("Failed to serialize bundle: {e}")))?;
+            .ctx_validation("Failed to serialize bundle")?;
         zip.start_file("project_bundle.json", options)
-            .map_err(|e| DomainError::Validation(format!("Failed to start project_bundle.json in zip: {e}")))?;
+            .ctx_validation("Failed to start project_bundle.json in zip")?;
         zip.write_all(&bundle_bytes)
-            .map_err(|e| DomainError::Validation(format!("Failed to write bundle into zip: {e}")))?;
+            .ctx_validation("Failed to write bundle into zip")?;
     }
 
     // 3. Add manifest with media references
@@ -194,7 +192,7 @@ pub async fn create_cloud_backup_inner(
     add_directory_files_to_zip(&mut zip, &base_data_dir, "settings", |name| name.ends_with(".json"), options);
 
     zip.finish()
-        .map_err(|e| DomainError::Validation(format!("Failed to finalize zip: {}", e)))?;
+        .ctx_validation("Failed to finalize zip")?;
 
     Ok(zip_path.to_string_lossy().to_string())
 }

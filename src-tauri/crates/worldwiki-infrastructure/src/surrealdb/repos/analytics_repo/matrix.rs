@@ -1,5 +1,6 @@
 //! Matrix and cross-reference analytics methods.
 
+use worldwiki_domain::errors::OptionStrExt;
 use surrealdb::Surreal;
 use surrealdb::engine::local::Db;
 use worldwiki_domain::analytics::{
@@ -101,18 +102,14 @@ fn build_entity_appearances(
         let ch_id_clean = ch.id.trim_start_matches("chapters:");
         let ch_order = ch.sort_order.unwrap_or(0);
 
-        let matching_apps: Vec<&RawAppearanceEdge> = ent
-            .appearances
-            .iter()
-            .filter(|a| {
-                if let Some(ch_id) = &a.chapter_id {
-                    let clean = ch_id.trim_start_matches("chapters:");
-                    clean == ch_id_clean
-                } else {
-                    false
-                }
-            })
-            .collect();
+        let mut matching_apps: Vec<&RawAppearanceEdge> = Vec::new();
+        for a in &ent.appearances {
+            if let Some(ch_id) = &a.chapter_id
+                && ch_id.trim_start_matches("chapters:") == ch_id_clean
+            {
+                matching_apps.push(a);
+            }
+        }
 
         let has_scene = matching_apps
             .iter()
@@ -221,7 +218,7 @@ pub(crate) async fn get_cross_reference_matrix_impl(
         entities_dto.push(EntityRowDto {
             id: ent.id,
             name: ent.name.unwrap_or_default(),
-            entity_type: ent.entity_type.unwrap_or_else(|| "character".to_string()),
+            entity_type: ent.entity_type.unwrap_or_str("character"),
             is_deceased: ent.is_deceased.unwrap_or(false),
             death_m_abs: ent.death_m_abs,
             birth_m_abs: ent.birth_m_abs,

@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::OptionStrExt;
 use super::errors::ChapterError;
 use crate::logic::models::Chapter;
 use serde_json::{json, Value};
@@ -80,7 +81,7 @@ impl Chapter {
                 errs.into_values()
                     .next()
                     .map(|e| e.to_string())
-                    .unwrap_or_else(|| "save_global_timeline: unknown error".to_string()),
+                    .unwrap_or_str("save_global_timeline: unknown error"),
             ));
         }
 

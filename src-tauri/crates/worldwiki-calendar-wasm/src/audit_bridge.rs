@@ -13,10 +13,10 @@ impl WasmCalendarEngine {
         first_month_of_year: usize,
     ) -> Result<JsValue, JsValue> {
         let cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let core_cfg = cfg.as_core();
         let preview = audit::generate_year_preview(year, &core_cfg, first_month_of_year);
-        serde_wasm_bindgen::to_value(&preview).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&preview).map_err(crate::js_err)
     }
 
     /// Комплексный аудит культуры календаря
@@ -27,10 +27,10 @@ impl WasmCalendarEngine {
         tropical_year_den: i64,
     ) -> Result<JsValue, JsValue> {
         let cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let core_cfg = cfg.as_core();
         let report = audit::audit_calendar_culture(&core_cfg, tropical_year_num, tropical_year_den);
-        serde_wasm_bindgen::to_value(&report).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&report).map_err(crate::js_err)
     }
 
     /// Расчет anchor_world_day для сопряжения календарей
@@ -42,13 +42,13 @@ impl WasmCalendarEngine {
         local_config: JsValue,
     ) -> Result<i64, JsValue> {
         let m_date: DateCoordinate = serde_wasm_bindgen::from_value(master_date)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let m_cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(master_config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let l_date: DateCoordinate = serde_wasm_bindgen::from_value(local_date)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let l_cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(local_config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
 
         let m_core = m_cfg.as_core();
         let l_core = l_cfg.as_core();
@@ -72,7 +72,7 @@ impl WasmCalendarEngine {
         }
 
         let p: WasmAgeParams = serde_wasm_bindgen::from_value(params)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let rule = AgeRule {
             age_at_birth: p.age_at_birth,
             step_on_new_year: p.step_on_new_year,

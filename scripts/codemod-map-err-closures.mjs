@@ -83,6 +83,16 @@ const REPLACEMENTS = [
     regex: /\.map_err\(\s*\|([a-zA-Z_][a-zA-Z0-9_]*)\|\s*((?:[a-zA-Z0-9_:]+::)?ProjectError)::OperationFailed\(\s*\1\.to_string\(\)\s*\)\s*\)/g,
     to: '.map_err($2::operation_failed)',
   },
+  // IpcError
+  {
+    regex: /\.map_err\(\s*\|([a-zA-Z_][a-zA-Z0-9_]*)\|\s*((?:[a-zA-Z0-9_:]+::)?IpcError)::from\(\s*\1\.to_string\(\)\s*\)\s*\)/g,
+    to: '.map_err($2::from_display)',
+  },
+  // JsValue (worldwiki-calendar-wasm)
+  {
+    regex: /\.map_err\(\s*\|([a-zA-Z_][a-zA-Z0-9_]*)\|\s*JsValue::from_str\(\s*&\s*\1\.to_string\(\)\s*\)\s*\)/g,
+    to: '.map_err(crate::js_err)',
+  },
 ];
 
 const files = collectRsFiles(ROOT);

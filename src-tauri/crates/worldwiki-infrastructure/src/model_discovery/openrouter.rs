@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::ai::AiModelInfo;
 use worldwiki_domain::DomainError;
 
@@ -45,13 +46,13 @@ pub(crate) async fn fetch_openrouter(trimmed_key: Option<&str>) -> Result<Vec<Ai
         .default_headers(headers)
         .timeout(std::time::Duration::from_secs(15))
         .build()
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to build HTTP client: {e}")))?;
+        .ctx_constraint("Failed to build HTTP client")?;
 
     let res = client
         .get("https://openrouter.ai/api/v1/models")
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("OpenRouter network request failed: {e}")))?;
+        .ctx_constraint("OpenRouter network request failed")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -62,24 +63,27 @@ pub(crate) async fn fetch_openrouter(trimmed_key: Option<&str>) -> Result<Vec<Ai
     let parsed: OpenRouterResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse OpenRouter JSON: {e}")))?;
+        .ctx_constraint("Failed to parse OpenRouter JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .data
-        .into_iter()
-        .map(|m| {
-            let ctx = m.context_length.or_else(|| m.top_provider.as_ref().and_then(|tp| tp.context_length));
-            let max_comp = m.top_provider.as_ref().and_then(|tp| tp.max_completion_tokens);
-            let label = m.name.unwrap_or_else(|| m.id.clone());
-            AiModelInfo {
-                value: m.id,
-                label,
-                description: m.description,
-                context_length: ctx,
-                max_completion_tokens: max_comp,
-            }
-        })
-        .collect();
+    let mut models = Vec::with_capacity(parsed.data.len());
+    for m in parsed.data {
+        let ctx = match m.context_length {
+            Some(c) => Some(c),
+            None => m.top_provider.as_ref().and_then(|tp| tp.context_length),
+        };
+        let max_comp = m.top_provider.as_ref().and_then(|tp| tp.max_completion_tokens);
+        let label = match m.name {
+            Some(name) => name,
+            None => m.id.clone(),
+        };
+        models.push(AiModelInfo {
+            value: m.id,
+            label,
+            description: m.description,
+            context_length: ctx,
+            max_completion_tokens: max_comp,
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)

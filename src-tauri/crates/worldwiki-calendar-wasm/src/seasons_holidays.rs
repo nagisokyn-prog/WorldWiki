@@ -26,7 +26,7 @@ impl WasmCalendarEngine {
         holiday: JsValue,
     ) -> Result<bool, JsValue> {
         let h: holidays::CoreHoliday = serde_wasm_bindgen::from_value(holiday)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(holidays::is_multi_year_holiday_active(curr_y, curr_m, curr_d, &h))
     }
 
@@ -38,7 +38,7 @@ impl WasmCalendarEngine {
         max_convergents: usize,
     ) -> Result<JsValue, JsValue> {
         let convergents = convergents::calculate_leap_convergents(trop_num, trop_den, max_convergents);
-        serde_wasm_bindgen::to_value(&convergents).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&convergents).map_err(crate::js_err)
     }
 
     /// Разложение рациональной дроби p/q на знаковые единичные гармоники (+1/-1)
@@ -49,7 +49,7 @@ impl WasmCalendarEngine {
         max_harmonics: usize,
     ) -> Result<JsValue, JsValue> {
         let harmonics = convergents::decompose_fraction_to_unit_harmonics(p, q, max_harmonics);
-        serde_wasm_bindgen::to_value(&harmonics).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&harmonics).map_err(crate::js_err)
     }
 
     /// Климатический детектор конфликта сезона солнцестояния

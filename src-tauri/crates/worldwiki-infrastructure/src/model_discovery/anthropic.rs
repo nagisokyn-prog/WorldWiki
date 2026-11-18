@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::ai::AiModelInfo;
 use worldwiki_domain::DomainError;
 use super::http::build_client;
@@ -25,7 +26,7 @@ pub(crate) async fn fetch_anthropic(trimmed_key: Option<&str>) -> Result<Vec<AiM
         .header("anthropic-version", "2023-06-01")
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Anthropic network request failed: {e}")))?;
+        .ctx_constraint("Anthropic network request failed")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -36,22 +37,22 @@ pub(crate) async fn fetch_anthropic(trimmed_key: Option<&str>) -> Result<Vec<AiM
     let parsed: AnthropicResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse Anthropic JSON: {e}")))?;
+        .ctx_constraint("Failed to parse Anthropic JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .data
-        .into_iter()
-        .map(|m| {
-            let label = m.display_name.unwrap_or_else(|| m.id.clone());
-            AiModelInfo {
-                value: m.id,
-                label,
-                description: None,
-                context_length: Some(200_000),
-                max_completion_tokens: Some(8192),
-            }
-        })
-        .collect();
+    let mut models = Vec::with_capacity(parsed.data.len());
+    for m in parsed.data {
+        let label = match m.display_name {
+            Some(name) => name,
+            None => m.id.clone(),
+        };
+        models.push(AiModelInfo {
+            value: m.id,
+            label,
+            description: None,
+            context_length: Some(200_000),
+            max_completion_tokens: Some(8192),
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)

@@ -1,5 +1,6 @@
 //! Low-level HTTP primitives for Yandex.Disk REST API communication.
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::fs;
 use std::path::Path;
 use worldwiki_domain::errors::DomainError;
@@ -34,14 +35,14 @@ pub async fn upload_single_file_with_client(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to get upload URL: {e}")))?;
+        .ctx_validation("Failed to get upload URL")?;
 
     if url_res.status() == 401 {
         return Err(DomainError::Validation("Token expired or invalid".to_string()));
     }
 
     let url_json: serde_json::Value =
-        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
+        url_res.json().await.ctx_validation("JSON error")?;
     let upload_url = url_json
         .get("href")
         .and_then(|v| v.as_str())
@@ -54,14 +55,14 @@ pub async fn upload_single_file_with_client(
         })?;
 
     // 2. Upload file
-    let file_content = fs::read(local_path).map_err(|e| DomainError::Validation(format!("Failed to read file: {e}")))?;
+    let file_content = fs::read(local_path).ctx_validation("Failed to read file")?;
 
     let upload_res = client
         .put(upload_url)
         .body(file_content)
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to upload file: {e}")))?;
+        .ctx_validation("Failed to upload file")?;
 
     if upload_res.status().is_success() {
         Ok(())
@@ -97,7 +98,7 @@ pub async fn ensure_yandex_dir_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to create folder: {e}")))?;
+        .ctx_validation("Failed to create folder")?;
 
     if res.status().is_success() || res.status() == 409 {
         Ok(())
@@ -124,7 +125,7 @@ pub async fn list_yandex_dir_files_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to list folder: {e}")))?;
+        .ctx_validation("Failed to list folder")?;
 
     if url_res.status() == 404 {
         return Ok(std::collections::HashSet::new());
@@ -136,7 +137,7 @@ pub async fn list_yandex_dir_files_inner(
     let json: serde_json::Value = url_res
         .json()
         .await
-        .map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
+        .ctx_validation("JSON error")?;
 
     let mut set = std::collections::HashSet::new();
     if let Some(items) = json

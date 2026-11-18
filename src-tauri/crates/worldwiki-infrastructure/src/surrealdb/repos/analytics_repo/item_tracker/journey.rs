@@ -104,14 +104,14 @@ fn build_entity_journey(
 ) -> ItemJourneyDto {
     let item_type = attrs
         .get("тип_предмета")
-        .or_else(|| attrs.get("itemType"))
+        .or(attrs.get("itemType"))
         .and_then(|v| v.as_str())
         .unwrap_or("артефакт")
         .to_string();
 
     let status_category = attrs
         .get("статус_категория")
-        .or_else(|| attrs.get("itemStatus"))
+        .or(attrs.get("itemStatus"))
         .and_then(|v| v.as_str())
         .unwrap_or("Цел / Активен")
         .to_string();
@@ -121,12 +121,12 @@ fn build_entity_journey(
     // 1. Creation node
     let creation_date = attrs
         .get("дата_создания")
-        .or_else(|| attrs.get("itemCreationDate"))
+        .or(attrs.get("itemCreationDate"))
         .and_then(|v| v.get("m_abs"))
         .and_then(|v| v.as_i64());
     let origin_loc = attrs
         .get("место_создания")
-        .or_else(|| attrs.get("itemOriginLocation"))
+        .or(attrs.get("itemOriginLocation"))
         .and_then(|v| v.as_str())
         .unwrap_or("");
 
@@ -149,7 +149,7 @@ fn build_entity_journey(
         for (idx, entry) in history.iter().enumerate() {
             let owner_val = entry
                 .get("название")
-                .or_else(|| entry.get("owner"))
+                .or(entry.get("owner"))
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
             let o_clean = clean_id(owner_val);
@@ -160,7 +160,7 @@ fn build_entity_journey(
                 .unwrap_or_else(|| owner_val.to_string());
             let circ = entry
                 .get("описание_1")
-                .or_else(|| entry.get("circumstances"))
+                .or(entry.get("circumstances"))
                 .and_then(|v| v.as_str())
                 .unwrap_or("")
                 .to_string();

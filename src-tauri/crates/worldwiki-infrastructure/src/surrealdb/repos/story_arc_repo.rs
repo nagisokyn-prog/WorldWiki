@@ -1,5 +1,6 @@
 //! SurrealDB implementation of StoryArcRepository.
 
+use worldwiki_domain::errors::OptionStrExt;
 use async_trait::async_trait;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
@@ -66,7 +67,7 @@ impl StoryArcRepository for SurrealStoryArcRepository {
     async fn assign_chapter(&self, relation: &ArcChapterRelation) -> Result<(), DomainError> {
         let clean_arc = clean_id("story_arcs", &relation.arc_id);
         let clean_chap = clean_id("chapters", &relation.chapter_id);
-        let phase = relation.phase.clone().unwrap_or_else(|| "setup".to_string());
+        let phase = relation.phase.clone().unwrap_or_str("setup");
         surreal_exec!(
             self.db,
             "RETURN fn::link_chapter_to_arc($chap_id, $arc_id, $phase);",

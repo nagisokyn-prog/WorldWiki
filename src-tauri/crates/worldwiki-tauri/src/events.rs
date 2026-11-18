@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use async_trait::async_trait;
 use serde_json::Value;
 use tauri::{AppHandle, Emitter};
@@ -19,7 +20,7 @@ impl EventPublisherPort for TauriEventPublisher {
     async fn publish_raw(&self, event_name: &str, payload: Value) -> Result<(), DomainError> {
         self.app_handle
             .emit(event_name, &payload)
-            .map_err(|e| DomainError::ConstraintViolation(format!("Tauri event emit failed: {e}")))?;
+            .ctx_constraint("Tauri event emit failed")?;
         Ok(())
     }
 }

@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::ai::AiModelInfo;
 use worldwiki_domain::DomainError;
 use super::http::build_client;
@@ -32,7 +33,7 @@ pub(crate) async fn fetch_gemini(trimmed_key: Option<&str>) -> Result<Vec<AiMode
         .get(&url)
         .send()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Gemini network request failed: {e}")))?;
+        .ctx_constraint("Gemini network request failed")?;
 
     if !res.status().is_success() {
         let status = res.status();
@@ -43,28 +44,28 @@ pub(crate) async fn fetch_gemini(trimmed_key: Option<&str>) -> Result<Vec<AiMode
     let parsed: GeminiResponse = res
         .json()
         .await
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to parse Gemini JSON: {e}")))?;
+        .ctx_constraint("Failed to parse Gemini JSON")?;
 
-    let mut models: Vec<AiModelInfo> = parsed
-        .models
-        .into_iter()
-        .filter(|m| {
-            m.supported_methods.as_ref().is_none_or(|methods| {
-                methods.iter().any(|method| method == "generateContent")
-            })
-        })
-        .map(|m| {
-            let id = m.name.strip_prefix("models/").unwrap_or(&m.name).to_string();
-            let label = m.display_name.unwrap_or_else(|| id.clone());
-            AiModelInfo {
-                value: id,
-                label,
-                description: m.description,
-                context_length: m.input_token_limit,
-                max_completion_tokens: m.output_token_limit,
-            }
-        })
-        .collect();
+    let mut models = Vec::with_capacity(parsed.models.len());
+    for m in parsed.models {
+        if let Some(methods) = m.supported_methods.as_ref()
+            && !methods.iter().any(|method| method == "generateContent")
+        {
+            continue;
+        }
+        let id = m.name.strip_prefix("models/").unwrap_or(&m.name).to_string();
+        let label = match m.display_name {
+            Some(name) => name,
+            None => id.clone(),
+        };
+        models.push(AiModelInfo {
+            value: id,
+            label,
+            description: m.description,
+            context_length: m.input_token_limit,
+            max_completion_tokens: m.output_token_limit,
+        });
+    }
 
     models.sort_by_key(|a| a.label.to_lowercase());
     Ok(models)

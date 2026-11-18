@@ -8,23 +8,20 @@ pub use bootstrap::lifecycle::{AgentTasks, AppState, handle_window_event, setup_
 pub fn run() {
     use logic::batch::*;
     use logic::chapters::*;
-    use logic::connections::*;
     use logic::entities::*;
     use logic::models::*;
-    use logic::projects::*;
-    use logic::volumes::*;
     use tauri_shell::logic::system::*;
     use tauri::{Emitter, Manager};
 
     if let Err(e) = tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
 // --- Проекты ---
-            get_projects,
-            create_project,
-            get_project_config,
-            save_project_config,
-            delete_project,
-            execute_raw_surql,
+            worldwiki_tauri::commands::get_projects,
+            worldwiki_tauri::commands::create_project,
+            worldwiki_tauri::commands::get_project_config,
+            worldwiki_tauri::commands::save_project_config,
+            worldwiki_tauri::commands::delete_project,
+            worldwiki_tauri::commands::execute_raw_surql,
             // --- Универсальные Сущности ---
             get_entities,
             get_entities_batch,
@@ -64,18 +61,18 @@ pub fn run() {
             create_chapter,
             save_chapter,
             delete_chapter,
-            get_chapter_hierarchy,
-            create_volume,
-            update_volume,
-            assign_chapter,
-            reorder_node,
-            auto_extend_timeline,
-            heal_deleted_chapter,
+            worldwiki_tauri::commands::get_chapter_hierarchy,
+            worldwiki_tauri::commands::create_volume,
+            worldwiki_tauri::commands::update_volume,
+            worldwiki_tauri::commands::assign_chapter,
+            worldwiki_tauri::commands::reorder_node,
+            worldwiki_tauri::commands::auto_extend_timeline,
+            worldwiki_tauri::commands::heal_deleted_chapter,
             // --- Связи / Таймлайн ---
-            get_connections,
-            save_connections,
+            worldwiki_tauri::commands::get_connections,
+            worldwiki_tauri::commands::save_connections,
             upsert_connections_batch,
-            remove_connections_by_source,
+            worldwiki_tauri::commands::remove_connections_by_source,
             get_global_timeline,
             save_global_timeline,
             get_planet_calendar_bundle,

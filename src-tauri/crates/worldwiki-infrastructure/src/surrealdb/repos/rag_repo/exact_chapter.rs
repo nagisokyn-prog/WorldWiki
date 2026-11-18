@@ -12,11 +12,13 @@ pub(crate) async fn fetch_exact_chapter(
     let mut list = Vec::new();
     let is_chapter_req = q_canon.contains("глав") || q_canon.contains("chapter");
     if is_chapter_req {
-        let num_opt = q_lower.split_whitespace().find_map(|word| {
-            word.trim_matches(|c: char| !c.is_numeric())
-                .parse::<u32>()
-                .ok()
-        });
+        let mut num_opt: Option<u32> = None;
+        for word in q_lower.split_whitespace() {
+            if let Ok(n) = word.trim_matches(|c: char| !c.is_numeric()).parse::<u32>() {
+                num_opt = Some(n);
+                break;
+            }
+        }
 
         if let Some(num) = num_opt {
             let num_str = num.to_string();

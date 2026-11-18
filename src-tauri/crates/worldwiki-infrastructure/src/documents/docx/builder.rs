@@ -134,17 +134,15 @@ pub(crate) fn append_block_xml(
         }
         "quote" => {
             let text = if let Some(items) = block.get("content").and_then(|v| v.as_array()) {
-                items
-                    .iter()
-                    .map(|item| {
-                        if item.get("type").and_then(|v| v.as_str()) == Some("paragraph") {
-                            extract_inline_text(item.get("content"))
-                        } else {
-                            extract_inline_text(Some(item))
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
+                let mut lines = Vec::with_capacity(items.len());
+                for item in items {
+                    if item.get("type").and_then(|v| v.as_str()) == Some("paragraph") {
+                        lines.push(extract_inline_text(item.get("content")));
+                    } else {
+                        lines.push(extract_inline_text(Some(item)));
+                    }
+                }
+                lines.join("\n")
             } else {
                 extract_inline_text(block.get("content"))
             };

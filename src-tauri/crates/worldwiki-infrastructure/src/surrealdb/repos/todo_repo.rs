@@ -96,16 +96,14 @@ impl TodoRepository for SurrealTodoRepository {
     }
 
     async fn list_by_owners(&self, owner_ids: &[&str]) -> Result<Vec<Todo>, DomainError> {
-        let owners: Vec<String> = owner_ids
-            .iter()
-            .map(|s| {
-                if s.contains(':') {
-                    s.to_string()
-                } else {
-                    format!("chapters:{}", s)
-                }
-            })
-            .collect();
+        let mut owners = Vec::with_capacity(owner_ids.len());
+        for s in owner_ids {
+            if s.contains(':') {
+                owners.push(s.to_string());
+            } else {
+                owners.push(format!("chapters:{}", s));
+            }
+        }
         surreal_take_list!(
             self.db,
             "RETURN fn::list_todos_by_owners($owners);",

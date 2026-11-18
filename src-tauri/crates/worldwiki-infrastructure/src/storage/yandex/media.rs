@@ -1,5 +1,6 @@
 //! Media synchronization and download functionality between local storage and Yandex.Disk.
 
+use worldwiki_domain::errors::DomainResultExt;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -146,7 +147,7 @@ async fn download_and_save_media_file(
 
     tokio::fs::write(&target_file_path, file_bytes)
         .await
-        .map_err(|e| DomainError::Validation(format!("Failed to save media file: {e}")))?;
+        .ctx_validation("Failed to save media file")?;
 
     Ok(true)
 }
@@ -158,9 +159,9 @@ pub async fn download_missing_media_inner(
     base_override: Option<&str>,
 ) -> Result<usize, DomainError> {
     let file = fs::File::open(backup_zip_path)
-        .map_err(|e| DomainError::Validation(format!("Failed to open backup zip: {e}")))?;
+        .ctx_validation("Failed to open backup zip")?;
     let mut zip = zip::ZipArchive::new(file)
-        .map_err(|e| DomainError::Validation(format!("Failed to read backup zip: {e}")))?;
+        .ctx_validation("Failed to read backup zip")?;
 
     let mut manifest_file = match zip.by_name("manifest.json") {
         Ok(f) => f,
@@ -171,10 +172,10 @@ pub async fn download_missing_media_inner(
     use std::io::Read;
     manifest_file
         .read_to_string(&mut manifest_str)
-        .map_err(|e| DomainError::Validation(format!("Failed to read manifest: {e}")))?;
+        .ctx_validation("Failed to read manifest")?;
 
     let manifest_json: serde_json::Value = serde_json::from_str(&manifest_str)
-        .map_err(|e| DomainError::Validation(format!("Failed to parse manifest: {e}")))?;
+        .ctx_validation("Failed to parse manifest")?;
 
     let media_files = match manifest_json.get("media_files").and_then(|v| v.as_array()) {
         Some(arr) => arr,

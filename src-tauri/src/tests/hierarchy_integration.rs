@@ -3,7 +3,13 @@
 //! Тестируют бизнес-логику управления иерархией через графовые рёбра `contains`
 //! поверх реальной in-memory SurrealDB + схемы `surreal_schema.surql`.
 
-use crate::logic::volumes::*;
+use worldwiki_infrastructure::surrealdb::repos::volume_ops_repo::{
+    assign_chapter as assign_chapter_inner,
+    create_volume as create_volume_inner,
+    get_chapter_hierarchy as get_chapter_hierarchy_inner,
+    reorder_node as reorder_node_inner,
+    update_volume as update_volume_inner,
+};
 use super::common::{create_test_db, seed_project, seed_chapter};
 
 #[tokio::test]

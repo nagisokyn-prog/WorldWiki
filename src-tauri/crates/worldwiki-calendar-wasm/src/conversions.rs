@@ -14,7 +14,7 @@ impl WasmCalendarEngine {
         day_start_offset: i64,
     ) -> Result<JsValue, JsValue> {
         let moment = t_abs_to_local_moment(t_abs, planet_id, ticks_per_day, day_start_offset);
-        serde_wasm_bindgen::to_value(&moment).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&moment).map_err(crate::js_err)
     }
 
     /// Преобразует локальный момент планеты обратно в галактическое t_abs
@@ -91,7 +91,7 @@ impl WasmCalendarEngine {
         params: JsValue,
     ) -> Result<JsValue, JsValue> {
         let p: WasmWeekdayPauseParams = serde_wasm_bindgen::from_value(params)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let config = weekdays::WeekdayPauseConfig {
             days_in_regular_months: p.days_in_regular_months,
             extra_days_base: p.extra_days_base,
@@ -103,7 +103,7 @@ impl WasmCalendarEngine {
             weekdays_count: p.weekdays_count,
         };
         let res = weekdays::calculate_weekday_with_pause(year, day_in_year, &config);
-        serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&res).map_err(crate::js_err)
     }
 
     /// Перевод внутреннего индекса месяца в культурный
@@ -119,9 +119,9 @@ impl WasmCalendarEngine {
     /// Преобразует календарную дату в абсолютное время t_abs
     pub fn date_to_t_abs(&self, date: JsValue, config: JsValue) -> Result<i64, JsValue> {
         let d: DateCoordinate = serde_wasm_bindgen::from_value(date)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let core_cfg = cfg.as_core();
         Ok(conversion::date_to_t_abs(&d, &core_cfg))
     }
@@ -129,9 +129,9 @@ impl WasmCalendarEngine {
     /// Преобразует абсолютное время t_abs в календарную дату
     pub fn t_abs_to_date(&self, t_abs: i64, config: JsValue) -> Result<JsValue, JsValue> {
         let cfg: WasmCultureConfig = serde_wasm_bindgen::from_value(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let core_cfg = cfg.as_core();
         let date = conversion::t_abs_to_date(t_abs, &core_cfg);
-        serde_wasm_bindgen::to_value(&date).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&date).map_err(crate::js_err)
     }
 }

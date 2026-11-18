@@ -9,6 +9,10 @@ pub mod types;
 pub use types::*;
 use wasm_bindgen::prelude::*;
 
+pub(crate) fn js_err<E: std::fmt::Display>(err: E) -> JsValue {
+    JsValue::from_str(&err.to_string())
+}
+
 #[wasm_bindgen]
 pub struct WasmCalendarEngine;
 
@@ -27,7 +31,7 @@ impl WasmCalendarEngine {
         _days_offset: i32,
     ) -> Result<bool, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(is_leap_year(year, &h) != 0)
     }
 
@@ -40,7 +44,7 @@ impl WasmCalendarEngine {
         leap_day_offset: i64,
     ) -> Result<i64, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(days_in_year(year, base_days, leap_day_offset, &h))
     }
 
@@ -53,7 +57,7 @@ impl WasmCalendarEngine {
         leap_day_offset: i64,
     ) -> Result<i64, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(days_up_to_year(year, base_days, leap_day_offset, &h))
     }
 
@@ -66,7 +70,7 @@ impl WasmCalendarEngine {
         leap_day_offset: i64,
     ) -> Result<JsValue, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         let (year, day_in_year) = year_from_days_o1(cal_day, base_days, &h, leap_day_offset);
 
         #[derive(serde::Serialize)]
@@ -76,13 +80,13 @@ impl WasmCalendarEngine {
         }
 
         serde_wasm_bindgen::to_value(&YearResult { year, day_in_year })
-            .map_err(|e| JsValue::from_str(&e.to_string()))
+            .map_err(crate::js_err)
     }
 
     /// Валидация набора гармоник по наименьшему общему кратному LCM
     pub fn validate_harmonics(&self, harmonics: JsValue) -> Result<bool, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(validate_harmonics_lcm(&h))
     }
 
@@ -94,7 +98,7 @@ impl WasmCalendarEngine {
         target_year_length_days: f64,
     ) -> Result<f64, JsValue> {
         let h: Vec<LeapHarmonic> = serde_wasm_bindgen::from_value(harmonics)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
         Ok(drift_per_century_f64(
             base_days,
             &h,
@@ -105,10 +109,10 @@ impl WasmCalendarEngine {
     /// Пакетный метод генерации сетки месяца за 1 вызов (120 FPS)
     pub fn get_month_grid_bundle(&self, params: JsValue) -> Result<JsValue, JsValue> {
         let p: MonthGridParams = serde_wasm_bindgen::from_value(params)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            .map_err(crate::js_err)?;
 
         let bundle = grid::build_month_grid_bundle(&p);
-        serde_wasm_bindgen::to_value(&bundle).map_err(|e| JsValue::from_str(&e.to_string()))
+        serde_wasm_bindgen::to_value(&bundle).map_err(crate::js_err)
     }
 }
 

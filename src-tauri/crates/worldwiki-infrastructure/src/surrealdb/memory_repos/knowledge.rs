@@ -28,17 +28,19 @@ impl EntityRepository for InMemoryEntityRepository {
 
     async fn search(&self, project_id: &str, query: &str, top_k: usize) -> Result<Vec<Entity>, DomainError> {
         let q = query.to_lowercase();
-        let results = self
-            .storage
-            .iter()
-            .filter(|r| {
-                r.value().project_id == project_id
-                    && (r.value().name.to_lowercase().contains(&q)
-                        || r.value().description.as_deref().unwrap_or("").to_lowercase().contains(&q))
-            })
-            .take(top_k)
-            .map(|r| r.value().clone())
-            .collect();
+        let mut results = Vec::new();
+        for r in self.storage.iter() {
+            let ent = r.value();
+            if ent.project_id == project_id
+                && (ent.name.to_lowercase().contains(&q)
+                    || ent.description.as_deref().unwrap_or("").to_lowercase().contains(&q))
+            {
+                results.push(ent.clone());
+                if results.len() >= top_k {
+                    break;
+                }
+            }
+        }
         Ok(results)
     }
 

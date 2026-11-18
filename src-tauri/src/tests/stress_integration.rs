@@ -14,8 +14,12 @@ use serde_json::json;
 use crate::logic::chapters::save_text_blocks_inner;
 use crate::logic::entities::{create_entity_relation_inner, get_entities_inner, get_entity_relations_inner, save_entity_inner};
 use crate::logic::models::{Entity, EntityRel};
-use crate::logic::projects::delete_project_inner;
-use crate::logic::volumes::{assign_chapter_inner, create_volume_inner, get_chapter_hierarchy_inner};
+use worldwiki_infrastructure::surrealdb::repos::project_ops_repo::delete_project as delete_project_inner;
+use worldwiki_infrastructure::surrealdb::repos::volume_ops_repo::{
+    assign_chapter as assign_chapter_inner,
+    create_volume as create_volume_inner,
+    get_chapter_hierarchy as get_chapter_hierarchy_inner,
+};
 use super::common::{create_test_db, seed_chapter, seed_project};
 
 /// 1. Нагрузочный тест: Пакетная вставка 10,000 сущностей.

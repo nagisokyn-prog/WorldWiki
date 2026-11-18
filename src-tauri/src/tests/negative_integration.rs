@@ -8,13 +8,20 @@
 //! - Невалидный/битый HTML при сохранении глав.
 //! - Переупорядочивание несуществующих узлов иерархии.
 
-use crate::logic::chapters::save_text_blocks_inner;
-use crate::logic::entities::{create_entity_relation_inner, get_entities_inner, get_entity_inner, get_entity_relations_inner, save_entity_inner};
-use crate::logic::models::{Entity, EntityRel};
-use crate::logic::projects::{create_project_inner, delete_project_inner};
-use crate::logic::volumes::{assign_chapter_inner, reorder_node_inner};
-use serde_json::json;
 use super::common::{create_test_db, seed_project};
+use crate::logic::chapters::save_text_blocks_inner;
+use crate::logic::entities::{
+    create_entity_relation_inner, get_entities_inner, get_entity_inner, get_entity_relations_inner,
+    save_entity_inner,
+};
+use crate::logic::models::{Entity, EntityRel};
+use serde_json::json;
+use worldwiki_infrastructure::surrealdb::repos::project_ops_repo::{
+    create_project as create_project_inner, delete_project as delete_project_inner,
+};
+use worldwiki_infrastructure::surrealdb::repos::volume_ops_repo::{
+    assign_chapter as assign_chapter_inner, reorder_node as reorder_node_inner,
+};
 
 #[tokio::test]
 async fn negative_get_nonexistent_entities_returns_empty() {
@@ -42,7 +49,10 @@ async fn negative_get_entity_malformed_id_handled_gracefully() {
     // Передаём мусорный ID с спецсимволами и кавычками
     let res = get_entity_inner(&db, "entities:'; DROP TABLE projects; --").await;
     // Запрос не должен паниковать или валить БД
-    assert!(res.is_ok(), "запрос с некорректным ID должен корректно возвращать None или пустой результат");
+    assert!(
+        res.is_ok(),
+        "запрос с некорректным ID должен корректно возвращать None или пустой результат"
+    );
     assert!(res.unwrap().is_none());
 }
 
@@ -54,7 +64,10 @@ async fn negative_create_project_missing_name_returns_err() {
     let invalid_data = json!({ "title": "Без имени" });
     let res = create_project_inner(&db, invalid_data).await;
 
-    assert!(res.is_err(), "create_project без 'name' должен возвращать Err");
+    assert!(
+        res.is_err(),
+        "create_project без 'name' должен возвращать Err"
+    );
     assert!(res.unwrap_err().to_string().contains("No name"));
 }
 
@@ -70,7 +83,10 @@ async fn negative_schemfull_rejects_untyped_root_field() {
 
     assert!(bad_query.is_ok());
     let errs = bad_query.unwrap().take_errors();
-    assert!(!errs.is_empty(), "SCHEMAFULL должен отклонить неизвестное корневое поле");
+    assert!(
+        !errs.is_empty(),
+        "SCHEMAFULL должен отклонить неизвестное корневое поле"
+    );
 }
 
 #[tokio::test]
@@ -79,7 +95,10 @@ async fn negative_delete_nonexistent_project_is_idempotent() {
 
     // Удаление проекта, которого никогда не было, не должно приводить к панике
     let res = delete_project_inner(&db, "ghost_project_never_existed").await;
-    assert!(res.is_ok(), "удаление несуществующего проекта должно завершаться успешно (идемпотентность)");
+    assert!(
+        res.is_ok(),
+        "удаление несуществующего проекта должно завершаться успешно (идемпотентность)"
+    );
 }
 
 #[tokio::test]
@@ -88,19 +107,25 @@ async fn negative_transaction_rollback_on_failure() {
     seed_project(&db, "p_trans", "Transaction Test").await;
 
     // Создаём 1 базовую сущность
-    save_entity_inner(&db, "p_trans", Entity {
-        id: None,
-        project_id: Some("projects:p_trans".into()),
-        schema_id: None,
-        entity_type: "item".into(),
-        name: "Сохранённый Предмет".into(),
-        description: None,
-        attributes: json!({}),
-        tags: vec![],
-        embeddings: None,
-        created_at: None,
-        updated_at: None,
-    }).await.unwrap();
+    save_entity_inner(
+        &db,
+        "p_trans",
+        Entity {
+            id: None,
+            project_id: Some("projects:p_trans".into()),
+            schema_id: None,
+            entity_type: "item".into(),
+            name: "Сохранённый Предмет".into(),
+            description: None,
+            attributes: json!({}),
+            tags: vec![],
+            embeddings: None,
+            created_at: None,
+            updated_at: None,
+        },
+    )
+    .await
+    .unwrap();
 
     // Запускаем транзакцию:
     // Операция 1: Валидный CREATE
@@ -117,7 +142,10 @@ async fn negative_transaction_rollback_on_failure() {
 
     let mut res = db.query(sql).await.unwrap();
     let errs = res.take_errors();
-    assert!(!errs.is_empty(), "транзакция должна зафиксировать ошибку валидации схемы");
+    assert!(
+        !errs.is_empty(),
+        "транзакция должна зафиксировать ошибку валидации схемы"
+    );
 
     // Проверяем, что 'Предмет Транзакции' НЕ сохранился (откат сработал)
     let mut check_res = db
@@ -125,7 +153,10 @@ async fn negative_transaction_rollback_on_failure() {
         .await
         .unwrap();
     let entities: Vec<serde_json::Value> = check_res.take(0).unwrap();
-    assert!(entities.is_empty(), "запись из упавшей транзакции не должна попасть в БД (Rollback)");
+    assert!(
+        entities.is_empty(),
+        "запись из упавшей транзакции не должна попасть в БД (Rollback)"
+    );
 }
 
 #[tokio::test]
@@ -152,7 +183,8 @@ async fn negative_create_relation_nonexistent_endpoints() {
             is_auto_extend: false,
             created_at: None,
         },
-    ).await;
+    )
+    .await;
 
     // SurrealDB RELATE создаст ребро, но при чтении связей целевая сущность не должна ломать систему
     assert!(rel.is_ok(), "создание ребра между кастомными ID разрешено");
@@ -169,7 +201,8 @@ async fn negative_assign_chapter_invalid_parent() {
         "p_neg_tree",
         "chapters:ghost_chap",
         Some("volumes:ghost_vol".into()),
-    ).await;
+    )
+    .await;
 
     assert!(res.is_ok(), "перепривязка не должна крашить бэкенд");
 }
@@ -182,12 +215,22 @@ async fn negative_save_text_blocks_malformed_html_without_tags() {
     // Сохранение битого HTML без закрывающих тегов и без атрибутов
     let broken_html = "<div><p>Просто текст без data-semantic-tag</p><span>Еще кусок";
     let res = save_text_blocks_inner(&db, "p_neg_tb", "chapters:ch1", broken_html).await;
-    assert!(res.is_ok(), "парсер семантических блоков должен корректно обрабатывать сырой текст без тегов");
+    assert!(
+        res.is_ok(),
+        "парсер семантических блоков должен корректно обрабатывать сырой текст без тегов"
+    );
 
     // Проверяем, что создался 1 блок с дефолтным типом 'description'
-    let mut q = db.query("SELECT * FROM text_blocks WHERE chapter_id = type::record('chapters:ch1')").await.unwrap();
+    let mut q = db
+        .query("SELECT * FROM text_blocks WHERE chapter_id = type::record('chapters:ch1')")
+        .await
+        .unwrap();
     let blocks: Vec<serde_json::Value> = q.take(0).unwrap();
-    assert_eq!(blocks.len(), 1, "тег <p> без атрибута data-semantic-tag парсится с дефолтным типом");
+    assert_eq!(
+        blocks.len(),
+        1,
+        "тег <p> без атрибута data-semantic-tag парсится с дефолтным типом"
+    );
     assert_eq!(blocks[0]["block_type"], "description");
 }
 
@@ -198,5 +241,8 @@ async fn negative_reorder_nonexistent_node() {
 
     // Переупорядочивание несуществующего тома
     let res = reorder_node_inner(&db, "p_neg_reorder", "volume", "volumes:ghost_vol", 10).await;
-    assert!(res.is_ok(), "reorder_node для несуществующего узла не должен приводить к панике");
+    assert!(
+        res.is_ok(),
+        "reorder_node для несуществующего узла не должен приводить к панике"
+    );
 }

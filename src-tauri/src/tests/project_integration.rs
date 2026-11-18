@@ -8,8 +8,14 @@
 use crate::logic::chapters::save_text_blocks_inner;
 use crate::logic::entities::save_entity_inner;
 use crate::logic::models::Entity;
-use crate::logic::projects::*;
-use crate::logic::volumes::create_volume_inner;
+use worldwiki_infrastructure::surrealdb::repos::project_ops_repo::{
+    create_project as create_project_inner,
+    delete_project as delete_project_inner,
+    get_project_config as get_project_config_inner,
+    get_projects as get_projects_inner,
+    save_project_config as save_project_config_inner,
+};
+use worldwiki_infrastructure::surrealdb::repos::volume_ops_repo::create_volume as create_volume_inner;
 use serde_json::json;
 use super::common::{create_test_db, seed_chapter, seed_project};
 

@@ -120,11 +120,18 @@ pub fn parse_chat_message_record(val: &Value, chat_id: &str) -> ChatMessage {
         .get("reasoning")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
-    let tool_logs = val.get("tool_logs").and_then(|v| v.as_array()).map(|arr| {
-        arr.iter()
-            .filter_map(|x| x.as_str().map(|s| s.to_string()))
-            .collect()
-    });
+    let tool_logs = match val.get("tool_logs").and_then(|v| v.as_array()) {
+        Some(arr) => {
+            let mut logs = Vec::with_capacity(arr.len());
+            for x in arr {
+                if let Some(s) = x.as_str() {
+                    logs.push(s.to_string());
+                }
+            }
+            Some(logs)
+        }
+        None => None,
+    };
     let quoted_context = val.get("quoted_context").cloned().filter(|v| !v.is_null());
     let citations = val.get("citations").and_then(|v| v.as_array()).cloned();
     let version = val.get("version").and_then(|v| v.as_u64()).unwrap_or(1) as u32;

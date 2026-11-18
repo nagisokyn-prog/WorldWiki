@@ -212,10 +212,13 @@ impl ChatRepository for SurrealChatRepository {
     ) -> Result<(), DomainError> {
         let chat_clean = clean_id_str(chat_id, "chats:");
         let c_rec = RecordId::new("chats", chat_clean);
-        let parent_rec = new_parent_id.map(|p| {
-            let p_clean = clean_id_str(p, "chats:");
-            RecordId::new("chats", p_clean)
-        });
+        let parent_rec = match new_parent_id {
+            Some(p) => {
+                let p_clean = clean_id_str(p, "chats:");
+                Some(RecordId::new("chats", p_clean))
+            }
+            None => None,
+        };
 
         self.db
             .query("UPDATE $chat SET parent_chat_id = $parent")

@@ -121,28 +121,30 @@ pub fn build_month_grid_bundle(p: &MonthGridParams) -> MonthGridBundle {
     }
 }
 
-pub fn format_all_moon_phases(t_abs: i64, ticks_per_day: i64, moon_list: &[moons::MoonConfig]) -> Vec<MoonDayPhase> {
+pub fn format_all_moon_phases(
+    t_abs: i64,
+    ticks_per_day: i64,
+    moon_list: &[moons::MoonConfig],
+) -> Vec<MoonDayPhase> {
     let raw_phases = moons::calculate_all_moon_phases(t_abs, ticks_per_day, moon_list);
-    raw_phases
-        .into_iter()
-        .zip(moon_list.iter())
-        .map(|((bp, phase_enum), moon)| {
-            let p_str = match phase_enum {
-                moons::MoonPhaseName::NewMoon => "new_moon",
-                moons::MoonPhaseName::WaxingCrescent => "waxing_crescent",
-                moons::MoonPhaseName::FirstQuarter => "first_quarter",
-                moons::MoonPhaseName::WaxingGibbous => "waxing_gibbous",
-                moons::MoonPhaseName::FullMoon => "full_moon",
-                moons::MoonPhaseName::WaningGibbous => "waning_gibbous",
-                moons::MoonPhaseName::LastQuarter => "last_quarter",
-                moons::MoonPhaseName::WaningCrescent => "waning_crescent",
-            };
-            MoonDayPhase {
-                moon_name: moon.name.clone(),
-                basis_points: bp,
-                phase_name: p_str.to_string(),
-            }
-        })
-        .collect()
+    let mut out = Vec::with_capacity(moon_list.len());
+    for ((bp, phase_enum), moon) in raw_phases.into_iter().zip(moon_list.iter()) {
+        let p_str = match phase_enum {
+            moons::MoonPhaseName::NewMoon => "new_moon",
+            moons::MoonPhaseName::WaxingCrescent => "waxing_crescent",
+            moons::MoonPhaseName::FirstQuarter => "first_quarter",
+            moons::MoonPhaseName::WaxingGibbous => "waxing_gibbous",
+            moons::MoonPhaseName::FullMoon => "full_moon",
+            moons::MoonPhaseName::WaningGibbous => "waning_gibbous",
+            moons::MoonPhaseName::LastQuarter => "last_quarter",
+            moons::MoonPhaseName::WaningCrescent => "waning_crescent",
+        };
+        out.push(MoonDayPhase {
+            moon_name: moon.name.clone(),
+            basis_points: bp,
+            phase_name: p_str.to_string(),
+        });
+    }
+    out
 }
 

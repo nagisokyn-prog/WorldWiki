@@ -18,8 +18,8 @@ pub async fn get_plot_promises(
         .query(sql)
         .bind(("p", clean))
         .await
-        .map_err(|e| IpcError::from(e.to_string()))?;
-    let items: Vec<serde_json::Value> = res.take(0).map_err(|e| IpcError::from(e.to_string()))?;
+        .map_err(IpcError::from_display)?;
+    let items: Vec<serde_json::Value> = res.take(0).map_err(IpcError::from_display)?;
     Ok(items)
 }
 
@@ -36,8 +36,8 @@ pub async fn get_plot_promise(
         .query(sql)
         .bind(("id", clean))
         .await
-        .map_err(|e| IpcError::from(e.to_string()))?;
-    let item: Option<serde_json::Value> = res.take(0).map_err(|e| IpcError::from(e.to_string()))?;
+        .map_err(IpcError::from_display)?;
+    let item: Option<serde_json::Value> = res.take(0).map_err(IpcError::from_display)?;
     Ok(item)
 }
 
@@ -84,20 +84,26 @@ bridge_command!(
         => plot.complete_todo(&plan_id)
 );
 
+fn clamp_sort_order(sort_order: Option<i64>) -> i32 {
+    match sort_order {
+        Some(s) if s > (i32::MAX as i64) || s < (i32::MIN as i64) => (s % (i32::MAX as i64)) as i32,
+        Some(s) => s as i32,
+        None => 0,
+    }
+}
+
 #[tauri::command]
 pub async fn get_todos(
     owner_id: String,
     state: State<'_, AppState>,
 ) -> Result<Vec<Todo>, IpcError> {
-    state
-        .services
-        .plot
-        .list_todos_by_owner(&owner_id)
-        .await
-        .map_err(|e| {
+    match state.services.plot.list_todos_by_owner(&owner_id).await {
+        Ok(v) => Ok(v),
+        Err(e) => {
             eprintln!("[IPC ERROR][get_todos] owner_id={}: {}", owner_id, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -109,25 +115,20 @@ pub async fn create_todo(
     depends_on: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, IpcError> {
-    let order_i32 = sort_order
-        .map(|s| {
-            if s > (i32::MAX as i64) || s < (i32::MIN as i64) {
-                (s % (i32::MAX as i64)) as i32
-            } else {
-                s as i32
-            }
-        })
-        .unwrap_or(0);
+    let order_i32 = clamp_sort_order(sort_order);
 
-    state
+    match state
         .services
         .plot
         .create_todo_ext(&owner_id, &text, order_i32, arc_id, depends_on)
         .await
-        .map_err(|e| {
+    {
+        Ok(v) => Ok(v),
+        Err(e) => {
             eprintln!("[IPC ERROR][create_todo] owner_id={}, text={}: {}", owner_id, text, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -136,15 +137,13 @@ pub async fn set_todo_status(
     status: String,
     state: State<'_, AppState>,
 ) -> Result<Todo, IpcError> {
-    state
-        .services
-        .plot
-        .set_todo_status(&id, &status)
-        .await
-        .map_err(|e| {
+    match state.services.plot.set_todo_status(&id, &status).await {
+        Ok(v) => Ok(v),
+        Err(e) => {
             eprintln!("[IPC ERROR][set_todo_status] id={}, status={}: {}", id, status, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -153,15 +152,13 @@ pub async fn set_todo_dependency(
     depends_on: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<Todo, IpcError> {
-    state
-        .services
-        .plot
-        .set_todo_dependency(&id, depends_on.clone())
-        .await
-        .map_err(|e| {
+    match state.services.plot.set_todo_dependency(&id, depends_on.clone()).await {
+        Ok(v) => Ok(v),
+        Err(e) => {
             eprintln!("[IPC ERROR][set_todo_dependency] id={}, depends_on={:?}: {}", id, depends_on, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -169,15 +166,13 @@ pub async fn auto_start_chapter(
     chapter_id: String,
     state: State<'_, AppState>,
 ) -> Result<(), IpcError> {
-    state
-        .services
-        .plot
-        .auto_start_chapter(&chapter_id)
-        .await
-        .map_err(|e| {
+    match state.services.plot.auto_start_chapter(&chapter_id).await {
+        Ok(()) => Ok(()),
+        Err(e) => {
             eprintln!("[IPC ERROR][auto_start_chapter] chapter_id={}: {}", chapter_id, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -186,15 +181,13 @@ pub async fn update_todo(
     text: String,
     state: State<'_, AppState>,
 ) -> Result<(), IpcError> {
-    state
-        .services
-        .plot
-        .update_todo(&id, &text)
-        .await
-        .map_err(|e| {
+    match state.services.plot.update_todo(&id, &text).await {
+        Ok(()) => Ok(()),
+        Err(e) => {
             eprintln!("[IPC ERROR][update_todo] id={}, text={}: {}", id, text, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -202,15 +195,13 @@ pub async fn toggle_todo(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<Todo, IpcError> {
-    state
-        .services
-        .plot
-        .toggle_todo(&id)
-        .await
-        .map_err(|e| {
+    match state.services.plot.toggle_todo(&id).await {
+        Ok(v) => Ok(v),
+        Err(e) => {
             eprintln!("[IPC ERROR][toggle_todo] id={}: {}", id, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -218,15 +209,13 @@ pub async fn delete_todo(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<(), IpcError> {
-    state
-        .services
-        .plot
-        .delete_todo(&id)
-        .await
-        .map_err(|e| {
+    match state.services.plot.delete_todo(&id).await {
+        Ok(()) => Ok(()),
+        Err(e) => {
             eprintln!("[IPC ERROR][delete_todo] id={}: {}", id, e);
-            IpcError::from(e)
-        })
+            Err(IpcError::from(e))
+        }
+    }
 }
 
 bridge_command!(

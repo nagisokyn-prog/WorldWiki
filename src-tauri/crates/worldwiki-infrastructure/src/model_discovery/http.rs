@@ -1,3 +1,4 @@
+use worldwiki_domain::errors::DomainResultExt;
 use worldwiki_domain::DomainError;
 
 pub(crate) fn build_client(timeout_secs: u64) -> Result<reqwest::Client, DomainError> {
@@ -10,6 +11,6 @@ pub(crate) fn build_client(timeout_secs: u64) -> Result<reqwest::Client, DomainE
         .default_headers(headers)
         .timeout(std::time::Duration::from_secs(timeout_secs))
         .build()
-        .map_err(|e| DomainError::ConstraintViolation(format!("Failed to build HTTP client: {e}")))
+        .ctx_constraint("Failed to build HTTP client")
 }
 

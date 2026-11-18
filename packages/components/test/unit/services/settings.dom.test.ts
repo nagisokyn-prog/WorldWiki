@@ -84,4 +84,25 @@ describe('applySettingsToDOM', () => {
     expect(style.getPropertyValue('--glass-card-alpha')).toBe('0.85');
     expect(style.getPropertyValue('--bg-card-rgb')).toBe('255, 255, 255');
   });
+
+  it('handles sparse/empty settings, modalBackdrop, useInset, and invalid color inputs', () => {
+    expect(extractRgb('#12345')).toBeNull();
+    expect(extractRgb('#zzzzzz')).toBeNull();
+    expect(extractRgb('rgb(a, b, c)')).toBeNull();
+    expect(toRgbaString('not-a-color', 0.3, [1, 2, 3])).toBe('rgba(1, 2, 3, 0.3)');
+
+    // Minimal empty object exercises all undefined/falsy branches
+    applySettingsToDOM({} as AppSettings);
+    expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+
+    // modalBackdrop + shadows.useInset + animations.enabled=false
+    applySettingsToDOM({
+      colors: { modalBackdrop: 'rgba(0,0,0,0.9)' },
+      shadows: { useInset: true },
+      animations: { enabled: false },
+    } as unknown as AppSettings);
+    expect(document.documentElement.style.getPropertyValue('--modal-backdrop')).toBe('rgba(0,0,0,0.9)');
+    expect(document.body.classList.contains('shadows-inset')).toBe(true);
+    expect(document.documentElement.getAttribute('data-animations')).toBe('false');
+  });
 });

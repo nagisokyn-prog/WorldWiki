@@ -210,4 +210,94 @@ describe('planningPanel utils & outlining', () => {
     });
     expect(res.blocks[0].chapters).toHaveLength(1);
   });
+
+  it('covers getCleanId, getPhaseLabel, normalizeTodo, insert/decrement/removeTodoInBlocks, and buildChapterArcGroups fallbacks', async () => {
+    const utils = await import('./planningPanel.utils');
+    expect(utils.getCleanId(null)).toBe('');
+    expect(utils.getCleanId({ id: 'chapters:99' })).toBe('99');
+    expect(utils.getPhaseLabel('setup')).toContain('Завязка');
+    expect(utils.getPhaseLabel('resolution')).toContain('Развязка');
+    expect(utils.getPhaseLabel('other')).toContain('Развитие');
+
+    const normDone = utils.mapToTapestryTodo({ is_done: true } as any);
+    expect(normDone.status).toBe('done');
+    expect(normDone.id).toBe('');
+
+    const normPlanned = utils.mapToTapestryTodo({ is_done: false, sort_order: 2 } as any);
+    expect(normPlanned.status).toBe('planned');
+
+    // insertTodoIntoBlocks with existing & new arc group + volume backlog
+    const blocks: TapestryVolumeBlock[] = [
+      {
+        volumeId: 'volumes:v1',
+        cleanVolumeId: 'v1',
+        title: 'Vol 1',
+        isCollapsed: false,
+        chapters: [
+          {
+            id: 'chapters:1',
+            chapterId: 'chapters:1',
+            cleanId: '1',
+            title: 'Ch1',
+            isCurrent: false,
+            isExpanded: false,
+            arcGroups: [{ arcId: 'story_arcs:a1', title: 'Arc 1', color: '#000', phase: null, phaseLabel: '', todos: [] }],
+            standaloneTodos: [],
+            doneCount: 1,
+            totalCount: 1,
+          },
+        ],
+        backlogTodos: [{ id: 'b1', owner_id: 'volumes:v1', text: 'B1', status: 'done', done: true, sort_order: 1 }],
+        chapterOptions: [],
+        stats: { total: 0, done: 0, inProgress: 0, planned: 0, blocked: 0 },
+      },
+    ];
+
+    const chaptersList = blocks[0].chapters;
+    const backlogList = blocks[0].backlogTodos;
+
+    utils.insertTodoIntoState(
+      chaptersList,
+      backlogList,
+      { id: 't1', owner_id: 'chapters:1', arc_id: 'story_arcs:a1', text: 'T1', status: 'planned', done: false, sort_order: 1 },
+      'chapters:1',
+      'story_arcs:a1',
+      'volumes:v1'
+    );
+    utils.insertTodoIntoState(
+      chaptersList,
+      backlogList,
+      { id: 't2', owner_id: 'chapters:1', arc_id: 'story_arcs:a2', text: 'T2', status: 'planned', done: false, sort_order: 2 },
+      'chapters:1',
+      'story_arcs:a2',
+      'volumes:v1'
+    );
+    utils.insertTodoIntoState(
+      chaptersList,
+      backlogList,
+      { id: 'b2', owner_id: 'volumes:v1', text: 'B2', status: 'done', done: true, sort_order: 2 },
+      'volumes:v1',
+      null,
+      'volumes:v1'
+    );
+    expect(chaptersList[0].arcGroups).toHaveLength(2);
+    expect(backlogList).toHaveLength(2);
+
+    utils.removeTodoFromState(chaptersList, backlogList, 't1', true);
+    utils.removeTodoFromState(chaptersList, backlogList, 'b1', true);
+    expect(backlogList).toHaveLength(1);
+
+    // buildChapterArcGroups with empty arc id, out fallback, and duplicate arc_id todos
+    const arcGroupsRes = utils.buildChapterArcGroups(
+      [
+        { id: 't1', owner_id: 'chapters:1', arc_id: 'story_arcs:a1', text: 'T1', status: 'planned', done: false, sort_order: 1 },
+        { id: 't2', owner_id: 'chapters:1', arc_id: 'story_arcs:a1', text: 'T2', status: 'planned', done: false, sort_order: 2 },
+        { id: 't3', owner_id: 'chapters:1', arc_id: 'story_arcs:a3', text: 'T3', status: 'planned', done: false, sort_order: 3 },
+      ],
+      '1',
+      [{ id: '', title: 'NoId' } as any, { id: 'story_arcs:a1', title: 'Arc 1' } as any],
+      new Map([['story_arcs:a1', [{ out: 'chapters:1' } as any]]])
+    );
+    expect(arcGroupsRes.arcGroups.find((g) => g.arcId === 'story_arcs:a1')?.todos).toHaveLength(2);
+  });
 });

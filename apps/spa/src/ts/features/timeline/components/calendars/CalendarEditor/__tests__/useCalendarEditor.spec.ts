@@ -203,10 +203,34 @@ describe('useCalendarEditor', () => {
     expect(editor.calendarRecord.value?.id).toBe('cal_missing');
 
     // loadCalendar error
-    mockCalendarStore.getCalendars.mockRejectedValueOnce(new Error('load fail'));
+    mockCalendarStore.getCalendars.mockRejectedValueOnce('raw load err');
     props.calendarId = 'cal_err';
     await flushPromises();
-    expect(editor.error.value).toBe('load fail');
+    expect(editor.error.value).toBe('Не удалось загрузить календарь');
+
+    // Double-wrapped data.data + null data + localStorage draft hydration + null calendarRecord guards
+    localStorage.setItem(
+      'calendar-state-test_proj-cal_double',
+      JSON.stringify({ activeTab: 'tab3', unsavedData: { название: 'DraftCal' }, unsavedName: 'DraftName' })
+    );
+    mockCalendarStore.getCalendars.mockResolvedValueOnce([
+      { id: 'cal_double', name: '', is_master: false, is_default: false, data: { data: { название: 'Inner' } } } as any,
+    ]);
+    props.calendarId = 'cal_double';
+    await flushPromises();
+    expect(editor.activeTab.value).toBe('cultureLore');
+    expect(editor.calendarRecord.value?.name).toBe('DraftName');
+
+    editor.patchCalendarData({ is_master: true, название: 'MasterCal' });
+    expect(editor.calendarRecord.value?.is_master).toBe(true);
+
+    editor.calendarRecord.value = null;
+    editor.patchCalendarData({ название: 'Ignored' });
+    await editor.saveCalendar();
+    await editor.deleteCalendar();
+    editor.applyPreset({ name: 'P', data: {} } as any);
+    editor.updateName('FallbackRec');
+    expect(editor.calendarRecord.value?.name).toBe('FallbackRec');
 
     vi.unstubAllGlobals();
     errSpy.mockRestore();

@@ -197,4 +197,79 @@ describe('shell.saveAll', () => {
     errSpy.mockRestore();
     warnSpy.mockRestore();
   });
+
+  it('covers calendar empty data/title, missing oldState, missing foreign target, __deleted, and openTab fallbacks', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sections: [{}, { dynamicContainers: [{ id: 'dc_plain', template: 'nonbidi' }, { id: 'dc_bidi', template: 'bidi_nofields' }] }],
+        templates: {
+          nonbidi: { isBidirectional: false },
+          bidi_nofields: { isBidirectional: true, bidirectionalLinkClass: '' },
+        },
+      }),
+    } as unknown as Response);
+
+    const calEmpty = {
+      id: 'tab-cal-empty',
+      tabType: 'entity',
+      entityType: 'calendar',
+      rawId: 'cal_empty',
+      title: '',
+      unsaved: true,
+      data: undefined,
+    } as unknown as EditorTab;
+
+    const entityNoId = {
+      id: 'tab-ent-noid',
+      tabType: 'entity',
+      entityType: 'character',
+      rawId: 'entities:c10',
+      title: 'entities:c10',
+      unsaved: true,
+      data: { rels: [] },
+      _foreignUpdates: {
+        missingType: { entityId: 'x' },
+        missingTarget: { entityType: 'character', entityId: 'missing_1', dataPath: 'rels', linkClass: 't' },
+        noLinkClass: { entityType: 'character', entityId: 'c11', dataPath: 'rels', linkClass: '' },
+        deletedItem: { entityType: 'character', entityId: 'c12', dataPath: 'rels', linkClass: 'target_id', __deleted: true },
+        pushNewItem: { entityType: 'character', entityId: 'c13', dataPath: 'rels', linkClass: 'target_id', data: { role: 'ally' } },
+      },
+    } as unknown as EditorTab;
+
+    const openNoDataTab = {
+      id: 'tab-open-nodata',
+      tabType: 'entity',
+      entityType: 'character',
+      rawId: 'c13',
+      title: 'C13',
+      unsaved: false,
+      data: undefined,
+    } as unknown as EditorTab;
+
+    deps.openEditors.value = [calEmpty, entityNoId, openNoDataTab];
+    mockGetEntity.mockImplementation(async (_p: string, _t: string, id: string) => {
+      if (id === 'c10') return null;
+      if (id === 'missing_1') return null;
+      if (id === 'c11') return { name: 'C11', rels: [] };
+      if (id === 'c12') return { rels: [{ target_id: 'c10' }, { target_id: 'other' }] };
+      if (id === 'c13') return { rels: [{ target_id: 'other' }] };
+      return null;
+    });
+    mockSaveEntityWithRelations.mockResolvedValueOnce({ id: 'entities:c10' });
+    mockTauriEmit.mockResolvedValue(undefined);
+
+    await executeSaveAll(deps);
+    expect(mockSaveCalendar).toHaveBeenCalledWith(
+      'my-proj',
+      expect.objectContaining({ название: 'Календарь' })
+    );
+    expect(mockSaveEntityWithRelations).toHaveBeenCalledTimes(1);
+
+    fetchSpy.mockRestore();
+    errSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
 });

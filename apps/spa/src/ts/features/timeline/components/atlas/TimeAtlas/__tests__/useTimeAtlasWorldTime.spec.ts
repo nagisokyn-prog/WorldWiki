@@ -162,5 +162,49 @@ describe('useTimeAtlasWorldTime', () => {
     errSpy.mockRestore();
     vi.useRealTimers();
   });
+
+  it('covers missing masterCalendar, fallback planet fields, non-string projectId, and empty clipboard', async () => {
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+    vi.spyOn(calStore, 'getPlanets').mockReturnValue([
+      {
+        id: 'planets:p_fallback',
+        name: 'Плутон',
+        timezones: [{ name: 'ТЗ1', offset_hours: -4 }],
+        regions: [{ name: 'Рег1', timezone_code: 'ТЗ1', latitude: '12', longitude: '34', max_day_hours: '14', min_day_hours: '10' }],
+      } as never,
+    ]);
+    vi.mocked(api.getEntities).mockResolvedValueOnce(null as never).mockResolvedValueOnce(null as never);
+
+    const nullCal = computed(() => null);
+    const currentMin = ref(0);
+    const hookNull = useTimeAtlasWorldTime(nullCal, currentMin, () => null as never, ref(null as unknown as string));
+    await Promise.resolve();
+    expect(hookNull.worldTimeSnippet.value).toContain('не настроены географические регионы');
+    expect(hookNull.masterCalendarName.value).toBe('Календарь Мира');
+    await hookNull.copyWorldTimeSnippet();
+
+    // Planet matched by name + time_settings fallback + dayMins = 0
+    const calNoSettings = {
+      ...CalendarEngine.getDefaultCalendar(),
+      название: '',
+      planet_id: 'Плутон',
+      timezones: [],
+      regions: [],
+      настройки_времени: undefined,
+      time_settings: { часов_в_сутках: 0, минут_в_часе: 0 },
+    } as any;
+    const hook2 = useTimeAtlasWorldTime(
+      computed(() => calNoSettings),
+      currentMin,
+      () => null as never,
+      ref('proj_2')
+    );
+    await Promise.resolve();
+    expect(hook2.worldTimezones.value[0].id).toBe('tz_0');
+    expect(hook2.worldTimezones.value[0].base_offset_hours).toBe(-4);
+    expect(hook2.worldRegions.value[0].id).toBe('reg_0');
+    expect(hook2.worldHour.value).toBe(0);
+  });
 });
 

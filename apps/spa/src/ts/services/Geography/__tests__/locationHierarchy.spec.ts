@@ -190,5 +190,64 @@ describe('locationHierarchy service', () => {
     expect(result.hasDiscrepancy).toBe(true);
     expect(result.discrepancyHint).toContain('Порт Заката');
   });
+
+  it('covers entity id/field/name helpers, timezone string parsing, scale levels, and state capital fallbacks', () => {
+    const capital = {
+      id: { String: 'entities:cap_2' },
+      name: 'Вторая Столица',
+      scale_level: 'region',
+      широта: '45,5',
+      долгота: '30.5',
+      часовой_пояс: 'UTC-2:30',
+    } as any;
+    const stateUnlisted = {
+      id: { id: 'entities:state_2' },
+      name: '',
+      entity_type: 'state',
+      capital_id: 'entities:cap_2',
+    } as any;
+    const target = {
+      id: '',
+      name: '',
+      entity_type: 'planet',
+      принадлежность_государству: 'entities:state_2',
+    } as any;
+
+    const res = resolveLocationGeography(target, [capital, stateUnlisted], []);
+    expect(res.latitude).toBe(45.5);
+    expect(res.longitude).toBe(30.5);
+    expect(res.offsetHours).toBe(-2.5);
+    expect(res.inheritedFromId).toBe('cap_2');
+
+    // Solar fallback with negative hours & "+3 ч" string & invalid number
+    const locHourStr = {
+      id: 'entities:loc_h',
+      name: 'Поселок',
+      scale_level: 'forest',
+      часовой_пояс: '+3 ч',
+      широта: 'not-a-num',
+    } as any;
+    const resHour = resolveLocationGeography(locHourStr, [locHourStr], []);
+    expect(resHour.offsetHours).toBe(3);
+    expect(resHour.latitude).toBeNull();
+
+    // Unresolved state string fallback & negative solar offset
+    const locSolarNeg = {
+      id: 'entities:loc_sol',
+      name: 'Запад',
+      принадлежность_государству: 'Неизвестное Королевство',
+      долгота: -45,
+      часовой_пояс: 'непонятно',
+    } as any;
+    const resSolar = resolveLocationGeography(locSolarNeg, [locSolarNeg], []);
+    expect(resSolar.timezoneId).toBe('solar_-3');
+    expect(resSolar.stateId).toBe('Неизвестное Королевство');
+
+    // Match by entity name and null/empty guards
+    const namedLoc = { name: 'По Имени', часовой_пояс: 'unknown' } as any;
+    const childByName = { id: 'entities:child_n', родительская_локация: 'По Имени' } as any;
+    const resByName = resolveLocationGeography(childByName, [namedLoc, childByName, {} as any], []);
+    expect(resByName.breadcrumbs[0].id).toBe('step_0');
+  });
 });
 

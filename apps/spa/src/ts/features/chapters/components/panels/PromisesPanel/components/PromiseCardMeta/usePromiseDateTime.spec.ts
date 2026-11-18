@@ -187,4 +187,33 @@ describe('usePromiseDateTime', () => {
     dt.syncInitialTimelineDate(null, 'ev_1', [{ id: 'ev_1', title: 'Battle', m_abs: 1440 }]);
     expect(dt.currentDay.value).toBeDefined();
   });
+
+  it('covers empty calendars, double-wrapped cal.data.data, setCalendar guards, and out-of-range eras', () => {
+    const emitChange = vi.fn();
+    const emptyDt = usePromiseDateTime(ref([]), emitChange);
+    emptyDt.onDateFieldsChange();
+    emptyDt.syncInitialTimelineDate({ m_abs: 100 });
+    expect(emptyDt.activeCalendar.value).toBeNull();
+
+    const wrappedCals = ref<CalendarRecord[]>([
+      {
+        id: 'cal:wrap',
+        name: 'Wrapped',
+        data: {
+          data: {
+            название: 'Wrapped',
+            эпохи: [{ название: 'E1', год_начала: 10, год_конца: 50 }],
+            месяцы: undefined as any,
+          },
+        } as any,
+      },
+    ]);
+    const wDt = usePromiseDateTime(wrappedCals, emitChange);
+    wDt.setCalendar('');
+    wDt.setCalendar('cal:wrap');
+    wDt.setCalendar('cal:wrap');
+    wDt.onUniversalDateChange({ absolute_minute: 1440 });
+    wDt.syncInitialTimelineDate({ m_abs: 0, date_fields: { era_index: 99, year: 999, month: 0, day: 1 } });
+    expect(wDt.currentEraIdx.value).toBe(99);
+  });
 });

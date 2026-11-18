@@ -147,5 +147,39 @@ describe('usePromiseQuoteSync', () => {
     cleanup();
     vi.advanceTimersByTime(1500);
   });
+
+  it('covers empty html, skipped promises, orphaned recovery, and block_id single-paragraph match', () => {
+    const emptySync = makeSync('', [{ id: 'p1', chapter_id: 'chapters:c1', quote: 'x' } as any]);
+    emptySync.syncQuotesWithManuscript(false);
+
+    const html = `
+      <p data-block-id="para-1">Точная цитата сцены.</p>
+      <p data-block-id="para-2">Второй абзац длинной сцены здесь.</p>
+    `;
+    const list: RichPlotPromise[] = [
+      { id: '', chapter_id: 'chapters:c1', quote: 'skip' } as any,
+      { id: 'p_empty', chapter_id: 'chapters:c1', quote: '   ', block_ids: [] } as any,
+      {
+        id: 'p_recover',
+        chapter_id: 'chapters:c1',
+        quote: 'Точная цитата сцены.',
+        block_id: 'para-1',
+        is_orphaned: true,
+      } as any,
+      {
+        id: 'p_update_single',
+        chapter_id: 'chapters:c1',
+        quote: 'Старая цитата',
+        block_id: 'para-2',
+        is_orphaned: true,
+      } as any,
+    ];
+
+    const { promises, syncQuotesWithManuscript } = makeSync(html, list);
+    syncQuotesWithManuscript(false);
+    expect(promises.value[2].is_orphaned).toBe(false);
+    expect(promises.value[3].quote).toBe('Второй абзац длинной сцены здесь.');
+    expect(promises.value[3].is_orphaned).toBe(false);
+  });
 });
 

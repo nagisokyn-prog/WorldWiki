@@ -225,4 +225,63 @@ describe('useParticipantsPanel', () => {
 
     wrapper.unmount();
   });
+
+  it('covers null schemas, schema.titleField, circular findNameDeep, fallback name/ID resolution, and far/fab icons', async () => {
+    const entityApi = await import('@/services/Entity/entity.api');
+    vi.spyOn(entityApi.entityApi, 'getSchemas').mockResolvedValueOnce(null as never);
+
+    let panel!: ReturnType<typeof useParticipantsPanel>;
+    const TestNull = defineComponent({
+      setup() {
+        panel = useParticipantsPanel({ project: 'proj_1', participants: [''] }, emit);
+        return {};
+      },
+      template: '<div></div>',
+    });
+    const w1 = mount(TestNull);
+    await flushPromises();
+    expect(panel.isFaIcon('far fa-user')).toBe(true);
+    expect(panel.isFaIcon('fab fa-github')).toBe(true);
+    expect(panel.isFaIcon('fal fa-circle')).toBe(true);
+    expect(panel.resolveEntityName('', 'character')).toBe('Без названия');
+    expect(panel.resolveEntityName('entities:missing_9', 'character', 'Фоллбэк')).toBe('Фоллбэк');
+    expect(panel.resolveEntityName('entities:missing_9', 'character')).toBe('ID: missing_9');
+    w1.unmount();
+
+    // Schema with titleField + circular object in entity data
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    vi.spyOn(entityApi.entityApi, 'getSchemas').mockResolvedValueOnce({
+      character: { titleField: 'meta.label', name: 'Герои' },
+    } as never);
+    vi.mocked(api.getEntitiesBatch).mockResolvedValueOnce({
+      character: [
+        { id: 'entities:c_tf', meta: { label: 'Титул из titleField' } },
+        { id: 'entities:c_circ', data: circular },
+      ],
+    } as never);
+
+    const TestWithTitleField = defineComponent({
+      setup() {
+        panel = useParticipantsPanel(
+          {
+            project: 'proj_1',
+            participants: [
+              { id: 'entities:c_tf', type: 'character' },
+              { id: 'entities:c_circ', type: 'character' },
+            ],
+          },
+          emit
+        );
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const w2 = mount(TestWithTitleField);
+    await flushPromises();
+    expect(panel.resolveEntityName('entities:c_tf', 'character')).toBe('Титул из titleField');
+    expect(panel.resolveEntityName('entities:c_circ', 'character')).toBe('Без названия');
+    w2.unmount();
+  });
 });

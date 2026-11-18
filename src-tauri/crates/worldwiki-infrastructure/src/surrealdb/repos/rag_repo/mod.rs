@@ -173,10 +173,10 @@ impl RAGContextPort for SurrealRAGAdapter {
             .query(sql)
             .bind(("chapter_id", clean))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         let ctx: Option<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         Ok(ctx.unwrap_or(serde_json::json!({})))
     }
 }

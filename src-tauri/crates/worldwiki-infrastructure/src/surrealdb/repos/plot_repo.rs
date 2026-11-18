@@ -29,7 +29,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
         let clean = clean_id("plot_promises", &promise.id);
         let data = prepare_data_for_upsert(
-            serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
+            serde_json::to_value(promise).map_err(DomainError::validation)?,
         );
         surreal_exec!(
             self.db,

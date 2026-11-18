@@ -17,10 +17,10 @@ pub async fn delete_chat_cascade(db: &Surreal<Db>, chat_id: &str) -> Result<(), 
     let mut res = db
         .query("SELECT id, parent_id FROM chats; SELECT in, out FROM contains;")
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
 
-    let all_chats: Vec<Value> = res.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-    let all_edges: Vec<Value> = res.take(1).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let all_chats: Vec<Value> = res.take(0).map_err(DomainError::constraint_violation)?;
+    let all_edges: Vec<Value> = res.take(1).map_err(DomainError::constraint_violation)?;
 
     let mut to_delete = HashSet::new();
     to_delete.insert(initial_rec.clone());
@@ -62,7 +62,7 @@ pub async fn delete_chat_cascade(db: &Surreal<Db>, chat_id: &str) -> Result<(), 
             .bind(("chat", rec))
             .bind(("raw_id", format!("chats:{clean}")))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         let errs = res.take_errors();
         if !errs.is_empty() {
             eprintln!("[DELETE_CHAT_CASCADE] Errors: {:?}", errs);
@@ -81,9 +81,9 @@ pub async fn switch_message_variant(db: &Surreal<Db>, message_id: &str) -> Resul
         .query("SELECT chat_id, parent_id FROM $msg")
         .bind(("msg", msg_rec.clone()))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
 
-    let orig: Option<Value> = res.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let orig: Option<Value> = res.take(0).map_err(DomainError::constraint_violation)?;
     if let Some(orig) = orig {
         let chat_id_str = clean_record_id(orig.get("chat_id").unwrap_or(&Value::Null)).unwrap_or_default();
         let chat_clean = clean_id_str(&chat_id_str, "chats:");
@@ -100,13 +100,13 @@ pub async fn switch_message_variant(db: &Surreal<Db>, message_id: &str) -> Resul
                 .bind(("parent", p_rec))
                 .bind(("msg", msg_rec))
                 .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+                .map_err(DomainError::constraint_violation)?;
         } else {
             db.query("BEGIN TRANSACTION; UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE; UPDATE chat_messages SET is_active = true WHERE id = $msg; COMMIT TRANSACTION;")
                 .bind(("chat", chat_rec))
                 .bind(("msg", msg_rec))
                 .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+                .map_err(DomainError::constraint_violation)?;
         }
     }
 
@@ -133,9 +133,9 @@ pub async fn edit_message_branch(
         .query("SELECT parent_id FROM chat_messages WHERE id = $msg")
         .bind(("msg", msg_rec))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
 
-    let orig: Option<Value> = check.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let orig: Option<Value> = check.take(0).map_err(DomainError::constraint_violation)?;
     let parent_id_val = orig.as_ref().and_then(|v| v.get("parent_id").cloned());
     let parent_clean = parent_id_val.as_ref().and_then(clean_record_id);
 
@@ -146,12 +146,12 @@ pub async fn edit_message_branch(
             .bind(("chat", chat_rec.clone()))
             .bind(("parent", p_rec))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
     } else {
         db.query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE")
             .bind(("chat", chat_rec.clone()))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
     }
 
     let new_user_uuid = uuid::Uuid::new_v4().to_string();
@@ -175,7 +175,7 @@ pub async fn edit_message_branch(
         .bind(("parent", p_rec))
         .bind(("content", new_text.to_string()))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
     } else {
         db.query(r#"
             BEGIN TRANSACTION;
@@ -189,7 +189,7 @@ pub async fn edit_message_branch(
         .bind(("proj", proj_rec))
         .bind(("content", new_text.to_string()))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
     }
 
     Ok((
@@ -217,9 +217,9 @@ pub async fn regenerate_assistant_variant(
         .query("SELECT content FROM $parent")
         .bind(("parent", user_msg_rec.clone()))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
 
-    let user_msg: Option<Value> = check_user.take(0).map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    let user_msg: Option<Value> = check_user.take(0).map_err(DomainError::constraint_violation)?;
     let user_text = user_msg
         .and_then(|v| {
             v.get("content")
@@ -231,7 +231,7 @@ pub async fn regenerate_assistant_variant(
     db.query("UPDATE chat_messages SET is_active = false WHERE parent_id = $parent AND role = 'assistant'")
         .bind(("parent", user_msg_rec.clone()))
         .await
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
 
     let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
     let new_assistant_rec = RecordId::new("chat_messages", new_assistant_uuid.as_str());
@@ -244,7 +244,7 @@ pub async fn regenerate_assistant_variant(
     .bind(("proj", proj_rec))
     .bind(("parent", user_msg_rec))
     .await
-    .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+    .map_err(DomainError::constraint_violation)?;
 
     Ok((
         format!("chats:{chat_clean}"),

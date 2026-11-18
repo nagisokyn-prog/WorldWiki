@@ -118,7 +118,7 @@ pub async fn create_cloud_backup_inner(
     target_dir: &Path,
     project_id: Option<&str>,
 ) -> Result<String, DomainError> {
-    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(target_dir).map_err(DomainError::validation)?;
 
     let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S").to_string();
     let temp_surql_path = target_dir.join(format!("backup_{}.surql", timestamp));
@@ -126,7 +126,7 @@ pub async fn create_cloud_backup_inner(
     let surql_path_str = temp_surql_path.to_string_lossy().to_string();
     db.export(&surql_path_str)
         .await
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
     let zip_path = target_dir.join(format!("WorldWiki_Backup_{}.wwiki", timestamp));
     let file = fs::File::create(&zip_path)
@@ -145,9 +145,9 @@ pub async fn create_cloud_backup_inner(
 
     if let Ok(mut dump_file) = fs::File::open(&temp_surql_path) {
         zip.start_file("database.surql", options)
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         std::io::copy(&mut dump_file, &mut zip)
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
     }
 
     if let Err(e) = fs::remove_file(&temp_surql_path) {
@@ -186,9 +186,9 @@ pub async fn create_cloud_backup_inner(
     });
     let manifest_bytes = serde_json::to_vec_pretty(&manifest).unwrap_or_default();
     zip.start_file("manifest.json", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
     zip.write_all(&manifest_bytes)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
     // 4. Add settings files
     add_directory_files_to_zip(&mut zip, &base_data_dir, "settings", |name| name.ends_with(".json"), options);

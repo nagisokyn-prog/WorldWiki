@@ -9,7 +9,7 @@ pub async fn execute_raw_surql_inner(
     let mut res = db
         .query(query)
         .await
-        .map_err(|e| ProjectError::InvalidData(e.to_string()))?;
+        .map_err(ProjectError::invalid_data)?;
 
     let errors = res.take_errors();
     if let Some((_, err)) = errors.into_iter().next() {

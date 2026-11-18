@@ -11,7 +11,7 @@ pub fn export_chapters_inner(
     chapters: &[Value],
     format: &str,
 ) -> Result<String, DomainError> {
-    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(target_dir).map_err(DomainError::validation)?;
 
     let file_path = target_dir.join(format!("exported_chapters.{}", format));
     let mut combined_content = String::new();
@@ -29,7 +29,7 @@ pub fn export_chapters_inner(
         combined_content.push_str(&format!("\n\n=== {} ===\n\n{}\n", title, content));
     }
 
-    fs::write(&file_path, combined_content).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::write(&file_path, combined_content).map_err(DomainError::validation)?;
 
     Ok(file_path.to_string_lossy().to_string())
 }

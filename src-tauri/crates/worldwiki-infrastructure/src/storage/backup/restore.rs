@@ -87,7 +87,7 @@ pub async fn restore_from_backup_inner(
             .timestamp_nanos_opt()
             .unwrap_or_default()
     ));
-    fs::create_dir_all(&temp_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(&temp_dir).map_err(DomainError::validation)?;
 
     let mut surql_found = false;
     let mut bundle_found = false;
@@ -97,10 +97,10 @@ pub async fn restore_from_backup_inner(
     for i in 0..zip.len() {
         let mut archive_file = zip
             .by_index(i)
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let name = archive_file
             .name()
-            .map_err(|e| DomainError::Validation(e.to_string()))?
+            .map_err(DomainError::validation)?
             .to_string();
 
         if name == "project_bundle.json" {

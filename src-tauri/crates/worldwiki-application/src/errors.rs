@@ -24,3 +24,25 @@ pub enum ApplicationError {
     #[error("Permission denied: {0}")]
     PermissionDenied(String),
 }
+
+impl ApplicationError {
+    pub fn not_found<E: std::fmt::Display>(err: E) -> Self {
+        Self::NotFound(err.to_string())
+    }
+
+    pub fn conflict<E: std::fmt::Display>(err: E) -> Self {
+        Self::Conflict(err.to_string())
+    }
+
+    pub fn validation<E: std::fmt::Display>(err: E) -> Self {
+        Self::Validation(err.to_string())
+    }
+
+    pub fn execution_failed<E: std::fmt::Display>(err: E) -> Self {
+        Self::ExecutionFailed(err.to_string())
+    }
+
+    pub fn permission_denied<E: std::fmt::Display>(err: E) -> Self {
+        Self::PermissionDenied(err.to_string())
+    }
+}

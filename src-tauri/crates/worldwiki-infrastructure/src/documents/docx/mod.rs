@@ -20,13 +20,13 @@ pub fn generate_docx(
     request: &ExportDocumentRequest,
     target_dir: &Path,
 ) -> Result<ExportDocumentResponse, DomainError> {
-    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(target_dir).map_err(DomainError::validation)?;
 
     let safe_title = sanitize_filename(&request.title);
     let file_name = format!("{}.docx", safe_title);
     let output_path = target_dir.join(&file_name);
 
-    let file = File::create(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
+    let file = File::create(&output_path).map_err(DomainError::validation)?;
     let mut zip = zip::ZipWriter::new(file);
 
     let options = SimpleFileOptions::default()
@@ -35,30 +35,30 @@ pub fn generate_docx(
 
     // 1. [Content_Types].xml
     zip.start_file("[Content_Types].xml", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
     zip.write_all(CONTENT_TYPES_XML.as_bytes())
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
     // 2. _rels/.rels
     zip.start_file("_rels/.rels", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
-    zip.write_all(RELS_XML.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
+    zip.write_all(RELS_XML.as_bytes()).map_err(DomainError::validation)?;
 
     // 3. word/_rels/document.xml.rels
     zip.start_file("word/_rels/document.xml.rels", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
     zip.write_all(DOC_RELS_XML.as_bytes())
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
     // 4. word/styles.xml
     zip.start_file("word/styles.xml", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
     zip.write_all(STYLES_XML.as_bytes())
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
     // 5. word/document.xml
     zip.start_file("word/document.xml", options)
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
     let mut doc_xml = String::with_capacity(32768);
     doc_xml.push_str(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -115,11 +115,11 @@ pub fn generate_docx(
 </w:document>"#);
 
     zip.write_all(doc_xml.as_bytes())
-        .map_err(|e| DomainError::Validation(e.to_string()))?;
+        .map_err(DomainError::validation)?;
 
-    zip.finish().map_err(|e| DomainError::Validation(e.to_string()))?;
+    zip.finish().map_err(DomainError::validation)?;
 
-    let metadata = fs::metadata(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
+    let metadata = fs::metadata(&output_path).map_err(DomainError::validation)?;
 
     Ok(ExportDocumentResponse {
         success: true,

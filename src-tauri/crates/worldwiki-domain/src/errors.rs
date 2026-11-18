@@ -27,3 +27,21 @@ pub enum DomainError {
         rel_type: String,
     },
 }
+
+impl DomainError {
+    pub fn validation<E: std::fmt::Display>(err: E) -> Self {
+        Self::Validation(err.to_string())
+    }
+
+    pub fn constraint_violation<E: std::fmt::Display>(err: E) -> Self {
+        Self::ConstraintViolation(err.to_string())
+    }
+
+    pub fn invalid_ast_node<E: std::fmt::Display>(err: E) -> Self {
+        Self::InvalidAstNode(err.to_string())
+    }
+
+    pub fn invalid_plot_promise<E: std::fmt::Display>(err: E) -> Self {
+        Self::InvalidPlotPromise(err.to_string())
+    }
+}

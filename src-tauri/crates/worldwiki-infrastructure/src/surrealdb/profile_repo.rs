@@ -31,11 +31,11 @@ impl AiProfileRepository for SurrealAiProfileRepository {
             .query("SELECT id, project_id, name, provider, base_url, api_key, settings, is_active, is_global FROM ai_profiles WHERE project_id = fn::normalize_project_id($proj) OR is_global = true")
             .bind(("proj", proj_id))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let rows: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         let mut profiles = Vec::with_capacity(rows.len());
 
         for v in rows {
@@ -115,7 +115,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
             .bind(("is_global", profile.is_global))
             .bind(("proj", proj_id))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let mut saved = profile.clone();
         saved.id = Some(id_val);
@@ -130,7 +130,7 @@ impl AiProfileRepository for SurrealAiProfileRepository {
             .query("DELETE type::record($id)")
             .bind(("id", p_id))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         Ok(())
     }

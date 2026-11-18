@@ -68,7 +68,7 @@ impl WebResearchPort for WebScraper {
         limit: usize,
     ) -> Result<Vec<SearchHitDto>, DomainError> {
         let mut url = reqwest::Url::parse("https://html.duckduckgo.com/html/")
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         url.query_pairs_mut().append_pair("q", query);
 
         let response = self
@@ -76,11 +76,11 @@ impl WebResearchPort for WebScraper {
             .get(url)
             .send()
             .await
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let html = response
             .text()
             .await
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let mut hits = DuckDuckGoParser::extract_search_hits(&html);
 
         if hits.is_empty() {
@@ -102,7 +102,7 @@ impl WebResearchPort for WebScraper {
     async fn fetch_page(&self, raw_url: &str) -> Result<WebPageEntity, DomainError> {
         let canonical_url = Self::normalize_canonical_url(raw_url);
         let parsed = reqwest::Url::parse(&canonical_url)
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let domain = parsed.host_str().unwrap_or("unknown").to_string();
 
         let response = self
@@ -110,7 +110,7 @@ impl WebResearchPort for WebScraper {
             .get(&canonical_url)
             .send()
             .await
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let status_code = response.status().as_u16() as i32;
 
         let content_type = response
@@ -123,7 +123,7 @@ impl WebResearchPort for WebScraper {
         let raw_body = response
             .text()
             .await
-            .map_err(|e| DomainError::Validation(e.to_string()))?;
+            .map_err(DomainError::validation)?;
         let title = extract_title(&raw_body, &content_type);
         let clean_text = if content_type.contains("html") {
             html_to_text(&raw_body)

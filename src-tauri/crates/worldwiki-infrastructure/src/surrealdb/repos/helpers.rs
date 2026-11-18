@@ -72,12 +72,12 @@ pub fn take_one<T: serde::de::DeserializeOwned>(
 ) -> Result<Option<T>, DomainError> {
     let raw: Option<Value> = res
         .take(idx)
-        .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        .map_err(DomainError::constraint_violation)?;
     match raw {
         Some(mut val) => {
             normalize_surreal_value(&mut val);
             let item: T =
-                serde_json::from_value(val).map_err(|e| DomainError::Validation(e.to_string()))?;
+                serde_json::from_value(val).map_err(DomainError::validation)?;
             Ok(Some(item))
         }
         None => Ok(None),
@@ -106,7 +106,7 @@ pub fn take_list<T: serde::de::DeserializeOwned>(
         }
         normalize_surreal_value(&mut val);
         let item: T =
-            serde_json::from_value(val).map_err(|e| DomainError::Validation(e.to_string()))?;
+            serde_json::from_value(val).map_err(DomainError::validation)?;
         list.push(item);
     }
     Ok(list)

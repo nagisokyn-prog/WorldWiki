@@ -24,16 +24,16 @@ pub(crate) fn extract_archive_file<R: std::io::Read>(
     if file_name == "project_bundle.json" {
         let bundle_path = temp_dir.join("project_bundle.json");
         let mut out =
-            fs::File::create(&bundle_path).map_err(|e| DomainError::Validation(e.to_string()))?;
-        std::io::copy(file, &mut out).map_err(|e| DomainError::Validation(e.to_string()))?;
+            fs::File::create(&bundle_path).map_err(DomainError::validation)?;
+        std::io::copy(file, &mut out).map_err(DomainError::validation)?;
         return Ok(true);
     }
 
     if file_name == "database.surql" {
         let surql_path = temp_dir.join("database.surql");
         let mut out =
-            fs::File::create(&surql_path).map_err(|e| DomainError::Validation(e.to_string()))?;
-        std::io::copy(file, &mut out).map_err(|e| DomainError::Validation(e.to_string()))?;
+            fs::File::create(&surql_path).map_err(DomainError::validation)?;
+        std::io::copy(file, &mut out).map_err(DomainError::validation)?;
         return Ok(true);
     }
 

@@ -8964,7 +8964,6 @@ dependencies = [
 name = "worldwiki-document-core"
 version = "1.0.0"
 dependencies = [
- "hashbrown 0.17.1",
  "serde",
  "serde_json",
 ]
@@ -8977,7 +8976,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "uuid",
  "worldwiki-calendar-core",
 ]
 

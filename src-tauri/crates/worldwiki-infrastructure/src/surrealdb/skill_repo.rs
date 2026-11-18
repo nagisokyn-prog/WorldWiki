@@ -39,11 +39,11 @@ impl SkillRepositoryPort for SurrealSkillRepository {
                     .query("SELECT id, name, description, prompt_text, file_path FROM ai_skills WHERE string::lowercase(name) = string::lowercase($name) LIMIT 1")
                     .bind(("name", manual_name.to_string()))
                     .await
-                    .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+                    .map_err(DomainError::constraint_violation)?;
 
                 let manual_skills: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
                 if let Some(skill_val) = manual_skills.into_iter().next() {
                     let id = clean_record_id(skill_val.get("id").unwrap_or(&Value::Null))
                         .unwrap_or_else(|| skill_val.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string());
@@ -79,11 +79,11 @@ impl SkillRepositoryPort for SurrealSkillRepository {
             .query(q_sql)
             .bind(("p_clean", proj_clean))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let raw_skills: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         let lower_query = trimmed_query.to_lowercase();
 
         let mut matches: Vec<SkillMatch> = Vec::new();
@@ -156,11 +156,11 @@ impl SkillRepositoryPort for SurrealSkillRepository {
             .bind(("clean", clean.to_string()))
             .bind(("id", format!("ai_skills:{clean}")))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let rows: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         if let Some(row) = rows.into_iter().next() {
             let prompt = row.get("prompt_text").and_then(|v| v.as_str()).map(|s| s.to_string());
             return Ok(prompt);

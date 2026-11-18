@@ -62,7 +62,7 @@ impl<T: EventPublisherPort + ?Sized> EventPublisherExt for T {
     async fn publish<E: ApplicationEvent>(&self, event: E) -> Result<(), DomainError> {
         let name = event.event_name();
         let payload = serde_json::to_value(&event)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         self.publish_raw(name, payload).await
     }
 }

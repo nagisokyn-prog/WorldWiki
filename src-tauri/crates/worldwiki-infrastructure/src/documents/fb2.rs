@@ -11,7 +11,7 @@ pub fn generate_fb2(
     request: &ExportDocumentRequest,
     target_dir: &Path,
 ) -> Result<ExportDocumentResponse, DomainError> {
-    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(target_dir).map_err(DomainError::validation)?;
 
     let safe_title = sanitize_filename(&request.title);
     let file_name = format!("{}.fb2", safe_title);
@@ -105,8 +105,8 @@ pub fn generate_fb2(
 
     xml.push_str("</FictionBook>\n");
 
-    fs::write(&output_path, xml.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
-    let metadata = fs::metadata(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::write(&output_path, xml.as_bytes()).map_err(DomainError::validation)?;
+    let metadata = fs::metadata(&output_path).map_err(DomainError::validation)?;
 
     Ok(ExportDocumentResponse {
         success: true,

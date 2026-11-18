@@ -55,3 +55,21 @@ impl serde::Serialize for ProjectError {
     }
 }
 
+impl ProjectError {
+    pub fn invalid_data<E: std::fmt::Display>(err: E) -> Self {
+        Self::InvalidData(err.to_string())
+    }
+
+    pub fn not_found<E: std::fmt::Display>(err: E) -> Self {
+        Self::NotFound(err.to_string())
+    }
+
+    pub fn transaction<E: std::fmt::Display>(err: E) -> Self {
+        Self::Transaction(err.to_string())
+    }
+
+    pub fn operation_failed<E: std::fmt::Display>(err: E) -> Self {
+        Self::OperationFailed(err.to_string())
+    }
+}
+

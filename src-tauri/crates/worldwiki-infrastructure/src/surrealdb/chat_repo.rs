@@ -37,11 +37,11 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("p_clean", proj_clean.to_string()))
             .bind(("proj_id", proj_id))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let raw_chats: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let chats = raw_chats
             .into_iter()
@@ -59,11 +59,11 @@ impl ChatRepository for SurrealChatRepository {
             .query("SELECT id, project_id, chat_id, role, content, reasoning, tool_logs, version, quoted_context, citations, edited_content, feedback_comment, rag_was_bad, parent_id, is_active, created_at, updated_at FROM chat_messages WHERE chat_id = type::record('chats', $c_clean) ORDER BY created_at ASC")
             .bind(("c_clean", chat_clean.to_string()))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let raw_msgs: Vec<Value> = res
             .take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
         let messages = raw_msgs
             .into_iter()
             .map(|val| parse_chat_message_record(&val, chat_id))
@@ -86,7 +86,7 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("title", chat.title.clone()))
             .bind(("p_clean", proj_clean.to_string()))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let errors = res.take_errors();
         if let Some((_, e)) = errors.into_iter().next() {
@@ -165,7 +165,7 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = query
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let errors = res.take_errors();
         if let Some((_, e)) = errors.into_iter().next() {
@@ -193,7 +193,7 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("clean", msg_clean.to_string()))
             .bind(("raw_id", raw_id))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         let errors = res.take_errors();
         if let Some((_, e)) = errors.into_iter().next() {
@@ -222,7 +222,7 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("chat", c_rec))
             .bind(("parent", parent_rec))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         Ok(())
     }
@@ -256,7 +256,7 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("out_tokens", usage.output_tokens as i64))
             .bind(("tot_tokens", usage.total_tokens as i64))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            .map_err(DomainError::constraint_violation)?;
 
         Ok(())
     }

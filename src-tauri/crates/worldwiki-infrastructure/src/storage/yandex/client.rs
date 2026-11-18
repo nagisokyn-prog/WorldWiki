@@ -138,7 +138,7 @@ pub async fn download_yandex_file_inner(
         "wwiki_download_{}",
         chrono::Local::now().timestamp_millis() + std::process::id() as i64
     ));
-    fs::create_dir_all(&temp_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
+    fs::create_dir_all(&temp_dir).map_err(DomainError::validation)?;
 
     let temp_file_path = temp_dir.join(file_name);
     fs::write(&temp_file_path, file_bytes)

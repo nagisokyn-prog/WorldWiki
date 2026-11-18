@@ -25,6 +25,7 @@
           {{ isUnsaved ? 'Сохранить изменения' : 'Сохранено' }}
         </button>
         <button
+          v-if="showVer110Features"
           class="btn-history-toggle"
           title="История изменений"
           @click="toggleHistory"
@@ -133,6 +134,8 @@ const {
   save,
   handleUpdateData,
 } = useEntityEditorWindow(props);
+
+const showVer110Features = typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__;
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/EntityEditorWindow.css"></style>

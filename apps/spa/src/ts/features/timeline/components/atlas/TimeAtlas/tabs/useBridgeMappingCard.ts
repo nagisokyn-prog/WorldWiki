@@ -14,8 +14,27 @@ export function useBridgeMappingCard(props: BridgeMappingCardProps) {
     };
   });
 
+  const eraWheelOptions = computed(() =>
+    (props.calData?.эпохи || []).map((era, eIdx) => ({
+      value: eIdx,
+      label: era.название || `Эпоха ${eIdx + 1}`,
+    }))
+  );
+
+  const monthWheelOptions = computed(() =>
+    (props.calData?.месяцы || []).map((m, mIdx) => ({
+      value: mIdx,
+      label: m.название || (m as unknown as { name?: string }).name || `Месяц ${mIdx + 1}`,
+    }))
+  );
+
+  const toSelectEvent = (value: string): Event => ({ target: { value } } as unknown as Event);
+
   return {
-    safeDate
+    safeDate,
+    eraWheelOptions,
+    monthWheelOptions,
+    toSelectEvent,
   };
 }
 

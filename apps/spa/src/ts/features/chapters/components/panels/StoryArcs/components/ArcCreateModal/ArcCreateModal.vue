@@ -19,16 +19,12 @@
 
       <div class="space-y-2">
         <label class="text-xs font-bold text-muted">Тип арки:</label>
-        <select
-          :value="arcType"
-          class="w-full text-xs px-3 py-2 rounded border border-subtle bg-input text-main"
-          @change="$emit('update:arcType', ($event.target as HTMLSelectElement).value as ArcType)"
-        >
-          <option value="character">Персонаж (Character)</option>
-          <option value="event">Событие (Event)</option>
-          <option value="relationship">Отношения (Relationship)</option>
-          <option value="theme">Тема (Theme)</option>
-        </select>
+        <XboxWheel
+          :model-value="arcType"
+          :options="arcTypeOptions"
+          class="w-full"
+          @update:model-value="$emit('update:arcType', $event as ArcType)"
+        />
       </div>
 
       <div class="flex justify-end gap-2 pt-3">
@@ -51,8 +47,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { ArcCreateModalProps, ArcCreateModalEmits } from './ArcCreateModal.model';
 import type { ArcType } from '../../StoryArcs.model';
+
+const arcTypeOptions = [
+  { value: 'character', label: 'Персонаж (Character)' },
+  { value: 'event', label: 'Событие (Event)' },
+  { value: 'relationship', label: 'Отношения (Relationship)' },
+  { value: 'theme', label: 'Тема (Theme)' },
+];
 
 defineProps<ArcCreateModalProps>();
 

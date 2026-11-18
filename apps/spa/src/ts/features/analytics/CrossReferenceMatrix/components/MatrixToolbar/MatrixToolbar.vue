@@ -21,22 +21,19 @@
         />
       </div>
 
-      <select
+      <XboxWheel
         v-if="volumeOptions && volumeOptions.length > 1"
         v-model="filters.selectedVolumeId"
+        :options="volumeWheelOptions"
         class="matrix-select"
         title="Фильтр по томам"
-      >
-        <option v-for="v in volumeOptions" :key="v.id" :value="v.id">📚 {{ v.title }}</option>
-      </select>
+      />
 
-      <select
+      <XboxWheel
         v-model="filters.selectedEntityType"
+        :options="entityTypeWheelOptions"
         class="matrix-select"
-      >
-        <option value="all">Все типы</option>
-        <option v-for="t in availableEntityTypes" :key="t" :value="t">{{ t }}</option>
-      </select>
+      />
 
       <label class="matrix-checkbox-label">
         <input v-model="filters.highlightGaps" type="checkbox" class="matrix-checkbox" />
@@ -55,10 +52,14 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { MatrixToolbarProps, MatrixToolbarEmits } from './MatrixToolbar.model';
+import { useMatrixToolbar } from './useMatrixToolbar';
 
-defineProps<MatrixToolbarProps>();
+const props = defineProps<MatrixToolbarProps>();
 defineEmits<MatrixToolbarEmits>();
+
+const { volumeWheelOptions, entityTypeWheelOptions } = useMatrixToolbar(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/analytics/CrossReferenceMatrix.css"></style>

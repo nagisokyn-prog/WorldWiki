@@ -101,16 +101,13 @@
       <div class="grid-2" style="margin-bottom: 12px;">
         <div class="form-group">
           <label class="form-label">Месяц в Календаре Мира</label>
-          <select
+          <XboxWheel
             class="form-select"
-            :value="anchorMonth"
-            :disabled="isReadOnly"
-            @change="$emit('update-anchor-month', parseInt(($event.target as HTMLSelectElement).value) || 0)"
-          >
-            <option v-for="(m, idx) in masterMonths" :key="idx" :value="idx">
-              {{ m.название || `Месяц ${idx + 1}` }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            :model-value="anchorMonth"
+            :options="masterMonthWheelOptions"
+            @update:model-value="$emit('update-anchor-month', parseInt($event) || 0)"
+          />
         </div>
         <div class="form-group">
           <label class="form-label">День в Календаре Мира</label>
@@ -145,15 +142,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab2SyncSectionProps, Tab2SyncSectionEmits } from './Tab2SyncSection.model';
 import Tab2SyncEventForm from '../Tab2SyncEventForm/Tab2SyncEventForm.vue';
 import Tab2SyncCalendarForm from '../Tab2SyncCalendarForm/Tab2SyncCalendarForm.vue';
 import Tab2SyncEraForm from '../Tab2SyncEraForm/Tab2SyncEraForm.vue';
 import { useTab2SyncSection } from './useTab2SyncSection';
 
-defineProps<Tab2SyncSectionProps>();
+const props = defineProps<Tab2SyncSectionProps>();
 
 defineEmits<Tab2SyncSectionEmits>();
 
-const { isCollapsed } = useTab2SyncSection();
+const { isCollapsed, masterMonthWheelOptions } = useTab2SyncSection(props);
 </script>

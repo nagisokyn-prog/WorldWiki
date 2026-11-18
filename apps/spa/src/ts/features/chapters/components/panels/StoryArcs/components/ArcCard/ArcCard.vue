@@ -7,18 +7,13 @@
         <span class="arc-card-type">{{ getArcTypeLabel(arc.arc_type) }}</span>
       </div>
 
-      <div class="arc-card-actions">
-        <select
-          :value="effectiveStatus"
+      <div class="arc-card-actions" @click.stop>
+        <XboxWheel
+          :model-value="effectiveStatus"
+          :options="arcStatusOptions"
           class="status-quick-select"
-          @change="$emit('update-status', arc, ($event.target as HTMLSelectElement).value as ArcStatus)"
-          @click.stop
-        >
-          <option value="planned">📋 Запланировано</option>
-          <option value="in_progress">⚡ В Процессе</option>
-          <option value="completed">✅ Завершено</option>
-          <option value="abandoned">🛑 Отменено</option>
-        </select>
+          @update:model-value="$emit('update-status', arc, $event as ArcStatus)"
+        />
 
         <button
           class="btn-delete-arc"
@@ -97,9 +92,17 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { ArcStatus } from '../../StoryArcs.model';
 import type { ArcCardProps, ArcCardEmits } from './ArcCard.model';
 import { useArcCard } from './useArcCard';
+
+const arcStatusOptions = [
+  { value: 'planned', label: '📋 Запланировано' },
+  { value: 'in_progress', label: '⚡ В Процессе' },
+  { value: 'completed', label: '✅ Завершено' },
+  { value: 'abandoned', label: '🛑 Отменено' },
+];
 
 const props = defineProps<ArcCardProps>();
 defineEmits<ArcCardEmits>();

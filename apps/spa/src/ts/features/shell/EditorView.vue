@@ -129,6 +129,7 @@
                         </div>
                         <div class="toolbar-group flex gap-2 border-none">
                           <button
+                            v-if="isVer110Enabled"
                             class="btn-new btn-outline-new interactive-el"
                             title="История изменений"
                             @click="toggleEntityHistory(tab.rawId)"

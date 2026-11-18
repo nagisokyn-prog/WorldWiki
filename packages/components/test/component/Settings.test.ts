@@ -454,13 +454,17 @@ describe('Settings.vue', () => {
   });
 
   describe('Editor Settings', () => {
-    it('should have auto-save interval slider', async () => {
+    it('should have auto-save interval slider only under ver_1.1.0', async () => {
       const editorWrapper = mount(SettingsEditor, {
         props: { settings: mockSettings, save: vi.fn() },
         global: { plugins: [i18n], directives: { 'auto-animate': () => {} } }
       });
       const sliders = editorWrapper.findAll('input[type="range"]');
-      expect(sliders.length).toBeGreaterThanOrEqual(3); // autoSave, snapshot, maxSnapshots
+      if (typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__) {
+        expect(sliders.length).toBeGreaterThanOrEqual(3); // autoSave, snapshot, maxSnapshots
+      } else {
+        expect(sliders.length).toBe(0);
+      }
     });
   });
 });

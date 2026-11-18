@@ -44,6 +44,19 @@ export function useJourneyMultiSelector(
     });
   });
 
+  const availableWheelOptions = computed(() =>
+    availableEntities.value.map((ent) => ({
+      value: ent.id || '',
+      label: ent.name,
+    }))
+  );
+
+  const handleAddValue = (val: string) => {
+    if (val) {
+      emit('add', val);
+    }
+  };
+
   const handleAddChange = (evt: Event) => {
     const target = evt.target as HTMLSelectElement;
     if (target.value) {
@@ -60,6 +73,8 @@ export function useJourneyMultiSelector(
 
   return {
     availableEntities,
+    availableWheelOptions,
+    handleAddValue,
     handleAddChange,
     handleRemove,
   };

@@ -33,29 +33,22 @@
     <!-- Режим времени (Повествовательный контекст сцены) -->
     <div class="flex items-center justify-between gap-1.5 py-1 border-t border-border mt-0.5">
       <span class="text-xs text-muted">Поток времени:</span>
-      <select
-        :value="currentTimeNature || 'present'"
-        class="bg-surface-subtle text-main border border-border rounded px-2 py-0.5 text-xs cursor-pointer focus:outline-none focus:border-accent"
-        @change="$emit('update:currentTimeNature', ($event.target as HTMLSelectElement).value); $emit('change')"
-      >
-        <option value="present">🎬 Настоящее (Основной сюжет)</option>
-        <option value="flashback">⏪ Флешбэк (Воспоминание)</option>
-        <option value="flashforward">🔮 Взгляд в будущее</option>
-      </select>
+      <XboxWheel
+        :model-value="currentTimeNature || 'present'"
+        :options="timeNatureOptions"
+        @update:model-value="$emit('update:currentTimeNature', $event); $emit('change')"
+      />
     </div>
 
     <!-- Выбор календаря (при раскрытых барабанах) -->
     <div v-if="isDatePickerOpen && calendars && calendars.length > 1" class="flex items-center gap-2 py-1">
       <span class="text-xs text-muted">Календарь:</span>
-      <select
-        :value="currentCalendarId"
-        class="bg-surface-subtle text-main border border-border rounded px-2 py-1 text-xs flex-1 cursor-pointer focus:outline-none focus:border-accent"
-        @change="$emit('update:currentCalendarId', ($event.target as HTMLSelectElement).value); $emit('change')"
-      >
-        <option v-for="cal in calendars" :key="cal.id" :value="cal.id">
-          {{ cal.data?.название || cal.name || 'Календарь' }}
-        </option>
-      </select>
+      <XboxWheel
+        :model-value="currentCalendarId"
+        :options="calendarWheelOptions"
+        class="flex-1"
+        @update:model-value="$emit('update:currentCalendarId', $event); $emit('change')"
+      />
     </div>
 
     <!-- Компактная двухрядная сетка XboxWheel (раскрывается по кнопке) -->
@@ -87,10 +80,14 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from './PromiseCardTimeline.model';
 import PromiseCardDateTimeWheels from '../PromiseCardDateTimeWheels/PromiseCardDateTimeWheels.vue';
+import { usePromiseCardTimeline } from './usePromiseCardTimeline';
 
-defineProps<PromiseCardTimelineProps>();
+const props = defineProps<PromiseCardTimelineProps>();
 
 defineEmits<PromiseCardTimelineEmits>();
+
+const { timeNatureOptions, calendarWheelOptions } = usePromiseCardTimeline(props);
 </script>

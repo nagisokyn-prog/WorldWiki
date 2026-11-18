@@ -106,17 +106,13 @@
 
         <!-- Column 2: Phase Select Plate -->
         <div class="arc-phase-plate">
-          <select
-            :value="arc.phase"
+          <XboxWheel
+            :model-value="arc.phase"
+            :options="arcPhaseOptions"
             class="arc-phase-select"
             title="Фаза сюжетной арки"
-            @change="updateArcPhase(arc.arcId, ($event.target as HTMLSelectElement).value)"
-          >
-            <option value="setup">🌱 Завязка</option>
-            <option value="escalation">⚡ Эскалация</option>
-            <option value="climax">🔥 Кульминация</option>
-            <option value="resolution">✅ Развязка</option>
-          </select>
+            @update:model-value="updateArcPhase(arc.arcId, $event)"
+          />
         </div>
       </div>
     </div>
@@ -124,8 +120,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import { usePromiseCardArcTags } from './usePromiseCardArcTags';
 import type { PromiseCardArcTagsProps, PromiseCardArcTagsEmits } from './PromiseCardArcTags.model';
+
+const arcPhaseOptions = [
+  { value: 'setup', label: '🌱 Завязка' },
+  { value: 'escalation', label: '⚡ Эскалация' },
+  { value: 'climax', label: '🔥 Кульминация' },
+  { value: 'resolution', label: '✅ Развязка' },
+];
 
 const props = defineProps<PromiseCardArcTagsProps>();
 const emit = defineEmits<PromiseCardArcTagsEmits>();

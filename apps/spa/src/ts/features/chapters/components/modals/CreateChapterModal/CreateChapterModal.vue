@@ -40,23 +40,15 @@
           <div v-if="volumes.length === 0" class="no-volumes-warning">
             ⚠️ В проекте нет томов. Сначала создайте том в структуре произведения.
           </div>
-          <select
+          <XboxWheel
             v-else
             id="chapter-volume-select"
-            :value="selectedVolumeId"
+            :model-value="selectedVolumeId"
+            :options="volumeWheelOptions"
             class="form-select"
-            :disabled="isLoading"
-            required
-            @change="onVolumeChange(($event.target as HTMLSelectElement).value)"
-          >
-            <option
-              v-for="vol in volumes"
-              :key="vol.id || 'vol'"
-              :value="vol.id"
-            >
-              {{ vol.title }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isLoading }"
+            @update:model-value="onVolumeChange($event)"
+          />
           <p v-if="volumes.length > 0" class="form-hint">
             Выберите том произведения, в который войдет новая глава.
           </p>
@@ -90,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { CreateChapterModalProps, CreateChapterModalEmits } from './CreateChapterModal.model';
 import { useCreateChapterModal } from './useCreateChapterModal';
 
@@ -100,6 +93,7 @@ const {
   title,
   selectedVolumeId,
   volumes,
+  volumeWheelOptions,
   isLoading,
   errorMessage,
   onVolumeChange,

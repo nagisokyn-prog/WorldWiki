@@ -27,19 +27,13 @@
             class="interactive-el gc-day-input"
             title="День"
           />
-          <select
-            v-model.number="currentMasterInput.month"
+          <XboxWheel
+            :model-value="currentMasterInput.month"
+            :options="monthWheelOptions"
             class="interactive-el gc-month-select"
             title="Месяц"
-          >
-            <option
-              v-for="(m, mIdx) in masterCalendarData?.месяцы || []"
-              :key="mIdx"
-              :value="mIdx"
-            >
-              {{ m.название }}
-            </option>
-          </select>
+            @update:model-value="currentMasterInput.month = Number($event)"
+          />
           <input
             v-model.number="currentMasterInput.year"
             type="number"
@@ -91,11 +85,11 @@
       <div v-if="localCalendars.length > 0" class="gc-local-section">
         <div class="gc-local-selector-row">
           <span class="gc-local-label">Сравнение:</span>
-          <select v-model="selectedLocalCal" class="interactive-el gc-select">
-            <option v-for="cal in localCalendars" :key="cal.id" :value="cal.id">
-              {{ cal.data?.название || 'Безымянный' }}
-            </option>
-          </select>
+          <XboxWheel
+            v-model="selectedLocalCal"
+            :options="localCalendarWheelOptions"
+            class="interactive-el gc-select"
+          />
         </div>
 
         <div v-if="selectedLocalCal" class="gc-local-result">
@@ -129,6 +123,7 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import { useGlobalCalendarWidget } from './useGlobalCalendarWidget';
 import CalendarExplainerCard from './CalendarExplainerCard.vue';
 import TimeAtlasModal from '../TimeAtlas/TimeAtlasModal.vue';
@@ -140,6 +135,8 @@ const {
   masterCalendar,
   masterCalendarData,
   localCalendars,
+  monthWheelOptions,
+  localCalendarWheelOptions,
   selectedLocalCal,
   currentMasterInput,
   maxDaysInCurrentMonth,

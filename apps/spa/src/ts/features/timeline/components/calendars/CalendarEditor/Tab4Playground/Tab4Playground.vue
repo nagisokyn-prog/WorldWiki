@@ -25,16 +25,13 @@
       <div class="grid-4" style="margin-top: 12px;">
         <div class="form-group">
           <label class="form-label">Эпоха / Эра</label>
-          <select
-            v-model.number="storyOrigin.era_index"
+          <XboxWheel
+            :model-value="storyOrigin.era_index"
+            :options="eraWheelOptions"
             class="form-select"
-            :disabled="isReadOnly"
-            @change="updateOrigin({ era_index: storyOrigin.era_index })"
-          >
-            <option v-for="(era, idx) in eras" :key="idx" :value="idx">
-              {{ era.название }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            @update:model-value="storyOrigin.era_index = Number($event); updateOrigin({ era_index: storyOrigin.era_index })"
+          />
         </div>
 
         <div class="form-group">
@@ -50,16 +47,13 @@
 
         <div class="form-group">
           <label class="form-label">Месяц</label>
-          <select
-            v-model.number="storyOrigin.month"
+          <XboxWheel
+            :model-value="storyOrigin.month"
+            :options="monthWheelOptions"
             class="form-select"
-            :disabled="isReadOnly"
-            @change="updateOrigin({ month: storyOrigin.month })"
-          >
-            <option v-for="(name, idx) in monthNames" :key="idx" :value="idx">
-              {{ name }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            @update:model-value="storyOrigin.month = Number($event); updateOrigin({ month: storyOrigin.month })"
+          />
         </div>
 
         <div class="form-group">
@@ -78,16 +72,13 @@
       <div class="grid-2" style="margin-top: 8px;">
         <div class="form-group">
           <label class="form-label">День недели для даты старта истории</label>
-          <select
-            v-model.number="storyOrigin.weekday_index"
+          <XboxWheel
+            :model-value="storyOrigin.weekday_index"
+            :options="weekdayWheelOptions"
             class="form-select"
-            :disabled="isReadOnly"
-            @change="updateOrigin({ weekday_index: storyOrigin.weekday_index })"
-          >
-            <option v-for="(wName, wIdx) in weekdayNames" :key="wIdx" :value="wIdx">
-              {{ wName }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            @update:model-value="storyOrigin.weekday_index = Number($event); updateOrigin({ weekday_index: storyOrigin.weekday_index })"
+          />
         </div>
 
         <div class="form-group">
@@ -146,6 +137,7 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab4PlaygroundProps, Tab4PlaygroundEmits } from './Tab4Playground.model';
 import { useTab4Playground } from './useTab4Playground';
 import Tab4MatrixSection from './components/Tab4MatrixSection/Tab4MatrixSection.vue';
@@ -154,14 +146,14 @@ const props = defineProps<Tab4PlaygroundProps>();
 const emit = defineEmits<Tab4PlaygroundEmits>();
 
 const {
-  eras,
   storyOrigin,
+  eraWheelOptions,
+  monthWheelOptions,
+  weekdayWheelOptions,
   testYear,
   testMonth,
   testDay,
   currentMonthTitle,
-  monthNames,
-  weekdayNames,
   weekdayHeaders,
   liveCalculation,
   monthMatrixDays,

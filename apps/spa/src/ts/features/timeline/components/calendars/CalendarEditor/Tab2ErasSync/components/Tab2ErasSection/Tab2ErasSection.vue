@@ -112,17 +112,13 @@
 
           <div v-if="era.has_anniversary" style="display: inline-flex; gap: 6px; align-items: center;">
             <span style="color: var(--text-muted)">Месяц:</span>
-            <select
-              v-model.number="era.anniversary_month"
+            <XboxWheel
+              :model-value="era.anniversary_month ?? 0"
+              :options="monthWheelOptions"
               class="form-select"
-              style="padding: 2px 6px; font-size: 11px;"
-              :disabled="isReadOnly"
-              @change="$emit('update-eras', [...eras])"
-            >
-              <option v-for="(m, mIdx) in months" :key="mIdx" :value="mIdx">
-                {{ m.название || `Месяц ${mIdx + 1}` }}
-              </option>
-            </select>
+              :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+              @update:model-value="era.anniversary_month = Number($event); $emit('update-eras', [...eras])"
+            />
             <span style="color: var(--text-muted)">День:</span>
             <input
               v-model.number="era.anniversary_day"
@@ -142,9 +138,13 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab2ErasSectionProps, Tab2ErasSectionEmits } from './Tab2ErasSection.model';
+import { useTab2ErasSection } from './useTab2ErasSection';
 
-defineProps<Tab2ErasSectionProps>();
+const props = defineProps<Tab2ErasSectionProps>();
 
 defineEmits<Tab2ErasSectionEmits>();
+
+const { monthWheelOptions } = useTab2ErasSection(props);
 </script>

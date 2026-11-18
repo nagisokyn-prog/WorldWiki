@@ -133,6 +133,7 @@ export default defineComponent({
     const isWowilonOpen = computed(() => shell.isWowilonOpen);
     const isAiEnabled = typeof __FEATURE_AI__ !== 'undefined' ? __FEATURE_AI__ : false;
     const isRazrabEnabled = typeof __FEATURE_RAZRAB__ !== 'undefined' ? __FEATURE_RAZRAB__ : false;
+    const isVer110Enabled = typeof __FEATURE_VER_1_1_0__ !== 'undefined' ? __FEATURE_VER_1_1_0__ : false;
 
     // Methods - direct references from store
     const selectSidebarTab = shell.selectSidebarTab;
@@ -268,6 +269,7 @@ export default defineComponent({
       },
       setActivePanelTab: (tab: string) => { shell.activePanelTab = tab; },
       isRazrabEnabled,
+      isVer110Enabled,
       togglePanel: () => { shell.activePanelTab = shell.activePanelTab === '' ? 'console' : ''; },
       toggleSidebar: () => { shell.sidebarVisible = !shell.sidebarVisible; },
 

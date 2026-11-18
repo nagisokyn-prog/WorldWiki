@@ -21,24 +21,19 @@
     </div>
 
     <!-- Dropdown to add character -->
-    <select
+    <XboxWheel
       v-if="availableEntities.length > 0"
+      :model-value="''"
+      :options="availableWheelOptions"
+      placeholder="+ Добавить персонажа..."
       class="add-entity-select"
-      @change="handleAddChange"
-    >
-      <option value="" disabled selected>+ Добавить персонажа...</option>
-      <option
-        v-for="ent in availableEntities"
-        :key="ent.id || ent.name"
-        :value="ent.id || ''"
-      >
-        {{ ent.name }}
-      </option>
-    </select>
+      @update:model-value="handleAddValue"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { JourneyMultiSelectorProps, JourneyMultiSelectorEmits } from './JourneyMultiSelector.model';
 import { useJourneyMultiSelector } from './useJourneyMultiSelector';
 
@@ -46,7 +41,7 @@ const props = defineProps<JourneyMultiSelectorProps>();
 
 const emit = defineEmits<JourneyMultiSelectorEmits>();
 
-const { availableEntities, handleAddChange, handleRemove } = useJourneyMultiSelector(props, emit);
+const { availableEntities, availableWheelOptions, handleAddValue, handleRemove } = useJourneyMultiSelector(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

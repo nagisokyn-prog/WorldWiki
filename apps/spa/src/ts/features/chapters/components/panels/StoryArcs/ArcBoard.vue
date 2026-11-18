@@ -17,16 +17,11 @@
           class="arcboard-search-input"
         />
 
-        <select
+        <XboxWheel
           v-model="filters.selectedType"
+          :options="arcTypeFilterOptions"
           class="arcboard-select"
-        >
-          <option value="all">Все типы</option>
-          <option value="character">Арка персонажа</option>
-          <option value="event">Арка события</option>
-          <option value="relationship">Арка отношений</option>
-          <option value="theme">Тематическая арка</option>
-        </select>
+        />
 
         <button
           class="btn-new-arc"
@@ -94,7 +89,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { ArcBoardProps, ArcBoardEmits } from './ArcBoard.model';
+
+const arcTypeFilterOptions = [
+  { value: 'all', label: 'Все типы' },
+  { value: 'character', label: 'Арка персонажа' },
+  { value: 'event', label: 'Арка события' },
+  { value: 'relationship', label: 'Арка отношений' },
+  { value: 'theme', label: 'Тематическая арка' },
+];
 import ArcCard from './components/ArcCard/ArcCard.vue';
 import ArcCreateModal from './components/ArcCreateModal/ArcCreateModal.vue';
 import { useArcBoard } from './useArcBoard';

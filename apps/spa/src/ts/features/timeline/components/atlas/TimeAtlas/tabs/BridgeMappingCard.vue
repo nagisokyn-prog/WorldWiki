@@ -11,19 +11,12 @@
     <div class="controls-row">
       <div v-if="calData.эпохи && calData.эпохи.length > 0" class="control-group">
         <label class="control-label">Эпоха</label>
-        <select
-          :value="safeDate.era_index ?? 0"
+        <XboxWheel
+          :model-value="safeDate.era_index ?? 0"
+          :options="eraWheelOptions"
           class="interactive-el glass-select"
-          @change="$emit('era-change', calData, $event)"
-        >
-          <option
-            v-for="(era, eIdx) in calData.эпохи"
-            :key="eIdx"
-            :value="eIdx"
-          >
-            {{ era.название || `Эпоха ${eIdx + 1}` }}
-          </option>
-        </select>
+          @update:model-value="$emit('era-change', calData, toSelectEvent($event))"
+        />
       </div>
 
       <div class="control-group">
@@ -38,19 +31,12 @@
 
       <div class="control-group flex-1">
         <label class="control-label">Месяц</label>
-        <select
-          :value="safeDate.month ?? 0"
+        <XboxWheel
+          :model-value="safeDate.month ?? 0"
+          :options="monthWheelOptions"
           class="interactive-el glass-select"
-          @change="$emit('month-change', calData, $event)"
-        >
-          <option
-            v-for="(m, mIdx) in calData.месяцы || []"
-            :key="mIdx"
-            :value="mIdx"
-          >
-            {{ m.название || (m as unknown as { name?: string }).name || `Месяц ${mIdx + 1}` }}
-          </option>
-        </select>
+          @update:model-value="$emit('month-change', calData, toSelectEvent($event))"
+        />
       </div>
 
       <div class="control-group">
@@ -96,11 +82,12 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { BridgeMappingCardProps, BridgeMappingCardEmits } from './BridgeMappingCard.model';
 import { useBridgeMappingCard } from './useBridgeMappingCard';
 
 const props = defineProps<BridgeMappingCardProps>();
 defineEmits<BridgeMappingCardEmits>();
 
-const { safeDate } = useBridgeMappingCard(props);
+const { safeDate, eraWheelOptions, monthWheelOptions, toSelectEvent } = useBridgeMappingCard(props);
 </script>

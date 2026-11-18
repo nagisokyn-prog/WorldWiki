@@ -244,10 +244,26 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     }
   };
 
+  const monthWheelOptions = computed(() =>
+    (masterCalendarData.value?.месяцы || []).map((m, mIdx) => ({
+      value: mIdx,
+      label: m.название,
+    }))
+  );
+
+  const localCalendarWheelOptions = computed(() =>
+    localCalendars.value.map((cal) => ({
+      value: cal.id,
+      label: cal.data?.название || 'Безымянный',
+    }))
+  );
+
   return {
     masterCalendar,
     masterCalendarData,
     localCalendars,
+    monthWheelOptions,
+    localCalendarWheelOptions,
     selectedLocalCal,
     currentMasterInput,
     maxDaysInCurrentMonth,

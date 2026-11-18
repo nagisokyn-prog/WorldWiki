@@ -17,7 +17,7 @@
       </div>
 
       <!-- Редактор (Сохранение) -->
-      <div class="settings-group">
+      <div v-if="showVer110Features" class="settings-group">
         <h3 class="form-label settings-group-title">Поведение и автосохранение</h3>
         
         <div class="control-row"><label>Интервал автосохранения</label><span class="val-badge">{{ settings.editor.autoSaveInterval === 0 ? 'Выкл' : settings.editor.autoSaveInterval + ' сек' }}</span></div>
@@ -43,4 +43,6 @@ const { t } = useI18n();
 const settings = defineModel<AppSettings>('settings', { required: true });
 
 defineProps<SettingsEditorProps>();
+
+const showVer110Features = typeof __FEATURE_VER_1_1_0__ !== 'undefined' && __FEATURE_VER_1_1_0__;
 </script>

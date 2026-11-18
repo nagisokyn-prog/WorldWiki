@@ -203,9 +203,22 @@ export function useTab4Playground(
     }
   }
 
+  const eraWheelOptions = computed(() =>
+    eras.value.map((era, idx) => ({ value: idx, label: era.название }))
+  );
+  const monthWheelOptions = computed(() =>
+    monthNames.value.map((name, idx) => ({ value: idx, label: name }))
+  );
+  const weekdayWheelOptions = computed(() =>
+    weekdayNames.value.map((wName, wIdx) => ({ value: wIdx, label: wName }))
+  );
+
   return {
     eras,
     storyOrigin,
+    eraWheelOptions,
+    monthWheelOptions,
+    weekdayWheelOptions,
     testYear,
     testMonth,
     testDay,

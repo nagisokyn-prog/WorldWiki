@@ -51,17 +51,14 @@
       <div v-if="targetMode === 'in_month'" class="form-group" style="margin-top: 6px;">
         <label class="form-label">Целевой високосный месяц</label>
         <div style="display: flex; gap: 10px; align-items: center;">
-          <select
+          <XboxWheel
             class="form-select"
             style="max-width: 200px;"
-            :value="targetMonthIndex"
-            :disabled="isReadOnly"
-            @change="$emit('update-target-month', parseInt(($event.target as HTMLSelectElement).value) || 0)"
-          >
-            <option v-for="(m, idx) in months" :key="idx" :value="idx">
-              {{ idx + 1 }}. {{ m.название || `Месяц ${idx + 1}` }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            :model-value="targetMonthIndex"
+            :options="monthWheelOptions"
+            @update:model-value="$emit('update-target-month', parseInt($event) || 0)"
+          />
           <span class="status-chip warning" style="font-size: 11px;">
             {{ targetMonthPreview }}
           </span>
@@ -149,9 +146,13 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab1LeapRulesInspectorProps, Tab1LeapRulesInspectorEmits } from './Tab1LeapRulesInspector.model';
+import { useTab1LeapRulesInspector } from './useTab1LeapRulesInspector';
 
-defineProps<Tab1LeapRulesInspectorProps>();
+const props = defineProps<Tab1LeapRulesInspectorProps>();
 
 defineEmits<Tab1LeapRulesInspectorEmits>();
+
+const { monthWheelOptions } = useTab1LeapRulesInspector(props);
 </script>

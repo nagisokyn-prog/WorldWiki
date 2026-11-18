@@ -54,36 +54,21 @@
     <!-- Filters & Refresh -->
     <div class="journey-toolbar-right">
       <!-- Arc Filter -->
-      <select
+      <XboxWheel
         v-if="storyArcs.length > 0"
-        :value="selectedArcFilter"
+        :model-value="selectedArcFilter"
+        :options="arcWheelOptions"
         class="journey-filter-select"
-        @change="$emit('update:selectedArcFilter', ($event.target as HTMLSelectElement).value)"
-      >
-        <option value="ALL">Все (с арками и без)</option>
-        <option value="ALL_ARCS">Все сюжетные арки</option>
-        <option value="UNASSIGNED">Вне сюжетных арок</option>
-        <option
-          v-for="arc in storyArcs"
-          :key="arc.id || arc.title"
-          :value="arc.id"
-        >
-          {{ arc.title }}
-        </option>
-      </select>
+        @update:model-value="$emit('update:selectedArcFilter', $event)"
+      />
 
       <!-- Category Filter -->
-      <select
-        :value="filterType"
+      <XboxWheel
+        :model-value="filterType"
+        :options="categoryWheelOptions"
         class="journey-filter-select"
-        @change="$emit('update:filterType', ($event.target as HTMLSelectElement).value)"
-      >
-        <option value="all">Все элементы</option>
-        <option value="scenes">Сцены и главы</option>
-        <option value="promises">Сюжетные ружья</option>
-        <option value="events">События мира</option>
-        <option value="relations">Отношения</option>
-      </select>
+        @update:model-value="$emit('update:filterType', $event)"
+      />
 
       <button
         class="btn-refresh"
@@ -97,15 +82,16 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { JourneyToolbarProps, JourneyToolbarEmits } from './JourneyToolbar.model';
 import JourneyMultiSelector from '../JourneyMultiSelector/JourneyMultiSelector.vue';
 import JourneyModeToggle from '../JourneyModeToggle/JourneyModeToggle.vue';
 import { useJourneyToolbar } from './useJourneyToolbar';
 
-defineProps<JourneyToolbarProps>();
+const props = defineProps<JourneyToolbarProps>();
 const emit = defineEmits<JourneyToolbarEmits>();
 
-const { onFilterModeUpdate } = useJourneyToolbar(emit);
+const { arcWheelOptions, categoryWheelOptions, onFilterModeUpdate } = useJourneyToolbar(emit, props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/entities/CharacterJourney.css"></style>

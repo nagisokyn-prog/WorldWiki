@@ -2,7 +2,7 @@
  * @file useCreateChapterModal.ts
  * @description Логика управления модальным окном создания главы
  */
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import * as api from '@/services/api.client';
 import type { CreateChapterModalProps, CreateChapterModalEmits, VolumeOption } from './CreateChapterModal.model';
 
@@ -134,10 +134,15 @@ export function useCreateChapterModal(
     });
   };
 
+  const volumeWheelOptions = computed(() =>
+    volumes.value.map((vol) => ({ value: vol.id || '', label: vol.title }))
+  );
+
   return {
     title,
     selectedVolumeId,
     volumes,
+    volumeWheelOptions,
     isLoading,
     errorMessage,
     onVolumeChange,

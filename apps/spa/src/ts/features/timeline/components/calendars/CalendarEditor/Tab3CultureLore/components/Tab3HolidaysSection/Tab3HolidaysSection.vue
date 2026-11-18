@@ -44,17 +44,13 @@
 
         <div style="display: flex; gap: 6px; align-items: center;">
           <span v-if="h.is_range" style="font-size: 11px; color: var(--text-muted)">С:</span>
-          <select
-            v-model.number="h.дата_начала.месяц"
+          <XboxWheel
+            :model-value="h.дата_начала.месяц"
+            :options="monthWheelOptions"
             class="form-select"
-            style="padding: 4px 8px; font-size: 12px;"
-            :disabled="isReadOnly"
-            @change="$emit('update-holidays', [...holidays])"
-          >
-            <option v-for="(m, mIdx) in months" :key="mIdx" :value="mIdx">
-              {{ m.название || `Месяц ${mIdx + 1}` }}
-            </option>
-          </select>
+            :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+            @update:model-value="h.дата_начала.месяц = Number($event); $emit('update-holidays', [...holidays])"
+          />
           <input
             v-model.number="h.дата_начала.день"
             type="number"
@@ -68,17 +64,13 @@
 
           <template v-if="h.is_range">
             <span style="font-size: 11px; color: var(--text-muted)">по:</span>
-            <select
-              v-model.number="h.дата_конца!.месяц"
+            <XboxWheel
+              :model-value="h.дата_конца!.месяц"
+              :options="monthWheelOptions"
               class="form-select"
-              style="padding: 4px 8px; font-size: 12px;"
-              :disabled="isReadOnly"
-              @change="$emit('update-holidays', [...holidays])"
-            >
-              <option v-for="(m, mIdx) in months" :key="mIdx" :value="mIdx">
-                {{ m.название || `Месяц ${mIdx + 1}` }}
-              </option>
-            </select>
+              :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+              @update:model-value="h.дата_конца!.месяц = Number($event); $emit('update-holidays', [...holidays])"
+            />
             <input
               v-model.number="h.дата_конца!.день"
               type="number"
@@ -115,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab3HolidaysSectionProps, Tab3HolidaysSectionEmits } from './Tab3HolidaysSection.model';
 import { useTab3HolidaysSection } from './useTab3HolidaysSection';
 
@@ -122,5 +115,5 @@ const props = defineProps<Tab3HolidaysSectionProps>();
 
 const emit = defineEmits<Tab3HolidaysSectionEmits>();
 
-const { toggleRange } = useTab3HolidaysSection(props, emit);
+const { monthWheelOptions, toggleRange } = useTab3HolidaysSection(props, emit);
 </script>

@@ -17,9 +17,13 @@
       </div>
       <div class="form-group">
         <label class="form-label">Месяц</label>
-        <select class="form-select" :value="dualDatingInput.month" :disabled="isReadOnly" @change="$emit('update-dual-input', { month: +($event.target as HTMLSelectElement).value })">
-          <option v-for="(m, i) in monthNames" :key="i" :value="i + 1">{{ m }}</option>
-        </select>
+        <XboxWheel
+          class="form-select"
+          :class="{ 'pointer-events-none opacity-60': isReadOnly }"
+          :model-value="dualDatingInput.month"
+          :options="monthWheelOptions"
+          @update:model-value="$emit('update-dual-input', { month: Number($event) })"
+        />
       </div>
       <div class="form-group">
         <label class="form-label">Год события</label>
@@ -47,9 +51,13 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { Tab5DualDatingCardProps, Tab5DualDatingCardEmits } from './Tab5DualDatingCard.model';
+import { useTab5DualDatingCard } from './useTab5DualDatingCard';
 
-defineProps<Tab5DualDatingCardProps>();
+const props = defineProps<Tab5DualDatingCardProps>();
 
 defineEmits<Tab5DualDatingCardEmits>();
+
+const { monthWheelOptions } = useTab5DualDatingCard(props);
 </script>

@@ -3,44 +3,35 @@
     <div class="matrix-toolbar glass-panel">
       <div class="matrix-selector-group">
         <label>Базовый календарь (сетка):</label>
-        <select
-          :value="matrixBaseCalId"
+        <XboxWheel
+          :model-value="matrixBaseCalId"
+          :options="calendarWheelOptions"
           class="interactive-el glass-select"
-          @change="$emit('update:matrixBaseCalId', ($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="c in allCalendars" :key="c.id" :value="c.id">
-            {{ c.data?.название || c.name || 'Календарь' }}
-          </option>
-        </select>
+          @update:model-value="$emit('update:matrixBaseCalId', $event)"
+        />
       </div>
 
       <div class="matrix-selector-group">
         <label>Сравнительный (в углах ячеек):</label>
-        <select
-          :value="matrixCompareCalId"
+        <XboxWheel
+          :model-value="matrixCompareCalId"
+          :options="calendarWheelOptions"
           class="interactive-el glass-select"
-          @change="$emit('update:matrixCompareCalId', ($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="c in allCalendars" :key="c.id" :value="c.id">
-            {{ c.data?.название || c.name || 'Календарь' }}
-          </option>
-        </select>
+          @update:model-value="$emit('update:matrixCompareCalId', $event)"
+        />
       </div>
 
       <div class="matrix-nav-group">
         <button class="matrix-btn interactive-el" title="Предыдущий месяц" @click="$emit('prevMonth')">◀</button>
         
         <!-- Era Select -->
-        <select
+        <XboxWheel
           v-if="matrixBaseCal?.эпохи && matrixBaseCal.эпохи.length > 0"
-          :value="matrixEra || 0"
+          :model-value="matrixEra || 0"
+          :options="eraWheelOptions"
           class="interactive-el glass-select matrix-era-select"
-          @change="$emit('update:matrixEra', Number(($event.target as HTMLSelectElement).value))"
-        >
-          <option v-for="(era, eIdx) in matrixBaseCal.эпохи" :key="eIdx" :value="eIdx">
-            {{ era.название || `Эпоха ${eIdx + 1}` }}
-          </option>
-        </select>
+          @update:model-value="$emit('update:matrixEra', Number($event))"
+        />
 
         <!-- Year Input -->
         <input
@@ -52,20 +43,13 @@
         />
 
         <!-- Month Select -->
-        <select
-          :value="matrixMonth"
+        <XboxWheel
+          :model-value="matrixMonth"
+          :options="monthWheelOptions"
           class="interactive-el glass-select matrix-month-select"
           title="Месяц"
-          @change="$emit('update:matrixMonth', Number(($event.target as HTMLSelectElement).value))"
-        >
-          <option
-            v-for="(m, mIdx) in matrixBaseCal?.месяцы || []"
-            :key="mIdx"
-            :value="mIdx"
-          >
-            {{ m.название }}
-          </option>
-        </select>
+          @update:model-value="$emit('update:matrixMonth', Number($event))"
+        />
 
         <button class="matrix-btn interactive-el" title="Следующий месяц" @click="$emit('nextMonth')">▶</button>
       </div>
@@ -110,9 +94,13 @@
 </template>
 
 <script setup lang="ts">
+import { XboxWheel } from '@worldwiki/components';
 import type { TimeAtlasMatrixTabProps, TimeAtlasMatrixTabEmits } from './TimeAtlasMatrixTab.model';
+import { useTimeAtlasMatrixTab } from './useTimeAtlasMatrixTab';
 
-defineProps<TimeAtlasMatrixTabProps>();
+const props = defineProps<TimeAtlasMatrixTabProps>();
 
 defineEmits<TimeAtlasMatrixTabEmits>();
+
+const { calendarWheelOptions, eraWheelOptions, monthWheelOptions } = useTimeAtlasMatrixTab(props);
 </script>

@@ -179,10 +179,45 @@ describe('useGlobalCalendarWidget', () => {
     });
     const emptyWrapper = mount(EmptyComp);
     await Promise.resolve();
-    expect(emptyWidget.isLoading.value).toBe(false);
+    expect(emptyWidget.masterCalendar.value).toBeNull();
+    expect(emptyWidget.maxDaysInCurrentMonth.value).toBe(31);
+    expect(emptyWidget.dateExplanation.value).toBeNull();
     emptyWrapper.unmount();
 
-    vi.useRealTimers();
+    // Master calendar matched by data.calendar_type === 'master' + flat месяцы without .data wrapper + moons
+    const { useCalendarStore } = await import('@/stores/calendar.store');
+    const calStore = useCalendarStore();
+    vi.spyOn(calStore, 'getCalendars').mockResolvedValueOnce([
+      {
+        id: 'cal_flat_master',
+        name: 'Custom',
+        is_master: false,
+        data: {
+          calendar_type: 'master',
+          название: 'Плоский',
+          месяцы: [{ название: 'М1', дней: 20 }],
+          эпохи: [{ название: 'Э1', год_начала: 1, год_конца: 100 }],
+          moons: [{ name: 'Селена', period_days: 20 }],
+        },
+      } as any,
+      {
+        id: 'cal_loc_flat',
+        name: 'Локальный',
+        месяцы: [{ название: 'Л1', дней: 25 }],
+        эпохи: [{ название: 'Э1', год_начала: 1, год_конца: 100 }],
+      } as any,
+    ]);
+    await widgetInstance.loadCalendars();
+    expect(widgetInstance.masterCalendar.value?.id).toBe('cal_flat_master');
+    expect(widgetInstance.activeMoons.value).toHaveLength(1);
+
+    // prevDay from month > 0 and nextDay to month < last
+    widgetInstance.currentMasterInput.value = { era_index: 0, year: 1, month: 0, day: 20, hour: 0, minute: 0 };
+    widgetInstance.nextDay();
+    widgetInstance.prevDay();
+    expect(widgetInstance.currentMasterInput.value.day).toBe(20);
+
     wrapper.unmount();
+    vi.useRealTimers();
   });
 });

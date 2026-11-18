@@ -88,4 +88,30 @@ describe('LegacyHtmlToASTConverter', () => {
     expect(table.rows[0].isHeader).toBe(true);
     expect(table.rows[1].isHeader).toBe(false);
   });
+
+  it('covers empty HTML, headings, scene breaks, alignment, lists, blockquotes, hr, fallback div, and inline marks', () => {
+    const emptyDoc = LegacyHtmlToASTConverter.convert('   ', { title: '' });
+    expect(emptyDoc.metadata.title).toBe('Без названия');
+    expect(emptyDoc.blocks).toHaveLength(1);
+
+    const noBlocksDoc = LegacyHtmlToASTConverter.convert('<div></div>');
+    expect(noBlocksDoc.blocks).toHaveLength(1);
+
+    const richHtml = `
+      <h2 id="h2-1">Заголовок</h2>
+      <p>* * *</p>
+      <p style="text-align: center">Центр</p>
+      <ul><li>Пункт</li></ul>
+      <ol><li>Номер</li></ol>
+      <blockquote><p>Цитата в p</p></blockquote>
+      <blockquote>Прямая цитата</blockquote>
+      <hr />
+      <div>Фоллбэк <b>жирный</b> <i>курсив</i> <u>подчерк</u> <s>зачерк</s> <code>код</code> <sub>2</sub> <sup>3</sup> <a href="https://a.b" title="t">ссылка</a> <span style="color: red; background-color: yellow; font-family: serif">стиль</span> <span class="entity-mention" data-entity-id="e1" data-entity-type="location">Город</span></div>
+    `;
+    const doc = LegacyHtmlToASTConverter.convert(richHtml);
+    expect(doc.blocks.some((b) => b.type === 'heading' && b.level === 2)).toBe(true);
+    expect(doc.blocks.filter((b) => b.type === 'scene_break')).toHaveLength(2);
+    expect(doc.blocks.some((b) => b.type === 'list' && b.variant === 'ordered')).toBe(true);
+    expect(doc.blocks.filter((b) => b.type === 'quote')).toHaveLength(2);
+  });
 });

@@ -220,4 +220,36 @@ describe('shell.manuscript', () => {
 
     errSpy.mockRestore();
   });
+
+  it('covers deleteChapter when getChapter rejects, empty summary, renameChapter no-op, and confirmed deleteVolume', async () => {
+    const ms = useShellManuscript(deps);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    deps.chapters.value = [
+      { id: 'chapters:prev', title: 'Prev' } as Chapter,
+      { id: 'chapters:cur', title: 'Cur' } as Chapter,
+    ];
+    mockGetChapter.mockRejectedValueOnce(new Error('no prev chapter'));
+    mockDeleteChapter.mockResolvedValueOnce(undefined);
+    await ms.deleteChapter({ id: 'chapters:cur' });
+    expect(warnSpy).toHaveBeenCalled();
+
+    // renameChapter with empty id -> no-op
+    await ms.renameChapter({}, 'X');
+    ms.onChapterRenamed({ id: '', title: 'Skip' });
+
+    // deleteVolume with silent=false & appConfirm=true & explicit chapters list
+    mockAppConfirm.mockResolvedValueOnce(true);
+    mockDeleteChapter.mockResolvedValueOnce(undefined);
+    mockDeleteVolume.mockResolvedValueOnce(undefined);
+    await ms.deleteVolume(
+      { id: 'volumes:v3', title: 'Том 3' },
+      [{ id: 'chapters:c3', volume_id: 'volumes:v3' } as Chapter],
+      false
+    );
+    expect(mockAppConfirm).toHaveBeenCalled();
+    expect(mockDeleteVolume).toHaveBeenCalledWith('volumes:v3');
+
+    warnSpy.mockRestore();
+  });
 });

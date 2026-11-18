@@ -169,6 +169,15 @@ describe('useLocationAstronomyWidget', () => {
 
     props.formData.scale_level = 'building';
     expect(hook.scaleLabel.value).toBeTruthy();
+
+    for (const s of ['interior', 'district', 'settlement', 'region', 'macro']) {
+      props.formData.scale_level = s;
+      expect(hook.scaleLabel.value).toBeTruthy();
+    }
+    props.formData.часовой_пояс = 'UTC+3';
+    expect(hook.formattedOffset.value).toBe('UTC+3');
+    props.formData.часовой_пояс = 'invalid';
+    expect(hook.formattedOffset.value).toBeTruthy();
   });
 });
 

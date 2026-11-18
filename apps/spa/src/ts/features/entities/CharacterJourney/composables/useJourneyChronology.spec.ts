@@ -28,4 +28,28 @@ describe('useJourneyChronology helpers', () => {
     expect(formatted).toContain('⏳');
     expect(formatted).toContain('День');
   });
+
+  it('covers pluralize 11-19, formatFlashbackDelta minutes, computeMabsFromDateFields Russian keys, timeOfDay, and calculateDiegeticAge', async () => {
+    const { calculateDiegeticAge } = await import('./useJourneyChronology');
+    const cal = CalendarFormat.getDefaultCalendar();
+
+    expect(pluralize(14, 'год', 'года', 'лет')).toBe('лет');
+    expect(formatFlashbackDelta(30)).toBe('⏪ Флэшбек');
+
+    expect(computeMabsFromDateFields(null, cal)).toBeNull();
+    const ruMabs = computeMabsFromDateFields({ год: 1, месяц: 0, день: 1 }, cal);
+    expect(ruMabs).not.toBeNull();
+
+    // Russian keys + null mAbs + evening/night timeOfDay
+    const eveningStr = formatDiegeticDate(null, { год: 1, месяц: 0, день: 2, hour: 20 }, null);
+    expect(eveningStr).toContain('Вечер');
+
+    // calculateDiegeticAge across years, days, newborn, and before birth
+    expect(calculateDiegeticAge(undefined, 100, cal)).toBeNull();
+    expect(calculateDiegeticAge(0, 0, cal)?.ageLabel).toBe('Новорожденный');
+    expect(calculateDiegeticAge(0, 1440 * 5, cal)?.ageLabel).toContain('дн');
+    expect(calculateDiegeticAge(0, 1440 * 60, cal)?.ageLabel).toContain('мес');
+    expect(calculateDiegeticAge(0, 1440 * 400, cal)?.ageLabel).toContain('год');
+    expect(calculateDiegeticAge(1440 * 400, 0, cal)?.isBeforeBirth).toBe(true);
+  });
 });

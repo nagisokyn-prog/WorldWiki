@@ -177,5 +177,50 @@ describe('timelineInspector.utils', () => {
     expect(formatted).toHaveLength(3);
     expect(formatted[2].locationName).toBe('loc1');
   });
+
+  it('covers empty era list, empty filters, pov/entity mismatch, and missing calMap entries', () => {
+    expect(resolveBestEraIndex(0, { эпохи: [] } as any)).toBe(0);
+
+    const chs: InspectorChapter[] = [{ id: 'c1', title: 'Глава 1', sort_order: 1 }];
+    const evs: InspectorEvent[] = [
+      {
+        id: 'ev_1',
+        title: 'Событие 1',
+        description: 'Секрет в описании',
+        m_abs: 100,
+        kind: 'event',
+        calendar_id: 'cal_missing',
+        location_id: 'raw_loc',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Глава 1', kind: 'direct', pov_id: 'pov1' }],
+        participants: [{ id: 'entities:e1', name: 'Герой' }],
+      },
+    ];
+
+    expect(buildFilteredChapters(chs, [], 0)).toHaveLength(0);
+    expect(buildFilteredChapters(chs, [], null)).toHaveLength(1);
+    expect(
+      filterInspectorEvents(evs, chs, {
+        searchQuery: 'секрет',
+        isolatedChapterId: null,
+        selectedEntityId: 'all',
+        selectedPovId: 'all',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'all',
+      })
+    ).toHaveLength(1);
+    expect(
+      filterInspectorEvents(evs, chs, {
+        searchQuery: 'нет_совпадений',
+        isolatedChapterId: null,
+        selectedEntityId: 'all',
+        selectedPovId: 'all',
+        showFlashbacksOnly: false,
+        selectedVolumeId: 'all',
+      })
+    ).toHaveLength(0);
+
+    const formatted = buildFormattedEvents(evs, chs, null, evs, [], new Map());
+    expect(formatted[0].locationName).toBe('raw_loc');
+  });
 });
 

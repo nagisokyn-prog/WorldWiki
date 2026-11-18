@@ -240,7 +240,7 @@ describe('usePromiseActions', () => {
     expect(promises.value[0].status).toBe('resolved');
 
     // removeMilestone on progression (developed -> planted) and resolution
-    promises.value[0].progressions = [{ milestone_id: 'm1', stage: 'progression', quote: 'M1', chapter_id: 'chap-1', paragraph_index: 2 }];
+    promises.value[0].progressions = [{ id: 'm1', milestone_id: 'm1', stage: 'progression', quote: 'M1', chapter_id: 'chap-1', paragraph_index: 2 }];
     promises.value[0].status = 'developed';
     await actions.removeMilestone(promises.value[0], 'm1', 'progression');
     expect(promises.value[0].status).toBe('planted');
@@ -254,14 +254,14 @@ describe('usePromiseActions', () => {
     await actions.updateStatus(promises.value[0], 'resolved');
     expect(promises.value[0].status).toBe('resolved');
 
-    // triggerInlineUpdate guards & prompt paths
-    await actions.triggerInlineUpdate({ id: '' } as never, 'progression');
-    await actions.triggerInlineUpdate(p1, 'progression');
-    await actions.triggerInlineUpdate(p1, 'resolution');
+    // promptAttachMilestone guards & prompt paths
+    actions.promptAttachMilestone({ id: '' } as never, 'progression');
+    actions.promptAttachMilestone(p1, 'progression');
+    actions.promptAttachMilestone(p1, 'resolution');
 
-    // saveUpdatedItem guards (!id and not found)
-    await actions.saveUpdatedItem({ id: '' } as never);
-    await actions.saveUpdatedItem({ id: 'plot_promises:nonexistent' } as never);
+    // updatePromise guards (!id and not found)
+    await actions.updatePromise({ id: '' } as never);
+    await actions.updatePromise({ id: 'plot_promises:nonexistent' } as never);
 
     // updatePromise debounced twice (clears existingTimer)
     void actions.updatePromise({ ...p1, quote: 'A' }, false);

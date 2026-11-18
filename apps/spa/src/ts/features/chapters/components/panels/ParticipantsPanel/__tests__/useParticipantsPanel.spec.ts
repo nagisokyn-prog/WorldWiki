@@ -254,6 +254,10 @@ describe('useParticipantsPanel', () => {
     vi.spyOn(entityApi.entityApi, 'getSchemas').mockResolvedValueOnce({
       character: { titleField: 'meta.label', name: 'Герои' },
     } as never);
+    vi.mocked(api.getEntities).mockResolvedValueOnce([
+      { id: 'entities:c_tf', meta: { label: 'Титул из titleField' } },
+      { id: 'entities:c_circ', data: circular },
+    ] as never);
     vi.mocked(api.getEntitiesBatch).mockResolvedValueOnce({
       character: [
         { id: 'entities:c_tf', meta: { label: 'Титул из titleField' } },

@@ -158,4 +158,74 @@ describe('useChapterPromisesBridge', () => {
     wrapper.unmount();
     expect(unlisten).toHaveBeenCalled();
   });
+
+  it('covers openJourney true/false, handleCreatePromise, handleLinkMilestone, handleLinkSubScene, missing chapter_id, and Tauri listen error', async () => {
+    const { openCharacterJourneyWindow } = await import('@/utils/windowManager');
+    vi.mocked(openCharacterJourneyWindow).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(listen).mockRejectedValueOnce(new Error('tauri listen fail'));
+    (window as unknown as { __TAURI__?: unknown }).__TAURI__ = {};
+
+    const addPromise = vi.fn();
+    const addMilestone = vi.fn();
+    const addSubScene = vi.fn();
+    const openChapterFromTree = vi.fn(async () => {});
+    const scrollToParagraph = vi.fn();
+
+    let bridge!: ReturnType<typeof useChapterPromisesBridge>;
+    const Comp = defineComponent({
+      setup() {
+        bridge = useChapterPromisesBridge({
+          project: 'p1',
+          currentChapter: ref({ id: 'chapters:1', title: 'Ch1' } as never),
+          chapters: ref([]),
+          hierarchy: ref({ chapters: [{ id: '2', title: '' }] } as never),
+          editorCoreRef: ref({ scrollToParagraph }),
+          rightSidebarRef: ref({
+            promises: [{ id: 'pr_1' }],
+            addPromise,
+            addMilestone,
+            addSubScene,
+          } as never),
+          openChapterFromTree,
+        });
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    await bridge.openJourney();
+    expect(bridge.isJourneyOpen.value).toBe(false);
+    await bridge.openJourney();
+    expect(bridge.isJourneyOpen.value).toBe(true);
+    bridge.closeJourney();
+    expect(bridge.isJourneyOpen.value).toBe(false);
+
+    bridge.handleCreatePromise({ kind: 'gun', quote: 'Q', paragraph_index: 1 });
+    expect(addPromise).toHaveBeenCalled();
+
+    bridge.handleLinkMilestone({ promiseId: 'pr_1', stage: 'progression', quote: 'M', paragraph_index: 2 });
+    expect(addMilestone).toHaveBeenCalled();
+
+    bridge.handleLinkSubScene({ parentPromiseId: 'missing', quote: 'S', paragraph_index: 3 });
+    expect(addSubScene).not.toHaveBeenCalled();
+    bridge.handleLinkSubScene({ parentPromiseId: 'pr_1', quote: 'S', paragraph_index: 3 });
+    expect(addSubScene).toHaveBeenCalled();
+
+    // Locate chapter found in hierarchy without chapters: prefix & empty title
+    bridge.handleLocatePromise({ chapterId: '2', paragraphIndex: 1, quote: 'Q' });
+    expect(openChapterFromTree).toHaveBeenCalledWith(expect.objectContaining({ id: 'chapters:2', title: 'Глава' }));
+
+    // handleJourneySelectScene without chapter_id -> no-op
+    bridge.handleJourneySelectScene({ paragraph_index: 1 });
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'OTHER' } }));
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'JOURNEY_SELECT_SCENE' } }));
+
+    wrapper.unmount();
+    warnSpy.mockRestore();
+  });
 });

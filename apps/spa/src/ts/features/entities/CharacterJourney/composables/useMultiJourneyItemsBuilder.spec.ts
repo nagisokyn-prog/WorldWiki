@@ -163,6 +163,18 @@ describe('useMultiJourneyItemsBuilder', () => {
       arc_title: 'Арка 4',
       arc_color: '#abcdef',
     });
+
+    // Empty scenes/appearances + appearance without chapter_id + scene without chapter_id
+    const minimal = buildMultiJourneyTimelineItems(
+      {
+        entities: [],
+        scenes: [{ id: 'sc_no_ch', present_entities: [] }],
+        appearances: [{ source: 'mention', chapter_id: '' }],
+      } as unknown as MultiJourneyResponse,
+      storyArcs,
+      'union'
+    );
+    expect(minimal.length).toBeGreaterThanOrEqual(1);
   });
 });
 

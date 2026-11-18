@@ -6,7 +6,6 @@
         <XboxWheel
           :model-value="matrixBaseCalId"
           :options="calendarWheelOptions"
-          class="interactive-el glass-select"
           @update:model-value="$emit('update:matrixBaseCalId', $event)"
         />
       </div>
@@ -16,7 +15,6 @@
         <XboxWheel
           :model-value="matrixCompareCalId"
           :options="calendarWheelOptions"
-          class="interactive-el glass-select"
           @update:model-value="$emit('update:matrixCompareCalId', $event)"
         />
       </div>
@@ -29,7 +27,6 @@
           v-if="matrixBaseCal?.эпохи && matrixBaseCal.эпохи.length > 0"
           :model-value="matrixEra || 0"
           :options="eraWheelOptions"
-          class="interactive-el glass-select matrix-era-select"
           @update:model-value="$emit('update:matrixEra', Number($event))"
         />
 
@@ -46,7 +43,6 @@
         <XboxWheel
           :model-value="matrixMonth"
           :options="monthWheelOptions"
-          class="interactive-el glass-select matrix-month-select"
           title="Месяц"
           @update:model-value="$emit('update:matrixMonth', Number($event))"
         />

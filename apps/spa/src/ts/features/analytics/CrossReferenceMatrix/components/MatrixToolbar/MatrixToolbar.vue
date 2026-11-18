@@ -25,14 +25,12 @@
         v-if="volumeOptions && volumeOptions.length > 1"
         v-model="filters.selectedVolumeId"
         :options="volumeWheelOptions"
-        class="matrix-select"
         title="Фильтр по томам"
       />
 
       <XboxWheel
         v-model="filters.selectedEntityType"
         :options="entityTypeWheelOptions"
-        class="matrix-select"
       />
 
       <label class="matrix-checkbox-label">

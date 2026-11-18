@@ -58,7 +58,6 @@
         v-if="storyArcs.length > 0"
         :model-value="selectedArcFilter"
         :options="arcWheelOptions"
-        class="journey-filter-select"
         @update:model-value="$emit('update:selectedArcFilter', $event)"
       />
 
@@ -66,7 +65,6 @@
       <XboxWheel
         :model-value="filterType"
         :options="categoryWheelOptions"
-        class="journey-filter-select"
         @update:model-value="$emit('update:filterType', $event)"
       />
 

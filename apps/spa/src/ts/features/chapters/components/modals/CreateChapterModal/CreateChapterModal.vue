@@ -45,7 +45,6 @@
             id="chapter-volume-select"
             :model-value="selectedVolumeId"
             :options="volumeWheelOptions"
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isLoading }"
             @update:model-value="onVolumeChange($event)"
           />

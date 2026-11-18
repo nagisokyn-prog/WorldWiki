@@ -115,7 +115,6 @@
             <XboxWheel
               :model-value="era.anniversary_month ?? 0"
               :options="monthWheelOptions"
-              class="form-select"
               :class="{ 'pointer-events-none opacity-60': isReadOnly }"
               @update:model-value="era.anniversary_month = Number($event); $emit('update-eras', [...eras])"
             />

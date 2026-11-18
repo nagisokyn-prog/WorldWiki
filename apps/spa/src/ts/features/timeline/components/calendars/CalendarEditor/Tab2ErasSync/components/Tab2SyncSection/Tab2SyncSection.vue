@@ -102,7 +102,6 @@
         <div class="form-group">
           <label class="form-label">Месяц в Календаре Мира</label>
           <XboxWheel
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             :model-value="anchorMonth"
             :options="masterMonthWheelOptions"

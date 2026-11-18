@@ -11,7 +11,6 @@
         <XboxWheel
           :model-value="effectiveStatus"
           :options="arcStatusOptions"
-          class="status-quick-select"
           @update:model-value="$emit('update-status', arc, $event as ArcStatus)"
         />
 

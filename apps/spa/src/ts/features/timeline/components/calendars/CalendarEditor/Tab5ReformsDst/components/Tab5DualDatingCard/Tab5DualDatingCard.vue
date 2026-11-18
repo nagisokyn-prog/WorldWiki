@@ -18,7 +18,6 @@
       <div class="form-group">
         <label class="form-label">Месяц</label>
         <XboxWheel
-          class="form-select"
           :class="{ 'pointer-events-none opacity-60': isReadOnly }"
           :model-value="dualDatingInput.month"
           :options="monthWheelOptions"

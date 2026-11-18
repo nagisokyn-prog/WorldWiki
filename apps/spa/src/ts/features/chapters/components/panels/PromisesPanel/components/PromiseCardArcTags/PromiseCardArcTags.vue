@@ -109,7 +109,6 @@
           <XboxWheel
             :model-value="arc.phase"
             :options="arcPhaseOptions"
-            class="arc-phase-select"
             title="Фаза сюжетной арки"
             @update:model-value="updateArcPhase(arc.arcId, $event)"
           />

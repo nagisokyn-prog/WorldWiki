@@ -39,7 +39,6 @@
         v-if="volumeOptions && volumeOptions.length > 1"
         v-model="filter.selectedVolumeId"
         :options="volumeWheelOptions"
-        class="filter-select"
         title="Фильтр по томам"
       />
 
@@ -59,14 +58,12 @@
         v-if="itemTypes.length > 0"
         v-model="filter.itemType"
         :options="itemTypeWheelOptions"
-        class="filter-select"
       />
 
       <!-- Usage State Select -->
       <XboxWheel
         v-model="filter.usageState"
         :options="usageStateWheelOptions"
-        class="filter-select"
       />
 
       <button

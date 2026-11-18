@@ -14,7 +14,6 @@
         <XboxWheel
           :model-value="safeDate.era_index ?? 0"
           :options="eraWheelOptions"
-          class="interactive-el glass-select"
           @update:model-value="$emit('era-change', calData, toSelectEvent($event))"
         />
       </div>
@@ -34,7 +33,6 @@
         <XboxWheel
           :model-value="safeDate.month ?? 0"
           :options="monthWheelOptions"
-          class="interactive-el glass-select"
           @update:model-value="$emit('month-change', calData, toSelectEvent($event))"
         />
       </div>

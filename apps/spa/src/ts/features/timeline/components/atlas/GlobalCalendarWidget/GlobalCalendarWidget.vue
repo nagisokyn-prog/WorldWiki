@@ -30,7 +30,6 @@
           <XboxWheel
             :model-value="currentMasterInput.month"
             :options="monthWheelOptions"
-            class="interactive-el gc-month-select"
             title="Месяц"
             @update:model-value="currentMasterInput.month = Number($event)"
           />
@@ -88,7 +87,6 @@
           <XboxWheel
             v-model="selectedLocalCal"
             :options="localCalendarWheelOptions"
-            class="interactive-el gc-select"
           />
         </div>
 

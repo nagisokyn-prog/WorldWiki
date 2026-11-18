@@ -28,7 +28,6 @@
           <XboxWheel
             :model-value="storyOrigin.era_index"
             :options="eraWheelOptions"
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             @update:model-value="storyOrigin.era_index = Number($event); updateOrigin({ era_index: storyOrigin.era_index })"
           />
@@ -50,7 +49,6 @@
           <XboxWheel
             :model-value="storyOrigin.month"
             :options="monthWheelOptions"
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             @update:model-value="storyOrigin.month = Number($event); updateOrigin({ month: storyOrigin.month })"
           />
@@ -75,7 +73,6 @@
           <XboxWheel
             :model-value="storyOrigin.weekday_index"
             :options="weekdayWheelOptions"
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             @update:model-value="storyOrigin.weekday_index = Number($event); updateOrigin({ weekday_index: storyOrigin.weekday_index })"
           />

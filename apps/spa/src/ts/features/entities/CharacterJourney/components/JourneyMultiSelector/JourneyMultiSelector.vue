@@ -26,7 +26,6 @@
       :model-value="''"
       :options="availableWheelOptions"
       placeholder="+ Добавить персонажа..."
-      class="add-entity-select"
       @update:model-value="handleAddValue"
     />
   </div>

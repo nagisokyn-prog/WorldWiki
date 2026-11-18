@@ -13,13 +13,13 @@
       <!-- Фильтр по томам -->
       <div v-if="volumeOptions && volumeOptions.length > 1" class="inspector-control-group">
         <span class="control-label">Том:</span>
-        <XboxWheel v-model="filters.selectedVolumeId" :options="volumeWheelOptions" class="inspector-select" title="Фильтр по томам" />
+        <XboxWheel v-model="filters.selectedVolumeId" :options="volumeWheelOptions" title="Фильтр по томам" />
       </div>
 
       <!-- Режим связей стрелками -->
       <div class="inspector-control-group">
         <span class="control-label">Связи:</span>
-        <XboxWheel v-model="filters.linkMode" :options="linkModeOptions" class="inspector-select" />
+        <XboxWheel v-model="filters.linkMode" :options="linkModeOptions" />
       </div>
 
       <!-- Изоляция сцен главы -->
@@ -28,7 +28,6 @@
         <XboxWheel
           :model-value="filters.isolatedChapterId ?? ''"
           :options="isolatedChapterOptions"
-          class="inspector-select"
           @update:model-value="filters.isolatedChapterId = $event || null"
         />
       </div>
@@ -39,7 +38,6 @@
         <XboxWheel
           :model-value="filters.readerHorizonChapterOrder ?? ''"
           :options="horizonOptions"
-          class="inspector-select"
           @update:model-value="filters.readerHorizonChapterOrder = $event === '' ? null : Number($event)"
         />
       </div>

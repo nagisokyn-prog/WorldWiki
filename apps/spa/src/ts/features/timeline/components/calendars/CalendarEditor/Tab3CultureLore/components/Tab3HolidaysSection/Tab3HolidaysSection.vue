@@ -47,7 +47,6 @@
           <XboxWheel
             :model-value="h.дата_начала.месяц"
             :options="monthWheelOptions"
-            class="form-select"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             @update:model-value="h.дата_начала.месяц = Number($event); $emit('update-holidays', [...holidays])"
           />
@@ -67,7 +66,6 @@
             <XboxWheel
               :model-value="h.дата_конца!.месяц"
               :options="monthWheelOptions"
-              class="form-select"
               :class="{ 'pointer-events-none opacity-60': isReadOnly }"
               @update:model-value="h.дата_конца!.месяц = Number($event); $emit('update-holidays', [...holidays])"
             />

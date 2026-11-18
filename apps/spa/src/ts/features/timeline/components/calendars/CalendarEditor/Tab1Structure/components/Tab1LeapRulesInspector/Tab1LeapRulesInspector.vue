@@ -52,7 +52,6 @@
         <label class="form-label">Целевой високосный месяц</label>
         <div style="display: flex; gap: 10px; align-items: center;">
           <XboxWheel
-            class="form-select"
             style="max-width: 200px;"
             :class="{ 'pointer-events-none opacity-60': isReadOnly }"
             :model-value="targetMonthIndex"

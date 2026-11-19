@@ -21,14 +21,20 @@ apps/spa/src/ts/features/entities/
 │   ├── CharacterJourney.vue
 │   ├── useCharacterJourney.ts
 │   ├── CharacterJourney.model.ts
-│   ├── components/                     # Атомарные элементы таймлайна пути
-│   └── composables/                    # Композаблы фильтрации и хронологии пути
+│   ├── components/                     # JourneyArcGroups, JourneyMeetingGapDivider, JourneyModeToggle, JourneyMultiSelector, JourneyTimelineList, JourneyToolbar
+│   └── composables/                    # journeyArcBindings, journeyLoader, journeyMentionParser, useJourneyChronology, useJourneyFiltersAndGroups...
+│
+├── EntityEditorWindow/                 # Отдельное окно редактора сущности с историей ревизий
+│   ├── EntityEditorWindow.vue
+│   ├── EntityEditorWindow.model.ts
+│   ├── EntityEditorWindow.utils.ts
+│   └── useEntityEditorWindow.ts
 │
 └── EntityEditor/                       # Главный полноэкранный редактор карточки сущности
     ├── EntityEditor.vue                # UI карточки: шапка (аватар, имя, теги), динамические поля, граф связей
     ├── EntityEditor.model.ts           # Интерфейс пропсов и эмиттов EntityEditor
     ├── useEntityEditor.ts              # Главный Composable: загрузка сущности по ID, автосохранение, валидация по схеме
-    ├── components/                     # Подвиджеты (LocationAstronomyWidget, EntityHistoryBanner)
+    ├── components/                     # EntityDynamicContainers, EntityDynamicItemCard, EntityHiddenManager, EntityHistoryAside, EntityHistoryBanner, EntitySectionFields, LocationAstronomyWidget
     ├── composables/                    # Вспомогательные композаблы карточки сущности
     │   ├── entityConfigLoader.utils.ts # Утилиты загрузки конфигураций
     │   ├── useEntityConfigLoader.ts    # Загрузка и резолв референсных данных

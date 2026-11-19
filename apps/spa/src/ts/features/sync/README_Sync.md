@@ -10,7 +10,11 @@
 apps/spa/src/ts/features/sync/
 ├── README_Sync.md                      # Данная всеобъемлющая документация подсистемы синхронизации
 ├── CloudSyncModal.vue                  # Модальное окно управления облаком: статус, выбор провайдера, лог
+├── CloudSyncModal.model.ts             # Пропсы, события и модели состояния CloudSyncModal
 ├── useCloudSyncModal.ts                # Composable синхронизации: запуск пуша/пула, обработка конфликтов, E2E ключи
+├── yandexPkce.ts                       # Генерация одноразовой пары PKCE (verifier + SHA-256 challenge) для Яндекс OAuth
+├── components/
+│   └── CloudSyncExportView.vue         # Подкомпонент экспорта и резервного копирования проекта
 └── __tests__/                          # Юнит-тесты синхронизации (useCloudSyncModal.spec.ts)
 ```
 

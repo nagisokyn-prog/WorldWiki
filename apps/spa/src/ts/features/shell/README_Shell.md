@@ -11,6 +11,7 @@ apps/spa/src/ts/features/shell/
 ├── README_Shell.md                     # Данная всеобъемлющая документация архитектуры оболочки
 ├── EditorView.vue                      # Главный полноэкранный рабочий каркас (Header, Navigation, Workspace, AI Sidebar)
 ├── EditorView.vue.ts                   # Логика оркестрации EditorView: вкладки, горячие клавиши, модалки
+├── EditorView.spec.ts                  # Тесты главного каркаса EditorView
 ├── useEditorViewListeners.ts           # Слушатели IPC и глобальных событий
 ├── useEditorViewListeners.spec.ts      # Тесты слушателей EditorView
 │

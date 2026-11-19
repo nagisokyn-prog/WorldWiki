@@ -97,4 +97,33 @@ mod tests {
         let err = pub_port.publish(FailingSerializeEvent).await.unwrap_err();
         assert!(matches!(err, DomainError::ConstraintViolation(_)));
     }
+
+    #[tokio::test]
+    async fn test_publish_success_for_all_application_events() {
+        let pub_port = DummyPublisher;
+
+        let ch_ev = ChapterUpdatedEvent {
+            chapter_id: "ch_1".to_string(),
+            word_count: 1500,
+            timestamp: 100,
+        };
+        assert_eq!(ch_ev.event_name(), "chapter_updated");
+        pub_port.publish(ch_ev).await.expect("chapter event publish");
+
+        let ent_ev = EntityChangedEvent {
+            entity_id: "ent_1".to_string(),
+            action: "updated".to_string(),
+            timestamp: 200,
+        };
+        assert_eq!(ent_ev.event_name(), "entity_changed");
+        pub_port.publish(ent_ev).await.expect("entity event publish");
+
+        let promise_ev = PlotPromiseUpdatedEvent {
+            promise_id: "pr_1".to_string(),
+            status: "resolved".to_string(),
+            timestamp: 300,
+        };
+        assert_eq!(promise_ev.event_name(), "plot_promise_updated");
+        pub_port.publish(promise_ev).await.expect("promise event publish");
+    }
 }

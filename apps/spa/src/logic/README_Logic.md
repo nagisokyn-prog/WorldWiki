@@ -31,18 +31,26 @@ apps/spa/src/logic/schema/
 │   ├── 01_tables.surql             # 📑 Таблицы и поля ядра (проекты, тома, арки, главы, сущности, таймлайн)
 │   ├── 02_indexes.surql            # 🔍 B-Tree, Composite FK и BM25 Fulltext индексы ядра
 │   ├── 03_events.surql             # ⚡ Set-based каскады и триггеры логирования ревизий
-│   └── 04_functions.surql          # 📊 Хранимые аналитические и графовые функции (fn::get_cross_reference_matrix, fn::get_timeline_inspector_data и др.)
+│   └── functions/                  # 📊 Хранимые аналитические и доменные функции:
+│       ├── 01_analytics.surql      # Матрица связей, инспектор таймлайна, трекер предметов
+│       ├── 02_hierarchy.surql      # fn::get_chapter_hierarchy и операции дерева рукописи
+│       ├── 03_relations.surql      # Графовые связи и отношения сущностей
+│       ├── 04_projects_and_entities.surql # Проекты, сущности и пакетные выборки
+│       ├── 05_revisions_and_blocks.surql  # Ревизии и производные text_blocks
+│       ├── 06_schemas.surql        # Динамические схемы сущностей и связей
+│       ├── 07_narrative_and_journey.surql # Нарратив и путь персонажа
+│       └── 08_calendars_and_planets.surql # Календари, планеты и fn::save_calendar
 └── ai/                             # 🧠 ИИ-пространство (Ultra Edition: аддитивная надстройка)
     ├── 01_workspace_tables.surql   # 🤖 Таблицы чатов, профилей, памяти агента, навыков, словаря
     ├── 02_web_research_tables.surql # 🌐 Декларативные таблицы веб-кэша web_pages и фактов web_evidence
     ├── 03_embeddings_hnsw.surql    # ⚡ entity_chunks и HNSW векторные индексы (768d, 1024d, 1536d, 2048d)
     ├── 04_indexes.surql            # 🔍 B-Tree и BM25 индексы для ИИ-таблиц и веб-кэша
     ├── 05_events.surql             # ⚡ Аддитивные каскады чатов, сессий и чанков (cascade_*_ai_delete)
-    └── 06_functions.surql          # 🔮 Все хранимые функции (fn::upsert_global_web_page, fn::gather_rag_bundle и др.)
+    └── 06_functions.surql          # 🔮 Хранимые RAG-функции (fn::upsert_global_web_page, fn::gather_rag_bundle и др.)
 ```
 
 ### 🎯 Редакции Приложения и Совместимость к Апгрейду
-* **🟢 Редакция Base (Писательский фокус)**: Последовательно выполняет модуль `no_ai/` (`00` $\to$ `03`). Полный функционал вики, лора, онтологии, таймлайна, рукописи и морфологического поиска. Работает мгновенно без каких-либо ИИ-зависимостей.
+* **🟢 Редакция Base (Писательский фокус)**: Последовательно выполняет модуль `no_ai/` (`00` $\to$ `03` и `functions/01..08`). Полный функционал вики, лора, онтологии, таймлайна, рукописи и морфологического поиска. Работает мгновенно без каких-либо ИИ-зависимостей.
 * **🚀 Редакция Ultra (Интеллектуальный соавтор)**: Накатывает слой `no_ai/`, затем донакатывает слой `ai/` (`01` $\to$ `06`). Разблокирует векторный поиск HNSW, DuckDuckGo-исследования, контекст GraphRAG и библиотеку навыков.
 * **🔄 Апгрейд Base $\to$ Ultra**: Полностью бесшовный и аддитивный (Cumulative Plug & Play) — при переходе на Ultra база просто донакатывает модули `ai/01..06` поверх существующего проекта без перетирания таблиц ядра.
 
@@ -229,16 +237,16 @@ flowchart TD
 ```
 
 ### 5.2. Гранулярные Каскады Удаления Доменных Узлов
-* 🧙‍♂️ **Удаление сущности (`cascade_entity_delete` в `01_core.surql`)**:
+* 🧙‍♂️ **Удаление сущности (`cascade_entity_delete` в `no_ai/03_events.surql`)**:
   Очищает все входящие/исходящие связи `entity_rel`, участие в сценах `appears_in`, участие в таймлайне `participates_in`, ревизии карточки `entity_revisions` и ревизии связей `entity_rel_revisions`. В Ultra-редакции `cascade_entity_chunks_delete` удаляет векторные чанки `entity_chunks`.
-* 📖 **Удаление главы (`cascade_chapter_delete` в `01_core.surql`)**:
+* 📖 **Удаление главы (`cascade_chapter_delete` в `no_ai/03_events.surql`)**:
   Очищает `text_blocks`, `appears_in`, `chapter_revisions`, вложенные `plans` и `plot_promises`.
-* ⏳ **Удаление календаря (`cascade_calendar_delete` в `01_core.surql`)**:
+* ⏳ **Удаление календаря (`cascade_calendar_delete` в `no_ai/03_events.surql`)**:
   Не удаляет события таймлайна ($M_{\text{abs}}$ неизменен), а автоматически перепривязывает все привязанные `timeline_events` к главному мастер-календарю (`is_master = true`).
 
 ---
 
-## 🔮 6. Хранимые Аналитические Функции GraphRAG (`05_functions.surql`)
+## 🔮 6. Хранимые Аналитические Функции GraphRAG (`ai/06_functions.surql` и `no_ai/functions/`)
 
 ### 1. `fn::gather_rag_bundle($proj, $q, $limit, $rel_limit)`
 Выполняет 1-раундтриповый сбор гибридного контекста:

@@ -156,8 +156,9 @@ WorldWiki/
 │   ├── components/           # Библиотека базовых UI-компонентов (28 шт.) и модуль Settings
 │   ├── resources/            # Темы оформления, дизайн-токены, шрифты и локали
 │   └── word-vibe/            # Модуль полиграфической постраничной верстки (Tiptap v2)
-├── src-tauri/                # Модульный бэкенд на языке Rust (5 изолированных крейтов)
+├── src-tauri/                # Модульный бэкенд на Rust (13 workspace-пакетов: гексагональное ядро + WASM + llama-sys)
 ├── tauri-surreal-kit/        # Инфраструктурный комплект процедурных макросов SurrealDB
+├── crates/                   # Архитектурный файрвол Cerberus (cargo-cerberus, cerberus-sfc, cerberus-surql)
 └── docs/
     └── coursework/           # Расчетно-пояснительная записка и ТЗ курсового проекта
 ```
@@ -169,7 +170,7 @@ WorldWiki/
 ### Системные требования
 - **ОС:** Microsoft Windows 10 / 11 (64-bit)
 - **Среда Node.js:** v20+ и пакетный менеджер **pnpm** v9.4+
-- **Компилятор Rust:** `rustc` / `cargo` (редакция 2021+)
+- **Компилятор Rust:** `rustc` / `cargo` (редакция `2024`)
 - **WebView2 Runtime** (входит в стандартную поставку Windows 10/11)
 
 ### Установка и запуск
@@ -210,10 +211,9 @@ cargo test
 pnpm lint
 pnpm lint:css
 
-# Запуск инквизиторских скриптов аудита монорепозитория:
-node analyze_vue_monoliths.js       # Аудит чистоты Vue SFC
-node find_css_hardcode.js           # Аудит отсутствия хардкода CSS-цветов
-node check_components_duplicates.js # Контроль отсутствия дубликатов UI
+# Запуск архитектурного файрвола Cerberus (Rust + SFC + CSS токены):
+cargo cerberus check --ci
+cerberus-sfc check
 ```
 
 ---
@@ -221,6 +221,10 @@ node check_components_duplicates.js # Контроль отсутствия ду
 ## 📖 Навигация по документации
 
 - 🏛️ [ARCHITECTURE.md](./ARCHITECTURE.md) — обзорная архитектура фронтенда и бэкенда.
+- 🦀 [src-tauri/README_src-tauri.md](./src-tauri/README_src-tauri.md) — документация бэкенда, 13 workspace-пакетов и WASM-ядер.
+- 🧩 [apps/spa/src/ts/features/README_Features.md](./apps/spa/src/ts/features/README_Features.md) — каталог всех 10 функциональных подсистем SPA.
+- 🔌 [apps/spa/src/ts/services/api/README_Api.md](./apps/spa/src/ts/services/api/README_Api.md) — справочник Tauri IPC-ручек и доменных API-фасадов.
+- 🛡️ [crates/docs/README_Cerberus.md](./crates/docs/README_Cerberus.md) — документация архитектурного файрвола Cerberus.
 - 🛑 [AGENTS.md](./AGENTS.md) — стандарты разработки, правила монорепозитория и архитектурные инварианты (`ARCH-001` .. `ARCH-012`).
 - 📑 [docs/coursework/](./docs/coursework/) — расчетно-пояснительная записка и ТЗ по дисциплине «Модели данных».
 

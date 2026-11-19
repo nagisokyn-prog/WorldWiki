@@ -10,22 +10,22 @@
 apps/spa/src/ts/services/
 ├── README_Services.md                  # 🌟 Данная всеобъемлющая документация сервисного слоя
 │
-├── api.client.ts                       # Низкоуровневый клиент взаимодействия с Tauri IPC / REST
-├── api.service.ts                      # Точка реэкспорта API
+├── api.client.ts                       # Автогенерируемый клиент взаимодействия с Tauri IPC (`invoke`)
+├── api.service.ts                      # Заглушка реэкспорта
+├── api/                                # 🔌 Доменные API-фасады и справочник IPC-ручек
+│   ├── README_Api.md                   # 📖 Полный каталог всех Tauri IPC-ручек и фасадов
+│   └── *.api.ts / api.*.ts             # Фасады: project, chapter, calendar, plot, batch, connection, cloud, search, tag
 ├── project.service.ts                  # Сервис управления проектами (создание, загрузка, переключение, экспорт)
 ├── chapter.service.ts                  # Сервис рукописи (загрузка глав, сохранение содержимого, статистика слов)
 ├── editor.service.ts                   # Координатор активных редакторов, вкладок и фокуса
 ├── uiEditorService.ts                  # Сервис UI-панелей и состояния тулбаров
 ├── footnote.service.ts                 # Индексация и резолв сносок
 │
-├── Calendars/                          # Сервисы подсистемы времени
-│   ├── useCalendarEngine.ts            # Реактивный фасад математического ядра календаря (WASM)
-│   ├── calendar.types.ts               # DTO интерфейсы календарей
-│   └── timeline-panel.ts               # Сервис привязки событий к главам рукописи
-│
-├── Entity/                             # Сервисы базы знаний
-│   ├── entity.service.ts               # CRUD сущностей, графы связей, кэширование
-│   └── useRelationshipBlock.ts         # Логика связей и матриц отношений
+├── AstDiff/                            # WASM-мост ast-diff и diffHtmlBuilder
+├── Calendars/                          # Сервисы подсистемы времени (calendar.wasm-bridge, useCalendarEngine, астрономия)
+├── Entity/                             # Сервисы базы знаний (entity.api, entity.service, entity.tree, entity.utils)
+├── Geography/                          # Иерархия локаций и локальное время (locationHierarchy, locationTime)
+├── Manuscript/                         # WASM-мост FSM-лексера рукописи (manuscript.wasm-bridge)
 │
 └── document/                           # 📑 Комплексный Документный Движок (Document Engine)
     ├── index.ts                        # Точка входа подсистемы документов

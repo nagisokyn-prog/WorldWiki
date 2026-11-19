@@ -14,63 +14,21 @@ apps/spa/src/ts/features/chapters/
 │
 └── components/                         # Декомпозированные подсистемы глав
     ├── workspace/                      # Рабочая область
-    │   └── ChaptersMain/               # Главный 3-панельный сплит-каркас (Vue, Composable, Model, Sidebar, Tabs, Composables)
+    │   └── ChaptersMain/               # Главный 3-панельный сплит-каркас (Vue, Composable, Model, ChapterRightSidebar, ChaptersHistoryDrawer, QuickLinkHint, PlanningMatrixTab, SceneInspectorTab)
     ├── tree/                           # Дерево рукописи
-    │   └── ChapterTree/                # Иерархическое дерево томов/глав/сцен (Vue, Composable, Model, Composables)
+    │   └── ChapterTree/                # Иерархическое дерево томов/глав/сцен (Vue, Composable, Model, useChapterTreeOps, useChapterTreeSections, useCalendarResize)
     ├── editor/                         # Текстовый процессор
-    │   └── EditorCoreTiptap/           # 4-режимный редактор Tiptap v3 (extensions/, composables/, stubs/, utils/, components/)
+    │   └── EditorCoreTiptap/           # 4-режимный редактор Tiptap v3 (EntityLinkSelector, PromiseContextMenu, AiGhostTextExtension, extensions/, composables/, stubs/, utils/, components/)
     ├── panels/                         # Инспекторы сюжета
-    │   ├── PlanningPanel/              # План сцен, цели и статусы готовности
-    │   ├── PromisesPanel/              # Сюжетные обещания и Чеховские ружья
+    │   ├── PlanningPanel/              # План сцен, цели и статусы готовности (PlanArcGroup, PlanItemRow, PlanVolumeHeader, TapestryChapterCard, VolumeBacklogSection)
+    │   ├── PromisesPanel/              # Сюжетные обещания и Чеховские ружья (см. README_NarrativeHub_Spec.md)
     │   ├── ParticipantsPanel/          # Участники, локации и предметы сцены
     │   └── StoryArcs/                  # Арки сюжета и доска ArcBoard
     ├── modals/                         # Диалоговые окна
     │   ├── CreateChapterModal/         # Модалка создания главы/тома
     │   └── ExportModal/                # Экспорт книги в форматы DOCX, PDF, FB2, EPUB, MD, TXT
     └── semantic/                       # Семантическая разметка
-        └── Semantic/                   # SemanticParagraph и SemanticParagraphNode
-```
-│   ├── EntityLinkSelector.vue          # Быстрый попап вставки ссылок на персонажей/локации (триггер '((')
-│   ├── useEntityLinkSelector.ts        # Поиск по базе сущностей проекта и вставка инлайн-тегов
-│   ├── PromiseContextMenu.vue          # Контекстное меню привязки фрагмента текста к Сюжетному обещанию
-│   ├── usePromiseContextMenu.ts        # Обработка выделения текста и создание вехи (Milestone)
-│   ├── AiGhostTextExtension.ts         # Tiptap v3 расширение серого текста-призрака (AI Autocomplete)
-│   ├── extensions/                     # Кастомные расширения форматирования
-│   │   └── WordFormatExtensions.ts     # Расширения шрифтов, цветов, маркеров
-│   ├── hooks/                          # Модули режимов редактора
-│   │   ├── useTiptapState.ts           # Реактивное состояние, статистика слов/знаков, footnotes
-│   │   ├── useTiptapFormatting.ts      # Команды жирного, курсива, списков, цитат, ссылок
-│   │   ├── useTiptapMarkdown.ts        # Парсинг и генерация Markdown через Turndown / Marked
-│   │   ├── useTiptapSplitView.ts       # Сплит-режим структуры: дерево семантических блоков со скроллом
-│   │   └── __tests__/
-│   └── __tests__/                      # Тесты редактора и мостов
-│
-├── Semantic/                           # Семантическая разметка абзацев рукописи
-│   ├── SemanticParagraph.vue           # Бейджи семантики (!о - описание, !д - диалог, !м - мысль)
-│   ├── useSemanticParagraph.ts         # Переключение семантических тегов по клику
-│   ├── SemanticParagraphNode.vue       # ProseMirror NodeView кастомного абзаца
-│   ├── useSemanticParagraphNode.ts     # Интеграция с Tiptap
-│   └── __tests__/
-│
-├── PlanningPanel/                      # Правая панель: План сцен и статус главы
-│   ├── PlanningPanel.vue               # Карточки сцен: цели, POV-персонаж, локация, статус (Черновик / Готово)
-│   ├── usePlanningPanel.ts             # Composable управления сценами и заметками главы
-│   └── __tests__/
-│
-├── ParticipantsPanel/                  # Правая панель: Персонажи и участники главы
-│   ├── ParticipantsPanel.vue           # Список действующих лиц, локаций и предметов сцены
-│   ├── useParticipantsPanel.ts         # Автодетекция сущностей в тексте + ручное добавление в сцену
-│   └── __tests__/
-│
-├── PromisesPanel/                      # Правая панель: Сюжетные обещания (Чеховские ружья)
-│   ├── PromisesPanel.vue               # Список обещаний: открытые, выполненные, нарушенные + шкала вех
-│   ├── usePromisesPanel.ts             # Composable трекинга обещаний, привязка к главам и цитатам текста
-│   └── __tests__/
-│
-└── Export/                             # Экспорт рукописи и книги
-    ├── ExportModal.vue                 # Диалог экспорта в форматы DOCX, PDF, FB2, EPUB, Markdown, TXT
-    ├── useExportModal.ts               # Сборка полного текста рукописи с учетом иерархии томов
-    └── __tests__/
+        └── Semantic/                   # SemanticParagraph и SemanticParagraphNode (!о / !д / !м)
 ```
 
 ---
@@ -125,6 +83,7 @@ flowchart TD
     ASTAdapt <--> ChapStore
     Part <--> EntityStore
     Prom <--> ChapStore
+    
 ```
 
 ---

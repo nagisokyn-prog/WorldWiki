@@ -20,7 +20,12 @@ tauri-surreal-kit/backend/
 │   │       ├── read_ops.rs           # find_by_id_op, find_all_op, normalize_raw_records
 │   │       ├── write_ops.rs          # create_op, save_op, delete_op
 │   │       ├── bind_helpers.rs       # bind_record_id, bind_params, bind_patch_fields
+│   │       ├── calendar_ops.rs       # save_calendar_record (вызов fn::save_calendar)
 │   │       ├── id_helpers.rs         # parse_record_id, ensure_table_prefix, id_to_string
+│   │       ├── id_parse.rs           # Безопасный парсер parse_record_id_ref с защитой от инъекций
+│   │       ├── id_helpers_tests.rs   # Юнит-тесты хелперов RecordId
+│   │       ├── id_helpers_kani.rs    # Формальная верификация Kani для RecordId-парсера
+│   │       ├── json_helpers.rs       # normalize_embedded_things, normalize_map_record_ids
 │   │       └── mock.rs               # MockSurrealDb, MockSurrealRepository для юнит-тестов
 │   ├── surreal_domain_macros/        # Proc-макросы кодогенерации
 │   │   ├── Cargo.toml
@@ -48,7 +53,8 @@ tauri-surreal-kit/backend/
         ├── main.rs                   # Bootstrap, init_database, регистрация системных команд
         ├── lib.rs                    # pub mod logic
         └── logic/
-            ├── mod.rs                # pub mod error; performance; system; system_core; theme;
+            ├── mod.rs                # pub mod builtin_themes; error; performance; system; system_core; theme;
+            ├── builtin_themes.rs     # Встроенные пресеты тем (BUILTIN_DARK, BUILTIN_LIGHT)
             ├── error.rs              # Типизированные ошибки оболочки TauriShellError
             ├── system_core.rs        # Низкоуровневая работа с FS, JSON, директориями
             ├── system.rs             # Tauri IPC команды файловой системы, окна, настроек
@@ -75,7 +81,12 @@ tauri-surreal-kit/backend/
 | `read_ops.rs` | Алгоритмы чтения `find_by_id_op`, `find_all_op` и нормализация сырых записей SurrealDB |
 | `write_ops.rs` | Алгоритмы записи `create_op`, `save_op` (UPSERT) и `delete_op` |
 | `bind_helpers.rs` | Безопасная 100% параметризация запросов: `bind_record_id`, `bind_params`, `bind_patch_fields` |
+| `calendar_ops.rs` | Специализированное сохранение календарей `save_calendar_record` через `fn::save_calendar` |
 | `id_helpers.rs` | Парсинг и форматирование RecordId: `parse_record_id`, `ensure_table_prefix`, `id_to_string` |
+| `id_parse.rs` | `parse_record_id_ref` — безаллокационный парсер `(table, raw_id)` с отсечением инъекционных символов (`{`, `\n`, кавычки, бэктики) |
+| `id_helpers_tests.rs` | Юнит-тесты хелперов идентификаторов |
+| `id_helpers_kani.rs` | Kani-доказательства: `proof_extract_target_id_table_isolation`, `proof_parse_record_id_ref_no_injection` |
+| `json_helpers.rs` | Нормализация `Thing`-объектов и `project_id` в JSON (`normalize_embedded_things`, `normalize_map_record_ids`) |
 | `mock.rs` | `MockSurrealDb` и `MockSurrealRepository` для изоляции доменных юнит-тестов без реальной БД |
 
 **SurrealDb trait**:
@@ -236,12 +247,17 @@ pub mod logic;
 #### `logic/mod.rs` — Реэкспорт подмодулей
 
 ```rust
+pub mod builtin_themes;
 pub mod error;
 pub mod performance;
 pub mod system;
 pub mod system_core;
 pub mod theme;
 ```
+
+#### `logic/builtin_themes.rs` — Встроенные темы
+
+Содержит JSON-константы `BUILTIN_DARK` и `BUILTIN_LIGHT` со стандартной палитрой цветов и параметрами стекла (`glass`).
 
 #### `logic/system_core.rs` — Чистая инфраструктурная логика
 
@@ -706,9 +722,9 @@ cargo llvm-cov --open
 ¹ Непокрытые функции — `__cmd__*` IPC-обёртки `#[tauri::command]`, выполняются
 только при реальном invoke() из webview (нужен e2e / tauri-driver).
 
-Ключевые тестовые файлы: интеграционные тесты живут в `*/tests/` каждого пакета;
+Ключевые тестовые файлы: интеграционные и compile-fail тесты живут в `*/tests/` каждого пакета (включая `surreal_domain_facade/tests/entity_commands_integration.rs`, `macro_compile_fail_tests.rs`, `serialization_integration.rs` и `tests/macros/*.rs`);
 branch-coverage репозитория — `surreal_domain_facade/tests/repository_branches_integration.rs`;
-юнит-тесты DTO — `surreal_domain_core/src/lib.rs` (`mod dto_tests`).
+юнит-тесты DTO и идентификаторов — `surreal_domain_core/src/lib.rs` и `id_helpers_tests.rs` (а также Kani-доказательства в `id_helpers_kani.rs`).
 
 ---
 

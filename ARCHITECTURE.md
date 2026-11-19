@@ -436,11 +436,12 @@ $$\boxed{\text{DomainError}} \longrightarrow \boxed{\text{ApplicationError}} \lo
 │                          WORLDWIKI STACK                               │
 ├───────────────────────┬────────────────────────────────────────────────┤
 │ Desktop Runtime       │ Tauri 2.x + Rust                               │
-│ Frontend Platform     │ Vue 3.5+ (Composition API) + TypeScript 5.8+  │
+│ Frontend Platform     │ Vue 3.5+ (Composition API) + TypeScript 6.x  │
 │ UI & Design System    │ Vanilla Scoped CSS + CSS Custom Properties     │
 │ Client State & Cache  │ Pinia Stores + @tanstack/vue-query             │
-│ Local Persistence     │ SurrealDB v2+ (Встраиваемый движок SurrealKV)  │
+│ Local Persistence     │ SurrealDB 3.x (Встраиваемый движок SurrealKV)  │
 │ Semantic Editors      │ Tiptap v3 (SPA) / Tiptap v2 (Word-Vibe)        │
+│ WASM Compute Cores    │ Calendar / AST Diff / Manuscript FSM (no_std)  │
 │ AI Inference Engine   │ Local llama.cpp (GGUF FFI) / Remote REST APIs  │
 └───────────────────────┴────────────────────────────────────────────────┘
 ```
@@ -455,6 +456,8 @@ $$\boxed{\text{DomainError}} \longrightarrow \boxed{\text{ApplicationError}} \lo
 
 - [Архитектура SPA, Multi-Page HTML и точки входа](./apps/spa/src/ts/README_Architecture.md)
 - [Каталог функциональных доменных модулей](./apps/spa/src/ts/features/README_Features.md)
+- [Сервисный слой и документный движок](./apps/spa/src/ts/services/README_Services.md)
+- [Справочник Tauri IPC-ручек и API-фасадов](./apps/spa/src/ts/services/api/README_Api.md)
 - [Слой реактивных запросов и кэширования](./apps/spa/src/ts/composables/README_Composables.md)
 - [Спецификация схемы данных SurrealDB и GraphRAG](./apps/spa/src/logic/README_Logic.md)
 - [Пакет базового UI-Kit `@worldwiki/components`](./packages/components/README.md)
@@ -462,6 +465,7 @@ $$\boxed{\text{DomainError}} \longrightarrow \boxed{\text{ApplicationError}} \lo
 
 ### 🦀 Архитектура Бэкенда и Ядра (Backend Core)
 
+- [Архитектура бэкенда, 13 пакетов workspace и WASM-ядер](./src-tauri/README_src-tauri.md)
 - [Гексагональная архитектура Rust-монолита и Composition Root](./src-tauri/src/README_src.md)
 - [Инфраструктурный пакет интеграции SurrealDB](./tauri-surreal-kit/backend/README_backend.md)
 

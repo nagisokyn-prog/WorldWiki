@@ -29,16 +29,6 @@ apps/spa/src/ts/features/timeline/
         ├── TimelineInspector/          # Хронологический инспектор томов и глав
         └── TimelinePanel/              # Панель исторических событий таймлайна
 ```
-│   ├── CalendarsPanel.vue              # Карточки календарей в Настройках Проекта (Master Calendar закреплен)
-│   ├── useCalendarsPanel.ts            # Управление списком и синхронизация с Tauri
-│   ├── DateWheels.vue                  # Барабаны прокрутки даты (Xbox/Mouse, горизонтальный/вертикальный режим)
-│   └── useDateWheels.ts                # Кинетика и физика колес прокрутки
-│
-└── UniversalDatePicker/                # 🎯 Универсальный Селектор Даты для Форм
-    ├── README_UniversalDatePicker.md   # 📖 Адаптивный ввод, day clamping, интеграция с сущностями и сценами
-    ├── UniversalDatePicker.vue         # Компактный выпадающий селектор даты для карточек и глав
-    └── useUniversalDatePicker.ts       # Реактивный расчет диапазонов и високосных дней
-```
 
 ---
 
@@ -90,13 +80,14 @@ flowchart TD
 
 ---
 
-## 🧭 Как связаны три подсистемы (Инженерный гид)
+## 🧭 Как связаны подсистемы (Инженерный гид)
 
-| Подсистема | Где живёт в UI | Роль в экосистеме | Ссылка на подробную доку |
-|---|---|---|---|
-| **Реестр Календарей (`CalendarsPanel`)** | Вкладка «Календари» в Настройках Проекта | Точка входа для создания и настройки списка календарей мира. Отвечает за пакетное сохранение в SQLite/SurrealDB через Tauri IPC | [README_CalendarsPanel.md](./CalendarsPanel/README_CalendarsPanel.md) |
-| **Математика и Инструменты (`Calendars`)** | Виджет над деревом глав, «Атлас Времени», панель событий | Выполняет астрономические расчеты, фазы лун, восход/закат солнца, кросс-конвертацию летоисчислений культур и генерацию литературных сводок для текста рукописи | [README_Calendars.md](./Calendars/README_Calendars.md) |
-| **Универсальный Контрол (`UniversalDatePicker`)** | Карточки персонажей, заголовки глав, модалки событий | Компактный встраиваемый селектор для писателя. Позволяет выбрать дату любого календаря с адаптивным числовым или карусельным вводом | [README_UniversalDatePicker.md](./UniversalDatePicker/README_UniversalDatePicker.md) |
+| Подсистема | Расположение | Роль в экосистеме |
+|---|---|---|
+| **Конструктор Календарей (`calendars/`)** | `./components/calendars/` | `CalendarEditor` (5 вкладок: `Tab1Structure`, `Tab2ErasSync`, `Tab3CultureLore`, `Tab4Playground`, `Tab5ReformsDst`), `CalendarAuditModal`, `CalendarPresetsModal`, `DialHierarchyConstructor`, `PlanetCalendarTree`, `CalendarEntityAdapter` и библиотека `presets/`. |
+| **Планеты и Астрономия (`planets/`)** | `./components/planets/` | `PlanetEditor` (`PlanetAstrophysicsTab`, `PlanetMoonsTab`, `PlanetTimezonesTab`, `PlanetPresetsModal`) — параметры орбиты, вращения, лун и часовых поясов. |
+| **Атлас и Виджеты (`atlas/`)** | `./components/atlas/` | `TimeAtlasModal` (матрица конвертации культур, мировое время), `GlobalCalendarWidget` над деревом глав и `GlobalTimeViewer`. |
+| **Инспекторы (`inspectors/`)** | `./components/inspectors/` | `TimelineInspector` (хронология томов и глав) и `TimelinePanel` (события таймлайна). |
 
 ---
 
@@ -115,14 +106,15 @@ flowchart TD
 ## 🧪 Полный запуск тестов подсистемы Времени
 
 ```bash
-# 1. Запуск тестов математики календарей и астрономии
-pnpm test apps/spa/src/ts/features/timeline/Calendars
+# 1. Запуск тестов календарей и редактора
+pnpm test apps/spa/src/ts/features/timeline/components/calendars
 
-# 2. Запуск тестов реестра и барабанов даты
-pnpm test apps/spa/src/ts/features/timeline/CalendarsPanel
+# 2. Запуск тестов планет и астрофизики
+pnpm test apps/spa/src/ts/features/timeline/components/planets
 
-# 3. Запуск тестов универсального селектора даты
-pnpm test apps/spa/src/ts/features/timeline/UniversalDatePicker
+# 3. Запуск тестов атласа времени и инспекторов
+pnpm test apps/spa/src/ts/features/timeline/components/atlas
+pnpm test apps/spa/src/ts/features/timeline/components/inspectors
 
 # 4. Полный прогон всех тестов подсистемы времени
 pnpm test apps/spa/src/ts/features/timeline

@@ -1,0 +1,2042 @@
+[
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "user5645",
+    "score": 24,
+    "url": "https://writing.stackexchange.com/questions/8938/software-for-developing-and-organizing-characters",
+    "title": "Software for developing and organizing characters",
+    "excerpt": "…created, these categories should automatically be available for each character adding images, text files, movies and stuff, or linking to these it would be nice if it somehow interacted with my writing and timeline software (Scrivener and Aeon Timeline) creating relations between characters (married to, boss of, lives next door to, etc.) these relations should not be limited in number What I don't need: character development from archetypes (as in Persona) or a list of mental disorders (as in Character Writer) What I know of: Persona : looks nice, but has these stupid character development tools that I don't need Character W…",
+    "matched_clusters": [
+      "C1",
+      "C5"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "excel",
+      "scrivener"
+    ],
+    "matched_pains": [
+      "cumbersome",
+      "excel",
+      "spreadsheet"
+    ],
+    "relevance_score": 60.8
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "worldbuilding.stackexchange.com",
+    "author": "JBH",
+    "score": 5,
+    "url": "https://worldbuilding.stackexchange.com/questions/264507/parallel-timelines-with-show-hide-option#264512",
+    "title": "Parallel timelines with show/hide option",
+    "excerpt": "…iant story. ( Source ) As mentioned in comments, there are a number of timeline management questions on our sister stack, Writing. Is there a software for story writing with detailed character files and an interactive timeline? (other then aeon timeline and scrivener) Software for developing and organizing characters Software to track multiple protagonists, bios, and timelines Anyone has any super intense software for plot outlining? Aside from mind maps, what other graphical diagrams and graphical elements can you use to document and plan out your novel? To the various solutions mentioned in those questions I can add... Stor…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "excel",
+      "scrivener",
+      "world anvil"
+    ],
+    "matched_pains": [
+      "excel",
+      "frustration",
+      "hated",
+      "headache",
+      "overwhelm",
+      "spreadsheet",
+      "spreadsheets"
+    ],
+    "relevance_score": 52.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Historical_Ad_1631",
+    "score": 178,
+    "url": "https://www.reddit.com/r/writing/comments/1rk2t3n/how_do_you_actually_track_continuity_across_a/",
+    "title": "How do you actually track continuity across a full-length novel?",
+    "excerpt": "…st 30K words I'm curious how other writers handle this, especially anyone working on series or complex ensemble casts: 1. What system do you use to track character details, timeline, and world rules across your manuscript? 2. What kinds of continuity errors slip through most often despite your system? 3. At what manuscript length does your tracking method start to break down? 4. If you write a series, how do you maintain continuity across books? I've been thinking about this problem a lot lately and I'm especially interested in hearing from anyone who writes fantasy or sci-fi with complex world rules — those seem like the harde…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "scrivener"
+    ],
+    "matched_pains": [
+      "forget",
+      "spreadsheets",
+      "tedious"
+    ],
+    "relevance_score": 52.0
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "A Confused Writer",
+    "score": 3,
+    "url": "https://writing.stackexchange.com/questions/58692/software-to-track-multiple-protagonists-bios-and-timelines",
+    "title": "Software to track multiple protagonists, bios, and timelines",
+    "excerpt": "…ave more than one main protagonist. My story has five main characters and the POV switches throughout the story Timeline that I'm able to move around Something that'll give me advice or ideas on the plot based on what I've written (such as plot holes or advice on relationships) This is most likely impossible Something that'll allow me to simply write out a bio for characters and places I understand if this seems impossible. I'm just looking for something similar to this. I've tried Mariner Persona, Contour, and Dramatica before but I found them to be pretty limited and difficult to understand. What I found limited was the…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "google docs",
+      "world anvil"
+    ],
+    "matched_pains": [
+      "difficult to",
+      "forgetful",
+      "hard to",
+      "messy"
+    ],
+    "relevance_score": 44.6
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "jsann",
+    "score": 423,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1tz3qlq/notebook_navigator_31_brings_scrivenerstyle/",
+    "title": "Notebook Navigator 3.1 brings Scrivener-style sidebars to Obsidian!",
+    "excerpt": "Notebook Navigator 3.1 brings Scrivener-style sidebars to Obsidian! — One of the main issues when moving from Scrivener to Obsidian is losing that **attached writing context**. If you use Scrivener, you probably rely on the Inspector notes panel, where you can keep scene notes, reminders, and scratch text beside the section you are writing. Ulysses has a similar sense of structure with **sheets inside groups**, but Obsidian has never really had a native way to make folder context follow you around while br…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 44.0
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "MrDidz",
+    "score": 3,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/wr5ren/creating_the_calendar_with_onetime_events_for_a/ikruhpn/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — I have to admit that I would never consider using World Anvil for this as it's far too clunky to use. I do use the Timeline feature for plotting my [campaign timeline,](https://www.worldanvil.com/w/wfrp-fragile-alliances-didz/t/making-the-rounds-timeline) but when it comes to detailed plotting of character movements, locations and timelines I find [the best tool is Excel…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "excel",
+      "world anvil",
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky",
+      "excel"
+    ],
+    "relevance_score": 41.6
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "Sorsha_OBrien",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1wjv5i4/ways_to_get_unstuck_when_you_write_yourself_into/pej863s/",
+    "title": "r/fantasywriters ('track')",
+    "excerpt": "…stance, I'll make a comment like **\\[parallel\\]** \\[idk how much you know about comments\\] and then write how the scene is a parallel. Or, **\\[double\\]** which either indicates what the character saying having a double meaning, like either foreshadowing, or with the information THEY know it has a double meaning. Or, **\\[gonna say\\]** is what a character was going to say but didn't because they were interrupted or stopped themselves. So these help me remember how other characters are feeling/ thinking in the scene OR my own like, meta-stuff to do with this. I also have others like **\\[behaviour\\]** \\[where I explain why the ch…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "onenote",
+      "scrivener"
+    ],
+    "matched_pains": [
+      "forgotten",
+      "slow"
+    ],
+    "relevance_score": 41.2
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "wetcircuit",
+    "score": 1,
+    "url": "https://writing.stackexchange.com/questions/41850/creating-and-keeping-track-of-characters#41922",
+    "title": "Creating and keeping track of characters",
+    "excerpt": "…even if it is superficial. What do these characters want/need, and how do they require the other characters to get it? For me, this starts with plotting my main character arcs individually, everything they should experience in the logical narrative order to tell their story. Before this process, I typically have a loose plot outline consisting of Mary Sue characters and their flattering \"power moments\". I also have an idea of the obvious personality clashes (A___ is quick to act, B___ is over-cautious), but this is general and not yet dynamic. I use a pseudo- Snowflake method to define the start and end states of the most impo…",
+    "matched_clusters": [
+      "C2",
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgettable",
+      "frustrated",
+      "frustrating",
+      "overwhelmingly",
+      "workaround"
+    ],
+    "relevance_score": 40.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "Sorsha_OBrien",
+    "score": 3,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1xou1cu/massive_outline_and_managing_sprawling_stories/19sayg3ffaxy9/",
+    "title": "r/fantasywriters ('track')",
+    "excerpt": "…gotten what I've written. So it's kind of chasing novelty within your own story. Often as well, I'll later -- like weeks or months later -- go back to a particular scene and know what should come next/ how to keep going. Like, if there's a plot hole or something I don't know yet, I'm just like 'enh it will come to me/ I'll fix it later' and most of the time it does. You can legit just explain away/ make up the reason for anything happening -- which is basically what fiction is. Also, none of these individuals books are 'done' yet. For some scenes I have more prose \\[or like, a first draft of prose\\] and for others I basic…",
+    "matched_clusters": [
+      "C3",
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [
+      "forgotten"
+    ],
+    "relevance_score": 39.6
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "MrDidz",
+    "score": 2,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/j36njd/why_i_should_use_this/g7dseou/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — First off! There is no need to pay out any money for World Anvil. If all you are doing is creating and recording a world, then WA has everything you need free of charge. The subscription system only really kicks in if you want to use WA for more than a basic world-building tool. In my case, I decided to start using it as a campaign manager and so had to pay to unlock the…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "world anvil",
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "annoying",
+      "clunky",
+      "frustration"
+    ],
+    "relevance_score": 39.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "grimborg",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=25070729",
+    "title": "Notion Timeline View",
+    "excerpt": "Notion Timeline View — If the Notion timeline view had more granularity (hours and not just days), it would become a great tool to plan novel scenes! (I’m using Aeon Timeline for now, but it’s clunky and doesn’t get any updates. I’d switch to Notion in a heartbeat!)",
+    "matched_clusters": [
+      "C1",
+      "C6"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "notion"
+    ],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 39.2
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "worldbuilding.stackexchange.com",
+    "author": "Annie.E.",
+    "score": 3,
+    "url": "https://worldbuilding.stackexchange.com/questions/264507/parallel-timelines-with-show-hide-option",
+    "title": "Parallel timelines with show/hide option",
+    "excerpt": "…things around or make dependencies visible. I use obsidian canvas for now and it works okay but lacks the option to hide. I am also very grateful for your concerns that the story will get too complex. As I mention below: I want to prevent continuity issues and forgotten plot lines. So this is for me and likely any potential reader will never know I needed this :)",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "forgotten",
+      "hard to",
+      "messy",
+      "spreadsheet"
+    ],
+    "relevance_score": 37.6
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "user5645",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/18070/make-emacs-or-vim-etc-like-ulysses#18071",
+    "title": "Make Emacs (or vim etc) like Ulysses",
+    "excerpt": "…g on loose paper and small file cards (with the help of scissors, glue, colored markers and a large floor – a very sensual and fun process), writing in a text editor (TextWrangler) and writing and rewriting in Scrivener. I have also used Aeon Timeline, Excel, HTML files (edited in an editor and viewed in a browser), photographs, and other applications and media to help me alongside my paper/editor/Scrivener core apps. If you want a software that exactly fits your personal writing style, you need to program it yourself – possibly a new one for every new book that you approach differently. The more flexible approach is modu…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "excel",
+      "scrivener"
+    ],
+    "matched_pains": [
+      "excel"
+    ],
+    "relevance_score": 36.4
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "spacer_geotag",
+    "score": 11,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1s9vmm1/new_to_yaml_is_it_bad_to_have_longmultiparagraph/",
+    "title": "(New to YAML) Is it bad to have long/multi-paragraph notes/descriptions in YAML frontmatter? (If so, is there a plugin that works similar to Scrivener's outliner & synopsis editing view?)",
+    "excerpt": "…sort of top-down view of all of your chapters/scenes and set it to show just the Title + Synopsis and you can edit that synopsis. You can move the file around if necessary so you don't have to commit to writing every scene in any finalized chronological order. It's all drag & drop so it's a bit smoother/less clumsy than just cut+pasting headers & content within headers. I tend to be pretty wordy in my planning so my synopses are more like 900-word summaries sometimes. I've been able to basically do this with bases but I'm running into a concern—if I have multiple paragraphs in my summary (currently just using a text property for…",
+    "matched_clusters": [
+      "C2",
+      "C6"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 36.2
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "worldbuilding.stackexchange.com",
+    "author": "Toph",
+    "score": 2,
+    "url": "https://worldbuilding.stackexchange.com/questions/267840/backing-into-character-ages-based-on-a-fantasy-calendar#267842",
+    "title": "Backing into character ages based on a fantasy calendar",
+    "excerpt": "Backing into character ages based on a fantasy calendar — I would use a spreadsheet for this, such as Google Sheets or Excel or LibreOffice Calc. Put the character dates of birth vertically in column B, the dates of significant events horizontally in row 2, and fill in cell C3 with this formula: = FLOOR((C$2-$B3) / 365.25) if you entered the dates in days, or simply = C$2-$B3 if you entered them in years. Adjust the references ac…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "excel",
+      "google sheets"
+    ],
+    "matched_pains": [
+      "excel",
+      "spreadsheet"
+    ],
+    "relevance_score": 34.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "seking9",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xjzeml/project_workflow_recommendation_and_migration/19ryay60nt1vp/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I wouldn't try to recreate that OneNote page 1:1 — I'd split it into three layers that each do one job well. First, keep the zoomable overview, but make it one Canvas per area of responsibility rather than one giant canvas for everything. Put each project on it as an embedded note, not a copy — so you can drag the card around and edit the note right on the canvas, an…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "onenote"
+    ],
+    "matched_pains": [
+      "clunky",
+      "painful"
+    ],
+    "relevance_score": 34.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Specific_Ability_396",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xq4a4w/absolute_noob_to_obsidian_here_how_do_i_use_it/19sacojibonj9/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I agree with everyone else. Use it and see what problems or limitations you encounter, then go look for solutions. I had been journaling for about 5 years in onenote before I made the switch and the problem I ran into was that I kept getting the same insights and ideas - I just forgot about them even though I had journaled about them before. So the main advantage of obsi…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "onenote"
+    ],
+    "matched_pains": [
+      "forgot",
+      "limitations"
+    ],
+    "relevance_score": 34.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "Rockwallguy",
+    "score": 1,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/h9r72l/how_do_you_use_calendars_for_different_campaigns/fv1kuhq/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — Here's my question. My party spends two days in Town A, spends 3 days traveling to Town B, then spends 5 days in town B. Where do I put that? I'm not looking for a session summary - I get how to work that, I'm looking for a way to visually show time passage. Both the timelines and the calendars are set up through the world screen, not the campaign screen. So I'm not sure…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "world anvil",
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky",
+      "frustrating"
+    ],
+    "relevance_score": 34.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "Temporary-Leg-5198",
+    "score": 25,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1t8uyam/i_made_an_offline_worldbuilding_tool_for_fantasy/",
+    "title": "I made an offline worldbuilding tool for fantasy writers who are tired of subscription apps - it's a single HTML file you open in your browser",
+    "excerpt": "…s in it: \\* Characters, factions, cultures, races, religions, creatures, artifacts — all the building blocks of a living world \\* A relationship web so you can actually see how your characters and power structures connect \\* Timeline and custom calendar system so your history feels real and internally consistent \\* Map section with pins linked to your world entries \\* 17 generators for when you need a name, settlement, or plot detail on the fly \\* Multiple worlds so you can keep separate projects from bleeding into each other \\* Export your full world as Markdown to paste into Notion, Obsidian, or wherever you write Built it…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "notion",
+      "obsidian"
+    ],
+    "matched_pains": [
+      "hated"
+    ],
+    "relevance_score": 34.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Ill_Tempered_Techie",
+    "score": 26,
+    "url": "https://www.reddit.com/r/writing/comments/1ba35e3/how_meticulous_are_you_with_continuity_and/",
+    "title": "How meticulous are you with continuity and smaller details...",
+    "excerpt": "…ntinuity and smaller details... — Just started to write my novel again. I sadly don't get a lot of time to work on my novel, I've started a few times then life gets in the way. :( This may be due to my irritating ability to pick up minor continuity errors, films, books, etc. or just my OCD, but I've written an Excel spreadsheet that has key dates relating to the story, some back story events, then for the chapters, key interactions, character ages, time between events, etc. Does anyone else do anything like this or is it complete overkill just to appease my OCD? I've found it really good for planning the story too, I've made se…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "excel"
+    ],
+    "matched_pains": [
+      "excel",
+      "spreadsheet"
+    ],
+    "relevance_score": 32.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "ArchyDWolf",
+    "score": 1,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/1xfpnr1/do_you_use_world_anvil_for_campaign_management/19roy5r0ehl41/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — Yea... It seems a great platform for lore but it is so slow and clunky and argh.. Frustrating I suppose. I wanted an all in one solution, I liked that I could sync it in foundry (in theory, there's a module for it).",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky",
+      "frustrating",
+      "slow"
+    ],
+    "relevance_score": 32.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "Lotus_swimmer",
+    "score": 35,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1fo8lwi/those_using_obsidian_for_fictionnovel_writing/",
+    "title": "Those using Obsidian for fiction/novel writing, could you tell me how it does against Scrivener?",
+    "excerpt": "Those using Obsidian for fiction/novel writing, could you tell me how it does against Scrivener? — I'm currently trying to decide between using Scrivener and Obsidian to write my novels. (I've already dropped a query on the Scrivener sub and it feels very compelling to get it.) But just in case, I thought I should ask the novel writers in this group to share why they're using Obsidian instead of Scrivener (or if they're using both). To me the attraction with Obsidian is that I can work in the same space as the wiki for my novels. However, a…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 31.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "LuckofCaymo",
+    "score": 3,
+    "url": "https://www.reddit.com/r/writing/comments/1ds1yt2/flash_backs_vs_chronological/",
+    "title": "Flash backs vs chronological",
+    "excerpt": "…something that sets the story in motion. It's too much. I need to start simpler. My first chapter is just that. It's great for a new beginning with the mc and a main actor in the prologue. Which hinges off the prologue. I think I got to do flashbacks or something. Regardless the prologue has to be fully revealed before 25k words(I think) and it is now 5.5k words long. I feel pretty good about the writing of the prologue. Its just too long for an opening, like 8 important people and maybe double that in background characters. The first chapter is only 2 characters and it stays that way for several chapters. Around chapter 4…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate",
+      "headache",
+      "issues with",
+      "painful",
+      "slow",
+      "slowly"
+    ],
+    "relevance_score": 30.6
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "Maursault",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=32889453",
+    "title": "My Dad and Kurt Cobain",
+    "excerpt": "…he record, and through download sites like iTunes, Amazon, Zune Marketplace, Rhapsody and venues like YouTube, but usually not radio. Once playing on radio stations in major cities, record sales immediately follow. LoFi is more organic and word of mouth, thus there is far slower adoption. I think without airplay, Nirvana could not have achieved \"overnight\" success. Fame would still have occurred, just much, much more slowly. And staling fame is often a tactic. Bands have only so much time, so much energy. Once the whole nation wants them, the art itself becomes more difficult to produce, because of the distractions of fame taking up all their time. If…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to",
+      "limitations",
+      "slower",
+      "slowly",
+      "struggling"
+    ],
+    "relevance_score": 30.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writers",
+    "author": "Mysterious-Eagle4690",
+    "score": 1,
+    "url": "https://www.reddit.com/r/writers/comments/rp3b7g/the_second_part_of_one_of_my_first_pieces_of/",
+    "title": "The second part of one of my first pieces of writing. any criticism on the story (Build up and pay off, caracters, any plot holes, etc) or of the writing overall would be apriciated.",
+    "excerpt": "The second part of one of my first pieces of writing. any criticism on the story (Build up and pay off, caracters, any plot holes, etc) or of the writing overall would be apriciated. — Part one: [https://www.reddit.com/r/writers/comments/rko7wx/a\\_small\\_part\\_of\\_my\\_first\\_writing\\_piece\\_any/?utm\\_source=share&utm\\_medium=web2x&context=3](https://www.reddit.com/r/writers/comments/rko7wx/a_small_part_of_my_first_writing_piece_any/?utm_source=share&utm_medium=web2x&context=3) We rushed back to the cam…",
+    "matched_clusters": [
+      "C3",
+      "C4"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate",
+      "slowly"
+    ],
+    "relevance_score": 30.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Immediate-Lab-2891",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xp9pcn/thinking_of_leaving_notion_are_there_any_creators/19s83daaxb7uq/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — For the canvas issue just use an alias when linking like \\[\\[Novel Page|Short Summary\\]\\]. Obsidian handles this natively without any plugins and it works perfectly for timelines. Regarding tutorials I recommend Nick Milo or Linking Your Thinking on YouTube since they focus on building your own system rather than giving you a rigid template to copy which is a common trap…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "notion",
+      "obsidian"
+    ],
+    "matched_pains": [
+      "overwhelmed"
+    ],
+    "relevance_score": 29.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "storm666_jr",
+    "score": 9,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/1mkvsdc/the_new_editor_sucks/n7mo4e9/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — I‘m all up for change - if it is in the right direction. And making a feature the new default, when it is obviously not done and not on par with the old feature is an odd choice. The main appeal of WA is for writers, creatives and game masters. What do they want? Quickly open new articles and fill them with lore, stories and fantastical worlds. But you put a barrier up…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky",
+      "slowed"
+    ],
+    "relevance_score": 28.8
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Nora De Weyer",
+    "score": 8,
+    "url": "https://writing.stackexchange.com/questions/35119/is-there-a-software-for-story-writing-with-detailed-character-files-and-an-inter",
+    "title": "Is there a software for story writing with detailed character files and an interactive timeline? (other then aeon timeline and scrivener)",
+    "excerpt": "Is there a software for story writing with detailed character files and an interactive timeline? (other then aeon timeline and scrivener) — I'm looking for a writing software that's user friendly and doesn't require endless tutorials to figure out. Plotist seems to be a good start, but their timeline is too simple and doesn't even have actual date or time on it... Also there character profiling could be more organised and interactive with their system. This would be perfect: beautiful timeline w…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 25.6
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Sufficient_Spells",
+    "score": 2,
+    "url": "https://www.reddit.com/r/writing/comments/18ggxl7/advice_nonlinear_narrative_or_no/",
+    "title": "[Advice] Non-linear narrative? Or no?",
+    "excerpt": "[Advice] Non-linear narrative? Or no? — I'm an aspiring author, first book, nearly done with a second draft. I have the story broken up into chunks, and I'm working on the transitions from chapter to chapter. My 'clock' in the story, is the moon. 1. Character A meets character B. 2. They spend time getting to know each other and find they have dreams that align. 3. They plan and prepare. 4. Character B d…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "broken",
+      "struggle",
+      "struggles"
+    ],
+    "relevance_score": 25.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "minotauris",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=47027298",
+    "title": "Cursor for Writers: How I chained parallel agents to track narrative consistency",
+    "excerpt": "…idebar without the user ever feeling a lag. The Feature: The Live Story Map Instead of a static “World Bible” that you have to manually update (which no writer does), Minotauris builds the wiki for you. It tracks antagonists. It tracks plot threads. It tracks character physical traits. If you try to write a scene that contradicts the map, the AI nudges you. It’s like a compiler error, but for plot holes. The “Unlimited” Problem We are currently testing a unique rate-limit approach. Because Minimax and our Llama 8b (via Groq) implementation are so efficient, we can offer “True Unlimited” tiers for pro users. We…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgets",
+      "lag",
+      "nightmare"
+    ],
+    "relevance_score": 25.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "Kylin_VDM",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1jnfzu1/obsidian_from_scrivener/",
+    "title": "Obsidian from Scrivener",
+    "excerpt": "…going to Obsidion for novel writing and was wondering if anyone had made a similar change and had advice for me? My scrivener project is a bit of a mess since I have about rounds of heavy revisions going on. I'm currently looking into the longform plugin but haven't had a chance to dig into it much yet. (If you have a tutorial you recommend please link me up) Somethings I'd love advice on is how to make a good timeline within obsidian as well as tracking data like whose in what scene, which arm go bitten by a dog or where the mcguffin is? I write epic fantasy if it matters. The written wiki part I'm actully excited about build…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "Tallain",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=43851218",
+    "title": "Ask HN: What are you working on? (April 2025)",
+    "excerpt": "…need a beta reader, let me know. I use a mix of things. For a long time I used vim with some plugins to emulate iA Writer, along with vimwiki for general notes. Now I use Obsidian for notes (general stuff like character bios, tags, ways to track relationships, worldbuilding stuff). I use iA Writer for a quick outline and first draft because it's simple and distraction-free, and I like its focus mode. Again this can be done with vim, I can send you my .vimrc if you're curious. I just wanted to support the company. Once the first draft is done, I spin up Scrivener. I put in the notes from the outline into the corkboard view, then pas…",
+    "matched_clusters": [
+      "C4"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.2
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "buildwright",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=48052774",
+    "title": "Show HN: LaoTzu Writer Studio",
+    "excerpt": "…N: LaoTzu Writer Studio — Wow, this looks like a great combination of best parts of the writing tools I've been using, from Storybook back in the day (now open sourced oStorybook) to Scrivener. I'm currently using Scrivener together with Aeon Timeline. This looks like a great program to tie everything together. Is the single lifetime license just a launch promotion? I'm wondering as you might need to bolster the revenue model a bit to sustain development. Great job though, looking forward to seeing it!",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.2
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "StoneTable",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=36951972",
+    "title": "Show HN: Markwhen: Markdown for Timelines",
+    "excerpt": "Show HN: Markwhen: Markdown for Timelines — Thirded. As a writer, I'm currently using Aeon Timeline ( https:&#x2F;&#x2F;timeline.app&#x2F; ) to track fictional timelines. It does a nice job of handling and displaying the data but it's fairly complex and not Markdown. An Obsidian plugin would be super useful in getting my workflow 100% Markdown.",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline",
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "SugarFree_3",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1ox3m1b/question_for_writers_and_scrivener_users/",
+    "title": "Question for writers and scrivener users",
+    "excerpt": "…grate their workflow to keep track of characters, timelines, subjects (maybe using bases or cards?). I would like to be able to create cards with a sentence on each, and play with the order of them in Canvas. Also, I have tried linking the Scrivener with Obsidian using Scrivener's external file sync, but the binder is completely disorganized when it appears in Obsidian, and it makes me nervous. Would love to see pictures of your process, if you have them!",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian",
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Mean_Lawyer7088",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xuegok/can_obsidian_give_me_the_visual_experience_of_the/19sji5z6eb869/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Well install docker, setup an linux vm connect your IDE to your linux vm via remote ssh. Anonmyce your vault, so that u only have your \"system\" and settings left. Copy That into your vm storage. Switch Back to your IDE in their u have now a sandboxxed os with your vaul as an template. Now u can tinker brainstorm via chat in the ide extensions and mockup design your vault…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "notion",
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 24.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "SuppaDumDum",
+    "score": 9,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xr9w1r/obsidian_just_passed_10000_community_plugins/19scjwv7c9vz7/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I agree but in defense of the whiners, there are advantages when the community has **THE Standard** tool for something. It ends up being the one everyone learns, that everyone builds around (eg in making sure Obsidian stays compatible with it, that other plugins do too, in using it as an auxiliary tool that depends on it), perhaps we would be in a worse world if there we…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "frustrating"
+    ],
+    "relevance_score": 23.8
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/ObsidianMD",
+    "author": "fera_boo",
+    "score": 6,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1ppk3ro/themes_for_worldbuilding_and_writing/",
+    "title": "Themes for worldbuilding and writing?",
+    "excerpt": "…in concerns: **1. Performance**: My laptop is getting old (it's seen better days) and I don't want a theme that will make Obsidian slow or sluggish. Smooth performance is important to me when I'm in writing mode. **2. Customization without too many plugins**: I want to try not to rely on too many plugins so the vault doesn't slow down. The less I have to depend on additional plugins and the more customization the theme has natively, the better.",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "slow"
+    ],
+    "relevance_score": 23.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "goldy1064",
+    "score": 4,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xuu4du/how_do_you_deal_with_not_having_a_date_modified/19sju8nnzwnmt/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — This was almost the gating issue for me to use obsidian. You have to keep it in the frontmatter and use plugin to keep it updated. Bases at least makes reporting on this much simpler than when you had to use dataview. At first, I used linter but it was a poor user experience. Every time it auto linted the frontmatter, the note scrolled to the top. I’ve been happier wit…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "forget"
+    ],
+    "relevance_score": 22.8
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "SF.",
+    "score": 13,
+    "url": "https://writing.stackexchange.com/questions/9505/when-do-i-explain-my-created-world-scenario-in-a-prologue-vs-letting-it-unfold#9507",
+    "title": "When do I explain my created world scenario in a prologue vs. letting it unfold in the story?",
+    "excerpt": "…e original would find recaps in the main story tedious. These who didn't, would feel lost. So, \"in last episode...\" Hanging some chekov guns. You have no good opportunity to do that from the main story, but there are things you simply must foreshadow early on. This list is not complete, by any means, nor ultimate - e.g. quite often you can do an interesting and captivating recap of past events in a sequel without need for an intro.",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "painlessly",
+      "tedious"
+    ],
+    "relevance_score": 22.6
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "donethisbe4",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xw91xa/one_central_calendartimeline_that_i_can_add_to/19sn4a4dcekn5/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — How massive a list? The Dataview community plugin is a great way to handle that but will run slowly once you get into many-hundreds of events or tens-of-thousands of notes. At that point, though, you can filter to subsections to improve the speed. Super quick, simplistic example. With Dataview enabled, paste this into any note: ``` - event 1 [date::2026-11-14] [e::remind…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "slowly"
+    ],
+    "relevance_score": 22.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "GracHol",
+    "score": 2,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/gkc24a/organizing_plots_in_correct_order/fqqevvc/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — I'm wondering how you're getting on with having each act and scene be it's own article. Is it clunky? I have been creating a 'Session' plot and adding scenes within it. I'm not 100% sold on this method yet but it is working. If any plot really needs it's own article, I nest it under the session one. As well, you can use the previous/next article options on the Navigation…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 22.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "dakrisht",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=6132214",
+    "title": "Introducing Quip",
+    "excerpt": "…note, the list goes one. Saying the \"software that we use to get work done has not evolved over the past thirty years\" is just utter nonsense. It has evolved, quite a bit. As much as I don't want to praise Microsoft, they've been improving Word (sure, Office for iOS is terrible) slowly but surely over the years. It's a solid WP and you give credit where credit is due. With regards to this application, the \"thread approach\" to document sharing and collaboration is an interesting notion. That is if you share a lot of documents with other social-based users a la FB style, but I highly doubt you're going to see attorneys redlining agreements in a feed - although…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "notion"
+    ],
+    "matched_pains": [
+      "slowly"
+    ],
+    "relevance_score": 22.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "TuquequeMC",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xuojgm/new_to_obsidian_need_some_plugins/19sjj9p85v8w3/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — The ones I use are: Dataview Pretty Properties Callout Manager File Explorer++ Local Backup However I recommend using regular obsidan once you encounter something is limiting you, then try to find a plugin for that. I also recommend limiting your vault to few plugins since you might get overwhelmed/distract your self from learning core obsidian which is very very powerfu…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [
+      "overwhelmed"
+    ],
+    "relevance_score": 22.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "Macabara",
+    "score": 1,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/1lo1r9l/old_version_editor_as_default_world_editor/ob3mxyg/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — You really appear everywhere I find WorldAnvil online, it's kind of impressive. Sorry to bring this up months later, but I was wondering if you've found an alternative site/app that's viable? I just cannot abide the new UI, it's clunky and unbelievably anti-user.",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 22.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "WilloGT",
+    "score": 1,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/1mkvsdc/the_new_editor_sucks/n82im43/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — It's bad, to put it nicely. Worldanvil went from smooth to clunky. I spend more time fighting your new UI than write anything. Even when I can write, I am a hot breath away from my hours of writing to just randomly disappear and it never coming back. You used to be a website where I could collect all my writing files. Now, with the website getting clunkier and clunkier,…",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 22.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/WorldAnvil",
+    "author": "Arigga01",
+    "score": 1,
+    "url": "https://www.reddit.com/r/WorldAnvil/comments/p6i6gu/roughly_two_years_ago_we_signed_up_for_a_1year/hk3o78n/",
+    "title": "r/WorldAnvil ('clunky')",
+    "excerpt": "r/WorldAnvil ('clunky') — Yes, very disappointing campaign features. So clunky compared to the world building. But, seems like everyone is aware and working on it.",
+    "matched_clusters": [
+      "C6"
+    ],
+    "matched_tools": [
+      "worldanvil"
+    ],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 22.2
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Ville Niemi",
+    "score": 8,
+    "url": "https://writing.stackexchange.com/questions/43773/showing-mass-murder-in-a-kids-book#43794",
+    "title": "Showing mass murder in a kid's book",
+    "excerpt": "…ks them as acceptable target) what happens to them is invariably heroic not horrible. Even Boromir dies like a hero. In fact Boromir is fairly obvious how to kill your characters example. He makes a clearly bad error that has been properly foreshadowed and that directly leads to his death scene. He understands his error and genuinely repents. He dies a heroic death complete with Sean Bean. Can't die better than that. In your case since you suggest the characters are sent back in time for a reason by God (?) you can just play up the \"go there, do your task, go back home\" aspect of it. The characters really might have literal…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgot",
+      "painful"
+    ],
+    "relevance_score": 21.6
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writers",
+    "author": "Odd-Print-7031",
+    "score": 5,
+    "url": "https://www.reddit.com/r/writers/comments/1vlroyb/stuck_on_plot_holes_and_choosing_a_genrehow_do/",
+    "title": "Stuck on plot holes and choosing a genre—how do you resolve logical story questions?",
+    "excerpt": "Stuck on plot holes and choosing a genre—how do you resolve logical story questions? — ​My new book idea started out simple and exciting, but as soon as I began plotting, a ton of logical plot questions popped up that I don’t know how to answer. On top of that, I’m struggling to narrow down the exact genre, and it’s getting really frustrating. ​How do you methodically work through l…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "frustrating",
+      "struggling"
+    ],
+    "relevance_score": 21.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writers",
+    "author": "Heavy_Solution_7966",
+    "score": 4,
+    "url": "https://www.reddit.com/r/writers/comments/15a0w8g/do_you_all_hate_plot_holes_as_well_as_a_writer/",
+    "title": "Do you all hate plot holes as well as a writer?",
+    "excerpt": "Do you all hate plot holes as well as a writer? — Plot holes are the [bane of my existence](https://www.toodat.com/community/Plotholesa/ForWriters/83X46dBBBkd79jAk). Fix one, and two more pop up! I relate to this [article](https://www.toodat.com/community/Plotholesa/ForWriters/83X46dBBBkd79jAk) because like I have been writing for the longest time, and I'm still struggling with novels because of this.…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate",
+      "struggling"
+    ],
+    "relevance_score": 20.8
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/fantasywriters",
+    "author": "PurpleYellow36",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1kdbrgh/advice_on_naming_for_year_notations_for_my_storys/",
+    "title": "Advice on naming for year notations for my story's calendar system",
+    "excerpt": "Advice on naming for year notations for my story's calendar system — Hello, you know how we use BCE/BC & CE/AD as year notations for the Gregorian calendar? I want to do something similar in my story to reflect the time before and after a specific event happened. See 157 years ago the royal family of the Kingdom of Leth formed a pact with a magical being that gave them the ability to create magical boundaries. The world was experiencing lik…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate",
+      "struggle"
+    ],
+    "relevance_score": 20.4
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "SC for reinstatement of Monica",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/26182/where-in-the-writing-process-do-you-work-in-subtext#26246",
+    "title": "Where in the writing process do you work in subtext?",
+    "excerpt": "…rt of the plot, with the characters representing something bigger than them and every word and action being carefully thought out to create the right impression. I'll assume that is not what you're doing. So you have a story with the plot, subplots and characters fleshed out and ready to navigate the action. But you want to make all this deeper; you want to shine a subtle light on a less visible personality trait (because the villain is tragically in love and refuses to acknowledge it while the hero is hiding from the reader and the narrator how dark his heart truly is). You have two ways to go about it: if you're a plan…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to",
+      "messy"
+    ],
+    "relevance_score": 20.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "teleportingparadox",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/hamly6t/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — Certainly, it is good to know what others of the genre are doing, but it is still nothing “necessary.” It may be helpful, it may be productive, but if one does not wish to build off of or respond to others of the very genre, I don’t believe it is a necessity to read within the genre. In fact, one doesn’t have to write “within a genre” at all; a writer might ve…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to",
+      "wish"
+    ],
+    "relevance_score": 20.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "NorinBlade",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1m7ms6b/feedback_for_my_fantasy_calendar_political_fantasy/n4ul24o/",
+    "title": "Feedback For my Fantasy calendar [Political Fantasy]",
+    "excerpt": "Feedback For my Fantasy calendar [Political Fantasy] — This is only my opinion but that seems quite complicated. I think if I read a book with references to \"White Day, the 22nd of Moon Month, Water Year 2732 according to the Garden Count\" I would get quickly confused, and particularly frustrated if I was expected to actually understand what these dates meant. This loosely falls under the concept of neologi…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "frustrated",
+      "frustration"
+    ],
+    "relevance_score": 20.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Old_Mulberry2044",
+    "score": 17,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xr868f/to_all_the_students_who_use_obsidian_to_study_and/19serrobodtfl/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — This is what I use daily in obsidian as a full time PhD student in applied maths. \\- Notebook navigator: I love this for how I can split view between folder and list, I can display yaml entries with the note and just general usability. Also love it for the calendar view. \\- dataview: I use this extensively over my entire vault, for sorting things, viewing things, putting…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 20.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "Geobond",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=47105170",
+    "title": "The Kingkiller Chronicles Completion Using LLMs",
+    "excerpt": "…em to finish it. The result is 113 chapters, 301,000 words, free at thethirdsilence.com Here's how: Story Bible (56,000 words) Before generating any fiction, I treated both novels as a codebase. Every character, location, lore element, and unresolved thread got extracted into structured reference docs. Every Chekhov's gun catalogued. Both timelines (the inner narrative and the frame story) mapped with convergence constraints. Drafting Used Claude primarily. Per-chapter workflow: feed the relevant story bible entries, previous chapters for continuity, the chapter outline, and 3-5 representative passages from the original books for…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgotten",
+      "painful"
+    ],
+    "relevance_score": 20.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "__notmyrealname__",
+    "score": 1,
+    "url": "https://www.reddit.com/r/writing/comments/hf0xuq/how_do_you_approach_nonchronological_narratives/",
+    "title": "How do you approach non-chronological narratives?",
+    "excerpt": "…consideration when presenting them? To be a little more explicit, as I'm sure this kind of narrative is easily open to interpretation, what I'm talking about is a series of events that can be mapped chronologically, but which are revealed out of order. This can be for a number of reasons, such as obfuscating details to re contextualise previous scenes, to demonstrate parallels between disparate events, to connect otherwise unrelated events, or any other appropriate justification. I'm not talking about tropes such [\"How We Got Here\"](https://tvtropes.org/pmwiki/pmwiki.php/Main/HowWeGotHere) where the narrative opens at the m…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to",
+      "slowly"
+    ],
+    "relevance_score": 20.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "mokoroko",
+    "score": 24,
+    "url": "https://www.reddit.com/r/writing/comments/84zav2/discovery_writers_do_you_jump_around_as_you_write/",
+    "title": "Discovery writers, do you jump around as you write or keep it chronological?",
+    "excerpt": "…ng process. I get ideas along the way and find characters saying or doing things I wouldn't have expected, and most of the time I like where things are veering off to so I let it happen. But it makes it hard to jump around and write scenes out of order, because I get to worrying that so much will have changed by the time the story catches up to that point, that it will all be wasted. That didn't used to bother me when I was a student, but working full time and having a busier life makes my writing time these days feel small and precious, and more and more often that feeling becomes full-on writer's block. Yet now I'm excited…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hard to"
+    ],
+    "relevance_score": 19.8
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "worriedshoes",
+    "score": 17,
+    "url": "https://www.reddit.com/r/writing/comments/iyh4d/nonlinear_story_lines/",
+    "title": "non-linear story lines?",
+    "excerpt": "non-linear story lines? — i just finished pale king by dfw, and infinite jest is still in recent memory. now i am beginning a writing thesis in the form of a fiction novel, and would like to utilize a similar non-linear plot line. for some reason it strikes me that telling a story in such a way, from so many different angles/not being bound by traditional narrative, allows a deeper impact on…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "slowly"
+    ],
+    "relevance_score": 18.4
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Galastel supports GoFundMonica",
+    "score": 6,
+    "url": "https://writing.stackexchange.com/questions/42725/coloured-comments-in-a-word-processor-word-libre-openoffice-is-it-possible",
+    "title": "Coloured comments in a word processor [Word/Libre/OpenOffice] - is it possible?",
+    "excerpt": "…pen to that too. I am using comments extensively while writing. Every time I re-read what I wrote to get back into the stream, if I find something that needs editing, I leave a comment for later. If I write something, and need something to foreshadow it earlier, I leave a comment. If I need to reference something in a conversation, but I don't know yet where this reference leads (so it's a thread I leave lose to pick up later), I leave a comment. It would be very helpful to me if I could colour-code those comments in some way, so \"bad wording, needs rephrasing\" comments would be visually different from \"this plot thread ne…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "microsoft word"
+    ],
+    "matched_pains": [],
+    "relevance_score": 18.2
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Standback",
+    "score": 6,
+    "url": "https://writing.stackexchange.com/questions/2387/what-are-tips-techniques-to-manage-the-consistency-of-a-plot-encompassing-seve#2388",
+    "title": "What are tips / techniques to manage the consistency of a plot encompassing several subplots ?",
+    "excerpt": "What are tips / techniques to manage the consistency of a plot encompassing several subplots ? — Well, here are my own suggestions - I hope they're helpful :) Keep a timeline for every character (or small group). Keep track not only of what's going on onstage, but also what's hidden from the reader - if the hero thinks his wife is dead, but actually she's studying with Tibetan monks and engineering a playful assassination attempt for every anniversary of theirs, the…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [
+      "scrivener"
+    ],
+    "matched_pains": [],
+    "relevance_score": 18.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Aggravating-Back-242",
+    "score": 5,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xqdwrk/tags_vs_links/19sbi2vkjebdu/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Personally I use links. Like for your `#book` tag, I'd just have a note called `book.md` which may even be empty, then I'd link to that instead. You can even make it look like a tag, for example, `[\\#book](book.md)`. Some benefits of having a note standing for a tag are: - You can add info to that “tag” in the body of the note. - As a note, that “tag” can have al…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 18.0
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "inspiredlead",
+    "score": 4,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xuu4du/how_do_you_deal_with_not_having_a_date_modified/19sjubz9l4y3m/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Having a “Last modified” was the first thing I wanted in Obsidian that was not out of the box, so I cooked it myself. Install the Dataview plugin, then put this in your note — I put it at the bottom. last-modified:: dv= dv.current().file.mtime It will update in real time as you type. You won’t see it refresh, but it does happen, consistently.",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.8
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "worldbuilding.stackexchange.com",
+    "author": "Sharkey Malarkey",
+    "score": 3,
+    "url": "https://worldbuilding.stackexchange.com/questions/267840/backing-into-character-ages-based-on-a-fantasy-calendar#267841",
+    "title": "Backing into character ages based on a fantasy calendar",
+    "excerpt": "Backing into character ages based on a fantasy calendar — Assuming you’re asking for something that can keep dates in line, I’d recommend world anvil. It has a date tracker area, along with many other services that you might want.",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "world anvil"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.6
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Glad-Key7256",
+    "score": 3,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xokijd/how_to_make_obsidian_less_laggy_on_linux/19s7iw9sqoktf/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Happy to help :) If disabling community plugins didn't resolve your issue, I reckon that your problem is more likely to be solved by ensuring all relevant drivers are installed, setting env variables, and/or running obsidian using the relevant flags rather than the lua script (which is still useful to have imo). I remember disabling all plugins on my HP laptopand obsidia…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.6
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "SC for reinstatement of Monica",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/11007/how-do-you-visualize-plot-structure#33616",
+    "title": "How do you visualize plot structure?",
+    "excerpt": "How do you visualize plot structure? — I use Aeon Timeline , which offers a lot of features. I've linked drectly to the features page so you can check out if the visual effect works for you. When the events are very convoluted (especially if there is a lot of physical travelling), I use yEd graph editor to better 'see' where the characters are and how they affect each other. However, I always keep the same characters and events in the…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "KK7VYJ",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xrrjpn/florilegium_help/19sdmtv0cty0y/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Each quote gets wrapped in comment markers so a script can find it: \\`\\`\\` %% #startquote %% \\#leadership #mindset \\*\\*Idries Shah\\*\\* \"Study the assumptions behind your actions. Then study the assumptions behind your assumptions.\" %% #endquote %% \\`\\`\\` Quotes live in a few topic files (ham radio, strategy, general), and tags handle the sorting. I don't use YAML for ind…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "bizvibe8",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xmlt6c/card_view_mode_plugin/19s2h9g66lsow/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — The reason that plugin broke is that it was written years before Obsidian switched to the CodeMirror 6 editor engine and the updated workspace layout, so its pane hooks no longer attach properly. Also, just a heads-up on the other suggestion: the Minimal cards snippet only formats Dataview tables and lists, so it won't style regular note reading view into floating cards…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "rainidazehaze",
+    "score": 2,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xm1s40/whats_with_the_claude_code_obsession_lately/19s1l733t39sz/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I'm not big on AI, it bothers me a lot in most contexts, but have to use it often for work and unfortunately even grad school now. I feel like companies could be doing it in an environmentlly friendly way and choose not to, and that if they were forced to put their mind to it they could figure out how to do it. I know that the ways people use it for certain things like c…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.4
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "tunesmith",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=34069572",
+    "title": "Ask HN: Programs that saved you 100 hours? (2022 edition)",
+    "excerpt": "Ask HN: Programs that saved you 100 hours? (2022 edition) — Flying Logic Aeon Timeline ObservableHQ - particularly the discovery that I can use most of it locally and privately for free. I've tried with quarto so far, but I think there are other ways too. What I want is a way to instantly switch between dag and tree data structures: graph for visual editing, tree for easy data entry. So something that would analyze&#x2F;cluster intelligently to minimize links wh…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Hacker News",
+    "source_context": "news.ycombinator.com",
+    "author": "virgil_disgr4ce",
+    "score": 1,
+    "url": "https://news.ycombinator.com/item?id=25645660",
+    "title": "Ask HN: Who's looking for a co-founder?",
+    "excerpt": "…rovides an open platform for discovering, learning from, and contributing to humanity’s understanding of history. Swymm has two components: the wiki-like public database of history, and a freemium* advanced timeline tool (compare to i.e. Aeon Timeline) for writers, planners, law enforcement and more to lay out beautiful interactive timelines. (* Pricing model up for debate) Unlike Aeon Timeline and all others, Swymm is cloud-based, multi-user, shareable, and leverages Swymm's database of public history that can be easily imported into your personal timelines. Located in NYC, closed beta, looking for a CTO. I have done all t…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [
+      "aeon timeline"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "worldbuilding.stackexchange.com",
+    "author": "noncom",
+    "score": 1,
+    "url": "https://worldbuilding.stackexchange.com/questions/264507/parallel-timelines-with-show-hide-option#264546",
+    "title": "Parallel timelines with show/hide option",
+    "excerpt": "…t provides, you can then query it for any information you want, and collate the results the way you want. You can create separate pages that render your story one way or another. One of the most popular plugins for querying your vault, the Dataview plugin, makes the full use of that, have you tried it? If not, I would encourage you to watch some YouTube videos on how to use it, and Obsidian in general. Also, there are plugins to extend canvas functionality, like Link Explorer, Canvas Filter, Semantic Canvas, and others, which expand canvas functions even more in the terms of selective information representation. Also the…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Flimsy-Process230",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xuegok/can_obsidian_give_me_the_visual_experience_of_the/19sj9ddjxcroi/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I did something similar back when I used Obsidian using the Dataview plugin and a rather unconventional query. Unfortunately I don’t remember the details anymore but I can tell you it’s definitely possible. I see people recommending Bases which might be a better option nowadays but Bases didn’t exist when I was using Obsidian.",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "N1tero",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xsnpt6/css_snippet_for_multicolumn/19sfmwkbndli9/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I started with [this ](https://github.com/efemkay/obsidian-modular-css-layout/blob/main/MCL%20Multi%20Column.css)css snippet from the multi column plugin, but I modified it a bit by deleting everything using \":has(\" because that's bad for performance. There are some threads talking about it [here](https://github.com/efemkay/obsidian-modular-css-layout/issues/67) and [her…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Aggravating-Back-242",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xqlbe6/torn_on_how_to_best_organize_my_dnd_campaign_vault/19saxymbroipu/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I have no direct experience using Obsidian for DnD or worldbuilding, but I do have a personal wiki alongside my normal notes, so I have some ideas. I'd say you start with a skeleton structure of just 2 folders in your vault root. One for keeping all the Wikipedia notes and their attachments. Another for keeping all your personal notes. This is so that you can later publi…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Big-Entertainer4936",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xqdwrk/tags_vs_links/19sahkbg30so2/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I use tags in my journal and dataview so that I can have separate journals based on writings related to that tag. If I write about #home - it goes to my Home Journal. It's very nice, Claude made it for me. I like how links work, but I liked them better in Logseq - this newer plugin Roam Backlinks makes look more like Logseq. I like how I can write in the area above the b…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "logseq"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Key-Concept-7001",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xolkav/newbie_here_studying_first_year_law_need_some/19s8jx12zsspv/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Instead of a wikipedia my advice is to really try to understand what frontmatter and bases can do for you. Tagging notes is also essential. Dataview can give you even finer control. Together, frontmattee, bases, and dataview are all you need to organize and retrieve information. But it also depends on your university whether obsidian can be that helpful. One of my childr…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [
+      "obsidian"
+    ],
+    "matched_pains": [],
+    "relevance_score": 17.2
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Galendo",
+    "score": 6,
+    "url": "https://writing.stackexchange.com/questions/48843/books-in-a-trilogy-are-significantly-different-lengths-what-to-do",
+    "title": "Books in a trilogy are significantly different lengths. What to do?",
+    "excerpt": "…sue of the different book sizes, which I imagine might be annoying for a reader. 2) Split the first book into two smaller books. This makes all the books about the same size, but I’m not sure I can have good “stopping points” for the plot threads between books 1 and 2 if I do this. Maybe with enough rewriting. 3) Split the story into two parallel stories. Of my three-and-a-half or so plots, my A and B plots are more closely aligned, as are my C and D plots. There isn’t much (direct) interaction between the two stories, though both are reacting to the same outside events, and the events of one story does have some ind…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "annoying"
+    ],
+    "relevance_score": 16.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Pony13",
+    "score": 6,
+    "url": "https://www.reddit.com/r/writing/comments/a78538/possible_to_have_hidden_continuity/",
+    "title": "Possible to have hidden continuity?",
+    "excerpt": "…look? I was thinking I could do an art trick: design each cover so that they share an art style, as though saying “this is really the story of the recurring villain, who paints in this style”, and all have small details that hint at a chronological order. But I’m not sure if that would make it too obvious that the stories take place in one universe.",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "paints"
+    ],
+    "relevance_score": 16.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "itsvic27",
+    "score": 5,
+    "url": "https://www.reddit.com/r/writing/comments/10pptkw/how_do_you_edit_your_drafts_sharingchronological/",
+    "title": "How do you edit your drafts? +sharing+chronological questions",
+    "excerpt": "…on. I am hesitant to share it in other ways as it is not ready yet and I wouldn’t even know where to share). Do you have any special ways to do so or like rituals? and I guess as a side note question: Do you/how often do you write out of chronological order? I outlined but some new ideas came to me so I have to figure out where they fit in with what I’ve already written. If anyone has an editing guide that they like whether it be online or book form, I would greatly appreciate it. I’m totally new to this but want to be better. Soon I’ll be looking into resources for grammar and other writing stuff. I’m in college rn so a…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "wish"
+    ],
+    "relevance_score": 16.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "SwordsmenEpsilion",
+    "score": 5,
+    "url": "https://www.reddit.com/r/writing/comments/e0k9do/should_the_chapters_in_a_finished_book_be_placed/",
+    "title": "Should the Chapters in a finished book be placed Chronological Order?",
+    "excerpt": "Should the Chapters in a finished book be placed Chronological Order? — I've been writing my first fantasy novel (first novel altogether actually) over the last few months very slowly. I have the plot completely worked out which is focused on the perspectives of three main characters. At first I thought the best order to lay out the chapters would be Chapter 1, Character A's story Chapter 2, Character B's story Chapter 3, Character C's story…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "slowly"
+    ],
+    "relevance_score": 16.0
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Josh",
+    "score": 4,
+    "url": "https://writing.stackexchange.com/questions/47580/how-should-i-handle-amnesia-based-plot-threads-interesting-vs-clich%c3%a9",
+    "title": "How should I handle amnesia-based plot threads? (interesting vs clich&#233;)",
+    "excerpt": "How should I handle amnesia-based plot threads? (interesting vs clich&#233;) — I'm writing for an amnesiac protagonist, in spite of the fact that I feel amnesia in fiction is usually a bad cliché used to avoid some of the background work of creating a character's family, friends, hometown, career, etc. Ideally, I'd like to hear an answer from someone who has written an amnesiac character before, and struggled with this…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "struggled"
+    ],
+    "relevance_score": 15.8
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Lauren-Clear-Monica-Ipsum",
+    "score": 4,
+    "url": "https://writing.stackexchange.com/questions/7243/tracing-dependencies-and-emergent-plotholes-during-edits#7244",
+    "title": "Tracing dependencies and emergent plotholes during edits",
+    "excerpt": "…art writing and you find threads which suddenly dangle, but using a verbal wireframe will make it much simpler to see where all the variables are. Then find a really good editor and explain what you've done, so the editor knows to look for plot holes.",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "spreadsheet"
+    ],
+    "relevance_score": 15.8
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "LauraFriend",
+    "score": 4,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xtrd7o/solo_levelling_system_actually_looks_like_the/19shnkuh03b0j/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — Oh man! That is so cool. You mind sharing how you set it up? Yeah Coding got it, but like did you create an own plugin or is that dataview or how did you do that? I wish I was so talented. I tried something similar but it was based on daily notes and for a while a was super invested in it. Then I learned that I work in low and high maintenance phases and my system wouldn…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "wish"
+    ],
+    "relevance_score": 15.8
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/fantasywriters",
+    "author": "deandinbetween",
+    "score": 3,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1m54kx7/worldbuilding_calendar/",
+    "title": "Worldbuilding: calendar",
+    "excerpt": "…summer\" or \"the tenth week of spring\" made more sense and was less clunky. I've never personally been taken out of a world by references to months or dates, but I was curious how everyone else feels about/manages this. Do you make up your own calendar, use a real-world one, or use something like fictional holidays to mark time? Or are defined dates and timelines something you avoid? Does it take you out of the world when reading, or do you just glide over it?",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "clunky"
+    ],
+    "relevance_score": 15.6
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "The_Gregor",
+    "score": 3,
+    "url": "https://www.reddit.com/r/writing/comments/24qsih/nonlinear_narratives_is_this_a_gimmick_or_am_i/",
+    "title": "Non-linear narratives - is this a gimmick or am I just a hipster?",
+    "excerpt": "…riously, I've seem to stumble upon a crappy show marathon. The most recent one, an anime, Bacanno!, peaked my interest because of the historical setting and the charm it seemed to have. However, here, every other scene, quite literally, is out of order from the overall flow of the plot, creating a discombobulated mess that's incredibly difficult and painful to follow. One scene may be in 1932, the next 1930, or even 1750. Throw in several different characters with interweaving stories and it becomes even more confusing. However, this type of storytelling usually receives high amounts of praise. However, it seems to be that c…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "painful"
+    ],
+    "relevance_score": 15.6
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "kepano",
+    "score": 3,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xwc2r3/obsidian_1151_loads_very_fast/19sobuvji3cys/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — There is no case where it loads slower than before, so no. Previously there was a screen that blocked the whole app, now if a plugin like Dataview is causing a long delay that progress is shown in the status bar, but it's no slower than before.",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "slower"
+    ],
+    "relevance_score": 15.6
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Lazarus",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/7243/tracing-dependencies-and-emergent-plotholes-during-edits#7477",
+    "title": "Tracing dependencies and emergent plotholes during edits",
+    "excerpt": "…amount of time he had to travel? Putting every event on your timeline will help you keep your characters, your events, and your plot on the straight and narrow. Finally, I wouldn't necessarily worry about filling in every single perceived plot hole you find. As much as the IT folks like to scream, \"Security through obscurity is no security at all,\" sometimes people don't exploit a weakness because they don't see it. So your main character is standing exposed and no one takes a swing at him. So what? Sometimes the bad guys just don't notice . If it helps, you can seal up your plot hole by pointing it out. \"Daniel stood in…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Standback",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/46688/balancing-setting-theme-and-character-arcs-how-to-deal-with-a-setting-that-ca#46832",
+    "title": "Balancing setting, theme, and character arcs: how to deal with a setting that carries emotional weight but is left behind?",
+    "excerpt": "…re weight you give an element, any element, the more readers are going to understand it as something that will be important later on. But, that doesn't necessarily mean that if an element is important, then you're required to build a whole subplot around it and keep bringing it up again and again! Instead: Start things in a way you can finish. You've recognized that British Guiana is important; but you've got a lot of control of how and why it's important. What place it occupies in the story. If you frame it as \"back in the day\"; if you don't open threads about characters or mysteries that stay firmly rooted there; then…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "StackExchange (Answer)",
+    "source_context": "writing.stackexchange.com",
+    "author": "wetcircuit",
+    "score": 2,
+    "url": "https://writing.stackexchange.com/questions/48843/books-in-a-trilogy-are-significantly-different-lengths-what-to-do#49009",
+    "title": "Books in a trilogy are significantly different lengths. What to do?",
+    "excerpt": "…s. What to do? — I'll give another option: 8) Split a major (sub)plot in half, and move the 2nd half into to a later book. It will definitely take some re-writing, but your 1st book seems overloaded. The temptation is to drop the weakest subplot, but consider splitting one of your strongest storylines into a before and after , according to a main character's change arc. You don't mention your characters' development, but consider which character has the most change within Book 1. This character's arc might be so big it's forcing more story to happen, to justify how much they change. For example, a character who rises…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "broken"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "debidatta",
+    "score": 2,
+    "url": "https://www.reddit.com/r/writing/comments/197bod/do_publishers_hate_flashbacks_and_non_linear/",
+    "title": "Do publishers hate flashbacks and non linear storylines?",
+    "excerpt": "Do publishers hate flashbacks and non linear storylines? — Recently I read somewhere that publishers for novels are not a fan of flashbacks and noon linear storylines. Supposedly these are gimmicks used by writers to spice up an otherwise not-so-interesting story. How much of this is true? How should someone defend himself / his novel against such criticism?",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "FreakishPeach",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/av5da5/what_calendar_system_do_you_use_in_your_fantasy/ehe5z7s/",
+    "title": "What calendar system do you use in your fantasy worlds?",
+    "excerpt": "What calendar system do you use in your fantasy worlds? — Yeah, I typically use the Julian calendar and assume that my world has the same characteristics as Earth in all astrological and physical senses. My calendar comprises 12 months, 52 weeks and 365 days. I've renamed the days of the week, but I struggled on that a lot and I'm still not really happy with it. The days are named for gods in th…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "struggled"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "MrIncorporeal",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/av5da5/what_calendar_system_do_you_use_in_your_fantasy/ehe5pf8/",
+    "title": "What calendar system do you use in your fantasy worlds?",
+    "excerpt": "What calendar system do you use in your fantasy worlds? — >I don't want to confuse people. Honestly I hate how much I know I need to adhere to this, even when it would make no sense in-setting. Big thing for me has been directions. The setting takes place on a mostly ocean world full of islands and archipelagos, with the only habitable zone being the magically fixed and enlarged eye of a planet-…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "TheMomentofGallifrey",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/av5da5/what_calendar_system_do_you_use_in_your_fantasy/ehdnwd7/",
+    "title": "What calendar system do you use in your fantasy worlds?",
+    "excerpt": "What calendar system do you use in your fantasy worlds? — I'm using a 366 day calendar which is parted into 9 \"months\" of 37 days each, and 3 \"moonfests\" lasting 11 days each, one every 3 months. The moonfests are periods in which the moon passes through ita fullest phase, and its special light becomes powerful enough that time starts distorting in the moonshine. During these times, the moonligh…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "slow"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "Voice-of-Aeona",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/cg5x26/need_some_suggestions_for_my_fantasy_calendar_and/eugu3td/",
+    "title": "Need some suggestions for my Fantasy Calendar and Dates. Particularly the year it should be?",
+    "excerpt": "Need some suggestions for my Fantasy Calendar and Dates. Particularly the year it should be? — Eon already has [a widely accepted definition](https://www.merriam-webster.com/dictionary/eon), and it's basically \"a really, *really, REALLY* long time.\" (A billion years, if you want to get down to scientific specifics.) Using eons to stand in for a year on your world would be like trying to say a furlong is about a knuckle'…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgetting"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "TJ_Jonasson",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1ogl9r2/do_you_use_a_real_world_calendar_romantasy/nli1ihk/",
+    "title": "Do you use a real world calendar? (Romantasy)",
+    "excerpt": "Do you use a real world calendar? (Romantasy) — For worldbuilding purposes I made my own calendar because conceptually I hate that every month IRL has a different number of days. Though as the top comment mentions, it really isn't all that relevant to the storytelling itself, there's very rarely a reason you need specific dates or times.",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hate"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "philologustus",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/hanw7ds/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — Recently drafted a fairy tale for kids. It has 7 realms in a mystical constellation. Almost every realm has a different duration/sense of time and hence no common calendar. Some of the realm doesn't have moons or stars thereby a luni-solar calendar would be redundant. Time could be subjective to spiritual entities/fantasy elements in parallel verse. It would have been sup…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "cumbersome"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "grody10",
+    "score": 2,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/hamp6au/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — It's annoying and confusing if it's the main calendar in use. There are certain common things that really aren't work changing. Like Miles is fine. No one needs to be saying 3 walk lengths. Or don't say qwalrufns for days. If it's not intuitive it will be annoying",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "annoying"
+    ],
+    "relevance_score": 15.4
+  },
+  {
+    "platform": "StackExchange (Question)",
+    "source_context": "writing.stackexchange.com",
+    "author": "Confusing Fungus",
+    "score": 1,
+    "url": "https://writing.stackexchange.com/questions/63096/how-to-accurately-write-a-post-nuclear-winter-novel-in-which-supplies-are-limite",
+    "title": "How to accurately write a post-nuclear winter novel in which supplies are limited?",
+    "excerpt": "…was entirely unplanned this takes place about 200 or so years after the fallout first happened, so biodegradable things/easily breakable things (glass, wood, paper, books) would have probably been lost by then. YES, I know there's a ton of plot holes, but I'm sorting that out (wouldn't be against constructive criticism/ideas though)",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "issue with"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Thucydides1987",
+    "score": 1,
+    "url": "https://www.reddit.com/r/writing/comments/2ont82/advicenonlinear_narratives/",
+    "title": "[Advice]Non-linear narratives",
+    "excerpt": "[Advice]Non-linear narratives — Hi all, I was wondering if anyone could give me some advice on the structure of my historical fiction novel. I will try to explain it as simply as possible. I am writing a novel with a non-linear narrative, structured around 3 protagonists. Now, I chose 3 protagonists because they’re meant to give readers a glimpse not just into their own unique lives, but also 3 different perspectives on the world they live in. I have divided the novel into 3 parts, each dedicated to one of the protagonists, and each ~100-150 pages in length. Here’s a tiny outline: **Part I:** Middle-aged m…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "frustrating"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "spacegreek",
+    "score": 1,
+    "url": "https://www.reddit.com/r/writing/comments/1pdzudl/continuity_error_check/",
+    "title": "Continuity Error Check",
+    "excerpt": "Continuity Error Check — Hi all. I’m building a tool that catches continuity errors and plot holes in game narratives using symbolic logic. Before I go build something stupid, I want to sanity-check with actual narrative designers. Anyone willing to do a quick 10–15 min call/chat to tell me what continuity crap pains you the most, how much time it takes? No pitch, no sales, just trying n…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "pains"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "05-wierdfishes",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/av5da5/what_calendar_system_do_you_use_in_your_fantasy/ehd7v8o/",
+    "title": "What calendar system do you use in your fantasy worlds?",
+    "excerpt": "What calendar system do you use in your fantasy worlds? — I definitely don’t have the mind to invent my own calendar haha so I just used the Roman calendar and renamed the twelve months, which was still kind of a pain in the ass. Honestly though as a reader if I’m reading a about a fictional world that still uses modern measurements I don’t really give a shit as long as the story and the c…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "pain"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "aldorn",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/haoapnk/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — A very simplified system. Forget number of days in a year. Keep it simple. Maybe a scholar has kept a record of ddxact days but for the common folk it can be basic like 'seven winters'... Years pass in seasons; The main two notably being Winter (cold) and summer (hot). Adjust the length of these dependant on your geography. Then note the passing of a year at the start or…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forget"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "McMan86",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/hamlajj/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — I think it’s more of a flavor thing than anything else. I feel like these types of crazy additions to a fantasy world (languages and complete calendars) are reserved for epic, multiple book-long, fantasy series. Otherwise, it could overwhelm a reader who was expecting less absurdly-fantastical elements in a standalone. However, when it’s pulled off well, it’s usuall…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "overwhelm"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "True_Industry4634",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1m54kx7/worldbuilding_calendar/n4kc7en/",
+    "title": "Worldbuilding: calendar",
+    "excerpt": "Worldbuilding: calendar — It's not hard to make your own calendar. I mean at least change the names of the days and months if you're in a fantasy setting where Latin has never been a language. I have fun doing it so that flavors my advice here but it would def spoil the immersion for me if GRRM said Wednesday, July 14 or whatever.",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "hard to"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "Competitive_Sign7548",
+    "score": 1,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/1xslgjk/how_do_you_usually_get_started_with_writing/19sfj7q6uxz6p/",
+    "title": "r/fantasywriters ('track')",
+    "excerpt": "…up to you if you want to outline or pants it. Pantsing is great for in-the-moment inspiration and just letting the story write itself. It's shortcoming is that you can very easily lose narrative focus, and the narrative just meanders into subplot swamp that doesn't really advance the story. Outlining helps mitigate subplot swamp syndrome but its shortcomings lie in its planning. Some people purposely keep their outlines vague, while others really beef it up with details and idea. If you're writing an epic fantasy, you definitely will need an outline to keep track of things. 6. With all that considered, you can start wr…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "difficult to"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/ObsidianMD",
+    "author": "Far-Contribution-398",
+    "score": 1,
+    "url": "https://www.reddit.com/r/ObsidianMD/comments/1xpazoy/recommendations_for_literature_notes_that_pull/19sbrlv9t9xsz/",
+    "title": "r/ObsidianMD ('Dataview')",
+    "excerpt": "r/ObsidianMD ('Dataview') — I don't know a BibTeX-specific plugin to recommend off the top of my head, but a couple of angles might help while you look. Templater plus a bit of Dataview can get you most of what the broken plugin did: parse the .bib file once (JabRef can usually export back out in a predictable format) into a CSV or flat Markdown list, then use Templater to generate one note per ent…",
+    "matched_clusters": [
+      "C5"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "broken"
+    ],
+    "relevance_score": 15.2
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "anybluez",
+    "score": 0,
+    "url": "https://www.reddit.com/r/writing/comments/1kx0jgv/should_my_story_be_nonlinear/",
+    "title": "should my story be non-linear?",
+    "excerpt": "…t and play huge roles in it, so i don’t think i can consider removing some to make anything less complicated. i’m just very confused whether or not i should keep the idea of it being non-linear or not, since it’s a thriller with many flashbacks and deep lores regarding each character. i’ve already written everything possible with “past” incidents and all relations possible between each character including their backgrounds, so i got that down. i also have the chronological order of the storyline in mind, but i feel like it wouldn’t be as interesting if it was written in a linear type. allow me to tell you a l…",
+    "matched_clusters": [
+      "C2"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "slowly"
+    ],
+    "relevance_score": 15.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "spacegreek",
+    "score": 0,
+    "url": "https://www.reddit.com/r/writing/comments/1pe1ifh/continuity_error_check/",
+    "title": "Continuity Error Check",
+    "excerpt": "Continuity Error Check — Hi all. I’m building a tool that catches continuity errors and plot holes in narratives using symbolic logic (not LLM nonsense). Before I go build something stupid, I want to sanity-check with actual narrative designers. Anyone willing to do a quick 10–15 min call/chat to tell me what continuity crap pains you the most, how much time it takes? No pitch, no sales,…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "pains"
+    ],
+    "relevance_score": 15.0
+  },
+  {
+    "platform": "Reddit (Post)",
+    "source_context": "r/writing",
+    "author": "Billyxransom",
+    "score": 0,
+    "url": "https://www.reddit.com/r/writing/comments/1fnb7ki/purposeful_continuity_errors/",
+    "title": "purposeful continuity errors?",
+    "excerpt": "purposeful continuity errors? — has any writer ever done this, that could be pointed to? this seems like it should be a big deal, the big (though not of the creepy, untoward behavior sort) controversy around the office. maybe it's not, and that's just why i never hear of it. think of films. you see a character wearing a tie in one scene, and the next scene it's simply draped around their neck. (i don't…",
+    "matched_clusters": [
+      "C3"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "workaround"
+    ],
+    "relevance_score": 15.0
+  },
+  {
+    "platform": "Reddit (Comment)",
+    "source_context": "r/fantasywriters",
+    "author": "Asterikon",
+    "score": -5,
+    "url": "https://www.reddit.com/r/fantasywriters/comments/pcycjq/what_do_you_make_of_calendar_systems/hamjmor/",
+    "title": "What do you make of calendar systems?",
+    "excerpt": "What do you make of calendar systems? — >but looking two what other writers of the genre usually do is nothing necessary. If I'm parsing this correctly, you're completely wrong. All art is ultimately in conversation with itself, and if you want do take part in that conversation, you need to know what's being said. &#x200B; >However, if the writer has put much thought into how the world works and how the people…",
+    "matched_clusters": [
+      "C1"
+    ],
+    "matched_tools": [],
+    "matched_pains": [
+      "forgotten"
+    ],
+    "relevance_score": 15.0
+  }
+]

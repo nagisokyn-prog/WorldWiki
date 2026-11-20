@@ -79,7 +79,8 @@ describe('shell.quickopen', () => {
     ]);
 
     await qo.updatePaletteCommands();
-    expect(qo.paletteCommands.value.length).toBeGreaterThanOrEqual(10);
+    const expectedMin = typeof __FEATURE_RAZRAB__ !== 'undefined' && __FEATURE_RAZRAB__ ? 10 : 9;
+    expect(qo.paletteCommands.value.length).toBeGreaterThanOrEqual(expectedMin);
 
     // Execute actions on generated commands
     const chCmd = qo.paletteCommands.value.find((c) => c.id === 'cmd_ch_c1');

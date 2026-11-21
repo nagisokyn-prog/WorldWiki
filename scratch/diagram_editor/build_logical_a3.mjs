@@ -663,7 +663,7 @@ out.push(`  <text class="stamp-txt" x="${sx + 792}" y="${sy + 87}" text-anchor="
 out.push(`  <text class="stamp-txt" x="${sx + 880}" y="${sy + 87}" text-anchor="middle">Масштаб</text>`);
 out.push(`  <text class="stamp-txt-b" x="${sx + 712}" y="${sy + 128}">У</text>`);
 out.push(`  <text class="stamp-txt" x="${sx + 735}" y="${sy + 178}" text-anchor="middle">Лист 1</text>`);
-out.push(`  <text class="stamp-txt" x="${sx + 860}" y="${sy + 178}" text-anchor="middle">Листов 1</text>`);
+out.push(`  <text class="stamp-txt" x="${sx + 860}" y="${sy + 178}" text-anchor="middle">Листов 2</text>`);
 out.push(`  <text class="stamp-txt" x="${sx + 500}" y="${sy + 242}" text-anchor="middle">SurrealDB v3.2 (SCHEMAFULL)</text>`);
 out.push(`  <text class="stamp-txt-b" x="${sx + 800}" y="${sy + 235}">Кафедра ИТ / Группа</text>`);
 out.push(`  <text class="stamp-txt" x="${sx + 800}" y="${sy + 256}" text-anchor="middle">(Курсовой проект)</text>`);

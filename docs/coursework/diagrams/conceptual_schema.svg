@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 778" width="1050" height="778"
+  font-family="'Segoe UI', 'DejaVu Sans', Arial, sans-serif">
+  <defs>
+    <!-- Bold black arrowhead for Property Graph TYPE RELATION edges -->
+    <marker id="graph-arrow" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M 0 1 L 11 5 L 0 9 z" fill="#000000" />
+    </marker>
+
+    <!-- Crow's Foot: Mandatory One (|) at line start -->
+    <marker id="one-start" viewBox="0 0 14 14" refX="0" refY="7" markerWidth="12" markerHeight="12"
+      orient="auto-start-reverse">
+      <line x1="6" y1="2" x2="6" y2="12" stroke="#333333" stroke-width="1.5" />
+    </marker>
+
+    <!-- Crow's Foot: Optional One (o|) at line start -->
+    <marker id="opt-one-start" viewBox="0 0 20 14" refX="0" refY="7" markerWidth="16" markerHeight="12"
+      orient="auto-start-reverse">
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#333333" stroke-width="1.5" />
+      <circle cx="12.5" cy="7" r="3.2" fill="#ffffff" stroke="#333333" stroke-width="1.4" />
+    </marker>
+
+    <!-- Crow's Foot: Zero or Many (o<) at line end -->
+    <marker id="many-opt-end" viewBox="0 0 22 14" refX="21" refY="7" markerWidth="18" markerHeight="12" orient="auto">
+      <circle cx="5.5" cy="7" r="3.2" fill="#ffffff" stroke="#333333" stroke-width="1.4" />
+      <line x1="9" y1="7" x2="21" y2="7" stroke="#333333" stroke-width="1.3" />
+      <line x1="21" y1="2" x2="11" y2="7" stroke="#333333" stroke-width="1.4" />
+      <line x1="21" y1="12" x2="11" y2="7" stroke="#333333" stroke-width="1.4" />
+    </marker>
+  </defs>
+
+  <style>
+    .bg {
+      fill: #ffffff;
+    }
+
+    .entity-box {
+      fill: #ffffff;
+      stroke: #000000;
+      stroke-width: 1.75;
+      rx: 5;
+      ry: 5;
+    }
+
+    .hub-box {
+      fill: #f2f2f2;
+      stroke: #000000;
+      stroke-width: 2.3;
+      rx: 5;
+      ry: 5;
+    }
+
+    .hub-inner {
+      fill: none;
+      stroke: #000000;
+      stroke-width: 0.95;
+      rx: 3;
+      ry: 3;
+    }
+
+    .entity-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      fill: #000000;
+      text-anchor: middle;
+    }
+
+    .graph-edge {
+      fill: none;
+      stroke: #000000;
+      stroke-width: 2.2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .rel-edge {
+      fill: none;
+      stroke: #333333;
+      stroke-width: 1.35;
+      stroke-dasharray: 5 3;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .label-bg {
+      fill: #ffffff;
+      stroke: none;
+      rx: 3;
+      ry: 3;
+    }
+
+    .graph-label {
+      font-family: 'Consolas', 'DejaVu Sans Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      fill: #000000;
+      text-anchor: middle;
+    }
+
+    .rel-label {
+      font-size: 11.5px;
+      font-style: italic;
+      fill: #222222;
+      text-anchor: middle;
+    }
+
+    .legend-text {
+      font-size: 12px;
+      fill: #111111;
+    }
+  </style>
+
+  <!-- Pure White Background (Strict ГОСТ A4 Portrait) -->
+  <rect class="bg" x="0" y="0" width="1050" height="778" />
+
+  <!-- =================================================================== -->
+  <!-- LAYER 1: RELATIONAL 1:N & 0..1:N EDGES (THIN DASHED + CROW'S FOOT)  -->
+  <!-- =================================================================== -->
+
+  <!-- projects 1:N entity_schemas -->
+  <path class="rel-edge" d="M 512 86 L 512 20 L 20 20 L 20 557 L 74 557" marker-start="url(#one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="200" y="11" width="78" height="16" />
+  <text class="rel-label" x="239" y="23">определяет</text>
+
+  <!-- projects 1:N story_arcs -->
+  <path class="rel-edge" d="M 480 86 L 480 36 L 42 36 L 42 247 L 74 247" marker-start="url(#one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="18" y="156" width="48" height="16" />
+  <text class="rel-label" x="42" y="168">задаёт</text>
+
+  <!-- projects 1:N planets -->
+  <path class="rel-edge" d="M 600 109 L 730 109" marker-start="url(#one-start)" marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="633" y="100" width="64" height="16" />
+  <text class="rel-label" x="665" y="112">включает</text>
+
+  <!-- todos 0..1:N todos (зависит от) -->
+  <path class="rel-edge" d="M 140 86 L 140 60 L 220 60 L 220 86" marker-start="url(#opt-one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="143" y="49" width="74" height="16" />
+  <text class="rel-label" x="180" y="61">зависит от</text>
+
+  <!-- volumes 0..1:N todos -->
+  <path class="rel-edge" d="M 394 238 L 380 238 L 380 100 L 286 100" marker-start="url(#opt-one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="311" y="91" width="46" height="16" />
+  <text class="rel-label" x="334" y="103">имеет</text>
+
+  <!-- story_arcs 0..1:N todos -->
+  <path class="rel-edge" d="M 180 224 L 180 132" marker-start="url(#opt-one-start)" marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="144" y="169" width="72" height="16" />
+  <text class="rel-label" x="180" y="181">порождает</text>
+
+  <!-- chapters 0..1:N todos -->
+  <path class="rel-edge" d="M 394 382 L 366 382 L 366 118 L 286 118" marker-start="url(#opt-one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="338" y="310" width="56" height="16" />
+  <text class="rel-label" x="366" y="322">требует</text>
+
+  <!-- chapters 1:N text_blocks -->
+  <path class="rel-edge" d="M 498 416 L 498 534" marker-start="url(#one-start)" marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="461" y="466" width="74" height="16" />
+  <text class="rel-label" x="498" y="478">содержит</text>
+
+  <!-- planets 1:N calendars -->
+  <path class="rel-edge" d="M 844 132 L 844 224" marker-start="url(#one-start)" marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="807" y="169" width="74" height="16" />
+  <text class="rel-label" x="844" y="181">формирует</text>
+
+  <!-- calendars 1:N timeline_events -->
+  <path class="rel-edge" d="M 844 270 L 844 370" marker-start="url(#one-start)" marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="812" y="312" width="64" height="16" />
+  <text class="rel-label" x="844" y="324">датирует</text>
+
+  <!-- plot_promises 0..1:N plot_promises -->
+  <path class="rel-edge" d="M 124 416 L 124 448 L 188 448 L 188 416" marker-start="url(#opt-one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="112" y="451" width="88" height="15" />
+  <text class="rel-label" x="156" y="462">детализирует</text>
+
+  <!-- entity_schemas 1:N entities -->
+  <path class="rel-edge" d="M 180 580 L 180 646 L 816 646 L 816 580" marker-start="url(#one-start)"
+    marker-end="url(#many-opt-end)" />
+  <rect class="label-bg" x="465" y="637" width="80" height="16" />
+  <text class="rel-label" x="505" y="649">типизирует</text>
+
+  <!-- =================================================================== -->
+  <!-- LAYER 2: PROPERTY GRAPH EDGES (BOLD SOLID BLACK, 0 CROSSINGS)       -->
+  <!-- =================================================================== -->
+
+  <!-- projects -> volumes :CONTAINS -->
+  <path class="graph-edge" d="M 498 132 L 498 221" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="456" y="168" width="84" height="18" />
+  <text class="graph-label" x="498" y="181">:CONTAINS</text>
+
+  <!-- volumes -> chapters :CONTAINS -->
+  <path class="graph-edge" d="M 498 270 L 498 367" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="456" y="311" width="84" height="18" />
+  <text class="graph-label" x="498" y="324">:CONTAINS</text>
+
+  <!-- chapters -> story_arcs :ADVANCE0S_ARC -->
+  <path class="graph-edge" d="M 394 402 L 318 402 L 318 256 L 289 256" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="272" y="290" width="92" height="18" />
+  <text class="graph-label" x="318" y="300">:ADVANCES_ARC</text>
+
+  <!-- plot_promises -> story_arcs :ADVANCES_ARC -->
+  <path class="graph-edge" d="M 180 370 L 180 273" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="124" y="311" width="112" height="18" />
+  <text class="graph-label" x="180" y="324">:ADVANCES_ARC</text>
+
+  <!-- timeline_events -> chapters :REVEALED_IN -->
+  <path class="graph-edge" d="M 730 393 L 605 393" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="618" y="384" width="96" height="18" />
+  <text class="graph-label" x="666" y="397">:REVEALED_IN</text>
+
+  <!-- entities -> text_blocks :APPEARS_IN -->
+  <path class="graph-edge" d="M 730 557 L 605 557" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="619" y="548" width="94" height="18" />
+  <text class="graph-label" x="666" y="561">:APPEARS_IN</text>
+
+  <!-- entities -> timeline_events :PARTICIPATES_IN -->
+  <path class="graph-edge" d="M 844 534 L 844 419" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="778" y="465" width="132" height="18" />
+  <text class="graph-label" x="844" y="478">:PARTICIPATES_IN</text>
+
+  <!-- entities -> entities :ENTITY_REL (right self-loop) -->
+  <path class="graph-edge" d="M 958 544 L 990 544 L 990 572 L 961 572" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="922" y="580" width="88" height="18" />
+  <text class="graph-label" x="966" y="593">:ENTITY_REL</text>
+
+  <!-- entities -> plot_promises :PARTICIPANT_OF -->
+  <path class="graph-edge" d="M 762 580 L 762 612 L 316 612 L 316 448 L 264 448 L 264 419"
+    marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="498" y="603" width="122" height="18" />
+  <text class="graph-label" x="559" y="616">:PARTICIPANT_OF</text>
+
+  <!-- plot_promises -> text_blocks :PROMISE_MILESTONES -->
+  <path class="graph-edge" d="M 286 408 L 356 408 L 356 548 L 391 548" marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="284" y="465" width="144" height="18" />
+  <text class="graph-label" x="356" y="478">:PROMISE_MILESTONES</text>
+
+  <!-- plot_promises -> timeline_events :OCCURS_AT -->
+  <path class="graph-edge" d="M 74 393 L 52 393 L 52 686 L 1022 686 L 1022 393 L 961 393"
+    marker-end="url(#graph-arrow)" />
+  <rect class="label-bg" x="498" y="677" width="96" height="18" />
+  <text class="graph-label" x="546" y="690">:OCCURS_AT</text>
+
+  <!-- =================================================================== -->
+  <!-- LAYER 3: 12 ENTITIES (NAMES ONLY, STRICT ГОСТ, height=46)           -->
+  <!-- =================================================================== -->
+
+  <!-- Row 1 -->
+  <g>
+    <rect class="entity-box" x="74" y="86" width="212" height="46" />
+    <text class="entity-title" x="180" y="114">todos</text>
+  </g>
+  <g>
+    <rect class="hub-box" x="394" y="86" width="206" height="46" />
+    <rect class="hub-inner" x="398" y="90" width="198" height="38" />
+    <text class="entity-title" x="497" y="114">projects</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="730" y="86" width="228" height="46" />
+    <text class="entity-title" x="844" y="114">planets</text>
+  </g>
+
+  <!-- Row 2 -->
+  <g>
+    <rect class="entity-box" x="74" y="224" width="212" height="46" />
+    <text class="entity-title" x="180" y="252">story_arcs</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="394" y="224" width="208" height="46" />
+    <text class="entity-title" x="498" y="252">volumes</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="730" y="224" width="228" height="46" />
+    <text class="entity-title" x="844" y="252">calendars</text>
+  </g>
+
+  <!-- Row 3 -->
+  <g>
+    <rect class="hub-box" x="74" y="370" width="212" height="46" />
+    <rect class="hub-inner" x="78" y="374" width="204" height="38" />
+    <text class="entity-title" x="180" y="398">plot_promises</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="394" y="370" width="208" height="46" />
+    <text class="entity-title" x="498" y="398">chapters</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="730" y="370" width="228" height="46" />
+    <text class="entity-title" x="844" y="398">timeline_events</text>
+  </g>
+
+  <!-- Row 4 -->
+  <g>
+    <rect class="entity-box" x="74" y="534" width="212" height="46" />
+    <text class="entity-title" x="180" y="562">entity_schemas</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="394" y="534" width="208" height="46" />
+    <text class="entity-title" x="498" y="562">text_blocks</text>
+  </g>
+  <g>
+    <rect class="entity-box" x="730" y="534" width="228" height="46" />
+    <text class="entity-title" x="844" y="562">entities</text>
+  </g>
+
+  <!-- =================================================================== -->
+  <!-- LAYER 4: COMPACT 1-LINE LEGEND                                      -->
+  <!-- =================================================================== -->
+  <g transform="translate(26, 740)">
+    <line class="graph-edge" x1="40" y1="0" x2="92" y2="0" marker-end="url(#graph-arrow)" />
+    <text class="legend-text" x="100" y="4">Графовая связь (TYPE RELATION)</text>
+
+    <line class="rel-edge" x1="344" y1="0" x2="398" y2="0" marker-start="url(#one-start)"
+      marker-end="url(#many-opt-end)" />
+    <text class="legend-text" x="406" y="4">Реляционная связь (1:N / 0..N)</text>
+
+    <rect class="hub-box" x="636" y="-11" width="32" height="22" />
+    <rect class="hub-inner" x="639" y="-8" width="26" height="16" />
+    <text class="legend-text" x="676" y="4">Ключевые хабы (projects, plot_promises)</text>
+  </g>
+</svg>

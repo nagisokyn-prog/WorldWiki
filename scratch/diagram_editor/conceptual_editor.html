@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorldWiki — Редактор концептуальной схемы БД</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-border: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --danger: #ef4444;
+    --success: #10b981;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    user-select: none;
+  }
+  .app {
+    display: grid;
+    grid-template-rows: 48px 1fr;
+    grid-template-columns: 1fr 290px;
+    height: 100vh;
+  }
+  header {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--panel-border);
+    font-size: 13px;
+  }
+  header .title { font-weight: 700; font-size: 14px; margin-right: 10px; color: #fff; }
+  header .sep { width: 1px; height: 22px; background: var(--panel-border); margin: 0 4px; }
+  button, select {
+    background: #334155; color: #f8fafc; border: 1px solid #475569;
+    border-radius: 5px; padding: 5px 10px; font-size: 12.5px; cursor: pointer;
+    transition: background .12s, border-color .12s;
+  }
+  button:hover, select:hover { background: #475569; }
+  button.primary { background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { background: var(--accent-hover); }
+  button.success { background: #059669; border-color: #059669; font-weight: 600; }
+  button.success:hover { background: #047857; }
+  button.active { background: var(--accent); border-color: #60a5fa; }
+  button.danger { background: #7f1d1d; border-color: #991b1b; }
+  button.danger:hover { background: #991b1b; }
+  label.chk {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12.5px; color: #cbd5e1; cursor: pointer;
+  }
+  .spacer { flex: 1; }
+
+  /* Viewport */
+  .viewport {
+    position: relative; overflow: hidden;
+    background: #1a2234;
+    background-image: radial-gradient(#334155 1px, transparent 1px);
+    background-size: 20px 20px;
+    cursor: default;
+  }
+  .viewport.panning { cursor: grabbing; }
+  .canvas-wrap {
+    position: absolute; top: 0; left: 0;
+    transform-origin: 0 0;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+  }
+  .hint-bar {
+    position: absolute; bottom: 10px; left: 14px;
+    background: rgba(15, 23, 42, 0.86);
+    border: 1px solid #334155; border-radius: 6px;
+    padding: 6px 12px; font-size: 11.5px; color: #cbd5e1;
+    pointer-events: none;
+  }
+
+  /* Inspector Sidebar */
+  aside {
+    background: var(--panel);
+    border-left: 1px solid var(--panel-border);
+    padding: 12px 14px;
+    overflow-y: auto;
+    font-size: 12.5px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .section {
+    border: 1px solid var(--panel-border);
+    border-radius: 7px; padding: 10px;
+    background: rgba(15, 23, 42, 0.45);
+  }
+  .section h3 {
+    margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #94a3b8;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field label { font-size: 11px; color: #94a3b8; }
+  .field input[type="number"], .field input[type="text"], .field select {
+    width: 100%; background: #0f172a; color: #f8fafc;
+    border: 1px solid #475569; border-radius: 4px; padding: 4px 7px;
+    font-size: 12.5px;
+  }
+  .field input[type="range"] { width: 100%; }
+  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .muted { color: #94a3b8; font-size: 11.5px; line-height: 1.45; }
+  .badge {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    background: #334155; font-family: Consolas, monospace; font-size: 11.5px;
+  }
+  .wp-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .wp-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0f172a; padding: 4px 7px; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 11.5px;
+  }
+  .wp-item button { padding: 2px 6px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="title">WorldWiki ERD Studio</span>
+    <button id="btnThemeColor" class="active" title="Цветная схема для слайдов">Цветная (Слайды)</button>
+    <button id="btnThemeBW" title="Чёрно-белая схема для DOCX (ГОСТ)">Ч/Б (DOCX)</button>
+    <div class="sep"></div>
+    <label class="chk"><input type="checkbox" id="chkDomains" /> Домены</label>
+    <label class="chk"><input type="checkbox" id="chkGrid" checked /> Сетка 10px</label>
+    <div class="sep"></div>
+    <button id="btnUndo" title="Отменить (Ctrl+Z)">↶ Undo</button>
+    <button id="btnRedo" title="Повторить (Ctrl+Y)">↷ Redo</button>
+    <button id="btnFit" title="Вписать в экран">⤢ Вписать</button>
+    <button id="btnReset" class="danger" title="Сбросить раскладку к исходной">Сброс</button>
+    <div class="spacer"></div>
+    <button id="btnSaveJson" title="Сохранить JSON-проект">JSON ↓</button>
+    <button id="btnLoadJson" title="Загрузить JSON-проект">JSON ↑</button>
+    <input type="file" id="fileJson" accept=".json" style="display:none" />
+    <div class="sep"></div>
+    <button id="btnExportSvg" class="primary">Скачать SVG</button>
+    <button id="btnExportPng" class="success">Скачать PNG (2x)</button>
+  </header>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="hint-bar">
+      <b>ЛКМ по домену (цветной зоне)</b> — двигать весь домен целиком · <b>ЛКМ по блоку</b> — двигать блок ·
+      <b>Клик по линии</b>: <b>розовый/зелёный кружок</b> — переставить конец на любую грань · <b>синий/оранжевый</b> — двигать изгибы (фон закреплён)
+    </div>
+  </div>
+
+  <aside id="inspector">
+    <div class="section">
+      <h3>Холст (SVG viewBox)</h3>
+      <div class="grid2">
+        <div class="field"><label>Ширина (W)</label><input type="number" id="inpCanvasW" step="20" min="800" max="2600" /></div>
+        <div class="field"><label>Высота (H)</label><input type="number" id="inpCanvasH" step="20" min="500" max="1800" /></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnPreset1280" style="flex:1">1280×790</button>
+        <button id="btnPreset169" style="flex:1">1440×810 (16:9)</button>
+      </div>
+    </div>
+
+    <div class="section" id="selectionPanel">
+      <h3>Выделение</h3>
+      <p class="muted">Кликните по <b>сущности</b> или по <b>линии связи</b> на схеме, чтобы настроить координаты, размеры, точки крепления и изгибы.<br><br>Все 23 связи жёстко закреплены между таблицами — случайно разорвать схему невозможно.</p>
+    </div>
+
+    <div class="section">
+      <h3>Быстрый выбор связи</h3>
+      <div class="field">
+        <select id="selQuickEdge"></select>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ============================================================================
+// 1. INITIAL DATA MODEL (12 entities in 4x3 grid, 23 immutable-topology edges)
+// ============================================================================
+const STORAGE_KEY = 'worldwiki_conceptual_editor_v3';
+
+function createDefaultState() {
+  return {
+    theme: 'color', // 'color' | 'bw'
+    showDomains: false,
+    snap: true,
+    canvas: { w: 1440, h: 680 },
+    nodes: [
+      // Row 1
+      { id: 'todos',           title: 'todos',           sub: 'Задачи планировщика (3NF)',    domain: 'manuscript', hub: false, x: 70,   y: 70,  w: 230, h: 68 },
+      { id: 'volumes',         title: 'volumes',         sub: 'Тома произведения',            domain: 'manuscript', hub: false, x: 420,  y: 70,  w: 230, h: 68 },
+      { id: 'projects',        title: 'projects',        sub: 'Проект мира / Произведение',   domain: 'root',       hub: true,  x: 770,  y: 70,  w: 230, h: 68 },
+      { id: 'planets',         title: 'planets',         sub: 'Планеты: сутки, наклон, луны', domain: 'chrono',     hub: false, x: 1120, y: 70,  w: 250, h: 68 },
+      // Row 2
+      { id: 'story_arcs',      title: 'story_arcs',      sub: 'Сквозные сюжетные арки',       domain: 'manuscript', hub: false, x: 70,   y: 250, w: 230, h: 68 },
+      { id: 'chapters',        title: 'chapters',        sub: 'Главы рукописи (AST)',         domain: 'manuscript', hub: false, x: 420,  y: 250, w: 230, h: 68 },
+      { id: 'entity_schemas',  title: 'entity_schemas',  sub: 'Мета-схемы классов',           domain: 'lore',       hub: false, x: 770,  y: 250, w: 230, h: 68 },
+      { id: 'calendars',       title: 'calendars',       sub: 'Авторские календари и эры',    domain: 'chrono',     hub: false, x: 1120, y: 250, w: 250, h: 68 },
+      // Row 3
+      { id: 'plot_promises',   title: 'plot_promises',   sub: 'Сцены и сюжетные узлы',        domain: 'manuscript', hub: true,  x: 70,   y: 430, w: 230, h: 68 },
+      { id: 'text_blocks',     title: 'text_blocks',     sub: 'Семантические блоки текста',   domain: 'manuscript', hub: false, x: 420,  y: 430, w: 230, h: 68 },
+      { id: 'entities',        title: 'entities',        sub: 'Сущности лора (герои, локации)', domain: 'lore',     hub: false, x: 770,  y: 430, w: 230, h: 68 },
+      { id: 'timeline_events', title: 'timeline_events', sub: 'События хронологии (M_abs)',   domain: 'chrono',     hub: false, x: 1120, y: 430, w: 250, h: 68 }
+    ],
+    edges: [
+      // Relational 1:N and 0..1:N (12 unique verb phrases)
+      { id: 'e_proj_arcs',    from: 'projects',       to: 'story_arcs',      kind: 'rel-1n',  label: 'задаёт',       fromSide: 'top',    fromOffset: 0.50, toSide: 'left',   toOffset: 0.50, waypoints: [{x:885,y:26},{x:26,y:26},{x:26,y:284}], labelPos: {x:535,y:26} },
+      { id: 'e_proj_planets', from: 'projects',       to: 'planets',         kind: 'rel-1n',  label: 'включает',     fromSide: 'right',  fromOffset: 0.50, toSide: 'left',   toOffset: 0.50, waypoints: [], labelPos: {x:1060,y:104} },
+      { id: 'e_proj_schemas', from: 'projects',       to: 'entity_schemas',  kind: 'rel-1n',  label: 'определяет',   fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:885,y:194} },
+      { id: 'e_vol_todos',    from: 'volumes',        to: 'todos',           kind: 'rel-01n', label: 'имеет',        fromSide: 'left',   fromOffset: 0.50, toSide: 'right',  toOffset: 0.50, waypoints: [], labelPos: {x:360,y:104} },
+      { id: 'e_arcs_todos',   from: 'story_arcs',     to: 'todos',           kind: 'rel-01n', label: 'порождает',    fromSide: 'top',    fromOffset: 0.50, toSide: 'bottom', toOffset: 0.50, waypoints: [], labelPos: {x:185,y:194} },
+      { id: 'e_ch_todos',     from: 'chapters',       to: 'todos',           kind: 'rel-01n', label: 'требует',      fromSide: 'left',   fromOffset: 0.26, toSide: 'right',  toOffset: 0.79, waypoints: [{x:360,y:268},{x:360,y:124}], labelPos: {x:360,y:194} },
+      { id: 'e_todos_self',   from: 'todos',          to: 'todos',           kind: 'rel-01n', label: 'зависит от',   fromSide: 'top',    fromOffset: 0.33, toSide: 'top',    toOffset: 0.67, waypoints: [{x:145,y:42},{x:225,y:42}], labelPos: {x:185,y:40} },
+      { id: 'e_ch_blocks',    from: 'chapters',       to: 'text_blocks',     kind: 'rel-1n',  label: 'содержит',     fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:535,y:373} },
+      { id: 'e_sch_ent',      from: 'entity_schemas', to: 'entities',        kind: 'rel-1n',  label: 'типизирует',   fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:885,y:396} },
+      { id: 'e_pl_cal',       from: 'planets',        to: 'calendars',       kind: 'rel-1n',  label: 'формирует',    fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:1245,y:194} },
+      { id: 'e_cal_ev',       from: 'calendars',      to: 'timeline_events', kind: 'rel-1n',  label: 'датирует',     fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:1245,y:374} },
+      { id: 'e_pp_self',      from: 'plot_promises',  to: 'plot_promises',   kind: 'rel-01n', label: 'детализирует', fromSide: 'bottom', fromOffset: 0.11, toSide: 'bottom', toOffset: 0.37, waypoints: [{x:96,y:534},{x:154,y:534}], labelPos: {x:125,y:546} },
+
+      // Property Graph TYPE RELATION edges
+      { id: 'e_proj_vol',     from: 'projects',       to: 'volumes',         kind: 'graph',   label: ':CONTAINS',          fromSide: 'left',   fromOffset: 0.50, toSide: 'right',  toOffset: 0.50, waypoints: [], labelPos: {x:710,y:104} },
+      { id: 'e_vol_ch',       from: 'volumes',        to: 'chapters',        kind: 'graph',   label: ':CONTAINS',          fromSide: 'bottom', fromOffset: 0.50, toSide: 'top',    toOffset: 0.50, waypoints: [], labelPos: {x:535,y:194} },
+      { id: 'e_ch_arcs',      from: 'chapters',       to: 'story_arcs',      kind: 'graph',   label: ':ADVANCES_ARC',      fromSide: 'left',   fromOffset: 0.68, toSide: 'right',  toOffset: 0.68, waypoints: [], labelPos: {x:361,y:296} },
+      { id: 'e_pp_arcs',      from: 'plot_promises',  to: 'story_arcs',      kind: 'graph',   label: ':ADVANCES_ARC',      fromSide: 'top',    fromOffset: 0.50, toSide: 'bottom', toOffset: 0.50, waypoints: [], labelPos: {x:185,y:374} },
+      { id: 'e_pp_blocks',    from: 'plot_promises',  to: 'text_blocks',     kind: 'graph',   label: ':PROMISE_MILESTONES',fromSide: 'right',  fromOffset: 0.50, toSide: 'left',   toOffset: 0.50, waypoints: [], labelPos: {x:360,y:464} },
+      { id: 'e_ev_ch',        from: 'timeline_events',to: 'chapters',        kind: 'graph',   label: ':REVEALED_IN',       fromSide: 'top',    fromOffset: 0.16, toSide: 'bottom', toOffset: 0.83, waypoints: [{x:1160,y:372},{x:610,y:372}], labelPos: {x:1060,y:372} },
+      { id: 'e_ent_blocks',   from: 'entities',       to: 'text_blocks',     kind: 'graph',   label: ':APPEARS_IN',        fromSide: 'left',   fromOffset: 0.50, toSide: 'right',  toOffset: 0.50, waypoints: [], labelPos: {x:710,y:464} },
+      { id: 'e_ent_ev',       from: 'entities',       to: 'timeline_events', kind: 'graph',   label: ':PARTICIPATES_IN',   fromSide: 'right',  fromOffset: 0.50, toSide: 'left',   toOffset: 0.50, waypoints: [], labelPos: {x:1060,y:464} },
+      { id: 'e_ent_self',     from: 'entities',       to: 'entities',        kind: 'graph',   label: ':ENTITY_REL',        fromSide: 'bottom', fromOffset: 0.63, toSide: 'bottom', toOffset: 0.89, waypoints: [{x:915,y:538},{x:975,y:538}], labelPos: {x:945,y:553} },
+      { id: 'e_ent_pp',       from: 'entities',       to: 'plot_promises',   kind: 'graph',   label: ':PARTICIPANT_OF',    fromSide: 'bottom', fromOffset: 0.33, toSide: 'bottom', toOffset: 0.76, waypoints: [{x:845,y:554},{x:245,y:554}], labelPos: {x:540,y:554} },
+      { id: 'e_pp_ev',        from: 'plot_promises',  to: 'timeline_events', kind: 'graph',   label: ':OCCURS_AT',         fromSide: 'bottom', fromOffset: 0.59, toSide: 'bottom', toOffset: 0.50, waypoints: [{x:205,y:602},{x:1245,y:602}], labelPos: {x:710,y:602} }
+    ]
+  };
+}
+
+let state = loadState();
+let historyStack = [JSON.stringify(state)];
+let historyIdx = 0;
+
+let selection = null; // { type: 'node'|'edge', id: string }
+let view = { x: 24, y: 16, scale: 0.92 };
+let drag = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return createDefaultState();
+}
+
+function saveLocal() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function pushHistory() {
+  const snap = JSON.stringify(state);
+  if (snap === historyStack[historyIdx]) return;
+  historyStack = historyStack.slice(0, historyIdx + 1);
+  historyStack.push(snap);
+  if (historyStack.length > 80) historyStack.shift();
+  historyIdx = historyStack.length - 1;
+  saveLocal();
+}
+
+function undo() {
+  if (historyIdx > 0) {
+    historyIdx--;
+    state = JSON.parse(historyStack[historyIdx]);
+    saveLocal();
+    renderAll();
+  }
+}
+
+function redo() {
+  if (historyIdx < historyStack.length - 1) {
+    historyIdx++;
+    state = JSON.parse(historyStack[historyIdx]);
+    saveLocal();
+    renderAll();
+  }
+}
+
+function snapVal(v) {
+  return state.snap ? Math.round(v / 10) * 10 : Math.round(v);
+}
+
+function getNode(id) {
+  return state.nodes.find(n => n.id === id);
+}
+
+function getEdge(id) {
+  return state.edges.find(e => e.id === id);
+}
+
+// ============================================================================
+// 2. GEOMETRY HELPERS
+// ============================================================================
+function anchorPoint(node, side, offset) {
+  const o = Math.max(0.05, Math.min(0.95, offset));
+  if (side === 'top')    return { x: node.x + node.w * o, y: node.y };
+  if (side === 'bottom') return { x: node.x + node.w * o, y: node.y + node.h };
+  if (side === 'left')   return { x: node.x, y: node.y + node.h * o };
+  return { x: node.x + node.w, y: node.y + node.h * o };
+}
+
+function autoOrthogonalCorners(p1, fromSide, p2, toSide) {
+  const fH = (fromSide === 'left' || fromSide === 'right');
+  const tH = (toSide === 'left' || toSide === 'right');
+  const outStub = 34;
+
+  // Same side (e.g. right->right, bottom->bottom, top->top, left->left)
+  if (fromSide === toSide) {
+    if (fromSide === 'top') {
+      const y = Math.min(p1.y, p2.y) - outStub;
+      return [{ x: p1.x, y }, { x: p2.x, y }];
+    }
+    if (fromSide === 'bottom') {
+      const y = Math.max(p1.y, p2.y) + outStub;
+      return [{ x: p1.x, y }, { x: p2.x, y }];
+    }
+    if (fromSide === 'left') {
+      const x = Math.min(p1.x, p2.x) - outStub;
+      return [{ x, y: p1.y }, { x, y: p2.y }];
+    }
+    const x = Math.max(p1.x, p2.x) + outStub;
+    return [{ x, y: p1.y }, { x, y: p2.y }];
+  }
+
+  // Opposite vertical sides (bottom -> top or top -> bottom)
+  if (!fH && !tH) {
+    if (Math.abs(p1.x - p2.x) <= 2) return [];
+    const midY = Math.round((p1.y + p2.y) / 2);
+    return [{ x: p1.x, y: midY }, { x: p2.x, y: midY }];
+  }
+
+  // Opposite horizontal sides (left -> right or right -> left)
+  if (fH && tH) {
+    if (Math.abs(p1.y - p2.y) <= 2) return [];
+    const midX = Math.round((p1.x + p2.x) / 2);
+    return [{ x: midX, y: p1.y }, { x: midX, y: p2.y }];
+  }
+
+  // Perpendicular sides -> clean 1-corner L-shape
+  if (fH && !tH) return [{ x: p2.x, y: p1.y }];
+  return [{ x: p1.x, y: p2.y }];
+}
+
+function cleanOrthogonalPoints(pts) {
+  // Remove near-duplicate points
+  const dedup = [];
+  for (const p of pts) {
+    const prev = dedup[dedup.length - 1];
+    if (!prev || Math.hypot(p.x - prev.x, p.y - prev.y) > 0.5) {
+      dedup.push({ x: Math.round(p.x), y: Math.round(p.y) });
+    }
+  }
+  // Remove collinear intermediate points
+  const out = [];
+  for (let i = 0; i < dedup.length; i++) {
+    if (i > 0 && i < dedup.length - 1) {
+      const a = out[out.length - 1], b = dedup[i], c = dedup[i + 1];
+      const sameX = Math.abs(a.x - b.x) <= 1 && Math.abs(b.x - c.x) <= 1;
+      const sameY = Math.abs(a.y - b.y) <= 1 && Math.abs(b.y - c.y) <= 1;
+      if (sameX || sameY) continue;
+    }
+    out.push(dedup[i]);
+  }
+  return out;
+}
+
+function getEdgePoints(edge) {
+  const n1 = getNode(edge.from);
+  const n2 = getNode(edge.to);
+  const p1 = anchorPoint(n1, edge.fromSide, edge.fromOffset);
+  let p2 = anchorPoint(n2, edge.toSide, edge.toOffset);
+  if (edge.kind === 'graph') {
+    const pull = 3;
+    if (edge.toSide === 'top') p2 = { x: p2.x, y: p2.y - pull };
+    else if (edge.toSide === 'bottom') p2 = { x: p2.x, y: p2.y + pull };
+    else if (edge.toSide === 'left') p2 = { x: p2.x - pull, y: p2.y };
+    else if (edge.toSide === 'right') p2 = { x: p2.x + pull, y: p2.y };
+  }
+
+  // No manual waypoints -> smart 90-degree auto-route
+  if (!edge.waypoints || edge.waypoints.length === 0) {
+    const corners = autoOrthogonalCorners(p1, edge.fromSide, p2, edge.toSide);
+    return cleanOrthogonalPoints([p1, ...corners, p2]);
+  }
+
+  // Manual waypoints -> strictly enforce 90-degree bridges so NO diagonal line is ever drawn
+  const raw = [p1];
+  const fH = (edge.fromSide === 'left' || edge.fromSide === 'right');
+  const tH = (edge.toSide === 'left' || edge.toSide === 'right');
+
+  const firstWp = edge.waypoints[0];
+  if (Math.abs(p1.x - firstWp.x) > 1 && Math.abs(p1.y - firstWp.y) > 1) {
+    raw.push(fH ? { x: firstWp.x, y: p1.y } : { x: p1.x, y: firstWp.y });
+  }
+  raw.push({ x: firstWp.x, y: firstWp.y });
+
+  for (let i = 1; i < edge.waypoints.length; i++) {
+    const prev = raw[raw.length - 1];
+    const curr = edge.waypoints[i];
+    if (Math.abs(prev.x - curr.x) > 1 && Math.abs(prev.y - curr.y) > 1) {
+      raw.push({ x: curr.x, y: prev.y });
+    }
+    raw.push({ x: curr.x, y: curr.y });
+  }
+
+  const last = raw[raw.length - 1];
+  if (Math.abs(last.x - p2.x) > 1 && Math.abs(last.y - p2.y) > 1) {
+    raw.push(tH ? { x: last.x, y: p2.y } : { x: p2.x, y: last.y });
+  }
+  raw.push(p2);
+
+  return cleanOrthogonalPoints(raw);
+}
+
+// Materialize the currently rendered 90-degree corners into editable edge.waypoints
+function materializeEdgeWaypoints(edge) {
+  const pts = getEdgePoints(edge);
+  edge.waypoints = pts.slice(1, -1).map(p => ({ x: Math.round(p.x), y: Math.round(p.y) }));
+}
+
+// Automatically slide fromOffset / toOffset along the node border so the arrow enters straight without hooks
+function syncOffsetsToWaypoints(edge) {
+  const n1 = getNode(edge.from);
+  const n2 = getNode(edge.to);
+  if (!edge.waypoints || edge.waypoints.length === 0) return;
+
+  const first = edge.waypoints[0];
+  const pad = 6;
+  if (edge.fromSide === 'top' || edge.fromSide === 'bottom') {
+    if (first.x >= n1.x + pad && first.x <= n1.x + n1.w - pad) {
+      edge.fromOffset = (first.x - n1.x) / n1.w;
+    }
+  } else {
+    if (first.y >= n1.y + pad && first.y <= n1.y + n1.h - pad) {
+      edge.fromOffset = (first.y - n1.y) / n1.h;
+    }
+  }
+
+  const last = edge.waypoints[edge.waypoints.length - 1];
+  if (edge.toSide === 'top' || edge.toSide === 'bottom') {
+    if (last.x >= n2.x + pad && last.x <= n2.x + n2.w - pad) {
+      edge.toOffset = (last.x - n2.x) / n2.w;
+    }
+  } else {
+    if (last.y >= n2.y + pad && last.y <= n2.y + n2.h - pad) {
+      edge.toOffset = (last.y - n2.y) / n2.h;
+    }
+  }
+}
+
+// Project cursor point (px, py) onto the nearest border of a node -> { side, offset }
+function snapPointToNodeBorder(node, px, py) {
+  const dTop = Math.abs(py - node.y);
+  const dBottom = Math.abs(py - (node.y + node.h));
+  const dLeft = Math.abs(px - node.x);
+  const dRight = Math.abs(px - (node.x + node.w));
+  const minD = Math.min(dTop, dBottom, dLeft, dRight);
+
+  let side = 'bottom';
+  if (minD === dTop) side = 'top';
+  else if (minD === dBottom) side = 'bottom';
+  else if (minD === dLeft) side = 'left';
+  else side = 'right';
+
+  let offset = 0.5;
+  if (side === 'top' || side === 'bottom') {
+    const relX = snapVal(px) - node.x;
+    offset = Math.max(0.08, Math.min(0.92, relX / node.w));
+  } else {
+    const relY = snapVal(py) - node.y;
+    offset = Math.max(0.08, Math.min(0.92, relY / node.h));
+  }
+  return { side, offset };
+}
+
+function pointsToPath(pts) {
+  if (!pts.length) return '';
+  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${Math.round(p.x)} ${Math.round(p.y)}`).join(' ');
+}
+
+function defaultLabelPos(pts) {
+  // Place label at midpoint of the longest segment
+  let bestLen = -1, bestPt = { x: 0, y: 0 };
+  for (let i = 0; i < pts.length - 1; i++) {
+    const dx = pts[i+1].x - pts[i].x;
+    const dy = pts[i+1].y - pts[i].y;
+    const len = Math.hypot(dx, dy);
+    if (len > bestLen) {
+      bestLen = len;
+      bestPt = { x: (pts[i].x + pts[i+1].x) / 2, y: (pts[i].y + pts[i+1].y) / 2 };
+    }
+  }
+  return bestPt;
+}
+
+// Keep adjacent waypoints aligned orthogonally when moving a node
+function keepOrthogonalOnNodeMove(nodeId, dx, dy) {
+  for (const e of state.edges) {
+    if (e.from === nodeId && e.to === nodeId) {
+      // Self-loop: move all waypoints + label together with node
+      for (const wp of e.waypoints) { wp.x += dx; wp.y += dy; }
+      if (e.labelPos) { e.labelPos.x += dx; e.labelPos.y += dy; }
+      continue;
+    }
+    if (e.from === nodeId && e.waypoints.length > 0) {
+      if (e.fromSide === 'left' || e.fromSide === 'right') e.waypoints[0].y += dy;
+      else e.waypoints[0].x += dx;
+    }
+    if (e.to === nodeId && e.waypoints.length > 0) {
+      const last = e.waypoints[e.waypoints.length - 1];
+      if (e.toSide === 'left' || e.toSide === 'right') last.y += dy;
+      else last.x += dx;
+    }
+    syncOffsetsToWaypoints(e);
+  }
+}
+
+// Move an entire domain (all its member nodes + internal edges/labels as a solid group)
+function moveDomainGroup(domainKey, dx, dy) {
+  const members = state.nodes.filter(n => n.domain === domainKey);
+  const memberIds = new Set(members.map(n => n.id));
+  for (const n of members) {
+    n.x += dx;
+    n.y += dy;
+  }
+  for (const e of state.edges) {
+    const fromIn = memberIds.has(e.from);
+    const toIn = memberIds.has(e.to);
+    if (fromIn && toIn) {
+      for (const wp of e.waypoints) { wp.x += dx; wp.y += dy; }
+      if (e.labelPos) { e.labelPos.x += dx; e.labelPos.y += dy; }
+    } else if (fromIn) {
+      if (e.waypoints.length > 0) {
+        if (e.fromSide === 'left' || e.fromSide === 'right') e.waypoints[0].y += dy;
+        else e.waypoints[0].x += dx;
+      }
+      syncOffsetsToWaypoints(e);
+    } else if (toIn) {
+      if (e.waypoints.length > 0) {
+        const last = e.waypoints[e.waypoints.length - 1];
+        if (e.toSide === 'left' || e.toSide === 'right') last.y += dy;
+        else last.x += dx;
+      }
+      syncOffsetsToWaypoints(e);
+    }
+  }
+}
+function computeDomainBounds(domainKey, padX = 18, padTop = 38, padBottom = 18) {
+  const members = state.nodes.filter(n => n.domain === domainKey);
+  if (!members.length) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const n of members) {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.w);
+    maxY = Math.max(maxY, n.y + n.h);
+  }
+  return { x: minX - padX, y: minY - padTop, w: (maxX - minX) + padX * 2, h: (maxY - minY) + padTop + padBottom };
+}
+
+function buildManuscriptDomainPath() {
+  const bAll = computeDomainBounds('manuscript', 18, 40, 22);
+  const bLore = computeDomainBounds('lore', 18, 34, 14);
+  if (!bAll) return '';
+  // If lore pocket overlaps bottom-right of manuscript bounding rect, carve clean L-notch!
+  const allR = bAll.x + bAll.w, allB = bAll.y + bAll.h;
+  const pp = getNode('plot_promises');
+  const tb = getNode('text_blocks');
+  if (bLore && bLore.x < allR && bLore.y < allB && pp && tb && (pp.x + pp.w + 20) < bLore.x && (tb.y + tb.h + 16) < bLore.y) {
+    const cutX = Math.min(bLore.x - 24, Math.max(pp.x + pp.w + 26, bAll.x + 120));
+    const cutY = Math.min(bLore.y - 24, tb.y + tb.h + 18);
+    const r = 8;
+    const x1 = bAll.x, y1 = bAll.y, x2 = allR, y2 = Math.max(allB, pp.y + pp.h + 58);
+    return `M ${x1+r} ${y1} L ${x2-r} ${y1} Q ${x2} ${y1} ${x2} ${y1+r} ` +
+           `L ${x2} ${cutY-r} Q ${x2} ${cutY} ${x2-r} ${cutY} ` +
+           `L ${cutX+r} ${cutY} Q ${cutX} ${cutY} ${cutX} ${cutY+r} ` +
+           `L ${cutX} ${y2-r} Q ${cutX} ${y2} ${cutX-r} ${y2} ` +
+           `L ${x1+r} ${y2} Q ${x1} ${y2} ${x1} ${y2-r} ` +
+           `L ${x1} ${y1+r} Q ${x1} ${y1} ${x1+r} ${y1} Z`;
+  }
+  const r = 8;
+  const x1 = bAll.x, y1 = bAll.y, x2 = allR, y2 = allB;
+  return `M ${x1+r} ${y1} L ${x2-r} ${y1} Q ${x2} ${y1} ${x2} ${y1+r} L ${x2} ${y2-r} Q ${x2} ${y2} ${x2-r} ${y2} L ${x1+r} ${y2} Q ${x1} ${y2} ${x1} ${y2-r} L ${x1} ${y1+r} Q ${x1} ${y1} ${x1+r} ${y1} Z`;
+}
+
+// ============================================================================
+// 3. SVG GENERATOR (CLEAN EXPORTABLE SVG + INTERACTIVE EDITOR OVERLAY)
+// ============================================================================
+function buildSvgMarkup(forExport = false) {
+  const { w, h } = state.canvas;
+  const isBW = state.theme === 'bw';
+
+  const graphColor = isBW ? '#000000' : '#1d4ed8';
+  const graphLabelColor = isBW ? '#000000' : '#1e3a8a';
+  const relColor = isBW ? '#333333' : '#64748b';
+  const relLabelColor = isBW ? '#222222' : '#475569';
+
+  const css = `
+    .bg { fill: #ffffff; }
+    .dom-manuscript { fill: ${isBW ? '#fafafa' : '#eff6ff'}; stroke: ${isBW ? '#777777' : '#93c5fd'}; stroke-width: ${isBW ? '1.1' : '1.4'}; ${isBW ? 'stroke-dasharray: 6 4;' : ''} stroke-linejoin: round; }
+    .dom-manuscript-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.45px; fill: ${isBW ? '#222222' : '#1d4ed8'}; }
+    .dom-lore { fill: ${isBW ? '#fafafa' : '#ecfdf5'}; stroke: ${isBW ? '#777777' : '#6ee7b7'}; stroke-width: ${isBW ? '1.1' : '1.4'}; ${isBW ? 'stroke-dasharray: 6 4;' : ''} rx: 8; ry: 8; }
+    .dom-lore-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.45px; fill: ${isBW ? '#222222' : '#047857'}; }
+    .dom-chrono { fill: ${isBW ? '#fafafa' : '#f5f3ff'}; stroke: ${isBW ? '#777777' : '#c4b5fd'}; stroke-width: ${isBW ? '1.1' : '1.4'}; ${isBW ? 'stroke-dasharray: 6 4;' : ''} rx: 8; ry: 8; }
+    .dom-chrono-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.45px; fill: ${isBW ? '#222222' : '#6d28d9'}; }
+
+    .box-root { fill: ${isBW ? '#f2f2f2' : '#fef3c7'}; stroke: ${isBW ? '#000000' : '#b45309'}; stroke-width: 2.3; rx: 6; ry: 6; }
+    .box-root-inner { fill: none; stroke: ${isBW ? '#000000' : '#d97706'}; stroke-width: 0.95; rx: 4; ry: 4; }
+    .box-manuscript { fill: ${isBW ? '#ffffff' : '#eff6ff'}; stroke: ${isBW ? '#000000' : '#2563eb'}; stroke-width: 1.85; rx: 6; ry: 6; }
+    .box-hub { fill: ${isBW ? '#f2f2f2' : '#ffedd5'}; stroke: ${isBW ? '#000000' : '#c2410c'}; stroke-width: 2.4; rx: 6; ry: 6; }
+    .box-hub-inner { fill: none; stroke: ${isBW ? '#000000' : '#ea580c'}; stroke-width: 0.95; rx: 4; ry: 4; }
+    .box-lore { fill: ${isBW ? '#ffffff' : '#ecfdf5'}; stroke: ${isBW ? '#000000' : '#059669'}; stroke-width: 1.85; rx: 6; ry: 6; }
+    .box-chrono { fill: ${isBW ? '#ffffff' : '#f5f3ff'}; stroke: ${isBW ? '#000000' : '#7c3aed'}; stroke-width: 1.85; rx: 6; ry: 6; }
+
+    .entity-title { font-size: 15px; font-weight: 700; fill: #0f172a; text-anchor: middle; pointer-events: none; }
+    .entity-sub { font-size: 11.5px; font-weight: 400; fill: ${isBW ? '#333333' : '#475569'}; text-anchor: middle; pointer-events: none; }
+
+    .graph-edge { fill: none; stroke: ${graphColor}; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+    .rel-edge { fill: none; stroke: ${relColor}; stroke-width: 1.35; stroke-dasharray: 5 3; stroke-linejoin: round; stroke-linecap: round; }
+    .edge-hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
+    .edge-selected { stroke: #f59e0b !important; stroke-width: 3 !important; }
+
+    .label-bg { fill: #ffffff; fill-opacity: 0.94; stroke: none; rx: 3; ry: 3; }
+    .graph-label { font-family: 'Consolas', 'DejaVu Sans Mono', monospace; font-size: 12px; font-weight: 700; fill: ${graphLabelColor}; text-anchor: middle; }
+    .rel-label { font-size: 11.5px; font-style: italic; fill: ${relLabelColor}; text-anchor: middle; }
+    .legend-text { font-size: 12.5px; font-weight: 500; fill: #1e293b; }
+  `;
+
+  let out = [];
+  if (forExport) {
+    out.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+    out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="'Segoe UI', 'DejaVu Sans', Arial, sans-serif">`);
+  }
+
+  out.push(`
+    <defs>
+      <marker id="graph-arrow" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+        <path d="M 0 1 L 11 5 L 0 9 z" fill="${graphColor}"/>
+      </marker>
+      <marker id="one-start" viewBox="0 0 14 14" refX="0" refY="7" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+        <line x1="6" y1="2" x2="6" y2="12" stroke="${relColor}" stroke-width="1.5"/>
+      </marker>
+      <marker id="opt-one-start" viewBox="0 0 20 14" refX="0" refY="7" markerWidth="16" markerHeight="12" orient="auto-start-reverse">
+        <line x1="5" y1="2" x2="5" y2="12" stroke="${relColor}" stroke-width="1.5"/>
+        <circle cx="12.5" cy="7" r="3.2" fill="#ffffff" stroke="${relColor}" stroke-width="1.4"/>
+      </marker>
+      <marker id="many-opt-end" viewBox="0 0 22 14" refX="21" refY="7" markerWidth="18" markerHeight="12" orient="auto">
+        <circle cx="5.5" cy="7" r="3.2" fill="#ffffff" stroke="${relColor}" stroke-width="1.4"/>
+        <line x1="9" y1="7" x2="21" y2="7" stroke="${relColor}" stroke-width="1.3"/>
+        <line x1="21" y1="2" x2="11" y2="7" stroke="${relColor}" stroke-width="1.4"/>
+        <line x1="21" y1="12" x2="11" y2="7" stroke="${relColor}" stroke-width="1.4"/>
+      </marker>
+    </defs>
+    <style>${css}</style>
+    <rect class="bg" x="0" y="0" width="${w}" height="${h}"/>
+  `);
+
+  // Optional subtle editor grid
+  if (!forExport && state.snap) {
+    out.push(`<defs><pattern id="edGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.6"/></pattern></defs>`);
+    out.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="url(#edGrid)" pointer-events="none"/>`);
+  }
+
+  // Layer 0: 3 Domain zones (draggable as whole groups in editor!)
+  if (state.showDomains) {
+    const mPath = buildManuscriptDomainPath();
+    const bM = computeDomainBounds('manuscript', 18, 40, 22);
+    const bL = computeDomainBounds('lore', 18, 34, 16);
+    const bC = computeDomainBounds('chrono', 18, 40, 20);
+    const domCur = !forExport ? ' style="cursor:move"' : '';
+    if (mPath && bM) {
+      out.push(`<g data-domain="manuscript"${domCur}>`);
+      out.push(`<path class="dom-manuscript" d="${mPath}"/>`);
+      out.push(`<text class="dom-manuscript-title" x="${Math.round(bM.x + 14)}" y="${Math.round(bM.y + 21)}">ДОМЕН РУКОПИСИ И СЮЖЕТА</text>`);
+      out.push(`</g>`);
+    }
+    if (bL) {
+      out.push(`<g data-domain="lore"${domCur}>`);
+      out.push(`<rect class="dom-lore" x="${Math.round(bL.x)}" y="${Math.round(bL.y)}" width="${Math.round(bL.w)}" height="${Math.round(bL.h)}"/>`);
+      out.push(`<text class="dom-lore-title" x="${Math.round(bL.x + 14)}" y="${Math.round(bL.y + 21)}">ДОМЕН ОНТОЛОГИИ И ЛОРА</text>`);
+      out.push(`</g>`);
+    }
+    if (bC) {
+      out.push(`<g data-domain="chrono"${domCur}>`);
+      out.push(`<rect class="dom-chrono" x="${Math.round(bC.x)}" y="${Math.round(bC.y)}" width="${Math.round(bC.w)}" height="${Math.round(bC.h)}"/>`);
+      out.push(`<text class="dom-chrono-title" x="${Math.round(bC.x + 14)}" y="${Math.round(bC.y + 21)}">ДОМЕН ВРЕМЕНИ И КОСМОЛОГИИ</text>`);
+      out.push(`</g>`);
+    }
+  }
+
+  // Layer 1 & 2: Edges (relational first, then graph on top)
+  const sortedEdges = [...state.edges].sort((a, b) => (a.kind === 'graph' ? 1 : 0) - (b.kind === 'graph' ? 1 : 0));
+  for (const e of sortedEdges) {
+    const pts = getEdgePoints(e);
+    const d = pointsToPath(pts);
+    const isSel = !forExport && selection && selection.type === 'edge' && selection.id === e.id;
+    const cls = (e.kind === 'graph' ? 'graph-edge' : 'rel-edge') + (isSel ? ' edge-selected' : '');
+    let markers = '';
+    if (e.kind === 'graph') markers = `marker-end="url(#graph-arrow)"`;
+    else if (e.kind === 'rel-1n') markers = `marker-start="url(#one-start)" marker-end="url(#many-opt-end)"`;
+    else markers = `marker-start="url(#opt-one-start)" marker-end="url(#many-opt-end)"`;
+
+    out.push(`<path class="${cls}" d="${d}" ${markers}/>`);
+    if (!forExport) {
+      out.push(`<path class="edge-hit" d="${d}" data-edge="${e.id}"/>`);
+    }
+    if (e.label) {
+      const lp = e.labelPos || defaultLabelPos(pts);
+      const charW = e.kind === 'graph' ? 7.6 : 6.6;
+      const bw = Math.round(e.label.length * charW + 14);
+      const bh = 18;
+      const cursor = !forExport ? ' style="cursor:move"' : '';
+      out.push(`<g data-edge-label="${e.id}"${cursor}>`);
+      out.push(`<rect class="label-bg" x="${Math.round(lp.x - bw/2)}" y="${Math.round(lp.y - bh/2 - 1)}" width="${bw}" height="${bh}"/>`);
+      out.push(`<text class="${e.kind === 'graph' ? 'graph-label' : 'rel-label'}" x="${Math.round(lp.x)}" y="${Math.round(lp.y + 4)}">${escapeXml(e.label)}</text>`);
+      out.push(`</g>`);
+    }
+  }
+
+  // Layer 3: Nodes
+  for (const n of state.nodes) {
+    const isSel = !forExport && selection && selection.type === 'node' && selection.id === n.id;
+    let boxCls = 'box-manuscript';
+    if (n.domain === 'root') boxCls = 'box-root';
+    else if (n.hub) boxCls = 'box-hub';
+    else if (n.domain === 'lore') boxCls = 'box-lore';
+    else if (n.domain === 'chrono') boxCls = 'box-chrono';
+
+    const cursor = !forExport ? ' style="cursor:move"' : '';
+    out.push(`<g data-node="${n.id}"${cursor}>`);
+    out.push(`<rect class="${boxCls}" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}"/>`);
+    if (n.domain === 'root' || n.hub) {
+      const innerCls = n.domain === 'root' ? 'box-root-inner' : 'box-hub-inner';
+      out.push(`<rect class="${innerCls}" x="${n.x + 4}" y="${n.y + 4}" width="${n.w - 8}" height="${n.h - 8}"/>`);
+    }
+    if (isSel) {
+      out.push(`<rect x="${n.x - 3}" y="${n.y - 3}" width="${n.w + 6}" height="${n.h + 6}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" rx="7"/>`);
+      // Resize handle bottom-right
+      out.push(`<rect data-resize="${n.id}" x="${n.x + n.w - 5}" y="${n.y + n.h - 5}" width="11" height="11" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" rx="2" style="cursor:nwse-resize"/>`);
+    }
+    const cx = Math.round(n.x + n.w / 2);
+    const ty1 = Math.round(n.y + n.h * 0.44);
+    const ty2 = Math.round(n.y + n.h * 0.76);
+    out.push(`<text class="entity-title" x="${cx}" y="${ty1}">${escapeXml(n.title)}</text>`);
+    out.push(`<text class="entity-sub" x="${cx}" y="${ty2}">${escapeXml(n.sub)}</text>`);
+    out.push(`</g>`);
+  }
+
+  // Layer 4: Compact 1-line Legend
+  const ly = h - 30;
+  out.push(`<g transform="translate(0, ${ly})">`);
+  out.push(`<line class="graph-edge" x1="100" y1="0" x2="158" y2="0" marker-end="url(#graph-arrow)"/>`);
+  out.push(`<text class="legend-text" x="168" y="4">Графовая связь (TYPE RELATION)</text>`);
+  out.push(`<line class="rel-edge" x1="430" y1="0" x2="490" y2="0" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>`);
+  out.push(`<text class="legend-text" x="500" y="4">Реляционная связь (1:N / 0..N)</text>`);
+  out.push(`<rect class="box-hub" x="750" y="-11" width="34" height="22"/>`);
+  out.push(`<rect class="box-hub-inner" x="753" y="-8" width="28" height="16"/>`);
+  out.push(`<text class="legend-text" x="794" y="4">Ключевые хабы (projects, plot_promises)</text>`);
+  out.push(`</g>`);
+
+  // Layer 5: Interactive Segment, Corner & Endpoint Handles for selected edge (editor only)
+  if (!forExport && selection && selection.type === 'edge') {
+    const e = getEdge(selection.id);
+    if (e) {
+      const pts = getEdgePoints(e);
+      // Draggable midpoint handles on every orthogonal segment (including 1-segment straight lines!)
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1];
+        const isVert = Math.abs(a.x - b.x) <= 1;
+        const mx = Math.round((a.x + b.x) / 2);
+        const my = Math.round((a.y + b.y) / 2);
+        if (Math.hypot(b.x - a.x, b.y - a.y) >= 22) {
+          if (isVert) {
+            out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="v" x="${mx - 4}" y="${my - 10}" width="8" height="20" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ew-resize"><title>Тянуть вертикальный отрезок влево/вправо</title></rect>`);
+          } else {
+            out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="h" x="${mx - 10}" y="${my - 4}" width="20" height="8" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ns-resize"><title>Тянуть горизонтальный отрезок вверх/вниз</title></rect>`);
+          }
+        }
+      }
+      // Corner waypoint handles (orange)
+      e.waypoints.forEach((wp, idx) => {
+        out.push(`<circle data-wp-edge="${e.id}" data-wp-idx="${idx}" cx="${wp.x}" cy="${wp.y}" r="5.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.8" style="cursor:move"><title>Угол изгиба (2× клик — удалить)</title></circle>`);
+      });
+      // Start Anchor Handle (green) & End Arrowhead Anchor Handle (magenta) — drag onto ANY side of the box!
+      const n1 = getNode(e.from), n2 = getNode(e.to);
+      const pStart = anchorPoint(n1, e.fromSide, e.fromOffset);
+      const pEnd = anchorPoint(n2, e.toSide, e.toOffset);
+      out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="from" cx="${Math.round(pStart.x)}" cy="${Math.round(pStart.y)}" r="6.5" fill="#10b981" stroke="#ffffff" stroke-width="2" style="cursor:grab"><title>Начало связи: перетащите на любую сторону блока ${e.from}</title></circle>`);
+      out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="to" cx="${Math.round(pEnd.x)}" cy="${Math.round(pEnd.y)}" r="7" fill="#ec4899" stroke="#ffffff" stroke-width="2" style="cursor:grab"><title>Конец связи (стрелка): перетащите на любую сторону блока ${e.to}</title></circle>`);
+    }
+  }
+
+  if (forExport) out.push(`</svg>`);
+  return out.join('\n');
+}
+
+function escapeXml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ============================================================================
+// 4. RENDERING & INSPECTOR UI
+// ============================================================================
+const svgEl = document.getElementById('svg');
+const canvasWrap = document.getElementById('canvasWrap');
+const viewport = document.getElementById('viewport');
+
+function applyViewTransform() {
+  canvasWrap.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+}
+
+function renderSvg() {
+  svgEl.setAttribute('viewBox', `0 0 ${state.canvas.w} ${state.canvas.h}`);
+  svgEl.setAttribute('width', state.canvas.w);
+  svgEl.setAttribute('height', state.canvas.h);
+  svgEl.innerHTML = buildSvgMarkup(false);
+}
+
+function renderToolbar() {
+  document.getElementById('btnThemeColor').classList.toggle('active', state.theme === 'color');
+  document.getElementById('btnThemeBW').classList.toggle('active', state.theme === 'bw');
+  document.getElementById('chkDomains').checked = state.showDomains;
+  document.getElementById('chkGrid').checked = state.snap;
+  document.getElementById('inpCanvasW').value = state.canvas.w;
+  document.getElementById('inpCanvasH').value = state.canvas.h;
+
+  const sel = document.getElementById('selQuickEdge');
+  if (!sel.options.length) {
+    sel.innerHTML = `<option value="">— Выбрать связь —</option>` +
+      state.edges.map(e => `<option value="${e.id}">${e.from} → ${e.to} ${e.label || '(' + e.kind + ')'}</option>`).join('');
+  }
+  sel.value = (selection && selection.type === 'edge') ? selection.id : '';
+}
+
+function renderInspector() {
+  const panel = document.getElementById('selectionPanel');
+  if (!selection) {
+    panel.innerHTML = `<h3>Выделение</h3><p class="muted">Кликните по <b>сущности</b> или по <b>линии связи</b> на схеме.<br><br>Все 23 связи жёстко закреплены между таблицами — случайно разорвать схему невозможно.</p>`;
+    return;
+  }
+
+  if (selection.type === 'node') {
+    const n = getNode(selection.id);
+    if (!n) return;
+    panel.innerHTML = `
+      <h3>Сущность: <span class="badge">${n.id}</span></h3>
+      <div class="grid2">
+        <div class="field"><label>X</label><input type="number" id="nX" value="${n.x}" step="10" /></div>
+        <div class="field"><label>Y</label><input type="number" id="nY" value="${n.y}" step="10" /></div>
+        <div class="field"><label>Ширина (W)</label><input type="number" id="nW" value="${n.w}" step="10" min="120" max="420" /></div>
+        <div class="field"><label>Высота (H)</label><input type="number" id="nH" value="${n.h}" step="4" min="44" max="140" /></div>
+      </div>
+      <div class="field" style="margin-top:8px"><label>Подпись (подзаголовок)</label><input type="text" id="nSub" value="${escapeXml(n.sub)}" /></div>
+    `;
+    ['nX','nY','nW','nH'].forEach(id => {
+      document.getElementById(id).addEventListener('change', ev => {
+        const val = parseInt(ev.target.value, 10) || 0;
+        const dx = id === 'nX' ? val - n.x : 0;
+        const dy = id === 'nY' ? val - n.y : 0;
+        if (id === 'nX') n.x = val;
+        if (id === 'nY') n.y = val;
+        if (id === 'nW') n.w = Math.max(120, val);
+        if (id === 'nH') n.h = Math.max(44, val);
+        if (dx || dy) keepOrthogonalOnNodeMove(n.id, dx, dy);
+        pushHistory(); renderSvg();
+      });
+    });
+    document.getElementById('nSub').addEventListener('input', ev => {
+      n.sub = ev.target.value;
+      renderSvg();
+    });
+    document.getElementById('nSub').addEventListener('change', () => pushHistory());
+    return;
+  }
+
+  if (selection.type === 'edge') {
+    const e = getEdge(selection.id);
+    if (!e) return;
+    const sideOpts = s => ['top','right','bottom','left'].map(k => `<option value="${k}" ${s===k?'selected':''}>${k}</option>`).join('');
+    panel.innerHTML = `
+      <h3>Связь: <span class="badge">${e.from} → ${e.to}</span></h3>
+      <div class="muted" style="margin-bottom:8px">Тип: <b>${e.kind === 'graph' ? 'Граф (TYPE RELATION)' : e.kind === 'rel-1n' ? 'Реляционная 1:N' : 'Опциональная 0..1:N'}</b></div>
+      <div class="grid2">
+        <div class="field"><label>Выход (${e.from})</label><select id="eFromSide">${sideOpts(e.fromSide)}</select></div>
+        <div class="field"><label>Сдвиг (${Math.round(e.fromOffset*100)}%)</label><input type="range" id="eFromOff" min="8" max="92" value="${Math.round(e.fromOffset*100)}" /></div>
+        <div class="field"><label>Вход (${e.to})</label><select id="eToSide">${sideOpts(e.toSide)}</select></div>
+        <div class="field"><label>Сдвиг (${Math.round(e.toOffset*100)}%)</label><input type="range" id="eToOff" min="8" max="92" value="${Math.round(e.toOffset*100)}" /></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="btnAddWp" style="flex:1">+ Добавить изгиб</button>
+        <button id="btnClearWp">Спрямить</button>
+      </div>
+      ${e.label ? `<div class="row" style="margin-top:6px"><button id="btnResetLbl" style="flex:1">Сбросить позицию подписи</button></div>` : ''}
+      <div class="wp-list">
+        ${e.waypoints.map((wp, i) => `
+          <div class="wp-item">
+            <span>#${i+1}: (${Math.round(wp.x)}, ${Math.round(wp.y)})</span>
+            <button data-del-wp="${i}">✕</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('eFromSide').addEventListener('change', ev => { e.fromSide = ev.target.value; pushHistory(); renderSvg(); });
+    document.getElementById('eToSide').addEventListener('change', ev => { e.toSide = ev.target.value; pushHistory(); renderSvg(); });
+    document.getElementById('eFromOff').addEventListener('input', ev => { e.fromOffset = ev.target.value / 100; renderSvg(); });
+    document.getElementById('eFromOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+    document.getElementById('eToOff').addEventListener('input', ev => { e.toOffset = ev.target.value / 100; renderSvg(); });
+    document.getElementById('eToOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+    document.getElementById('btnAddWp').addEventListener('click', () => {
+      const pts = getEdgePoints(e);
+      const mid = defaultLabelPos(pts);
+      e.waypoints.push({ x: snapVal(mid.x), y: snapVal(mid.y) });
+      pushHistory(); renderAll();
+    });
+    document.getElementById('btnClearWp').addEventListener('click', () => {
+      e.waypoints = [];
+      pushHistory(); renderAll();
+    });
+    const btnLbl = document.getElementById('btnResetLbl');
+    if (btnLbl) btnLbl.addEventListener('click', () => { e.labelPos = null; pushHistory(); renderSvg(); });
+    panel.querySelectorAll('[data-del-wp]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        e.waypoints.splice(parseInt(btn.dataset.delWp, 10), 1);
+        pushHistory(); renderAll();
+      });
+    });
+  }
+}
+
+function renderAll() {
+  renderSvg();
+  renderToolbar();
+  renderInspector();
+  applyViewTransform();
+}
+
+// ============================================================================
+// 5. POINTER INTERACTIONS (DRAG NODES, RESIZE, DRAG WAYPOINTS, LABELS, PAN/ZOOM)
+// ============================================================================
+function clientToSvg(clientX, clientY) {
+  const rect = canvasWrap.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) / view.scale,
+    y: (clientY - rect.top) / view.scale
+  };
+}
+
+let spacePressed = false;
+window.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if (e.code === 'Space') { spacePressed = true; viewport.classList.add('panning'); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  const step = e.shiftKey ? 140 : 50;
+  if (e.key === 'ArrowUp')    { e.preventDefault(); view.y += step; applyViewTransform(); }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); view.y -= step; applyViewTransform(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); view.x += step; applyViewTransform(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); view.x -= step; applyViewTransform(); }
+});
+window.addEventListener('keyup', e => {
+  if (e.code === 'Space') { spacePressed = false; viewport.classList.remove('panning'); }
+});
+
+viewport.addEventListener('contextmenu', e => e.preventDefault());
+
+viewport.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+
+  const target = e.target;
+  const pt = clientToSvg(e.clientX, e.clientY);
+
+  // 1. Resize node handle
+  if (target.dataset && target.dataset.resize) {
+    const n = getNode(target.dataset.resize);
+    drag = { mode: 'resize', node: n, startX: pt.x, startY: pt.y, origW: n.w, origH: n.h };
+    return;
+  }
+
+  // 1a. Drag start/end anchor along or across node sides (green / magenta handles)
+  if (target.dataset && target.dataset.anchorEdge) {
+    const edge = getEdge(target.dataset.anchorEdge);
+    const which = target.dataset.anchorEnd; // 'from' | 'to'
+    drag = { mode: 'anchor', edge, which };
+    return;
+  }
+
+  // 1b. Drag orthogonal segment (slides entire vertical or horizontal segment at 90 deg, and slides anchor offset along box border!)
+  if (target.dataset && target.dataset.segEdge) {
+    const edge = getEdge(target.dataset.segEdge);
+    const segIdx = parseInt(target.dataset.segIdx, 10);
+    const dir = target.dataset.segDir;
+    materializeEdgeWaypoints(edge);
+    drag = { mode: 'seg', edge, segIdx, dir };
+    return;
+  }
+
+  // 2. Drag waypoint (coupled with adjacent orthogonal corners & border offsets so no hooks appear)
+  if (target.dataset && target.dataset.wpEdge) {
+    const edge = getEdge(target.dataset.wpEdge);
+    const idx = parseInt(target.dataset.wpIdx, 10);
+    materializeEdgeWaypoints(edge);
+    const pts = getEdgePoints(edge);
+    let mIdx = idx;
+    if (edge.waypoints[idx]) {
+      const targetWp = edge.waypoints[idx];
+      const found = edge.waypoints.findIndex(w => Math.hypot(w.x - targetWp.x, w.y - targetWp.y) <= 2);
+      if (found >= 0) mIdx = found;
+    }
+    const prevPt = mIdx > 0 ? edge.waypoints[mIdx - 1] : pts[0];
+    const currPt = edge.waypoints[mIdx] || pts[1];
+    const nextPt = mIdx < edge.waypoints.length - 1 ? edge.waypoints[mIdx + 1] : pts[pts.length - 1];
+    const prevSameX = prevPt && currPt ? Math.abs(prevPt.x - currPt.x) <= 2 : false;
+    const nextSameX = nextPt && currPt ? Math.abs(nextPt.x - currPt.x) <= 2 : false;
+    drag = { mode: 'wp', edge, idx: mIdx, prevSameX, nextSameX };
+    return;
+  }
+
+  // 3. Drag edge label
+  const lblG = target.closest && target.closest('[data-edge-label]');
+  if (lblG) {
+    const edge = getEdge(lblG.dataset.edgeLabel);
+    selection = { type: 'edge', id: edge.id };
+    if (!edge.labelPos) edge.labelPos = defaultLabelPos(getEdgePoints(edge));
+    drag = { mode: 'label', edge, offX: pt.x - edge.labelPos.x, offY: pt.y - edge.labelPos.y };
+    renderAll();
+    return;
+  }
+
+  // 4. Drag node
+  const nodeG = target.closest && target.closest('[data-node]');
+  if (nodeG) {
+    const n = getNode(nodeG.dataset.node);
+    selection = { type: 'node', id: n.id };
+    drag = { mode: 'node', node: n, lastX: n.x, lastY: n.y, offX: pt.x - n.x, offY: pt.y - n.y };
+    renderAll();
+    return;
+  }
+
+  // 5. Select edge
+  if (target.dataset && target.dataset.edge) {
+    selection = { type: 'edge', id: target.dataset.edge };
+    renderAll();
+    return;
+  }
+
+  // 6. Drag entire domain group by grabbing its backdrop / border / title
+  const domG = target.closest && target.closest('[data-domain]');
+  if (domG) {
+    const domainKey = domG.dataset.domain;
+    selection = null;
+    drag = { mode: 'domain', domainKey, lastX: snapVal(pt.x), lastY: snapVal(pt.y) };
+    renderAll();
+    return;
+  }
+
+  // 7. Empty canvas click -> only deselect (background is locked and never moves!)
+  selection = null;
+  renderAll();
+});
+
+viewport.addEventListener('dblclick', e => {
+  const target = e.target;
+  const pt = clientToSvg(e.clientX, e.clientY);
+
+  // Double-click waypoint -> delete it
+  if (target.dataset && target.dataset.wpEdge) {
+    const edge = getEdge(target.dataset.wpEdge);
+    const idx = parseInt(target.dataset.wpIdx, 10);
+    edge.waypoints.splice(idx, 1);
+    pushHistory();
+    renderAll();
+    return;
+  }
+
+  // Double-click edge -> insert orthogonal step on nearest segment
+  if (target.dataset && target.dataset.edge) {
+    const edge = getEdge(target.dataset.edge);
+    materializeEdgeWaypoints(edge);
+    const pts = getEdgePoints(edge);
+    let bestSeg = 0, bestDist = Infinity;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const d = distToSegment(pt, pts[i], pts[i+1]);
+      if (d < bestDist) { bestDist = d; bestSeg = i; }
+    }
+    const a = pts[bestSeg], b = pts[bestSeg + 1];
+    const isVert = Math.abs(a.x - b.x) <= 1;
+    const mx = snapVal(pt.x), my = snapVal(pt.y);
+    // Insert a clean 90-degree jog (2 corners) so you immediately get a draggable segment!
+    const jog = isVert
+      ? [{ x: a.x, y: my }, { x: a.x + 30, y: my }, { x: a.x + 30, y: Math.round((my + b.y) / 2) }, { x: b.x, y: Math.round((my + b.y) / 2) }]
+      : [{ x: mx, y: a.y }, { x: mx, y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: b.y }];
+    edge.waypoints.splice(bestSeg, 0, ...jog);
+    selection = { type: 'edge', id: edge.id };
+    pushHistory();
+    renderAll();
+  }
+});
+
+function distToSegment(p, a, b) {
+  const l2 = (b.x - a.x)**2 + (b.y - a.y)**2;
+  if (l2 === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  let t = ((p.x - a.x)*(b.x - a.x) + (p.y - a.y)*(b.y - a.y)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t*(b.x - a.x)), p.y - (a.y + t*(b.y - a.y)));
+}
+
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  if (drag.mode === 'pan') {
+    view.x = drag.vx + (e.clientX - drag.startX);
+    view.y = drag.vy + (e.clientY - drag.startY);
+    applyViewTransform();
+    return;
+  }
+  const pt = clientToSvg(e.clientX, e.clientY);
+  if (drag.mode === 'domain') {
+    const nx = snapVal(pt.x);
+    const ny = snapVal(pt.y);
+    const dx = nx - drag.lastX;
+    const dy = ny - drag.lastY;
+    if (dx !== 0 || dy !== 0) {
+      moveDomainGroup(drag.domainKey, dx, dy);
+      drag.lastX = nx;
+      drag.lastY = ny;
+      renderSvg();
+    }
+  } else if (drag.mode === 'node') {
+    const nx = snapVal(pt.x - drag.offX);
+    const ny = snapVal(pt.y - drag.offY);
+    const dx = nx - drag.lastX;
+    const dy = ny - drag.lastY;
+    if (dx !== 0 || dy !== 0) {
+      drag.node.x = nx;
+      drag.node.y = ny;
+      keepOrthogonalOnNodeMove(drag.node.id, dx, dy);
+      drag.lastX = nx;
+      drag.lastY = ny;
+      renderSvg();
+    }
+  } else if (drag.mode === 'resize') {
+    drag.node.w = Math.max(120, snapVal(drag.origW + (pt.x - drag.startX)));
+    drag.node.h = Math.max(44, snapVal(drag.origH + (pt.y - drag.startY)));
+    renderSvg();
+  } else if (drag.mode === 'anchor') {
+    const e = drag.edge;
+    const node = getNode(drag.which === 'from' ? e.from : e.to);
+    const snapped = snapPointToNodeBorder(node, pt.x, pt.y);
+    if (drag.which === 'from') {
+      const sideChanged = e.fromSide !== snapped.side;
+      e.fromSide = snapped.side;
+      e.fromOffset = snapped.offset;
+      const pStart = anchorPoint(node, e.fromSide, e.fromOffset);
+      if (e.waypoints.length > 0) {
+        if (sideChanged && e.waypoints.length === 1) {
+          // Re-compute clean 1-corner L-shape for the new side
+          e.waypoints = [];
+          materializeEdgeWaypoints(e);
+        } else {
+          if (e.fromSide === 'top' || e.fromSide === 'bottom') e.waypoints[0].x = Math.round(pStart.x);
+          else e.waypoints[0].y = Math.round(pStart.y);
+        }
+      }
+    } else {
+      const sideChanged = e.toSide !== snapped.side;
+      e.toSide = snapped.side;
+      e.toOffset = snapped.offset;
+      const pEnd = anchorPoint(node, e.toSide, e.toOffset);
+      if (e.waypoints.length > 0) {
+        const last = e.waypoints[e.waypoints.length - 1];
+        if (sideChanged && e.waypoints.length === 1) {
+          e.waypoints = [];
+          materializeEdgeWaypoints(e);
+        } else {
+          if (e.toSide === 'top' || e.toSide === 'bottom') last.x = Math.round(pEnd.x);
+          else last.y = Math.round(pEnd.y);
+        }
+      }
+    }
+    renderSvg();
+  } else if (drag.mode === 'seg') {
+    const e = drag.edge;
+    const n1 = getNode(e.from), n2 = getNode(e.to);
+    const i = drag.segIdx; // segment connects pts[i] -> pts[i+1]; waypoints index is i-1 and i
+    const wpA = (i - 1 >= 0 && i - 1 < e.waypoints.length) ? e.waypoints[i - 1] : null;
+    const wpB = (i >= 0 && i < e.waypoints.length) ? e.waypoints[i] : null;
+
+    if (drag.dir === 'v') {
+      const nx = snapVal(pt.x);
+      if (wpA) wpA.x = nx;
+      if (wpB) wpB.x = nx;
+      // If segment touches start or end anchor on top/bottom side, slide the anchor offset directly!
+      if (!wpA && (e.fromSide === 'top' || e.fromSide === 'bottom')) {
+        e.fromOffset = Math.max(0.08, Math.min(0.92, (nx - n1.x) / n1.w));
+      }
+      if (!wpB && (e.toSide === 'top' || e.toSide === 'bottom')) {
+        e.toOffset = Math.max(0.08, Math.min(0.92, (nx - n2.x) / n2.w));
+      }
+    } else {
+      const ny = snapVal(pt.y);
+      if (wpA) wpA.y = ny;
+      if (wpB) wpB.y = ny;
+      // If segment touches start or end anchor on left/right side, slide the anchor offset directly!
+      if (!wpA && (e.fromSide === 'left' || e.fromSide === 'right')) {
+        e.fromOffset = Math.max(0.08, Math.min(0.92, (ny - n1.y) / n1.h));
+      }
+      if (!wpB && (e.toSide === 'left' || e.toSide === 'right')) {
+        e.toOffset = Math.max(0.08, Math.min(0.92, (ny - n2.y) / n2.h));
+      }
+    }
+    syncOffsetsToWaypoints(e);
+    renderSvg();
+  } else if (drag.mode === 'wp') {
+    const e = drag.edge;
+    const wp = e.waypoints[drag.idx];
+    if (wp) {
+      const nx = snapVal(pt.x), ny = snapVal(pt.y);
+      wp.x = nx; wp.y = ny;
+      // Coupled neighbor update so dragging an L-corner moves the legs instead of spawning extra hooks
+      if (drag.idx > 0) {
+        const prev = e.waypoints[drag.idx - 1];
+        if (drag.prevSameX) prev.x = nx; else prev.y = ny;
+      }
+      if (drag.idx < e.waypoints.length - 1) {
+        const next = e.waypoints[drag.idx + 1];
+        if (drag.nextSameX) next.x = nx; else next.y = ny;
+      }
+      syncOffsetsToWaypoints(e);
+      renderSvg();
+    }
+  } else if (drag.mode === 'label') {
+    drag.edge.labelPos = { x: snapVal(pt.x - drag.offX), y: snapVal(pt.y - drag.offY) };
+    renderSvg();
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  if (!drag) return;
+  const wasMove = drag.mode !== 'pan';
+  drag = null;
+  viewport.classList.remove('panning');
+  if (wasMove) {
+    pushHistory();
+    renderInspector();
+  }
+});
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.ctrlKey || e.metaKey) {
+    // Pinch-to-zoom on trackpad or Ctrl + mouse wheel
+    const f = Math.exp(-e.deltaY * 0.008);
+    const rect = viewport.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const newScale = Math.max(0.35, Math.min(2.5, view.scale * f));
+    view.x = mx - (mx - view.x) * (newScale / view.scale);
+    view.y = my - (my - view.y) * (newScale / view.scale);
+    view.scale = newScale;
+  } else {
+    // Two-finger trackpad scroll / regular wheel -> pan canvas
+    view.x -= e.deltaX;
+    view.y -= e.deltaY;
+  }
+  applyViewTransform();
+}, { passive: false });
+
+// ============================================================================
+// 6. TOOLBAR & EXPORT ACTIONS
+// ============================================================================
+function fitToScreen() {
+  const r = viewport.getBoundingClientRect();
+  const pad = 36;
+  const s = Math.min((r.width - pad) / state.canvas.w, (r.height - pad) / state.canvas.h, 1.15);
+  view.scale = s;
+  view.x = Math.round((r.width - state.canvas.w * s) / 2);
+  view.y = Math.round((r.height - state.canvas.h * s) / 2);
+  applyViewTransform();
+}
+
+document.getElementById('btnThemeColor').addEventListener('click', () => { state.theme = 'color'; pushHistory(); renderAll(); });
+document.getElementById('btnThemeBW').addEventListener('click', () => { state.theme = 'bw'; pushHistory(); renderAll(); });
+document.getElementById('chkDomains').addEventListener('change', e => { state.showDomains = e.target.checked; pushHistory(); renderAll(); });
+document.getElementById('chkGrid').addEventListener('change', e => { state.snap = e.target.checked; saveLocal(); renderSvg(); });
+document.getElementById('btnUndo').addEventListener('click', undo);
+document.getElementById('btnRedo').addEventListener('click', redo);
+document.getElementById('btnFit').addEventListener('click', fitToScreen);
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm('Сбросить всю раскладку к исходной?')) return;
+  state = createDefaultState();
+  selection = null;
+  pushHistory();
+  renderAll();
+  fitToScreen();
+});
+
+document.getElementById('inpCanvasW').addEventListener('change', e => { state.canvas.w = Math.max(800, parseInt(e.target.value,10)||1280); pushHistory(); renderAll(); });
+document.getElementById('inpCanvasH').addEventListener('change', e => { state.canvas.h = Math.max(500, parseInt(e.target.value,10)||790); pushHistory(); renderAll(); });
+document.getElementById('btnPreset1280').addEventListener('click', () => { state.canvas = { w: 1280, h: 790 }; pushHistory(); renderAll(); fitToScreen(); });
+document.getElementById('btnPreset169').addEventListener('click', () => { state.canvas = { w: 1440, h: 810 }; pushHistory(); renderAll(); fitToScreen(); });
+
+document.getElementById('selQuickEdge').addEventListener('change', e => {
+  if (e.target.value) selection = { type: 'edge', id: e.target.value };
+  else selection = null;
+  renderAll();
+});
+
+// Export clean SVG
+document.getElementById('btnExportSvg').addEventListener('click', () => {
+  const svgStr = buildSvgMarkup(true);
+  const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const name = state.theme === 'bw' ? 'conceptual_schema.svg' : 'conceptual_schema_slides.svg';
+  triggerDownload(blob, name);
+});
+
+// Export high-res 2x PNG
+document.getElementById('btnExportPng').addEventListener('click', () => {
+  const svgStr = buildSvgMarkup(true);
+  const img = new Image();
+  const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    const scale = 2;
+    const c = document.createElement('canvas');
+    c.width = state.canvas.w * scale;
+    c.height = state.canvas.h * scale;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    c.toBlob(pngBlob => {
+      const name = state.theme === 'bw' ? 'conceptual_schema.png' : 'conceptual_schema_slides.png';
+      triggerDownload(pngBlob, name);
+    }, 'image/png');
+  };
+  img.src = url;
+});
+
+// Save / Load JSON layout
+document.getElementById('btnSaveJson').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  triggerDownload(blob, 'worldwiki_schema_layout.json');
+});
+document.getElementById('btnLoadJson').addEventListener('click', () => document.getElementById('fileJson').click());
+document.getElementById('fileJson').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      state = JSON.parse(r.result);
+      selection = null;
+      pushHistory();
+      renderAll();
+      fitToScreen();
+    } catch (err) { alert('Ошибка чтения JSON: ' + err.message); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+function triggerDownload(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+
+// Init
+renderAll();
+setTimeout(fitToScreen, 30);
+window.addEventListener('resize', fitToScreen);
+</script>
+</body>
+</html>

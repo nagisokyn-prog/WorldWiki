@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorldWiki — Редактор модульной логической схемы А3 (ГОСТ)</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-border: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    user-select: none;
+  }
+  .app {
+    display: grid;
+    grid-template-rows: 48px 1fr;
+    grid-template-columns: 1fr 300px;
+    height: 100vh;
+  }
+  header {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--panel-border);
+    font-size: 13px;
+  }
+  header .title { font-weight: 700; font-size: 14px; margin-right: 10px; color: #fff; }
+  header .sep { width: 1px; height: 22px; background: var(--panel-border); margin: 0 4px; }
+  button, select {
+    background: #334155; color: #f8fafc; border: 1px solid #475569;
+    border-radius: 5px; padding: 5px 10px; font-size: 12.5px; cursor: pointer;
+    transition: background .12s;
+  }
+  button:hover, select:hover { background: #475569; }
+  button.primary { background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { background: var(--accent-hover); }
+  button.success { background: #059669; border-color: #059669; font-weight: 600; }
+  button.success:hover { background: #047857; }
+  button.active { background: var(--accent); border-color: #60a5fa; }
+  button.danger { background: #7f1d1d; border-color: #991b1b; }
+  button.danger:hover { background: #991b1b; }
+  label.chk {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12.5px; color: #cbd5e1; cursor: pointer;
+  }
+  .spacer { flex: 1; }
+
+  .viewport {
+    position: relative; overflow: hidden;
+    background: #1a2234;
+    background-image: radial-gradient(#334155 1px, transparent 1px);
+    background-size: 20px 20px;
+    cursor: default;
+  }
+  .canvas-wrap {
+    position: absolute; top: 0; left: 0;
+    transform-origin: 0 0;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+  }
+  .hint-bar {
+    position: absolute; bottom: 10px; left: 14px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid #334155; border-radius: 6px;
+    padding: 6px 12px; font-size: 11.5px; color: #cbd5e1;
+    pointer-events: none;
+  }
+
+  aside {
+    background: var(--panel);
+    border-left: 1px solid var(--panel-border);
+    padding: 12px 14px;
+    overflow-y: auto;
+    font-size: 12.5px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .section {
+    border: 1px solid var(--panel-border);
+    border-radius: 7px; padding: 10px;
+    background: rgba(15, 23, 42, 0.45);
+  }
+  .section h3 {
+    margin: 0 0 8px 0; font-size: 11.5px; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #94a3b8;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+  .field label { font-size: 11px; color: #94a3b8; }
+  .field input[type="number"], .field input[type="text"], .field select {
+    width: 100%; background: #0f172a; color: #f8fafc;
+    border: 1px solid #475569; border-radius: 4px; padding: 4px 7px;
+    font-size: 12px;
+  }
+  .field input[type="range"] { width: 100%; }
+  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .muted { color: #94a3b8; font-size: 11.5px; line-height: 1.45; }
+  .badge {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    background: #334155; font-family: Consolas, monospace; font-size: 11px;
+  }
+  .wp-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .wp-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0f172a; padding: 4px 7px; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 11px;
+  }
+  .wp-item button { padding: 2px 6px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="title">WorldWiki Модульная А3 Studio</span>
+    <button id="btnThemeBW" class="active">Ч/Б ГОСТ (А3)</button>
+    <button id="btnThemeColor">С цветными акцентами</button>
+    <div class="sep"></div>
+    <label class="chk"><input type="checkbox" id="chkStamp" checked /> Рамка и штамп А3</label>
+    <label class="chk"><input type="checkbox" id="chkGrid" checked /> Сетка 10px</label>
+    <div class="sep"></div>
+    <button id="btnUndo" title="Отменить (Ctrl+Z)">↶ Undo</button>
+    <button id="btnRedo" title="Повторить (Ctrl+Y)">↷ Redo</button>
+    <button id="btnFit" title="Вписать А3 в экран">⤢ Вписать</button>
+    <button id="btnReset" class="danger">Сброс</button>
+    <div class="spacer"></div>
+    <button id="btnSaveJson">JSON ↓</button>
+    <button id="btnLoadJson">JSON ↑</button>
+    <input type="file" id="fileJson" accept=".json" style="display:none" />
+    <div class="sep"></div>
+    <button id="btnExportSvg" class="primary">Скачать SVG</button>
+    <button id="btnExportPng" class="success">Скачать PNG (2x)</button>
+  </header>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="hint-bar">
+      <b>ЛКМ по таблице / порту</b> — двигать (90°) · <b>Стрелки клавиатуры (+Shift)</b> — крутить лист ·
+      <b>Клик по линии</b>: <b>розовый/зелёный</b> — грань · <b>синий/оранжевый</b> — изгибы · <b>Колесо</b> — зум
+    </div>
+  </div>
+
+  <aside id="inspector">
+    <div class="section">
+      <h3>Штамп ГОСТ 2.104 (А3: 2100×1485)</h3>
+      <div class="field"><label>Обозначение документа</label><input type="text" id="inpDocCode" /></div>
+      <div class="field"><label>Кафедра / Группа</label><input type="text" id="inpDept" /></div>
+      <div class="field"><label>Разработал (фамилия)</label><input type="text" id="inpAuthor" /></div>
+    </div>
+
+    <div class="section" id="selectionPanel">
+      <h3>Выделение</h3>
+      <p class="muted">Кликните по <b>таблице</b>, <b>порту</b> или <b>линии связи</b>.<br><br>Модули M1–M4 изолированы от спагетти; двигайте таблицы и порты свободно.</p>
+    </div>
+
+    <div class="section">
+      <h3>Быстрый выбор</h3>
+      <div class="field"><label>Таблица / Порт</label><select id="selQuickNode"></select></div>
+      <div class="field"><label>Связь</label><select id="selQuickEdge"></select></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const STORAGE_KEY = 'worldwiki_logical_a3_editor_v2';
+const ROW_H = 14.5;
+const HEADER_H = 22;
+const IO_H = 30;
+
+function calcNodeHeight(n) {
+  if (n.kind === 'port') return 24;
+  return Math.round(HEADER_H + (n.kind === 'relation' ? IO_H : 0) + n.fields.length * ROW_H + 6);
+}
+
+const MODULES = [
+  { id: 'M1', title: 'МОДУЛЬ M1: РУКОПИСЬ И ПЛАНИРОВЩИК',        x: 122,  y: 162, w: 518, h: 1085 },
+  { id: 'M2', title: 'МОДУЛЬ M2: СЮЖЕТНЫЕ УЗЛЫ И ОБЕЩАНИЯ',    x: 658,  y: 162, w: 486, h: 1085 },
+  { id: 'M3', title: 'МОДУЛЬ M3: ОНТОЛОГИЯ ЛОРА И ВЕРСИОННОСТЬ', x: 1162, y: 162, w: 486, h: 1005 },
+  { id: 'M4', title: 'МОДУЛЬ M4: ХРОНОЛОГИЯ И СИСТЕМА',         x: 1666, y: 162, w: 388, h: 1005 },
+];
+
+function createDefaultState() {
+  const nodes = [
+    // Ports (off-page connectors)
+    { id: 'p_m2_arcs', kind: 'port', x: 676,  y: 205, w: 145, label: '→ [M1] story_arcs', fields: [] },
+    { id: 'p_m2_ch',   kind: 'port', x: 978,  y: 205, w: 145, label: '← [M1] chapters', fields: [] },
+    { id: 'p_m2_ent',  kind: 'port', x: 978,  y: 445, w: 145, label: '← [M3] entities', fields: [] },
+    { id: 'p_m2_blk',  kind: 'port', x: 978,  y: 785, w: 145, label: '→ [M1] text_blocks', fields: [] },
+    { id: 'p_m2_ev',   kind: 'port', x: 978,  y: 1055,w: 145, label: '→ [M4] timeline_events', fields: [] },
+    { id: 'p_m3_proj', kind: 'port', x: 1180, y: 205, w: 145, label: '← [M1] projects', fields: [] },
+    { id: 'p_m3_ch',   kind: 'port', x: 1480, y: 890, w: 150, label: '→ [M1] chapters | blocks', fields: [] },
+    { id: 'p_m4_proj', kind: 'port', x: 1680, y: 205, w: 136, label: '← [M1] projects', fields: [] },
+    { id: 'p_m4_ent',  kind: 'port', x: 1680, y: 745, w: 132, label: '← [M3] entities', fields: [] },
+    { id: 'p_m4_ch',   kind: 'port', x: 1680, y: 925, w: 132, label: '→ [M1] chapters', fields: [] },
+
+    // M1
+    { id: 'projects', kind: 'hub', x: 140, y: 205, w: 220, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'name', type: 'string' },
+      { k: '', name: 'type', type: 'string?' }, { k: '', name: 'genres', type: 'array' },
+      { k: '', name: 'cover_image', type: 'string?' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'contains', kind: 'relation', x: 140, y: 348, w: 220, inTypes: 'projects | volumes', outTypes: 'volumes | chapters', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'sort_order', type: 'int' }
+    ]},
+    { id: 'volumes', kind: 'normal', x: 140, y: 465, w: 220, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: '', name: 'title', type: 'string' }
+    ]},
+    { id: 'chapters', kind: 'normal', x: 140, y: 585, w: 220, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'volume_id', type: 'record' },
+      { k: '', name: 'title / content', type: 'string' }, { k: '', name: 'sort_order', type: 'int' },
+      { k: '', name: 'word_count', type: 'int' }, { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'text_blocks', kind: 'normal', x: 140, y: 745, w: 220, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'chapter_id', type: 'record' },
+      { k: '', name: 'block_type', type: 'string' }, { k: '', name: 'order_index', type: 'int' },
+      { k: '', name: 'content', type: 'string' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'story_arcs', kind: 'normal', x: 400, y: 205, w: 222, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: '', name: 'title', type: 'string' }, { k: '', name: 'status', type: 'string' },
+      { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'todos', kind: 'normal', x: 400, y: 350, w: 222, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'owner_vol / ch / arc', type: 'record?' },
+      { k: 'FK', name: 'arc_id', type: 'record?' }, { k: 'FK', name: 'depends_on', type: 'record?' },
+      { k: '', name: 'text', type: 'string' }, { k: '', name: 'status', type: 'string' },
+      { k: '', name: 'is_done', type: 'bool' }, { k: '', name: 'sort_order', type: 'int' },
+      { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'chapter_revisions', kind: 'audit', x: 400, y: 585, w: 222, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'target_id', type: 'record' },
+      { k: '', name: 'content', type: 'object' }, { k: '', name: 'commit_msg', type: 'string?' },
+      { k: '', name: 'created_at', type: 'datetime' }, { k: '', name: 'is_pinned', type: 'bool' }
+    ]},
+
+    // M2
+    { id: 'advances_arc', kind: 'relation', x: 676, y: 270, w: 210, inTypes: 'chapters | plot_promises', outTypes: 'story_arcs', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'phase', type: 'string' },
+      { k: '', name: 'transition', type: 'string?' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'participant_of', kind: 'relation', x: 916, y: 310, w: 210, inTypes: 'entities', outTypes: 'plot_promises', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'role', type: 'string?' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'plot_promises', kind: 'hub', x: 676, y: 485, w: 228, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'parent_id', type: 'record?' },
+      { k: 'FK', name: 'location_id', type: 'record?' }, { k: 'FK', name: 'timeline_event_id', type: 'record?' },
+      { k: '', name: 'block_ids', type: 'array' }, { k: '', name: 'kind / status', type: 'string' },
+      { k: '', name: 'time_nature', type: 'string' }, { k: '', name: 'title', type: 'string' },
+      { k: '', name: 'note', type: 'string?' }, { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'spans_blocks', kind: 'relation', x: 676, y: 740, w: 226, inTypes: 'plot_promises', outTypes: 'text_blocks', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'promise_milestones', kind: 'relation', x: 676, y: 855, w: 226, inTypes: 'plot_promises', outTypes: 'text_blocks', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'stage', type: 'string' },
+      { k: '', name: 'quote', type: 'string' }, { k: '', name: 'note', type: 'string?' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'occurs_at', kind: 'relation', x: 676, y: 1020, w: 226, inTypes: 'plot_promises', outTypes: 'timeline_events', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'time_nature', type: 'string' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+
+    // M3
+    { id: 'entity_schemas', kind: 'normal', x: 1180, y: 265, w: 222, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: 'UQ', name: 'type_key', type: 'string' }, { k: '', name: 'type_name', type: 'string' },
+      { k: '', name: 'fields_schema', type: 'array' }, { k: '', name: 'full_schema', type: 'object?' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'schema_history', kind: 'audit', x: 1418, y: 265, w: 214, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'schema_id', type: 'record' },
+      { k: 'FK', name: 'project_id', type: 'record' }, { k: '', name: 'type_key', type: 'string' },
+      { k: '', name: 'snapshot', type: 'object' }, { k: '', name: 'saved_at', type: 'datetime' },
+      { k: '', name: 'is_pinned / msg', type: 'bool/str' }
+    ]},
+    { id: 'entities', kind: 'normal', x: 1180, y: 455, w: 222, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'schema_id', type: 'record' },
+      { k: '', name: 'name', type: 'string' }, { k: '', name: 'description', type: 'string?' },
+      { k: '', name: 'tags', type: 'array' }, { k: '', name: 'attributes', type: 'object' },
+      { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'entity_revisions', kind: 'audit', x: 1418, y: 455, w: 214, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'target_id', type: 'record' },
+      { k: '', name: 'content', type: 'object' }, { k: '', name: 'commit_msg', type: 'string?' },
+      { k: '', name: 'created_at', type: 'datetime' }, { k: '', name: 'is_pinned', type: 'bool' }
+    ]},
+    { id: 'entity_rel', kind: 'relation', x: 1180, y: 650, w: 222, inTypes: 'entities', outTypes: 'entities', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'rel_type / desc', type: 'string' },
+      { k: '', name: 'strength', type: 'int?' }, { k: '', name: 'attributes', type: 'object' },
+      { k: 'FK', name: 'start_at_ch / vol', type: 'record?' }, { k: 'FK', name: 'end_at_ch / vol', type: 'record?' },
+      { k: '', name: 'is_auto_extend', type: 'bool' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'entity_rel_revisions', kind: 'audit', x: 1418, y: 650, w: 214, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'target_id', type: 'record' },
+      { k: 'FK', name: 'in_id / out_id', type: 'record' }, { k: '', name: 'action', type: 'string' },
+      { k: '', name: 'content', type: 'object' }, { k: '', name: 'commit_msg', type: 'string?' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'appears_in', kind: 'relation', x: 1180, y: 890, w: 222, inTypes: 'entities', outTypes: 'chapters | text_blocks', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'source', type: 'string' },
+      { k: '', name: 'count', type: 'int?' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'relation_schemas', kind: 'audit', x: 1418, y: 955, w: 214, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: 'UQ', name: 'rel_key', type: 'string' }, { k: '', name: 'rel_name / icon / color', type: 'string' },
+      { k: '', name: 'from_types / to_types', type: 'array' }
+    ]},
+
+    // M4
+    { id: 'planets', kind: 'normal', x: 1730, y: 245, w: 265, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: '', name: 'name', type: 'string' }, { k: '', name: 'ticks_per_day', type: 'int' },
+      { k: '', name: 'axial_tilt_mdeg', type: 'int?' }, { k: '', name: 'orbit_days_num / den', type: 'int?' },
+      { k: '', name: 'moons / timezones / reg', type: 'array' }, { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'calendars', kind: 'normal', x: 1730, y: 415, w: 265, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'planet_id', type: 'record' },
+      { k: '', name: 'name', type: 'string' }, { k: '', name: 'description', type: 'string?' },
+      { k: '', name: 'data', type: 'object' }, { k: '', name: 'is_default / is_master', type: 'bool' },
+      { k: '', name: 'created_at / updated_at', type: 'datetime' }
+    ]},
+    { id: 'timeline_events', kind: 'normal', x: 1730, y: 575, w: 265, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'project_id', type: 'record' },
+      { k: 'FK', name: 'calendar_id', type: 'record' }, { k: '', name: 'title', type: 'string' },
+      { k: '', name: 'description', type: 'string?' }, { k: '', name: 'm_abs', type: 'int' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'participates_in', kind: 'relation', x: 1838, y: 740, w: 202, inTypes: 'entities', outTypes: 'timeline_events', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'role', type: 'string?' },
+      { k: '', name: 'notes', type: 'string?' }, { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'revealed_in', kind: 'relation', x: 1838, y: 895, w: 202, inTypes: 'timeline_events', outTypes: 'chapters', fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: 'FK', name: 'pov_id', type: 'record?' },
+      { k: '', name: 'kind', type: 'string' }, { k: 'FK', name: 'block_id', type: 'record?' },
+      { k: '', name: 'created_at', type: 'datetime' }
+    ]},
+    { id: 'system_meta', kind: 'audit', x: 1838, y: 1065, w: 202, fields: [
+      { k: 'PK', name: 'id', type: 'record' }, { k: '', name: 'ddl_hash', type: 'string' },
+      { k: '', name: 'updated_at', type: 'datetime' }
+    ]},
+  ];
+  nodes.forEach(n => { n.h = calcNodeHeight(n); });
+
+  const edges = [
+    // M1 rel
+    { id: 'r1_proj_arcs', from: 'projects', to: 'story_arcs', kind: 'rel', fromSide: 'right', fromOffset: 0.35, toSide: 'left', toOffset: 0.50, waypoints: [{x:380,y:245},{x:380,y:255}] },
+    { id: 'r1_proj_vol',  from: 'projects', to: 'volumes',    kind: 'rel', fromSide: 'right', fromOffset: 0.65, toSide: 'left', toOffset: 0.45, waypoints: [{x:372,y:280},{x:372,y:497}] },
+    { id: 'r1_vol_ch',    from: 'volumes',  to: 'chapters',   kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'r1_ch_blk',    from: 'chapters', to: 'text_blocks',kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'r1_arcs_todo', from: 'story_arcs', to: 'todos',    kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'r1_vol_todo',  from: 'volumes',  to: 'todos',      kind: 'rel', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.55, waypoints: [{x:382,y:501},{x:382,y:437}] },
+    { id: 'r1_ch_todo',   from: 'chapters', to: 'todos',      kind: 'rel', fromSide: 'right', fromOffset: 0.35, toSide: 'left', toOffset: 0.78, waypoints: [{x:390,y:625},{x:390,y:473}] },
+    { id: 'r1_ch_rev',    from: 'chapters', to: 'chapter_revisions', kind: 'rel', fromSide: 'right', fromOffset: 0.65, toSide: 'left', toOffset: 0.50, waypoints: [] },
+
+    // M3 rel
+    { id: 'r3_proj_sch',  from: 'p_m3_proj',      to: 'entity_schemas', kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.30, waypoints: [] },
+    { id: 'r3_sch_hist',  from: 'entity_schemas', to: 'schema_history', kind: 'rel', fromSide: 'right',  fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+    { id: 'r3_sch_ent',   from: 'entity_schemas', to: 'entities',       kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'r3_ent_rev',   from: 'entities',       to: 'entity_revisions', kind: 'rel', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+    { id: 'r3_erel_rev',  from: 'entity_rel',     to: 'entity_rel_revisions', kind: 'rel', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+    { id: 'r3_proj_rsch', from: 'p_m3_proj',      to: 'relation_schemas', kind: 'rel', fromSide: 'right', fromOffset: 0.50, toSide: 'right', toOffset: 0.50, waypoints: [{x:1640,y:217},{x:1640,y:1005}] },
+
+    // M4 rel
+    { id: 'r4_proj_pl',   from: 'p_m4_proj', to: 'planets',         kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [{x:1748,y:237},{x:1862,y:237}] },
+    { id: 'r4_pl_cal',    from: 'planets',   to: 'calendars',       kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'r4_cal_ev',    from: 'calendars', to: 'timeline_events', kind: 'rel', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+
+    // M1 graph
+    { id: 'g1_proj_cont', from: 'projects', to: 'contains', kind: 'graph', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'g1_vol_cont',  from: 'volumes',  to: 'contains', kind: 'graph', fromSide: 'left', fromOffset: 0.25, toSide: 'left', toOffset: 0.50, waypoints: [{x:130,y:483},{x:130,y:391}] },
+    { id: 'g1_cont_vol',  from: 'contains', to: 'volumes',  kind: 'graph', fromSide: 'bottom', fromOffset: 0.35, toSide: 'top', toOffset: 0.35, waypoints: [] },
+    { id: 'g1_cont_ch',   from: 'contains', to: 'chapters', kind: 'graph', fromSide: 'right', fromOffset: 0.65, toSide: 'right', toOffset: 0.20, waypoints: [{x:376,y:404},{x:376,y:608}] },
+
+    // M2 graph
+    { id: 'g2_arc_p',     from: 'advances_arc', to: 'p_m2_arcs', kind: 'graph', fromSide: 'top', fromOffset: 0.40, toSide: 'bottom', toOffset: 0.50, waypoints: [] },
+    { id: 'g2_ch_arc',    from: 'p_m2_ch',      to: 'advances_arc', kind: 'graph', fromSide: 'left', fromOffset: 0.50, toSide: 'top', toOffset: 0.72, waypoints: [{x:827,y:217}] },
+    { id: 'g2_pp_arc',    from: 'plot_promises', to: 'advances_arc', kind: 'graph', fromSide: 'top', fromOffset: 0.50, toSide: 'bottom', toOffset: 0.50, waypoints: [] },
+    { id: 'g2_ent_part',  from: 'p_m2_ent',     to: 'participant_of', kind: 'graph', fromSide: 'top', fromOffset: 0.50, toSide: 'bottom', toOffset: 0.65, waypoints: [] },
+    { id: 'g2_part_pp',   from: 'participant_of', to: 'plot_promises', kind: 'graph', fromSide: 'bottom', fromOffset: 0.50, toSide: 'right', toOffset: 0.15, waypoints: [{x:1021,y:514}] },
+    { id: 'g2_pp_spans',  from: 'plot_promises', to: 'spans_blocks', kind: 'graph', fromSide: 'right', fromOffset: 0.55, toSide: 'right', toOffset: 0.50, waypoints: [{x:930,y:595},{x:930,y:782}] },
+    { id: 'g2_spans_blk', from: 'spans_blocks', to: 'p_m2_blk', kind: 'graph', fromSide: 'right', fromOffset: 0.75, toSide: 'left', toOffset: 0.50, waypoints: [] },
+    { id: 'g2_pp_mile',   from: 'plot_promises', to: 'promise_milestones', kind: 'graph', fromSide: 'left', fromOffset: 0.75, toSide: 'left', toOffset: 0.50, waypoints: [{x:666,y:635},{x:666,y:932}] },
+    { id: 'g2_mile_blk',  from: 'promise_milestones', to: 'p_m2_blk', kind: 'graph', fromSide: 'right', fromOffset: 0.50, toSide: 'bottom', toOffset: 0.50, waypoints: [{x:946,y:932},{x:946,y:829},{x:1050,y:829}] },
+    { id: 'g2_pp_occ',    from: 'plot_promises', to: 'occurs_at', kind: 'graph', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+    { id: 'g2_occ_ev',    from: 'occurs_at',    to: 'p_m2_ev',   kind: 'graph', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+
+    // M3 graph
+    { id: 'g3_ent_erel',  from: 'entities',   to: 'entity_rel', kind: 'graph', fromSide: 'bottom', fromOffset: 0.35, toSide: 'top', toOffset: 0.35, waypoints: [] },
+    { id: 'g3_erel_ent',  from: 'entity_rel', to: 'entities',   kind: 'graph', fromSide: 'top', fromOffset: 0.72, toSide: 'bottom', toOffset: 0.72, waypoints: [] },
+    { id: 'g3_ent_app',   from: 'entities',   to: 'appears_in', kind: 'graph', fromSide: 'left', fromOffset: 0.75, toSide: 'left', toOffset: 0.50, waypoints: [{x:1170,y:574},{x:1170,y:947}] },
+    { id: 'g3_app_ch',    from: 'appears_in', to: 'p_m3_ch',    kind: 'graph', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+
+    // M4 graph
+    { id: 'g4_ent_pin',   from: 'p_m4_ent',        to: 'participates_in', kind: 'graph', fromSide: 'right', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [{x:1939,y:757}] },
+    { id: 'g4_pin_ev',    from: 'participates_in', to: 'timeline_events', kind: 'graph', fromSide: 'top', fromOffset: 0.20, toSide: 'bottom', toOffset: 0.50, waypoints: [{x:1878,y:718}] },
+    { id: 'g4_ev_rev',    from: 'timeline_events', to: 'revealed_in',     kind: 'graph', fromSide: 'right', fromOffset: 0.65, toSide: 'right', toOffset: 0.50, waypoints: [{x:2044,y:663},{x:2044,y:960}] },
+    { id: 'g4_rev_ch',    from: 'revealed_in',     to: 'p_m4_ch',         kind: 'graph', fromSide: 'left', fromOffset: 0.50, toSide: 'right', toOffset: 0.50, waypoints: [] },
+  ];
+
+  return {
+    theme: 'bw',
+    showStamp: true,
+    snap: true,
+    canvas: { w: 2100, h: 1485 },
+    stamp: { docCode: 'КП.09.03.04.001 ДЗ', dept: 'Кафедра ИТ / Группа', author: '' },
+    nodes,
+    edges
+  };
+}
+
+let state = loadState();
+let historyStack = [JSON.stringify(state)];
+let historyIdx = 0;
+let selection = null;
+let view = { x: 20, y: 12, scale: 0.55 };
+let drag = null;
+
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return createDefaultState();
+}
+function saveLocal() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
+function pushHistory() {
+  const snap = JSON.stringify(state);
+  if (snap === historyStack[historyIdx]) return;
+  historyStack = historyStack.slice(0, historyIdx + 1);
+  historyStack.push(snap);
+  if (historyStack.length > 60) historyStack.shift();
+  historyIdx = historyStack.length - 1;
+  saveLocal();
+}
+function undo() { if (historyIdx > 0) { historyIdx--; state = JSON.parse(historyStack[historyIdx]); saveLocal(); renderAll(); } }
+function redo() { if (historyIdx < historyStack.length - 1) { historyIdx++; state = JSON.parse(historyStack[historyIdx]); saveLocal(); renderAll(); } }
+function snapVal(v) { return state.snap ? Math.round(v / 10) * 10 : Math.round(v); }
+function getNode(id) { return state.nodes.find(n => n.id === id); }
+function getEdge(id) { return state.edges.find(e => e.id === id); }
+
+// 90-degree Orthogonal Router
+function anchorPoint(node, side, offset) {
+  const o = Math.max(0.06, Math.min(0.94, offset));
+  if (side === 'top')    return { x: node.x + node.w * o, y: node.y };
+  if (side === 'bottom') return { x: node.x + node.w * o, y: node.y + node.h };
+  if (side === 'left')   return { x: node.x, y: node.y + node.h * o };
+  return { x: node.x + node.w, y: node.y + node.h * o };
+}
+function autoOrthogonalCorners(p1, fromSide, p2, toSide) {
+  const fH = (fromSide === 'left' || fromSide === 'right'), tH = (toSide === 'left' || toSide === 'right'), stub = 24;
+  if (fromSide === toSide) {
+    if (fromSide === 'top')    { const y = Math.min(p1.y, p2.y) - stub; return [{ x: p1.x, y }, { x: p2.x, y }]; }
+    if (fromSide === 'bottom') { const y = Math.max(p1.y, p2.y) + stub; return [{ x: p1.x, y }, { x: p2.x, y }]; }
+    if (fromSide === 'left')   { const x = Math.min(p1.x, p2.x) - stub; return [{ x, y: p1.y }, { x, y: p2.y }]; }
+    const x = Math.max(p1.x, p2.x) + stub; return [{ x, y: p1.y }, { x, y: p2.y }];
+  }
+  if (!fH && !tH) { if (Math.abs(p1.x - p2.x) <= 2) return []; const my = Math.round((p1.y + p2.y) / 2); return [{ x: p1.x, y: my }, { x: p2.x, y: my }]; }
+  if (fH && tH)   { if (Math.abs(p1.y - p2.y) <= 2) return []; const mx = Math.round((p1.x + p2.x) / 2); return [{ x: mx, y: p1.y }, { x: mx, y: p2.y }]; }
+  return fH ? [{ x: p2.x, y: p1.y }] : [{ x: p1.x, y: p2.y }];
+}
+function cleanOrthogonalPoints(pts) {
+  const dedup = [];
+  for (const p of pts) { const prev = dedup[dedup.length - 1]; if (!prev || Math.hypot(p.x - prev.x, p.y - prev.y) > 0.5) dedup.push({ x: Math.round(p.x), y: Math.round(p.y) }); }
+  const out = [];
+  for (let i = 0; i < dedup.length; i++) {
+    if (i > 0 && i < dedup.length - 1) {
+      const a = out[out.length - 1], b = dedup[i], c = dedup[i + 1];
+      if ((Math.abs(a.x - b.x) <= 1 && Math.abs(b.x - c.x) <= 1) || (Math.abs(a.y - b.y) <= 1 && Math.abs(b.y - c.y) <= 1)) continue;
+    }
+    out.push(dedup[i]);
+  }
+  return out;
+}
+function getEdgePoints(edge) {
+  const n1 = getNode(edge.from), n2 = getNode(edge.to);
+  const p1 = anchorPoint(n1, edge.fromSide, edge.fromOffset);
+  let p2 = anchorPoint(n2, edge.toSide, edge.toOffset);
+  if (edge.kind === 'graph') {
+    const pull = 2;
+    if (edge.toSide === 'top') p2.y -= pull; else if (edge.toSide === 'bottom') p2.y += pull;
+    else if (edge.toSide === 'left') p2.x -= pull; else p2.x += pull;
+  }
+  if (!edge.waypoints || !edge.waypoints.length) return cleanOrthogonalPoints([p1, ...autoOrthogonalCorners(p1, edge.fromSide, p2, edge.toSide), p2]);
+  const raw = [p1], fH = (edge.fromSide === 'left' || edge.fromSide === 'right'), tH = (edge.toSide === 'left' || edge.toSide === 'right');
+  const firstWp = edge.waypoints[0];
+  if (Math.abs(p1.x - firstWp.x) > 1 && Math.abs(p1.y - firstWp.y) > 1) raw.push(fH ? { x: firstWp.x, y: p1.y } : { x: p1.x, y: firstWp.y });
+  raw.push({ x: firstWp.x, y: firstWp.y });
+  for (let i = 1; i < edge.waypoints.length; i++) {
+    const prev = raw[raw.length - 1], curr = edge.waypoints[i];
+    if (Math.abs(prev.x - curr.x) > 1 && Math.abs(prev.y - curr.y) > 1) raw.push({ x: curr.x, y: prev.y });
+    raw.push({ x: curr.x, y: curr.y });
+  }
+  const last = raw[raw.length - 1];
+  if (Math.abs(last.x - p2.x) > 1 && Math.abs(last.y - p2.y) > 1) raw.push(tH ? { x: last.x, y: p2.y } : { x: p2.x, y: last.y });
+  raw.push(p2);
+  return cleanOrthogonalPoints(raw);
+}
+function materializeEdgeWaypoints(edge) { edge.waypoints = getEdgePoints(edge).slice(1, -1).map(p => ({ x: Math.round(p.x), y: Math.round(p.y) })); }
+function syncOffsetsToWaypoints(edge) {
+  const n1 = getNode(edge.from), n2 = getNode(edge.to);
+  if (!edge.waypoints || !edge.waypoints.length) return;
+  const first = edge.waypoints[0], last = edge.waypoints[edge.waypoints.length - 1], pad = 6;
+  if (edge.fromSide === 'top' || edge.fromSide === 'bottom') { if (first.x >= n1.x + pad && first.x <= n1.x + n1.w - pad) edge.fromOffset = (first.x - n1.x) / n1.w; }
+  else { if (first.y >= n1.y + pad && first.y <= n1.y + n1.h - pad) edge.fromOffset = (first.y - n1.y) / n1.h; }
+  if (edge.toSide === 'top' || edge.toSide === 'bottom') { if (last.x >= n2.x + pad && last.x <= n2.x + n2.w - pad) edge.toOffset = (last.x - n2.x) / n2.w; }
+  else { if (last.y >= n2.y + pad && last.y <= n2.y + n2.h - pad) edge.toOffset = (last.y - n2.y) / n2.h; }
+}
+function snapPointToNodeBorder(node, px, py) {
+  const dT = Math.abs(py - node.y), dB = Math.abs(py - (node.y + node.h)), dL = Math.abs(px - node.x), dR = Math.abs(px - (node.x + node.w));
+  const m = Math.min(dT, dB, dL, dR);
+  const side = m === dT ? 'top' : m === dB ? 'bottom' : m === dL ? 'left' : 'right';
+  const offset = (side === 'top' || side === 'bottom') ? Math.max(0.08, Math.min(0.92, (snapVal(px) - node.x) / node.w)) : Math.max(0.08, Math.min(0.92, (snapVal(py) - node.y) / node.h));
+  return { side, offset };
+}
+function keepOrthogonalOnNodeMove(nodeId, dx, dy) {
+  for (const e of state.edges) {
+    if (e.from === nodeId && e.waypoints.length > 0) { if (e.fromSide === 'left' || e.fromSide === 'right') e.waypoints[0].y += dy; else e.waypoints[0].x += dx; }
+    if (e.to === nodeId && e.waypoints.length > 0) { const last = e.waypoints[e.waypoints.length - 1]; if (e.toSide === 'left' || e.toSide === 'right') last.y += dy; else last.x += dx; }
+    syncOffsetsToWaypoints(e);
+  }
+}
+function pointsToPath(pts) { return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${Math.round(p.x)} ${Math.round(p.y)}`).join(' '); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+// ============================================================================
+// SVG GENERATOR
+// ============================================================================
+function buildSvgMarkup(forExport = false) {
+  const { w, h } = state.canvas, isBW = state.theme === 'bw';
+  const gCol = isBW ? '#000000' : '#1d4ed8', rCol = isBW ? '#444444' : '#64748b';
+  const css = `
+    .bg { fill: #ffffff; }
+    .frame-outer { fill: none; stroke: #000000; stroke-width: 1; }
+    .frame-inner { fill: none; stroke: #000000; stroke-width: 2.2; }
+    .mod-box { fill: #ffffff; stroke: ${isBW ? '#000000' : '#475569'}; stroke-width: 1.4; stroke-dasharray: 8 4; rx: 6; ry: 6; }
+    .mod-hdr { fill: ${isBW ? '#222222' : '#1e293b'}; rx: 3; ry: 3; }
+    .mod-hdr-txt { font-size: 11px; font-weight: 700; letter-spacing: 0.4px; fill: #ffffff; }
+    .map-box { fill: ${isBW ? '#f5f5f5' : '#eff6ff'}; stroke: ${isBW ? '#000000' : '#2563eb'}; stroke-width: 1.5; rx: 5; ry: 5; }
+    .map-title { font-size: 11.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .map-sub { font-size: 10px; fill: #333333; text-anchor: middle; }
+    .map-lbl { font-size: 9.5px; font-style: italic; fill: #222222; text-anchor: middle; }
+    .port-box { fill: ${isBW ? '#f0f0f0' : '#e0f2fe'}; stroke: ${isBW ? '#333333' : '#0284c7'}; stroke-width: 1.2; stroke-dasharray: 3 2; rx: 10; ry: 10; }
+    .port-txt { font-family: 'Consolas', monospace; font-size: 10px; font-weight: 700; fill: #111111; text-anchor: middle; pointer-events: none; }
+    .tbl-normal { fill: ${isBW ? '#ffffff' : '#f8fafc'}; stroke: ${isBW ? '#000000' : '#2563eb'}; stroke-width: 1.4; }
+    .tbl-normal-hdr { fill: ${isBW ? '#222222' : '#1e40af'}; }
+    .tbl-hub { fill: ${isBW ? '#ffffff' : '#fff7ed'}; stroke: ${isBW ? '#000000' : '#c2410c'}; stroke-width: 2.1; }
+    .tbl-hub-hdr { fill: ${isBW ? '#000000' : '#c2410c'}; }
+    .tbl-rel { fill: ${isBW ? '#fafafa' : '#f0fdf4'}; stroke: ${isBW ? '#000000' : '#059669'}; stroke-width: 1.5; stroke-dasharray: 5 3; }
+    .tbl-rel-hdr { fill: ${isBW ? '#444444' : '#047857'}; }
+    .tbl-audit { fill: #ffffff; stroke: #64748b; stroke-width: 1.2; }
+    .tbl-audit-hdr { fill: #475569; }
+    .hdr-title { font-size: 11.5px; font-weight: 700; fill: #ffffff; pointer-events: none; }
+    .hdr-badge { font-size: 8.5px; font-weight: 700; fill: #ffffff; text-anchor: end; opacity: 0.9; pointer-events: none; }
+    .io-box { fill: ${isBW ? '#eeeeee' : '#dcfce7'}; stroke: #999999; stroke-width: 0.7; pointer-events: none; }
+    .io-text { font-family: 'Consolas', monospace; font-size: 9.5px; fill: #111111; pointer-events: none; }
+    .fld-key { font-family: 'Consolas', monospace; font-size: 8.8px; font-weight: 700; fill: #000000; pointer-events: none; }
+    .fld-name { font-family: 'Consolas', monospace; font-size: 9.8px; fill: #000000; pointer-events: none; }
+    .fld-name-pk { font-family: 'Consolas', monospace; font-size: 9.8px; font-weight: 700; text-decoration: underline; fill: #000000; pointer-events: none; }
+    .fld-type { font-family: 'Consolas', monospace; font-size: 9px; fill: #444444; text-anchor: end; pointer-events: none; }
+    .divider { stroke: #d4d4d4; stroke-width: 0.7; }
+    .rel-line { fill: none; stroke: ${rCol}; stroke-width: 1.15; stroke-dasharray: 4 3; stroke-linejoin: round; }
+    .graph-line { fill: none; stroke: ${gCol}; stroke-width: 1.7; stroke-linejoin: round; }
+    .edge-hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
+    .edge-selected { stroke: #f59e0b !important; stroke-width: 2.8 !important; }
+    .stamp-line { fill: none; stroke: #000000; stroke-width: 1.1; }
+    .stamp-bold { fill: none; stroke: #000000; stroke-width: 1.9; }
+    .stamp-txt { font-size: 9.2px; fill: #000000; }
+    .stamp-txt-b { font-size: 11.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .stamp-title { font-size: 15px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .legend-box { fill: #ffffff; stroke: #000000; stroke-width: 1.25; }
+    .legend-hdr { font-size: 12px; font-weight: 700; fill: #000000; }
+    .legend-txt { font-size: 11px; fill: #111111; }
+  `;
+
+  const out = [];
+  if (forExport) {
+    out.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+    out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="'Segoe UI', 'DejaVu Sans', Arial, sans-serif">`);
+  }
+  out.push(`
+    <defs>
+      <marker id="graph-arrow" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M 0 1 L 11 5 L 0 9 z" fill="${gCol}"/>
+      </marker>
+      <marker id="one-start" viewBox="0 0 14 14" refX="0" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <line x1="6" y1="2" x2="6" y2="12" stroke="${rCol}" stroke-width="1.3"/>
+      </marker>
+      <marker id="many-opt-end" viewBox="0 0 22 14" refX="21" refY="7" markerWidth="14" markerHeight="10" orient="auto">
+        <circle cx="5.5" cy="7" r="2.8" fill="#ffffff" stroke="${rCol}" stroke-width="1.2"/>
+        <line x1="8.5" y1="7" x2="21" y2="7" stroke="${rCol}" stroke-width="1.2"/>
+        <line x1="21" y1="2" x2="11" y2="7" stroke="${rCol}" stroke-width="1.2"/>
+        <line x1="21" y1="12" x2="11" y2="7" stroke="${rCol}" stroke-width="1.2"/>
+      </marker>
+    </defs>
+    <style>${css}</style>
+    <rect class="bg" x="0" y="0" width="${w}" height="${h}"/>
+  `);
+
+  if (!forExport && state.snap) {
+    out.push(`<defs><pattern id="edGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.6"/></pattern></defs>`);
+    out.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="url(#edGrid)" pointer-events="none"/>`);
+  }
+  if (state.showStamp) {
+    out.push(`<rect class="frame-outer" x="1" y="1" width="${w - 2}" height="${h - 2}" pointer-events="none"/>`);
+    out.push(`<rect class="frame-inner" x="100" y="25" width="1975" height="1435" pointer-events="none"/>`);
+  }
+
+  // Top Overview Map
+  out.push(`<g pointer-events="none">`);
+  out.push(`  <rect x="122" y="38" width="1932" height="108" fill="#fafafa" stroke="#000000" stroke-width="1.2" rx="5"/>`);
+  out.push(`  <text x="136" y="56" font-size="11" font-weight="700" fill="#000000">АРХИТЕКТУРНАЯ КАРТА ВЗАИМОСВЯЗИ ПОДСИСТЕМ (ДЕКОМПОЗИЦИЯ ЛОГИЧЕСКОЙ СХЕМЫ НА МОДУЛИ M1–M4)</text>`);
+  const mapNodes = [
+    { x: 140,  y: 70, w: 380, h: 62, t: 'M1: Рукопись и планировщик',    s: 'projects, volumes, chapters, text_blocks, todos, arcs' },
+    { x: 640,  y: 70, w: 380, h: 62, t: 'M2: Сюжетные узлы и обещания', s: 'plot_promises, advances_arc, milestones, occurs_at' },
+    { x: 1140, y: 70, w: 390, h: 62, t: 'M3: Онтология лора и ревизии',  s: 'entity_schemas, entities, entity_rel, appears_in, audit' },
+    { x: 1650, y: 70, w: 384, h: 62, t: 'M4: Хронология и система',      s: 'planets, calendars, timeline_events, revealed_in, meta' },
+  ];
+  for (const m of mapNodes) {
+    out.push(`  <rect class="map-box" x="${m.x}" y="${m.y}" width="${m.w}" height="${m.h}"/>`);
+    out.push(`  <text class="map-title" x="${m.x + m.w / 2}" y="${m.y + 25}">${m.t}</text>`);
+    out.push(`  <text class="map-sub" x="${m.x + m.w / 2}" y="${m.y + 45}">${m.s}</text>`);
+  }
+  out.push(`  <line class="graph-line" x1="520" y1="101" x2="636" y2="101" marker-end="url(#graph-arrow)"/><text class="map-lbl" x="578" y="94">сцены / арки</text>`);
+  out.push(`  <line class="graph-line" x1="1140" y1="101" x2="1024" y2="101" marker-end="url(#graph-arrow)"/><text class="map-lbl" x="1082" y="94">участники</text>`);
+  out.push(`  <line class="graph-line" x1="1530" y1="101" x2="1646" y2="101" marker-end="url(#graph-arrow)"/><text class="map-lbl" x="1588" y="94">события</text>`);
+  out.push(`</g>`);
+
+  // 4 Module Frames
+  for (const m of MODULES) {
+    out.push(`<g pointer-events="none"><rect class="mod-box" x="${m.x}" y="${m.y}" width="${m.w}" height="${m.h}"/><rect class="mod-hdr" x="${m.x}" y="${m.y}" width="${m.w}" height="24"/><text class="mod-hdr-txt" x="${m.x + 12}" y="${m.y + 16}">${m.title}</text></g>`);
+  }
+
+  // Edges
+  const sorted = [...state.edges].sort((a, b) => (a.kind === 'graph' ? 1 : 0) - (b.kind === 'graph' ? 1 : 0));
+  for (const e of sorted) {
+    const pts = getEdgePoints(e), d = pointsToPath(pts);
+    const isSel = !forExport && selection && selection.type === 'edge' && selection.id === e.id;
+    const cls = (e.kind === 'graph' ? 'graph-line' : 'rel-line') + (isSel ? ' edge-selected' : '');
+    const markers = e.kind === 'graph' ? `marker-end="url(#graph-arrow)"` : `marker-start="url(#one-start)" marker-end="url(#many-opt-end)"`;
+    out.push(`<path class="${cls}" d="${d}" ${markers}/>`);
+    if (!forExport) out.push(`<path class="edge-hit" d="${d}" data-edge="${e.id}"/>`);
+  }
+
+  // Nodes (tables + draggable ports)
+  for (const t of state.nodes) {
+    const isSel = !forExport && selection && selection.type === 'node' && selection.id === t.id;
+    const cur = !forExport ? ' style="cursor:move"' : '';
+    if (t.kind === 'port') {
+      out.push(`<g data-node="${t.id}"${cur}>`);
+      out.push(`  <rect class="port-box" x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}"/>`);
+      out.push(`  <text class="port-txt" x="${t.x + t.w / 2}" y="${t.y + 15}">${esc(t.label)}</text>`);
+      if (isSel) out.push(`  <rect x="${t.x - 3}" y="${t.y - 3}" width="${t.w + 6}" height="${t.h + 6}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" rx="12"/>`);
+      out.push(`</g>`);
+      continue;
+    }
+
+    const cls = t.kind === 'hub' ? 'tbl-hub' : t.kind === 'relation' ? 'tbl-rel' : t.kind === 'audit' ? 'tbl-audit' : 'tbl-normal';
+    const hdrCls = t.kind === 'hub' ? 'tbl-hub-hdr' : t.kind === 'relation' ? 'tbl-rel-hdr' : t.kind === 'audit' ? 'tbl-audit-hdr' : 'tbl-normal-hdr';
+    const badge = t.kind === 'hub' ? 'HUB' : t.kind === 'relation' ? 'RELATION' : t.kind === 'audit' ? 'AUDIT' : 'TABLE';
+
+    out.push(`<g data-node="${t.id}"${cur}>`);
+    out.push(`  <rect class="${cls}" x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="3" ry="3"/>`);
+    out.push(`  <rect class="${hdrCls}" x="${t.x}" y="${t.y}" width="${t.w}" height="${HEADER_H}" rx="2" ry="2"/>`);
+    out.push(`  <text class="hdr-title" x="${t.x + 8}" y="${t.y + 15}">${esc(t.id)}</text>`);
+    out.push(`  <text class="hdr-badge" x="${t.x + t.w - 7}" y="${t.y + 15}">${badge}</text>`);
+
+    let curY = t.y + HEADER_H;
+    if (t.kind === 'relation') {
+      out.push(`  <rect class="io-box" x="${t.x + 1}" y="${curY}" width="${t.w - 2}" height="${IO_H}"/>`);
+      out.push(`  <text class="io-text" x="${t.x + 6}" y="${curY + 12}"><tspan font-weight="700">IN:</tspan>  ${esc(t.inTypes)}</text>`);
+      out.push(`  <text class="io-text" x="${t.x + 6}" y="${curY + 24}"><tspan font-weight="700">OUT:</tspan> ${esc(t.outTypes)}</text>`);
+      curY += IO_H;
+    }
+    t.fields.forEach((f, idx) => {
+      const fy = curY + idx * ROW_H + 11;
+      if (idx > 0 && t.fields[idx - 1].k === 'PK') out.push(`  <line class="divider" x1="${t.x + 4}" y1="${curY + idx * ROW_H}" x2="${t.x + t.w - 4}" y2="${curY + idx * ROW_H}"/>`);
+      if (f.k) out.push(`  <text class="fld-key" x="${t.x + 6}" y="${fy}">${esc(f.k)}</text>`);
+      out.push(`  <text class="${f.k === 'PK' ? 'fld-name-pk' : 'fld-name'}" x="${t.x + 25}" y="${fy}">${esc(f.name)}</text>`);
+      out.push(`  <text class="fld-type" x="${t.x + t.w - 6}" y="${fy}">${esc(f.type)}</text>`);
+    });
+    if (isSel) {
+      out.push(`  <rect x="${t.x - 3}" y="${t.y - 3}" width="${t.w + 6}" height="${t.h + 6}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" rx="4"/>`);
+      out.push(`  <rect data-resize="${t.id}" x="${t.x + t.w - 5}" y="${t.y + Math.round(t.h / 2) - 6}" width="10" height="12" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" rx="2" style="cursor:ew-resize"/>`);
+    }
+    out.push(`</g>`);
+  }
+
+  // Legend & GOST 2.104 Stamp
+  if (state.showStamp) {
+    out.push(`<g pointer-events="none">`);
+    out.push(`  <rect class="legend-box" x="122" y="1265" width="1022" height="175" rx="4" ry="4"/>`);
+    out.push(`  <text class="legend-hdr" x="142" y="1290">Условные обозначения (модульная логическая нотация ER + Property Graph Association Class)</text>`);
+    out.push(`  <rect class="tbl-normal" x="142" y="1308" width="100" height="30" rx="2"/><rect class="tbl-normal-hdr" x="142" y="1308" width="100" height="13"/><text x="148" y="1318" font-size="8.5" font-weight="700" fill="#fff">TABLE</text>`);
+    out.push(`  <text class="legend-txt" x="254" y="1327">Обычная таблица узлов (PK / FK / UQ, «?» = option)</text>`);
+    out.push(`  <rect class="tbl-rel" x="142" y="1350" width="100" height="30" rx="2"/><rect class="tbl-rel-hdr" x="142" y="1350" width="100" height="13"/><text x="148" y="1360" font-size="8.5" font-weight="700" fill="#fff">RELATION</text>`);
+    out.push(`  <text class="legend-txt" x="254" y="1369">Графовое отношение TYPE RELATION (IN / OUT + атрибуты)</text>`);
+    out.push(`  <rect class="tbl-audit" x="142" y="1392" width="100" height="30" rx="2"/><rect class="tbl-audit-hdr" x="142" y="1392" width="100" height="13"/><text x="148" y="1402" font-size="8.5" font-weight="700" fill="#fff">AUDIT</text>`);
+    out.push(`  <text class="legend-txt" x="254" y="1411">Таблицы ревизий, схем связей и метаданных DDL</text>`);
+    out.push(`  <line class="graph-line" x1="650" y1="1323" x2="725" y2="1323" marker-end="url(#graph-arrow)"/>`);
+    out.push(`  <text class="legend-txt" x="738" y="1327">Графовый поток (IN → RELATION → OUT)</text>`);
+    out.push(`  <line class="rel-line" x1="650" y1="1365" x2="725" y2="1365" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>`);
+    out.push(`  <text class="legend-txt" x="738" y="1369">Реляционная связь FK (1:N / 0..N)</text>`);
+    out.push(`  <rect class="port-box" x="650" y="1395" width="75" height="24"/><text class="port-txt" x="687" y="1410">→ [M1] ...</text>`);
+    out.push(`  <text class="legend-txt" x="738" y="1411">Межмодульный коннектор (ссылка на таблицу другого модуля)</text>`);
+    out.push(`</g>`);
+
+    const sx = 1150, sy = 1185;
+    out.push(`<g pointer-events="none">`);
+    out.push(`  <rect class="stamp-bold" x="${sx}" y="${sy}" width="925" height="275"/>`);
+    const cw = [52, 42, 111, 70, 50];
+    let cx = sx;
+    for (const w1 of cw) { out.push(`  <line class="stamp-line" x1="${cx}" y1="${sy}" x2="${cx}" y2="${sy + 275}"/>`); cx += w1; }
+    out.push(`  <line class="stamp-bold" x1="${sx + 325}" y1="${sy}" x2="${sx + 325}" y2="${sy + 275}"/>`);
+    for (let r = 1; r < 11; r++) {
+      const ry = sy + r * 25;
+      out.push(`  <line class="${(r === 4 || r === 5) ? 'stamp-bold' : 'stamp-line'}" x1="${sx}" y1="${ry}" x2="${sx + 325}" y2="${ry}"/>`);
+    }
+    cx = sx;
+    ['Изм.', 'Лист', '№ докум.', 'Подп.', 'Дата'].forEach((h1, i) => {
+      out.push(`  <text class="stamp-txt" x="${cx + cw[i] / 2}" y="${sy + 117}" text-anchor="middle">${h1}</text>`);
+      cx += cw[i];
+    });
+    ['Разраб.', 'Проверил', 'Т.контр.', '', 'Н.контр.', 'Утв.'].forEach((r1, i) => {
+      if (r1) out.push(`  <text class="stamp-txt" x="${sx + 4}" y="${sy + 142 + i * 25}">${r1}</text>`);
+    });
+    if (state.stamp.author) out.push(`  <text class="stamp-txt" x="${sx + 98}" y="${sy + 142}">${esc(state.stamp.author)}</text>`);
+    out.push(`  <line class="stamp-bold" x1="${sx + 325}" y1="${sy + 70}" x2="${sx + 925}" y2="${sy + 70}"/>`);
+    out.push(`  <text class="stamp-title" x="${sx + 625}" y="${sy + 42}">${esc(state.stamp.docCode)}</text>`);
+    out.push(`  <line class="stamp-bold" x1="${sx + 675}" y1="${sy + 70}" x2="${sx + 675}" y2="${sy + 275}"/>`);
+    out.push(`  <line class="stamp-bold" x1="${sx + 325}" y1="${sy + 200}" x2="${sx + 925}" y2="${sy + 200}"/>`);
+    out.push(`  <text class="stamp-title" x="${sx + 500}" y="${sy + 128}">WorldWiki</text>`);
+    out.push(`  <text class="stamp-txt-b" x="${sx + 500}" y="${sy + 155}">Логическая схема базы данных</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 500}" y="${sy + 178}" text-anchor="middle">(Модули M1–M4: ER + Property Graph)</text>`);
+    out.push(`  <line class="stamp-line" x1="${sx + 675}" y1="${sy + 95}" x2="${sx + 925}" y2="${sy + 95}"/>`);
+    out.push(`  <line class="stamp-bold" x1="${sx + 675}" y1="${sy + 150}" x2="${sx + 925}" y2="${sy + 150}"/>`);
+    out.push(`  <line class="stamp-line" x1="${sx + 750}" y1="${sy + 70}" x2="${sx + 750}" y2="${sy + 150}"/>`);
+    out.push(`  <line class="stamp-line" x1="${sx + 835}" y1="${sy + 70}" x2="${sx + 835}" y2="${sy + 150}"/>`);
+    out.push(`  <line class="stamp-line" x1="${sx + 795}" y1="${sy + 150}" x2="${sx + 795}" y2="${sy + 200}"/>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 712}" y="${sy + 87}" text-anchor="middle">Лит.</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 792}" y="${sy + 87}" text-anchor="middle">Масса</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 880}" y="${sy + 87}" text-anchor="middle">Масштаб</text>`);
+    out.push(`  <text class="stamp-txt-b" x="${sx + 712}" y="${sy + 128}">У</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 735}" y="${sy + 178}" text-anchor="middle">Лист 1</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 860}" y="${sy + 178}" text-anchor="middle">Листов 1</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 500}" y="${sy + 242}" text-anchor="middle">SurrealDB v3.2 (SCHEMAFULL)</text>`);
+    out.push(`  <text class="stamp-txt-b" x="${sx + 800}" y="${sy + 235}">${esc(state.stamp.dept)}</text>`);
+    out.push(`  <text class="stamp-txt" x="${sx + 800}" y="${sy + 256}" text-anchor="middle">(Курсовой проект)</text>`);
+    out.push(`</g>`);
+  }
+
+  if (!forExport && selection && selection.type === 'edge') {
+    const e = getEdge(selection.id);
+    if (e) {
+      const pts = getEdgePoints(e);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1], isVert = Math.abs(a.x - b.x) <= 1;
+        const mx = Math.round((a.x + b.x) / 2), my = Math.round((a.y + b.y) / 2);
+        if (Math.hypot(b.x - a.x, b.y - a.y) >= 22) {
+          if (isVert) out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="v" x="${mx - 4}" y="${my - 10}" width="8" height="20" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ew-resize"/>`);
+          else out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="h" x="${mx - 10}" y="${my - 4}" width="20" height="8" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ns-resize"/>`);
+        }
+      }
+      e.waypoints.forEach((wp, idx) => { out.push(`<circle data-wp-edge="${e.id}" data-wp-idx="${idx}" cx="${wp.x}" cy="${wp.y}" r="5.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.8" style="cursor:move"/>`); });
+      const n1 = getNode(e.from), n2 = getNode(e.to);
+      const pS = anchorPoint(n1, e.fromSide, e.fromOffset), pE = anchorPoint(n2, e.toSide, e.toOffset);
+      out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="from" cx="${Math.round(pS.x)}" cy="${Math.round(pS.y)}" r="6.5" fill="#10b981" stroke="#ffffff" stroke-width="2" style="cursor:grab"/>`);
+      out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="to" cx="${Math.round(pE.x)}" cy="${Math.round(pE.y)}" r="7" fill="#ec4899" stroke="#ffffff" stroke-width="2" style="cursor:grab"/>`);
+    }
+  }
+  if (forExport) out.push(`</svg>`);
+  return out.join('\n');
+}
+
+// ============================================================================
+// UI & INTERACTIONS
+// ============================================================================
+const svgEl = document.getElementById('svg'), canvasWrap = document.getElementById('canvasWrap'), viewport = document.getElementById('viewport');
+function applyViewTransform() { canvasWrap.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`; }
+function renderSvg() { svgEl.setAttribute('viewBox', `0 0 ${state.canvas.w} ${state.canvas.h}`); svgEl.setAttribute('width', state.canvas.w); svgEl.setAttribute('height', state.canvas.h); svgEl.innerHTML = buildSvgMarkup(false); }
+function renderToolbar() {
+  document.getElementById('btnThemeBW').classList.toggle('active', state.theme === 'bw');
+  document.getElementById('btnThemeColor').classList.toggle('active', state.theme === 'color');
+  document.getElementById('chkStamp').checked = state.showStamp;
+  document.getElementById('chkGrid').checked = state.snap;
+  document.getElementById('inpDocCode').value = state.stamp.docCode;
+  document.getElementById('inpDept').value = state.stamp.dept;
+  document.getElementById('inpAuthor').value = state.stamp.author;
+  const selN = document.getElementById('selQuickNode');
+  if (!selN.options.length) selN.innerHTML = `<option value="">— Выбрать —</option>` + state.nodes.map(n => `<option value="${n.id}">${n.id} (${n.kind})</option>`).join('');
+  selN.value = (selection && selection.type === 'node') ? selection.id : '';
+  const selE = document.getElementById('selQuickEdge');
+  if (!selE.options.length) selE.innerHTML = `<option value="">— Выбрать —</option>` + state.edges.map(e => `<option value="${e.id}">${e.from} → ${e.to}</option>`).join('');
+  selE.value = (selection && selection.type === 'edge') ? selection.id : '';
+}
+function renderInspector() {
+  const panel = document.getElementById('selectionPanel');
+  if (!selection) { panel.innerHTML = `<h3>Выделение</h3><p class="muted">Кликните по <b>таблице</b>, <b>порту</b> или <b>линии связи</b>.<br><br>Модули M1–M4 изолированы от спагетти; двигайте таблицы и порты свободно.</p>`; return; }
+  if (selection.type === 'node') {
+    const n = getNode(selection.id); if (!n) return;
+    panel.innerHTML = `<h3>${n.kind === 'port' ? 'Порт' : 'Таблица'}: <span class="badge">${n.id}</span></h3><div class="grid2"><div class="field"><label>X</label><input type="number" id="nX" value="${n.x}" step="10" /></div><div class="field"><label>Y</label><input type="number" id="nY" value="${n.y}" step="10" /></div><div class="field"><label>Ширина (W)</label><input type="number" id="nW" value="${n.w}" step="10" min="100" max="420" /></div><div class="field"><label>Высота (H)</label><input type="number" value="${n.h}" disabled /></div></div>`;
+    ['nX', 'nY', 'nW'].forEach(id => {
+      document.getElementById(id).addEventListener('change', ev => {
+        const val = parseInt(ev.target.value, 10) || 0, dx = id === 'nX' ? val - n.x : 0, dy = id === 'nY' ? val - n.y : 0;
+        if (id === 'nX') n.x = val; if (id === 'nY') n.y = val; if (id === 'nW') n.w = Math.max(100, val);
+        if (dx || dy) keepOrthogonalOnNodeMove(n.id, dx, dy); pushHistory(); renderSvg();
+      });
+    });
+    return;
+  }
+  if (selection.type === 'edge') {
+    const e = getEdge(selection.id); if (!e) return;
+    const sideOpts = s => ['top', 'right', 'bottom', 'left'].map(k => `<option value="${k}" ${s === k ? 'selected' : ''}>${k}</option>`).join('');
+    panel.innerHTML = `<h3>Связь: <span class="badge">${e.from} → ${e.to}</span></h3><div class="grid2"><div class="field"><label>Выход</label><select id="eFromSide">${sideOpts(e.fromSide)}</select></div><div class="field"><label>Сдвиг (${Math.round(e.fromOffset * 100)}%)</label><input type="range" id="eFromOff" min="6" max="94" value="${Math.round(e.fromOffset * 100)}" /></div><div class="field"><label>Вход</label><select id="eToSide">${sideOpts(e.toSide)}</select></div><div class="field"><label>Сдвиг (${Math.round(e.toOffset * 100)}%)</label><input type="range" id="eToOff" min="6" max="94" value="${Math.round(e.toOffset * 100)}" /></div></div><div class="row" style="margin-top:8px"><button id="btnAddWp" style="flex:1">+ Изгиб</button><button id="btnClearWp">Спрямить</button></div><div class="wp-list">${e.waypoints.map((wp, i) => `<div class="wp-item"><span>#${i + 1}: (${Math.round(wp.x)}, ${Math.round(wp.y)})</span><button data-del-wp="${i}">✕</button></div>`).join('')}</div>`;
+    document.getElementById('eFromSide').addEventListener('change', ev => { e.fromSide = ev.target.value; pushHistory(); renderSvg(); });
+    document.getElementById('eToSide').addEventListener('change', ev => { e.toSide = ev.target.value; pushHistory(); renderSvg(); });
+    document.getElementById('eFromOff').addEventListener('input', ev => { e.fromOffset = ev.target.value / 100; renderSvg(); });
+    document.getElementById('eFromOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+    document.getElementById('eToOff').addEventListener('input', ev => { e.toOffset = ev.target.value / 100; renderSvg(); });
+    document.getElementById('eToOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+    document.getElementById('btnAddWp').addEventListener('click', () => { const pts = getEdgePoints(e); e.waypoints.push({ x: snapVal((pts[0].x + pts[pts.length - 1].x) / 2), y: snapVal((pts[0].y + pts[pts.length - 1].y) / 2) }); pushHistory(); renderAll(); });
+    document.getElementById('btnClearWp').addEventListener('click', () => { e.waypoints = []; pushHistory(); renderAll(); });
+    panel.querySelectorAll('[data-del-wp]').forEach(btn => { btn.addEventListener('click', () => { e.waypoints.splice(parseInt(btn.dataset.delWp, 10), 1); pushHistory(); renderAll(); }); });
+  }
+}
+function renderAll() { renderSvg(); renderToolbar(); renderInspector(); applyViewTransform(); }
+function clientToSvg(clientX, clientY) { const r = canvasWrap.getBoundingClientRect(); return { x: (clientX - r.left) / view.scale, y: (clientY - r.top) / view.scale }; }
+
+window.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  const step = e.shiftKey ? 140 : 50;
+  if (e.key === 'ArrowUp')    { e.preventDefault(); view.y += step; applyViewTransform(); }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); view.y -= step; applyViewTransform(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); view.x += step; applyViewTransform(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); view.x -= step; applyViewTransform(); }
+});
+viewport.addEventListener('contextmenu', e => e.preventDefault());
+viewport.addEventListener('mousedown', e => {
+  if (e.button === 1 || e.button === 2) { drag = { mode: 'pan', startX: e.clientX, startY: e.clientY, vx: view.x, vy: view.y }; return; }
+  if (e.button !== 0) return;
+  const target = e.target, pt = clientToSvg(e.clientX, e.clientY);
+  if (target.dataset && target.dataset.resize) { const n = getNode(target.dataset.resize); drag = { mode: 'resize', node: n, startX: pt.x, origW: n.w }; return; }
+  if (target.dataset && target.dataset.anchorEdge) { drag = { mode: 'anchor', edge: getEdge(target.dataset.anchorEdge), which: target.dataset.anchorEnd }; return; }
+  if (target.dataset && target.dataset.segEdge) { const edge = getEdge(target.dataset.segEdge); materializeEdgeWaypoints(edge); drag = { mode: 'seg', edge, segIdx: parseInt(target.dataset.segIdx, 10), dir: target.dataset.segDir }; return; }
+  if (target.dataset && target.dataset.wpEdge) {
+    const edge = getEdge(target.dataset.wpEdge), idx = parseInt(target.dataset.wpIdx, 10); materializeEdgeWaypoints(edge); const pts = getEdgePoints(edge);
+    let mIdx = Math.min(idx, Math.max(0, edge.waypoints.length - 1));
+    const prevPt = mIdx > 0 ? edge.waypoints[mIdx - 1] : pts[0], currPt = edge.waypoints[mIdx] || pts[1], nextPt = mIdx < edge.waypoints.length - 1 ? edge.waypoints[mIdx + 1] : pts[pts.length - 1];
+    drag = { mode: 'wp', edge, idx: mIdx, prevSameX: prevPt && currPt ? Math.abs(prevPt.x - currPt.x) <= 2 : false, nextSameX: nextPt && currPt ? Math.abs(nextPt.x - currPt.x) <= 2 : false };
+    return;
+  }
+  const nodeG = target.closest && target.closest('[data-node]');
+  if (nodeG) { const n = getNode(nodeG.dataset.node); selection = { type: 'node', id: n.id }; drag = { mode: 'node', node: n, lastX: n.x, lastY: n.y, offX: pt.x - n.x, offY: pt.y - n.y }; renderAll(); return; }
+  if (target.dataset && target.dataset.edge) { selection = { type: 'edge', id: target.dataset.edge }; renderAll(); return; }
+  selection = null; renderAll();
+});
+viewport.addEventListener('dblclick', e => {
+  const target = e.target, pt = clientToSvg(e.clientX, e.clientY);
+  if (target.dataset && target.dataset.wpEdge) { const edge = getEdge(target.dataset.wpEdge); edge.waypoints.splice(parseInt(target.dataset.wpIdx, 10), 1); pushHistory(); renderAll(); return; }
+  if (target.dataset && target.dataset.edge) {
+    const edge = getEdge(target.dataset.edge); materializeEdgeWaypoints(edge); const pts = getEdgePoints(edge);
+    let bestSeg = 0, bestDist = Infinity;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1], l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+      const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((pt.x - a.x) * (b.x - a.x) + (pt.y - a.y) * (b.y - a.y)) / l2));
+      const d = Math.hypot(pt.x - (a.x + t * (b.x - a.x)), pt.y - (a.y + t * (b.y - a.y)));
+      if (d < bestDist) { bestDist = d; bestSeg = i; }
+    }
+    const a = pts[bestSeg], b = pts[bestSeg + 1], isVert = Math.abs(a.x - b.x) <= 1, mx = snapVal(pt.x), my = snapVal(pt.y);
+    const jog = isVert ? [{ x: a.x, y: my }, { x: a.x + 30, y: my }, { x: a.x + 30, y: Math.round((my + b.y) / 2) }, { x: b.x, y: Math.round((my + b.y) / 2) }] : [{ x: mx, y: a.y }, { x: mx, y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: b.y }];
+    edge.waypoints.splice(bestSeg, 0, ...jog); selection = { type: 'edge', id: edge.id }; pushHistory(); renderAll();
+  }
+});
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  if (drag.mode === 'pan') { view.x = drag.vx + (e.clientX - drag.startX); view.y = drag.vy + (e.clientY - drag.startY); applyViewTransform(); return; }
+  const pt = clientToSvg(e.clientX, e.clientY);
+  if (drag.mode === 'node') {
+    const nx = snapVal(pt.x - drag.offX), ny = snapVal(pt.y - drag.offY), dx = nx - drag.lastX, dy = ny - drag.lastY;
+    if (dx || dy) { drag.node.x = nx; drag.node.y = ny; keepOrthogonalOnNodeMove(drag.node.id, dx, dy); drag.lastX = nx; drag.lastY = ny; renderSvg(); }
+  } else if (drag.mode === 'resize') {
+    drag.node.w = Math.max(100, snapVal(drag.origW + (pt.x - drag.startX))); renderSvg();
+  } else if (drag.mode === 'anchor') {
+    const e1 = drag.edge, node = getNode(drag.which === 'from' ? e1.from : e1.to), snapped = snapPointToNodeBorder(node, pt.x, pt.y);
+    if (drag.which === 'from') {
+      const sc = e1.fromSide !== snapped.side; e1.fromSide = snapped.side; e1.fromOffset = snapped.offset; const pS = anchorPoint(node, e1.fromSide, e1.fromOffset);
+      if (e1.waypoints.length) { if (sc && e1.waypoints.length === 1) { e1.waypoints = []; materializeEdgeWaypoints(e1); } else if (e1.fromSide === 'top' || e1.fromSide === 'bottom') e1.waypoints[0].x = Math.round(pS.x); else e1.waypoints[0].y = Math.round(pS.y); }
+    } else {
+      const sc = e1.toSide !== snapped.side; e1.toSide = snapped.side; e1.toOffset = snapped.offset; const pE = anchorPoint(node, e1.toSide, e1.toOffset);
+      if (e1.waypoints.length) { const last = e1.waypoints[e1.waypoints.length - 1]; if (sc && e1.waypoints.length === 1) { e1.waypoints = []; materializeEdgeWaypoints(e1); } else if (e1.toSide === 'top' || e1.toSide === 'bottom') last.x = Math.round(pE.x); else last.y = Math.round(pE.y); }
+    }
+    renderSvg();
+  } else if (drag.mode === 'seg') {
+    const e1 = drag.edge, n1 = getNode(e1.from), n2 = getNode(e1.to), i = drag.segIdx;
+    const wpA = (i - 1 >= 0 && i - 1 < e1.waypoints.length) ? e1.waypoints[i - 1] : null, wpB = (i >= 0 && i < e1.waypoints.length) ? e1.waypoints[i] : null;
+    if (drag.dir === 'v') { const nx = snapVal(pt.x); if (wpA) wpA.x = nx; if (wpB) wpB.x = nx; if (!wpA && (e1.fromSide === 'top' || e1.fromSide === 'bottom')) e1.fromOffset = Math.max(0.06, Math.min(0.94, (nx - n1.x) / n1.w)); if (!wpB && (e1.toSide === 'top' || e1.toSide === 'bottom')) e1.toOffset = Math.max(0.06, Math.min(0.94, (nx - n2.x) / n2.w)); }
+    else { const ny = snapVal(pt.y); if (wpA) wpA.y = ny; if (wpB) wpB.y = ny; if (!wpA && (e1.fromSide === 'left' || e1.fromSide === 'right')) e1.fromOffset = Math.max(0.06, Math.min(0.94, (ny - n1.y) / n1.h)); if (!wpB && (e1.toSide === 'left' || e1.toSide === 'right')) e1.toOffset = Math.max(0.06, Math.min(0.94, (ny - n2.y) / n2.h)); }
+    syncOffsetsToWaypoints(e1); renderSvg();
+  } else if (drag.mode === 'wp') {
+    const e1 = drag.edge, wp = e1.waypoints[drag.idx];
+    if (wp) {
+      const nx = snapVal(pt.x), ny = snapVal(pt.y); wp.x = nx; wp.y = ny;
+      if (drag.idx > 0) { const prev = e1.waypoints[drag.idx - 1]; if (drag.prevSameX) prev.x = nx; else prev.y = ny; }
+      if (drag.idx < e1.waypoints.length - 1) { const next = e1.waypoints[drag.idx + 1]; if (drag.nextSameX) next.x = nx; else next.y = ny; }
+      syncOffsetsToWaypoints(e1); renderSvg();
+    }
+  }
+});
+window.addEventListener('mouseup', () => { if (!drag) return; const was = drag.mode !== 'pan'; drag = null; if (was) { pushHistory(); renderInspector(); } });
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.ctrlKey || e.metaKey) {
+    // Pinch-to-zoom on trackpad or Ctrl + mouse wheel
+    const f = Math.exp(-e.deltaY * 0.008);
+    const rect = viewport.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const ns = Math.max(0.25, Math.min(2.5, view.scale * f));
+    view.x = mx - (mx - view.x) * (ns / view.scale);
+    view.y = my - (my - view.y) * (ns / view.scale);
+    view.scale = ns;
+  } else {
+    // Two-finger trackpad scroll / regular wheel -> pan canvas
+    view.x -= e.deltaX;
+    view.y -= e.deltaY;
+  }
+  applyViewTransform();
+}, { passive: false });
+
+function fitToScreen() { const r = viewport.getBoundingClientRect(), pad = 28, s = Math.min((r.width - pad) / state.canvas.w, (r.height - pad) / state.canvas.h, 1); view.scale = s; view.x = Math.round((r.width - state.canvas.w * s) / 2); view.y = Math.round((r.height - state.canvas.h * s) / 2); applyViewTransform(); }
+document.getElementById('btnThemeBW').addEventListener('click', () => { state.theme = 'bw'; pushHistory(); renderAll(); });
+document.getElementById('btnThemeColor').addEventListener('click', () => { state.theme = 'color'; pushHistory(); renderAll(); });
+document.getElementById('chkStamp').addEventListener('change', e => { state.showStamp = e.target.checked; pushHistory(); renderAll(); });
+document.getElementById('chkGrid').addEventListener('change', e => { state.snap = e.target.checked; saveLocal(); renderSvg(); });
+document.getElementById('btnUndo').addEventListener('click', undo);
+document.getElementById('btnRedo').addEventListener('click', redo);
+document.getElementById('btnFit').addEventListener('click', fitToScreen);
+document.getElementById('btnReset').addEventListener('click', () => { if (!confirm('Сбросить всю раскладку А3 к исходной?')) return; state = createDefaultState(); selection = null; pushHistory(); renderAll(); fitToScreen(); });
+document.getElementById('inpDocCode').addEventListener('input', e => { state.stamp.docCode = e.target.value; renderSvg(); });
+document.getElementById('inpDocCode').addEventListener('change', () => pushHistory());
+document.getElementById('inpDept').addEventListener('input', e => { state.stamp.dept = e.target.value; renderSvg(); });
+document.getElementById('inpDept').addEventListener('change', () => pushHistory());
+document.getElementById('inpAuthor').addEventListener('input', e => { state.stamp.author = e.target.value; renderSvg(); });
+document.getElementById('inpAuthor').addEventListener('change', () => pushHistory());
+document.getElementById('selQuickNode').addEventListener('change', e => { selection = e.target.value ? { type: 'node', id: e.target.value } : null; renderAll(); });
+document.getElementById('selQuickEdge').addEventListener('change', e => { selection = e.target.value ? { type: 'edge', id: e.target.value } : null; renderAll(); });
+function triggerDownload(blob, filename) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
+document.getElementById('btnExportSvg').addEventListener('click', () => triggerDownload(new Blob([buildSvgMarkup(true)], { type: 'image/svg+xml;charset=utf-8' }), 'logical_schema_a3.svg'));
+document.getElementById('btnExportPng').addEventListener('click', () => {
+  const img = new Image(), url = URL.createObjectURL(new Blob([buildSvgMarkup(true)], { type: 'image/svg+xml;charset=utf-8' }));
+  img.onload = () => { const sc = 2, c = document.createElement('canvas'); c.width = state.canvas.w * sc; c.height = state.canvas.h * sc; const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => triggerDownload(b, 'logical_schema_a3.png'), 'image/png'); };
+  img.src = url;
+});
+document.getElementById('btnSaveJson').addEventListener('click', () => triggerDownload(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }), 'worldwiki_logical_a3.json'));
+document.getElementById('btnLoadJson').addEventListener('click', () => document.getElementById('fileJson').click());
+document.getElementById('fileJson').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { try { state = JSON.parse(r.result); selection = null; pushHistory(); renderAll(); fitToScreen(); } catch (err) { alert(err.message); } }; r.readAsText(f); e.target.value = '';
+});
+renderAll();
+setTimeout(fitToScreen, 30);
+window.addEventListener('resize', fitToScreen);
+</script>
+</body>
+</html>

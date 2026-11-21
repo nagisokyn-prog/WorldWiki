@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2100 1485" width="2100" height="1485" font-family="'Segoe UI', 'DejaVu Sans', Arial, sans-serif">
+
+  <defs>
+    <marker id="graph-arrow" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 1 L 11 5 L 0 9 z" fill="#000000"/>
+    </marker>
+    <marker id="one-start" viewBox="0 0 14 14" refX="0" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="6" y1="2" x2="6" y2="12" stroke="#444444" stroke-width="1.3"/>
+    </marker>
+    <marker id="many-opt-end" viewBox="0 0 22 14" refX="21" refY="7" markerWidth="14" markerHeight="10" orient="auto">
+      <circle cx="5.5" cy="7" r="2.8" fill="#ffffff" stroke="#444444" stroke-width="1.2"/>
+      <line x1="8.5" y1="7" x2="21" y2="7" stroke="#444444" stroke-width="1.2"/>
+      <line x1="21" y1="2" x2="11" y2="7" stroke="#444444" stroke-width="1.2"/>
+      <line x1="21" y1="12" x2="11" y2="7" stroke="#444444" stroke-width="1.2"/>
+    </marker>
+  </defs>
+  <style>
+    .bg { fill: #ffffff; }
+    .frame-outer { fill: none; stroke: #000000; stroke-width: 1; }
+    .frame-inner { fill: none; stroke: #000000; stroke-width: 2.2; }
+
+    /* Module Frames and Top Overview Map */
+    .mod-box { fill: #ffffff; stroke: #000000; stroke-width: 1.4; stroke-dasharray: 8 4; rx: 6; ry: 6; }
+    .mod-hdr { fill: #222222; rx: 3; ry: 3; }
+    .mod-hdr-txt { font-size: 11px; font-weight: 700; letter-spacing: 0.4px; fill: #ffffff; }
+    .map-box { fill: #f5f5f5; stroke: #000000; stroke-width: 1.5; rx: 5; ry: 5; }
+    .map-title { font-size: 11.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .map-sub { font-size: 10px; fill: #333333; text-anchor: middle; }
+    .map-lbl { font-size: 9.5px; font-style: italic; fill: #222222; text-anchor: middle; }
+
+    /* Off-page Port Connectors */
+    .port-box { fill: #f0f0f0; stroke: #333333; stroke-width: 1.2; stroke-dasharray: 3 2; rx: 10; ry: 10; }
+    .port-txt { font-family: 'Consolas', monospace; font-size: 10px; font-weight: 700; fill: #111111; text-anchor: middle; }
+
+    /* Tables */
+    .tbl-normal { fill: #ffffff; stroke: #000000; stroke-width: 1.4; }
+    .tbl-normal-hdr { fill: #222222; }
+    .tbl-hub { fill: #ffffff; stroke: #000000; stroke-width: 2.1; }
+    .tbl-hub-hdr { fill: #000000; }
+    .tbl-rel { fill: #fafafa; stroke: #000000; stroke-width: 1.5; stroke-dasharray: 5 3; }
+    .tbl-rel-hdr { fill: #444444; }
+    .tbl-audit { fill: #ffffff; stroke: #555555; stroke-width: 1.2; }
+    .tbl-audit-hdr { fill: #666666; }
+
+    .hdr-title { font-size: 11.5px; font-weight: 700; fill: #ffffff; }
+    .hdr-badge { font-size: 8.5px; font-weight: 700; fill: #ffffff; text-anchor: end; opacity: 0.9; }
+    .io-box { fill: #eeeeee; stroke: #999999; stroke-width: 0.7; }
+    .io-text { font-family: 'Consolas', monospace; font-size: 9.5px; fill: #111111; }
+    .fld-key { font-family: 'Consolas', monospace; font-size: 8.8px; font-weight: 700; fill: #000000; }
+    .fld-name { font-family: 'Consolas', monospace; font-size: 9.8px; fill: #000000; }
+    .fld-name-pk { font-family: 'Consolas', monospace; font-size: 9.8px; font-weight: 700; text-decoration: underline; fill: #000000; }
+    .fld-type { font-family: 'Consolas', monospace; font-size: 9px; fill: #444444; text-anchor: end; }
+    .divider { stroke: #d4d4d4; stroke-width: 0.7; }
+
+    .rel-line { fill: none; stroke: #444444; stroke-width: 1.15; stroke-dasharray: 4 3; stroke-linejoin: round; }
+    .graph-line { fill: none; stroke: #000000; stroke-width: 1.7; stroke-linejoin: round; }
+
+    /* GOST 2.104 Stamp and Legend */
+    .stamp-line { fill: none; stroke: #000000; stroke-width: 1.1; }
+    .stamp-bold { fill: none; stroke: #000000; stroke-width: 1.9; }
+    .stamp-txt { font-size: 9.2px; fill: #000000; }
+    .stamp-txt-b { font-size: 11.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .stamp-title { font-size: 15px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .legend-box { fill: #ffffff; stroke: #000000; stroke-width: 1.25; }
+    .legend-hdr { font-size: 12px; font-weight: 700; fill: #000000; }
+    .legend-txt { font-size: 11px; fill: #111111; }
+  </style>
+
+<rect class="bg" x="0" y="0" width="2100" height="1485"/>
+<rect class="frame-outer" x="1" y="1" width="2098" height="1483"/>
+<rect class="frame-inner" x="100" y="25" width="1975" height="1435"/>
+<g>
+  <rect x="122" y="38" width="1932" height="108" fill="#fafafa" stroke="#000000" stroke-width="1.2" rx="5"/>
+  <text x="136" y="56" font-size="11" font-weight="700" fill="#000000">АРХИТЕКТУРНАЯ КАРТА ВЗАИМОСВЯЗИ ПОДСИСТЕМ (ДЕКОМПОЗИЦИЯ ЛОГИЧЕСКОЙ СХЕМЫ НА МОДУЛИ M1–M4)</text>
+  <rect class="map-box" x="140" y="70" width="380" height="62"/>
+  <text class="map-title" x="330" y="95">M1: Рукопись и планировщик</text>
+  <text class="map-sub" x="330" y="115">projects, volumes, chapters, text_blocks, todos, arcs</text>
+  <rect class="map-box" x="640" y="70" width="380" height="62"/>
+  <text class="map-title" x="830" y="95">M2: Сюжетные узлы и обещания</text>
+  <text class="map-sub" x="830" y="115">plot_promises, advances_arc, milestones, occurs_at</text>
+  <rect class="map-box" x="1140" y="70" width="390" height="62"/>
+  <text class="map-title" x="1335" y="95">M3: Онтология лора и ревизии</text>
+  <text class="map-sub" x="1335" y="115">entity_schemas, entities, entity_rel, appears_in, audit</text>
+  <rect class="map-box" x="1650" y="70" width="384" height="62"/>
+  <text class="map-title" x="1842" y="95">M4: Хронология и система</text>
+  <text class="map-sub" x="1842" y="115">planets, calendars, timeline_events, revealed_in, meta</text>
+  <line class="graph-line" x1="520" y1="101" x2="636" y2="101" marker-end="url(#graph-arrow)"/>
+  <text class="map-lbl" x="578" y="94">сцены / арки</text>
+  <line class="graph-line" x1="1140" y1="101" x2="1024" y2="101" marker-end="url(#graph-arrow)"/>
+  <text class="map-lbl" x="1082" y="94">участники</text>
+  <line class="graph-line" x1="1530" y1="101" x2="1646" y2="101" marker-end="url(#graph-arrow)"/>
+  <text class="map-lbl" x="1588" y="94">события</text>
+</g>
+<g>
+  <rect class="mod-box" x="122" y="162" width="518" height="1085"/>
+  <rect class="mod-hdr" x="122" y="162" width="518" height="24"/>
+  <text class="mod-hdr-txt" x="134" y="178">МОДУЛЬ M1: РУКОПИСЬ И ПЛАНИРОВЩИК</text>
+</g>
+<g>
+  <rect class="mod-box" x="658" y="162" width="486" height="1085"/>
+  <rect class="mod-hdr" x="658" y="162" width="486" height="24"/>
+  <text class="mod-hdr-txt" x="670" y="178">МОДУЛЬ M2: СЮЖЕТНЫЕ УЗЛЫ И ОБЕЩАНИЯ</text>
+</g>
+<g>
+  <rect class="mod-box" x="1162" y="162" width="486" height="1005"/>
+  <rect class="mod-hdr" x="1162" y="162" width="486" height="24"/>
+  <text class="mod-hdr-txt" x="1174" y="178">МОДУЛЬ M3: ОНТОЛОГИЯ ЛОРА И ВЕРСИОННОСТЬ</text>
+</g>
+<g>
+  <rect class="mod-box" x="1666" y="162" width="388" height="1005"/>
+  <rect class="mod-hdr" x="1666" y="162" width="388" height="24"/>
+  <text class="mod-hdr-txt" x="1678" y="178">МОДУЛЬ M4: ХРОНОЛОГИЯ И СИСТЕМА</text>
+</g>
+<path class="rel-line" d="M 360 245 L 380 245 L 380 256 L 400 256" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 360 280 L 372 280 L 372 497 L 140 497" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 250 537 L 250 585" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 250 700 L 250 745" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 511 306 L 511 350" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 360 501 L 382 501 L 382 437 L 400 437" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 360 625 L 390 625 L 390 474 L 400 474" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 360 660 L 400 643" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1253 229 L 1247 265" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1402 330 L 1418 330" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1291 395 L 1291 455" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1402 520 L 1418 513" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1402 737 L 1418 715" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1325 217 L 1640 217 L 1640 1006 L 1632 1006" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1748 229 L 1756 237 L 1862 237 L 1863 245" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1863 389 L 1863 415" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="rel-line" d="M 1863 545 L 1863 575" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+<path class="graph-line" d="M 250 320 L 250 348" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 140 483 L 130 483 L 130 392 L 140 392" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 217 435 L 217 465" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 360 405 L 376 405 L 376 608 L 360 608" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 749 229 L 760 270" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 978 217 L 840 217 L 827 270" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 790 485 L 781 386" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1051 469 L 1053 310" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1021 412 L 1013 495 L 904 511" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 904 580 L 930 580 L 930 784 L 902 784" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 902 805 L 978 797" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 676 615 L 666 615 L 666 921 L 676 921" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 902 921 L 946 921 L 946 829 L 1051 829 L 1051 809" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 790 658 L 790 1002 L 789 1020" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 902 1071 L 978 1067" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1258 585 L 1258 650" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1340 650 L 1340 585" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1180 553 L 1170 553 L 1170 948 L 1180 948" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1402 948 L 1480 902" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1812 757 L 1922 757 L 1939 740" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1878 740 L 1855 710 L 1855 715 L 1863 705" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1995 660 L 2044 660 L 2044 961 L 2040 961" marker-end="url(#graph-arrow)"/>
+<path class="graph-line" d="M 1838 961 L 1812 937" marker-end="url(#graph-arrow)"/>
+<g>
+  <rect class="port-box" x="676" y="205" width="145" height="24"/>
+  <text class="port-txt" x="748.5" y="220">→ [M1] story_arcs</text>
+</g>
+<g>
+  <rect class="port-box" x="978" y="205" width="145" height="24"/>
+  <text class="port-txt" x="1050.5" y="220">← [M1] chapters</text>
+</g>
+<g>
+  <rect class="port-box" x="978" y="445" width="145" height="24"/>
+  <text class="port-txt" x="1050.5" y="460">← [M3] entities</text>
+</g>
+<g>
+  <rect class="port-box" x="978" y="785" width="145" height="24"/>
+  <text class="port-txt" x="1050.5" y="800">→ [M1] text_blocks</text>
+</g>
+<g>
+  <rect class="port-box" x="978" y="1055" width="145" height="24"/>
+  <text class="port-txt" x="1050.5" y="1070">→ [M4] timeline_events</text>
+</g>
+<g>
+  <rect class="port-box" x="1180" y="205" width="145" height="24"/>
+  <text class="port-txt" x="1252.5" y="220">← [M1] projects</text>
+</g>
+<g>
+  <rect class="port-box" x="1480" y="890" width="150" height="24"/>
+  <text class="port-txt" x="1555" y="905">→ [M1] chapters | blocks</text>
+</g>
+<g>
+  <rect class="port-box" x="1680" y="205" width="136" height="24"/>
+  <text class="port-txt" x="1748" y="220">← [M1] projects</text>
+</g>
+<g>
+  <rect class="port-box" x="1680" y="745" width="132" height="24"/>
+  <text class="port-txt" x="1746" y="760">← [M3] entities</text>
+</g>
+<g>
+  <rect class="port-box" x="1680" y="925" width="132" height="24"/>
+  <text class="port-txt" x="1746" y="940">→ [M1] chapters</text>
+</g>
+<g>
+  <rect class="tbl-hub" x="140" y="205" width="220" height="115" rx="3" ry="3"/>
+  <rect class="tbl-hub-hdr" x="140" y="205" width="220" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="148" y="220">projects</text>
+  <text class="hdr-badge" x="353" y="220">HUB</text>
+  <text class="fld-key" x="146" y="238">PK</text>
+  <text class="fld-name-pk" x="165" y="238">id</text>
+  <text class="fld-type" x="354" y="238">record</text>
+  <line class="divider" x1="144" y1="241.5" x2="356" y2="241.5"/>
+  <text class="fld-name" x="165" y="252.5">name</text>
+  <text class="fld-type" x="354" y="252.5">string</text>
+  <text class="fld-name" x="165" y="267">type</text>
+  <text class="fld-type" x="354" y="267">string?</text>
+  <text class="fld-name" x="165" y="281.5">genres</text>
+  <text class="fld-type" x="354" y="281.5">array</text>
+  <text class="fld-name" x="165" y="296">cover_image</text>
+  <text class="fld-type" x="354" y="296">string?</text>
+  <text class="fld-name" x="165" y="310.5">created_at</text>
+  <text class="fld-type" x="354" y="310.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="140" y="348" width="220" height="87" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="140" y="348" width="220" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="148" y="363">contains</text>
+  <text class="hdr-badge" x="353" y="363">RELATION</text>
+  <rect class="io-box" x="141" y="370" width="218" height="30"/>
+  <text class="io-text" x="146" y="382"><tspan font-weight="700">IN:</tspan>  projects | volumes</text>
+  <text class="io-text" x="146" y="394"><tspan font-weight="700">OUT:</tspan> volumes | chapters</text>
+  <text class="fld-key" x="146" y="411">PK</text>
+  <text class="fld-name-pk" x="165" y="411">id</text>
+  <text class="fld-type" x="354" y="411">record</text>
+  <line class="divider" x1="144" y1="414.5" x2="356" y2="414.5"/>
+  <text class="fld-name" x="165" y="425.5">sort_order</text>
+  <text class="fld-type" x="354" y="425.5">int</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="140" y="465" width="220" height="72" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="140" y="465" width="220" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="148" y="480">volumes</text>
+  <text class="hdr-badge" x="353" y="480">TABLE</text>
+  <text class="fld-key" x="146" y="498">PK</text>
+  <text class="fld-name-pk" x="165" y="498">id</text>
+  <text class="fld-type" x="354" y="498">record</text>
+  <line class="divider" x1="144" y1="501.5" x2="356" y2="501.5"/>
+  <text class="fld-key" x="146" y="512.5">FK</text>
+  <text class="fld-name" x="165" y="512.5">project_id</text>
+  <text class="fld-type" x="354" y="512.5">record</text>
+  <text class="fld-name" x="165" y="527">title</text>
+  <text class="fld-type" x="354" y="527">string</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="140" y="585" width="220" height="115" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="140" y="585" width="220" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="148" y="600">chapters</text>
+  <text class="hdr-badge" x="353" y="600">TABLE</text>
+  <text class="fld-key" x="146" y="618">PK</text>
+  <text class="fld-name-pk" x="165" y="618">id</text>
+  <text class="fld-type" x="354" y="618">record</text>
+  <line class="divider" x1="144" y1="621.5" x2="356" y2="621.5"/>
+  <text class="fld-key" x="146" y="632.5">FK</text>
+  <text class="fld-name" x="165" y="632.5">volume_id</text>
+  <text class="fld-type" x="354" y="632.5">record</text>
+  <text class="fld-name" x="165" y="647">title / content</text>
+  <text class="fld-type" x="354" y="647">string</text>
+  <text class="fld-name" x="165" y="661.5">sort_order</text>
+  <text class="fld-type" x="354" y="661.5">int</text>
+  <text class="fld-name" x="165" y="676">word_count</text>
+  <text class="fld-type" x="354" y="676">int</text>
+  <text class="fld-name" x="165" y="690.5">created_at / updated_at</text>
+  <text class="fld-type" x="354" y="690.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="140" y="745" width="220" height="115" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="140" y="745" width="220" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="148" y="760">text_blocks</text>
+  <text class="hdr-badge" x="353" y="760">TABLE</text>
+  <text class="fld-key" x="146" y="778">PK</text>
+  <text class="fld-name-pk" x="165" y="778">id</text>
+  <text class="fld-type" x="354" y="778">record</text>
+  <line class="divider" x1="144" y1="781.5" x2="356" y2="781.5"/>
+  <text class="fld-key" x="146" y="792.5">FK</text>
+  <text class="fld-name" x="165" y="792.5">chapter_id</text>
+  <text class="fld-type" x="354" y="792.5">record</text>
+  <text class="fld-name" x="165" y="807">block_type</text>
+  <text class="fld-type" x="354" y="807">string</text>
+  <text class="fld-name" x="165" y="821.5">order_index</text>
+  <text class="fld-type" x="354" y="821.5">int</text>
+  <text class="fld-name" x="165" y="836">content</text>
+  <text class="fld-type" x="354" y="836">string</text>
+  <text class="fld-name" x="165" y="850.5">created_at</text>
+  <text class="fld-type" x="354" y="850.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="400" y="205" width="222" height="101" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="400" y="205" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="408" y="220">story_arcs</text>
+  <text class="hdr-badge" x="615" y="220">TABLE</text>
+  <text class="fld-key" x="406" y="238">PK</text>
+  <text class="fld-name-pk" x="425" y="238">id</text>
+  <text class="fld-type" x="616" y="238">record</text>
+  <line class="divider" x1="404" y1="241.5" x2="618" y2="241.5"/>
+  <text class="fld-key" x="406" y="252.5">FK</text>
+  <text class="fld-name" x="425" y="252.5">project_id</text>
+  <text class="fld-type" x="616" y="252.5">record</text>
+  <text class="fld-name" x="425" y="267">title</text>
+  <text class="fld-type" x="616" y="267">string</text>
+  <text class="fld-name" x="425" y="281.5">status</text>
+  <text class="fld-type" x="616" y="281.5">string</text>
+  <text class="fld-name" x="425" y="296">created_at / updated_at</text>
+  <text class="fld-type" x="616" y="296">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="400" y="350" width="222" height="159" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="400" y="350" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="408" y="365">todos</text>
+  <text class="hdr-badge" x="615" y="365">TABLE</text>
+  <text class="fld-key" x="406" y="383">PK</text>
+  <text class="fld-name-pk" x="425" y="383">id</text>
+  <text class="fld-type" x="616" y="383">record</text>
+  <line class="divider" x1="404" y1="386.5" x2="618" y2="386.5"/>
+  <text class="fld-key" x="406" y="397.5">FK</text>
+  <text class="fld-name" x="425" y="397.5">owner_vol / ch / arc</text>
+  <text class="fld-type" x="616" y="397.5">record?</text>
+  <text class="fld-key" x="406" y="412">FK</text>
+  <text class="fld-name" x="425" y="412">arc_id</text>
+  <text class="fld-type" x="616" y="412">record?</text>
+  <text class="fld-key" x="406" y="426.5">FK</text>
+  <text class="fld-name" x="425" y="426.5">depends_on</text>
+  <text class="fld-type" x="616" y="426.5">record?</text>
+  <text class="fld-name" x="425" y="441">text</text>
+  <text class="fld-type" x="616" y="441">string</text>
+  <text class="fld-name" x="425" y="455.5">status</text>
+  <text class="fld-type" x="616" y="455.5">string</text>
+  <text class="fld-name" x="425" y="470">is_done</text>
+  <text class="fld-type" x="616" y="470">bool</text>
+  <text class="fld-name" x="425" y="484.5">sort_order</text>
+  <text class="fld-type" x="616" y="484.5">int</text>
+  <text class="fld-name" x="425" y="499">created_at / updated_at</text>
+  <text class="fld-type" x="616" y="499">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="400" y="585" width="222" height="115" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="400" y="585" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="408" y="600">chapter_revisions</text>
+  <text class="hdr-badge" x="615" y="600">AUDIT</text>
+  <text class="fld-key" x="406" y="618">PK</text>
+  <text class="fld-name-pk" x="425" y="618">id</text>
+  <text class="fld-type" x="616" y="618">record</text>
+  <line class="divider" x1="404" y1="621.5" x2="618" y2="621.5"/>
+  <text class="fld-key" x="406" y="632.5">FK</text>
+  <text class="fld-name" x="425" y="632.5">target_id</text>
+  <text class="fld-type" x="616" y="632.5">record</text>
+  <text class="fld-name" x="425" y="647">content</text>
+  <text class="fld-type" x="616" y="647">object</text>
+  <text class="fld-name" x="425" y="661.5">commit_msg</text>
+  <text class="fld-type" x="616" y="661.5">string?</text>
+  <text class="fld-name" x="425" y="676">created_at</text>
+  <text class="fld-type" x="616" y="676">datetime</text>
+  <text class="fld-name" x="425" y="690.5">is_pinned</text>
+  <text class="fld-type" x="616" y="690.5">bool</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="676" y="270" width="210" height="116" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="676" y="270" width="210" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="684" y="285">advances_arc</text>
+  <text class="hdr-badge" x="879" y="285">RELATION</text>
+  <rect class="io-box" x="677" y="292" width="208" height="30"/>
+  <text class="io-text" x="682" y="304"><tspan font-weight="700">IN:</tspan>  chapters | plot_promises</text>
+  <text class="io-text" x="682" y="316"><tspan font-weight="700">OUT:</tspan> story_arcs</text>
+  <text class="fld-key" x="682" y="333">PK</text>
+  <text class="fld-name-pk" x="701" y="333">id</text>
+  <text class="fld-type" x="880" y="333">record</text>
+  <line class="divider" x1="680" y1="336.5" x2="882" y2="336.5"/>
+  <text class="fld-name" x="701" y="347.5">phase</text>
+  <text class="fld-type" x="880" y="347.5">string</text>
+  <text class="fld-name" x="701" y="362">transition</text>
+  <text class="fld-type" x="880" y="362">string?</text>
+  <text class="fld-name" x="701" y="376.5">created_at</text>
+  <text class="fld-type" x="880" y="376.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="916" y="310" width="210" height="102" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="916" y="310" width="210" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="924" y="325">participant_of</text>
+  <text class="hdr-badge" x="1119" y="325">RELATION</text>
+  <rect class="io-box" x="917" y="332" width="208" height="30"/>
+  <text class="io-text" x="922" y="344"><tspan font-weight="700">IN:</tspan>  entities</text>
+  <text class="io-text" x="922" y="356"><tspan font-weight="700">OUT:</tspan> plot_promises</text>
+  <text class="fld-key" x="922" y="373">PK</text>
+  <text class="fld-name-pk" x="941" y="373">id</text>
+  <text class="fld-type" x="1120" y="373">record</text>
+  <line class="divider" x1="920" y1="376.5" x2="1122" y2="376.5"/>
+  <text class="fld-name" x="941" y="387.5">role</text>
+  <text class="fld-type" x="1120" y="387.5">string?</text>
+  <text class="fld-name" x="941" y="402">created_at</text>
+  <text class="fld-type" x="1120" y="402">datetime</text>
+</g>
+<g>
+  <rect class="tbl-hub" x="676" y="485" width="228" height="173" rx="3" ry="3"/>
+  <rect class="tbl-hub-hdr" x="676" y="485" width="228" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="684" y="500">plot_promises</text>
+  <text class="hdr-badge" x="897" y="500">HUB</text>
+  <text class="fld-key" x="682" y="518">PK</text>
+  <text class="fld-name-pk" x="701" y="518">id</text>
+  <text class="fld-type" x="898" y="518">record</text>
+  <line class="divider" x1="680" y1="521.5" x2="900" y2="521.5"/>
+  <text class="fld-key" x="682" y="532.5">FK</text>
+  <text class="fld-name" x="701" y="532.5">parent_id</text>
+  <text class="fld-type" x="898" y="532.5">record?</text>
+  <text class="fld-key" x="682" y="547">FK</text>
+  <text class="fld-name" x="701" y="547">location_id</text>
+  <text class="fld-type" x="898" y="547">record?</text>
+  <text class="fld-key" x="682" y="561.5">FK</text>
+  <text class="fld-name" x="701" y="561.5">timeline_event_id</text>
+  <text class="fld-type" x="898" y="561.5">record?</text>
+  <text class="fld-name" x="701" y="576">block_ids</text>
+  <text class="fld-type" x="898" y="576">array</text>
+  <text class="fld-name" x="701" y="590.5">kind / status</text>
+  <text class="fld-type" x="898" y="590.5">string</text>
+  <text class="fld-name" x="701" y="605">time_nature</text>
+  <text class="fld-type" x="898" y="605">string</text>
+  <text class="fld-name" x="701" y="619.5">title</text>
+  <text class="fld-type" x="898" y="619.5">string</text>
+  <text class="fld-name" x="701" y="634">note</text>
+  <text class="fld-type" x="898" y="634">string?</text>
+  <text class="fld-name" x="701" y="648.5">created_at / updated_at</text>
+  <text class="fld-type" x="898" y="648.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="676" y="740" width="226" height="87" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="676" y="740" width="226" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="684" y="755">spans_blocks</text>
+  <text class="hdr-badge" x="895" y="755">RELATION</text>
+  <rect class="io-box" x="677" y="762" width="224" height="30"/>
+  <text class="io-text" x="682" y="774"><tspan font-weight="700">IN:</tspan>  plot_promises</text>
+  <text class="io-text" x="682" y="786"><tspan font-weight="700">OUT:</tspan> text_blocks</text>
+  <text class="fld-key" x="682" y="803">PK</text>
+  <text class="fld-name-pk" x="701" y="803">id</text>
+  <text class="fld-type" x="896" y="803">record</text>
+  <line class="divider" x1="680" y1="806.5" x2="898" y2="806.5"/>
+  <text class="fld-name" x="701" y="817.5">created_at</text>
+  <text class="fld-type" x="896" y="817.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="676" y="855" width="226" height="131" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="676" y="855" width="226" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="684" y="870">promise_milestones</text>
+  <text class="hdr-badge" x="895" y="870">RELATION</text>
+  <rect class="io-box" x="677" y="877" width="224" height="30"/>
+  <text class="io-text" x="682" y="889"><tspan font-weight="700">IN:</tspan>  plot_promises</text>
+  <text class="io-text" x="682" y="901"><tspan font-weight="700">OUT:</tspan> text_blocks</text>
+  <text class="fld-key" x="682" y="918">PK</text>
+  <text class="fld-name-pk" x="701" y="918">id</text>
+  <text class="fld-type" x="896" y="918">record</text>
+  <line class="divider" x1="680" y1="921.5" x2="898" y2="921.5"/>
+  <text class="fld-name" x="701" y="932.5">stage</text>
+  <text class="fld-type" x="896" y="932.5">string</text>
+  <text class="fld-name" x="701" y="947">quote</text>
+  <text class="fld-type" x="896" y="947">string</text>
+  <text class="fld-name" x="701" y="961.5">note</text>
+  <text class="fld-type" x="896" y="961.5">string?</text>
+  <text class="fld-name" x="701" y="976">created_at</text>
+  <text class="fld-type" x="896" y="976">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="676" y="1020" width="226" height="102" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="676" y="1020" width="226" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="684" y="1035">occurs_at</text>
+  <text class="hdr-badge" x="895" y="1035">RELATION</text>
+  <rect class="io-box" x="677" y="1042" width="224" height="30"/>
+  <text class="io-text" x="682" y="1054"><tspan font-weight="700">IN:</tspan>  plot_promises</text>
+  <text class="io-text" x="682" y="1066"><tspan font-weight="700">OUT:</tspan> timeline_events</text>
+  <text class="fld-key" x="682" y="1083">PK</text>
+  <text class="fld-name-pk" x="701" y="1083">id</text>
+  <text class="fld-type" x="896" y="1083">record</text>
+  <line class="divider" x1="680" y1="1086.5" x2="898" y2="1086.5"/>
+  <text class="fld-name" x="701" y="1097.5">time_nature</text>
+  <text class="fld-type" x="896" y="1097.5">string</text>
+  <text class="fld-name" x="701" y="1112">created_at</text>
+  <text class="fld-type" x="896" y="1112">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="1180" y="265" width="222" height="130" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="1180" y="265" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1188" y="280">entity_schemas</text>
+  <text class="hdr-badge" x="1395" y="280">TABLE</text>
+  <text class="fld-key" x="1186" y="298">PK</text>
+  <text class="fld-name-pk" x="1205" y="298">id</text>
+  <text class="fld-type" x="1396" y="298">record</text>
+  <line class="divider" x1="1184" y1="301.5" x2="1398" y2="301.5"/>
+  <text class="fld-key" x="1186" y="312.5">FK</text>
+  <text class="fld-name" x="1205" y="312.5">project_id</text>
+  <text class="fld-type" x="1396" y="312.5">record</text>
+  <text class="fld-key" x="1186" y="327">UQ</text>
+  <text class="fld-name" x="1205" y="327">type_key</text>
+  <text class="fld-type" x="1396" y="327">string</text>
+  <text class="fld-name" x="1205" y="341.5">type_name</text>
+  <text class="fld-type" x="1396" y="341.5">string</text>
+  <text class="fld-name" x="1205" y="356">fields_schema</text>
+  <text class="fld-type" x="1396" y="356">array</text>
+  <text class="fld-name" x="1205" y="370.5">full_schema</text>
+  <text class="fld-type" x="1396" y="370.5">object?</text>
+  <text class="fld-name" x="1205" y="385">created_at</text>
+  <text class="fld-type" x="1396" y="385">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="1418" y="265" width="214" height="130" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="1418" y="265" width="214" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1426" y="280">schema_history</text>
+  <text class="hdr-badge" x="1625" y="280">AUDIT</text>
+  <text class="fld-key" x="1424" y="298">PK</text>
+  <text class="fld-name-pk" x="1443" y="298">id</text>
+  <text class="fld-type" x="1626" y="298">record</text>
+  <line class="divider" x1="1422" y1="301.5" x2="1628" y2="301.5"/>
+  <text class="fld-key" x="1424" y="312.5">FK</text>
+  <text class="fld-name" x="1443" y="312.5">schema_id</text>
+  <text class="fld-type" x="1626" y="312.5">record</text>
+  <text class="fld-key" x="1424" y="327">FK</text>
+  <text class="fld-name" x="1443" y="327">project_id</text>
+  <text class="fld-type" x="1626" y="327">record</text>
+  <text class="fld-name" x="1443" y="341.5">type_key</text>
+  <text class="fld-type" x="1626" y="341.5">string</text>
+  <text class="fld-name" x="1443" y="356">snapshot</text>
+  <text class="fld-type" x="1626" y="356">object</text>
+  <text class="fld-name" x="1443" y="370.5">saved_at</text>
+  <text class="fld-type" x="1626" y="370.5">datetime</text>
+  <text class="fld-name" x="1443" y="385">is_pinned / msg</text>
+  <text class="fld-type" x="1626" y="385">bool/str</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="1180" y="455" width="222" height="130" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="1180" y="455" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1188" y="470">entities</text>
+  <text class="hdr-badge" x="1395" y="470">TABLE</text>
+  <text class="fld-key" x="1186" y="488">PK</text>
+  <text class="fld-name-pk" x="1205" y="488">id</text>
+  <text class="fld-type" x="1396" y="488">record</text>
+  <line class="divider" x1="1184" y1="491.5" x2="1398" y2="491.5"/>
+  <text class="fld-key" x="1186" y="502.5">FK</text>
+  <text class="fld-name" x="1205" y="502.5">schema_id</text>
+  <text class="fld-type" x="1396" y="502.5">record</text>
+  <text class="fld-name" x="1205" y="517">name</text>
+  <text class="fld-type" x="1396" y="517">string</text>
+  <text class="fld-name" x="1205" y="531.5">description</text>
+  <text class="fld-type" x="1396" y="531.5">string?</text>
+  <text class="fld-name" x="1205" y="546">tags</text>
+  <text class="fld-type" x="1396" y="546">array</text>
+  <text class="fld-name" x="1205" y="560.5">attributes</text>
+  <text class="fld-type" x="1396" y="560.5">object</text>
+  <text class="fld-name" x="1205" y="575">created_at / updated_at</text>
+  <text class="fld-type" x="1396" y="575">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="1418" y="455" width="214" height="115" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="1418" y="455" width="214" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1426" y="470">entity_revisions</text>
+  <text class="hdr-badge" x="1625" y="470">AUDIT</text>
+  <text class="fld-key" x="1424" y="488">PK</text>
+  <text class="fld-name-pk" x="1443" y="488">id</text>
+  <text class="fld-type" x="1626" y="488">record</text>
+  <line class="divider" x1="1422" y1="491.5" x2="1628" y2="491.5"/>
+  <text class="fld-key" x="1424" y="502.5">FK</text>
+  <text class="fld-name" x="1443" y="502.5">target_id</text>
+  <text class="fld-type" x="1626" y="502.5">record</text>
+  <text class="fld-name" x="1443" y="517">content</text>
+  <text class="fld-type" x="1626" y="517">object</text>
+  <text class="fld-name" x="1443" y="531.5">commit_msg</text>
+  <text class="fld-type" x="1626" y="531.5">string?</text>
+  <text class="fld-name" x="1443" y="546">created_at</text>
+  <text class="fld-type" x="1626" y="546">datetime</text>
+  <text class="fld-name" x="1443" y="560.5">is_pinned</text>
+  <text class="fld-type" x="1626" y="560.5">bool</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="1180" y="650" width="222" height="174" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="1180" y="650" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1188" y="665">entity_rel</text>
+  <text class="hdr-badge" x="1395" y="665">RELATION</text>
+  <rect class="io-box" x="1181" y="672" width="220" height="30"/>
+  <text class="io-text" x="1186" y="684"><tspan font-weight="700">IN:</tspan>  entities</text>
+  <text class="io-text" x="1186" y="696"><tspan font-weight="700">OUT:</tspan> entities</text>
+  <text class="fld-key" x="1186" y="713">PK</text>
+  <text class="fld-name-pk" x="1205" y="713">id</text>
+  <text class="fld-type" x="1396" y="713">record</text>
+  <line class="divider" x1="1184" y1="716.5" x2="1398" y2="716.5"/>
+  <text class="fld-name" x="1205" y="727.5">rel_type / desc</text>
+  <text class="fld-type" x="1396" y="727.5">string</text>
+  <text class="fld-name" x="1205" y="742">strength</text>
+  <text class="fld-type" x="1396" y="742">int?</text>
+  <text class="fld-name" x="1205" y="756.5">attributes</text>
+  <text class="fld-type" x="1396" y="756.5">object</text>
+  <text class="fld-key" x="1186" y="771">FK</text>
+  <text class="fld-name" x="1205" y="771">start_at_ch / vol</text>
+  <text class="fld-type" x="1396" y="771">record?</text>
+  <text class="fld-key" x="1186" y="785.5">FK</text>
+  <text class="fld-name" x="1205" y="785.5">end_at_ch / vol</text>
+  <text class="fld-type" x="1396" y="785.5">record?</text>
+  <text class="fld-name" x="1205" y="800">is_auto_extend</text>
+  <text class="fld-type" x="1396" y="800">bool</text>
+  <text class="fld-name" x="1205" y="814.5">created_at</text>
+  <text class="fld-type" x="1396" y="814.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="1418" y="650" width="214" height="130" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="1418" y="650" width="214" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1426" y="665">entity_rel_revisions</text>
+  <text class="hdr-badge" x="1625" y="665">AUDIT</text>
+  <text class="fld-key" x="1424" y="683">PK</text>
+  <text class="fld-name-pk" x="1443" y="683">id</text>
+  <text class="fld-type" x="1626" y="683">record</text>
+  <line class="divider" x1="1422" y1="686.5" x2="1628" y2="686.5"/>
+  <text class="fld-key" x="1424" y="697.5">FK</text>
+  <text class="fld-name" x="1443" y="697.5">target_id</text>
+  <text class="fld-type" x="1626" y="697.5">record</text>
+  <text class="fld-key" x="1424" y="712">FK</text>
+  <text class="fld-name" x="1443" y="712">in_id / out_id</text>
+  <text class="fld-type" x="1626" y="712">record</text>
+  <text class="fld-name" x="1443" y="726.5">action</text>
+  <text class="fld-type" x="1626" y="726.5">string</text>
+  <text class="fld-name" x="1443" y="741">content</text>
+  <text class="fld-type" x="1626" y="741">object</text>
+  <text class="fld-name" x="1443" y="755.5">commit_msg</text>
+  <text class="fld-type" x="1626" y="755.5">string?</text>
+  <text class="fld-name" x="1443" y="770">created_at</text>
+  <text class="fld-type" x="1626" y="770">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="1180" y="890" width="222" height="116" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="1180" y="890" width="222" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1188" y="905">appears_in</text>
+  <text class="hdr-badge" x="1395" y="905">RELATION</text>
+  <rect class="io-box" x="1181" y="912" width="220" height="30"/>
+  <text class="io-text" x="1186" y="924"><tspan font-weight="700">IN:</tspan>  entities</text>
+  <text class="io-text" x="1186" y="936"><tspan font-weight="700">OUT:</tspan> chapters | text_blocks</text>
+  <text class="fld-key" x="1186" y="953">PK</text>
+  <text class="fld-name-pk" x="1205" y="953">id</text>
+  <text class="fld-type" x="1396" y="953">record</text>
+  <line class="divider" x1="1184" y1="956.5" x2="1398" y2="956.5"/>
+  <text class="fld-name" x="1205" y="967.5">source</text>
+  <text class="fld-type" x="1396" y="967.5">string</text>
+  <text class="fld-name" x="1205" y="982">count</text>
+  <text class="fld-type" x="1396" y="982">int?</text>
+  <text class="fld-name" x="1205" y="996.5">created_at</text>
+  <text class="fld-type" x="1396" y="996.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="1418" y="955" width="214" height="101" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="1418" y="955" width="214" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1426" y="970">relation_schemas</text>
+  <text class="hdr-badge" x="1625" y="970">AUDIT</text>
+  <text class="fld-key" x="1424" y="988">PK</text>
+  <text class="fld-name-pk" x="1443" y="988">id</text>
+  <text class="fld-type" x="1626" y="988">record</text>
+  <line class="divider" x1="1422" y1="991.5" x2="1628" y2="991.5"/>
+  <text class="fld-key" x="1424" y="1002.5">FK</text>
+  <text class="fld-name" x="1443" y="1002.5">project_id</text>
+  <text class="fld-type" x="1626" y="1002.5">record</text>
+  <text class="fld-key" x="1424" y="1017">UQ</text>
+  <text class="fld-name" x="1443" y="1017">rel_key</text>
+  <text class="fld-type" x="1626" y="1017">string</text>
+  <text class="fld-name" x="1443" y="1031.5">rel_name / icon / color</text>
+  <text class="fld-type" x="1626" y="1031.5">string</text>
+  <text class="fld-name" x="1443" y="1046">from_types / to_types</text>
+  <text class="fld-type" x="1626" y="1046">array</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="1730" y="245" width="265" height="144" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="1730" y="245" width="265" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1738" y="260">planets</text>
+  <text class="hdr-badge" x="1988" y="260">TABLE</text>
+  <text class="fld-key" x="1736" y="278">PK</text>
+  <text class="fld-name-pk" x="1755" y="278">id</text>
+  <text class="fld-type" x="1989" y="278">record</text>
+  <line class="divider" x1="1734" y1="281.5" x2="1991" y2="281.5"/>
+  <text class="fld-key" x="1736" y="292.5">FK</text>
+  <text class="fld-name" x="1755" y="292.5">project_id</text>
+  <text class="fld-type" x="1989" y="292.5">record</text>
+  <text class="fld-name" x="1755" y="307">name</text>
+  <text class="fld-type" x="1989" y="307">string</text>
+  <text class="fld-name" x="1755" y="321.5">ticks_per_day</text>
+  <text class="fld-type" x="1989" y="321.5">int</text>
+  <text class="fld-name" x="1755" y="336">axial_tilt_mdeg</text>
+  <text class="fld-type" x="1989" y="336">int?</text>
+  <text class="fld-name" x="1755" y="350.5">orbit_days_num / den</text>
+  <text class="fld-type" x="1989" y="350.5">int?</text>
+  <text class="fld-name" x="1755" y="365">moons / timezones / reg</text>
+  <text class="fld-type" x="1989" y="365">array</text>
+  <text class="fld-name" x="1755" y="379.5">created_at / updated_at</text>
+  <text class="fld-type" x="1989" y="379.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="1730" y="415" width="265" height="130" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="1730" y="415" width="265" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1738" y="430">calendars</text>
+  <text class="hdr-badge" x="1988" y="430">TABLE</text>
+  <text class="fld-key" x="1736" y="448">PK</text>
+  <text class="fld-name-pk" x="1755" y="448">id</text>
+  <text class="fld-type" x="1989" y="448">record</text>
+  <line class="divider" x1="1734" y1="451.5" x2="1991" y2="451.5"/>
+  <text class="fld-key" x="1736" y="462.5">FK</text>
+  <text class="fld-name" x="1755" y="462.5">planet_id</text>
+  <text class="fld-type" x="1989" y="462.5">record</text>
+  <text class="fld-name" x="1755" y="477">name</text>
+  <text class="fld-type" x="1989" y="477">string</text>
+  <text class="fld-name" x="1755" y="491.5">description</text>
+  <text class="fld-type" x="1989" y="491.5">string?</text>
+  <text class="fld-name" x="1755" y="506">data</text>
+  <text class="fld-type" x="1989" y="506">object</text>
+  <text class="fld-name" x="1755" y="520.5">is_default / is_master</text>
+  <text class="fld-type" x="1989" y="520.5">bool</text>
+  <text class="fld-name" x="1755" y="535">created_at / updated_at</text>
+  <text class="fld-type" x="1989" y="535">datetime</text>
+</g>
+<g>
+  <rect class="tbl-normal" x="1730" y="575" width="265" height="130" rx="3" ry="3"/>
+  <rect class="tbl-normal-hdr" x="1730" y="575" width="265" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1738" y="590">timeline_events</text>
+  <text class="hdr-badge" x="1988" y="590">TABLE</text>
+  <text class="fld-key" x="1736" y="608">PK</text>
+  <text class="fld-name-pk" x="1755" y="608">id</text>
+  <text class="fld-type" x="1989" y="608">record</text>
+  <line class="divider" x1="1734" y1="611.5" x2="1991" y2="611.5"/>
+  <text class="fld-key" x="1736" y="622.5">FK</text>
+  <text class="fld-name" x="1755" y="622.5">project_id</text>
+  <text class="fld-type" x="1989" y="622.5">record</text>
+  <text class="fld-key" x="1736" y="637">FK</text>
+  <text class="fld-name" x="1755" y="637">calendar_id</text>
+  <text class="fld-type" x="1989" y="637">record</text>
+  <text class="fld-name" x="1755" y="651.5">title</text>
+  <text class="fld-type" x="1989" y="651.5">string</text>
+  <text class="fld-name" x="1755" y="666">description</text>
+  <text class="fld-type" x="1989" y="666">string?</text>
+  <text class="fld-name" x="1755" y="680.5">m_abs</text>
+  <text class="fld-type" x="1989" y="680.5">int</text>
+  <text class="fld-name" x="1755" y="695">created_at</text>
+  <text class="fld-type" x="1989" y="695">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="1838" y="740" width="202" height="116" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="1838" y="740" width="202" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1846" y="755">participates_in</text>
+  <text class="hdr-badge" x="2033" y="755">RELATION</text>
+  <rect class="io-box" x="1839" y="762" width="200" height="30"/>
+  <text class="io-text" x="1844" y="774"><tspan font-weight="700">IN:</tspan>  entities</text>
+  <text class="io-text" x="1844" y="786"><tspan font-weight="700">OUT:</tspan> timeline_events</text>
+  <text class="fld-key" x="1844" y="803">PK</text>
+  <text class="fld-name-pk" x="1863" y="803">id</text>
+  <text class="fld-type" x="2034" y="803">record</text>
+  <line class="divider" x1="1842" y1="806.5" x2="2036" y2="806.5"/>
+  <text class="fld-name" x="1863" y="817.5">role</text>
+  <text class="fld-type" x="2034" y="817.5">string?</text>
+  <text class="fld-name" x="1863" y="832">notes</text>
+  <text class="fld-type" x="2034" y="832">string?</text>
+  <text class="fld-name" x="1863" y="846.5">created_at</text>
+  <text class="fld-type" x="2034" y="846.5">datetime</text>
+</g>
+<g>
+  <rect class="tbl-rel" x="1838" y="895" width="202" height="131" rx="3" ry="3"/>
+  <rect class="tbl-rel-hdr" x="1838" y="895" width="202" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1846" y="910">revealed_in</text>
+  <text class="hdr-badge" x="2033" y="910">RELATION</text>
+  <rect class="io-box" x="1839" y="917" width="200" height="30"/>
+  <text class="io-text" x="1844" y="929"><tspan font-weight="700">IN:</tspan>  timeline_events</text>
+  <text class="io-text" x="1844" y="941"><tspan font-weight="700">OUT:</tspan> chapters</text>
+  <text class="fld-key" x="1844" y="958">PK</text>
+  <text class="fld-name-pk" x="1863" y="958">id</text>
+  <text class="fld-type" x="2034" y="958">record</text>
+  <line class="divider" x1="1842" y1="961.5" x2="2036" y2="961.5"/>
+  <text class="fld-key" x="1844" y="972.5">FK</text>
+  <text class="fld-name" x="1863" y="972.5">pov_id</text>
+  <text class="fld-type" x="2034" y="972.5">record?</text>
+  <text class="fld-name" x="1863" y="987">kind</text>
+  <text class="fld-type" x="2034" y="987">string</text>
+  <text class="fld-key" x="1844" y="1001.5">FK</text>
+  <text class="fld-name" x="1863" y="1001.5">block_id</text>
+  <text class="fld-type" x="2034" y="1001.5">record?</text>
+  <text class="fld-name" x="1863" y="1016">created_at</text>
+  <text class="fld-type" x="2034" y="1016">datetime</text>
+</g>
+<g>
+  <rect class="tbl-audit" x="1838" y="1065" width="202" height="72" rx="3" ry="3"/>
+  <rect class="tbl-audit-hdr" x="1838" y="1065" width="202" height="22" rx="2" ry="2"/>
+  <text class="hdr-title" x="1846" y="1080">system_meta</text>
+  <text class="hdr-badge" x="2033" y="1080">AUDIT</text>
+  <text class="fld-key" x="1844" y="1098">PK</text>
+  <text class="fld-name-pk" x="1863" y="1098">id</text>
+  <text class="fld-type" x="2034" y="1098">record</text>
+  <line class="divider" x1="1842" y1="1101.5" x2="2036" y2="1101.5"/>
+  <text class="fld-name" x="1863" y="1112.5">ddl_hash</text>
+  <text class="fld-type" x="2034" y="1112.5">string</text>
+  <text class="fld-name" x="1863" y="1127">updated_at</text>
+  <text class="fld-type" x="2034" y="1127">datetime</text>
+</g>
+<g>
+  <rect class="legend-box" x="122" y="1265" width="1022" height="175" rx="4" ry="4"/>
+  <text class="legend-hdr" x="142" y="1290">Условные обозначения (модульная логическая нотация ER + Property Graph Association Class)</text>
+  <rect class="tbl-normal" x="142" y="1308" width="100" height="30" rx="2"/><rect class="tbl-normal-hdr" x="142" y="1308" width="100" height="13"/><text x="148" y="1318" font-size="8.5" font-weight="700" fill="#fff">TABLE</text>
+  <text class="legend-txt" x="254" y="1327">Обычная таблица узлов (PK / FK / UQ, «?» = option)</text>
+  <rect class="tbl-rel" x="142" y="1350" width="100" height="30" rx="2"/><rect class="tbl-rel-hdr" x="142" y="1350" width="100" height="13"/><text x="148" y="1360" font-size="8.5" font-weight="700" fill="#fff">RELATION</text>
+  <text class="legend-txt" x="254" y="1369">Графовое отношение TYPE RELATION (IN / OUT + атрибуты)</text>
+  <rect class="tbl-audit" x="142" y="1392" width="100" height="30" rx="2"/><rect class="tbl-audit-hdr" x="142" y="1392" width="100" height="13"/><text x="148" y="1402" font-size="8.5" font-weight="700" fill="#fff">AUDIT</text>
+  <text class="legend-txt" x="254" y="1411">Таблицы ревизий, схем связей и метаданных DDL</text>
+  <line class="graph-line" x1="650" y1="1323" x2="725" y2="1323" marker-end="url(#graph-arrow)"/>
+  <text class="legend-txt" x="738" y="1327">Графовый поток (IN → RELATION → OUT)</text>
+  <line class="rel-line" x1="650" y1="1365" x2="725" y2="1365" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>
+  <text class="legend-txt" x="738" y="1369">Реляционная связь FK (1:N / 0..N)</text>
+  <rect class="port-box" x="650" y="1395" width="75" height="24"/><text class="port-txt" x="687" y="1410">→ [M1] ...</text>
+  <text class="legend-txt" x="738" y="1411">Межмодульный коннектор (ссылка на таблицу другого модуля)</text>
+</g>
+<g>
+  <rect class="stamp-bold" x="1150" y="1185" width="925" height="275"/>
+  <line class="stamp-line" x1="1150" y1="1185" x2="1150" y2="1460"/>
+  <line class="stamp-line" x1="1202" y1="1185" x2="1202" y2="1460"/>
+  <line class="stamp-line" x1="1244" y1="1185" x2="1244" y2="1460"/>
+  <line class="stamp-line" x1="1355" y1="1185" x2="1355" y2="1460"/>
+  <line class="stamp-line" x1="1425" y1="1185" x2="1425" y2="1460"/>
+  <line class="stamp-bold" x1="1475" y1="1185" x2="1475" y2="1460"/>
+  <line class="stamp-line" x1="1150" y1="1210" x2="1475" y2="1210"/>
+  <line class="stamp-line" x1="1150" y1="1235" x2="1475" y2="1235"/>
+  <line class="stamp-line" x1="1150" y1="1260" x2="1475" y2="1260"/>
+  <line class="stamp-bold" x1="1150" y1="1285" x2="1475" y2="1285"/>
+  <line class="stamp-bold" x1="1150" y1="1310" x2="1475" y2="1310"/>
+  <line class="stamp-line" x1="1150" y1="1335" x2="1475" y2="1335"/>
+  <line class="stamp-line" x1="1150" y1="1360" x2="1475" y2="1360"/>
+  <line class="stamp-line" x1="1150" y1="1385" x2="1475" y2="1385"/>
+  <line class="stamp-line" x1="1150" y1="1410" x2="1475" y2="1410"/>
+  <line class="stamp-line" x1="1150" y1="1435" x2="1475" y2="1435"/>
+  <text class="stamp-txt" x="1176" y="1302" text-anchor="middle">Изм.</text>
+  <text class="stamp-txt" x="1223" y="1302" text-anchor="middle">Лист</text>
+  <text class="stamp-txt" x="1299.5" y="1302" text-anchor="middle">№ докум.</text>
+  <text class="stamp-txt" x="1390" y="1302" text-anchor="middle">Подп.</text>
+  <text class="stamp-txt" x="1450" y="1302" text-anchor="middle">Дата</text>
+  <text class="stamp-txt" x="1154" y="1327">Разраб.</text>
+  <text class="stamp-txt" x="1154" y="1352">Проверил</text>
+  <text class="stamp-txt" x="1154" y="1377">Т.контр.</text>
+  <text class="stamp-txt" x="1154" y="1427">Н.контр.</text>
+  <text class="stamp-txt" x="1154" y="1452">Утв.</text>
+  <line class="stamp-bold" x1="1475" y1="1255" x2="2075" y2="1255"/>
+  <text class="stamp-title" x="1775" y="1227">КП.09.03.04.001 ДЗ</text>
+  <line class="stamp-bold" x1="1825" y1="1255" x2="1825" y2="1460"/>
+  <line class="stamp-bold" x1="1475" y1="1385" x2="2075" y2="1385"/>
+  <text class="stamp-title" x="1650" y="1313">WorldWiki</text>
+  <text class="stamp-txt-b" x="1650" y="1340">Логическая схема базы данных</text>
+  <text class="stamp-txt" x="1650" y="1363" text-anchor="middle">(Модули M1–M4: ER + Property Graph)</text>
+  <line class="stamp-line" x1="1825" y1="1280" x2="2075" y2="1280"/>
+  <line class="stamp-bold" x1="1825" y1="1335" x2="2075" y2="1335"/>
+  <line class="stamp-line" x1="1900" y1="1255" x2="1900" y2="1335"/>
+  <line class="stamp-line" x1="1985" y1="1255" x2="1985" y2="1335"/>
+  <line class="stamp-line" x1="1945" y1="1335" x2="1945" y2="1385"/>
+  <text class="stamp-txt" x="1862" y="1272" text-anchor="middle">Лит.</text>
+  <text class="stamp-txt" x="1942" y="1272" text-anchor="middle">Масса</text>
+  <text class="stamp-txt" x="2030" y="1272" text-anchor="middle">Масштаб</text>
+  <text class="stamp-txt-b" x="1862" y="1313">У</text>
+  <text class="stamp-txt" x="1885" y="1363" text-anchor="middle">Лист 1</text>
+  <text class="stamp-txt" x="2010" y="1363" text-anchor="middle">Листов 1</text>
+  <text class="stamp-txt" x="1650" y="1427" text-anchor="middle">SurrealDB v3.2 (SCHEMAFULL)</text>
+  <text class="stamp-txt-b" x="1950" y="1420">Кафедра ИТ / Группа</text>
+  <text class="stamp-txt" x="1950" y="1441" text-anchor="middle">(Курсовой проект)</text>
+</g>
+</svg>

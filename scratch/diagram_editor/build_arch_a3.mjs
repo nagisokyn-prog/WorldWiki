@@ -213,7 +213,7 @@ out.push(`<text class="t-s" x="154" y="1028">Изолированное моду
 
 out.push(`<rect class="card" x="692" y="982" width="320" height="114"/>`);
 out.push(`<text class="t-mono-b" x="704" y="1004">infrastructure (Адаптеры БД и ФС)</text>`);
-out.push(`<text class="t-s" x="704" y="1024">• SurrealDB v3.2 SCHEMAFULL (RocksDB)</text>`);
+out.push(`<text class="t-s" x="704" y="1024">• SurrealDB v3.2 SCHEMAFULL (SurrealKV)</text>`);
 out.push(`<text class="t-s" x="704" y="1042">• 100% .bind(), каскады EVENT, fn::*</text>`);
 out.push(`<text class="t-s" x="704" y="1060">• Архивы проектов .wwiki, локальная ФС</text>`);
 out.push(`<text class="t-s" x="704" y="1078">• Реализует трейты из слоя ports</text>`);

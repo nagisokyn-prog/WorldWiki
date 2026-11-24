@@ -615,7 +615,8 @@ out.push(`  <rect class="tbl-audit" x="142" y="1392" width="100" height="30" rx=
 out.push(`  <text class="legend-txt" x="254" y="1411">Таблицы ревизий, схем связей и метаданных DDL</text>`);
 
 out.push(`  <line class="graph-line" x1="650" y1="1323" x2="725" y2="1323" marker-end="url(#graph-arrow)"/>`);
-out.push(`  <text class="legend-txt" x="738" y="1327">Графовый поток (IN → RELATION → OUT)</text>`);
+out.push(`  <text class="legend-txt" x="738" y="1318">Графовый поток (IN → RELATION → OUT):</text>`);
+out.push(`  <text class="legend-txt" x="738" y="1333" font-size="10" fill="#334155">1 ребро = 1 IN + 1 OUT; узел участвует в 0..N связях</text>`);
 
 out.push(`  <line class="rel-line" x1="650" y1="1365" x2="725" y2="1365" marker-start="url(#one-start)" marker-end="url(#many-opt-end)"/>`);
 out.push(`  <text class="legend-txt" x="738" y="1369">Реляционная связь FK (1:N / 0..N)</text>`);

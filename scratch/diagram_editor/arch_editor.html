@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WorldWiki — Редактор Листа 2 А3 (Архитектура и Ядра)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      user-select: none;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: 48px 1fr;
+      grid-template-columns: 1fr 300px;
+      height: 100vh;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--panel-border);
+      font-size: 13px;
+    }
+
+    header .title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-right: 10px;
+      color: #fff;
+    }
+
+    header .sep {
+      width: 1px;
+      height: 22px;
+      background: var(--panel-border);
+      margin: 0 4px;
+    }
+
+    button,
+    select {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: background .12s;
+    }
+
+    button:hover,
+    select:hover {
+      background: #475569;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    button.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    button.success {
+      background: #059669;
+      border-color: #059669;
+      font-weight: 600;
+    }
+
+    button.success:hover {
+      background: #047857;
+    }
+
+    button.active {
+      background: var(--accent);
+      border-color: #60a5fa;
+    }
+
+    button.danger {
+      background: #7f1d1d;
+      border-color: #991b1b;
+    }
+
+    button.danger:hover {
+      background: #991b1b;
+    }
+
+    label.chk {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .viewport {
+      position: relative;
+      overflow: hidden;
+      background: #1a2234;
+      background-image: radial-gradient(#334155 1px, transparent 1px);
+      background-size: 20px 20px;
+      cursor: default;
+    }
+
+    .canvas-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    .hint-bar {
+      position: absolute;
+      bottom: 10px;
+      left: 14px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      pointer-events: none;
+    }
+
+    aside {
+      background: var(--panel);
+      border-left: 1px solid var(--panel-border);
+      padding: 12px 14px;
+      overflow-y: auto;
+      font-size: 12.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section {
+      border: 1px solid var(--panel-border);
+      border-radius: 7px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .section h3 {
+      margin: 0 0 8px 0;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #94a3b8;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+
+    .field label {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .field input[type="number"],
+    .field input[type="text"],
+    .field select {
+      width: 100%;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 4px 7px;
+      font-size: 12px;
+    }
+
+    .field input[type="range"] {
+      width: 100%;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #334155;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .wp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .wp-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0f172a;
+      padding: 4px 7px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .wp-item button {
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <span class="title">WorldWiki Лист 2 А3 Studio</span>
+      <button id="btnThemeBW" class="active">Ч/Б ГОСТ (А3)</button>
+      <button id="btnThemeColor">С цветными акцентами</button>
+      <div class="sep"></div>
+      <label class="chk"><input type="checkbox" id="chkStamp" checked /> Рамка и штамп А3</label>
+      <label class="chk"><input type="checkbox" id="chkZones" checked /> Рамки зон</label>
+      <label class="chk"><input type="checkbox" id="chkGrid" checked /> Сетка 10px</label>
+      <div class="sep"></div>
+      <button id="btnUndo" title="Отменить (Ctrl+Z)">↶ Undo</button>
+      <button id="btnRedo" title="Повторить (Ctrl+Y)">↷ Redo</button>
+      <button id="btnFit" title="Вписать А3 в экран">⤢ Вписать</button>
+      <button id="btnReset" class="danger">Сброс</button>
+      <div class="spacer"></div>
+      <button id="btnSaveJson">JSON ↓</button>
+      <button id="btnLoadJson">JSON ↑</button>
+      <input type="file" id="fileJson" accept=".json" style="display:none" />
+      <div class="sep"></div>
+      <button id="btnExportSvg" class="primary">Скачать SVG</button>
+      <button id="btnExportPng" class="success">Скачать PNG (2x)</button>
+    </header>
+
+    <div class="viewport" id="viewport">
+      <div class="canvas-wrap" id="canvasWrap">
+        <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="hint-bar">
+        <b>ЛКМ по блоку</b> — двигать (90°) · <b>Синий квадрат в углу</b> — размер блока ·
+        <b>Тачпад (2 пальца) / Стрелки</b> — крутить лист · <b>Щипок / Ctrl+колесо</b> — зум ·
+        <b>Клик по линии</b> — изгибы и грани
+      </div>
+    </div>
+
+    <aside id="inspector">
+      <div class="section">
+        <h3>Штамп ГОСТ 2.104 (А3: 2100×1485)</h3>
+        <div class="field"><label>Обозначение документа</label><input type="text" id="inpDocCode" /></div>
+        <div class="field"><label>Кафедра / Группа</label><input type="text" id="inpDept" /></div>
+        <div class="field"><label>Разработал (фамилия)</label><input type="text" id="inpAuthor" /></div>
+      </div>
+
+      <div class="section" id="selectionPanel">
+        <h3>Выделение</h3>
+        <p class="muted">Кликните по <b>блоку</b> или по <b>линии связи</b> на схеме.<br><br>Все связи между слоями
+          архитектуры и #![no_std]-ядрами закреплены под 90°.</p>
+      </div>
+
+      <div class="section">
+        <h3>Быстрый выбор</h3>
+        <div class="field"><label>Блок</label><select id="selQuickNode"></select></div>
+        <div class="field"><label>Связь</label><select id="selQuickEdge"></select></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'worldwiki_arch_a3_editor_v2';
+
+    const ZONES = [
+      { id: 'Z1', title: '1. КЛИЕНТСКОЕ ПРИЛОЖЕНИЕ (WEBVIEW2 / VUE 3 / TYPESCRIPT): FSD, MVVM И МОНОРЕПОЗИТОРИЙ', x: 122, y: 72, w: 910, h: 610 },
+      { id: 'Z2', title: '2. НАТИВНОЕ ЯДРО БЭКЕНДА (RUST HEXAGONAL ARCHITECTURE: PORTS & ADAPTERS)', x: 122, y: 715, w: 910, h: 530 },
+      { id: 'Z3', title: '3. ИЗОЛИРОВАННЫЕ #![no_std] ВЫЧИСЛИТЕЛЬНЫЕ ЯДРА И МАТЕМАТИЧЕСКИЕ МОДЕЛИ (РАЗДЕЛ 4.2)', x: 1054, y: 72, w: 1000, h: 1090 },
+    ];
+
+    function createDefaultState() {
+      const nodes = [
+        // Z1: Frontend FSD
+        { id: 'fsd_app', kind: 'normal', zone: 'Z1', x: 142, y: 134, w: 145, h: 52, title: 'app', lines: ['Router, DI, Root'] },
+        { id: 'fsd_feat', kind: 'normal', zone: 'Z1', x: 312, y: 134, w: 165, h: 52, title: 'features', lines: ['UI-модули фич'] },
+        { id: 'fsd_comp', kind: 'normal', zone: 'Z1', x: 502, y: 134, w: 170, h: 52, title: 'composables', lines: ['ViewModel-хуки'] },
+        { id: 'fsd_store', kind: 'normal', zone: 'Z1', x: 697, y: 134, w: 175, h: 52, title: 'stores / services', lines: ['Pinia, IPC-клиент'] },
+        { id: 'fsd_types', kind: 'normal', zone: 'Z1', x: 897, y: 134, w: 115, h: 52, title: 'types / utils', lines: ['DTO, хелперы'] },
+
+        // Z1: MVVM + AST
+        { id: 'mvvm_model', kind: 'normal', zone: 'Z1', x: 142, y: 230, w: 215, h: 62, title: 'Feature.model.ts', lines: ['Props, Emits, DTO, Enums'] },
+        { id: 'mvvm_view', kind: 'normal', zone: 'Z1', x: 392, y: 230, w: 225, h: 62, title: 'Feature.vue (View)', lines: ['Декларативный шаблон'] },
+        { id: 'mvvm_vm', kind: 'hub', zone: 'Z1', x: 392, y: 330, w: 225, h: 66, title: 'useFeature.ts (VM)', lines: ['ref, computed, валидация', 'Оптимистичный откат (UI)'] },
+        { id: 'mvvm_spec', kind: 'dash', zone: 'Z1', x: 142, y: 330, w: 215, h: 66, title: 'Feature.spec.ts', lines: ['Vitest (83–95% coverage)', 'Success / Rollback / Edge'] },
+
+        {
+          id: 'ast_adapter', kind: 'hdr', zone: 'Z1', x: 655, y: 230, w: 357, h: 166, title: 'SemanticDocument AST (ASTAdapter)', lines: [
+            'ASTAdapter (Tiptap v3 JSON <-> text_blocks)',
+            '• DocumentNode (контейнер главы)',
+            '• ParagraphNode (абзацы + статистика)',
+            '• EntityMentionNode — триггер ((Сущность))',
+            '• FootnoteNode, HeadingNode, ImageNode, TableNode',
+          ]
+        },
+
+        {
+          id: 'pinia_client', kind: 'normal', zone: 'Z1', x: 142, y: 438, w: 475, h: 62, title: 'Pinia Store + api.client.ts (IPC Client)', lines: [
+            'Единая точка вызова Tauri IPC, обработка IpcError (Toast / Alert)'
+          ]
+        },
+
+        {
+          id: 'pkgs_ui', kind: 'normal', zone: 'Z1', x: 142, y: 546, w: 265, h: 114, title: '@worldwiki/components & resources', lines: [
+            '• UI-Kit и CSS дизайн-токены',
+            '• packages/resources: шрифты, иконки',
+          ]
+        },
+        {
+          id: 'pkgs_wasm', kind: 'normal', zone: 'Z1', x: 432, y: 546, w: 580, h: 114, title: 'Клиентские WASM-пакеты (wasm-bindgen поверх #![no_std])', lines: [
+            '• @worldwiki/calendar-wasm   — локальная проекция дат и циферблатов',
+            '• @worldwiki/ast-diff-wasm   — визуальное сравнение ревизий (Myers)',
+            '• @worldwiki/manuscript-wasm — мгновенная подсветка ((Сущность)) O(N)',
+          ]
+        },
+
+        // Z2: Backend Hexagonal
+        {
+          id: 'be_tauri', kind: 'hub', zone: 'Z2', x: 142, y: 756, w: 520, h: 58, title: 'adapters/tauri (Единственный слой Tauri IPC)', lines: [
+            'bridge_macro!, AppState, типизированная трансляция ошибок в IpcError'
+          ]
+        },
+        {
+          id: 'be_boot', kind: 'normal', zone: 'Z2', x: 692, y: 756, w: 320, h: 58, title: 'bootstrap (Composition Root)', lines: [
+            'Сборка графа зависимостей AppServices'
+          ]
+        },
+        {
+          id: 'be_app', kind: 'normal', zone: 'Z2', x: 142, y: 842, w: 245, h: 92, title: 'application (Use Cases)', lines: [
+            'GetChapter, SaveEntity,', 'TimelineAudit, Analytics', 'ApplicationError'
+          ]
+        },
+        {
+          id: 'be_ports', kind: 'normal', zone: 'Z2', x: 417, y: 842, w: 245, h: 92, title: 'ports (Трейты-интерфейсы)', lines: [
+            'RepositoryPort, StoragePort,', 'EventPublisherPort', '(Инверсия зависимостей)'
+          ]
+        },
+        {
+          id: 'be_kit', kind: 'dash', zone: 'Z2', x: 692, y: 842, w: 320, h: 118, title: 'tauri-surreal-kit (Платформенный каркас)', lines: [
+            '• surreal_domain_core (нормализация ID)',
+            '• surreal_domain_macros (IPC-мосты)',
+            '• Управление окнами, темами, бенчмарк',
+            '• 100% параметризованный SurrealQL',
+          ]
+        },
+        {
+          id: 'be_domain', kind: 'hub', zone: 'Z2', x: 142, y: 968, w: 520, h: 84, title: 'domain (Чистая предметная область — 0 зависимостей)', lines: [
+            'Сущности, Value Objects (M_abs, t_abs), DomainError, инварианты ((Сущность))',
+            'Изолированное модульное тестирование без поднятия Tauri / БД',
+          ]
+        },
+        {
+          id: 'be_infra', kind: 'normal', zone: 'Z2', x: 692, y: 982, w: 320, h: 114, title: 'infrastructure (Адаптеры БД и ФС)', lines: [
+            '• SurrealDB v3 SCHEMAFULL (SurrealKV)',
+            '• 100% .bind(), каскады EVENT, fn::*',
+            '• Архивы проектов .wwiki, локальная ФС',
+            '• Реализует трейты из слоя ports',
+          ]
+        },
+        {
+          id: 'be_cerberus', kind: 'dash', zone: 'Z2', x: 142, y: 1120, w: 870, h: 106, title: 'Cerberus Architectural Firewall + Kani Model Checker', lines: [
+            '• Rust Core: правила ARCH-001..012 (запрет tauri:: в domain/application), ERR-001..007, SDB-001..009',
+            '• Frontend: cerberus-sfc check (строгость MVVM/FSD, запрет хардкода цветов и IPC в .vue)',
+            '• Формальная верификация Kani (91 доказательство без паник и переполнений) + llvm-cov (98–100%)',
+          ]
+        },
+
+        // Z3: #![no_std] Compute Cores
+        {
+          id: 'cal_1', kind: 'normal', zone: 'Z3', x: 1094, y: 158, w: 215, h: 175, title: '1. Скаляр t_abs', lines: [
+            't_abs ∈ Z (i64, тики)',
+            'div_euclid(t_abs, T_day)',
+            'rem_euclid(t_abs, T_day)',
+            'Корректно при t_abs < 0',
+            'DialHierarchy (C = Π s_i):',
+            'каскадное квантование',
+            'без потери тиков',
+          ]
+        },
+        {
+          id: 'cal_2', kind: 'normal', zone: 'Z3', x: 1332, y: 158, w: 230, h: 175, title: '2. Гармоники O(k) и O(1)', lines: [
+            'F(Y) = Σ w_i·⌊(a_i·Y+b_i)/c_i⌋',
+            'Високосность: ΔF(Y) ∈ {0,1}',
+            'Арифметика i128 (0 overflow)',
+            'Обратный поиск года O(1):',
+            'year_from_days_o1',
+            'Цепные дроби (глубина 10):',
+            '1/4 → 7/29 → 8/33 → 97/400',
+          ]
+        },
+        {
+          id: 'cal_3', kind: 'normal', zone: 'Z3', x: 1585, y: 158, w: 215, h: 175, title: '3. Астрономия без libm', lines: [
+            'Прямое/ретроград. вращ.',
+            'Солнечный полдень (тики)',
+            'Зенитное расст. [0..180000]',
+            'Полярный день и ночь',
+            'Инсоляция поверхности',
+            'Фазы N лун (128-бит б.п.)',
+            'Дрейф < 1 дн / 500k лет',
+          ]
+        },
+        {
+          id: 'cal_4', kind: 'normal', zone: 'Z3', x: 1823, y: 158, w: 194, h: 175, title: '4. Реформы и Аллен', lines: [
+            'Эры (бинарный поиск)',
+            'Цепочки календарей (≤ 8)',
+            'Gap, Transitional, DstPolicy',
+            '13 отношений Аллена',
+            '(Before..Equals):',
+            '• Билокация персонажа',
+            '• Действия после смерти',
+          ]
+        },
+        {
+          id: 'cal_summary', kind: 'dash', zone: 'Z3', x: 1094, y: 352, w: 923, h: 185, title: 'worldwiki-calendar-core — Гарантии (70 Kani | 100% fn cov)', lines: [
+            'Вход: [M_abs | дата] ──▶ t_abs (i64) ──▶ [Кросс-календарная проекция без накопления ошибки]',
+            '• Нулевое использование f64: детерминизм на x86_64, ARM64 и WebAssembly (wasm32).',
+            '• Биективность квантования доказана Kani для T_day mod C = 0.',
+            '• timeline_events.m_abs индексируется B-Tree и фильтруется в «Режиме читателя».',
+            '• Алгебра Аллена запускается поверх plot_promises (occurs_at) и entities (participates_in).',
+          ]
+        },
+
+        {
+          id: 'doc_1', kind: 'normal', zone: 'Z3', x: 1094, y: 624, w: 280, h: 112, title: '1. diff_documents (Блоки)', lines: [
+            'Вход: SemanticDocument v1, v2',
+            'Трассировка диагоналей Майерса',
+            'EditOp: Keep/Insert/Delete/Mod',
+          ]
+        },
+        {
+          id: 'doc_2', kind: 'normal', zone: 'Z3', x: 1404, y: 624, w: 295, h: 112, title: '2. compute_inline_diff', lines: [
+            'Для изменённых узлов (Modify):',
+            'символьные дельты InlineChange',
+            'без перезаписи всего абзаца',
+          ]
+        },
+        {
+          id: 'doc_3', kind: 'normal', zone: 'Z3', x: 1729, y: 624, w: 288, h: 112, title: '3. apply_patch (Ревизии)', lines: [
+            'Детерминированное применение',
+            'DocumentDiffResult с проверкой',
+            'Выход: chapter_revisions',
+          ]
+        },
+        {
+          id: 'doc_summary', kind: 'dash', zone: 'Z3', x: 1094, y: 750, w: 923, h: 66, title: 'worldwiki-document-core (Myers Diff O((N+M)D) | 10 Kani)', lines: [
+            '• Структурный diff сохраняет целостность EntityMentionNode ((Сущность)) и FootnoteNode; дельты хранятся в chapter_revisions.',
+          ]
+        },
+
+        {
+          id: 'man_fsm', kind: 'normal', zone: 'Z3', x: 1094, y: 896, w: 450, h: 230, title: 'worldwiki-manuscript-core: FSM-лексер (6 Kani | O(N))', lines: [
+            '[Plain] ─"("─▶ [Open1] ─"("─▶ [Inside] ─")"─▶ [Close1] ─")"─▶ [Emit]',
+            '• Линейный проход O(N) без RegExp и бэктрекинга (0 ReDoS)',
+            '• Триггер сущности строго ((Сущность))',
+            '• resolve_cross_references: хэш-поиск TargetMetadata за O(1)',
+            '• Выход: графовые рёбра appears_in (entity → block)',
+            '• Полная безопасность UTF-8 границ (проверено Kani)',
+          ]
+        },
+        {
+          id: 'man_schema', kind: 'normal', zone: 'Z3', x: 1564, y: 896, w: 453, h: 230, title: 'Эволюция схем entity_schemas без миграции БД', lines: [
+            '1. Обновление декларации fields_schema в entity_schemas (UPSERT)',
+            '2. Поле entities.attributes (object FLEXIBLE) сохраняет старые',
+            '   значения без потерь и без пакетной перезаписи записей',
+            '3. Ленивая нормализация на уровне формы (UI подставляет default)',
+            'save_entity_schema ─▶ entity_schemas (UPSERT fields_schema)',
+            'entities.attributes (FLEXIBLE) <─ слияние в useEntityForm',
+          ]
+        },
+      ];
+
+      const edges = [
+        // FSD
+        { id: 'e_fsd1', from: 'fsd_app', to: 'fsd_feat', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_fsd2', from: 'fsd_feat', to: 'fsd_comp', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_fsd3', from: 'fsd_comp', to: 'fsd_store', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_fsd4', from: 'fsd_store', to: 'fsd_types', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+
+        // MVVM
+        { id: 'e_mv1', from: 'mvvm_model', to: 'mvvm_view', kind: 'dash', label: '', fromSide: 'right', fromOffset: 0.40, toSide: 'left', toOffset: 0.40, waypoints: [] },
+        { id: 'e_mv2', from: 'mvvm_model', to: 'mvvm_vm', kind: 'dash', label: '', fromSide: 'bottom', fromOffset: 0.50, toSide: 'left', toOffset: 0.30, waypoints: [{ x: 250, y: 310 }, { x: 376, y: 310 }, { x: 376, y: 350 }] },
+        { id: 'e_mv3', from: 'mvvm_view', to: 'mvvm_vm', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.50, waypoints: [] },
+        { id: 'e_mv4', from: 'mvvm_spec', to: 'mvvm_vm', kind: 'dash', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_mv5', from: 'mvvm_vm', to: 'pinia_client', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.76, waypoints: [] },
+        { id: 'e_ast', from: 'ast_adapter', to: 'pinia_client', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.50, toSide: 'right', toOffset: 0.50, waypoints: [{ x: 833, y: 469 }] },
+        { id: 'e_pk1', from: 'pinia_client', to: 'pkgs_ui', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.33, toSide: 'top', toOffset: 0.59, waypoints: [] },
+        { id: 'e_pk2', from: 'pinia_client', to: 'pkgs_wasm', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.80, toSide: 'top', toOffset: 0.15, waypoints: [] },
+
+        // IPC -> Backend
+        { id: 'e_ipc', from: 'pinia_client', to: 'be_tauri', kind: 'solid', label: 'Tauri IPC', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.45, waypoints: [] },
+        { id: 'e_bt1', from: 'be_boot', to: 'be_tauri', kind: 'dash', label: '', fromSide: 'left', fromOffset: 0.50, toSide: 'right', toOffset: 0.50, waypoints: [] },
+        { id: 'e_bt2', from: 'be_tauri', to: 'be_kit', kind: 'dash', label: '', fromSide: 'right', fromOffset: 0.75, toSide: 'left', toOffset: 0.32, waypoints: [{ x: 678, y: 800 }, { x: 678, y: 880 }] },
+        { id: 'e_ap1', from: 'be_tauri', to: 'be_app', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.23, toSide: 'top', toOffset: 0.50, waypoints: [] },
+        { id: 'e_ap2', from: 'be_app', to: 'be_ports', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_dm1', from: 'be_ports', to: 'be_domain', kind: 'solid', label: '', fromSide: 'bottom', fromOffset: 0.50, toSide: 'top', toOffset: 0.76, waypoints: [] },
+        { id: 'e_in1', from: 'be_infra', to: 'be_ports', kind: 'dash', label: '', fromSide: 'left', fromOffset: 0.42, toSide: 'right', toOffset: 0.74, waypoints: [{ x: 676, y: 1030 }, { x: 676, y: 910 }] },
+        { id: 'e_in2', from: 'be_infra', to: 'be_kit', kind: 'dash', label: '', fromSide: 'top', fromOffset: 0.50, toSide: 'bottom', toOffset: 0.50, waypoints: [] },
+
+        // Cores connections
+        { id: 'e_wasm_cores', from: 'pkgs_wasm', to: 'cal_1', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.47, toSide: 'left', toOffset: 0.47, waypoints: [{ x: 1040, y: 600 }, { x: 1040, y: 240 }] },
+        { id: 'e_dom_cores', from: 'be_domain', to: 'cal_summary', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.75, waypoints: [{ x: 678, y: 1010 }, { x: 678, y: 1106 }, { x: 1040, y: 1106 }, { x: 1040, y: 490 }] },
+        { id: 'e_cal12', from: 'cal_1', to: 'cal_2', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_cal23', from: 'cal_2', to: 'cal_3', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_cal34', from: 'cal_3', to: 'cal_4', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_doc12', from: 'doc_1', to: 'doc_2', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+        { id: 'e_doc23', from: 'doc_2', to: 'doc_3', kind: 'solid', label: '', fromSide: 'right', fromOffset: 0.50, toSide: 'left', toOffset: 0.50, waypoints: [] },
+      ];
+
+      return {
+        theme: 'bw',
+        showStamp: true,
+        showZones: true,
+        snap: true,
+        canvas: { w: 2100, h: 1485 },
+        stamp: { docCode: 'КП.09.03.04.002 АР', dept: 'Кафедра ИТ / Группа', author: '' },
+        nodes,
+        edges
+      };
+    }
+
+    let state = loadState();
+    let historyStack = [JSON.stringify(state)];
+    let historyIdx = 0;
+    let selection = null;
+    let view = { x: 20, y: 12, scale: 0.55 };
+    let drag = null;
+
+    function loadState() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch (e) { } return createDefaultState(); }
+    function saveLocal() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { } }
+    function pushHistory() {
+      const s = JSON.stringify(state); if (s === historyStack[historyIdx]) return;
+      historyStack = historyStack.slice(0, historyIdx + 1); historyStack.push(s);
+      if (historyStack.length > 60) historyStack.shift(); historyIdx = historyStack.length - 1; saveLocal();
+    }
+    function undo() { if (historyIdx > 0) { historyIdx--; state = JSON.parse(historyStack[historyIdx]); saveLocal(); renderAll(); } }
+    function redo() { if (historyIdx < historyStack.length - 1) { historyIdx++; state = JSON.parse(historyStack[historyIdx]); saveLocal(); renderAll(); } }
+    function snapVal(v) { return state.snap ? Math.round(v / 10) * 10 : Math.round(v); }
+    function getNode(id) { return state.nodes.find(n => n.id === id); }
+    function getEdge(id) { return state.edges.find(e => e.id === id); }
+
+    // 90-degree Orthogonal Router
+    function anchorPoint(node, side, offset) {
+      const o = Math.max(0.06, Math.min(0.94, offset));
+      if (side === 'top') return { x: node.x + node.w * o, y: node.y };
+      if (side === 'bottom') return { x: node.x + node.w * o, y: node.y + node.h };
+      if (side === 'left') return { x: node.x, y: node.y + node.h * o };
+      return { x: node.x + node.w, y: node.y + node.h * o };
+    }
+    function autoOrthogonalCorners(p1, fromSide, p2, toSide) {
+      const fH = (fromSide === 'left' || fromSide === 'right'), tH = (toSide === 'left' || toSide === 'right'), stub = 24;
+      if (fromSide === toSide) {
+        if (fromSide === 'top') { const y = Math.min(p1.y, p2.y) - stub; return [{ x: p1.x, y }, { x: p2.x, y }]; }
+        if (fromSide === 'bottom') { const y = Math.max(p1.y, p2.y) + stub; return [{ x: p1.x, y }, { x: p2.x, y }]; }
+        if (fromSide === 'left') { const x = Math.min(p1.x, p2.x) - stub; return [{ x, y: p1.y }, { x, y: p2.y }]; }
+        const x = Math.max(p1.x, p2.x) + stub; return [{ x, y: p1.y }, { x, y: p2.y }];
+      }
+      if (!fH && !tH) { if (Math.abs(p1.x - p2.x) <= 2) return []; const my = Math.round((p1.y + p2.y) / 2); return [{ x: p1.x, y: my }, { x: p2.x, y: my }]; }
+      if (fH && tH) { if (Math.abs(p1.y - p2.y) <= 2) return []; const mx = Math.round((p1.x + p2.x) / 2); return [{ x: mx, y: p1.y }, { x: mx, y: p2.y }]; }
+      return fH ? [{ x: p2.x, y: p1.y }] : [{ x: p1.x, y: p2.y }];
+    }
+    function cleanOrthogonalPoints(pts) {
+      const dedup = [];
+      for (const p of pts) { const prev = dedup[dedup.length - 1]; if (!prev || Math.hypot(p.x - prev.x, p.y - prev.y) > 0.5) dedup.push({ x: Math.round(p.x), y: Math.round(p.y) }); }
+      const out = [];
+      for (let i = 0; i < dedup.length; i++) {
+        if (i > 0 && i < dedup.length - 1) {
+          const a = out[out.length - 1], b = dedup[i], c = dedup[i + 1];
+          if ((Math.abs(a.x - b.x) <= 1 && Math.abs(b.x - c.x) <= 1) || (Math.abs(a.y - b.y) <= 1 && Math.abs(b.y - c.y) <= 1)) continue;
+        }
+        out.push(dedup[i]);
+      }
+      return out;
+    }
+    function getEdgePoints(edge) {
+      const n1 = getNode(edge.from), n2 = getNode(edge.to);
+      const p1 = anchorPoint(n1, edge.fromSide, edge.fromOffset);
+      let p2 = anchorPoint(n2, edge.toSide, edge.toOffset);
+      const pull = 2;
+      if (edge.toSide === 'top') p2.y -= pull; else if (edge.toSide === 'bottom') p2.y += pull;
+      else if (edge.toSide === 'left') p2.x -= pull; else p2.x += pull;
+      if (!edge.waypoints || !edge.waypoints.length) return cleanOrthogonalPoints([p1, ...autoOrthogonalCorners(p1, edge.fromSide, p2, edge.toSide), p2]);
+      const raw = [p1], fH = (edge.fromSide === 'left' || edge.fromSide === 'right'), tH = (edge.toSide === 'left' || edge.toSide === 'right');
+      const firstWp = edge.waypoints[0];
+      if (Math.abs(p1.x - firstWp.x) > 1 && Math.abs(p1.y - firstWp.y) > 1) raw.push(fH ? { x: firstWp.x, y: p1.y } : { x: p1.x, y: firstWp.y });
+      raw.push({ x: firstWp.x, y: firstWp.y });
+      for (let i = 1; i < edge.waypoints.length; i++) {
+        const prev = raw[raw.length - 1], curr = edge.waypoints[i];
+        if (Math.abs(prev.x - curr.x) > 1 && Math.abs(prev.y - curr.y) > 1) raw.push({ x: curr.x, y: prev.y });
+        raw.push({ x: curr.x, y: curr.y });
+      }
+      const last = raw[raw.length - 1];
+      if (Math.abs(last.x - p2.x) > 1 && Math.abs(last.y - p2.y) > 1) raw.push(tH ? { x: last.x, y: p2.y } : { x: p2.x, y: last.y });
+      raw.push(p2);
+      return cleanOrthogonalPoints(raw);
+    }
+    function materializeEdgeWaypoints(edge) { edge.waypoints = getEdgePoints(edge).slice(1, -1).map(p => ({ x: Math.round(p.x), y: Math.round(p.y) })); }
+    function syncOffsetsToWaypoints(edge) {
+      const n1 = getNode(edge.from), n2 = getNode(edge.to);
+      if (!edge.waypoints || !edge.waypoints.length) return;
+      const first = edge.waypoints[0], last = edge.waypoints[edge.waypoints.length - 1], pad = 6;
+      if (edge.fromSide === 'top' || edge.fromSide === 'bottom') { if (first.x >= n1.x + pad && first.x <= n1.x + n1.w - pad) edge.fromOffset = (first.x - n1.x) / n1.w; }
+      else { if (first.y >= n1.y + pad && first.y <= n1.y + n1.h - pad) edge.fromOffset = (first.y - n1.y) / n1.h; }
+      if (edge.toSide === 'top' || edge.toSide === 'bottom') { if (last.x >= n2.x + pad && last.x <= n2.x + n2.w - pad) edge.toOffset = (last.x - n2.x) / n2.w; }
+      else { if (last.y >= n2.y + pad && last.y <= n2.y + n2.h - pad) edge.toOffset = (last.y - n2.y) / n2.h; }
+    }
+    function snapPointToNodeBorder(node, px, py) {
+      const dT = Math.abs(py - node.y), dB = Math.abs(py - (node.y + node.h)), dL = Math.abs(px - node.x), dR = Math.abs(px - (node.x + node.w));
+      const m = Math.min(dT, dB, dL, dR), side = m === dT ? 'top' : m === dB ? 'bottom' : m === dL ? 'left' : 'right';
+      const offset = (side === 'top' || side === 'bottom') ? Math.max(0.08, Math.min(0.92, (snapVal(px) - node.x) / node.w)) : Math.max(0.08, Math.min(0.92, (snapVal(py) - node.y) / node.h));
+      return { side, offset };
+    }
+    function keepOrthogonalOnNodeMove(nodeId, dx, dy) {
+      for (const e of state.edges) {
+        if (e.from === nodeId && e.waypoints.length > 0) { if (e.fromSide === 'left' || e.fromSide === 'right') e.waypoints[0].y += dy; else e.waypoints[0].x += dx; }
+        if (e.to === nodeId && e.waypoints.length > 0) { const last = e.waypoints[e.waypoints.length - 1]; if (e.toSide === 'left' || e.toSide === 'right') last.y += dy; else last.x += dx; }
+        syncOffsetsToWaypoints(e);
+      }
+    }
+    function pointsToPath(pts) { return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${Math.round(p.x)} ${Math.round(p.y)}`).join(' '); }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    // ============================================================================
+    // SVG GENERATOR
+    // ============================================================================
+    function buildSvgMarkup(forExport = false) {
+      const { w, h } = state.canvas, isBW = state.theme === 'bw';
+      const sCol = isBW ? '#000000' : '#1d4ed8', dCol = isBW ? '#444444' : '#64748b';
+      const css = `
+    .bg { fill: #ffffff; }
+    .frame-outer { fill: none; stroke: #000000; stroke-width: 1; }
+    .frame-inner { fill: none; stroke: #000000; stroke-width: 2.2; }
+    .zone-box { fill: #ffffff; stroke: ${isBW ? '#000000' : '#475569'}; stroke-width: 1.5; stroke-dasharray: 8 4; rx: 6; ry: 6; }
+    .zone-hdr { fill: ${isBW ? '#222222' : '#1e293b'}; rx: 3; ry: 3; }
+    .zone-hdr-txt { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; fill: #ffffff; }
+    .card { fill: ${isBW ? '#ffffff' : '#f8fafc'}; stroke: ${isBW ? '#000000' : '#2563eb'}; stroke-width: 1.6; rx: 4; ry: 4; }
+    .card-hub { fill: ${isBW ? '#f3f3f3' : '#fff7ed'}; stroke: ${isBW ? '#000000' : '#c2410c'}; stroke-width: 2.2; rx: 4; ry: 4; }
+    .card-dash { fill: ${isBW ? '#fafafa' : '#f0fdf4'}; stroke: ${isBW ? '#333333' : '#059669'}; stroke-width: 1.4; stroke-dasharray: 5 3; rx: 4; ry: 4; }
+    .card-hdr { fill: ${isBW ? '#333333' : '#1e40af'}; }
+    .card-hdr-txt { font-size: 12px; font-weight: 700; fill: #ffffff; pointer-events: none; }
+    .t-b { font-size: 12.5px; font-weight: 700; fill: #000000; pointer-events: none; }
+    .t-s { font-size: 10.5px; fill: #333333; pointer-events: none; }
+    .t-mono { font-family: 'Consolas', 'DejaVu Sans Mono', monospace; font-size: 10px; fill: #000000; pointer-events: none; }
+    .t-mono-b { font-family: 'Consolas', 'DejaVu Sans Mono', monospace; font-size: 11px; font-weight: 700; fill: #000000; pointer-events: none; }
+    .edge { fill: none; stroke: ${sCol}; stroke-width: 1.9; stroke-linejoin: round; }
+    .edge-dash { fill: none; stroke: ${dCol}; stroke-width: 1.4; stroke-dasharray: 5 3; stroke-linejoin: round; }
+    .edge-hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
+    .edge-selected { stroke: #f59e0b !important; stroke-width: 2.8 !important; }
+    .edge-lbl-bg { fill: #ffffff; stroke: none; rx: 2; }
+    .edge-lbl { font-size: 10.5px; font-style: italic; fill: #111111; text-anchor: middle; pointer-events: none; }
+    .stamp-line { fill: none; stroke: #000000; stroke-width: 1.1; }
+    .stamp-bold { fill: none; stroke: #000000; stroke-width: 1.9; }
+    .stamp-txt { font-size: 9.2px; fill: #000000; }
+    .stamp-txt-b { font-size: 11.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .stamp-title { font-size: 15px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .legend-box { fill: #ffffff; stroke: #000000; stroke-width: 1.25; }
+    .legend-hdr { font-size: 12px; font-weight: 700; fill: #000000; }
+  `;
+
+      const out = [];
+      if (forExport) {
+        out.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+        out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="'Segoe UI', 'DejaVu Sans', Arial, sans-serif">`);
+      }
+      out.push(`
+    <defs>
+      <marker id="arr" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M 0 1 L 11 5 L 0 9 z" fill="${sCol}"/>
+      </marker>
+      <marker id="arr-gray" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M 0 1 L 11 5 L 0 9 z" fill="${dCol}"/>
+      </marker>
+    </defs>
+    <style>${css}</style>
+    <rect class="bg" x="0" y="0" width="${w}" height="${h}"/>
+  `);
+
+      if (!forExport && state.snap) {
+        out.push(`<defs><pattern id="edGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.6"/></pattern></defs>`);
+        out.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="url(#edGrid)" pointer-events="none"/>`);
+      }
+      if (state.showStamp) {
+        out.push(`<rect class="frame-outer" x="1" y="1" width="${w - 2}" height="${h - 2}" pointer-events="none"/>`);
+        out.push(`<rect class="frame-inner" x="100" y="25" width="1975" height="1435" pointer-events="none"/>`);
+      }
+      out.push(`<text x="122" y="54" font-size="16" font-weight="700" fill="#000000" pointer-events="none">АРХИТЕКТУРА ПРОГРАММНОГО КОМПЛЕКСА «WORLDWIKI» И ВЫЧИСЛИТЕЛЬНЫЕ ЯДРА (#![no_std])</text>`);
+
+      if (state.showZones) {
+        for (const z of ZONES) {
+          out.push(`<g pointer-events="none"><rect class="zone-box" x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}"/><rect class="zone-hdr" x="${z.x}" y="${z.y}" width="${z.w}" height="26"/><text class="zone-hdr-txt" x="${z.x + 14}" y="${z.y + 17}">${esc(z.title)}</text></g>`);
+        }
+      }
+
+      // Edges
+      for (const e of state.edges) {
+        const pts = getEdgePoints(e), d = pointsToPath(pts);
+        const isSel = !forExport && selection && selection.type === 'edge' && selection.id === e.id;
+        const cls = (e.kind === 'solid' ? 'edge' : 'edge-dash') + (isSel ? ' edge-selected' : '');
+        const m = e.kind === 'solid' ? 'url(#arr)' : 'url(#arr-gray)';
+        out.push(`<path class="${cls}" d="${d}" marker-end="${m}"/>`);
+        if (!forExport) out.push(`<path class="edge-hit" d="${d}" data-edge="${e.id}"/>`);
+        if (e.label) {
+          const mx = Math.round((pts[0].x + pts[pts.length - 1].x) / 2), my = Math.round((pts[0].y + pts[pts.length - 1].y) / 2);
+          out.push(`<rect class="edge-lbl-bg" x="${mx - 42}" y="${my - 9}" width="84" height="16" pointer-events="none"/><text class="edge-lbl" x="${mx}" y="${my + 3}">${esc(e.label)}</text>`);
+        }
+      }
+
+      // Nodes
+      for (const n of state.nodes) {
+        const isSel = !forExport && selection && selection.type === 'node' && selection.id === n.id;
+        const cur = !forExport ? ' style="cursor:move"' : '';
+        const cls = n.kind === 'hub' ? 'card-hub' : n.kind === 'dash' ? 'card-dash' : 'card';
+        out.push(`<g data-node="${n.id}"${cur}>`);
+        out.push(`  <rect class="${cls}" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}"/>`);
+        if (n.kind === 'hdr') {
+          out.push(`  <rect class="card-hdr" x="${n.x}" y="${n.y}" width="${n.w}" height="24" rx="2"/>`);
+          out.push(`  <text class="card-hdr-txt" x="${n.x + 10}" y="${n.y + 16}">${esc(n.title)}</text>`);
+          n.lines.forEach((ln, idx) => out.push(`  <text class="t-s" x="${n.x + 10}" y="${n.y + 44 + idx * 18}">${esc(ln)}</text>`));
+        } else if (n.id.startsWith('fsd_')) {
+          out.push(`  <text class="t-mono-b" x="${n.x + n.w / 2}" y="${n.y + 22}" text-anchor="middle">${esc(n.title)}</text>`);
+          out.push(`  <text class="t-s" x="${n.x + n.w / 2}" y="${n.y + 40}" text-anchor="middle">${esc(n.lines[0] || '')}</text>`);
+        } else {
+          out.push(`  <text class="t-mono-b" x="${n.x + 10}" y="${n.y + 20}">${esc(n.title)}</text>`);
+          if (n.lines.length > 2) out.push(`  <line x1="${n.x + 4}" y1="${n.y + 26}" x2="${n.x + n.w - 4}" y2="${n.y + 26}" stroke="#cccccc" pointer-events="none"/>`);
+          const startY = n.lines.length > 2 ? n.y + 42 : n.y + 39;
+          n.lines.forEach((ln, idx) => out.push(`  <text class="t-s" x="${n.x + 10}" y="${startY + idx * 17}">${esc(ln)}</text>`));
+        }
+        if (isSel) {
+          out.push(`  <rect x="${n.x - 3}" y="${n.y - 3}" width="${n.w + 6}" height="${n.h + 6}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" rx="5"/>`);
+          out.push(`  <rect data-resize="${n.id}" x="${n.x + n.w - 5}" y="${n.y + n.h - 5}" width="11" height="11" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" rx="2" style="cursor:nwse-resize"/>`);
+        }
+        out.push(`</g>`);
+      }
+
+      // Legend & Stamp
+      if (state.showStamp) {
+        out.push(`<g pointer-events="none">`);
+        out.push(`  <rect class="legend-box" x="122" y="1265" width="1010" height="175" rx="4" ry="4"/>`);
+        out.push(`  <text class="legend-hdr" x="142" y="1290">Условные обозначения (Архитектура программного комплекса и вычислительные модели)</text>`);
+        out.push(`  <rect class="card" x="142" y="1308" width="90" height="28"/><text class="t-s" x="244" y="1326">Модуль / крейт / слой архитектуры (FSD, Hexagonal, #![no_std])</text>`);
+        out.push(`  <rect class="card-hub" x="142" y="1348" width="90" height="28"/><text class="t-s" x="244" y="1366">Ключевой узел интеграции (ViewModel, IPC, Domain, Calendar Core)</text>`);
+        out.push(`  <rect class="card-dash" x="142" y="1388" width="90" height="28"/><text class="t-s" x="244" y="1406">Вспомогательный каркас, верификация, спецификации и тесты</text>`);
+        out.push(`  <line class="edge" x1="650" y1="1322" x2="725" y2="1322" marker-end="url(#arr)"/><text class="t-s" x="738" y="1326">Прямой поток вызовов / преобразования данных</text>`);
+        out.push(`  <line class="edge-dash" x1="650" y1="1362" x2="725" y2="1362" marker-end="url(#arr-gray)"/><text class="t-s" x="738" y="1366">Зависимость, инверсия портов (DI) или проверка тестами</text>`);
+        out.push(`</g>`);
+
+        const sx = 1150, sy = 1185;
+        out.push(`<g pointer-events="none">`);
+        out.push(`  <rect class="stamp-bold" x="${sx}" y="${sy}" width="925" height="275"/>`);
+        const cw = [52, 42, 111, 70, 50]; let cx = sx;
+        for (const w1 of cw) { out.push(`  <line class="stamp-line" x1="${cx}" y1="${sy}" x2="${cx}" y2="${sy + 275}"/>`); cx += w1; }
+        out.push(`  <line class="stamp-bold" x1="${sx + 325}" y1="${sy}" x2="${sx + 325}" y2="${sy + 275}"/>`);
+        for (let r = 1; r < 11; r++) { const ry = sy + r * 25; out.push(`  <line class="${(r === 4 || r === 5) ? 'stamp-bold' : 'stamp-line'}" x1="${sx}" y1="${ry}" x2="${sx + 325}" y2="${ry}"/>`); }
+        cx = sx;
+        ['Изм.', 'Лист', '№ докум.', 'Подп.', 'Дата'].forEach((h1, i) => { out.push(`  <text class="stamp-txt" x="${cx + cw[i] / 2}" y="${sy + 117}" text-anchor="middle">${h1}</text>`); cx += cw[i]; });
+        ['Разраб.', 'Проверил', 'Т.контр.', '', 'Н.контр.', 'Утв.'].forEach((r1, i) => { if (r1) out.push(`  <text class="stamp-txt" x="${sx + 4}" y="${sy + 142 + i * 25}">${r1}</text>`); });
+        if (state.stamp.author) out.push(`  <text class="stamp-txt" x="${sx + 98}" y="${sy + 142}">${esc(state.stamp.author)}</text>`);
+        out.push(`  <line class="stamp-bold" x1="${sx + 325}" y1="${sy + 70}" x2="${sx + 925}" y2="${sy + 70}"/><text class="stamp-title" x="${sx + 625}" y="${sy + 42}">${esc(state.stamp.docCode)}</text>`);
+        out.push(`  <line class="stamp-bold" x1="${sx + 675}" y1="${sy + 70}" x2="${sx + 675}" y2="${sy + 275}"/><line class="stamp-bold" x1="${sx + 325}" y1="${sy + 200}" x2="${sx + 925}" y2="${sy + 200}"/>`);
+        out.push(`  <text class="stamp-title" x="${sx + 500}" y="${sy + 124}">WorldWiki</text><text class="stamp-txt-b" x="${sx + 500}" y="${sy + 152}">Архитектура программного комплекса</text><text class="stamp-txt" x="${sx + 500}" y="${sy + 174}" text-anchor="middle">и вычислительные ядра (#![no_std])</text>`);
+        out.push(`  <line class="stamp-line" x1="${sx + 675}" y1="${sy + 95}" x2="${sx + 925}" y2="${sy + 95}"/><line class="stamp-bold" x1="${sx + 675}" y1="${sy + 150}" x2="${sx + 925}" y2="${sy + 150}"/>`);
+        out.push(`  <line class="stamp-line" x1="${sx + 750}" y1="${sy + 70}" x2="${sx + 750}" y2="${sy + 150}"/><line class="stamp-line" x1="${sx + 835}" y1="${sy + 70}" x2="${sx + 835}" y2="${sy + 150}"/><line class="stamp-line" x1="${sx + 795}" y1="${sy + 150}" x2="${sx + 795}" y2="${sy + 200}"/>`);
+        out.push(`  <text class="stamp-txt" x="${sx + 712}" y="${sy + 87}" text-anchor="middle">Лит.</text><text class="stamp-txt" x="${sx + 792}" y="${sy + 87}" text-anchor="middle">Масса</text><text class="stamp-txt" x="${sx + 880}" y="${sy + 87}" text-anchor="middle">Масштаб</text>`);
+        out.push(`  <text class="stamp-txt-b" x="${sx + 712}" y="${sy + 128}">У</text><text class="stamp-txt" x="${sx + 735}" y="${sy + 178}" text-anchor="middle">Лист 2</text><text class="stamp-txt" x="${sx + 860}" y="${sy + 178}" text-anchor="middle">Листов 2</text>`);
+        out.push(`  <text class="stamp-txt" x="${sx + 500}" y="${sy + 242}" text-anchor="middle">Rust / Tauri v2 / Vue 3 / WASM</text><text class="stamp-txt-b" x="${sx + 800}" y="${sy + 235}">${esc(state.stamp.dept)}</text><text class="stamp-txt" x="${sx + 800}" y="${sy + 256}" text-anchor="middle">(Курсовой проект)</text>`);
+        out.push(`</g>`);
+      }
+
+      if (!forExport && selection && selection.type === 'edge') {
+        const e = getEdge(selection.id);
+        if (e) {
+          const pts = getEdgePoints(e);
+          for (let i = 0; i < pts.length - 1; i++) {
+            const a = pts[i], b = pts[i + 1], isVert = Math.abs(a.x - b.x) <= 1, mx = Math.round((a.x + b.x) / 2), my = Math.round((a.y + b.y) / 2);
+            if (Math.hypot(b.x - a.x, b.y - a.y) >= 22) {
+              if (isVert) out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="v" x="${mx - 4}" y="${my - 10}" width="8" height="20" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ew-resize"/>`);
+              else out.push(`<rect data-seg-edge="${e.id}" data-seg-idx="${i}" data-seg-dir="h" x="${mx - 10}" y="${my - 4}" width="20" height="8" rx="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="cursor:ns-resize"/>`);
+            }
+          }
+          e.waypoints.forEach((wp, idx) => out.push(`<circle data-wp-edge="${e.id}" data-wp-idx="${idx}" cx="${wp.x}" cy="${wp.y}" r="5.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.8" style="cursor:move"/>`));
+          const n1 = getNode(e.from), n2 = getNode(e.to), pS = anchorPoint(n1, e.fromSide, e.fromOffset), pE = anchorPoint(n2, e.toSide, e.toOffset);
+          out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="from" cx="${Math.round(pS.x)}" cy="${Math.round(pS.y)}" r="6.5" fill="#10b981" stroke="#ffffff" stroke-width="2" style="cursor:grab"/>`);
+          out.push(`<circle data-anchor-edge="${e.id}" data-anchor-end="to" cx="${Math.round(pE.x)}" cy="${Math.round(pE.y)}" r="7" fill="#ec4899" stroke="#ffffff" stroke-width="2" style="cursor:grab"/>`);
+        }
+      }
+      if (forExport) out.push(`</svg>`);
+      return out.join('\n');
+    }
+
+    // ============================================================================
+    // UI & INTERACTIONS
+    // ============================================================================
+    const svgEl = document.getElementById('svg'), canvasWrap = document.getElementById('canvasWrap'), viewport = document.getElementById('viewport');
+    function applyViewTransform() { canvasWrap.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`; }
+    function renderSvg() { svgEl.setAttribute('viewBox', `0 0 ${state.canvas.w} ${state.canvas.h}`); svgEl.setAttribute('width', state.canvas.w); svgEl.setAttribute('height', state.canvas.h); svgEl.innerHTML = buildSvgMarkup(false); }
+    function renderToolbar() {
+      document.getElementById('btnThemeBW').classList.toggle('active', state.theme === 'bw');
+      document.getElementById('btnThemeColor').classList.toggle('active', state.theme === 'color');
+      document.getElementById('chkStamp').checked = state.showStamp;
+      document.getElementById('chkZones').checked = state.showZones;
+      document.getElementById('chkGrid').checked = state.snap;
+      document.getElementById('inpDocCode').value = state.stamp.docCode;
+      document.getElementById('inpDept').value = state.stamp.dept;
+      document.getElementById('inpAuthor').value = state.stamp.author;
+      const selN = document.getElementById('selQuickNode');
+      if (!selN.options.length) selN.innerHTML = `<option value="">— Выбрать —</option>` + state.nodes.map(n => `<option value="${n.id}">${n.title}</option>`).join('');
+      selN.value = (selection && selection.type === 'node') ? selection.id : '';
+      const selE = document.getElementById('selQuickEdge');
+      if (!selE.options.length) selE.innerHTML = `<option value="">— Выбрать —</option>` + state.edges.map(e => `<option value="${e.id}">${e.from} → ${e.to}</option>`).join('');
+      selE.value = (selection && selection.type === 'edge') ? selection.id : '';
+    }
+    function renderInspector() {
+      const panel = document.getElementById('selectionPanel');
+      if (!selection) { panel.innerHTML = `<h3>Выделение</h3><p class="muted">Кликните по <b>блоку</b> или по <b>линии связи</b> на схеме.<br><br>Все связи между слоями архитектуры и #![no_std]-ядрами закреплены под 90°.</p>`; return; }
+      if (selection.type === 'node') {
+        const n = getNode(selection.id); if (!n) return;
+        panel.innerHTML = `<h3>Блок: <span class="badge">${n.id}</span></h3><div class="grid2"><div class="field"><label>X</label><input type="number" id="nX" value="${n.x}" step="10" /></div><div class="field"><label>Y</label><input type="number" id="nY" value="${n.y}" step="10" /></div><div class="field"><label>Ширина (W)</label><input type="number" id="nW" value="${n.w}" step="10" min="100" max="960" /></div><div class="field"><label>Высота (H)</label><input type="number" id="nH" value="${n.h}" step="4" min="40" max="400" /></div></div>`;
+        ['nX', 'nY', 'nW', 'nH'].forEach(id => {
+          document.getElementById(id).addEventListener('change', ev => {
+            const val = parseInt(ev.target.value, 10) || 0, dx = id === 'nX' ? val - n.x : 0, dy = id === 'nY' ? val - n.y : 0;
+            if (id === 'nX') n.x = val; if (id === 'nY') n.y = val; if (id === 'nW') n.w = Math.max(100, val); if (id === 'nH') n.h = Math.max(40, val);
+            if (dx || dy) keepOrthogonalOnNodeMove(n.id, dx, dy); pushHistory(); renderSvg();
+          });
+        });
+        return;
+      }
+      if (selection.type === 'edge') {
+        const e = getEdge(selection.id); if (!e) return;
+        const sideOpts = s => ['top', 'right', 'bottom', 'left'].map(k => `<option value="${k}" ${s === k ? 'selected' : ''}>${k}</option>`).join('');
+        panel.innerHTML = `<h3>Связь: <span class="badge">${e.from} → ${e.to}</span></h3><div class="grid2"><div class="field"><label>Выход</label><select id="eFromSide">${sideOpts(e.fromSide)}</select></div><div class="field"><label>Сдвиг (${Math.round(e.fromOffset * 100)}%)</label><input type="range" id="eFromOff" min="6" max="94" value="${Math.round(e.fromOffset * 100)}" /></div><div class="field"><label>Вход</label><select id="eToSide">${sideOpts(e.toSide)}</select></div><div class="field"><label>Сдвиг (${Math.round(e.toOffset * 100)}%)</label><input type="range" id="eToOff" min="6" max="94" value="${Math.round(e.toOffset * 100)}" /></div></div><div class="row" style="margin-top:8px"><button id="btnAddWp" style="flex:1">+ Изгиб</button><button id="btnClearWp">Спрямить</button></div><div class="wp-list">${e.waypoints.map((wp, i) => `<div class="wp-item"><span>#${i + 1}: (${Math.round(wp.x)}, ${Math.round(wp.y)})</span><button data-del-wp="${i}">✕</button></div>`).join('')}</div>`;
+        document.getElementById('eFromSide').addEventListener('change', ev => { e.fromSide = ev.target.value; pushHistory(); renderSvg(); });
+        document.getElementById('eToSide').addEventListener('change', ev => { e.toSide = ev.target.value; pushHistory(); renderSvg(); });
+        document.getElementById('eFromOff').addEventListener('input', ev => { e.fromOffset = ev.target.value / 100; renderSvg(); });
+        document.getElementById('eFromOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+        document.getElementById('eToOff').addEventListener('input', ev => { e.toOffset = ev.target.value / 100; renderSvg(); });
+        document.getElementById('eToOff').addEventListener('change', () => { pushHistory(); renderInspector(); });
+        document.getElementById('btnAddWp').addEventListener('click', () => { const pts = getEdgePoints(e); e.waypoints.push({ x: snapVal((pts[0].x + pts[pts.length - 1].x) / 2), y: snapVal((pts[0].y + pts[pts.length - 1].y) / 2) }); pushHistory(); renderAll(); });
+        document.getElementById('btnClearWp').addEventListener('click', () => { e.waypoints = []; pushHistory(); renderAll(); });
+        panel.querySelectorAll('[data-del-wp]').forEach(btn => { btn.addEventListener('click', () => { e.waypoints.splice(parseInt(btn.dataset.delWp, 10), 1); pushHistory(); renderAll(); }); });
+      }
+    }
+    function renderAll() { renderSvg(); renderToolbar(); renderInspector(); applyViewTransform(); }
+    function clientToSvg(clientX, clientY) { const r = canvasWrap.getBoundingClientRect(); return { x: (clientX - r.left) / view.scale, y: (clientY - r.top) / view.scale }; }
+
+    window.addEventListener('keydown', e => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+      const step = e.shiftKey ? 140 : 50;
+      if (e.key === 'ArrowUp') { e.preventDefault(); view.y += step; applyViewTransform(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); view.y -= step; applyViewTransform(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); view.x += step; applyViewTransform(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); view.x -= step; applyViewTransform(); }
+    });
+    viewport.addEventListener('contextmenu', e => e.preventDefault());
+    viewport.addEventListener('mousedown', e => {
+      if (e.button === 1 || e.button === 2) { drag = { mode: 'pan', startX: e.clientX, startY: e.clientY, vx: view.x, vy: view.y }; return; }
+      if (e.button !== 0) return;
+      const target = e.target, pt = clientToSvg(e.clientX, e.clientY);
+      if (target.dataset && target.dataset.resize) { const n = getNode(target.dataset.resize); drag = { mode: 'resize', node: n, startX: pt.x, startY: pt.y, origW: n.w, origH: n.h }; return; }
+      if (target.dataset && target.dataset.anchorEdge) { drag = { mode: 'anchor', edge: getEdge(target.dataset.anchorEdge), which: target.dataset.anchorEnd }; return; }
+      if (target.dataset && target.dataset.segEdge) { const edge = getEdge(target.dataset.segEdge); materializeEdgeWaypoints(edge); drag = { mode: 'seg', edge, segIdx: parseInt(target.dataset.segIdx, 10), dir: target.dataset.segDir }; return; }
+      if (target.dataset && target.dataset.wpEdge) {
+        const edge = getEdge(target.dataset.wpEdge), idx = parseInt(target.dataset.wpIdx, 10); materializeEdgeWaypoints(edge); const pts = getEdgePoints(edge);
+        let mIdx = Math.min(idx, Math.max(0, edge.waypoints.length - 1));
+        const prevPt = mIdx > 0 ? edge.waypoints[mIdx - 1] : pts[0], currPt = edge.waypoints[mIdx] || pts[1], nextPt = mIdx < edge.waypoints.length - 1 ? edge.waypoints[mIdx + 1] : pts[pts.length - 1];
+        drag = { mode: 'wp', edge, idx: mIdx, prevSameX: prevPt && currPt ? Math.abs(prevPt.x - currPt.x) <= 2 : false, nextSameX: nextPt && currPt ? Math.abs(nextPt.x - currPt.x) <= 2 : false };
+        return;
+      }
+      const nodeG = target.closest && target.closest('[data-node]');
+      if (nodeG) { const n = getNode(nodeG.dataset.node); selection = { type: 'node', id: n.id }; drag = { mode: 'node', node: n, lastX: n.x, lastY: n.y, offX: pt.x - n.x, offY: pt.y - n.y }; renderAll(); return; }
+      if (target.dataset && target.dataset.edge) { selection = { type: 'edge', id: target.dataset.edge }; renderAll(); return; }
+      selection = null; renderAll();
+    });
+    viewport.addEventListener('dblclick', e => {
+      const target = e.target, pt = clientToSvg(e.clientX, e.clientY);
+      if (target.dataset && target.dataset.wpEdge) { const edge = getEdge(target.dataset.wpEdge); edge.waypoints.splice(parseInt(target.dataset.wpIdx, 10), 1); pushHistory(); renderAll(); return; }
+      if (target.dataset && target.dataset.edge) {
+        const edge = getEdge(target.dataset.edge); materializeEdgeWaypoints(edge); const pts = getEdgePoints(edge);
+        let bestSeg = 0, bestDist = Infinity;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const a = pts[i], b = pts[i + 1], l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+          const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((pt.x - a.x) * (b.x - a.x) + (pt.y - a.y) * (b.y - a.y)) / l2));
+          const d = Math.hypot(pt.x - (a.x + t * (b.x - a.x)), pt.y - (a.y + t * (b.y - a.y)));
+          if (d < bestDist) { bestDist = d; bestSeg = i; }
+        }
+        const a = pts[bestSeg], b = pts[bestSeg + 1], isVert = Math.abs(a.x - b.x) <= 1, mx = snapVal(pt.x), my = snapVal(pt.y);
+        const jog = isVert ? [{ x: a.x, y: my }, { x: a.x + 30, y: my }, { x: a.x + 30, y: Math.round((my + b.y) / 2) }, { x: b.x, y: Math.round((my + b.y) / 2) }] : [{ x: mx, y: a.y }, { x: mx, y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: a.y + 30 }, { x: Math.round((mx + b.x) / 2), y: b.y }];
+        edge.waypoints.splice(bestSeg, 0, ...jog); selection = { type: 'edge', id: edge.id }; pushHistory(); renderAll();
+      }
+    });
+    window.addEventListener('mousemove', e => {
+      if (!drag) return;
+      if (drag.mode === 'pan') { view.x = drag.vx + (e.clientX - drag.startX); view.y = drag.vy + (e.clientY - drag.startY); applyViewTransform(); return; }
+      const pt = clientToSvg(e.clientX, e.clientY);
+      if (drag.mode === 'node') {
+        const nx = snapVal(pt.x - drag.offX), ny = snapVal(pt.y - drag.offY), dx = nx - drag.lastX, dy = ny - drag.lastY;
+        if (dx || dy) { drag.node.x = nx; drag.node.y = ny; keepOrthogonalOnNodeMove(drag.node.id, dx, dy); drag.lastX = nx; drag.lastY = ny; renderSvg(); }
+      } else if (drag.mode === 'resize') {
+        drag.node.w = Math.max(100, snapVal(drag.origW + (pt.x - drag.startX))); drag.node.h = Math.max(40, snapVal(drag.origH + (pt.y - drag.startY))); renderSvg();
+      } else if (drag.mode === 'anchor') {
+        const e1 = drag.edge, node = getNode(drag.which === 'from' ? e1.from : e1.to), snapped = snapPointToNodeBorder(node, pt.x, pt.y);
+        if (drag.which === 'from') {
+          const sc = e1.fromSide !== snapped.side; e1.fromSide = snapped.side; e1.fromOffset = snapped.offset; const pS = anchorPoint(node, e1.fromSide, e1.fromOffset);
+          if (e1.waypoints.length) { if (sc && e1.waypoints.length === 1) { e1.waypoints = []; materializeEdgeWaypoints(e1); } else if (e1.fromSide === 'top' || e1.fromSide === 'bottom') e1.waypoints[0].x = Math.round(pS.x); else e1.waypoints[0].y = Math.round(pS.y); }
+        } else {
+          const sc = e1.toSide !== snapped.side; e1.toSide = snapped.side; e1.toOffset = snapped.offset; const pE = anchorPoint(node, e1.toSide, e1.toOffset);
+          if (e1.waypoints.length) { const last = e1.waypoints[e1.waypoints.length - 1]; if (sc && e1.waypoints.length === 1) { e1.waypoints = []; materializeEdgeWaypoints(e1); } else if (e1.toSide === 'top' || e1.toSide === 'bottom') last.x = Math.round(pE.x); else last.y = Math.round(pE.y); }
+        }
+        renderSvg();
+      } else if (drag.mode === 'seg') {
+        const e1 = drag.edge, n1 = getNode(e1.from), n2 = getNode(e1.to), i = drag.segIdx;
+        const wpA = (i - 1 >= 0 && i - 1 < e1.waypoints.length) ? e1.waypoints[i - 1] : null, wpB = (i >= 0 && i < e1.waypoints.length) ? e1.waypoints[i] : null;
+        if (drag.dir === 'v') { const nx = snapVal(pt.x); if (wpA) wpA.x = nx; if (wpB) wpB.x = nx; if (!wpA && (e1.fromSide === 'top' || e1.fromSide === 'bottom')) e1.fromOffset = Math.max(0.06, Math.min(0.94, (nx - n1.x) / n1.w)); if (!wpB && (e1.toSide === 'top' || e1.toSide === 'bottom')) e1.toOffset = Math.max(0.06, Math.min(0.94, (nx - n2.x) / n2.w)); }
+        else { const ny = snapVal(pt.y); if (wpA) wpA.y = ny; if (wpB) wpB.y = ny; if (!wpA && (e1.fromSide === 'left' || e1.fromSide === 'right')) e1.fromOffset = Math.max(0.06, Math.min(0.94, (ny - n1.y) / n1.h)); if (!wpB && (e1.toSide === 'left' || e1.toSide === 'right')) e1.toOffset = Math.max(0.06, Math.min(0.94, (ny - n2.y) / n2.h)); }
+        syncOffsetsToWaypoints(e1); renderSvg();
+      } else if (drag.mode === 'wp') {
+        const e1 = drag.edge, wp = e1.waypoints[drag.idx];
+        if (wp) {
+          const nx = snapVal(pt.x), ny = snapVal(pt.y); wp.x = nx; wp.y = ny;
+          if (drag.idx > 0) { const prev = e1.waypoints[drag.idx - 1]; if (drag.prevSameX) prev.x = nx; else prev.y = ny; }
+          if (drag.idx < e1.waypoints.length - 1) { const next = e1.waypoints[drag.idx + 1]; if (drag.nextSameX) next.x = nx; else next.y = ny; }
+          syncOffsetsToWaypoints(e1); renderSvg();
+        }
+      }
+    });
+    window.addEventListener('mouseup', () => { if (!drag) return; const was = drag.mode !== 'pan'; drag = null; if (was) { pushHistory(); renderInspector(); } });
+    viewport.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        const f = Math.exp(-e.deltaY * 0.008), rect = viewport.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        const ns = Math.max(0.25, Math.min(2.5, view.scale * f)); view.x = mx - (mx - view.x) * (ns / view.scale); view.y = my - (my - view.y) * (ns / view.scale); view.scale = ns;
+      } else {
+        view.x -= e.deltaX; view.y -= e.deltaY;
+      }
+      applyViewTransform();
+    }, { passive: false });
+
+    function fitToScreen() { const r = viewport.getBoundingClientRect(), pad = 28, s = Math.min((r.width - pad) / state.canvas.w, (r.height - pad) / state.canvas.h, 1); view.scale = s; view.x = Math.round((r.width - state.canvas.w * s) / 2); view.y = Math.round((r.height - state.canvas.h * s) / 2); applyViewTransform(); }
+    document.getElementById('btnThemeBW').addEventListener('click', () => { state.theme = 'bw'; pushHistory(); renderAll(); });
+    document.getElementById('btnThemeColor').addEventListener('click', () => { state.theme = 'color'; pushHistory(); renderAll(); });
+    document.getElementById('chkStamp').addEventListener('change', e => { state.showStamp = e.target.checked; pushHistory(); renderAll(); });
+    document.getElementById('chkZones').addEventListener('change', e => { state.showZones = e.target.checked; pushHistory(); renderAll(); });
+    document.getElementById('chkGrid').addEventListener('change', e => { state.snap = e.target.checked; saveLocal(); renderSvg(); });
+    document.getElementById('btnUndo').addEventListener('click', undo);
+    document.getElementById('btnRedo').addEventListener('click', redo);
+    document.getElementById('btnFit').addEventListener('click', fitToScreen);
+    document.getElementById('btnReset').addEventListener('click', () => { if (!confirm('Сбросить всю раскладку Листа 2 А3 к исходной?')) return; state = createDefaultState(); selection = null; pushHistory(); renderAll(); fitToScreen(); });
+    document.getElementById('inpDocCode').addEventListener('input', e => { state.stamp.docCode = e.target.value; renderSvg(); });
+    document.getElementById('inpDocCode').addEventListener('change', () => pushHistory());
+    document.getElementById('inpDept').addEventListener('input', e => { state.stamp.dept = e.target.value; renderSvg(); });
+    document.getElementById('inpDept').addEventListener('change', () => pushHistory());
+    document.getElementById('inpAuthor').addEventListener('input', e => { state.stamp.author = e.target.value; renderSvg(); });
+    document.getElementById('inpAuthor').addEventListener('change', () => pushHistory());
+    document.getElementById('selQuickNode').addEventListener('change', e => { selection = e.target.value ? { type: 'node', id: e.target.value } : null; renderAll(); });
+    document.getElementById('selQuickEdge').addEventListener('change', e => { selection = e.target.value ? { type: 'edge', id: e.target.value } : null; renderAll(); });
+    function triggerDownload(blob, filename) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
+    document.getElementById('btnExportSvg').addEventListener('click', () => triggerDownload(new Blob([buildSvgMarkup(true)], { type: 'image/svg+xml;charset=utf-8' }), 'architecture_and_math_a3.svg'));
+    document.getElementById('btnExportPng').addEventListener('click', () => {
+      const img = new Image(), url = URL.createObjectURL(new Blob([buildSvgMarkup(true)], { type: 'image/svg+xml;charset=utf-8' }));
+      img.onload = () => { const sc = 2, c = document.createElement('canvas'); c.width = state.canvas.w * sc; c.height = state.canvas.h * sc; const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => triggerDownload(b, 'architecture_and_math_a3.png'), 'image/png'); };
+      img.src = url;
+    });
+    document.getElementById('btnSaveJson').addEventListener('click', () => triggerDownload(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }), 'worldwiki_arch_a3.json'));
+    document.getElementById('btnLoadJson').addEventListener('click', () => document.getElementById('fileJson').click());
+    document.getElementById('fileJson').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader(); r.onload = () => { try { state = JSON.parse(r.result); selection = null; pushHistory(); renderAll(); fitToScreen(); } catch (err) { alert(err.message); } }; r.readAsText(f); e.target.value = '';
+    });
+    renderAll();
+    setTimeout(fitToScreen, 30);
+    window.addEventListener('resize', fitToScreen);
+  </script>
+</body>
+
+</html>

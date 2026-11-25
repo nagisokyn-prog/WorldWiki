@@ -9,6 +9,7 @@ import {
   buildFilteredChapters,
   filterInspectorEvents,
   buildFormattedEvents,
+  groupEventsByDate,
 } from '../timelineInspector.utils';
 import type { InspectorEvent, InspectorChapter } from '../TimelineInspector.model';
 import type { CalendarData } from '@/services/Calendars/calendar.types';
@@ -21,16 +22,24 @@ describe('timelineInspector.utils', () => {
     expect(normalizeId(null)).toBe('');
   });
 
-  it('detects flashback from text or kind', () => {
-    const ev1: InspectorEvent = {
+  it('detects flashback strictly from explicit kind or time_nature', () => {
+    const evPlainText: InspectorEvent = {
       id: 'timeline_events:1',
       title: 'Сцена флешбэка в детстве',
       m_abs: 100,
       reveals: [],
       participants: []
     };
+    const evExplicit: InspectorEvent = {
+      id: 'timeline_events:2',
+      title: 'Обычный заголовок',
+      m_abs: 100,
+      reveals: [{ chapter_id: 'c1', chapter_title: 'Ch1', kind: 'flashback' }],
+      participants: []
+    };
     const chapters: InspectorChapter[] = [];
-    expect(checkIsFlashback(ev1, chapters)).toBe(true);
+    expect(checkIsFlashback(evPlainText, chapters)).toBe(false);
+    expect(checkIsFlashback(evExplicit, chapters)).toBe(true);
   });
 
   it('cleans participants list properly', () => {
@@ -96,11 +105,19 @@ describe('timelineInspector.utils', () => {
       id: 'timeline_events:2',
       title: 'Past',
       m_abs: 1000,
+      reveals: [{ chapter_id: 'c2', chapter_title: 'Ch2', kind: 'flashback' }],
+      participants: [],
+    };
+    const evEarlierDirect: InspectorEvent = {
+      id: 'timeline_events:3',
+      title: 'Earlier direct',
+      m_abs: 1000,
       reveals: [{ chapter_id: 'c2', chapter_title: 'Ch2', kind: 'direct' }],
       participants: [],
     };
 
     expect(checkIsFlashback(evFlash, chs, [evPrev, evFlash])).toBe(true);
+    expect(checkIsFlashback(evEarlierDirect, chs, [evPrev, evEarlierDirect])).toBe(false);
     expect(checkIsFlashback(evPrev, chs, [evPrev, evFlash])).toBe(false);
   });
 
@@ -297,6 +314,61 @@ describe('timelineInspector.utils', () => {
       new Map([['cal_official', officialCal]])
     );
     expect(formattedOfficial[0].locationName).toBe('Цитадель');
+  });
+
+  it('nests same-day subscenes inside parent card and tracks cross-day subscenes', () => {
+    const cal = {
+      id: 'cal_1',
+      название: 'Std',
+      минут_в_часе: 60,
+      часов_в_сутках: 24,
+      месяцы: [{ название: 'Янв', дней: 30 }],
+      эпохи: [{ название: 'Н.э.', обратный_отсчет: false, год_начала: 1, год_конца: 5000 }],
+    } as unknown as CalendarData;
+    const chs: InspectorChapter[] = [{ id: 'c1', title: 'Гл 1', sort_order: 1 }];
+    const evs: InspectorEvent[] = [
+      {
+        id: 'plot_promises:parent',
+        title: 'Главная сцена',
+        m_abs: 1440,
+        kind: 'scene',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Гл 1', kind: 'direct' }],
+        participants: [],
+      },
+      {
+        id: 'plot_promises:same_day',
+        parent_id: 'plot_promises:parent',
+        title: 'Подсцена в тот же день',
+        m_abs: 1500,
+        kind: 'scene',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Гл 1', kind: 'direct' }],
+        participants: [],
+      },
+      {
+        id: 'plot_promises:other_day',
+        parent_id: 'plot_promises:parent',
+        title: 'Подсцена в другой день',
+        m_abs: 2880,
+        kind: 'scene',
+        reveals: [{ chapter_id: 'c1', chapter_title: 'Гл 1', kind: 'direct' }],
+        participants: [],
+      },
+    ];
+
+    const formatted = buildFormattedEvents(evs, chs, cal, evs);
+    const cols = groupEventsByDate(formatted);
+
+    expect(cols).toHaveLength(2);
+    expect(cols[0].events).toHaveLength(1);
+    expect(cols[0].events[0].id).toBe('plot_promises:parent');
+    expect(cols[0].events[0].sameDayChildren).toHaveLength(1);
+    expect(cols[0].events[0].sameDayChildren?.[0].id).toBe('plot_promises:same_day');
+    expect(cols[0].events[0].crossDayChildCount).toBe(1);
+
+    expect(cols[1].events).toHaveLength(1);
+    expect(cols[1].events[0].id).toBe('plot_promises:other_day');
+    expect(cols[1].events[0].parentIdNormalized).toBe('parent');
+    expect(cols[1].events[0].parentTitle).toBe('Главная сцена');
   });
 });
 

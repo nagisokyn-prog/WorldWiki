@@ -22,53 +22,55 @@
         <span class="empty-hint">Привяжите события таймлайна к главам или создайте сцены с датами в редакторе.</span>
       </div>
 
-      <div v-else class="dual-axis-canvas" :style="{ minWidth: canvasMinWidth }">
-        <!-- Верхняя Нарративная Ось -->
-        <div class="axis-track-wrapper narrative-wrapper">
-          <div class="axis-badge axis-badge-narrative"><span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)</div>
+      <div v-else class="dual-axis-canvas">
+        <!-- Верхняя Нарративная Ось (независимый скролл глав) -->
+        <div class="axis-scroll-track narrative-scroll-track" @scroll="onNarrativeScroll">
+          <div class="axis-track-wrapper narrative-wrapper" :style="{ minWidth: narrativeMinWidth }">
+            <div class="axis-badge axis-badge-narrative"><span>📚</span> ПОРЯДОК ЧТЕНИЯ ГЛАВ (НАРРАТИВ)</div>
 
-          <div
-            v-for="seg in volumeSegments"
-            :key="'vol-seg-' + seg.volumeId + '-' + seg.startIndex"
-            class="timeline-volume-bracket"
-            :style="{ left: seg.leftPx + 'px', width: seg.widthPx + 'px' }"
-          >
-            <div class="bracket-arm bracket-arm-left"></div>
-            <div class="bracket-pill" :title="`Том: ${seg.volumeTitle} (${seg.count} гл.)`">
-              <span class="vol-icon">📚</span>
-              <span class="vol-name">{{ seg.volumeTitle }}</span>
-              <span class="vol-count">({{ seg.count }} гл.)</span>
+            <div
+              v-for="seg in volumeSegments"
+              :key="'vol-seg-' + seg.volumeId + '-' + seg.startIndex"
+              class="timeline-volume-bracket"
+              :style="{ left: seg.leftPx + 'px', width: seg.widthPx + 'px' }"
+            >
+              <div class="bracket-arm bracket-arm-left"></div>
+              <div class="bracket-pill" :title="`Том: ${seg.volumeTitle} (${seg.count} гл.)`">
+                <span class="vol-icon">📚</span>
+                <span class="vol-name">{{ seg.volumeTitle }}</span>
+                <span class="vol-count">({{ seg.count }} гл.)</span>
+              </div>
+              <div class="bracket-arm bracket-arm-right"></div>
             </div>
-            <div class="bracket-arm bracket-arm-right"></div>
+
+            <div
+              v-for="seg in volumeSegments.filter(s => s.boundaryLeftPx !== undefined)"
+              :key="'vol-bound-' + seg.volumeId"
+              class="timeline-volume-boundary-marker"
+              :style="{ left: seg.boundaryLeftPx + 'px' }"
+              :title="`Граница между томами: переход к «${seg.volumeTitle}»`"
+            >
+              <div class="boundary-line"></div>
+              <div class="boundary-dot"></div>
+            </div>
+
+            <div class="axis-rail axis-rail-narrative"></div>
+
+            <TimelineChapterNode
+              v-for="(ch, idx) in filteredChapters"
+              :key="'ch-node-' + ch.id"
+              :chapter="ch"
+              :index="idx"
+              :is-active="activeChapterId === normalizeId(ch.id)"
+              @select="selectChapter"
+              @navigate="navigateToChapter"
+              @jump-flashback="jumpToFlashback"
+              @set-hover="hoveredChapterId = $event"
+            />
           </div>
-
-          <div
-            v-for="seg in volumeSegments.filter(s => s.boundaryLeftPx !== undefined)"
-            :key="'vol-bound-' + seg.volumeId"
-            class="timeline-volume-boundary-marker"
-            :style="{ left: seg.boundaryLeftPx + 'px' }"
-            :title="`Граница между томами: переход к «${seg.volumeTitle}»`"
-          >
-            <div class="boundary-line"></div>
-            <div class="boundary-dot"></div>
-          </div>
-
-          <div class="axis-rail axis-rail-narrative"></div>
-
-          <TimelineChapterNode
-            v-for="(ch, idx) in filteredChapters"
-            :key="'ch-node-' + ch.id"
-            :chapter="ch"
-            :index="idx"
-            :is-active="activeChapterId === normalizeId(ch.id)"
-            @select="selectChapter"
-            @navigate="navigateToChapter"
-            @jump-flashback="jumpToFlashback"
-            @set-hover="hoveredChapterId = $event"
-          />
         </div>
 
-        <!-- SVG Соединительные нити Безье -->
+        <!-- SVG Соединительные нити Безье поверх вьюпорта -->
         <svg class="connection-svg" width="100%" height="100%">
           <defs>
             <marker id="arrow-direct" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -76,6 +78,9 @@
             </marker>
             <marker id="arrow-flashback" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
               <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--warning)" />
+            </marker>
+            <marker id="arrow-hierarchy" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--info, var(--accent))" />
             </marker>
           </defs>
           <g v-for="line in connectionLines" :key="line.id">
@@ -90,69 +95,57 @@
               :class="{ 'connection-path--flashback': line.isFlashback }"
             />
           </g>
-
-          <!-- Нижние линии иерархии связанных сцен (от пина к пину) -->
-          <g v-for="sline in sceneHierarchyLines" :key="sline.id" class="scene-hierarchy-group">
+          <g v-for="hLine in sceneHierarchyLines" :key="hLine.id">
             <path
-              :d="`M ${sline.x1} ${sline.y1} C ${sline.x1} ${sline.yBottom}, ${sline.x2} ${sline.yBottom}, ${sline.x2} ${sline.y2}`"
+              :d="`M ${hLine.x1} ${hLine.y1} C ${hLine.x1} ${hLine.yBottom}, ${hLine.x2} ${hLine.yBottom}, ${hLine.x2} ${hLine.y2}`"
               fill="none"
-              stroke="var(--warning)"
-              stroke-width="2.5"
+              stroke="var(--info, var(--accent))"
+              stroke-width="2"
               stroke-dasharray="4 3"
-              class="scene-hierarchy-path"
+              marker-end="url(#arrow-hierarchy)"
+              class="hierarchy-path"
             />
           </g>
         </svg>
 
-        <!-- Нижняя Диегетическая Ось -->
-        <div class="axis-track-wrapper diegetic-wrapper">
-          <div class="axis-badge axis-badge-diegetic"><span>⏳</span> ВРЕМЯ МИРА</div>
-          <div class="axis-rail axis-rail-diegetic"></div>
+        <!-- Нижняя Диегетическая Ось (колонки по датам, независимый скролл) -->
+        <div class="axis-scroll-track diegetic-scroll-track" @scroll="onDiegeticScroll">
+          <div class="axis-track-wrapper diegetic-wrapper" :style="{ minWidth: diegeticMinWidth }">
+            <div class="axis-badge axis-badge-diegetic"><span>⏳</span> ВРЕМЯ МИРА</div>
+            <div class="axis-rail axis-rail-diegetic"></div>
 
-          <div v-if="!formattedEvents.length" class="axis-empty-hint p-4 text-xs text-muted italic">
-            <span>ℹ️ В выбранном горизонте нет связанных событий или сцен</span>
-          </div>
+            <div v-if="!dateColumns.length" class="axis-empty-hint p-4 text-xs text-muted italic">
+              <span>ℹ️ В выбранном горизонте нет связанных событий или сцен</span>
+            </div>
 
-          <div
-            v-for="(ev, idx) in formattedEvents"
-            :key="'ev-node-' + ev.id"
-            :data-event-id="normalizeId(ev.id)"
-            class="event-node interactive-el"
-            :class="{
-              'event-node--active': isEventHighlighted(ev),
-              'event-node--dimmed': isEventDimmed(ev),
-              'event-node--ping': pingedEventId === normalizeId(ev.id),
-              'event-node--flashback': ev.isFlashback,
-            }"
-            :style="{ position: 'absolute', top: '24px', left: (60 + idx * 160) + 'px' }"
-            :title="`Кликните для перехода к сцене в тексте: ${ev.title}`"
-            @mouseenter="hoveredEventId = ev.id"
-            @mouseleave="hoveredEventId = null"
-            @click="navigateToScene(ev)"
-          >
-            <div class="event-pin-top"></div>
-            <div class="event-header">
-              <span class="event-kind-badge" :class="ev.kindMeta.badgeClass">{{ ev.kindMeta.icon }} {{ ev.kindMeta.label }}</span>
-              <span v-if="ev.isFlashback" class="flashback-tag" title="Сцена разворачивается как воспоминание / ретроспектива">⏪ Флешбэк</span>
+            <div
+              v-for="(col, colIdx) in dateColumns"
+              :key="'date-col-' + col.key"
+              class="date-cluster-column"
+              :class="{ 'is-undated': col.isUndated }"
+              :style="{ left: (82 + colIdx * 136) + 'px' }"
+            >
+              <div class="date-cluster-pin"></div>
+              <div class="date-cluster-header">
+                <span class="date-cluster-label">{{ col.label }}</span>
+                <span class="date-cluster-count">{{ col.events.length }}</span>
+              </div>
+
+              <div class="date-cluster-stack">
+                <TimelineEventNode
+                  v-for="ev in col.events"
+                  :key="'ev-node-' + ev.id"
+                  :ev="ev"
+                  :pinged-event-id="pingedEventId"
+                  :is-highlighted="isEventHighlighted"
+                  :is-dimmed="isEventDimmed"
+                  @hover-event="hoveredEventId = $event"
+                  @navigate-scene="navigateToScene"
+                  @scroll-chapter="scrollToChapter"
+                  @scroll-event="scrollToEvent"
+                />
+              </div>
             </div>
-            <div class="event-node-title" :title="ev.title">{{ ev.title }}</div>
-            <div class="event-meta-row">
-              <span class="event-date-chip"><span class="date-icon">📅</span><span class="date-text">{{ ev.formattedDate }}</span></span>
-              <span v-if="ev.location_id" class="event-location-chip" :title="ev.localTimeHint || ev.locationName || ev.location_id">
-                📍 {{ ev.locationName || ev.location_id.replace(/^(entities|locations):/, '') }}
-              </span>
-              <span v-if="ev.localTimeBadge" class="event-date-chip" :title="ev.localTimeHint || ''">
-                <span>{{ ev.localTimeBadge }}</span>
-              </span>
-            </div>
-            <div v-if="ev.cleanParticipants.length" class="event-participants-list">
-              <span v-for="p in ev.cleanParticipants.slice(0, 2)" :key="p.id" class="participant-chip" :title="p.name">👤 {{ p.name }}</span>
-              <span v-if="ev.cleanParticipants.length > 2" class="participant-more">+{{ ev.cleanParticipants.length - 2 }}</span>
-            </div>
-            <div v-if="ev.primaryChapterId" class="event-jump-back" title="Показать главу на верхней оси" @click.stop="scrollToChapter(ev.primaryChapterId)">
-              <span>Верхняя ось: {{ ev.primaryChapterTitle || ('Гл. #' + ev.primaryChapterId) }} ⏩</span>
-            </div>
-            <div class="event-pin-bottom"></div>
           </div>
         </div>
       </div>
@@ -164,16 +157,18 @@
 import { useTimelineInspector } from './useTimelineInspector';
 import TimelineInspectorToolbar from './components/TimelineInspectorToolbar/TimelineInspectorToolbar.vue';
 import TimelineChapterNode from './components/TimelineChapterNode/TimelineChapterNode.vue';
+import TimelineEventNode from './components/TimelineEventNode/TimelineEventNode.vue';
 import type { TimelineInspectorProps, TimelineInspectorEmits } from './TimelineInspector.model';
 
 const props = withDefaults(defineProps<TimelineInspectorProps>(), { projectId: '', project: '' });
 const emit = defineEmits<TimelineInspectorEmits>();
 
 const {
-  filters, volumeOptions, volumeSegments, filteredChapters, formattedEvents, filteredEvents,
-  connectionLines, sceneHierarchyLines, canvasMinWidth, isLoading, activeChapterId, hoveredChapterId, hoveredEventId,
+  filters, volumeOptions, volumeSegments, filteredChapters, dateColumns, filteredEvents,
+  connectionLines, sceneHierarchyLines, narrativeMinWidth, diegeticMinWidth, onNarrativeScroll, onDiegeticScroll,
+  isLoading, activeChapterId, hoveredChapterId, hoveredEventId,
   pingedEventId, refresh, navigateToChapter, navigateToScene, selectChapter, jumpToFlashback,
-  scrollToChapter, isEventHighlighted, isEventDimmed, normalizeId,
+  scrollToEvent, scrollToChapter, isEventHighlighted, isEventDimmed, normalizeId,
 } = useTimelineInspector(props, emit);
 </script>
 

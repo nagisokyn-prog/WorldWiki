@@ -33,7 +33,7 @@ pub enum MilestoneStage {
     Resolution,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct PromiseMilestone {
     #[serde(default)]
     pub milestone_id: Option<String>,
@@ -49,6 +49,24 @@ pub struct PromiseMilestone {
     pub chapter_id: Option<String>,
     #[serde(default)]
     pub order_index: Option<i32>,
+    #[serde(default)]
+    pub location_id: Option<String>,
+    #[serde(default)]
+    pub timeline_event_id: Option<String>,
+    #[serde(default)]
+    pub m_abs: Option<i64>,
+    #[serde(default)]
+    pub calendar_id: Option<String>,
+    #[serde(default)]
+    pub participant_ids: Vec<String>,
+    #[serde(default)]
+    pub arcs: Vec<SceneArcItem>,
+    #[serde(default)]
+    pub time_nature: Option<String>,
+    #[serde(default)]
+    pub is_flashback: Option<bool>,
+    #[serde(default)]
+    pub block_ids: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

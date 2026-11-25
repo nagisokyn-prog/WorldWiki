@@ -34,15 +34,25 @@ describe('usePromiseCard', () => {
     isCurrentChapterPromise: () => true
   };
 
-  it('toggles collapsed state', () => {
+  it('toggles collapsed state locally when expanded prop is undefined', () => {
     const emit = vi.fn();
     const { isCardCollapsed, toggleCollapsed } = usePromiseCard(props, emit);
 
-    expect(isCardCollapsed.value).toBe(false);
-    toggleCollapsed();
     expect(isCardCollapsed.value).toBe(true);
     toggleCollapsed();
     expect(isCardCollapsed.value).toBe(false);
+    expect(emit).not.toHaveBeenCalled();
+    toggleCollapsed();
+    expect(isCardCollapsed.value).toBe(true);
+  });
+
+  it('delegates collapsed state and emits toggleExpand when expanded prop is controlled', () => {
+    const emit = vi.fn();
+    const { isCardCollapsed, toggleCollapsed } = usePromiseCard({ ...props, expanded: false }, emit);
+
+    expect(isCardCollapsed.value).toBe(true);
+    toggleCollapsed();
+    expect(emit).toHaveBeenCalledWith('toggleExpand');
   });
 
   it('emits locate event with correct payload', () => {

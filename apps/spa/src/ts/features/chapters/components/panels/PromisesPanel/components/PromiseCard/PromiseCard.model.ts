@@ -34,9 +34,12 @@ export type PromiseCardEmitFn = {
 };
 
 export interface PromiseCardTimelineProps {
+  project: string;
   item: RichPlotPromise;
   getChapterTitle: (chapterId: string) => string;
   isCurrentChapterPromise: (chapterId: string) => boolean;
+  previousScene?: RichPlotPromise | null;
+  sharedEntities?: SharedPromiseEntities | null;
 }
 
 export type PromiseCardTimelineEmits = {
@@ -44,4 +47,6 @@ export type PromiseCardTimelineEmits = {
   locate: [];
   locateStep: [payload: { chapter_id: string; paragraph_index: number; quote: string }];
   removeMilestone: [payload: { item: RichPlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }];
+  'update:item': [val: RichPlotPromise];
+  change: [];
 };

@@ -57,16 +57,32 @@ export function getInspectorKindMeta(kind?: string): InspectorKindMeta {
 export interface FormattedInspectorEvent extends InspectorEvent {
   id: string;
   formattedDate: string;
+  dayKey: string;
+  dayLabel: string;
+  timeLabel: string;
+  isUndated?: boolean;
   cleanParticipants: InspectorParticipant[];
   isScene: boolean;
   kindMeta: InspectorKindMeta;
   isFlashback?: boolean;
   primaryChapterId?: string;
   primaryChapterTitle?: string;
+  primaryChapterOrder?: number;
   locationName?: string;
   localTimeBadge?: string;
   localTimeHint?: string | null;
   hasTimezoneDiscrepancy?: boolean;
+  parentIdNormalized?: string;
+  parentTitle?: string;
+  sameDayChildren?: FormattedInspectorEvent[];
+  crossDayChildCount?: number;
+}
+
+export interface DateClusterColumn {
+  key: string;
+  label: string;
+  isUndated: boolean;
+  events: FormattedInspectorEvent[];
 }
 
 export interface InspectorChapter {

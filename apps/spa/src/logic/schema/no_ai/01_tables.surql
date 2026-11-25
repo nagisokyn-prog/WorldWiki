@@ -254,11 +254,22 @@ DEFINE FIELD OVERWRITE created_at ON spans_blocks TYPE datetime DEFAULT time::no
 
 -- 21.2. ВЕХИ ЖИЗНЕННОГО ЦИКЛА РУЖЬЯ В ТЕКСТЕ РУКОПИСИ
 DEFINE TABLE OVERWRITE promise_milestones TYPE RELATION IN plot_promises OUT text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE stage      ON promise_milestones TYPE string
+DEFINE FIELD OVERWRITE stage             ON promise_milestones TYPE string
   ASSERT $value IN ['plant', 'progression', 'resolution'];
-DEFINE FIELD OVERWRITE quote      ON promise_milestones TYPE string;
-DEFINE FIELD OVERWRITE note       ON promise_milestones TYPE option<string | null>;
-DEFINE FIELD OVERWRITE created_at ON promise_milestones TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE quote             ON promise_milestones TYPE string;
+DEFINE FIELD OVERWRITE note              ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE location_id       ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE timeline_event_id ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE m_abs             ON promise_milestones TYPE option<int | null>;
+DEFINE FIELD OVERWRITE calendar_id       ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE participant_ids   ON promise_milestones TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE arcs              ON promise_milestones TYPE array<object> DEFAULT [];
+DEFINE FIELD OVERWRITE arcs.*.arc_id     ON promise_milestones TYPE string;
+DEFINE FIELD OVERWRITE arcs.*.arc_phase  ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE time_nature       ON promise_milestones TYPE option<string | null>;
+DEFINE FIELD OVERWRITE is_flashback      ON promise_milestones TYPE option<bool | null>;
+DEFINE FIELD OVERWRITE block_ids         ON promise_milestones TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE created_at        ON promise_milestones TYPE datetime DEFAULT time::now();
 
 -- 21.3. ДЕЙСТВУЮЩИЕ ЛИЦА НАРРАТИВНОГО УЗЛА (ПЕРСОНАЖИ, АРТЕФАКТЫ, ЛОКАЦИИ)
 DEFINE TABLE OVERWRITE participant_of TYPE RELATION IN entities OUT plot_promises SCHEMAFULL;

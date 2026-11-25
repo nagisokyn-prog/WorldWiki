@@ -34,67 +34,47 @@
         <span class="group-title">Развитие ({{ item.progressions.length }}):</span>
       </div>
 
-      <div
+      <PromiseMilestoneCard
         v-for="(prog, pIdx) in item.progressions"
-        :key="prog.id || prog.milestone_id || prog.quote || pIdx"
-        class="timeline-step step-progression"
-      >
-        <div class="step-badge">
-          <span class="step-connector">├─</span>
-          <span class="step-location font-medium">{{ getChapterTitle(prog.chapter_id || '') }} · абз. {{ prog.paragraph_index ?? 1 }}</span>
-          <span v-if="isCurrentChapterPromise(prog.chapter_id || '')" class="badge-current-chapter">текущая</span>
-          <button
-            class="btn-delete-step"
-            title="Удалить это упоминание"
-            @click="$emit('removeMilestone', { item, milestoneId: prog.id || prog.milestone_id || '', stage: 'progression' })"
-          >
-            ✕
-          </button>
-        </div>
-
-        <blockquote class="card-quote quote-small">
-          «{{ prog.quote || '' }}»
-        </blockquote>
-
-        <div class="step-actions">
-          <button class="btn-locate-step" @click="$emit('locateStep', { chapter_id: prog.chapter_id || '', paragraph_index: prog.paragraph_index ?? 1, quote: prog.quote || '' })">
-            📍 Перейти
-          </button>
-        </div>
-      </div>
+        :key="prog.milestone_id || prog.id || prog.quote || pIdx"
+        :project="project"
+        :parent-item="item"
+        :milestone="prog"
+        stage="progression"
+        :get-chapter-title="getChapterTitle"
+        :is-current-chapter-promise="isCurrentChapterPromise"
+        :previous-scene="previousScene"
+        :shared-entities="sharedEntities"
+        @locate-step="$emit('locateStep', $event)"
+        @remove-milestone="$emit('removeMilestone', $event)"
+        @update:item="$emit('update:item', $event)"
+        @change="$emit('change')"
+      />
     </div>
 
     <!-- 3. 🎯 ТОЧКА ВЫСТРЕЛА / РАЗВЯЗКИ (RESOLUTION) - ТОЛЬКО ДЛЯ РУЖЕЙ -->
     <div v-if="item.kind !== 'scene' && item.resolution" class="timeline-step step-resolution">
-      <div class="step-badge">
-        <span class="step-icon">🎯</span>
-        <span class="step-name font-bold text-success">Отстреляно:</span>
-        <span class="step-location font-semibold">{{ getChapterTitle(item.resolution.chapter_id || '') }} · абз. {{ item.resolution.paragraph_index ?? 1 }}</span>
-        <span v-if="isCurrentChapterPromise(item.resolution.chapter_id || '')" class="badge-current-chapter">текущая</span>
-        <button
-          class="btn-delete-step"
-          title="Сбросить завершение"
-          @click="$emit('removeMilestone', { item, milestoneId: item.resolution?.id || item.resolution?.milestone_id || '', stage: 'resolution' })"
-        >
-          ✕
-        </button>
-      </div>
-
-      <blockquote class="card-quote quote-resolution">
-        «{{ item.resolution.quote || '' }}»
-      </blockquote>
-
-      <div class="step-actions">
-        <button class="btn-locate-step" @click="$emit('locateStep', { chapter_id: item.resolution?.chapter_id || '', paragraph_index: item.resolution?.paragraph_index ?? 1, quote: item.resolution?.quote || '' })">
-          📍 Перейти к финалу
-        </button>
-      </div>
+      <PromiseMilestoneCard
+        :project="project"
+        :parent-item="item"
+        :milestone="item.resolution"
+        stage="resolution"
+        :get-chapter-title="getChapterTitle"
+        :is-current-chapter-promise="isCurrentChapterPromise"
+        :previous-scene="previousScene"
+        :shared-entities="sharedEntities"
+        @locate-step="$emit('locateStep', $event)"
+        @remove-milestone="$emit('removeMilestone', $event)"
+        @update:item="$emit('update:item', $event)"
+        @change="$emit('change')"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from '../PromiseCard.model';
+import PromiseMilestoneCard from './PromiseMilestoneCard/PromiseMilestoneCard.vue';
 
 defineProps<PromiseCardTimelineProps>();
 defineEmits<PromiseCardTimelineEmits>();

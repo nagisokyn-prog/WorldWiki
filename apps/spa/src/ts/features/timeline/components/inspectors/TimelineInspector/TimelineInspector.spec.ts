@@ -121,7 +121,7 @@ describe('useTimelineInspector Composable', () => {
           id: 'ev:flashback_1',
           title: 'Воспоминание о детстве',
           m_abs: 50,
-          reveals: [{ chapter_id: 'ch:1', chapter_title: 'Дом?', kind: 'direct' }],
+          reveals: [{ chapter_id: 'ch:1', chapter_title: 'Дом?', kind: 'flashback' }],
           participants: [],
         },
         {

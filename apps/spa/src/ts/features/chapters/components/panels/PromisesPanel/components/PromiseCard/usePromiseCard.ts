@@ -44,6 +44,12 @@ export function usePromiseCard(
     return props.item.arc_id ? 1 : 0;
   });
 
+  const progressionCount = computed(() =>
+    Array.isArray(props.item.progressions) ? props.item.progressions.length : 0
+  );
+
+  const hasResolution = computed(() => Boolean(props.item.resolution));
+
   const handleLocate = () => {
     emit('locate', {
       chapter_id: props.item.chapter_id || '',
@@ -64,6 +70,8 @@ export function usePromiseCard(
     timeNatureIcon,
     participantCount,
     arcCount,
+    progressionCount,
+    hasResolution,
     toggleCollapsed,
     handleLocate,
     handleRemove

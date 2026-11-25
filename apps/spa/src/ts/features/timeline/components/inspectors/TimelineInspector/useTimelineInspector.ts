@@ -16,14 +16,17 @@ import {
   buildFilteredChapters,
   filterInspectorEvents,
   buildFormattedEvents,
+  groupEventsByDate,
 } from './timelineInspector.utils';
 import {
   buildVolumeOptions,
   resolveChaptersWithVolumes,
   buildVolumeSegments,
-  calculateConnectionLines,
-  calculateSceneHierarchyLines,
 } from './timelineInspectorVolume.utils';
+import {
+  computeViewportConnectionLines,
+  computeCrossDayHierarchyLines,
+} from './timelineInspectorLinks.utils';
 import { useTimelineInspectorNavigation } from './useTimelineInspectorNavigation';
 
 export function useTimelineInspector(
@@ -150,36 +153,64 @@ export function useTimelineInspector(
   const navigation = useTimelineInspectorNavigation(filteredChapters, formattedEvents, emit);
 
   const chapterSpacing = 140;
-  const eventSpacing = 160;
   const startX = 60;
+  const columnSpacing = 136;
+  const columnStartX = 82;
+
+  const narrativeScrollLeft = ref(0);
+  const diegeticScrollLeft = ref(0);
+  const diegeticScrollTop = ref(0);
+  const onNarrativeScroll = (e: Event) => {
+    narrativeScrollLeft.value = (e.target as HTMLElement)?.scrollLeft || 0;
+  };
+  const onDiegeticScroll = (e: Event) => {
+    const el = e.target as HTMLElement | null;
+    diegeticScrollLeft.value = el?.scrollLeft || 0;
+    diegeticScrollTop.value = el?.scrollTop || 0;
+  };
+
+  const dateColumns = computed(() => groupEventsByDate(formattedEvents.value));
+
+  const getTargetChId = () =>
+    navigation.activeChapterId.value
+      ? normalizeId(navigation.activeChapterId.value)
+      : navigation.hoveredChapterId.value
+        ? normalizeId(navigation.hoveredChapterId.value)
+        : null;
 
   const connectionLines = computed(() =>
-    calculateConnectionLines({
-      linkMode: filters.value.linkMode,
+    computeViewportConnectionLines({
+      mode: filters.value.linkMode,
       chapters: filteredChapters.value,
-      events: filteredEvents.value,
-      activeChapterId: navigation.activeChapterId.value,
-      hoveredChapterId: navigation.hoveredChapterId.value,
-      hoveredEventId: navigation.hoveredEventId.value,
+      dateColumns: dateColumns.value,
+      formattedEvents: formattedEvents.value,
+      narrativeScrollLeft: narrativeScrollLeft.value,
+      diegeticScrollLeft: diegeticScrollLeft.value,
       startX,
       chapterSpacing,
-      eventSpacing,
+      columnStartX,
+      columnSpacing,
+      targetChId: getTargetChId(),
+      targetEvId: navigation.hoveredEventId.value ? normalizeId(navigation.hoveredEventId.value) : null,
     })
   );
 
   const sceneHierarchyLines = computed(() =>
-    calculateSceneHierarchyLines({
-      events: filteredEvents.value,
-      startX,
-      eventSpacing,
+    computeCrossDayHierarchyLines({
+      mode: filters.value.linkMode,
+      dateColumns: dateColumns.value,
+      diegeticScrollLeft: diegeticScrollLeft.value,
+      diegeticScrollTop: diegeticScrollTop.value,
+      columnStartX,
+      columnSpacing,
+      targetChId: getTargetChId(),
+      targetEvId: navigation.hoveredEventId.value ? normalizeId(navigation.hoveredEventId.value) : null,
     })
   );
 
-  const canvasMinWidth = computed(() => {
-    const chWidth = startX + filteredChapters.value.length * chapterSpacing + 120;
-    const evWidth = startX + filteredEvents.value.length * eventSpacing + 120;
-    return `${Math.max(600, Math.max(chWidth, evWidth))}px`;
-  });
+  const narrativeMinWidth = computed(() => `${Math.max(600, startX + filteredChapters.value.length * chapterSpacing + 120)}px`);
+  const diegeticMinWidth = computed(() => `${Math.max(600, columnStartX + dateColumns.value.length * columnSpacing + 120)}px`);
+  const canvasMinWidth = computed(() => narrativeMinWidth.value);
 
   watch(() => [getProjectId(), filters.value.readerHorizonChapterOrder], loadInspectorData);
   onMounted(loadInspectorData);
@@ -191,9 +222,14 @@ export function useTimelineInspector(
     filteredChapters,
     filteredEvents,
     formattedEvents,
+    dateColumns,
     connectionLines,
     sceneHierarchyLines,
     canvasMinWidth,
+    narrativeMinWidth,
+    diegeticMinWidth,
+    onNarrativeScroll,
+    onDiegeticScroll,
     isLoading,
     error,
     activeChapterId: navigation.activeChapterId,

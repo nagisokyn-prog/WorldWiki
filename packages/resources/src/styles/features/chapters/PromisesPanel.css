@@ -1586,3 +1586,19 @@
 
 
 
+
+.milestone-collapsible-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.milestone-collapsible-card.stage-resolution {
+  border-color: var(--success, var(--accent));
+}
+
+.milestone-card-body {
+  padding: 6px 8px;
+  border-top: 1px solid var(--border-subtle, var(--border-color));
+}

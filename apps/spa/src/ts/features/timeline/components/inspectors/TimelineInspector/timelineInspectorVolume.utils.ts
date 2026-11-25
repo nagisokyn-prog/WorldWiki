@@ -197,7 +197,7 @@ export function calculateConnectionLines(params: {
       const x1 = chapterPositions.get(cleanRChId);
       const x2 = eventPositions.get(evId);
       if (x1 !== undefined && x2 !== undefined) {
-        const isFlashback = checkIsFlashback(ev, chapters) || r.kind === 'flashback' || x1 > x2;
+        const isFlashback = checkIsFlashback(ev, chapters) || r.kind === 'flashback';
         lines.push({
           id: `line-${evId}-${r.chapter_id}`,
           eventId: evId,

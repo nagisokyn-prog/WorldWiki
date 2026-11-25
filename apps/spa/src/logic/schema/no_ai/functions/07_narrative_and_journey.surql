@@ -132,18 +132,26 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
     IF array::len($milestones) > 0 {
         FOR $m IN $milestones {
             IF $m.block_id != NONE {
+                LET $m_chap = IF $m.chapter_id != NONE AND $m.chapter_id != NULL AND type::string($m.chapter_id) != '' AND type::string($m.chapter_id) != 'NONE' {
+                    type::record('chapters', string::trim(string::replace(string::replace(string::replace(string::replace(type::string($m.chapter_id), 'chapters:', ''), '`', ''), '⟨', ''), '⟩', '')))
+                } ELSE {
+                    $target_chap
+                };
+                LET $m_chap_str = IF $m_chap != NONE AND $m_chap != NULL {
+                    string::trim(string::replace(string::replace(string::replace(string::replace(type::string($m_chap), 'chapters:', ''), '`', ''), '⟨', ''), '⟩', ''))
+                } ELSE { $clean_chap_str };
                 LET $clean_mb = string::trim(string::replace(string::replace(string::replace(string::replace(type::string($m.block_id), 'text_blocks:', ''), '`', ''), '⟨', ''), '⟩', ''));
                 LET $mb_id = IF string::starts_with($clean_mb, 'blk_') {
                     $clean_mb
-                } ELSE IF $clean_chap_str != '' {
-                    string::concat('blk_', $clean_chap_str, '_', $clean_mb)
+                } ELSE IF $m_chap_str != '' {
+                    string::concat('blk_', $m_chap_str, '_', $clean_mb)
                 } ELSE {
                     $clean_mb
                 };
                 LET $block_rec = type::record('text_blocks', $mb_id);
-                IF $target_chap != NONE AND $target_chap != NULL {
+                IF $m_chap != NONE AND $m_chap != NULL {
                     UPSERT $block_rec SET
-                        chapter_id = $target_chap,
+                        chapter_id = $m_chap,
                         block_type = block_type ?? 'description',
                         order_index = order_index ?? ($m.order_index ?? 0),
                         content = content ?? ($m.quote ?? ''),
@@ -153,6 +161,15 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                     stage = IF $m.stage != NONE AND $m.stage != NULL AND type::string($m.stage) != '' { type::string($m.stage) } ELSE { 'plant' },
                     quote = IF $m.quote != NONE AND $m.quote != NULL { type::string($m.quote) } ELSE { '' },
                     note = IF $m.note != NONE AND $m.note != NULL { type::string($m.note) } ELSE { NONE },
+                    location_id = IF $m.location_id != NONE AND $m.location_id != NULL AND type::string($m.location_id) != 'NONE' { type::string($m.location_id) } ELSE { NONE },
+                    timeline_event_id = IF $m.timeline_event_id != NONE AND $m.timeline_event_id != NULL AND type::string($m.timeline_event_id) != 'NONE' { type::string($m.timeline_event_id) } ELSE { NONE },
+                    m_abs = IF $m.m_abs != NONE AND $m.m_abs != NULL { type::int($m.m_abs) } ELSE { NONE },
+                    calendar_id = IF $m.calendar_id != NONE AND $m.calendar_id != NULL AND type::string($m.calendar_id) != 'NONE' { type::string($m.calendar_id) } ELSE { NONE },
+                    participant_ids = IF $m.participant_ids != NONE AND type::is_array($m.participant_ids) { $m.participant_ids } ELSE { [] },
+                    arcs = IF $m.arcs != NONE AND type::is_array($m.arcs) { $m.arcs } ELSE { [] },
+                    time_nature = IF $m.time_nature != NONE AND $m.time_nature != NULL AND type::string($m.time_nature) != '' { type::string($m.time_nature) } ELSE { NONE },
+                    is_flashback = IF $m.is_flashback != NONE { $m.is_flashback } ELSE { NONE },
+                    block_ids = IF $m.block_ids != NONE AND type::is_array($m.block_ids) { $m.block_ids } ELSE { [] },
                     created_at = time::now();
             };
         };
@@ -274,7 +291,16 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 note: note,
                 block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
-                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END,
+                location_id: location_id,
+                timeline_event_id: timeline_event_id,
+                m_abs: m_abs,
+                calendar_id: calendar_id,
+                participant_ids: IF participant_ids != NONE AND type::is_array(participant_ids) THEN participant_ids ELSE [] END,
+                arcs: IF arcs != NONE AND type::is_array(arcs) THEN arcs ELSE [] END,
+                time_nature: time_nature,
+                is_flashback: is_flashback,
+                block_ids: IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END
             } AS milestones,
             (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
@@ -616,7 +642,16 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
                 note: note,
                 block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
-                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END,
+                location_id: location_id,
+                timeline_event_id: timeline_event_id,
+                m_abs: m_abs,
+                calendar_id: calendar_id,
+                participant_ids: IF participant_ids != NONE AND type::is_array(participant_ids) THEN participant_ids ELSE [] END,
+                arcs: IF arcs != NONE AND type::is_array(arcs) THEN arcs ELSE [] END,
+                time_nature: time_nature,
+                is_flashback: is_flashback,
+                block_ids: IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END
             } AS milestones,
             (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
@@ -673,7 +708,16 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
                 note: note,
                 block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
-                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END,
+                location_id: location_id,
+                timeline_event_id: timeline_event_id,
+                m_abs: m_abs,
+                calendar_id: calendar_id,
+                participant_ids: IF participant_ids != NONE AND type::is_array(participant_ids) THEN participant_ids ELSE [] END,
+                arcs: IF arcs != NONE AND type::is_array(arcs) THEN arcs ELSE [] END,
+                time_nature: time_nature,
+                is_flashback: is_flashback,
+                block_ids: IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END
             } AS milestones,
             (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
@@ -735,7 +779,16 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
                 note: note,
                 block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
-                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END,
+                location_id: location_id,
+                timeline_event_id: timeline_event_id,
+                m_abs: m_abs,
+                calendar_id: calendar_id,
+                participant_ids: IF participant_ids != NONE AND type::is_array(participant_ids) THEN participant_ids ELSE [] END,
+                arcs: IF arcs != NONE AND type::is_array(arcs) THEN arcs ELSE [] END,
+                time_nature: time_nature,
+                is_flashback: is_flashback,
+                block_ids: IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END
             } AS milestones,
             (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{
@@ -782,7 +835,16 @@ DEFINE FUNCTION OVERWRITE fn::list_unresolved_promises_by_volume($vol: any) {
                 note: note,
                 block_id: IF out != NONE THEN string::replace(type::string(out), 'text_blocks:', '') ELSE NONE END,
                 chapter_id: IF out.chapter_id != NONE THEN type::string(out.chapter_id) ELSE NONE END,
-                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END
+                order_index: IF out.order_index != NONE THEN out.order_index ELSE NONE END,
+                location_id: location_id,
+                timeline_event_id: timeline_event_id,
+                m_abs: m_abs,
+                calendar_id: calendar_id,
+                participant_ids: IF participant_ids != NONE AND type::is_array(participant_ids) THEN participant_ids ELSE [] END,
+                arcs: IF arcs != NONE AND type::is_array(arcs) THEN arcs ELSE [] END,
+                time_nature: time_nature,
+                is_flashback: is_flashback,
+                block_ids: IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END
             } AS milestones,
             (IF array::len(<-participant_of) > 0 THEN <-participant_of.in.id ELSE [] END) AS participant_ids,
             ->advances_arc.{

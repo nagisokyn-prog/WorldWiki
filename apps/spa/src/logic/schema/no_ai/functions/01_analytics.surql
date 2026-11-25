@@ -247,7 +247,48 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
         LIMIT 2000
     );
 
-    LET $all_events = array::concat($events, $scene_events, $entity_events);
+    LET $milestone_events = (
+        SELECT
+            id,
+            type::string(in) AS parent_id,
+            IF quote != NONE AND string::len(quote) > 0 { quote }
+               ELSE IF stage == 'resolution' { 'Отстрел' }
+               ELSE { 'Развитие' } AS title,
+            note AS description,
+            IF in.kind != NONE { in.kind } ELSE { 'gun' } AS kind,
+            location_id,
+            IF m_abs != NONE {
+                m_abs
+            } ELSE IF out.chapter_id.sort_order != NONE {
+                out.chapter_id.sort_order * 1440
+            } ELSE {
+                1440
+            } AS m_abs,
+            calendar_id,
+            [
+                {
+                    chapter_id: IF out.chapter_id != NONE { type::string(out.chapter_id) } ELSE { '' },
+                    chapter_title: IF out.chapter_id.title != NONE { out.chapter_id.title } ELSE { 'Глава' },
+                    chapter_order: IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order } ELSE { 0 },
+                    chapter_sort_order: IF out.chapter_id.sort_order != NONE { out.chapter_id.sort_order } ELSE { 0 },
+                    pov_id: NONE,
+                    kind: IF time_nature == 'flashback' OR is_flashback == true { 'flashback' } ELSE { 'direct' },
+                    block_id: IF out != NONE { out.id } ELSE { NONE },
+                    is_anachronism: false
+                }
+            ] AS reveals,
+            IF participant_ids != NONE AND array::len(participant_ids) > 0 {
+                (SELECT id, name, schema_id.type_key AS entity_type FROM entities WHERE id IN $parent.participant_ids OR type::string(id) IN $parent.participant_ids)
+            } ELSE {
+                []
+            } AS participants
+        FROM promise_milestones
+        WHERE stage IN ['progression', 'resolution']
+          AND out.chapter_id.volume_id.project_id = $p_rec
+        LIMIT 2000
+    );
+
+    LET $all_events = array::concat($events, $scene_events, $milestone_events, $entity_events);
 
     LET $chapters = (
         SELECT 

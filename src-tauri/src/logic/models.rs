@@ -235,6 +235,25 @@ pub struct PromiseMilestone {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number | null")]
     pub order_index: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timeline_event_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
+    pub m_abs: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calendar_id: Option<String>,
+    #[serde(default)]
+    pub participant_ids: Vec<String>,
+    #[serde(default)]
+    pub arcs: Vec<SceneArcItem>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub time_nature: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_flashback: Option<bool>,
+    #[serde(default)]
+    pub block_ids: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]

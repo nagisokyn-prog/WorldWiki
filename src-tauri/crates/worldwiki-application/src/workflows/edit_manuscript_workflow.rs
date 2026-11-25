@@ -80,6 +80,7 @@ impl EditManuscriptAtomicWorkflow {
                 block_id: None,
                 chapter_id: Some(chapter.id.clone()),
                 order_index: Some(1),
+                ..Default::default()
             });
             self.plot_services.plant_promise(&promise).await?;
             promises_planted += 1;

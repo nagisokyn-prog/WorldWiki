@@ -20,6 +20,8 @@
           </span>
           <span v-if="participantCount > 0" class="collapsed-pill" title="Участники">👥 {{ participantCount }}</span>
           <span v-if="arcCount > 0" class="collapsed-pill" title="Арки">⚡ {{ arcCount }}</span>
+          <span v-if="progressionCount > 0" class="collapsed-pill" title="Этапы развития">🌿 {{ progressionCount }}</span>
+          <span v-if="hasResolution" class="collapsed-pill" title="Отстреляно">🎯</span>
           <span v-if="item.quote" class="collapsed-quote text-xs text-muted truncate italic">
             «{{ item.quote.slice(0, 32) }}{{ item.quote.length > 32 ? '...' : '' }}»
           </span>
@@ -49,13 +51,18 @@
 
       <!-- ХРОНОЛОГИЯ ЖИЗНИ ОБЕЩАНИЯ (МИНИ-ТАЙМЛАЙН) -->
       <PromiseCardTimeline
+        :project="project"
         :item="item"
         :get-chapter-title="getChapterTitle"
         :is-current-chapter-promise="isCurrentChapterPromise"
+        :previous-scene="previousScene"
+        :shared-entities="sharedEntities"
         @remove="handleRemove"
         @locate="handleLocate"
         @locate-step="$emit('locate', $event)"
         @remove-milestone="$emit('removeMilestone', $event)"
+        @update:item="$emit('update:item', $event)"
+        @change="$emit('change')"
       />
 
       <!-- 4. ДРЕВОВИДНЫЕ СВЯЗАННЫЕ ПОД-СЦЕНЫ -->
@@ -75,6 +82,7 @@
             :get-chapter-title="getChapterTitle"
             :is-current-chapter-promise="isCurrentChapterPromise"
             :level="(level || 0) + 1"
+            :shared-entities="sharedEntities"
             @update:item="$emit('update:item', $event)"
             @update:note-draft="$emit('update:noteDraft', $event)"
             @remove="$emit('remove', $event)"
@@ -87,25 +95,6 @@
             @change="$emit('change')"
           />
         </div>
-      </div>
-
-      <!-- Быстрые действия с карточкой (только для сюжетных обещаний / ружей) -->
-      <div v-if="item.kind !== 'scene'" class="card-quick-actions">
-        <button 
-          class="btn-quick btn-quick-progress" 
-          title="Развить обещание выделенной фразой"
-          @click="$emit('promptAttachMilestone', { item, stage: 'progression' })"
-        >
-          🌿 + Развить
-        </button>
-        <button 
-          v-if="!item.resolution"
-          class="btn-quick btn-quick-resolve" 
-          title="Отстрелять обещание в текущей главе"
-          @click="$emit('promptAttachMilestone', { item, stage: 'resolution' })"
-        >
-          🎯 Отстрелять
-        </button>
       </div>
 
       <!-- Заметка -->
@@ -131,7 +120,9 @@ import PromiseCardTimeline from './components/PromiseCardTimeline.vue';
 import { usePromiseCard } from './usePromiseCard';
 import type { PromiseCardProps, PromiseCardEmits } from './PromiseCard.model';
 
-const props = defineProps<PromiseCardProps>();
+const props = withDefaults(defineProps<PromiseCardProps>(), {
+  expanded: undefined
+});
 const emit = defineEmits<PromiseCardEmits>();
 
 const {
@@ -140,6 +131,8 @@ const {
   timeNatureIcon,
   participantCount,
   arcCount,
+  progressionCount,
+  hasResolution,
   toggleCollapsed,
   handleLocate,
   handleRemove

@@ -12,6 +12,15 @@ export interface PromiseMilestone {
   paragraph_index?: number;
   order_index: number | null;
   created_at?: string | null;
+  location_id?: string | null;
+  timeline_event_id?: string | null;
+  m_abs?: number | null;
+  calendar_id?: string | null;
+  participant_ids?: string[];
+  arcs?: SceneArcItem[];
+  time_nature?: string | null;
+  is_flashback?: boolean | null;
+  block_ids?: string[];
 }
 
 export type DatePrecision = 'exact' | 'day' | 'month' | 'season' | 'year' | 'range';

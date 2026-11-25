@@ -12,6 +12,7 @@ import {
   type InspectorChapter,
   type InspectorParticipant,
   type FormattedInspectorEvent,
+  type DateClusterColumn,
   type TimelineInspectorFilterState,
   getInspectorKindMeta,
 } from './TimelineInspector.model';
@@ -34,26 +35,14 @@ export function getEventId(ev: InspectorEvent): string {
 
 export function checkIsFlashback(
   ev: InspectorEvent,
-  allChs: InspectorChapter[],
-  allEvents?: InspectorEvent[]
+  _allChs?: InspectorChapter[],
+  _allEvents?: InspectorEvent[]
 ): boolean {
-  if (ev.reveals?.some((r) => r.kind === 'flashback' || (r as unknown as { time_nature?: string }).time_nature === 'flashback')) return true;
-  const rawObj = ev as unknown as { time_nature?: string; is_flashback?: boolean };
-  if (rawObj.time_nature === 'flashback' || rawObj.is_flashback === true) return true;
-  const text = `${ev.title} ${ev.description || ''}`.toLowerCase();
-  if (text.includes('флешбэк') || text.includes('флешбек') || text.includes('ретроспектив') || text.includes('воспоминани')) return true;
-
-  const primaryRev = ev.reveals?.[0];
-  if (primaryRev && ev.m_abs > 0 && allChs.length > 1 && allEvents) {
-    const cleanChId = normalizeId(primaryRev.chapter_id);
-    const chIdx = allChs.findIndex((c) => normalizeId(c.id) === cleanChId);
-    if (chIdx > 0) {
-      const prevChIds = new Set(allChs.slice(0, chIdx).map((c) => normalizeId(c.id)));
-      const prevEvents = allEvents.filter((e) => e.m_abs > 0 && e.reveals?.some((r) => prevChIds.has(normalizeId(r.chapter_id))));
-      if (prevEvents.length > 0 && ev.m_abs < Math.max(...prevEvents.map((e) => e.m_abs)) - 1440) return true;
-    }
+  if (ev.reveals?.some((r) => r.kind === 'flashback' || (r as unknown as { time_nature?: string }).time_nature === 'flashback')) {
+    return true;
   }
-  return false;
+  const rawObj = ev as unknown as { time_nature?: string; is_flashback?: boolean };
+  return rawObj.time_nature === 'flashback' || rawObj.is_flashback === true;
 }
 
 export function resolveBestEraIndex(mAbs: number, cal: CalendarData): number {
@@ -224,22 +213,107 @@ export function buildFormattedEvents(
     }
 
     const formattedDate = formatEventDate(ev.m_abs, targetCal);
+    const isUndated = ev.m_abs === 0;
+    let dayKey = 'undated';
+    let dayLabel = 'Без даты';
+    let timeLabel = '';
+
+    if (!isUndated && targetCal) {
+      try {
+        const bestEra = resolveBestEraIndex(ev.m_abs, targetCal);
+        const parts = CalendarMath.getDateFromAbsolute(ev.m_abs, targetCal, bestEra);
+        const monthName = targetCal.месяцы?.[parts.month]?.название || `Мес. ${parts.month + 1}`;
+        dayKey = `${bestEra}_${parts.year}_${parts.month}_${parts.day}`;
+        dayLabel = `${parts.day} ${monthName} ${parts.year}`;
+        const hh = String(parts.hour ?? 0).padStart(2, '0');
+        const mm = String(parts.minute ?? 0).padStart(2, '0');
+        if (parts.hour || parts.minute) timeLabel = `${hh}:${mm}`;
+      } catch {
+        dayKey = `m_${ev.m_abs}`;
+        dayLabel = formattedDate;
+      }
+    } else if (!isUndated) {
+      dayKey = `m_${ev.m_abs}`;
+      dayLabel = formattedDate;
+    }
+
+    const chObj = primaryReveal?.chapter_id
+      ? chapters.find((c) => normalizeId(c.id) === normalizeId(primaryReveal.chapter_id))
+      : undefined;
+
+    const rawParent = ev.parent_id ? normalizeId(ev.parent_id) : '';
+    const parentIdNormalized = rawParent && rawParent.toUpperCase() !== 'NONE' ? rawParent : undefined;
 
     return {
       ...ev,
       id: evId,
       formattedDate,
+      dayKey,
+      dayLabel,
+      timeLabel,
+      isUndated,
       cleanParticipants,
       isScene: evId.startsWith('plot_promises:') || !evId.startsWith('timeline_events:'),
       kind,
       kindMeta,
       isFlashback,
       primaryChapterId: primaryReveal?.chapter_id ? normalizeId(primaryReveal.chapter_id) : undefined,
-      primaryChapterTitle: primaryReveal?.chapter_title || undefined,
+      primaryChapterTitle: primaryReveal?.chapter_title || chObj?.title || undefined,
+      primaryChapterOrder: chObj?.sort_order ?? primaryReveal?.chapter_order ?? primaryReveal?.chapter_sort_order,
       locationName,
       localTimeBadge,
       localTimeHint,
       hasTimezoneDiscrepancy,
+      parentIdNormalized,
     };
   });
+}
+
+export function groupEventsByDate(events: FormattedInspectorEvent[]): DateClusterColumn[] {
+  const cloned = events.map((ev) => ({
+    ...ev,
+    sameDayChildren: [] as FormattedInspectorEvent[],
+    crossDayChildCount: 0,
+  }));
+
+  const byId = new Map<string, FormattedInspectorEvent>();
+  for (const ev of cloned) {
+    byId.set(normalizeId(ev.id), ev);
+  }
+
+  const topLevelEvents: FormattedInspectorEvent[] = [];
+  for (const ev of cloned) {
+    const parentKey = ev.parentIdNormalized || (ev.parent_id ? normalizeId(ev.parent_id) : '');
+    const parent = parentKey && parentKey.toUpperCase() !== 'NONE' ? byId.get(parentKey) : undefined;
+
+    if (parent && normalizeId(parent.id) !== normalizeId(ev.id)) {
+      ev.parentIdNormalized = normalizeId(parent.id);
+      ev.parentTitle = parent.title;
+      if (parent.dayKey === ev.dayKey) {
+        parent.sameDayChildren = parent.sameDayChildren || [];
+        parent.sameDayChildren.push(ev);
+        continue;
+      }
+      parent.crossDayChildCount = (parent.crossDayChildCount || 0) + 1;
+    }
+    topLevelEvents.push(ev);
+  }
+
+  const columns: DateClusterColumn[] = [];
+  const map = new Map<string, DateClusterColumn>();
+  for (const ev of topLevelEvents) {
+    let col = map.get(ev.dayKey);
+    if (!col) {
+      col = {
+        key: ev.dayKey,
+        label: ev.dayLabel,
+        isUndated: Boolean(ev.isUndated),
+        events: [],
+      };
+      map.set(ev.dayKey, col);
+      columns.push(col);
+    }
+    col.events.push(ev);
+  }
+  return columns;
 }

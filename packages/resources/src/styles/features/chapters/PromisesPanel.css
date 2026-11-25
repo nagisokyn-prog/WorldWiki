@@ -1598,7 +1598,6 @@
   border-color: var(--success, var(--accent));
 }
 
-.milestone-card-body {
-  padding: 6px 8px;
-  border-top: 1px solid var(--border-subtle, var(--border-color));
+.milestone-step-footer {
+  padding: 0 8px 8px;
 }

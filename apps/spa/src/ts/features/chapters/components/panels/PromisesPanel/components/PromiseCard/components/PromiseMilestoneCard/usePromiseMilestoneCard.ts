@@ -45,6 +45,15 @@ export function usePromiseMilestoneCard(
     return '';
   });
 
+  const cleanBlocks = computed(() => {
+    const blocks = props.milestone.block_ids;
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      return blocks.map(cleanBlockLabel).filter((b): b is string => Boolean(b));
+    }
+    const single = cleanBlockLabel(props.milestone.block_id);
+    return single ? [single] : [];
+  });
+
   const milestoneAsPromise = computed<RichPlotPromise>(() => ({
     ...props.parentItem,
     id: props.milestone.milestone_id || `${props.parentItem.id || 'ms'}_${props.stage}`,
@@ -52,8 +61,8 @@ export function usePromiseMilestoneCard(
     quote: props.milestone.quote || '',
     title: props.milestone.quote || props.parentItem.title,
     paragraph_index: props.milestone.order_index ?? 1,
-    block_id: props.milestone.block_id || null,
-    block_ids: Array.isArray(props.milestone.block_ids) ? props.milestone.block_ids : [],
+    block_id: cleanBlocks.value[0] || null,
+    block_ids: cleanBlocks.value,
     location_id: props.milestone.location_id ?? null,
     timeline_event_id: props.milestone.timeline_event_id ?? null,
     m_abs: props.milestone.m_abs ?? null,

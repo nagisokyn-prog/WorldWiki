@@ -1,5 +1,5 @@
 <template>
-  <div class="milestone-collapsible-card" :class="`stage-${stage}`">
+  <div class="promise-card milestone-collapsible-card" :class="[`stage-${stage}`, { 'is-card-collapsed': isCollapsed }]">
     <div class="card-header cursor-pointer select-none" @click="toggleCollapsed">
       <div class="flex items-center gap-1.5 flex-1 min-w-0">
         <span class="collapse-card-icon text-[10px] text-muted">{{ isCollapsed ? '▶' : '▼' }}</span>
@@ -29,7 +29,7 @@
       </button>
     </div>
 
-    <div v-if="!isCollapsed" class="milestone-card-body flex flex-col gap-2">
+    <div v-if="!isCollapsed" class="card-body flex flex-col gap-2">
       <PromiseCardMeta
         :project="project"
         :item="milestoneAsPromise"
@@ -40,21 +40,23 @@
         @change="$emit('change')"
       />
 
-      <div class="step-badge">
-        <span class="step-location font-medium">
-          {{ getChapterTitle(milestone.chapter_id || '') }} · абз. {{ milestone.order_index ?? 1 }}
-        </span>
-        <span v-if="isCurrentChapterPromise(milestone.chapter_id || '')" class="badge-current-chapter">текущая</span>
-      </div>
+      <div class="milestone-step-footer flex flex-col gap-1.5">
+        <div class="step-badge">
+          <span class="step-location font-medium">
+            {{ getChapterTitle(milestone.chapter_id || '') }} · абз. {{ milestone.order_index ?? 1 }}
+          </span>
+          <span v-if="isCurrentChapterPromise(milestone.chapter_id || '')" class="badge-current-chapter">текущая</span>
+        </div>
 
-      <blockquote class="card-quote quote-small" :class="{ 'quote-resolution': stage === 'resolution' }">
-        «{{ milestone.quote || '' }}»
-      </blockquote>
+        <blockquote class="card-quote quote-small" :class="{ 'quote-resolution': stage === 'resolution' }">
+          «{{ milestone.quote || '' }}»
+        </blockquote>
 
-      <div class="step-actions">
-        <button class="btn-locate-step" @click="handleLocate">
-          {{ stage === 'resolution' ? '📍 Перейти к финалу' : '📍 Перейти' }}
-        </button>
+        <div class="step-actions">
+          <button class="btn-locate-step" @click="handleLocate">
+            {{ stage === 'resolution' ? '📍 Перейти к финалу' : '📍 Перейти' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

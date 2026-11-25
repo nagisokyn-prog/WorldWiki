@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useAvailableEntityTypes } from '../../../composables/useAvailableEntityTypes';
 
 export interface SchemaCustomField {
@@ -63,17 +63,46 @@ export interface SchemaContainerItem {
     [key: string]: unknown;
 }
 
+let cachedUiConfig: { templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown } | null = null;
+let uiConfigPromise: Promise<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }> | null = null;
+
+async function loadUiEditorConfig(): Promise<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }> {
+    if (cachedUiConfig) return cachedUiConfig;
+    if (!uiConfigPromise) {
+        uiConfigPromise = fetch('/struct/editor/ui_editor.json')
+            .then(async (res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = (await res.json()) as { templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown };
+                cachedUiConfig = data;
+                return data;
+            })
+            .catch((err) => {
+                uiConfigPromise = null;
+                throw err;
+            });
+    }
+    return uiConfigPromise;
+}
+
 export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const isDraggedOver = ref(false);
     const { availableTypes: availableEntityTypes } = useAvailableEntityTypes();
 
-    const rawConfigs = import.meta.glob<Record<string, { default?: { templates?: Record<string, SchemaTemplateConfig> }; templates?: Record<string, SchemaTemplateConfig> }>>(
-        '../../../struct/editor/ui_editor.json',
-        { eager: true }
+    const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(
+        cachedUiConfig || {}
     );
-    const uiMod = Object.values(rawConfigs)[0];
-    const initialConfig = (uiMod && ('default' in uiMod ? uiMod.default : uiMod)) || {};
-    const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(initialConfig as { templates?: Record<string, SchemaTemplateConfig> });
+
+    onMounted(async () => {
+        if (cachedUiConfig) {
+            fullConfig.value = cachedUiConfig;
+            return;
+        }
+        try {
+            fullConfig.value = await loadUiEditorConfig();
+        } catch (err) {
+            console.warn('[useSchemaContainer] Failed to load ui_editor.json:', err);
+        }
+    });
 
     const atomicBricks = [
         { value: 'text', label: 'Текст' },

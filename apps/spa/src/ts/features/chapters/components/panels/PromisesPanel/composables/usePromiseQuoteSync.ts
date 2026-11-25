@@ -56,7 +56,9 @@ export function createPromiseQuoteSync(options: {
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      const pNodes = Array.from(doc.querySelectorAll('p, blockquote'));
+      const pNodes = Array.from(
+        doc.body.querySelectorAll(':scope > p, :scope > blockquote, :scope > h1, :scope > h2, :scope > h3, :scope > div.semantic-paragraph-node, :scope > div')
+      );
       if (pNodes.length === 0) return;
 
       const cleanChapId = cleanId(options.props.chapterId);
@@ -128,9 +130,19 @@ export function createPromiseQuoteSync(options: {
         const minParaIdx = paraIndices.length > 0 ? paraIndices[0] : -1;
         const maxParaIdx = paraIndices.length > 0 ? paraIndices[paraIndices.length - 1] : -1;
         const expectedSpan = minParaIdx !== -1 && maxParaIdx !== -1 ? Math.max(1, maxParaIdx - minParaIdx + 1) : 1;
-
         const trimmed = currentQuote.trim();
-        const quoteLines = trimmed.split(/[\r\n]+/).map(normalizeChunk).filter((s) => s.length >= 4);
+
+        // Быстрая точная проверка по сохранённым индексам para-N: если текст на этих позициях не изменился — не трогаем границы
+        if (paraIndices.length > 0 && paraIndices.every((idx) => idx >= 0 && idx < pNodes.length)) {
+          const idxText = normalizeChunk(paraIndices.map((idx) => pNodes[idx].textContent ?? '').join(' '));
+          const curNorm = normalizeChunk(trimmed);
+          if (!curNorm || idxText === curNorm || (curNorm.length >= 6 && idxText.includes(curNorm))) {
+            if (p.is_orphaned) { p.is_orphaned = false; hasChanges = true; }
+            continue;
+          }
+        }
+
+        const quoteLines = trimmed.split(/[\r\n]+/).map(normalizeChunk).filter((s) => s.length > 0);
         const isMultiParagraph = expectedSpan > 1 || quoteLines.length > 1 || trimmed.includes('\n');
 
         // Путь 1.5: Прямой поиск цитаты в одиночном параграфе рукописи
@@ -167,22 +179,44 @@ export function createPromiseQuoteSync(options: {
 
         let startIdx = -1;
         let endIdx = -1;
-        if (normStart.length >= 4) {
-          for (let i = 0; i < pNodes.length; i++) {
-            const nodeNorm = normalizeChunk(pNodes[i].textContent ?? '');
-            if (nodeNorm.length >= 4 && (nodeNorm.includes(normStart) || (nodeNorm.length >= 10 && normStart.includes(nodeNorm)))) {
-              startIdx = i;
-              break;
+        const matchesLine = (nodeNorm: string, anchor: string) => {
+          if (!anchor) return false;
+          if (nodeNorm === anchor) return true;
+          if (anchor.length >= 4 && nodeNorm.length >= 4) {
+            return nodeNorm.includes(anchor) || (nodeNorm.length >= 10 && anchor.includes(nodeNorm));
+          }
+          return false;
+        };
+
+        if (normStart.length > 0) {
+          if (minParaIdx >= 0 && minParaIdx < pNodes.length) {
+            for (let offset = 0; offset < pNodes.length; offset++) {
+              const up = minParaIdx + offset;
+              if (up < pNodes.length && matchesLine(normalizeChunk(pNodes[up].textContent ?? ''), normStart)) {
+                startIdx = up;
+                break;
+              }
+              const down = minParaIdx - offset;
+              if (offset > 0 && down >= 0 && matchesLine(normalizeChunk(pNodes[down].textContent ?? ''), normStart)) {
+                startIdx = down;
+                break;
+              }
+            }
+          } else {
+            for (let i = 0; i < pNodes.length; i++) {
+              if (matchesLine(normalizeChunk(pNodes[i].textContent ?? ''), normStart)) {
+                startIdx = i;
+                break;
+              }
             }
           }
         }
         if (startIdx === -1 && minParaIdx >= 0 && minParaIdx < pNodes.length) startIdx = minParaIdx;
 
-        if (startIdx !== -1 && normEnd.length >= 4) {
+        if (startIdx !== -1 && normEnd.length > 0) {
           const maxSearchIdx = Math.min(pNodes.length - 1, startIdx + Math.max(expectedSpan, quoteLines.length, 2) + 12);
           for (let i = maxSearchIdx; i >= startIdx; i--) {
-            const nodeNorm = normalizeChunk(pNodes[i].textContent ?? '');
-            if (nodeNorm.length >= 4 && (nodeNorm.includes(normEnd) || (nodeNorm.length >= 10 && normEnd.includes(nodeNorm)))) {
+            if (matchesLine(normalizeChunk(pNodes[i].textContent ?? ''), normEnd)) {
               endIdx = i;
               break;
             }

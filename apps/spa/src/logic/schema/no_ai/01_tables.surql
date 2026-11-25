@@ -172,6 +172,12 @@ DEFINE FIELD OVERWRITE project_id  ON timeline_events TYPE record<projects> | st
 DEFINE FIELD OVERWRITE title       ON timeline_events TYPE string;
 DEFINE FIELD OVERWRITE description ON timeline_events TYPE option<string | null>;
 DEFINE FIELD OVERWRITE m_abs       ON timeline_events TYPE int; -- Золотой эталон абсолютной минуты
+DEFINE FIELD OVERWRITE m_abs_end   ON timeline_events TYPE option<int | null>; -- Конец диапазона для нечётких дат (флешбэки и др.)
+DEFINE FIELD OVERWRITE date_precision ON timeline_events TYPE string DEFAULT 'exact'
+  ASSERT $value IN ['exact', 'day', 'month', 'season', 'year', 'range'];
+DEFINE FIELD OVERWRITE is_approximate ON timeline_events TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE time_of_day    ON timeline_events TYPE option<string | null>
+  ASSERT $value IN [NONE, NULL, 'morning', 'day', 'evening', 'night'];
 DEFINE FIELD OVERWRITE calendar_id ON timeline_events TYPE record<calendars> | string VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE created_at  ON timeline_events TYPE datetime DEFAULT time::now();
 
@@ -237,7 +243,7 @@ DEFINE FIELD OVERWRITE note              ON plot_promises TYPE option<string | n
 DEFINE FIELD OVERWRITE status            ON plot_promises TYPE string DEFAULT 'planted'
   ASSERT $value IN ['planted', 'developed', 'in_progress', 'resolved', 'abandoned'];
 DEFINE FIELD OVERWRITE parent_id         ON plot_promises TYPE option<record<plot_promises> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
-DEFINE FIELD OVERWRITE location_id       ON plot_promises TYPE option<record<entities> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
+DEFINE FIELD OVERWRITE location_id       ON plot_promises TYPE option<record<entities> | string | null> VALUE IF type::is_string($value) AND string::contains($value, ':') { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE timeline_event_id ON plot_promises TYPE option<record<timeline_events> | string | null> VALUE IF type::is_string($value) { type::record($value) } ELSE { $value };
 DEFINE FIELD OVERWRITE created_at        ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at        ON plot_promises TYPE datetime DEFAULT time::now();

@@ -1,5 +1,9 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { plotApi } from '@/services/api/plot.api';
+import { useCalendarStore } from '@/stores/calendar.store';
+import { useStoryArcsStore } from '@/stores/story_arcs.store';
+import { fetchPromiseCardEntities } from './components/PromiseCardMeta/usePromiseCardEntitiesLoader';
+import type { SharedPromiseEntities } from './components/PromiseCardMeta/PromiseCardMeta.model';
 import {
   usePromiseFiltering,
   cleanId,
@@ -27,6 +31,55 @@ export function usePromisesPanel(
   const promises = ref<RichPlotPromise[]>([]);
   const loading = ref(false);
   const isCollapsed = ref(false);
+  const expandedCardIds = ref<Set<string>>(new Set());
+  const sharedEntities = ref<SharedPromiseEntities | null>(null);
+
+  const calendarStore = useCalendarStore();
+  const arcsStore = useStoryArcsStore();
+
+  const loadSharedEntities = async () => {
+    if (!props.project) return;
+    try {
+      const res = await fetchPromiseCardEntities(props.project, calendarStore, arcsStore);
+      sharedEntities.value = res;
+    } catch (err) {
+      console.warn('[usePromisesPanel] Failed to load shared project entities:', err);
+    }
+  };
+
+  const isCardExpanded = (id?: string | null): boolean => {
+    if (!id) return false;
+    return expandedCardIds.value.has(id);
+  };
+
+  const toggleCardExpanded = (id?: string | null) => {
+    if (!id) return;
+    const next = new Set(expandedCardIds.value);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.clear();
+      next.add(id);
+    }
+    expandedCardIds.value = next;
+  };
+
+  const expandAllCards = () => {
+    const next = new Set<string>();
+    for (const p of filtering.filteredPromises.value) {
+      if (p.id) next.add(p.id);
+    }
+    expandedCardIds.value = next;
+  };
+
+  const collapseAllCards = () => {
+    expandedCardIds.value = new Set();
+  };
+
+  const getPreviousScene = (index: number): RichPlotPromise | null => {
+    if (index <= 0) return null;
+    return filtering.filteredPromises.value[index - 1] || null;
+  };
 
   const resize = usePromiseResize();
 
@@ -117,7 +170,31 @@ export function usePromisesPanel(
     }
   };
 
-  watch(() => [props.project, props.chapterId], loadPromises);
+  watch(() => [props.project, props.chapterId], () => {
+    expandedCardIds.value = new Set();
+    void loadPromises();
+  });
+  watch(() => props.project, loadSharedEntities);
+
+  const addPromiseAndExpand = async (payload: {
+    kind: string;
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+    block_ids?: string[];
+  }) => {
+    const newId = await actions.addPromise(payload);
+    if (newId) {
+      expandedCardIds.value = new Set([newId]);
+    }
+  };
+
+  const addNewSceneAndExpand = async () => {
+    const newId = await actions.addNewScene();
+    if (newId) {
+      expandedCardIds.value = new Set([newId]);
+    }
+  };
 
   // Триггерится каждый раз, когда Tiptap-редактор генерирует новый HTML.
   // Т.к. content теперь явно объявлен в интерфейсе — Vue правильно отслеживает изменения.
@@ -131,7 +208,8 @@ export function usePromisesPanel(
 
   const onEditorUpdate = () => { syncQuotesWithManuscript(true); };
   onMounted(() => {
-    loadPromises();
+    void loadPromises();
+    void loadSharedEntities();
     document.addEventListener('ww:editor-content-updated', onEditorUpdate);
   });
   onUnmounted(() => {
@@ -142,6 +220,13 @@ export function usePromisesPanel(
   return {
     syncQuotesWithManuscript,
     isCollapsed,
+    expandedCardIds,
+    sharedEntities,
+    isCardExpanded,
+    toggleCardExpanded,
+    expandAllCards,
+    collapseAllCards,
+    getPreviousScene,
     promises,
     chapterPromises: filtering.chapterPromises,
     filteredPromises: filtering.filteredPromises,
@@ -152,8 +237,8 @@ export function usePromisesPanel(
     statusFilter: filtering.statusFilter,
     categoryFilter: filtering.categoryFilter,
     loadPromises,
-    addPromise: actions.addPromise,
-    addNewScene: actions.addNewScene,
+    addPromise: addPromiseAndExpand,
+    addNewScene: addNewSceneAndExpand,
     addSubScene: actions.addSubScene,
     updatePromise: actions.updatePromise,
     addMilestone: actions.addMilestone,

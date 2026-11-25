@@ -25,7 +25,7 @@
 
         <button
           class="btn-new-arc"
-          @click="showCreateModal = true"
+          @click="openInlineCreate"
         >
           ➕ Новая Арка
         </button>
@@ -58,7 +58,40 @@
 
         <!-- Cards List -->
         <div class="kanban-col-body">
-          <div v-if="col.arcs.length === 0" class="kanban-empty-col">
+          <!-- Inline Create Card in Planned column -->
+          <div
+            v-if="col.status === 'planned' && showCreateModal"
+            class="arc-card arc-inline-create-card"
+          >
+            <input
+              ref="inlineTitleInput"
+              v-model="newArcTitle"
+              type="text"
+              placeholder="Название арки (Enter)..."
+              class="arc-inline-input"
+              @keydown.enter.prevent="handleCreate"
+              @keydown.esc="cancelCreate"
+            />
+            <div class="arc-inline-actions">
+              <button
+                type="button"
+                class="arc-inline-btn arc-inline-btn-cancel"
+                @click="cancelCreate"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                class="arc-inline-btn arc-inline-btn-confirm"
+                :disabled="!newArcTitle.trim()"
+                @click="handleCreate"
+              >
+                Создать
+              </button>
+            </div>
+          </div>
+
+          <div v-if="col.arcs.length === 0 && !(col.status === 'planned' && showCreateModal)" class="kanban-empty-col">
             <span class="empty-col-icon">📂</span>
             <span>Нет арок</span>
           </div>
@@ -76,21 +109,14 @@
         </div>
       </div>
     </div>
-
-    <!-- Simple Create Modal -->
-    <ArcCreateModal
-      v-if="showCreateModal"
-      v-model:title="newArcTitle"
-      v-model:arc-type="newArcType"
-      @close="showCreateModal = false"
-      @create="handleCreate"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import type { ArcBoardProps, ArcBoardEmits } from './ArcBoard.model';
+import ArcCard from './components/ArcCard/ArcCard.vue';
+import { useArcBoard } from './useArcBoard';
 
 const arcTypeFilterOptions = [
   { value: 'all', label: 'Все типы' },
@@ -99,9 +125,6 @@ const arcTypeFilterOptions = [
   { value: 'relationship', label: 'Арка отношений' },
   { value: 'theme', label: 'Тематическая арка' },
 ];
-import ArcCard from './components/ArcCard/ArcCard.vue';
-import ArcCreateModal from './components/ArcCreateModal/ArcCreateModal.vue';
-import { useArcBoard } from './useArcBoard';
 
 const props = withDefaults(
   defineProps<ArcBoardProps>(),
@@ -118,7 +141,9 @@ const {
   isLoading,
   showCreateModal,
   newArcTitle,
-  newArcType,
+  inlineTitleInput,
+  openInlineCreate,
+  cancelCreate,
   getArcEffectiveStatus,
   getLinkedBlocks,
   handleCreate,

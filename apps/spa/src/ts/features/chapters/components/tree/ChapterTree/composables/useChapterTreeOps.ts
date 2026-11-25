@@ -103,6 +103,8 @@ export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
             }
         } else if (name) {
             options.emit('add-entity', sectionId, name);
+        } else {
+            options.explorerTreeRef.value?.startCreate(sectionId);
         }
     };
 

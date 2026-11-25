@@ -1,4 +1,4 @@
-import { ref, computed, watch, type Ref } from 'vue';
+import { ref, computed, watch, onUnmounted, type Ref } from 'vue';
 import type { PromiseCardMetaProps, PromiseCardMetaEmits, ProjectEntityOption } from './PromiseCardMeta.model';
 
 export function usePromiseCardLocation(
@@ -86,6 +86,10 @@ export function usePromiseCardLocation(
     emit('update:item', updated);
     emit('change');
   };
+
+  onUnmounted(() => {
+    saveLocation();
+  });
 
   return {
     locationDraft,

@@ -42,7 +42,12 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
           doc.forEach((node, offset) => {
             blockCount++;
             const nodeEnd = offset + node.nodeSize;
-            if (selection.to > offset && selection.from < nodeEnd) {
+            const contentStart = offset + 1;
+            const contentEnd = nodeEnd - 1;
+            const touchesNode = node.textContent.length > 0
+              ? (selection.to > contentStart && selection.from < contentEnd)
+              : (selection.to > offset && selection.from < nodeEnd);
+            if (touchesNode) {
               const attrId = (node.attrs && (node.attrs.block_id || node.attrs.id)) as string | undefined;
               const bId = attrId || `para-${blockCount}`;
               collectedBlockIds.push(bId);

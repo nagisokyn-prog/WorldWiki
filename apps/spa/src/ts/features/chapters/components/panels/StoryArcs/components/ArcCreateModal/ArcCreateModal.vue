@@ -1,49 +1,52 @@
 <template>
-  <div
-    class="fixed inset-0 bg-backdrop flex items-center justify-center z-50 p-4"
-    @click.self="$emit('close')"
-  >
-    <div class="modal-box p-6 rounded-lg border border-subtle bg-surface w-full max-w-md space-y-4 shadow-lg">
-      <h3 class="text-base font-bold m-0">Создать Сюжетную Линию (Арку)</h3>
+  <Teleport to="body">
+    <div
+      class="arc-modal-overlay"
+      @click.self="$emit('close')"
+    >
+      <div class="arc-modal-box">
+        <h3 class="arc-modal-title">Создать Сюжетную Линию (Арку)</h3>
 
-      <div class="space-y-2">
-        <label class="text-xs font-bold text-muted">Название арки:</label>
-        <input
-          :value="title"
-          type="text"
-          placeholder="Например: Арка Примирения с Эрис..."
-          class="w-full text-xs px-3 py-2 rounded border border-subtle bg-input text-main"
-          @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
-        />
-      </div>
+        <div class="arc-modal-field">
+          <label class="arc-modal-label">Название арки:</label>
+          <input
+            :value="title"
+            type="text"
+            placeholder="Например: Арка Примирения с Эрис..."
+            class="arc-modal-input"
+            @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
+          />
+        </div>
 
-      <div class="space-y-2">
-        <label class="text-xs font-bold text-muted">Тип арки:</label>
-        <XboxWheel
-          :model-value="arcType"
-          :options="arcTypeOptions"
-          class="w-full"
-          @update:model-value="$emit('update:arcType', $event as ArcType)"
-        />
-      </div>
+        <div class="arc-modal-field">
+          <label class="arc-modal-label">Тип арки:</label>
+          <XboxWheel
+            :model-value="arcType"
+            :options="arcTypeOptions"
+            @update:model-value="$emit('update:arcType', $event as ArcType)"
+          />
+        </div>
 
-      <div class="flex justify-end gap-2 pt-3">
-        <button
-          class="px-4 py-1.5 text-xs rounded border border-subtle bg-surface hover:bg-surface-hover text-main cursor-pointer"
-          @click="$emit('close')"
-        >
-          Отмена
-        </button>
-        <button
-          class="px-4 py-1.5 text-xs rounded font-bold bg-accent text-surface cursor-pointer"
-          :disabled="!title.trim()"
-          @click="$emit('create')"
-        >
-          Создать
-        </button>
+        <div class="arc-modal-actions">
+          <button
+            type="button"
+            class="arc-modal-btn"
+            @click="$emit('close')"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            class="arc-modal-btn arc-modal-btn-primary"
+            :disabled="!title.trim()"
+            @click="$emit('create')"
+          >
+            Создать
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -62,3 +65,5 @@ defineProps<ArcCreateModalProps>();
 
 defineEmits<ArcCreateModalEmits>();
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/ArcCreateModal.css"></style>

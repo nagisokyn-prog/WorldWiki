@@ -1,4 +1,5 @@
 import type { RichPlotPromise } from '../../usePromisesPanel';
+import type { SharedPromiseEntities } from '../PromiseCardMeta/PromiseCardMeta.model';
 
 export interface PromiseCardProps {
   project: string;
@@ -9,6 +10,9 @@ export interface PromiseCardProps {
   getChapterTitle: (chapterId: string) => string;
   isCurrentChapterPromise: (chapterId: string) => boolean;
   level?: number;
+  expanded?: boolean;
+  previousScene?: RichPlotPromise | null;
+  sharedEntities?: SharedPromiseEntities | null;
 }
 
 export type PromiseCardEmits = {
@@ -21,6 +25,7 @@ export type PromiseCardEmits = {
   saveNote: [item: RichPlotPromise];
   'update:noteDraft': [val: string];
   'update:item': [val: RichPlotPromise];
+  toggleExpand: [];
   change: [];
 };
 

@@ -1,5 +1,56 @@
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import type { RichPlotPromise } from './PromiseActions.model';
+import { cleanId } from './usePromiseFiltering';
+import { useStoryArcsStore } from '@/stores/story_arcs.store';
+
+export async function preserveSceneArcsOnChapter(
+  item: RichPlotPromise,
+  project: string,
+  chapterId: string | null
+): Promise<void> {
+  if (!project || !chapterId) return;
+  const arcIds = new Set<string>();
+  if (Array.isArray(item.arcs)) {
+    for (const a of item.arcs) {
+      if (a?.arc_id) arcIds.add(String(a.arc_id));
+    }
+  }
+  if (item.arc_id) arcIds.add(String(item.arc_id));
+  if (arcIds.size === 0) return;
+
+  const arcsStore = useStoryArcsStore();
+  const formattedChap = chapterId.includes(':') ? chapterId : `chapters:${chapterId}`;
+  for (const aid of arcIds) {
+    try {
+      await arcsStore.bindChapter({ in: aid, out: formattedChap, project_id: project });
+    } catch (err) {
+      console.warn('[preserveSceneArcsOnChapter] Failed to preserve arc on chapter:', err);
+    }
+  }
+}
+
+export function findPreviousDateTemplate(
+  list: RichPlotPromise[],
+  chapterId: string,
+  paragraphIndex: number
+): RichPlotPromise | null {
+  const cleanChap = cleanId(chapterId);
+  const sameChapter = list.filter(
+    (p) => cleanId(p.chapter_id) === cleanChap && p.m_abs !== undefined && p.m_abs !== null
+  );
+  if (sameChapter.length === 0) return null;
+
+  const preceding = sameChapter
+    .filter((p) => (p.paragraph_index ?? 0) <= paragraphIndex)
+    .sort((a, b) => (b.paragraph_index ?? 0) - (a.paragraph_index ?? 0));
+
+  const preferredPresent = preceding.find((p) => !p.time_nature || p.time_nature === 'present');
+  if (preferredPresent) return preferredPresent;
+  if (preceding.length > 0) return preceding[0];
+
+  const anyPresent = [...sameChapter].reverse().find((p) => !p.time_nature || p.time_nature === 'present');
+  return anyPresent || sameChapter[sameChapter.length - 1] || null;
+}
 
 function sanitizeBlockId(raw?: string | null): string {
   if (!raw || typeof raw !== 'string') return '';
@@ -57,6 +108,10 @@ export function preparePromisePayload(
     arc_id: derivedArcId,
     arc_phase: derivedArcPhase,
     time_nature: item.time_nature || 'present',
+    m_abs_end: item.m_abs_end ?? null,
+    date_precision: item.date_precision || 'exact',
+    is_approximate: Boolean(item.is_approximate),
+    time_of_day: item.time_of_day ?? null,
     title: item.title?.trim() || item.quote?.trim() || 'Сюжетное обещание',
     quote: item.quote ?? '',
     kind: item.kind || 'gun',
@@ -78,6 +133,10 @@ export function createNewPromiseRecord(
     arcs?: RichPlotPromise['arcs'];
     time_nature?: string | null;
     m_abs?: number | null;
+    m_abs_end?: number | null;
+    date_precision?: RichPlotPromise['date_precision'];
+    is_approximate?: boolean | null;
+    time_of_day?: RichPlotPromise['time_of_day'];
     calendar_id?: string | null;
   }
 ): RichPlotPromise {
@@ -97,6 +156,10 @@ export function createNewPromiseRecord(
     location_id: payload.location_id || null,
     timeline_event_id: null,
     m_abs: payload.m_abs ?? null,
+    m_abs_end: payload.m_abs_end ?? null,
+    date_precision: payload.date_precision ?? 'exact',
+    is_approximate: Boolean(payload.is_approximate),
+    time_of_day: payload.time_of_day ?? null,
     calendar_id: payload.calendar_id || null,
     participant_ids: payload.participant_ids ? [...payload.participant_ids] : [],
     arcs: payload.arcs ? [...payload.arcs] : [],

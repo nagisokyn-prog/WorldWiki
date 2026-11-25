@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import type { StoryArc } from '@/stores/story_arcs.store';
 import type { RichPlotPromise, SceneArcItem } from '@/features/chapters/components/panels/PromisesPanel/composables/PromiseActions.model';
 import { useStoryArcsStore } from '@/stores/story_arcs.store';
@@ -63,6 +63,19 @@ export function useArcBoard(projectId: string) {
   const showCreateModal = ref(false);
   const newArcTitle = ref('');
   const newArcType = ref<ArcType>('character');
+  const inlineTitleInput = ref<HTMLInputElement | null>(null);
+
+  const openInlineCreate = async () => {
+    newArcTitle.value = '';
+    showCreateModal.value = true;
+    await nextTick();
+    inlineTitleInput.value?.focus();
+  };
+
+  const cancelCreate = () => {
+    showCreateModal.value = false;
+    newArcTitle.value = '';
+  };
 
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
@@ -205,6 +218,9 @@ export function useArcBoard(projectId: string) {
     showCreateModal,
     newArcTitle,
     newArcType,
+    inlineTitleInput,
+    openInlineCreate,
+    cancelCreate,
     getArcEffectiveStatus,
     getLinkedBlocks,
     handleCreate,

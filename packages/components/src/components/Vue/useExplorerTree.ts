@@ -178,6 +178,9 @@ export function useExplorerTree(
   };
 
   const startCreate = (sectionId: string) => {
+    if (!expandedSections.value.has(sectionId)) {
+      expandedSections.value = new Set(expandedSections.value).add(sectionId);
+    }
     creating.value = { sectionId, name: '' };
   };
 

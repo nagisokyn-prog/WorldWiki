@@ -1,15 +1,48 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { PromiseCardProps, PromiseCardEmitFn } from './PromiseCard.model';
 
 export function usePromiseCard(
   props: PromiseCardProps,
   emit: PromiseCardEmitFn
 ) {
-  const isCardCollapsed = ref(false);
+  const localCollapsed = ref(true);
+
+  const isCardCollapsed = computed(() =>
+    props.expanded !== undefined ? !props.expanded : localCollapsed.value
+  );
 
   const toggleCollapsed = () => {
-    isCardCollapsed.value = !isCardCollapsed.value;
+    if (props.expanded !== undefined) {
+      emit('toggleExpand');
+    } else {
+      localCollapsed.value = !localCollapsed.value;
+    }
   };
+
+  const collapsedBlockBadge = computed(() => {
+    const blocks = props.item.block_ids;
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      return blocks.length === 1 ? blocks[0] : `${blocks[0]}..${blocks[blocks.length - 1]}`;
+    }
+    return props.item.block_id || null;
+  });
+
+  const timeNatureIcon = computed(() => {
+    const tn = props.item.time_nature;
+    if (tn === 'flashback') return '⏪';
+    if (tn === 'flashforward') return '⏩';
+    if (tn === 'dream' || tn === 'memory') return '💭';
+    return '';
+  });
+
+  const participantCount = computed(() =>
+    Array.isArray(props.item.participant_ids) ? props.item.participant_ids.length : 0
+  );
+
+  const arcCount = computed(() => {
+    if (Array.isArray(props.item.arcs) && props.item.arcs.length > 0) return props.item.arcs.length;
+    return props.item.arc_id ? 1 : 0;
+  });
 
   const handleLocate = () => {
     emit('locate', {
@@ -27,6 +60,10 @@ export function usePromiseCard(
 
   return {
     isCardCollapsed,
+    collapsedBlockBadge,
+    timeNatureIcon,
+    participantCount,
+    arcCount,
     toggleCollapsed,
     handleLocate,
     handleRemove

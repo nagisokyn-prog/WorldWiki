@@ -254,7 +254,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_calendar($cal_id: any) {
 -- 7. ПОЛУЧЕНИЕ СОБЫТИЯ ТАЙМЛАЙНА ПО ID
 DEFINE FUNCTION OVERWRITE fn::get_timeline_event($id: any) {
     LET $rec = IF string::starts_with(type::string($id), 'timeline_events:') { type::record($id) } ELSE { type::record('timeline_events', $id) };
-    LET $res = (SELECT id, project_id, calendar_id, title, description, m_abs, created_at FROM $rec LIMIT 1);
+    LET $res = (SELECT id, project_id, calendar_id, title, description, m_abs, m_abs_end, date_precision, is_approximate, time_of_day, created_at FROM $rec LIMIT 1);
     RETURN IF array::len($res) > 0 { $res[0] } ELSE { NONE };
 };
 
@@ -303,7 +303,7 @@ DEFINE FUNCTION OVERWRITE fn::delete_timeline_event($id: any) {
 -- 10. СПИСОК СОБЫТИЙ ТАЙМЛАЙНА ПРОЕКТА
 DEFINE FUNCTION OVERWRITE fn::list_timeline_events_by_project($proj: any) {
     LET $p_rec = fn::normalize_project_id($proj);
-    RETURN (SELECT id, project_id, calendar_id, title, description, m_abs, created_at FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC LIMIT 1000);
+    RETURN (SELECT id, project_id, calendar_id, title, description, m_abs, m_abs_end, date_precision, is_approximate, time_of_day, created_at FROM timeline_events WHERE project_id = $p_rec ORDER BY m_abs ASC LIMIT 1000);
 };
 
 -- 11. ПРИВЯЗКА РАСКРЫТИЯ СОБЫТИЯ В ГЛАВЕ (REVEAL)

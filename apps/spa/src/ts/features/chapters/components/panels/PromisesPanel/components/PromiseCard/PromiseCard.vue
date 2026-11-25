@@ -11,13 +11,19 @@
       <div class="flex items-center gap-1.5 flex-1 min-w-0">
         <span class="collapse-card-icon text-[10px] text-muted">{{ isCardCollapsed ? '▶' : '▼' }}</span>
         <span class="kind-icon">{{ kindInfo.icon }}</span>
-        <span class="kind-label font-semibold">{{ kindInfo.label }}</span>
-        <span v-if="isCardCollapsed && item.location_id" class="collapsed-preview text-xs text-muted truncate">
-          📍 {{ item.location_id }}
-        </span>
-        <span v-if="isCardCollapsed && item.quote" class="collapsed-quote text-xs text-muted truncate italic">
-          «{{ item.quote.slice(0, 35) }}{{ item.quote.length > 35 ? '...' : '' }}»
-        </span>
+        <span v-if="!isCardCollapsed" class="kind-label font-semibold">{{ kindInfo.label }}</span>
+        <template v-if="isCardCollapsed">
+          <span v-if="timeNatureIcon" class="collapsed-pill" :title="item.time_nature || ''">{{ timeNatureIcon }}</span>
+          <span v-if="collapsedBlockBadge" class="collapsed-pill font-mono">{{ collapsedBlockBadge }}</span>
+          <span v-if="item.location_id" class="collapsed-preview text-xs text-muted truncate">
+            📍 {{ item.location_id }}
+          </span>
+          <span v-if="participantCount > 0" class="collapsed-pill" title="Участники">👥 {{ participantCount }}</span>
+          <span v-if="arcCount > 0" class="collapsed-pill" title="Арки">⚡ {{ arcCount }}</span>
+          <span v-if="item.quote" class="collapsed-quote text-xs text-muted truncate italic">
+            «{{ item.quote.slice(0, 32) }}{{ item.quote.length > 32 ? '...' : '' }}»
+          </span>
+        </template>
       </div>
       <button 
         class="btn-delete" 
@@ -28,13 +34,15 @@
       </button>
     </div>
 
-    <!-- Разворачиваемое тело карточки -->
-    <div v-show="!isCardCollapsed" class="card-body flex flex-col gap-2">
+    <!-- Разворачиваемое тело карточки (lazy mount) -->
+    <div v-if="!isCardCollapsed" class="card-body flex flex-col gap-2">
       <!-- Интерактивная мета-информация сцены: участники, гибридная локация, событие таймлайна, тип -->
       <PromiseCardMeta
         :project="project"
         :item="item"
         :chapter-id="item.chapter_id || ''"
+        :previous-scene="previousScene"
+        :shared-entities="sharedEntities"
         @update:item="$emit('update:item', $event)"
         @change="$emit('change')"
       />
@@ -128,6 +136,10 @@ const emit = defineEmits<PromiseCardEmits>();
 
 const {
   isCardCollapsed,
+  collapsedBlockBadge,
+  timeNatureIcon,
+  participantCount,
+  arcCount,
   toggleCollapsed,
   handleLocate,
   handleRemove

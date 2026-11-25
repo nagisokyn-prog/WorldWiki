@@ -12,4 +12,5 @@ export interface ChapterBoundArc {
   title: string;
   color?: string | null;
   arcType: string;
+  fromScene?: boolean;
 }

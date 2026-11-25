@@ -4,7 +4,7 @@ import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { cleanId } from './usePromiseFiltering';
 import type { RichPlotPromise, PromiseMilestone, UsePromiseActionsParams } from './PromiseActions.model';
 
-import { createNewPromiseRecord, syncPromisesToLocalStorage } from './usePromisePayloadBuilder';
+import { createNewPromiseRecord, findPreviousDateTemplate, preserveSceneArcsOnChapter, syncPromisesToLocalStorage } from './usePromisePayloadBuilder';
 import { createPromisePersister } from './usePromisePersistence';
 
 export function usePromiseActions(params: UsePromiseActionsParams) {
@@ -40,25 +40,33 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     paragraph_index: number;
     block_id?: string | null;
     block_ids?: string[];
-  }) => {
+  }): Promise<string | null> => {
     const project = getProject();
     const chapterId = getChapterId();
-    if (!project || !chapterId) return;
+    if (!project || !chapterId) return null;
 
-    const newPromise = createNewPromiseRecord(project, chapterId, payload);
+    const prevDateSource = findPreviousDateTemplate(promises.value, chapterId, payload.paragraph_index);
+    const newPromise = createNewPromiseRecord(project, chapterId, {
+      ...payload,
+      m_abs: prevDateSource?.m_abs ?? null, m_abs_end: prevDateSource?.m_abs_end ?? null,
+      date_precision: prevDateSource?.date_precision ?? 'exact', is_approximate: prevDateSource?.is_approximate ?? false,
+      time_of_day: prevDateSource?.time_of_day ?? null, calendar_id: prevDateSource?.calendar_id ?? null,
+      time_nature: 'present'
+    });
 
+    let finalId = newPromise.id;
     try {
       const created = await plotApi.savePlotPromise(project, newPromise as unknown as PlotPromise);
-      promises.value.push({
-        ...newPromise,
-        ...((created as unknown as Partial<RichPlotPromise>) || {})
-      });
+      const merged = { ...newPromise, ...((created as unknown as Partial<RichPlotPromise>) || {}) };
+      finalId = merged.id;
+      promises.value.push(merged);
     } catch (err) {
       console.warn('[usePromiseActions] Failed to persist new promise to backend, keeping local state:', err);
       promises.value.push(newPromise);
     }
     syncLocalBackup();
     emit('change');
+    return finalId;
   };
 
   const addMilestone = async (payload: {
@@ -153,6 +161,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
 
   const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
+    await preserveSceneArcsOnChapter(item, getProject(), item.chapter_id || getChapterId());
     try {
       await plotApi.deletePlotPromise(item.id);
     } catch (err) {
@@ -161,6 +170,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     promises.value = promises.value.filter((p) => p.id !== item.id);
     syncLocalBackup();
     emit('change');
+    document.dispatchEvent(new CustomEvent('ww:chapter-arcs-changed'));
   };
 
   const locateSource = (item: { chapter_id?: string | null; paragraph_index?: number | null; quote?: string | null; block_id?: string | null }) => {
@@ -187,27 +197,28 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
   };
 
+  const persistAndNotifyArcs = async (updatedItem: RichPlotPromise) => {
+    await persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
+    document.dispatchEvent(new CustomEvent('ww:chapter-arcs-changed'));
+  };
+
   const updatePromise = async (updatedItem: RichPlotPromise, immediate = false) => {
     if (!updatedItem.id) return;
     const targetClean = cleanId(updatedItem.id);
     const index = promises.value.findIndex((p) => p.id === updatedItem.id || cleanId(p.id) === targetClean);
-    if (index !== -1) {
-      promises.value[index] = { ...updatedItem };
-    }
+    if (index !== -1) promises.value[index] = { ...updatedItem };
     syncLocalBackup();
     emit('change');
 
     const existingTimer = updatePromiseDebounceMap.get(targetClean);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-    }
+    if (existingTimer) clearTimeout(existingTimer);
     if (immediate) {
       updatePromiseDebounceMap.delete(targetClean);
-      return persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
+      return persistAndNotifyArcs(updatedItem);
     }
     const timer = setTimeout(() => {
       updatePromiseDebounceMap.delete(targetClean);
-      void persist(updatedItem, '[usePromiseActions] Updating promise/scene metadata');
+      void persistAndNotifyArcs(updatedItem);
     }, 250);
     updatePromiseDebounceMap.set(targetClean, timer);
   };

@@ -95,6 +95,14 @@ pub struct PlotPromise {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub m_abs: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub m_abs_end: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_precision: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_approximate: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub time_of_day: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub calendar_id: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub participant_ids: Vec<String>,
@@ -127,6 +135,10 @@ impl PlotPromise {
             updated_at: DateTime::UNIX_EPOCH,
             milestones: Vec::new(),
             m_abs: None,
+            m_abs_end: None,
+            date_precision: None,
+            is_approximate: None,
+            time_of_day: None,
             calendar_id: None,
             participant_ids: Vec::new(),
             arcs: Vec::new(),

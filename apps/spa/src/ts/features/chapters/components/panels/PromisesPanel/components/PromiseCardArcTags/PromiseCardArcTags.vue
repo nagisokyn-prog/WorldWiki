@@ -87,7 +87,7 @@
         <!-- Column 1: Arc Title Plate -->
         <div
           class="arc-title-plate"
-          :style="arc.color ? { borderLeft: `3px solid ${arc.color}` } : {}"
+          :style="{ borderLeft: `3px solid ${arc.color || 'var(--accent)'}` }"
         >
           <div class="arc-info-left">
             <span class="arc-icon">⚡</span>

@@ -58,10 +58,13 @@ export function findSceneElements(
 
   const trimmedQuote = (quote || '').trim();
 
-  if (!trimmedQuote && paraIndices.length > 0) {
-    return paraIndices
+  if (paraIndices.length > 0) {
+    const matchedByParaIndices = paraIndices
       .filter((idx0) => idx0 >= 0 && idx0 < topBlocks.length)
       .map((idx0) => topBlocks[idx0]);
+    if (matchedByParaIndices.length > 0) {
+      return matchedByParaIndices;
+    }
   }
 
   const cleanString = (s: string) =>

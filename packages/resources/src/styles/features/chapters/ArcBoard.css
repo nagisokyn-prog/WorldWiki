@@ -235,6 +235,64 @@
   border-color: var(--accent);
 }
 
+.arc-inline-create-card {
+  cursor: default;
+  border-color: var(--accent);
+  background-color: var(--bg-panel);
+}
+
+.arc-inline-create-card:hover {
+  background-color: var(--bg-panel);
+}
+
+.arc-inline-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-size: var(--font-size-xs, 12px);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  outline: none;
+}
+
+.arc-inline-input:focus {
+  border-color: var(--accent);
+}
+
+.arc-inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.arc-inline-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.arc-inline-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.arc-inline-btn-confirm {
+  border-color: transparent;
+  background-color: var(--accent);
+  color: var(--accent-text, var(--text-on-accent, var(--text-inverted)));
+  font-weight: 600;
+}
+
+.arc-inline-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .arc-card-header {
   display: flex;
   align-items: flex-start;

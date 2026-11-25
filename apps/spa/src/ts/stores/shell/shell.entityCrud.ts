@@ -161,7 +161,13 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
       deps.addLog(`Entity -> Created [${nameToSet}] (${resolvedType})`, 'success');
       deps.addToast(`Сущность "${nameToSet}" создана`, 'success');
       await deps.loadEntityList(resolvedType);
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
+      if (deps.chapterTreeRef.value?.load) {
+        await deps.chapterTreeRef.value.load();
+      } else {
+        document.dispatchEvent(new CustomEvent('ww:entity-saved', {
+          detail: { id: newEntityId, type: resolvedType }
+        }));
+      }
 
       const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType: resolvedType };
       deps.openEntity(entityToOpen);

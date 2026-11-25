@@ -61,6 +61,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
         LET $evt_title = IF $data.title != NONE AND $data.title != '' { $data.title } ELSE { 'Сцена' };
         LET $evt_desc = IF $data.note != NONE { $data.note } ELSE { NONE };
         LET $evt_mabs = type::int($data.m_abs);
+        LET $evt_mabs_end = IF $data.m_abs_end != NONE AND $data.m_abs_end != NULL { type::int($data.m_abs_end) } ELSE { NONE };
+        LET $evt_precision = IF $data.date_precision != NONE AND $data.date_precision != NULL AND type::string($data.date_precision) IN ['exact', 'day', 'month', 'season', 'year', 'range'] { type::string($data.date_precision) } ELSE { 'exact' };
+        LET $evt_approx = IF $data.is_approximate != NONE AND $data.is_approximate != NULL { type::bool($data.is_approximate) } ELSE { false };
+        LET $evt_tod = IF $data.time_of_day != NONE AND $data.time_of_day != NULL AND type::string($data.time_of_day) IN ['morning', 'day', 'evening', 'night'] { type::string($data.time_of_day) } ELSE { NONE };
         
         IF $existing_evt_id != NONE AND $existing_evt_id != NULL {
             (UPSERT $existing_evt_id SET
@@ -68,6 +72,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 title = $evt_title,
                 description = $evt_desc,
                 m_abs = $evt_mabs,
+                m_abs_end = $evt_mabs_end,
+                date_precision = $evt_precision,
+                is_approximate = $evt_approx,
+                time_of_day = $evt_tod,
                 calendar_id = $cal_rec
             );
             $existing_evt_id
@@ -77,6 +85,10 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
                 title = $evt_title,
                 description = $evt_desc,
                 m_abs = $evt_mabs,
+                m_abs_end = $evt_mabs_end,
+                date_precision = $evt_precision,
+                is_approximate = $evt_approx,
+                time_of_day = $evt_tod,
                 calendar_id = $cal_rec,
                 created_at = time::now()
             );
@@ -235,12 +247,17 @@ DEFINE FUNCTION OVERWRITE fn::upsert_plot_promise(
             IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
             (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
+            time_nature,
             title,
             note,
             status,
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            (timeline_event_id.m_abs_end ?? array::first(->occurs_at.out.m_abs_end)) AS m_abs_end,
+            (timeline_event_id.date_precision ?? array::first(->occurs_at.out.date_precision)) AS date_precision,
+            (timeline_event_id.is_approximate ?? array::first(->occurs_at.out.is_approximate)) AS is_approximate,
+            (timeline_event_id.time_of_day ?? array::first(->occurs_at.out.time_of_day)) AS time_of_day,
             IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
                 type::string(timeline_event_id.calendar_id)
             ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
@@ -572,12 +589,17 @@ DEFINE FUNCTION OVERWRITE fn::get_plot_promise($id: any) {
             IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
             (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
+            time_nature,
             title,
             note,
             status,
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            (timeline_event_id.m_abs_end ?? array::first(->occurs_at.out.m_abs_end)) AS m_abs_end,
+            (timeline_event_id.date_precision ?? array::first(->occurs_at.out.date_precision)) AS date_precision,
+            (timeline_event_id.is_approximate ?? array::first(->occurs_at.out.is_approximate)) AS is_approximate,
+            (timeline_event_id.time_of_day ?? array::first(->occurs_at.out.time_of_day)) AS time_of_day,
             IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
                 type::string(timeline_event_id.calendar_id)
             ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
@@ -624,12 +646,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_project($proj: any) {
             IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
             (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
+            time_nature,
             title,
             note,
             status,
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            (timeline_event_id.m_abs_end ?? array::first(->occurs_at.out.m_abs_end)) AS m_abs_end,
+            (timeline_event_id.date_precision ?? array::first(->occurs_at.out.date_precision)) AS date_precision,
+            (timeline_event_id.is_approximate ?? array::first(->occurs_at.out.is_approximate)) AS is_approximate,
+            (timeline_event_id.time_of_day ?? array::first(->occurs_at.out.time_of_day)) AS time_of_day,
             IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
                 type::string(timeline_event_id.calendar_id)
             ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN
@@ -681,12 +708,17 @@ DEFINE FUNCTION OVERWRITE fn::list_plot_promises_by_chapter($chap: any) {
             IF parent_id != NONE AND parent_id != NULL THEN type::string(parent_id) ELSE NONE END AS parent_id,
             (IF block_ids != NONE AND type::is_array(block_ids) THEN block_ids ELSE [] END) AS block_ids,
             kind,
+            time_nature,
             title,
             note,
             status,
             location_id,
             timeline_event_id,
             (timeline_event_id.m_abs ?? array::first(->occurs_at.out.m_abs)) AS m_abs,
+            (timeline_event_id.m_abs_end ?? array::first(->occurs_at.out.m_abs_end)) AS m_abs_end,
+            (timeline_event_id.date_precision ?? array::first(->occurs_at.out.date_precision)) AS date_precision,
+            (timeline_event_id.is_approximate ?? array::first(->occurs_at.out.is_approximate)) AS is_approximate,
+            (timeline_event_id.time_of_day ?? array::first(->occurs_at.out.time_of_day)) AS time_of_day,
             IF timeline_event_id.calendar_id != NONE AND timeline_event_id.calendar_id != NULL THEN
                 type::string(timeline_event_id.calendar_id)
             ELSE IF array::first(->occurs_at.out.calendar_id) != NONE AND array::first(->occurs_at.out.calendar_id) != NULL THEN

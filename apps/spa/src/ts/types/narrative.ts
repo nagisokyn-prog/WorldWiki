@@ -14,6 +14,9 @@ export interface PromiseMilestone {
   created_at?: string | null;
 }
 
+export type DatePrecision = 'exact' | 'day' | 'month' | 'season' | 'year' | 'range';
+export type TimeOfDayPreset = 'morning' | 'day' | 'evening' | 'night';
+
 export type RichPlotPromise = PlotPromise & {
   parent_id?: string | null;
   children?: RichPlotPromise[];
@@ -33,6 +36,10 @@ export type RichPlotPromise = PlotPromise & {
   arc_phase?: string | null;
   participant_ids?: string[] | null;
   m_abs?: number | null;
+  m_abs_end?: number | null;
+  date_precision?: DatePrecision | null;
+  is_approximate?: boolean | null;
+  time_of_day?: TimeOfDayPreset | null;
   calendar_id?: string | null;
   date_fields?: Record<string, unknown> | null;
   time_nature?: string | null;

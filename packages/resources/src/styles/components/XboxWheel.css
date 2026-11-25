@@ -3,7 +3,7 @@
 .dropdown-container {
   position: relative;
   width: 100%;
-  z-index: 1000;
+  min-width: 0;
 }
 
 .dropdown-container.is-compact {
@@ -31,7 +31,18 @@
   font-size: 13px;
   transition: border-color var(--anim-speed, 0.2s) var(--anim-ease, ease);
   min-height: 32px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
   box-sizing: border-box;
+}
+
+.status-trigger > span:first-child {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .status-trigger:hover {
@@ -44,6 +55,7 @@
 }
 
 .arrow-icon {
+  flex-shrink: 0;
   font-size: 12px;
   transition: transform 0.3s;
   color: var(--text-muted);
@@ -59,7 +71,7 @@
   height: 180px;
   overflow: hidden;
   pointer-events: auto;
-  background: var(--bg-panel);
+  background: var(--dropdown-bg, var(--bg-panel));
   backdrop-filter: blur(var(--glass-blur, 20px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
   border: 1px solid var(--border-color);
@@ -97,9 +109,14 @@
 .wheel-item {
   position: absolute;
   width: 100%;
+  box-sizing: border-box;
+  padding: 0 16px;
   text-align: center;
   height: 44px;
   line-height: 44px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 14px;
   color: var(--text-muted);
   cursor: pointer;
@@ -118,18 +135,22 @@
   font-weight: 700;
 }
 
-.wheel-fade-enter-active, .wheel-fade-leave-active {
+.wheel-fade-enter-active,
+.wheel-fade-leave-active {
   transition: opacity 0.2s, transform 0.2s;
 }
-.wheel-fade-enter-from, .wheel-fade-leave-to {
+
+.wheel-fade-enter-from,
+.wheel-fade-leave-to {
   opacity: 0;
   transform: translateY(-8px);
 }
 
 /* Horizontal Mode Overrides */
 .wheel-wrapper.is-horizontal {
-  height: 54px; 
+  height: 54px;
 }
+
 .wheel-wrapper.is-horizontal::after {
   top: 10px;
   bottom: 10px;
@@ -143,6 +164,7 @@
   border-left: 1px solid var(--glass-highlight);
   border-right: 1px solid var(--glass-highlight);
 }
+
 .is-horizontal .wheel-container {
   height: 100%;
 }

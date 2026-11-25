@@ -9,6 +9,14 @@ pub struct TimelineEvent {
     pub title: String,
     pub description: Option<String>,
     pub m_abs: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub m_abs_end: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_precision: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_approximate: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub time_of_day: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -26,6 +34,10 @@ impl TimelineEvent {
             title: title.into(),
             description: None,
             m_abs,
+            m_abs_end: None,
+            date_precision: None,
+            is_approximate: None,
+            time_of_day: None,
             created_at: DateTime::UNIX_EPOCH,
         }
     }

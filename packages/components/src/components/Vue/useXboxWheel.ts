@@ -109,12 +109,19 @@ export function useXboxWheel(
     
     const rect = trigger.value.getBoundingClientRect();
     const zoom = parseFloat(document.documentElement.style.getPropertyValue('--app-zoom')) || 1;
+    const triggerWidth = rect.width / zoom;
+    const longestLabelLen = normalizedOptions.value.reduce((max, o) => Math.max(max, o.label.length), 0);
+    const estimatedWidth = longestLabelLen > 0 ? longestLabelLen * 8.5 + 48 : 0;
+    const maxAllowed = Math.max(triggerWidth, Math.min(420, window.innerWidth / zoom - 24));
+    const finalWidth = Math.min(maxAllowed, Math.max(triggerWidth, estimatedWidth));
+    const maxLeft = Math.max(12, window.innerWidth - finalWidth * zoom - 12);
+    const left = Math.min(rect.left, maxLeft);
     
     dropdownStyle.value = {
       position: 'fixed',
       top: `${rect.bottom + 8 * zoom}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width / zoom}px`,
+      left: `${left}px`,
+      width: `${finalWidth}px`,
       '--local-zoom': zoom,
       zIndex: 99999
     } as CSSProperties;

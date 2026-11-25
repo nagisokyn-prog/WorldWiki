@@ -47,14 +47,46 @@ export function usePromiseCardDateTimeWheels(
     emit('change');
   };
 
+  const stepYear = (delta: number) => {
+    handleYearInput((Number(props.currentYear) || 1) + delta);
+  };
+
+  const handleEndYearInput = (rawVal: string | number) => {
+    const num = Number(rawVal);
+    const min = props.currentYear ?? props.eraMinYear ?? 1;
+    const max = props.eraMaxYear ?? Infinity;
+    if (isNaN(num)) {
+      emit('update:endYear', min);
+      emit('change');
+      return;
+    }
+    const clamped = Math.min(max, Math.max(min, num));
+    emit('update:endYear', clamped);
+    emit('change');
+  };
+
+  const onEndMonthChange = (val: number | string) => {
+    emit('update:endMonthIdx', Number(val) || 0);
+    emit('change');
+  };
+
+  const onSeasonChange = (val: number | string) => {
+    emit('update:currentSeasonIdx', Number(val) || 0);
+    emit('change');
+  };
+
   return {
     handleYearInput,
+    stepYear,
+    handleEndYearInput,
     onEraChange,
     onYearChange,
     onMonthChange,
     onDayChange,
     onHourChange,
-    onMinuteChange
+    onMinuteChange,
+    onEndMonthChange,
+    onSeasonChange
   };
 }
 

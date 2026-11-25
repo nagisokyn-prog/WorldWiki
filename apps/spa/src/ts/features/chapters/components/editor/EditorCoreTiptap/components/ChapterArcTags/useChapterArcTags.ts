@@ -1,5 +1,7 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useStoryArcsStore, type StoryArc } from '@/stores/story_arcs.store';
+import { plotApi } from '@/services/api/plot.api';
+import type { RichPlotPromise } from '@/types/narrative';
 import type { ChapterArcTagsProps, ChapterArcTagsEmits, ChapterBoundArc } from './ChapterArcTags.model';
 
 export function useChapterArcTags(
@@ -10,21 +12,54 @@ export function useChapterArcTags(
   const isPickerOpen = ref(false);
   const newArcTitle = ref('');
   const isCreating = ref(false);
+  const sceneArcIdsInChapter = ref<Set<string>>(new Set());
 
   const cleanChapterId = computed(() => {
     if (!props.chapterId) return '';
     return props.chapterId.includes(':') ? props.chapterId : `chapters:${props.chapterId}`;
   });
 
+  const stripPrefix = (id?: string | null) =>
+    String(id || '').replace(/^(chapters|story_arcs):/i, '').replace(/[`⟨⟩"']/g, '').trim();
+
+  const loadSceneArcs = async () => {
+    if (!props.project || !cleanChapterId.value) {
+      sceneArcIdsInChapter.value = new Set();
+      return;
+    }
+    try {
+      const raw = await plotApi.getPlotPromises(props.project);
+      const list = Array.isArray(raw) ? (raw as unknown as RichPlotPromise[]) : [];
+      const targetChap = stripPrefix(cleanChapterId.value);
+      const found = new Set<string>();
+      for (const p of list) {
+        const pChap = stripPrefix(p.chapter_id || p.milestones?.[0]?.chapter_id);
+        if (!pChap || pChap !== targetChap) continue;
+        if (Array.isArray(p.arcs)) {
+          for (const a of p.arcs) {
+            if (a?.arc_id) found.add(stripPrefix(String(a.arc_id)));
+          }
+        }
+        if (p.arc_id) found.add(stripPrefix(String(p.arc_id)));
+      }
+      sceneArcIdsInChapter.value = found;
+    } catch (err) {
+      console.warn('[useChapterArcTags] Failed to load scene arcs:', err);
+    }
+  };
+
   const loadData = async () => {
     if (!props.project) return;
     await store.loadArcs(props.project);
-    if (store.arcs.length > 0) {
-      await Promise.all(
-        store.arcs.map(arc => arc.id ? store.loadBindings(arc.id) : Promise.resolve())
-      );
-    }
+    await Promise.all([
+      ...store.arcs.map(arc => arc.id ? store.loadBindings(arc.id) : Promise.resolve()),
+      loadSceneArcs()
+    ]);
   };
+
+  const onArcsChanged = () => { void loadSceneArcs(); };
+  onMounted(() => { document.addEventListener('ww:chapter-arcs-changed', onArcsChanged); });
+  onUnmounted(() => { document.removeEventListener('ww:chapter-arcs-changed', onArcsChanged); });
 
   watch(() => [props.project, props.chapterId], loadData, { immediate: true });
 
@@ -32,22 +67,24 @@ export function useChapterArcTags(
     if (!cleanChapterId.value) return [];
     const result: ChapterBoundArc[] = [];
 
+    const targetChap = stripPrefix(cleanChapterId.value);
     for (const arc of store.arcs) {
       if (!arc.id) continue;
       const relations = store.arcChapters.get(arc.id) || [];
-      const isBound = relations.some(r => {
+      const isDirect = relations.some(r => {
         const outCandidate = r.chapter_id || r.out;
         if (!outCandidate) return false;
-        const outClean = outCandidate.includes(':') ? outCandidate : `chapters:${outCandidate}`;
-        return outClean === cleanChapterId.value;
+        return stripPrefix(outCandidate) === targetChap;
       });
+      const isFromScene = sceneArcIdsInChapter.value.has(stripPrefix(arc.id));
 
-      if (isBound) {
+      if (isDirect || isFromScene) {
         result.push({
           arcId: arc.id,
           title: arc.title,
           color: arc.color,
-          arcType: arc.arc_type
+          arcType: arc.arc_type,
+          fromScene: !isDirect && isFromScene
         });
       }
     }

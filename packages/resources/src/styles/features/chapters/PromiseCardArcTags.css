@@ -72,7 +72,7 @@
 
 .arc-binding-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) 134px;
   gap: 8px;
   width: 100%;
   align-items: center;

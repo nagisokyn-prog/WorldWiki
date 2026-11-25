@@ -8,6 +8,22 @@
         </span>
       </div>
       <div class="flex items-center gap-1.5">
+        <button
+          v-if="filteredPromises.length > 0"
+          class="btn-icon-subtle text-xs"
+          title="Развернуть все карточки"
+          @click.stop="expandAllCards"
+        >
+          ⊞
+        </button>
+        <button
+          v-if="filteredPromises.length > 0"
+          class="btn-icon-subtle text-xs"
+          title="Свернуть все карточки"
+          @click.stop="collapseAllCards"
+        >
+          ⊟
+        </button>
         <button 
           class="btn-icon-subtle text-xs" 
           title="Открыть путь персонажа и навигатор сцен" 
@@ -53,7 +69,7 @@
 
       <div v-else class="promises-list">
         <PromiseCard
-          v-for="item in filteredPromises" 
+          v-for="(item, idx) in filteredPromises" 
           :key="item.id || item.quote"
           :project="project"
           :item="item"
@@ -62,6 +78,10 @@
           :note-draft="noteDraft"
           :get-chapter-title="getChapterTitle"
           :is-current-chapter-promise="isCurrentChapterPromise"
+          :expanded="isCardExpanded(item.id)"
+          :previous-scene="getPreviousScene(idx)"
+          :shared-entities="sharedEntities"
+          @toggle-expand="toggleCardExpanded(item.id)"
           @update:item="updatePromise"
           @update:note-draft="noteDraft = $event"
           @remove="removePromise"
@@ -91,6 +111,12 @@ const emit = defineEmits<PromisesPanelEmits>();
 
 const {
   isCollapsed,
+  sharedEntities,
+  isCardExpanded,
+  toggleCardExpanded,
+  expandAllCards,
+  collapseAllCards,
+  getPreviousScene,
   promises,
   chapterPromises,
   filteredPromises,

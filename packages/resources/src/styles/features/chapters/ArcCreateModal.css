@@ -1,0 +1,97 @@
+.arc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4, 16px);
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+}
+
+.arc-modal-box {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-6, 24px);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-panel);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+  color: var(--text-main);
+}
+
+.arc-modal-title {
+  margin: 0;
+  font-size: var(--font-size-base, 15px);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.arc-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.arc-modal-label {
+  font-size: var(--font-size-xs, 12px);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.arc-modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-xs, 12px);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  outline: none;
+}
+
+.arc-modal-input:focus {
+  border-color: var(--accent);
+}
+
+.arc-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2, 8px);
+  padding-top: var(--space-2, 8px);
+}
+
+.arc-modal-btn {
+  padding: 6px 16px;
+  font-size: var(--font-size-xs, 12px);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.arc-modal-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.arc-modal-btn-primary {
+  border-color: transparent;
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+}
+
+.arc-modal-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.arc-modal-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

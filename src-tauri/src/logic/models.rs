@@ -262,6 +262,10 @@ surreal_entity! {
         #[serde(skip_serializing_if = "Option::is_none")] pub arc_phase: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")] pub time_nature: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")] pub is_flashback: Option<bool>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub m_abs_end: Option<i64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub date_precision: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub is_approximate: Option<bool>,
+        #[serde(default, skip_serializing_if = "Option::is_none")] pub time_of_day: Option<String>,
         #[serde(default)] pub block_ids: Vec<String>,
     }
 }

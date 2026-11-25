@@ -1,6 +1,6 @@
 <template>
   <div class="compact-wheels-grid">
-    <!-- Ряд 1: [ Эпоха ] [ Год ] [ Месяц ] -->
+    <!-- Ряд 1: [ Эпоха ] [ Год (без дубля барабана) ] [ Месяц / Сезон ] -->
     <div class="wheels-row">
       <div class="wheel-cell">
         <label class="wheel-label">Эпоха</label>
@@ -13,29 +13,35 @@
       </div>
 
       <div class="wheel-cell">
-        <div class="flex items-center justify-between gap-1 mb-1">
-          <label class="wheel-label">Год</label>
+        <label class="wheel-label">Год</label>
+        <div class="year-stepper">
+          <button type="button" class="year-step-btn" title="-1 год" @click="stepYear(-1)">−</button>
           <input
             type="number"
             :value="currentYear"
-            class="w-14 px-1 py-0.5 text-xs text-right bg-panel border border-border rounded text-main focus:outline-none focus:border-accent"
+            class="year-step-input"
             :min="eraMinYear ?? 1"
             :max="eraMaxYear ?? undefined"
             title="Прямой ввод года"
             @change="handleYearInput(($event.target as HTMLInputElement).value)"
             @keydown.enter="handleYearInput(($event.target as HTMLInputElement).value)"
           />
+          <button type="button" class="year-step-btn" title="+1 год" @click="stepYear(1)">+</button>
         </div>
+      </div>
+
+      <div v-if="datePrecision === 'season' && seasonWheelOptions && seasonWheelOptions.length > 0" class="wheel-cell">
+        <label class="wheel-label">Сезон</label>
         <XboxWheel
-          :model-value="currentYear"
-          :options="yearWheelOptions"
-          placeholder="Год"
-          @update:model-value="onYearChange"
+          :model-value="currentSeasonIdx ?? 0"
+          :options="seasonWheelOptions"
+          placeholder="Сезон"
+          @update:model-value="onSeasonChange"
         />
       </div>
 
-      <div class="wheel-cell">
-        <label class="wheel-label">Месяц</label>
+      <div v-else-if="datePrecision !== 'year'" class="wheel-cell">
+        <label class="wheel-label">{{ datePrecision === 'range' ? 'От (Месяц)' : 'Месяц' }}</label>
         <XboxWheel
           :model-value="currentMonthIdx"
           :options="monthWheelOptions"
@@ -45,8 +51,38 @@
       </div>
     </div>
 
-    <!-- Ряд 2: [ День ] [ Час ] [ Минута ] -->
-    <div class="wheels-row">
+    <!-- Ряд 2 для диапазона (От — До): [ До: Год ] [ До: Месяц ] -->
+    <div v-if="datePrecision === 'range'" class="wheels-row">
+      <div class="wheel-cell">
+        <label class="wheel-label">До (Год)</label>
+        <div class="year-stepper">
+          <button type="button" class="year-step-btn" @click="handleEndYearInput((endYear ?? currentYear) - 1)">−</button>
+          <input
+            type="number"
+            :value="endYear ?? currentYear"
+            class="year-step-input"
+            :min="currentYear"
+            :max="eraMaxYear ?? undefined"
+            @change="handleEndYearInput(($event.target as HTMLInputElement).value)"
+            @keydown.enter="handleEndYearInput(($event.target as HTMLInputElement).value)"
+          />
+          <button type="button" class="year-step-btn" @click="handleEndYearInput((endYear ?? currentYear) + 1)">+</button>
+        </div>
+      </div>
+
+      <div class="wheel-cell">
+        <label class="wheel-label">До (Месяц)</label>
+        <XboxWheel
+          :model-value="endMonthIdx ?? currentMonthIdx"
+          :options="monthWheelOptions"
+          placeholder="Месяц"
+          @update:model-value="onEndMonthChange"
+        />
+      </div>
+    </div>
+
+    <!-- Ряд 2 для точной даты / дня: [ День ] [ Час ] [ Минута ] -->
+    <div v-if="!datePrecision || datePrecision === 'exact' || datePrecision === 'day'" class="wheels-row">
       <div class="wheel-cell">
         <label class="wheel-label">День</label>
         <XboxWheel
@@ -57,7 +93,7 @@
         />
       </div>
 
-      <div class="wheel-cell">
+      <div v-if="!datePrecision || datePrecision === 'exact'" class="wheel-cell">
         <label class="wheel-label">Час</label>
         <XboxWheel
           :model-value="currentHour"
@@ -67,7 +103,7 @@
         />
       </div>
 
-      <div class="wheel-cell">
+      <div v-if="!datePrecision || datePrecision === 'exact'" class="wheel-cell">
         <label class="wheel-label">Мин</label>
         <XboxWheel
           :model-value="currentMinute"
@@ -90,11 +126,14 @@ const emit = defineEmits<PromiseCardDateTimeWheelsEmits>();
 
 const {
   handleYearInput,
+  stepYear,
+  handleEndYearInput,
   onEraChange,
-  onYearChange,
   onMonthChange,
   onDayChange,
   onHourChange,
-  onMinuteChange
+  onMinuteChange,
+  onEndMonthChange,
+  onSeasonChange
 } = usePromiseCardDateTimeWheels(props, emit);
 </script>

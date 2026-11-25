@@ -5,11 +5,13 @@
       v-for="arc in boundArcs"
       :key="arc.arcId"
       class="arc-tag-badge"
-      :style="arc.color ? { borderLeftColor: arc.color, borderLeftWidth: '3px' } : {}"
+      :title="arc.fromScene ? 'Привязано в сцене этой главы' : 'Привязано к главе'"
+      :style="{ borderLeftColor: arc.color || 'var(--accent)', borderLeftWidth: '3px' }"
     >
       <span class="arc-icon">⚡</span>
       <span class="arc-title">{{ arc.title }}</span>
       <button
+        v-if="!arc.fromScene"
         type="button"
         class="arc-remove-btn"
         title="Отвязать арку от главы"

@@ -162,8 +162,10 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     const inKey = rel.in || arcId || '';
     if (!inKey) return;
     const existing = arcChapters.value.get(inKey) || [];
-    existing.push(rel);
-    arcChapters.value.set(inKey, existing);
+    if (!existing.some(r => (r.out || r.chapter_id) === chapterId)) {
+      existing.push(rel);
+      arcChapters.value.set(inKey, existing);
+    }
   }
 
   async function unbindChapter(arcId: string, chapterId: string): Promise<void> {

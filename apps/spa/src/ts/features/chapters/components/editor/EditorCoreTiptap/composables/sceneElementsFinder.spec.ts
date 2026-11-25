@@ -52,4 +52,30 @@ describe('sceneElementsFinder', () => {
     // Out-of-range / no match returns []
     expect(findSceneElements(dom, 'нет такого', undefined, 0)).toEqual([]);
   });
+
+  it('does not truncate multi-paragraph scene when only one block has matching data-block-id', () => {
+    const dom = document.createElement('div');
+    dom.innerHTML = `
+      <p>Эпиграф</p>
+      <p>Автор</p>
+      <p></p>
+      <p></p>
+      <p>— Эй, Лёша, может уже постучишься?</p>
+      <p>— Успокойся, Ника, дай ему время.</p>
+      <p>— Да-да, как скажешь, мамочка.</p>
+      <p>— Так, сестра, хватит выкаблучиваться.</p>
+      <p data-block-id="para-9">— Да не бузи ты так.</p>
+    `;
+
+    const els = findSceneElements(
+      dom,
+      '— Эй, Лёша, может уже постучишься?\n— Да не бузи ты так.',
+      'para-5',
+      5,
+      ['para-5', 'para-6', 'para-7', 'para-8', 'para-9']
+    );
+    expect(els).toHaveLength(5);
+    expect(els[0].textContent).toContain('Лёша');
+    expect(els[4].textContent).toContain('Да не бузи ты так.');
+  });
 });

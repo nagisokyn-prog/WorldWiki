@@ -15,10 +15,14 @@ export function findSceneElements(
   let maxParaIdx = -1;
   const paraIndices: number[] = [];
 
+  let partialDomMatch: HTMLElement[] = [];
+
   if (blockIds && blockIds.length > 0) {
     const cleanTargetIds = blockIds
       .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
       .map((id) => (id.split(':').pop() || id).replace(/[`⟨⟩"']/g, '').trim().toLowerCase());
+
+    const uniqueTargetCount = new Set(cleanTargetIds).size;
 
     const matchedByExplicitDomAttr = topBlocks.filter((el) => {
       const explicitAttr = el.getAttribute('data-block-id') || el.getAttribute('data-id');
@@ -28,13 +32,16 @@ export function findSceneElements(
       return (
         cleanTargetIds.includes(bId) ||
         cleanTargetIds.includes(cleanBId) ||
-        cleanTargetIds.some((t) => t.endsWith(`_${cleanBId}`) || t === `blk_${cleanBId}`)
+        cleanTargetIds.some(
+          (t) => t.endsWith(`_${cleanBId}`) || t === `blk_${cleanBId}` || cleanBId.endsWith(`_${t}`)
+        )
       );
     });
 
-    if (matchedByExplicitDomAttr.length > 0) {
+    if (matchedByExplicitDomAttr.length > 0 && matchedByExplicitDomAttr.length >= uniqueTargetCount) {
       return matchedByExplicitDomAttr;
     }
+    partialDomMatch = matchedByExplicitDomAttr;
 
     for (const t of cleanTargetIds) {
       const match = t.match(/para-(\d+)/);
@@ -58,7 +65,7 @@ export function findSceneElements(
 
   const trimmedQuote = (quote || '').trim();
 
-  if (paraIndices.length > 0) {
+  if (paraIndices.length > 0 && !trimmedQuote) {
     const matchedByParaIndices = paraIndices
       .filter((idx0) => idx0 >= 0 && idx0 < topBlocks.length)
       .map((idx0) => topBlocks[idx0]);
@@ -126,7 +133,7 @@ export function findSceneElements(
     }
   }
 
-  if (startIndex === -1) return [];
+  if (startIndex === -1) return partialDomMatch;
 
   let endIndex = startIndex;
   const isMultiParagraph = expectedSpan > 1 || quoteLines.length > 1 || trimmedQuote.includes('\n');

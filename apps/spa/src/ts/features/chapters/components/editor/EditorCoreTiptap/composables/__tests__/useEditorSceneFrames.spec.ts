@@ -77,12 +77,15 @@ describe('useEditorSceneFrames', () => {
 
     expect(p1.classList.contains('narrative-frame-first')).toBe(true);
     expect(p1.classList.contains('narrative-kind-scene')).toBe(true);
+    expect(p1.getAttribute('data-narrative-frame')).toBe('first');
 
     expect(p2.classList.contains('narrative-frame-middle')).toBe(true);
     expect(p2.classList.contains('narrative-kind-scene')).toBe(true);
+    expect(p2.getAttribute('data-narrative-frame')).toBe('middle');
 
     expect(p3.classList.contains('narrative-frame-last')).toBe(true);
     expect(p3.classList.contains('narrative-kind-scene')).toBe(true);
+    expect(p3.getAttribute('data-narrative-frame')).toBe('last');
   });
 
   it('renders frames for conflict, gun, and other narrative kinds', () => {

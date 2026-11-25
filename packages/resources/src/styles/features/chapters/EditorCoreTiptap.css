@@ -614,37 +614,43 @@ del.diff-del, .diff-del {
 
 .editor-core .narrative-kind-scene,
 .editor-core-tiptap .narrative-kind-scene,
-.narrative-kind-scene {
+.narrative-kind-scene,
+[data-narrative-kind="scene"] {
   --narrative-accent: var(--accent);
 }
 
 .editor-core .narrative-kind-conflict,
 .editor-core-tiptap .narrative-kind-conflict,
-.narrative-kind-conflict {
+.narrative-kind-conflict,
+[data-narrative-kind="conflict"] {
   --narrative-accent: var(--color-danger, var(--accent));
 }
 
 .editor-core .narrative-kind-gun,
 .editor-core-tiptap .narrative-kind-gun,
-.narrative-kind-gun {
+.narrative-kind-gun,
+[data-narrative-kind="gun"] {
   --narrative-accent: var(--color-warning, var(--accent));
 }
 
 .editor-core .narrative-kind-foreshadowing,
 .editor-core-tiptap .narrative-kind-foreshadowing,
-.narrative-kind-foreshadowing {
+.narrative-kind-foreshadowing,
+[data-narrative-kind="foreshadowing"] {
   --narrative-accent: var(--accent-secondary, var(--accent));
 }
 
 .editor-core .narrative-kind-mystery,
 .editor-core-tiptap .narrative-kind-mystery,
-.narrative-kind-mystery {
+.narrative-kind-mystery,
+[data-narrative-kind="mystery"] {
   --narrative-accent: var(--color-success, var(--accent));
 }
 
 .editor-core .narrative-kind-question,
 .editor-core-tiptap .narrative-kind-question,
-.narrative-kind-question {
+.narrative-kind-question,
+[data-narrative-kind="question"] {
   --narrative-accent: var(--color-info, var(--accent));
 }
 
@@ -652,6 +658,7 @@ del.diff-del, .diff-del {
 .editor-core .narrative-frame-single,
 .editor-core-tiptap .narrative-frame-single,
 .narrative-frame-single,
+[data-narrative-frame="single"],
 .editor-core .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last),
 .editor-core-tiptap .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last),
 .scene-frame:not(.narrative-frame-first):not(.narrative-frame-middle):not(.narrative-frame-last) {
@@ -669,7 +676,8 @@ del.diff-del, .diff-del {
 /* Первый абзац многострочного нарративного блока */
 .editor-core .narrative-frame-first,
 .editor-core-tiptap .narrative-frame-first,
-.narrative-frame-first {
+.narrative-frame-first,
+[data-narrative-frame="first"] {
   border: 1px solid var(--border-subtle, var(--border-color));
   border-bottom: none;
   border-left: 3px solid var(--narrative-accent, var(--accent));
@@ -689,7 +697,8 @@ del.diff-del, .diff-del {
 /* Промежуточные абзацы (непрерывное тело без внутренних разрывов) */
 .editor-core .narrative-frame-middle,
 .editor-core-tiptap .narrative-frame-middle,
-.narrative-frame-middle {
+.narrative-frame-middle,
+[data-narrative-frame="middle"] {
   border-left: 3px solid var(--narrative-accent, var(--accent));
   border-right: 1px solid var(--border-subtle, var(--border-color));
   border-top: none;
@@ -707,7 +716,8 @@ del.diff-del, .diff-del {
 /* Последний абзац многострочного нарративного блока */
 .editor-core .narrative-frame-last,
 .editor-core-tiptap .narrative-frame-last,
-.narrative-frame-last {
+.narrative-frame-last,
+[data-narrative-frame="last"] {
   border: 1px solid var(--border-subtle, var(--border-color));
   border-top: none;
   border-left: 3px solid var(--narrative-accent, var(--accent));
@@ -722,6 +732,20 @@ del.diff-del, .diff-del {
   min-height: 1.5em;
   position: relative;
   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Сохраняем отступ под бейдж семантического тега (!о / !д / !м), чтобы он не наползал на текст */
+.semantic-paragraph-node.narrative-frame-single,
+.semantic-paragraph-node.narrative-frame-first,
+.semantic-paragraph-node.narrative-frame-middle,
+.semantic-paragraph-node.narrative-frame-last,
+.semantic-paragraph-node[data-narrative-frame] {
+  padding-left: 28px;
+}
+
+.semantic-paragraph-node.narrative-frame .semantic-tag-badge,
+.semantic-paragraph-node[data-narrative-frame] .semantic-tag-badge {
+  left: 4px;
 }
 
 .editor-core .narrative-frame:hover,

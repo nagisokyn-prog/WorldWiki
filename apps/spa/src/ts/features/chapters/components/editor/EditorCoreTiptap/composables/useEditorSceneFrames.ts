@@ -26,7 +26,7 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
     if (!editorDom) return;
 
     // Сброс старых рамок
-    const existingFrames = editorDom.querySelectorAll('.scene-frame, .narrative-frame, [class*="narrative-embedded-"]');
+    const existingFrames = editorDom.querySelectorAll('.scene-frame, .narrative-frame, [data-narrative-frame], [class*="narrative-embedded-"], [data-embedded-kind]');
     existingFrames.forEach(el => {
       el.classList.remove(
         'scene-frame',
@@ -50,6 +50,7 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
       el.removeAttribute('data-scene-id');
       el.removeAttribute('data-narrative-id');
       el.removeAttribute('data-narrative-kind');
+      el.removeAttribute('data-narrative-frame');
       el.removeAttribute('data-embedded-kind');
     });
 
@@ -136,7 +137,7 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
       const isMicroItem = kind !== 'scene';
 
       matchedElements.forEach((el, index) => {
-        const alreadyInScene = el.classList.contains('scene-frame');
+        const alreadyInScene = el.classList.contains('scene-frame') || el.getAttribute('data-narrative-kind') === 'scene';
 
         if (alreadyInScene && isMicroItem) {
           // Микро-единица (ружьё, тайна и т.д.) внутри сцены: не разрываем каркас сцены!
@@ -156,16 +157,28 @@ export function useEditorSceneFrames(options: UseEditorSceneFramesOptions) {
         if (count === 1) {
           el.classList.remove('narrative-frame-middle');
           el.classList.add('narrative-frame-single');
+          el.setAttribute('data-narrative-frame', 'single');
         } else if (index === 0) {
           el.classList.remove('narrative-frame-middle');
           el.classList.add('narrative-frame-first');
+          el.setAttribute('data-narrative-frame', 'first');
         } else if (index === count - 1) {
           el.classList.remove('narrative-frame-middle');
           el.classList.add('narrative-frame-last');
+          el.setAttribute('data-narrative-frame', 'last');
         } else {
           // Устанавливаем middle только если на элементе ещё нет явных граничных классов
-          if (!el.classList.contains('narrative-frame-first') && !el.classList.contains('narrative-frame-last') && !el.classList.contains('narrative-frame-single')) {
+          const curFrame = el.getAttribute('data-narrative-frame');
+          if (
+            !el.classList.contains('narrative-frame-first') &&
+            !el.classList.contains('narrative-frame-last') &&
+            !el.classList.contains('narrative-frame-single') &&
+            curFrame !== 'first' &&
+            curFrame !== 'last' &&
+            curFrame !== 'single'
+          ) {
             el.classList.add('narrative-frame-middle');
+            el.setAttribute('data-narrative-frame', 'middle');
           }
         }
       });

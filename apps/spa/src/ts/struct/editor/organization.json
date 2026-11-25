@@ -584,8 +584,41 @@
           "type": "dynamic",
           "title": "Ключевые члены организации",
           "emptyMessage": "Участники не добавлены",
-          "template": "membersTemplate",
-          "dataPath": "члены_организации"
+          "template": "Двунаправленная связь",
+          "dataPath": "члены_организации",
+          "foreign_type": "character",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Участник",
+              "placeholder": "Выберите персонажа...",
+              "entityType": "character"
+            },
+            "тип_отношения": {
+              "label": "Тип отношений",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "союз",
+                  "label": "🤝 Союз / Партнерство"
+                },
+                {
+                  "value": "вражда",
+                  "label": "⚔️ Вражда / Конфликт"
+                },
+                {
+                  "value": "нейтралитет",
+                  "label": "Нейтралитет"
+                },
+                {
+                  "value": "зависимость",
+                  "label": "Вассал / Зависимость"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -838,24 +871,159 @@
           "type": "dynamic",
           "title": "Отношения с другими организациями",
           "emptyMessage": "Связи с организациями не добавлены",
-          "template": "organizationRelationshipsTemplate",
-          "dataPath": "отношения_с_организациями"
+          "template": "Двунаправленная связь",
+          "dataPath": "отношения_с_организациями",
+          "foreign_type": "organization",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Организация",
+              "placeholder": "Выберите организацию...",
+              "entityType": "organization"
+            },
+            "тип_отношения": {
+              "label": "Тип отношений",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "союз",
+                  "label": "🤝 Союз / Партнерство"
+                },
+                {
+                  "value": "вражда",
+                  "label": "⚔️ Вражда / Вооруженный конфликт"
+                },
+                {
+                  "value": "соперничество",
+                  "label": "🎯 Соперничество / Конкуренция"
+                },
+                {
+                  "value": "нейтралитет",
+                  "label": "⚖️ Нейтралитет"
+                },
+                {
+                  "value": "вассал",
+                  "label": "👑 Подчинение / Филиал / Вассал"
+                },
+                {
+                  "value": "патрон",
+                  "label": "🏛️ Патронаж / Материнская компания"
+                },
+                {
+                  "value": "торговля",
+                  "label": "💰 Торговое партнерство"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "allies",
           "type": "dynamic",
           "title": "Ключевые союзники",
           "emptyMessage": "Союзники не добавлены",
-          "template": "organizationRelationshipsTemplate",
-          "dataPath": "союзники"
+          "template": "Двунаправленная связь",
+          "dataPath": "союзники",
+          "foreign_type": "organization",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Организация",
+              "placeholder": "Выберите организацию...",
+              "entityType": "organization"
+            },
+            "тип_отношения": {
+              "label": "Тип отношений",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "союз",
+                  "label": "🤝 Союз / Партнерство"
+                },
+                {
+                  "value": "вражда",
+                  "label": "⚔️ Вражда / Вооруженный конфликт"
+                },
+                {
+                  "value": "соперничество",
+                  "label": "🎯 Соперничество / Конкуренция"
+                },
+                {
+                  "value": "нейтралитет",
+                  "label": "⚖️ Нейтралитет"
+                },
+                {
+                  "value": "вассал",
+                  "label": "👑 Подчинение / Филиал / Вассал"
+                },
+                {
+                  "value": "патрон",
+                  "label": "🏛️ Патронаж / Материнская компания"
+                },
+                {
+                  "value": "торговля",
+                  "label": "💰 Торговое партнерство"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "enemies",
           "type": "dynamic",
           "title": "Ключевые враги",
           "emptyMessage": "Враждебные организации не добавлены",
-          "template": "organizationRelationshipsTemplate",
-          "dataPath": "враги"
+          "template": "Двунаправленная связь",
+          "dataPath": "враги",
+          "foreign_type": "organization",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Организация",
+              "placeholder": "Выберите организацию...",
+              "entityType": "organization"
+            },
+            "тип_отношения": {
+              "label": "Тип отношений",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "союз",
+                  "label": "🤝 Союз / Партнерство"
+                },
+                {
+                  "value": "вражда",
+                  "label": "⚔️ Вражда / Вооруженный конфликт"
+                },
+                {
+                  "value": "соперничество",
+                  "label": "🎯 Соперничество / Конкуренция"
+                },
+                {
+                  "value": "нейтралитет",
+                  "label": "⚖️ Нейтралитет"
+                },
+                {
+                  "value": "вассал",
+                  "label": "👑 Подчинение / Филиал / Вассал"
+                },
+                {
+                  "value": "патрон",
+                  "label": "🏛️ Патронаж / Материнская компания"
+                },
+                {
+                  "value": "торговля",
+                  "label": "💰 Торговое партнерство"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "internalConflicts",
@@ -896,8 +1064,53 @@
           "type": "dynamic",
           "title": "Юрисдикция и отношения с государствами",
           "emptyMessage": "Связи с государствами не добавлены",
-          "template": "orgStateRelTemplate",
-          "dataPath": "отношения_с_государствами"
+          "template": "Двунаправленная связь",
+          "dataPath": "отношения_с_государствами",
+          "foreign_type": "state",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Государство",
+              "placeholder": "Выберите государство...",
+              "entityType": "state"
+            },
+            "тип_отношения": {
+              "label": "Правовой и политический статус в государстве",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "легальная",
+                  "label": "🟢 Официально признана / Зарегистрирована"
+                },
+                {
+                  "value": "государственная",
+                  "label": "🏛️ Государственная структура / Ведомство"
+                },
+                {
+                  "value": "субсидируемая",
+                  "label": "💰 Получает субсидии / Гос. поддержка"
+                },
+                {
+                  "value": "нейтральная",
+                  "label": "⚖️ Нейтральная / Частная деятельность"
+                },
+                {
+                  "value": "ограниченная",
+                  "label": "🟡 Ограничена в правах / Под надзором"
+                },
+                {
+                  "value": "запрещенная",
+                  "label": "🔴 Запрещена / Экстремистская"
+                },
+                {
+                  "value": "подпольная_война",
+                  "label": "⚔️ Вооруженное сопротивление / Партизаны"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -2781,305 +2994,5 @@
     "save": "/api/project/{project}/organizations",
     "delete": "/api/project/{project}/organizations/{id}"
   },
-  "entityType": "organization",
-  "templates": {
-    "membersTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Участник",
-          "entityType": "character",
-          "placeholder": "Выберите персонажа..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Тип отношений",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "союз",
-              "label": "🤝 Союз / Партнерство"
-            },
-            {
-              "value": "вражда",
-              "label": "⚔️ Вражда / Конфликт"
-            },
-            {
-              "value": "нейтралитет",
-              "label": "Нейтралитет"
-            },
-            {
-              "value": "зависимость",
-              "label": "Вассал / Зависимость"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Описание отношений",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Ключевые члены организации",
-      "dynamicContainers": [
-        {
-          "id": "endDate",
-          "type": "dynamic",
-          "title": "Дата выхода",
-          "emptyMessage": "Состоит в организации. Нажмите «Добавить», чтобы указать дату.",
-          "template": "membersStateTemplate",
-          "dataPath": "дата_выхода"
-        }
-      ]
-    },
-    "membersStateTemplate": {
-      "type": "timeline",
-      "fields": [
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "select",
-          "class": "статус_категория",
-          "label": "Статус",
-          "options": []
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Описание",
-          "rows": 2
-        }
-      ],
-      "itemClass": "relationship-state-item",
-      "headerTitle": "Дата выхода"
-    },
-    "organizationRelationshipsTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Организация",
-          "entityType": "organization",
-          "placeholder": "Выберите организацию..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Тип отношений",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "союз",
-              "label": "🤝 Союз / Партнерство"
-            },
-            {
-              "value": "вражда",
-              "label": "⚔️ Вражда / Вооруженный конфликт"
-            },
-            {
-              "value": "соперничество",
-              "label": "🎯 Соперничество / Конкуренция"
-            },
-            {
-              "value": "нейтралитет",
-              "label": "⚖️ Нейтралитет"
-            },
-            {
-              "value": "вассал",
-              "label": "👑 Подчинение / Филиал / Вассал"
-            },
-            {
-              "value": "патрон",
-              "label": "🏛️ Патронаж / Материнская компания"
-            },
-            {
-              "value": "торговля",
-              "label": "💰 Торговое партнерство"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Описание отношений и история взаимодействия",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Отношения с организацией",
-      "dynamicContainers": [
-        {
-          "id": "динамика_отношений",
-          "type": "dynamic",
-          "title": "ДИНАМИКА ОТНОШЕНИЙ",
-          "emptyMessage": "Добавьте изменения в отношениях",
-          "template": "organizationRelationshipsStateTemplate",
-          "dataPath": "динамика_отношений"
-        }
-      ]
-    },
-    "organizationRelationshipsStateTemplate": {
-      "type": "timeline",
-      "fields": [
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "select",
-          "class": "статус_категория",
-          "label": "Статус / Уровень",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "улучшение",
-              "label": "📈 Улучшение отношений"
-            },
-            {
-              "value": "ухудшение",
-              "label": "📉 Ухудшение отношений"
-            },
-            {
-              "value": "разрыв",
-              "label": "❌ Разрыв отношений"
-            },
-            {
-              "value": "эскалация",
-              "label": "⚔️ Эскалация конфликта"
-            },
-            {
-              "value": "пакт",
-              "label": "🤝 Заключение договора/пакта"
-            }
-          ]
-        },
-        {
-          "type": "range",
-          "class": "сила_отношений",
-          "min": -100,
-          "max": 100,
-          "value": 0,
-          "label": "Отношение (-100 вражда .. 100 союз)"
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Описание события / Причина изменения",
-          "rows": 2
-        }
-      ],
-      "itemClass": "relationship-state-item",
-      "headerTitle": "ДИНАМИКА ОТНОШЕНИЙ"
-    },
-    "orgStateRelTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Государство",
-          "entityType": "state",
-          "placeholder": "Выберите государство..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Правовой и политический статус в государстве",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "легальная",
-              "label": "🟢 Официально признана / Зарегистрирована"
-            },
-            {
-              "value": "государственная",
-              "label": "🏛️ Государственная структура / Ведомство"
-            },
-            {
-              "value": "субсидируемая",
-              "label": "💰 Получает субсидии / Гос. поддержка"
-            },
-            {
-              "value": "нейтральная",
-              "label": "⚖️ Нейтральная / Частная деятельность"
-            },
-            {
-              "value": "ограниченная",
-              "label": "🟡 Ограничена в правах / Под надзором"
-            },
-            {
-              "value": "запрещенная",
-              "label": "🔴 Запрещена / Экстремистская"
-            },
-            {
-              "value": "подпольная_война",
-              "label": "⚔️ Вооруженное сопротивление / Партизаны"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Влияние на власть и законы государства",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Отношения с государством",
-      "dynamicContainers": [
-        {
-          "id": "динамика_статуса_в_государстве",
-          "type": "dynamic",
-          "title": "ЭВОЛЮЦИЯ СТАТУСА",
-          "emptyMessage": "Добавьте изменения правового или политического статуса",
-          "template": "organizationRelationshipsStateTemplate",
-          "dataPath": "динамика_статуса"
-        }
-      ]
-    }
-  }
+  "entityType": "organization"
 }

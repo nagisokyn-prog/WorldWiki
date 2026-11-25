@@ -122,7 +122,13 @@ export function useEntityDynamicOps(ctx: UseEntityDynamicOpsContext) {
 
   const toggleItemCollapse = (containerPath: string, idx: number) => {
     const key = `${containerPath}_${idx}`;
-    collapsedItems.value[key] = !collapsedItems.value[key];
+    const next = { ...collapsedItems.value };
+    if (next[key]) {
+      delete next[key];
+    } else {
+      next[key] = true;
+    }
+    collapsedItems.value = next;
   };
 
   const areAllCollapsed = (containerPath: string, count: number): boolean => {
@@ -135,13 +141,16 @@ export function useEntityDynamicOps(ctx: UseEntityDynamicOpsContext) {
 
   const toggleAllCollapse = (containerPath: string, count: number) => {
     const allCollapsed = areAllCollapsed(containerPath, count);
+    const next = { ...collapsedItems.value };
     for (let i = 0; i < count; i++) {
+      const key = `${containerPath}_${i}`;
       if (allCollapsed) {
-        delete collapsedItems.value[`${containerPath}_${i}`];
+        delete next[key];
       } else {
-        collapsedItems.value[`${containerPath}_${i}`] = true;
+        next[key] = true;
       }
     }
+    collapsedItems.value = next;
   };
 
   const removeDynamicItem = (path: string, idx: number | string) => {

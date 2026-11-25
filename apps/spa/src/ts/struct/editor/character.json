@@ -135,8 +135,51 @@
           "type": "timeline",
           "title": "Линия жизни и статуса",
           "emptyMessage": "Статусы не добавлены (по умолчанию персонаж считается живым)",
-          "template": "characterStatusTimelineTemplate",
-          "dataPath": "эволюция_статуса"
+          "template": "Базовая хронология",
+          "dataPath": "эволюция_статуса",
+          "fieldOverrides": {
+            "статус_категория": {
+              "label": "Статус персонажа",
+              "options": [
+                {
+                  "value": "Жив",
+                  "label": "🟢 Жив"
+                },
+                {
+                  "value": "Пропал без вести",
+                  "label": "🟡 Пропал без вести"
+                },
+                {
+                  "value": "В коме / плену",
+                  "label": "🟣 В коме / плену"
+                },
+                {
+                  "value": "Мёртв",
+                  "label": "🔴 Мёртв"
+                },
+                {
+                  "value": "Воскрес / Вернулся",
+                  "label": "✨ Воскрес / Вернулся"
+                }
+              ]
+            },
+            "название": {
+              "hidden": true
+            },
+            "описание_1": {
+              "label": "Обстоятельства / Причина смены статуса",
+              "placeholder": "Например, ранен в бою у реки, числился пропавшим..."
+            },
+            "описание_2": {
+              "hidden": true
+            },
+            "описание_3": {
+              "hidden": true
+            },
+            "числовой_показатель": {
+              "hidden": true
+            }
+          }
         },
         {
           "id": "ageTimeline",
@@ -1780,32 +1823,198 @@
           "type": "dynamic",
           "title": "Связи с персонажами",
           "emptyMessage": "Связи с персонажами не добавлены",
-          "template": "characterRelationshipTemplate",
-          "dataPath": "связи_с_персонажами"
+          "template": "Двунаправленная связь",
+          "dataPath": "связи_с_персонажами",
+          "foreign_type": "character",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Персонаж",
+              "placeholder": "Выберите персонажа...",
+              "entityType": "character"
+            },
+            "тип_отношения": {
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "семья",
+                  "label": "👪 Семья"
+                },
+                {
+                  "value": "друг",
+                  "label": "👥 Друг"
+                },
+                {
+                  "value": "романтика",
+                  "label": "❤️ Романтика"
+                },
+                {
+                  "value": "профессиональные",
+                  "label": "💼 Профессиональные"
+                },
+                {
+                  "value": "конфликтные",
+                  "label": "⚔️ Конфликтные"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "familyRelations",
           "type": "dynamic",
           "title": "Семейные отношения",
           "emptyMessage": "Семейные отношения не добавлены",
-          "template": "familyRelationTemplate",
-          "dataPath": "семейные_отношения"
+          "template": "Двунаправленная связь",
+          "dataPath": "семейные_отношения",
+          "foreign_type": "character",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Родственник",
+              "placeholder": "Выберите персонажа...",
+              "entityType": "character"
+            },
+            "тип_отношения": {
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "родитель",
+                  "label": "Родитель"
+                },
+                {
+                  "value": "ребенок",
+                  "label": "Ребёнок"
+                },
+                {
+                  "value": "брат/сестра",
+                  "label": "Брат/Сестра"
+                },
+                {
+                  "value": "супруг",
+                  "label": "Супруг/Супруга"
+                },
+                {
+                  "value": "другой",
+                  "label": "Другой"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "characterOrganizations",
           "type": "dynamic",
           "title": "Организации и фракции",
           "emptyMessage": "Связи с организациями не добавлены",
-          "template": "characterOrganizationTemplate",
-          "dataPath": "состоит_в_организациях"
+          "template": "Двунаправленная связь",
+          "dataPath": "состоит_в_организациях",
+          "foreign_type": "organization",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Организация",
+              "placeholder": "Выберите организацию...",
+              "entityType": "organization"
+            },
+            "тип_отношения": {
+              "label": "Роль и членство",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "лидер",
+                  "label": "👑 Лидер / Глава"
+                },
+                {
+                  "value": "член",
+                  "label": "👤 Полноправный участник"
+                },
+                {
+                  "value": "новобранец",
+                  "label": "🔰 Новобранец / Стажер"
+                },
+                {
+                  "value": "агент",
+                  "label": "🕵️ Тайный агент / Информатор"
+                },
+                {
+                  "value": "союзник",
+                  "label": "🤝 Внештатный союзник"
+                },
+                {
+                  "value": "бывший_член",
+                  "label": "🚪 Бывший участник / В отставке"
+                },
+                {
+                  "value": "дезертир_враг",
+                  "label": "⚔️ Дезертир / Изменник"
+                }
+              ]
+            }
+          }
         },
         {
           "id": "characterStates",
           "type": "dynamic",
           "title": "Государственная принадлежность и подданство",
           "emptyMessage": "Подданство или статус в государствах не указаны",
-          "template": "characterStateTemplate",
-          "dataPath": "подданство_и_статус"
+          "template": "Двунаправленная связь",
+          "dataPath": "подданство_и_статус",
+          "foreign_type": "state",
+          "fieldOverrides": {
+            "целевая_сущность": {
+              "label": "Государство",
+              "placeholder": "Выберите государство...",
+              "entityType": "state"
+            },
+            "тип_отношения": {
+              "label": "Правовой статус и подданство",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                },
+                {
+                  "value": "гражданин",
+                  "label": "🟢 Гражданин / Подданный"
+                },
+                {
+                  "value": "правитель",
+                  "label": "👑 Монарх / Глава государства"
+                },
+                {
+                  "value": "госслужащий",
+                  "label": "🏛️ Чиновник / Министр"
+                },
+                {
+                  "value": "дворянин",
+                  "label": "⚜️ Аристократ / Дворянин"
+                },
+                {
+                  "value": "иностранец",
+                  "label": "⚪ Иностранец / Гость"
+                },
+                {
+                  "value": "беженец",
+                  "label": "🟡 Беженец / Проситель убежища"
+                },
+                {
+                  "value": "изгнанник",
+                  "label": "🟠 Изгнанник / Лишен прав"
+                },
+                {
+                  "value": "враг_народа",
+                  "label": "🔴 Государственный преступник / В розыске"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -2268,521 +2477,5 @@
     "save": "/api/project/{project}/characters",
     "delete": "/api/project/{project}/characters/{id}"
   },
-  "entityType": "character",
-  "templates": {
-    "characterStatusTimelineTemplate": {
-      "type": "timeline",
-      "headerTitle": "Этап жизненного цикла",
-      "fields": [
-        {
-          "type": "select",
-          "class": "статус_категория",
-          "label": "Статус персонажа",
-          "options": [
-            {
-              "value": "Жив",
-              "label": "🟢 Жив"
-            },
-            {
-              "value": "Пропал без вести",
-              "label": "🟡 Пропал без вести"
-            },
-            {
-              "value": "В коме / плену",
-              "label": "🟣 В коме / плену"
-            },
-            {
-              "value": "Мёртв",
-              "label": "🔴 Мёртв"
-            },
-            {
-              "value": "Воскрес / Вернулся",
-              "label": "✨ Воскрес / Вернулся"
-            }
-          ],
-          "default": "Жив"
-        },
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "calendar_datetime",
-          "class": "начальная_дата",
-          "label": "Дата и время начала (по календарю мира)",
-          "placeholder": "Выберите дату..."
-        },
-        {
-          "type": "calendar_datetime",
-          "class": "конечная_дата",
-          "label": "Дата и время окончания (по календарю мира)",
-          "placeholder": "Выберите дату...",
-          "allowOngoing": true
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Обстоятельства / Причина смены статуса",
-          "placeholder": "Например, ранен в бою у реки, числился пропавшим...",
-          "rows": 2
-        }
-      ],
-      "itemClass": "timeline-item"
-    },
-    "characterRelationshipTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "персонаж",
-      "fields": [
-        {
-          "type": "select",
-          "class": "персонаж",
-          "label": "Персонаж",
-          "entityType": "character",
-          "placeholder": "Выберите персонажа..."
-        },
-        {
-          "type": "select",
-          "class": "базовый_тип_связи",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "семья",
-              "label": "👪 Семья"
-            },
-            {
-              "value": "друг",
-              "label": "👥 Друг"
-            },
-            {
-              "value": "романтика",
-              "label": "❤️ Романтика"
-            },
-            {
-              "value": "профессиональные",
-              "label": "💼 Профессиональные"
-            },
-            {
-              "value": "конфликтные",
-              "label": "⚔️ Конфликтные"
-            }
-          ]
-        }
-      ],
-      "dynamicContainers": [
-        {
-          "id": "relationshipStates",
-          "type": "timeline",
-          "title": "Динамика отношений",
-          "emptyMessage": "Динамика не добавлена",
-          "template": "relationshipStateTemplate",
-          "dataPath": "динамика_отношений"
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Связь с персонажем"
-    },
-    "relationshipStateTemplate": {
-      "type": "timeline",
-      "fields": [
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "select",
-          "class": "тип_связи",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "друг",
-              "label": "Друг"
-            },
-            {
-              "value": "враг",
-              "label": "Враг"
-            },
-            {
-              "value": "союзник",
-              "label": "Союзник"
-            },
-            {
-              "value": "нейтральный",
-              "label": "Нейтральный"
-            },
-            {
-              "value": "романтический",
-              "label": "Романтический"
-            }
-          ]
-        },
-        {
-          "type": "range",
-          "class": "сила_отношений",
-          "min": -100,
-          "max": 100,
-          "value": 0,
-          "label": "Отношение (-100 вражда .. 100 союз)"
-        },
-        {
-          "type": "textarea",
-          "class": "описание_причина",
-          "rows": 2,
-          "placeholder": "Почему изменились отношения..."
-        }
-      ],
-      "itemClass": "relationship-state-item",
-      "headerTitle": "Состояние отношений"
-    },
-    "familyRelationTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "родственник",
-      "fields": [
-        {
-          "type": "select",
-          "class": "родственник",
-          "label": "Родственник",
-          "entityType": "character",
-          "placeholder": "Выберите персонажа..."
-        },
-        {
-          "type": "select",
-          "class": "тип_родства",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "родитель",
-              "label": "Родитель"
-            },
-            {
-              "value": "ребенок",
-              "label": "Ребёнок"
-            },
-            {
-              "value": "брат/сестра",
-              "label": "Брат/Сестра"
-            },
-            {
-              "value": "супруг",
-              "label": "Супруг/Супруга"
-            },
-            {
-              "value": "другой",
-              "label": "Другой"
-            }
-          ]
-        }
-      ],
-      "dynamicContainers": [
-        {
-          "id": "familyRelationshipStates",
-          "type": "timeline",
-          "title": "Динамика семейных отношений",
-          "emptyMessage": "Динамика не добавлена",
-          "template": "relationshipStateTemplate",
-          "dataPath": "динамика_отношений"
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Семейное отношение"
-    },
-    "characterOrganizationTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Организация",
-          "entityType": "organization",
-          "placeholder": "Выберите организацию..."
-        },
-        {
-          "type": "text",
-          "class": "должность_ранг",
-          "label": "Должность / Звание / Ранг",
-          "placeholder": "Например: Капитан стражи, Архимаг, Рядовой..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Роль и членство",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "лидер",
-              "label": "👑 Лидер / Глава"
-            },
-            {
-              "value": "член",
-              "label": "👤 Полноправный участник"
-            },
-            {
-              "value": "новобранец",
-              "label": "🔰 Новобранец / Стажер"
-            },
-            {
-              "value": "агент",
-              "label": "🕵️ Тайный агент / Информатор"
-            },
-            {
-              "value": "союзник",
-              "label": "🤝 Внештатный союзник"
-            },
-            {
-              "value": "бывший_член",
-              "label": "🚪 Бывший участник / В отставке"
-            },
-            {
-              "value": "дезертир_враг",
-              "label": "⚔️ Дезертир / Изменник"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Обязанности и влияние в организации",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Членство в организации",
-      "dynamicContainers": [
-        {
-          "id": "карьера_в_организации",
-          "type": "timeline",
-          "title": "КАРЬЕРА И ИСТОРИЯ ЧЛЕНСТВА",
-          "emptyMessage": "Добавьте этапы службы или смены рангов",
-          "template": "characterOrganizationStateTemplate",
-          "dataPath": "история_членства"
-        }
-      ]
-    },
-    "characterOrganizationStateTemplate": {
-      "type": "timeline",
-      "fields": [
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "select",
-          "class": "статус_категория",
-          "label": "Событие карьеры",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "вступление",
-              "label": "🟢 Вступление / Присяга"
-            },
-            {
-              "value": "повышение",
-              "label": "📈 Повышение в звании"
-            },
-            {
-              "value": "награда",
-              "label": "🎖️ Награда / Орден"
-            },
-            {
-              "value": "понижение",
-              "label": "📉 Разжалование"
-            },
-            {
-              "value": "увольнение",
-              "label": "🟡 Почетная отставка"
-            },
-            {
-              "value": "изгнание",
-              "label": "🔴 Исключение / Трибунал"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Подробности события",
-          "rows": 2
-        }
-      ],
-      "itemClass": "relationship-state-item",
-      "headerTitle": "ЭТАП СЛУЖБЫ"
-    },
-    "characterStateTemplate": {
-      "type": "dynamic",
-      "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
-      "fields": [
-        {
-          "type": "select",
-          "class": "целевая_сущность",
-          "label": "Государство",
-          "entityType": "state",
-          "placeholder": "Выберите государство..."
-        },
-        {
-          "type": "select",
-          "class": "тип_отношения",
-          "label": "Правовой статус и подданство",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "гражданин",
-              "label": "🟢 Гражданин / Подданный"
-            },
-            {
-              "value": "правитель",
-              "label": "👑 Монарх / Глава государства"
-            },
-            {
-              "value": "госслужащий",
-              "label": "🏛️ Чиновник / Министр"
-            },
-            {
-              "value": "дворянин",
-              "label": "⚜️ Аристократ / Дворянин"
-            },
-            {
-              "value": "иностранец",
-              "label": "⚪ Иностранец / Гость"
-            },
-            {
-              "value": "беженец",
-              "label": "🟡 Беженец / Проситель убежища"
-            },
-            {
-              "value": "изгнанник",
-              "label": "🟠 Изгнанник / Лишен прав"
-            },
-            {
-              "value": "враг_народа",
-              "label": "🔴 Государственный преступник / В розыске"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Статус перед законом и отношение властей",
-          "rows": 3
-        }
-      ],
-      "itemClass": "dynamic-item",
-      "headerTitle": "Отношения с государством",
-      "dynamicContainers": [
-        {
-          "id": "динамика_подданства",
-          "type": "timeline",
-          "title": "ЭВОЛЮЦИЯ СТАТУСА В ГОСУДАРСТВЕ",
-          "emptyMessage": "Добавьте изменения статуса (розыск, амнистия, награды)",
-          "template": "characterStateStateTemplate",
-          "dataPath": "динамика_подданства"
-        }
-      ]
-    },
-    "characterStateStateTemplate": {
-      "type": "timeline",
-      "fields": [
-        {
-          "type": "manuscript_point",
-          "class": "начальная_глава",
-          "label": "Начало в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу..."
-        },
-        {
-          "type": "manuscript_point",
-          "class": "конечная_глава",
-          "label": "Окончание в рукописи (Том / Глава)",
-          "placeholder": "Выберите том и главу...",
-          "allowAutoExtend": true
-        },
-        {
-          "type": "select",
-          "class": "статус_категория",
-          "label": "Событие статуса",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "получение_прав",
-              "label": "🟢 Получение подданства"
-            },
-            {
-              "value": "госнаграда",
-              "label": "🎖️ Государственная награда"
-            },
-            {
-              "value": "объявлен_розыск",
-              "label": "🔴 Объявлен в розыск"
-            },
-            {
-              "value": "амнистия",
-              "label": "🕊️ Амнистия / Помилование"
-            },
-            {
-              "value": "лишение_прав",
-              "label": "❌ Лишение титула / Изгнание"
-            }
-          ]
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Описание указа или инцидента",
-          "rows": 2
-        }
-      ],
-      "itemClass": "relationship-state-item",
-      "headerTitle": "ИЗМЕНЕНИЕ СТАТУСА"
-    }
-  }
+  "entityType": "character"
 }

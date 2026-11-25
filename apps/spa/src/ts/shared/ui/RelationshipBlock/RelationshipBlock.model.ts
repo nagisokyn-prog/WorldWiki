@@ -44,4 +44,5 @@ export interface RelationshipBlockProps {
   entityId: string;
   project: string;
   sandboxMode?: boolean;
+  isCollapsed?: boolean;
 }

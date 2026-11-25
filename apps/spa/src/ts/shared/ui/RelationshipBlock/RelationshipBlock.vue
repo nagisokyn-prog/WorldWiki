@@ -1,23 +1,39 @@
 <template>
   <div class="rel-block glass-panel" :class="linkClass">
     
-    <div class="rel-header">
-      <div class="flex items-center gap-3">
+    <div class="rel-header cursor-pointer select-none" @click="toggleCollapsed">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-xs text-accent">{{ effectiveCollapsed ? '▶' : '▼' }}</span>
         <span class="text-xl">🔗</span>
-        <div class="flex-col">
-          <strong class="text-main text-sm">{{ templateConf.headerTitle || 'Связь' }}</strong>
+        <div class="flex-col min-w-0">
+          <div class="flex items-center gap-2 min-w-0">
+            <strong class="text-main text-sm whitespace-nowrap">{{ templateConf.headerTitle || 'Связь' }} #{{ (idx ?? 0) + 1 }}</strong>
+            <span v-if="relationshipSummary" class="text-xs text-muted truncate max-w-sm" :title="relationshipSummary">
+              — {{ relationshipSummary }}
+            </span>
+          </div>
           <span class="text-xs text-muted text-muted-70">
             с сущностью типа «{{ templateConf.foreign_type || (templateConf.fields?.find((f) => f.class === linkClass)?.entityType) || '?' }}»
           </span>
         </div>
       </div>
-      <button class="btn-icon danger interactive-el" title="Удалить связь" @click="$emit('remove')">
-        <i class="fas fa-trash-alt"></i>
-      </button>
+      <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+        <button
+          type="button"
+          class="btn-new btn-outline-new text-xs interactive-el py-0.5 px-2"
+          :title="effectiveCollapsed ? 'Развернуть связь' : 'Свернуть связь'"
+          @click="toggleCollapsed"
+        >
+          {{ effectiveCollapsed ? 'Развернуть' : 'Свернуть' }}
+        </button>
+        <button class="btn-icon danger interactive-el" title="Удалить связь" @click="$emit('remove')">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
     </div>
 
     <!-- BIDIRECTIONAL SPLIT -->
-    <div class="rel-split">
+    <div v-if="!effectiveCollapsed" class="rel-split">
       
       <!-- СТОРОНА А -->
       <div class="rel-side rel-side-left">
@@ -54,14 +70,35 @@
 
         <!-- Dynamic Containers A -->
         <div v-for="subConf in templateConf.dynamicContainers || []" :key="'adc-' + (subConf.id || '')" class="sub-container-wrap">
-          <div class="sub-header">
+          <div class="sub-header flex justify-between items-center">
             <span>⏱️ {{ subConf.title }}</span>
+            <button
+              v-if="getNestedList(item, subConf).length > 1"
+              type="button"
+              class="btn-new btn-outline-new text-xs interactive-el py-0.5 px-2"
+              @click.stop="toggleAllNestedCollapse('a_' + (subConf.id || subConf.dataPath || ''), getNestedList(item, subConf).length)"
+            >
+              {{ areAllNestedCollapsed('a_' + (subConf.id || subConf.dataPath || ''), getNestedList(item, subConf).length) ? 'Развернуть все' : 'Свернуть все' }}
+            </button>
           </div>
           <div v-auto-animate class="p-2 flex-col gap-2">
             <div v-for="(nItem, nIdx) in getNestedList(item, subConf)" :key="nIdx" class="nested-item card-secondary relative">
-              <button class="btn-icon danger interactive-el absolute nested-remove-btn" title="Удалить" @click="removeNestedItem(nIdx, item, subConf)">
-                <i class="fas fa-times"></i>
-              </button>
+              <div
+                class="flex justify-between items-center mb-1 pb-1 border-b cursor-pointer select-none"
+                @click="toggleNestedCollapse('a_' + (subConf.id || subConf.dataPath || ''), Number(nIdx))"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-xs text-accent">{{ nestedCollapsed['a_' + (subConf.id || subConf.dataPath || '') + '_' + nIdx] ? '▶' : '▼' }}</span>
+                  <strong class="text-accent text-xs whitespace-nowrap">Элемент #{{ Number(nIdx) + 1 }}</strong>
+                  <span v-if="getNestedSummary(nItem)" class="text-xs text-muted truncate max-w-sm" :title="getNestedSummary(nItem)">
+                    — {{ getNestedSummary(nItem) }}
+                  </span>
+                </div>
+                <button class="btn-icon danger interactive-el" title="Удалить" @click.stop="removeNestedItem(nIdx, item, subConf)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div v-if="!nestedCollapsed['a_' + (subConf.id || subConf.dataPath || '') + '_' + nIdx]">
               
               <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
                 <template v-if="nField.class === 'начальная_глава' || nField.class === 'конечная_глава'">
@@ -123,6 +160,7 @@
                   Отношения продолжаются (без даты окончания)
                 </div>
               </div>
+              </div>
             </div>
             
             <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested" @click="addNestedItem(item, subConf)">
@@ -178,14 +216,35 @@
 
           <!-- Dynamic Containers B (Mirror) -->
           <div v-for="subConf in templateConf.dynamicContainers || []" :key="'bdc-' + (subConf.id || '')" class="sub-container-wrap">
-            <div class="sub-header">
+            <div class="sub-header flex justify-between items-center">
               <span>⏱️ {{ subConf.title }}</span>
+              <button
+                v-if="getNestedList(foreignItem, subConf).length > 1"
+                type="button"
+                class="btn-new btn-outline-new text-xs interactive-el py-0.5 px-2"
+                @click.stop="toggleAllNestedCollapse('b_' + (subConf.id || subConf.dataPath || ''), getNestedList(foreignItem, subConf).length)"
+              >
+                {{ areAllNestedCollapsed('b_' + (subConf.id || subConf.dataPath || ''), getNestedList(foreignItem, subConf).length) ? 'Развернуть все' : 'Свернуть все' }}
+              </button>
             </div>
             <div class="p-2 flex-col gap-2">
               <div v-for="(nItem, nIdx) in getNestedList(foreignItem, subConf)" :key="nIdx" class="nested-item card-secondary relative">
-                <button class="btn-icon danger interactive-el absolute nested-remove-btn" title="Удалить" @click="removeNestedItem(nIdx, foreignItem, subConf)">
-                  <i class="fas fa-times"></i>
-                </button>
+                <div
+                  class="flex justify-between items-center mb-1 pb-1 border-b cursor-pointer select-none"
+                  @click="toggleNestedCollapse('b_' + (subConf.id || subConf.dataPath || ''), Number(nIdx))"
+                >
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xs text-accent">{{ nestedCollapsed['b_' + (subConf.id || subConf.dataPath || '') + '_' + nIdx] ? '▶' : '▼' }}</span>
+                    <strong class="text-accent text-xs whitespace-nowrap">Элемент #{{ Number(nIdx) + 1 }}</strong>
+                    <span v-if="getNestedSummary(nItem)" class="text-xs text-muted truncate max-w-sm" :title="getNestedSummary(nItem)">
+                      — {{ getNestedSummary(nItem) }}
+                    </span>
+                  </div>
+                  <button class="btn-icon danger interactive-el" title="Удалить" @click.stop="removeNestedItem(nIdx, foreignItem, subConf)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div v-if="!nestedCollapsed['b_' + (subConf.id || subConf.dataPath || '') + '_' + nIdx]">
                 <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
                   <template v-if="nField.class === 'начальная_глава' || nField.class === 'конечная_глава'">
                     <ManuscriptPointPicker
@@ -245,6 +304,7 @@
                     Отношения продолжаются (без даты окончания)
                   </div>
                 </div>
+                </div>
               </div>
               
               <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested-info" @click="addNestedItem(foreignItem, subConf)">
@@ -272,12 +332,21 @@ import ManuscriptPointPicker from '../ManuscriptPointPicker/ManuscriptPointPicke
 import UniversalDatePicker from '../UniversalDatePicker/UniversalDatePicker.vue';
 
 const props = withDefaults(defineProps<RelationshipBlockProps>(), {
-    sandboxMode: false
+    sandboxMode: false,
+    isCollapsed: undefined
 });
 
-const emit = defineEmits(['remove', 'modified', 'foreign-update', 'item-updated', 'update:modelValue']);
+const emit = defineEmits(['remove', 'modified', 'foreign-update', 'item-updated', 'update:modelValue', 'toggle-collapse']);
 
 const {
+  effectiveCollapsed,
+  toggleCollapsed,
+  relationshipSummary,
+  nestedCollapsed,
+  toggleNestedCollapse,
+  areAllNestedCollapsed,
+  toggleAllNestedCollapse,
+  getNestedSummary,
   templateFields,
   formatLabel,
   getInputValue,

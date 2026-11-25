@@ -12,7 +12,10 @@ export function useSettingsPerformance(
   const showAdvanced = ref(false);
 
   const status = computed(() => performanceManager.status.value);
-  const lastP95 = computed(() => performanceManager.lastP95.value);
+  const lastP95 = computed(() => {
+    const val = Number(performanceManager.lastP95.value);
+    return Number.isFinite(val) ? Number(val.toFixed(3)) : 0;
+  });
   const batteryStatus = computed(() => performanceManager.batteryStatus.value);
   const activeLevel = computed(() => settings.value.perf?.level ?? 'Balanced');
 

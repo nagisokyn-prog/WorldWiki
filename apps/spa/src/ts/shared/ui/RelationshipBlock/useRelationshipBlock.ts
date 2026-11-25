@@ -7,6 +7,45 @@ import { useRelationshipNestedOps } from './useRelationshipNestedOps';
 
 export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event: string, ...args: unknown[]) => void) {
   const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
+  const localCollapsed = ref(false);
+  const effectiveCollapsed = computed(() =>
+    props.isCollapsed !== undefined ? props.isCollapsed : localCollapsed.value
+  );
+  const toggleCollapsed = () => {
+    if (props.isCollapsed !== undefined) {
+      emit('toggle-collapse');
+    } else {
+      localCollapsed.value = !localCollapsed.value;
+    }
+  };
+
+  const nestedCollapsed = ref<Record<string, boolean>>({});
+  const isNestedCollapsed = (key: string, idx: number): boolean =>
+    Boolean(nestedCollapsed.value[`${key}_${idx}`]);
+  const toggleNestedCollapse = (key: string, idx: number) => {
+    const k = `${key}_${idx}`;
+    const next = { ...nestedCollapsed.value };
+    if (next[k]) delete next[k];
+    else next[k] = true;
+    nestedCollapsed.value = next;
+  };
+  const areAllNestedCollapsed = (key: string, count: number): boolean => {
+    if (count <= 0) return false;
+    for (let i = 0; i < count; i++) {
+      if (!nestedCollapsed.value[`${key}_${i}`]) return false;
+    }
+    return true;
+  };
+  const toggleAllNestedCollapse = (key: string, count: number) => {
+    const all = areAllNestedCollapsed(key, count);
+    const next = { ...nestedCollapsed.value };
+    for (let i = 0; i < count; i++) {
+      const k = `${key}_${i}`;
+      if (all) delete next[k];
+      else next[k] = true;
+    }
+    nestedCollapsed.value = next;
+  };
 
   const linkClass = computed<string>(() => {
     if (props.templateConf.bidirectionalLinkClass) {
@@ -71,8 +110,31 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   const getInputNumber = (event: Event): number =>
     Number((event.target as HTMLInputElement).value);
 
+  const relationshipSummary = computed(() => {
+    const typeField = templateFields.value.find((f) => f.class !== linkClass.value && f.type === 'select');
+    const typeVal = typeField ? String(props.item[typeField.class] || '').trim() : '';
+    const target = foreignLabel.value;
+    if (target && target !== 'Взаимное отношение' && typeVal) return `${target} (${typeVal})`;
+    if (target && target !== 'Взаимное отношение') return target;
+    return typeVal || '';
+  });
+
+  const getNestedSummary = (nItem: Record<string, unknown>): string => {
+    const val = nItem['тип_связи'] || nItem['статус_категория'] || nItem['название'] || nItem['описание_причина'];
+    return val ? String(val).trim() : '';
+  };
+
   return {
     wheelHorizontal,
+    effectiveCollapsed,
+    toggleCollapsed,
+    relationshipSummary,
+    nestedCollapsed,
+    isNestedCollapsed,
+    toggleNestedCollapse,
+    areAllNestedCollapsed,
+    toggleAllNestedCollapse,
+    getNestedSummary,
     templateFields,
     formatLabel,
     getInputValue,

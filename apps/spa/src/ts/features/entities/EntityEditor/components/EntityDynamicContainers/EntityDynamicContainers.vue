@@ -52,12 +52,14 @@
               :key="idx"
               :item="item"
               :idx="idx"
+              :is-collapsed="isItemCollapsed(container.dataPath || container.id || '', idx)"
               :template-conf="getTemplateConf(container)"
               :all-templates="getAllTemplates()"
               :reference-data="referenceData || {}"
               :entity-id="entityId"
               :entity-type="entityType"
               :project="project"
+              @toggle-collapse="onToggleCollapse(container.dataPath || container.id || '', idx)"
               @remove="$emit('removeDynamicItem', container.dataPath || container.id || '', idx)"
               @modified="$emit('modified')"
               @foreign-update="$emit('foreignUpdate', $event)"
@@ -87,6 +89,14 @@
               @modified="$emit('modified')"
             />
           </template>
+          <div class="mt-2 flex justify-end">
+            <button
+              class="btn btn-small btn-outline interactive-el"
+              @click="$emit('addDynamicItem', container.dataPath || container.id || '', container.template || '')"
+            >
+              ➕ Добавить
+            </button>
+          </div>
         </div>
       </div>
     </template>

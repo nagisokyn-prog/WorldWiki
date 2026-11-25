@@ -116,7 +116,7 @@ pub const CORE_ENTITY_SCHEMAS: &[(&str, &str)] = &[
 
 pub fn compute_schema_hash() -> String {
     let mut hasher = DefaultHasher::new();
-    hasher.write(b"v13_promise_milestones_meta");
+    hasher.write(b"v14_unified_ui_editor_schemas");
     for (name, ddl) in ALL_DDL_MODULES {
         hasher.write(name.as_bytes());
         hasher.write(ddl.as_bytes());

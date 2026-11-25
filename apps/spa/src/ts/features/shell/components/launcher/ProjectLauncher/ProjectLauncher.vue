@@ -58,9 +58,6 @@ class="glass-btn outline" title="Удалить"
                                 </div>
                                 <div class="project-card-meta">
                                     <h3>{{ project.name }}</h3>
-                                    <div v-if="project.stats" class="project-stats">
-                                        <span>{{ project.stats.chapters || 0 }} глав</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>

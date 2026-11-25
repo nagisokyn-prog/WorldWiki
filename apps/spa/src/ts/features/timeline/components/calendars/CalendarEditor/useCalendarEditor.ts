@@ -17,6 +17,7 @@ import {
   saveCalendarLocalDraft,
   clearCalendarLocalDraft,
   hydrateCalendarLocalDraft,
+  notifyCalendarToast,
 } from './useCalendarEditorStorage';
 import { syncPresetWithPlanet } from './useCalendarPresetSync';
 
@@ -165,9 +166,11 @@ export function useCalendarEditor(
       hasUnsavedDraft.value = false;
       saveCalendarLocalDraft(getStateKey(), { activeTab: activeTab.value });
       emit('save', calendarRecord.value.data as Record<string, unknown>);
+      notifyCalendarToast('Календарь сохранён', 'success');
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Не удалось сохранить календарь';
       console.error('[CalendarEditor] Ошибка сохранения:', e);
+      notifyCalendarToast(error.value, 'error');
     } finally {
       isSaving.value = false;
     }
@@ -224,7 +227,19 @@ export function useCalendarEditor(
 
   const handleTriggerSave = (e: Event) => {
     const custom = e as CustomEvent<{ id?: string }>;
-    if (!custom.detail?.id || custom.detail.id === props.calendarId || String(calendarRecord.value?.id).endsWith(custom.detail.id)) {
+    const norm = (v?: string | null) => String(v || '').replace(/^calendars:/, '').trim();
+    const targetId = norm(custom.detail?.id);
+    if (!targetId || targetId === norm(props.calendarId) || targetId === norm(calendarRecord.value?.id)) {
+      e.preventDefault();
+      void saveCalendar();
+    }
+  };
+
+  const handleDirectCtrlS = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.code === 'KeyS') {
+      if (props.isReadOnly || isSaving.value) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
       void saveCalendar();
     }
   };
@@ -233,6 +248,7 @@ export function useCalendarEditor(
     void ensureWasmInitialized().catch((e) => console.warn('WASM init in useCalendarEditor failed:', e));
     document.addEventListener('ww:calendar-renamed', handleRenamed as EventListener);
     document.addEventListener('ww:trigger-calendar-save', handleTriggerSave as EventListener);
+    window.addEventListener('keydown', handleDirectCtrlS, true);
   });
 
   void loadCalendar();
@@ -241,6 +257,7 @@ export function useCalendarEditor(
     if (debounceTimer) clearTimeout(debounceTimer);
     document.removeEventListener('ww:calendar-renamed', handleRenamed as EventListener);
     document.removeEventListener('ww:trigger-calendar-save', handleTriggerSave as EventListener);
+    window.removeEventListener('keydown', handleDirectCtrlS, true);
   });
 
   watch(() => props.calendarId, async (newVal, oldVal) => {

@@ -7,6 +7,7 @@ import type { EditorTab } from './shell.types';
 export interface SaveAllDeps {
   projectName: Ref<string>;
   openEditors: Ref<EditorTab[]>;
+  activeEditor?: Ref<EditorTab | null>;
   chapterTreeRef: Ref<{ load?: (targetId?: string) => Promise<void> } | null>;
   currentSidebarTab: Ref<string | null>;
   addLog: (text: string, type?: 'info' | 'warn' | 'error' | 'success') => void;
@@ -18,8 +19,11 @@ export interface SaveAllDeps {
 
 export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
   let savedCount = 0;
+  const activeTabId = deps.activeEditor?.value?.id;
   for (const editor of deps.openEditors.value) {
-    if (!editor.unsaved) continue;
+    const isActiveTimelineTab =
+      activeTabId === editor.id && (editor.entityType === 'calendar' || editor.entityType === 'planet');
+    if (!editor.unsaved && !isActiveTimelineTab) continue;
     if (editor.tabType === 'chapter') {
       document.dispatchEvent(new CustomEvent('ww:trigger-chapter-save'));
       continue;
@@ -32,7 +36,18 @@ export async function executeSaveAll(deps: SaveAllDeps): Promise<void> {
       continue;
     }
     if (editor.entityType === 'calendar') {
-      document.dispatchEvent(new CustomEvent('ww:trigger-calendar-save', { detail: { id: editor.rawId } }));
+      const triggerEvt = new CustomEvent('ww:trigger-calendar-save', {
+        detail: { id: editor.rawId },
+        cancelable: true,
+      });
+      document.dispatchEvent(triggerEvt);
+      if (triggerEvt.defaultPrevented) {
+        editor.unsaved = false;
+        deps.markSaved(editor.id);
+        triggerRef(deps.openEditors);
+        savedCount++;
+        continue;
+      }
       try {
         const { useCalendarStore } = await import('../calendar.store');
         const calendarStore = useCalendarStore();

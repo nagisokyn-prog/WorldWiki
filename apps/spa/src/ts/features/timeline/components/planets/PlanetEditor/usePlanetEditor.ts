@@ -5,6 +5,8 @@
  */
 
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue';
+import { getActivePinia } from 'pinia';
+import { useConsoleStore } from '@/stores/console';
 import type {
   PlanetEditorProps,
   PlanetEditorEmits,
@@ -76,15 +78,27 @@ export function usePlanetEditor(
     };
     const handleTriggerSave = (e: Event) => {
       const custom = e as CustomEvent<{ id?: string }>;
-      if (!custom.detail?.id || custom.detail.id === props.planetId || String(planet.value.id).endsWith(custom.detail.id)) {
+      const norm = (v?: string | null) => String(v || '').replace(/^planets:/, '').trim();
+      const targetId = norm(custom.detail?.id);
+      if (!targetId || targetId === norm(props.planetId) || targetId === norm(planet.value.id)) {
+        void savePlanet();
+      }
+    };
+    const handleDirectCtrlS = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.code === 'KeyS') {
+        if (props.isReadOnly || isSaving.value) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
         void savePlanet();
       }
     };
     document.addEventListener('ww:planet-renamed', handleRenamed as EventListener);
     document.addEventListener('ww:trigger-planet-save', handleTriggerSave as EventListener);
+    window.addEventListener('keydown', handleDirectCtrlS, true);
     onUnmounted(() => {
       document.removeEventListener('ww:planet-renamed', handleRenamed as EventListener);
       document.removeEventListener('ww:trigger-planet-save', handleTriggerSave as EventListener);
+      window.removeEventListener('keydown', handleDirectCtrlS, true);
     });
   });
 
@@ -106,6 +120,7 @@ export function usePlanetEditor(
     get: () => planet.value.axial_tilt_mdeg / 1000,
     set: (val: number) => {
       planet.value.axial_tilt_mdeg = Math.round(val * 1000);
+      emit('update:planet', planet.value);
     },
   });
 
@@ -118,6 +133,7 @@ export function usePlanetEditor(
     const minutes = Number(planet.value.day_minutes) || 0;
     const seconds = Number(planet.value.day_seconds) || 0;
     planet.value.ticks_per_day = hours * 3600 + minutes * 60 + seconds;
+    emit('update:planet', planet.value);
   }
 
   function updateOrbitDays(days: number) {
@@ -125,6 +141,7 @@ export function usePlanetEditor(
     planet.value.orbit_days_num = Math.round(days * 10000);
     planet.value.orbit_days_den = 10000;
     recalculateAstroPoints();
+    emit('update:planet', planet.value);
   }
 
 
@@ -181,10 +198,12 @@ export function usePlanetEditor(
   // Спутники (Луны)
   function addMoon(moon?: Partial<PlanetMoon>) {
     addPlanetMoon(planet.value, moon);
+    emit('update:planet', planet.value);
   }
 
   function removeMoon(index: number) {
     removePlanetMoon(planet.value, index);
+    emit('update:planet', planet.value);
   }
 
   // Сохранение планеты через API бэкенда
@@ -199,10 +218,12 @@ export function usePlanetEditor(
       emit('save', planet.value);
       emit('update:name', planet.value.name);
       emit('update:planet', planet.value);
+      if (getActivePinia()) useConsoleStore().addToast('Планета сохранена', 'success');
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
       errorMessage.value = `Ошибка сохранения планеты: ${err}`;
       console.error('[PlanetEditor]', err);
+      if (getActivePinia()) useConsoleStore().addToast(errorMessage.value, 'error');
     } finally {
       isSaving.value = false;
     }

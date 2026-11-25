@@ -3,6 +3,15 @@
  * @description Изолированный слой сохранения и восстановления драфта календаря в LocalStorage.
  */
 
+import { getActivePinia } from 'pinia';
+import { useConsoleStore } from '@/stores/console';
+
+export function notifyCalendarToast(text: string, type: 'success' | 'error'): void {
+  if (getActivePinia()) {
+    useConsoleStore().addToast(text, type);
+  }
+}
+
 export interface CalendarLocalState {
   activeTab?: string;
   unsavedData?: Record<string, unknown>;

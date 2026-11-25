@@ -81,6 +81,7 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
     await executeSaveAll({
       projectName: deps.projectName,
       openEditors: deps.openEditors,
+      activeEditor: deps.activeEditor,
       chapterTreeRef: deps.chapterTreeRef,
       currentSidebarTab: deps.currentSidebarTab,
       addLog: deps.addLog,

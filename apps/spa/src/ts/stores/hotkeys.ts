@@ -200,11 +200,11 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
   };
 
   const register = () => {
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('keydown', handleKeydown, true);
   };
 
   const unregister = () => {
-    window.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener('keydown', handleKeydown, true);
   };
 
   onScopeDispose(() => {

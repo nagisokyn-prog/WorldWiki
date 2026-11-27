@@ -43,7 +43,7 @@
         stage="progression"
         :get-chapter-title="getChapterTitle"
         :is-current-chapter-promise="isCurrentChapterPromise"
-        :previous-scene="previousScene"
+        :previous-scene="getProgressionPrevious(pIdx)"
         :shared-entities="sharedEntities"
         @locate-step="$emit('locateStep', $event)"
         @remove-milestone="$emit('removeMilestone', $event)"
@@ -61,7 +61,7 @@
         stage="resolution"
         :get-chapter-title="getChapterTitle"
         :is-current-chapter-promise="isCurrentChapterPromise"
-        :previous-scene="previousScene"
+        :previous-scene="resolutionPrevious"
         :shared-entities="sharedEntities"
         @locate-step="$emit('locateStep', $event)"
         @remove-milestone="$emit('removeMilestone', $event)"
@@ -75,8 +75,11 @@
 <script setup lang="ts">
 import type { PromiseCardTimelineProps, PromiseCardTimelineEmits } from '../PromiseCard.model';
 import PromiseMilestoneCard from './PromiseMilestoneCard/PromiseMilestoneCard.vue';
+import { usePromiseCardTimeline } from './usePromiseCardTimeline';
 
-defineProps<PromiseCardTimelineProps>();
+const props = defineProps<PromiseCardTimelineProps>();
 defineEmits<PromiseCardTimelineEmits>();
+
+const { getProgressionPrevious, resolutionPrevious } = usePromiseCardTimeline(props);
 </script>
 

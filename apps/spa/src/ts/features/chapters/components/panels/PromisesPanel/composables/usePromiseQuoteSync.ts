@@ -39,12 +39,7 @@ export function createPromiseQuoteSync(options: {
     }, 1200);
   };
 
-  const cleanup = () => {
-    if (syncSaveTimer) {
-      clearTimeout(syncSaveTimer);
-      syncSaveTimer = null;
-    }
-  };
+      const cleanup = () => { if (syncSaveTimer) { clearTimeout(syncSaveTimer); syncSaveTimer = null; } };
 
   const syncQuotesWithManuscript = (persistToBackend = false) => {
     const chapterData = options.props.chapterData as ({ content?: string } & Record<string, unknown>) | null | undefined;
@@ -64,7 +59,37 @@ export function createPromiseQuoteSync(options: {
       const cleanChapId = cleanId(options.props.chapterId);
       let hasChanges = false;
 
+      const collectTextsByBlockIds = (ids: string[]) => {
+        const texts: string[] = [];
+        for (const bId of ids) {
+          const cleanBId = bId.replace(/^(text_blocks|blocks):/, '').replace(/[`⟨⟩"']/g, '');
+          const shortId = cleanBId.replace(/^blk_[^_]+_/, '');
+          const blockEl = doc.querySelector(
+            `[data-block-id="${bId}"], [data-block-id="${cleanBId}"], [data-block-id="${shortId}"], [data-id="${bId}"], [data-id="${cleanBId}"], [data-id="${shortId}"]`
+          );
+          if (blockEl?.textContent?.trim()) texts.push(blockEl.textContent.trim());
+        }
+        return texts;
+      };
+
       for (const p of options.promises.value) {
+        if (Array.isArray(p.milestones)) {
+          let milestoneChanged = false;
+          for (const m of p.milestones) {
+            if (!m.chapter_id || cleanId(m.chapter_id) !== cleanChapId) continue;
+            const mIds = m.block_ids?.length ? m.block_ids : (m.block_id ? [m.block_id] : []);
+            const mTexts = mIds.length ? collectTextsByBlockIds(mIds) : [];
+            if (mTexts.length === mIds.length && mTexts.length > 0 && m.quote !== mTexts.join('\n')) {
+              m.quote = mTexts.join('\n');
+              milestoneChanged = true;
+            }
+          }
+          if (milestoneChanged) {
+            hasChanges = true;
+            if (persistToBackend) scheduleBackendPromiseSync(p);
+          }
+        }
+
         const pChapId = cleanId(p.chapter_id);
         if (!cleanChapId || pChapId !== cleanChapId) continue;
 
@@ -84,7 +109,7 @@ export function createPromiseQuoteSync(options: {
               matchedTexts.push(blockEl.textContent.trim());
             }
           }
-          if (matchedTexts.length > 0) {
+          if (matchedTexts.length === p.block_ids.length && matchedTexts.length > 0) {
             const combinedText = matchedTexts.join('\n');
             if (p.quote !== combinedText) {
               if (!p.title || p.title === p.quote) p.title = combinedText;
@@ -117,6 +142,9 @@ export function createPromiseQuoteSync(options: {
             continue;
           }
         }
+
+        // Если у блока уже есть реальные стабильные ID (blk_*), не деградируем их в para-N и не обрезаем цитату
+        if (p.block_ids?.some((id) => !/^para-\d+$/i.test(id)) || (p.block_id && !/^para-\d+$/i.test(p.block_id))) continue;
 
         const paraIndices: number[] = [];
         for (const rawB of p.block_ids ?? (p.block_id ? [p.block_id] : [])) {

@@ -873,8 +873,10 @@ DEFINE FUNCTION OVERWRITE fn::delete_plot_promise($id: any) {
     -- Очищаем ребра связей
     DELETE occurs_at WHERE in = $rec;
     DELETE promise_milestones WHERE in = $rec;
+    DELETE spans_blocks WHERE in = $rec;
     DELETE advances_arc WHERE in = $rec;
     DELETE participant_of WHERE out = $rec;
+    UPDATE plot_promises SET parent_id = NONE WHERE parent_id = $rec;
     
     -- Удаляем сюжетное обещание
     DELETE $rec;

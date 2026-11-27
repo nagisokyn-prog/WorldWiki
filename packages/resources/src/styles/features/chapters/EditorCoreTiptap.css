@@ -623,14 +623,14 @@ del.diff-del, .diff-del {
 .editor-core-tiptap .narrative-kind-conflict,
 .narrative-kind-conflict,
 [data-narrative-kind="conflict"] {
-  --narrative-accent: var(--color-danger, var(--accent));
+  --narrative-accent: var(--error, var(--accent));
 }
 
 .editor-core .narrative-kind-gun,
 .editor-core-tiptap .narrative-kind-gun,
 .narrative-kind-gun,
 [data-narrative-kind="gun"] {
-  --narrative-accent: var(--color-warning, var(--accent));
+  --narrative-accent: var(--warning, var(--accent));
 }
 
 .editor-core .narrative-kind-foreshadowing,
@@ -644,14 +644,14 @@ del.diff-del, .diff-del {
 .editor-core-tiptap .narrative-kind-mystery,
 .narrative-kind-mystery,
 [data-narrative-kind="mystery"] {
-  --narrative-accent: var(--color-success, var(--accent));
+  --narrative-accent: var(--success, var(--accent));
 }
 
 .editor-core .narrative-kind-question,
 .editor-core-tiptap .narrative-kind-question,
 .narrative-kind-question,
 [data-narrative-kind="question"] {
-  --narrative-accent: var(--color-info, var(--accent));
+  --narrative-accent: var(--info, var(--accent));
 }
 
 /* Одиночный абзац — полная плашка */
@@ -743,6 +743,22 @@ del.diff-del, .diff-del {
   padding-left: 28px;
 }
 
+.semantic-paragraph-node.narrative-frame-first,
+.semantic-paragraph-node[data-narrative-frame="first"] {
+  margin-bottom: 0;
+}
+
+.semantic-paragraph-node.narrative-frame-middle,
+.semantic-paragraph-node[data-narrative-frame="middle"] {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.semantic-paragraph-node.narrative-frame-last,
+.semantic-paragraph-node[data-narrative-frame="last"] {
+  margin-top: 0;
+}
+
 .semantic-paragraph-node.narrative-frame .semantic-tag-badge,
 .semantic-paragraph-node[data-narrative-frame] .semantic-tag-badge {
   left: 4px;
@@ -778,7 +794,7 @@ del.diff-del, .diff-del {
 .editor-core .narrative-embedded-gun,
 .editor-core-tiptap .narrative-embedded-gun,
 .narrative-frame.narrative-embedded-gun {
-  border-left: 3px solid var(--color-warning, var(--accent));
+  border-left: 3px solid var(--warning, var(--accent));
   background-color: var(--warning-bg, var(--bg-selected));
 }
 
@@ -803,7 +819,7 @@ del.diff-del, .diff-del {
 .editor-core .narrative-embedded-mystery,
 .editor-core-tiptap .narrative-embedded-mystery,
 .narrative-frame.narrative-embedded-mystery {
-  border-left: 3px solid var(--color-success, var(--accent));
+  border-left: 3px solid var(--success, var(--accent));
   background-color: var(--success-bg, var(--bg-selected));
 }
 
@@ -853,7 +869,7 @@ del.diff-del, .diff-del {
 .editor-core .narrative-embedded-question,
 .editor-core-tiptap .narrative-embedded-question,
 .narrative-frame.narrative-embedded-question {
-  border-left: 3px solid var(--color-info, var(--accent));
+  border-left: 3px solid var(--info, var(--accent));
   background-color: var(--info-bg, var(--bg-selected));
 }
 
@@ -878,7 +894,7 @@ del.diff-del, .diff-del {
 .editor-core .narrative-embedded-conflict,
 .editor-core-tiptap .narrative-embedded-conflict,
 .narrative-frame.narrative-embedded-conflict {
-  border-left: 3px solid var(--color-danger, var(--accent));
+  border-left: 3px solid var(--error, var(--accent));
   background-color: var(--error-bg, var(--bg-selected));
 }
 

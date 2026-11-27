@@ -87,7 +87,8 @@ export function usePromisesPanel(
     promises,
     chapterId: () => props.chapterId,
     chapterTitle: () => props.chapterTitle,
-    allChapters: () => props.allChapters
+    allChapters: () => props.allChapters,
+    currentChapterContent: () => (props.chapterData as { content?: string } | null | undefined)?.content
   });
 
   const actions = usePromiseActions({
@@ -118,18 +119,28 @@ export function usePromisesPanel(
         const progressions = milestones.filter((m) => m.stage === 'progression');
         const resolution = milestones.find((m) => m.stage === 'resolution') || null;
 
+        const normalizeBlockList = (raw?: unknown) =>
+          Array.isArray(raw)
+            ? raw
+                .filter((b): b is string => typeof b === 'string' && b.trim().length > 0 && b !== 'NONE')
+                .map((b) => {
+                  const stripped = b.replace(/^(text_blocks|blocks):/i, '').replace(/[`⟨⟩"']/g, '').trim();
+                  const pm = stripped.match(/(para-\d+)$/i);
+                  return pm ? pm[1] : stripped.replace(/^blk_[^_]+_/, '');
+                })
+            : [];
+
+        const normalizedMilestones = milestones.map((m) => ({
+          ...m,
+          block_ids: normalizeBlockList(m.block_ids).length > 0
+            ? normalizeBlockList(m.block_ids)
+            : (m.block_id ? normalizeBlockList([m.block_id]) : [])
+        }));
+
         const cleanParent = p.parent_id && p.parent_id !== 'NONE' && p.parent_id !== 'plot_promises:NONE'
           ? p.parent_id
           : null;
-        const cleanBlockIds = Array.isArray(p.block_ids)
-          ? p.block_ids
-              .filter((b): b is string => typeof b === 'string' && b.trim().length > 0 && b !== 'NONE')
-              .map((b) => {
-                const stripped = b.replace(/^(text_blocks|blocks):/i, '').replace(/[`⟨⟩"']/g, '').trim();
-                const pm = stripped.match(/(para-\d+)$/i);
-                return pm ? pm[1] : stripped.replace(/^blk_[^_]+_/, '');
-              })
-          : [];
+        const cleanBlockIds = normalizeBlockList(p.block_ids);
 
         return {
           ...p,
@@ -141,7 +152,7 @@ export function usePromisesPanel(
           block_id: p.block_id || plant?.block_id || cleanBlockIds[0] || null,
           progressions: p.progressions || progressions,
           resolution: p.resolution || resolution,
-          milestones
+          milestones: normalizedMilestones
         };
       });
       try {
@@ -227,15 +238,16 @@ export function usePromisesPanel(
     expandAllCards,
     collapseAllCards,
     getPreviousScene,
-    promises,
-    chapterPromises: filtering.chapterPromises,
-    filteredPromises: filtering.filteredPromises,
+    promises, chapterPromises: filtering.chapterPromises, filteredPromises: filtering.filteredPromises,
+    displayGroups: filtering.displayGroups, toggleChapterGroup: filtering.toggleChapterGroup,
     loading,
     editingNoteId: actions.editingNoteId,
     noteDraft: actions.noteDraft,
     scopeFilter: filtering.scopeFilter,
     statusFilter: filtering.statusFilter,
     categoryFilter: filtering.categoryFilter,
+    searchQuery: filtering.searchQuery,
+    locateFirstFiltered: () => { const first = filtering.filteredPromises.value[0]; if (first) { if (first.id) expandedCardIds.value = new Set([first.id]); actions.locateSource(first); } },
     loadPromises,
     addPromise: addPromiseAndExpand,
     addNewScene: addNewSceneAndExpand,

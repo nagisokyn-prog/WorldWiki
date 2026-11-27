@@ -119,7 +119,9 @@ describe('Entity Schemas Contract Audit (6 Core Entities)', () => {
     expect(basicDc.length).toBeGreaterThan(0);
     expect(basicDc[0].dataPath).toBe('хронология_события');
 
-    const tpl = schema.templates[basicDc[0].template];
+    const uiEditorPath = path.join(schemasDir, 'ui_editor.json');
+    const uiEditor = fs.existsSync(uiEditorPath) ? JSON.parse(fs.readFileSync(uiEditorPath, 'utf8')) : {};
+    const tpl = schema.templates?.[basicDc[0].template] || uiEditor.templates?.[basicDc[0].template];
     expect(tpl).toBeDefined();
     const dateField = tpl.fields.find((f: any) => f.class === 'начальная_дата');
     expect(dateField).toBeDefined();

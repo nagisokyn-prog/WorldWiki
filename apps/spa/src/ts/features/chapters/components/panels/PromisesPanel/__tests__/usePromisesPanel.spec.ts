@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { usePromisesPanel, PROMISE_KINDS, PROMISE_STATUSES } from '../usePromisesPanel';
 import * as api from '@/services/api.client';
 
@@ -13,6 +14,7 @@ describe('usePromisesPanel', () => {
   let emit: any;
 
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.clearAllMocks();
     localStorage.clear();
     props = {

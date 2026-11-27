@@ -157,7 +157,7 @@ describe('usePromiseCardMeta', () => {
     const emit = vi.fn();
     const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
     await meta.loadProjectEntities();
-    meta.currentHour.value = 0;
+    meta.currentHour.value = 23;
     meta.currentMinute.value = 0;
     
     expect(meta.diegeticInfo.value?.timeOfDayName).toBe('🌙 Ночь');

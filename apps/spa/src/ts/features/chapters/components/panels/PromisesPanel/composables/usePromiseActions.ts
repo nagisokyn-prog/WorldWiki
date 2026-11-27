@@ -70,28 +70,19 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   };
 
   const addMilestone = async (payload: {
-    promiseId: string;
-    stage: 'progression' | 'resolution';
-    quote: string;
-    paragraph_index: number;
-    block_id?: string | null;
-    chapterId?: string | null;
+    promiseId: string; stage: 'progression' | 'resolution'; quote: string;
+    paragraph_index: number; block_id?: string | null; block_ids?: string[]; chapterId?: string | null;
   }) => {
     const target = promises.value.find((p) => cleanId(p.id) === cleanId(payload.promiseId));
     if (!target) return;
-    
     const chapId = payload.chapterId || params.chapterId || target.chapter_id;
+    const resolvedBlockIds = payload.block_ids?.length ? payload.block_ids : (payload.block_id ? [payload.block_id] : []);
+    const msId = `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const ms: PromiseMilestone = {
-      milestone_id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      stage: payload.stage,
-      chapter_id: chapId || null,
-      paragraph_index: payload.paragraph_index || 1,
-      order_index: payload.paragraph_index || 1,
-      quote: payload.quote,
-      note: null,
-      block_id: payload.block_id || '',
-      created_at: new Date().toISOString()
+      milestone_id: msId, id: msId, stage: payload.stage, chapter_id: chapId || null,
+      paragraph_index: payload.paragraph_index || 1, order_index: payload.paragraph_index || 1,
+      quote: payload.quote, note: null, block_id: payload.block_id || resolvedBlockIds[0] || '',
+      block_ids: resolvedBlockIds, created_at: new Date().toISOString()
     };
 
     target.milestones = Array.isArray(target.milestones) ? target.milestones : [];
@@ -116,21 +107,27 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     milestoneId: string,
     stage: 'progression' | 'resolution'
   ) => {
-    promise.milestones = (promise.milestones || []).filter(
-      (m) => m.milestone_id !== milestoneId && (m as { id?: string }).id !== milestoneId
-    );
-    if (stage === 'progression' && Array.isArray(promise.progressions)) {
-      promise.progressions = promise.progressions.filter((m) => m.id !== milestoneId);
-      if (promise.progressions.length === 0 && promise.status === 'developed') {
-        promise.status = 'planted';
+    const target = promises.value.find((p) => cleanId(p.id) === cleanId(promise.id)) || promise;
+    const matchesMs = (m: PromiseMilestone) =>
+      (milestoneId && (m.milestone_id === milestoneId || m.id === milestoneId)) ||
+      (!milestoneId && m.stage === stage);
+
+    target.milestones = (target.milestones || []).filter((m) => !matchesMs(m));
+    if (stage === 'progression' && Array.isArray(target.progressions)) {
+      target.progressions = target.progressions.filter((m) => !matchesMs(m));
+      if (target.progressions.length === 0 && target.status === 'developed') {
+        target.status = 'planted';
       }
     } else if (stage === 'resolution') {
-      promise.resolution = null;
-      promise.status = promise.progressions?.length ? 'developed' : 'planted';
-      promise.resolved_in_chapter = null;
-      promise.resolved_in_volume = null;
+      target.resolution = null;
+      target.status = target.progressions?.length ? 'developed' : 'planted';
+      target.resolved_in_chapter = null;
+      target.resolved_in_volume = null;
     }
-    await persist(promise, '[usePromiseActions] Removing milestone');
+    if (target !== promise) {
+      Object.assign(promise, { milestones: target.milestones, progressions: target.progressions, resolution: target.resolution, status: target.status });
+    }
+    await persist(target, '[usePromiseActions] Removing milestone');
   };
 
   const updateStatus = async (item: RichPlotPromise, newStatus: string) => {
@@ -143,10 +140,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     await persist(item, '[usePromiseActions] Updating status');
   };
 
-  const startEditNote = (item: RichPlotPromise) => {
-    editingNoteId.value = item.id;
-    noteDraft.value = item.note || '';
-  };
+  const startEditNote = (item: RichPlotPromise) => { editingNoteId.value = item.id; noteDraft.value = item.note || ''; };
 
   const saveNote = async (item: RichPlotPromise) => {
     item.note = noteDraft.value.trim() || null;
@@ -154,20 +148,23 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     await persist(item, '[usePromiseActions] Saving note');
   };
 
-  const cancelEditNote = () => {
-    editingNoteId.value = null;
-    noteDraft.value = '';
-  };
+  const cancelEditNote = () => { editingNoteId.value = null; noteDraft.value = ''; };
 
   const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
+    const targetClean = cleanId(item.id);
     await preserveSceneArcsOnChapter(item, getProject(), item.chapter_id || getChapterId());
     try {
       await plotApi.deletePlotPromise(item.id);
     } catch (err) {
       console.warn('[usePromiseActions] Failed to delete promise from backend:', err);
+      const { appAlert } = await import('@worldwiki/components');
+      appAlert(`Не удалось удалить блок: ${err instanceof Error ? err.message : String(err)}`);
+      return;
     }
-    promises.value = promises.value.filter((p) => p.id !== item.id);
+    promises.value = promises.value.filter(
+      (p) => p.id !== item.id && cleanId(p.id) !== targetClean && cleanId(p.parent_id) !== targetClean
+    );
     syncLocalBackup();
     emit('change');
     document.dispatchEvent(new CustomEvent('ww:chapter-arcs-changed'));

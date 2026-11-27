@@ -172,6 +172,7 @@ export function createNewPromiseRecord(
         quote: quoteStr,
         note: null,
         block_id: payload.block_id || '',
+        block_ids: payload.block_ids && payload.block_ids.length > 0 ? payload.block_ids : (payload.block_id ? [payload.block_id] : []),
         chapter_id: chapterId || null,
         order_index: payload.paragraph_index
       }

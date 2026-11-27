@@ -87,11 +87,13 @@ export const SemanticParagraph = Paragraph.extend({
     return {
       id: {
         default: null,
+        keepOnSplit: false,
         parseHTML: (element) => element.getAttribute('data-id') || element.getAttribute('data-block-id'),
         renderHTML: (attributes) => (attributes.id ? { 'data-id': attributes.id } : {})
       },
       block_id: {
         default: null,
+        keepOnSplit: false,
         parseHTML: (element) => element.getAttribute('data-block-id') || element.getAttribute('data-id'),
         renderHTML: (attributes) => (attributes.block_id ? { 'data-block-id': attributes.block_id } : {})
       },

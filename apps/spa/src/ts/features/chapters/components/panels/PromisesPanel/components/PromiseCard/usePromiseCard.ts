@@ -19,12 +19,20 @@ export function usePromiseCard(
     }
   };
 
+  const formatBlockBadgeId = (id: string) => {
+    const clean = String(id).replace(/^(text_blocks|blocks):/i, '').trim();
+    const blkMatch = clean.match(/^(blk_)([a-zA-Z0-9-]{4,})$/i);
+    return blkMatch ? `${blkMatch[1]}${blkMatch[2].slice(0, 3)}` : clean;
+  };
+
   const collapsedBlockBadge = computed(() => {
     const blocks = props.item.block_ids;
     if (Array.isArray(blocks) && blocks.length > 0) {
-      return blocks.length === 1 ? blocks[0] : `${blocks[0]}..${blocks[blocks.length - 1]}`;
+      return blocks.length === 1
+        ? formatBlockBadgeId(blocks[0])
+        : `${formatBlockBadgeId(blocks[0])}..${formatBlockBadgeId(blocks[blocks.length - 1])}`;
     }
-    return props.item.block_id || null;
+    return props.item.block_id ? formatBlockBadgeId(props.item.block_id) : null;
   });
 
   const timeNatureIcon = computed(() => {

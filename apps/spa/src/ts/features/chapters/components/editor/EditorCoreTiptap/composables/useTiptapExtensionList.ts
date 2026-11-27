@@ -21,7 +21,32 @@ import {
 } from '../extensions/WordFormatExtensions';
 import { EnterHandler, SemanticParagraph } from '../extensions/SemanticExtensions';
 import { DiffInsertion, DiffDeletion } from '../extensions/DiffMarks';
+import { NarrativeFramesExtension } from '../extensions/NarrativeFramesExtension';
+import UniqueID from '@tiptap/extension-unique-id';
 import type { AnyExtension } from '@tiptap/core';
+
+export const BlockUniqueID = UniqueID.extend({
+  addGlobalAttributes() {
+    const parentAttrs = this.parent?.() || [];
+    return parentAttrs.map((entry) => ({
+      ...entry,
+      attributes: {
+        [this.options.attributeName]: {
+          default: null,
+          keepOnSplit: false,
+          parseHTML: (element: HTMLElement) =>
+            element.getAttribute('data-block-id') ||
+            element.getAttribute(`data-${this.options.attributeName}`) ||
+            element.getAttribute('data-id'),
+          renderHTML: (attributes: Record<string, unknown>) => {
+            const val = attributes[this.options.attributeName];
+            return val ? { 'data-block-id': val } : {};
+          }
+        }
+      }
+    }));
+  }
+});
 
 export function createTiptapExtensions(project: string): AnyExtension[] {
   return [
@@ -32,6 +57,15 @@ export function createTiptapExtensions(project: string): AnyExtension[] {
       dropcursor: { color: 'var(--color-accent)', width: 2 }
     }),
     SemanticParagraph,
+    BlockUniqueID.configure({
+      attributeName: 'block_id',
+      types: ['paragraph', 'heading', 'blockquote'],
+      generateID: () =>
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? `blk_${crypto.randomUUID()}`
+          : `blk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
+    }),
+    NarrativeFramesExtension,
     EnterHandler,
     DiffInsertion,
     DiffDeletion,

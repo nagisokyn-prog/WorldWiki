@@ -217,14 +217,21 @@ export function usePromiseCardMeta(
     handleDateFieldsChange();
   };
 
+  const formatBlockBadgeId = (id: string) => {
+    const clean = String(id).replace(/^(text_blocks|blocks):/i, '').trim();
+    const blkMatch = clean.match(/^(blk_)([a-zA-Z0-9-]{4,})$/i);
+    if (blkMatch) return `${blkMatch[1]}${blkMatch[2].slice(0, 3)}`;
+    return clean;
+  };
+
   const blockBadgeText = computed(() => {
     if (props.item.block_ids && props.item.block_ids.length > 0) {
       if (props.item.block_ids.length === 1) {
-        return props.item.block_ids[0];
+        return formatBlockBadgeId(props.item.block_ids[0]);
       }
-      return `${props.item.block_ids[0]}..${props.item.block_ids[props.item.block_ids.length - 1]} (${props.item.block_ids.length})`;
+      return `${formatBlockBadgeId(props.item.block_ids[0])}..${formatBlockBadgeId(props.item.block_ids[props.item.block_ids.length - 1])} (${props.item.block_ids.length})`;
     }
-    return props.item.block_id || null;
+    return props.item.block_id ? formatBlockBadgeId(props.item.block_id) : null;
   });
 
   return {

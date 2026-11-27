@@ -6,7 +6,10 @@ function cleanBlockLabel(raw?: string | null): string | null {
   if (!raw) return null;
   const stripped = String(raw).replace(/^(text_blocks|blocks):/i, '').replace(/[`⟨⟩"']/g, '').trim();
   const pm = stripped.match(/(para-\d+)$/i);
-  return pm ? pm[1] : stripped.replace(/^blk_[^_]+_/, '');
+  if (pm) return pm[1];
+  const short = stripped.replace(/^blk_[^_]+_/, '');
+  const blkMatch = short.match(/^(blk_)([a-zA-Z0-9-]{4,})$/i);
+  return blkMatch ? `${blkMatch[1]}${blkMatch[2].slice(0, 3)}` : short;
 }
 
 export function usePromiseMilestoneCard(
